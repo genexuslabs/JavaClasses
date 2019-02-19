@@ -11,7 +11,7 @@ This project allow to build gxclassR, the release version of the standard classe
 # How to build
 
 - Download or clone the project. 
-- Open a windows command prompt and move to the makefile directory
+- Open a windows command prompt and move to the <project dir>\makefile directory
 - Open the build.bat and check the JAVA_HOME directory and the ANT_HOME directory are ok for your environment.
 - run build.bat
 
