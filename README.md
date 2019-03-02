@@ -69,7 +69,7 @@ The dependencies between the projects are specified in each pom.xml within their
  
  # How to copy dependencies jar files to the dependency directory
  
- cd gx
- mvn dependency:copy-dependencies
+ - cd gx
+ - mvn dependency:copy-dependencies
 
 
