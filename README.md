@@ -50,11 +50,26 @@ The standard Android classes.
 The dependencies between the projects are specified in each pom.xml within their directory.
 
 
-# How to build
+# How to build all
 
 - Download or clone the project. 
-- Open a windows command prompt and move to the <project dir>\makefile directory
-- Open the build.bat and check the JAVA_HOME directory and the ANT_HOME directory are ok for your environment.
-- run buildGxClasses.bat
+- Open a windows command prompt and move to the <project dir> directory
+- Run mvnLocal.bat 
+  This will install 1 legacy jar file in the local repository of Maven. And the SAP jar file.
+- mvn compile (will compile the whole project)
+  
+# How to build a specific project
+
+- cd <project specific dir>
+- mvn compile
+  
+ # How to package all or some project
+ 
+ mvn package
+ 
+ # How to copy dependencies jar files to the dependency directory
+ 
+ cd gx
+ mvn dependency:copy-dependencies
 
 
