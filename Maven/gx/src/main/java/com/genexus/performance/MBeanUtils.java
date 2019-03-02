@@ -1,0 +1,186 @@
+package com.genexus.performance;
+
+import com.genexus.db.*;
+
+import javax.management.*;
+import java.util.*;
+
+public class MBeanUtils {
+	
+	private static MBeanServer mbs = null;
+	private static Vector registeredObjects = new Vector();
+	
+  public MBeanUtils() {
+  }
+  
+	private static MBeanServer getMBeanServer()		
+	{
+		if(mbs == null)
+		{
+			try
+			{
+				ArrayList list = MBeanServerFactory.findMBeanServer(null);
+				if (list.size() > 0)
+					mbs = (MBeanServer) list.get(0);
+			}
+			catch(Throwable t)
+			{
+				t.printStackTrace(System.out);
+				System.exit(1);
+			}
+		}
+		return mbs;
+	}  
+
+  public static void createMBeanDataStoreProviders()
+  {
+    MBeanServer mbs = getMBeanServer();
+	if (mbs == null)
+		return;	
+
+    try
+    {
+      ObjectName name = new ObjectName("com.genexus.performance:type=DataStoreProviders");
+	  registeredObjects.addElement(name);
+
+      DataStoreProvidersJMX mbean = new DataStoreProvidersJMX();
+	  
+      mbs.registerMBean(mbean, name);
+    }
+    catch(javax.management.MalformedObjectNameException e)
+    {
+      System.out.println(e);
+    }
+    catch(javax.management.InstanceAlreadyExistsException e)
+    {
+      System.out.println(e);
+    }
+    catch(javax.management.MBeanRegistrationException e)
+    {
+      System.out.println(e);
+    }
+    catch(javax.management.NotCompliantMBeanException e)
+    {
+      System.out.println(e);
+    }
+  }  
+  
+  public static void createMBeanDataStoreProvider(String dsName)
+  {
+    MBeanServer mbs = getMBeanServer();
+	if (mbs == null)
+		return;	
+
+    try
+    {
+      ObjectName name = new ObjectName("com.genexus.performance:type=DataStoreProviders.DataStoreProvider,name= " + dsName);
+	  registeredObjects.addElement(name);
+
+      DataStoreProviderJMX mbean = new DataStoreProviderJMX(dsName);
+	  
+      mbs.registerMBean(mbean, name);
+    }
+    catch(javax.management.MalformedObjectNameException e)
+    {
+      System.out.println(e);
+    }
+    catch(javax.management.InstanceAlreadyExistsException e)
+    {
+      System.out.println(e);
+    }
+    catch(javax.management.MBeanRegistrationException e)
+    {
+      System.out.println(e);
+    }
+    catch(javax.management.NotCompliantMBeanException e)
+    {
+      System.out.println(e);
+    }
+  }    
+  
+  public static void createMBeanSentence(DataStoreProviderInfo dsInfo, String sname)
+  {
+    MBeanServer mbs = getMBeanServer();
+	if (mbs == null)
+		return;	
+
+    try
+    {
+      ObjectName name = new ObjectName("com.genexus.performance:type=DataStoreProviders.DataStoreProvider.SQLStatement,DataStoreProvider="+ dsInfo.getName() +",name= " + sname);
+	  registeredObjects.addElement(name);
+
+      SentenceJMX mbean = new SentenceJMX(dsInfo, sname);
+	  
+      mbs.registerMBean(mbean, name);
+    }
+    catch(javax.management.MalformedObjectNameException e)
+    {
+      System.out.println(e);
+    }
+    catch(javax.management.InstanceAlreadyExistsException e)
+    {
+      System.out.println(e);
+    }
+    catch(javax.management.MBeanRegistrationException e)
+    {
+      System.out.println(e);
+    }
+    catch(javax.management.NotCompliantMBeanException e)
+    {
+      System.out.println(e);
+    }
+  }  
+  
+  public static void createMBeanProcedure(ProcedureInfo pInfo)
+  {
+    MBeanServer mbs = getMBeanServer();
+	if (mbs == null)
+		return;	
+
+    try
+    {
+      ObjectName name = new ObjectName("com.genexus.performance:type=Procedures,name= " + pInfo.getName());
+	  registeredObjects.addElement(name);
+
+      ProcedureJMX mbean = new ProcedureJMX(pInfo);
+	  
+      mbs.registerMBean(mbean, name);
+    }
+    catch(javax.management.MalformedObjectNameException e)
+    {
+      System.out.println(e);
+    }
+    catch(javax.management.InstanceAlreadyExistsException e)
+    {
+      System.out.println(e);
+    }
+    catch(javax.management.MBeanRegistrationException e)
+    {
+      System.out.println(e);
+    }
+    catch(javax.management.NotCompliantMBeanException e)
+    {
+      System.out.println(e);
+    }
+  }  
+  
+  public static void unregisterObjects()
+  {
+	  try
+	  {
+		for (int i = 0; i < registeredObjects.size(); i++)
+		{
+			mbs.unregisterMBean((ObjectName) registeredObjects.elementAt(i));
+		}
+	  }
+	  catch(javax.management.InstanceNotFoundException e)
+	  {
+		System.out.println(e);
+	  }
+	  catch(javax.management.MBeanRegistrationException e)
+	  {
+		  System.out.println(e);
+	  }
+	  mbs = null;
+  }
+}

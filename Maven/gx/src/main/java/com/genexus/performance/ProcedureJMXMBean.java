@@ -1,0 +1,13 @@
+package com.genexus.performance;
+
+import java.util.*;
+
+public interface ProcedureJMXMBean
+{
+	long getCount();
+	Date getLastExecute();
+	long getTotalTime();
+	float getAverageTime();
+	long getWorstTime();
+	long getBestTime();
+}

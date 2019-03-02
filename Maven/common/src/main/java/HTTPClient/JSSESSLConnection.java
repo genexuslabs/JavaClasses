@@ -1,0 +1,110 @@
+// $Log: JSSESSLConnection.java,v $
+// Revision 1.2  2002/12/18 20:58:19  gusbro
+// -
+//
+// Revision 1.1.1.1  2001/09/07 20:42:08  gusbro
+// Entran los fuentes al CVS
+//
+// Revision 1.1.1.1  2001/09/07 20:42:08  gusbro
+// GeneXus Java Olimar
+//
+package HTTPClient;
+
+/**
+ * Title:        Clases manejo SSL
+ * Description:
+ * Copyright:    Copyright (c) 2001
+ * Company:
+ * @author gb
+ * @version 1.0
+ */
+
+import java.net.*;
+import java.io.IOException;
+
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLSocketFactory;
+import javax.security.cert.X509Certificate;
+
+/** Esta clase provee un Binding SSL para la libreria JSSE de Sun
+ *
+ */
+public class JSSESSLConnection implements ISSLConnection
+{
+    private static SSLSocketFactory defaultSSLFactory =	(SSLSocketFactory) SSLSocketFactory.getDefault();
+    private SSLSocketFactory  sslFactory = defaultSSLFactory;
+
+    public JSSESSLConnection() throws Exception
+    {
+    }
+
+    public Socket processSSLSocket(Socket fromSocket, String host, int port) throws IOException
+    {
+		SSLSocket sock = (SSLSocket)sslFactory.createSocket(fromSocket, host, port, true);		
+		return sock;
+    }
+
+    public Socket getSSLSocket(InetAddress addr, int port) throws IOException
+    {
+        return new Socket(addr, port);
+    }
+
+    public Socket getSSLSocket(InetAddress addr, int port, InetAddress localAddr, int localPort) throws IOException
+    {
+        return new Socket(addr, port, localAddr, localPort);
+    }
+
+    public Object clone()
+    {
+      return this;
+    }
+
+    public String toString()
+    {
+      return "JSSE SSL Connection, using: " + sslFactory;
+    }
+
+    /**
+     * Set the SSL socket factory for this connection. If not set, uses the
+     * default factory.
+     *
+     * @param sslFactory the SSL socket factory
+     */
+    public static void setDefaultSSLSocketFactory(SSLSocketFactory sslFactory)
+    {
+	defaultSSLFactory = sslFactory;
+    }
+
+    /**
+     * Set the current SSL socket factory for this connection.
+     *
+     * @return the current SSL socket factory
+     */
+    public static SSLSocketFactory getDefaultSSLSocketFactory()
+    {
+	return defaultSSLFactory;
+    }
+
+    /**
+     * Set the SSL socket factory for this connection. If not set, uses the
+     * default factory.
+     *
+     * @param sslFactory the SSL socket factory
+     */
+    public void setSSLSocketFactory(SSLSocketFactory sslFactory)
+    {
+	this.sslFactory = sslFactory;
+    }
+
+    /**
+     * Set the current SSL socket factory for this connection.
+     *
+     * @return the current SSL socket factory
+     */
+    public SSLSocketFactory getSSLSocketFactory()
+    {
+	return sslFactory;
+    }
+}	
+
