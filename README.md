@@ -81,6 +81,6 @@ The dependencies between the projects are specified in each pom.xml within their
  
  The site for each module can be found at <project dir>\target\site\index.html
   
-  ![GitHub Logo](/images/logo.png)
+  ![Site](/Maven/site.png)
 
 
