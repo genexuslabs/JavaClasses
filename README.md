@@ -1,4 +1,5 @@
-# JavaClasses
+# JavaClasses (Working Process, these classes are not intended to be used as release library yet)
+
 GeneXus Standard Classes for Java.
 
 GeneXus Standard Classes for Android. *This is not the full runtime for Android, the full runtime can be created by using the Android Flexible Client project*
