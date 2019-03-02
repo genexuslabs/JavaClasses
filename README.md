@@ -12,38 +12,38 @@ GeneXus Standard Classes for Android. *This is not the full runtime for Android,
 
 he Maven directory is a project that allows you to build multiple modules.
 
-##common
+## common
 Classes common to Android and Java
 
-##gxcryptocommon
+## gxcryptocommon
 
 Classes common to Android and Java related to Cryptography
 
-##apacheandroid
+## apacheandroid
 
 Android apache class dependence. These were separated by size issues. They are candidates to disappear in the near future.
 
-##gxmail
+## gxmail
 
 Classes related to mail handling.
 
-##gx
+## gx
 
 Java standard classes
 
-##gxoffice
+## gxoffice
 
 Formerly Java classes are now separated to be included only when using office.
 
-##gxsearch
+## gxsearch
 
 Formerly in Java classes are now separated to be included only when using search.
 
-##gxandroidpublisher and javapns
+## gxandroidpublisher and javapns
 
 They are necessary for when you have Push Notifications in your old implementation. These are projects that should disappear in the short term.
 
-##Android
+## Android
 
 The standard Android classes.
 
