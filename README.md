@@ -10,7 +10,9 @@ GeneXus Standard Classes for Android. *This is not the full runtime for Android,
 
 # Projects Description
 
-he Maven directory is a project that allows you to build multiple modules.
+Maven directory is a project that allows you to build multiple modules.
+
+# Modules
 
 ## common
 Classes common to Android and Java
