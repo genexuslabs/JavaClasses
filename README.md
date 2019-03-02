@@ -71,5 +71,16 @@ The dependencies between the projects are specified in each pom.xml within their
  
  - cd gx
  - mvn dependency:copy-dependencies
+ 
+ # How to create a Site with the specification of each module
+ 
+ - mvn site
+ 
+ (Android site is failing)
+ (when processing xmlsec exception are raised but the process continue)
+ 
+ The site for each module can be found at <project dir>\target\site\index.html
+  
+  ![GitHub Logo](/images/logo.png)
 
 
