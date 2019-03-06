@@ -55,35 +55,33 @@ The dependencies between the projects are specified in each pom.xml within their
 
 # How to build all
 
-- Download or clone the project. 
+- Download or clone the project.
 - Open a windows command prompt and move to the <project dir> directory
-- Run mvnLocal.bat 
+- Run mvnLocal.bat
   This will install 1 legacy jar file in the local repository of Maven. And the SAP jar file.
 - mvn compile (will compile the whole project)
-  
+
 # How to build a specific project
 
 - cd <project specific dir>
 - mvn compile
-  
+
  # How to package all or some project
- 
+
  mvn package
- 
+
  # How to copy dependencies jar files to the dependency directory
- 
+
  - cd gx
  - mvn dependency:copy-dependencies
- 
+
  # How to create a Site with the specification of each module
- 
+
  - mvn site
- 
+
  (Android site is failing)
  (when processing xmlsec exception are raised but the process continue)
- 
+
  The site for each module can be found at <project dir>\target\site\index.html
-  
-  ![Site](/Maven/site.png)
 
-
+  ![Site](site.png)
