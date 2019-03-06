@@ -1,6 +1,6 @@
 package com.genexus.management;
 
-import java.util.*;
+import java.util.Date;
 
 public interface ConnectionJMXMBean
 {

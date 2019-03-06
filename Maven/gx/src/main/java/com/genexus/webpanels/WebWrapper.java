@@ -1,10 +1,11 @@
 package com.genexus.webpanels;
-import com.genexus.ModelContext;
 import java.io.ByteArrayOutputStream;
-import com.genexus.internet.HttpContext;
+
+import javax.servlet.http.HttpServletRequest;
+
+import com.genexus.ModelContext;
 import com.genexus.internet.HttpContextNull;
 import com.genexus.internet.HttpRequest;
-import javax.servlet.http.*;
 
 public class WebWrapper
 {

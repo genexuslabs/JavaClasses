@@ -8,16 +8,19 @@
 
 package com.genexus.db.driver;
 
-import java.io.*;
-import java.sql.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 import com.genexus.CommonUtil;
-import com.genexus.PrivateUtilities;
 import com.genexus.ICleanedup;
 //import com.genexus.DebugFlag;
-
-import java.util.GregorianCalendar;
-import java.util.Calendar;
 
 public final class GXDBDebug implements ICleanedup
 {

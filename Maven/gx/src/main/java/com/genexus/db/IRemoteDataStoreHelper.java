@@ -1,8 +1,9 @@
 package com.genexus.db;
 
+import java.sql.SQLException;
+
 import com.genexus.GXParameterPacker;
 import com.genexus.GXParameterUnpacker;
-import java.sql.SQLException;
 
 public interface IRemoteDataStoreHelper extends IDataStoreHelper
 {

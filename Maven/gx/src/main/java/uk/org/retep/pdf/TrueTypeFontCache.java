@@ -1,8 +1,7 @@
 package uk.org.retep.pdf;
 
-import java.util.HashMap;
 import java.io.File;
-import java.util.Locale;
+import java.util.HashMap;
 
 public class TrueTypeFontCache
 {

@@ -1,6 +1,5 @@
 package com.genexus;
 
-import com.genexus.*;
 import java.util.Vector;
 
 public class Store

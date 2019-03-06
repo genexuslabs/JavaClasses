@@ -1,9 +1,8 @@
 package uk.org.retep.pdf.j2;
 
-import java.awt.*;
-import java.awt.image.*;
-import java.io.*;
-import java.util.*;
+import java.awt.Shape;
+import java.io.PrintWriter;
+import java.io.Serializable;
 
 /**
  * This class extends the main PDFGraphics class, and is compiled on the

@@ -1,14 +1,14 @@
 package com.genexus.webpanels;
 
-import java.util.Vector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.io.File;
+
 import org.apache.commons.io.IOUtils;
+
 import com.genexus.Application;
-import com.genexus.util.GXServices;
 import com.genexus.util.GXFile;
+import com.genexus.util.GXServices;
 
 public class FileItem
 { 

@@ -7,9 +7,9 @@
 //
 package uk.org.retep.pdf;
 
-import java.awt.*;
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
 
 /**
  * This class defines an annotation (commonly known as Bookmarks).

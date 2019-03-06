@@ -43,8 +43,10 @@ package com.genexus.db.driver;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.*;
-import com.genexus.GXJTA;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
+
 import com.genexus.ModelContext;
 
 public final class DirectConnectionPool implements IConnectionPool

@@ -6,9 +6,6 @@
 // GeneXus Java Olimar
 //
 package uk.org.retep.pdf;
-import java.awt.*;
-import java.io.*;
-import java.util.*;
 
 /**
  * Title:

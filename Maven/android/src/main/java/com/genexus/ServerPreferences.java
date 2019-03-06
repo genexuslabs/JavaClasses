@@ -11,9 +11,8 @@
 
 package com.genexus;
 
-import java.util.*;		    
-import java.io.*;
-import java.net.URL;
+import java.util.Hashtable;
+
 import com.genexus.util.IniFile;
 
 public final class ServerPreferences extends Preferences

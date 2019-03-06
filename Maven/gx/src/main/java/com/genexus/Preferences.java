@@ -1,65 +1,12 @@
-// $Log: Preferences.java,v $
-// Revision 1.11  2004/08/13 19:46:14  iroqueta
-// Se cambio el nombre de la entrada JAVA_USERID por LOGIN_AS_USERID
-//
-// Revision 1.10  2004/06/23 20:16:10  gusbro
-// - Agrego preferences para EventHandling
-//
-// Revision 1.9  2004/06/10 20:34:52  gusbro
-// - Error en el put anterior
-//
-// Revision 1.8  2004/06/07 19:10:41  gusbro
-// - Agrego property DBACTION_PROC
-//
-// Revision 1.7  2004/05/25 17:58:12  gusbro
-// - Agrego property getLDAP_USERID_TYPE()
-//
-// Revision 1.6  2004/02/19 17:06:03  gusbro
-// - Idem anterior
-//
-// Revision 1.5  2004/02/10 16:39:44  gusbro
-// - Agrego soporte para cache de resultados
-//
-// Revision 1.4  2003/11/04 20:27:13  gusbro
-// - Agrego preference SUBMIT_POOL_SIZE
-//
-// Revision 1.3  2003/06/26 18:27:22  gusbro
-// - Agrego getBLOB_PATH
-//
-// Revision 1.2  2002/11/25 21:00:31  aaguiar
-// - La getConnTimeout devuelve el valor del .cfg en vez de 300 hard coded
-//
-// Revision 1.1.1.1  2002/04/23 21:47:48  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2002/04/23 21:47:48  gusbro
-// GeneXus Java Olimar
-//
-//
-//   Rev 1.4   23 Sep 1998 19:48:32   AAGUIAR
-//
-//   Rev 1.3   10 Aug 1998 16:39:50   AAGUIAR
-//	-	Se usa la PrivateUtilities.loadProperties en vez de GXutil.loadProperties
-//
-//   Rev 1.2   Jun 30 1998 10:06:48   AAGUIAR
-//	-	Se agrego la preference AUTO_REMOTE
-//	-	Se cambio la constante ORB_RMI por ORB_SUN_RMI.
-//
-//   Rev 1.1   Jun 18 1998 12:23:54   AAGUIAR
-//	-	Se soporta la preference field_exit y key_refresh.
-//
-//   Rev 1.0   May 29 1998 10:03:22   AAGUIAR
-//	-	Creación de la clase.
-
 package com.genexus;
 
-import com.genexus.util.IniFile;
-import com.genexus.GXDbFile;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.util.Hashtable;
+
 import com.genexus.common.interfaces.IPreferences;
 import com.genexus.util.GXServices;
-
-import java.util.*;
-import java.io.*;
+import com.genexus.util.IniFile;
 
 public class Preferences implements IPreferences {
 	public static final byte ORB_NEVER = 0;

@@ -31,15 +31,24 @@
 //
 package com.genexus.internet;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Date;
+import java.util.TimeZone;
 
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
-import com.genexus.platform.*;
-
-import gxmail.Configuration;
+import com.genexus.platform.INativeFunctions;
 
 public class POP3Session  implements GXInternetConstants,IPOP3Session
 {

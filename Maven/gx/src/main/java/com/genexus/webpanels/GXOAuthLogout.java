@@ -1,10 +1,9 @@
 package com.genexus.webpanels;
 
-import com.genexus.*;
+import com.genexus.Application;
+import com.genexus.ModelContext;
 import com.genexus.internet.HttpContext;
 import com.genexus.security.GXSecurityProvider;
-
-import json.org.json.*;
 
 public class GXOAuthLogout extends GXWebObjectStub
 {   

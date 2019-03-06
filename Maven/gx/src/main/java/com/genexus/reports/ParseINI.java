@@ -20,13 +20,27 @@
 //
 package com.genexus.reports;
 
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+
 /** ParseINI, clase para el manejo de INIs
  * @version 1.0.1
  */
-
-import java.util.*;
-import java.util.zip.*;
-import java.io.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 public class ParseINI
 {

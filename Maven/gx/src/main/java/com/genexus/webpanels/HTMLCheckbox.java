@@ -1,7 +1,5 @@
 package com.genexus.webpanels;
 
-import java.io.*;
-
 public class HTMLCheckbox extends HTMLObject implements ICheckbox
 {
 	private String checkedValue;

@@ -1,8 +1,13 @@
 package com.genexus.util;
 
-import com.genexus.db.driver.*;
-import com.genexus.*;
 import java.io.File;
+
+import com.genexus.Application;
+import com.genexus.GXBaseCollection;
+import com.genexus.GXutil;
+import com.genexus.SdtMessages_Message;
+import com.genexus.StructSdtMessages_Message;
+import com.genexus.db.driver.ExternalProvider;
 
 public class GXStorageProvider {
 

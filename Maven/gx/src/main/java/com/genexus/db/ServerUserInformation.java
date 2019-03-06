@@ -1,15 +1,15 @@
 package com.genexus.db;
 
+import java.sql.SQLException;
+import java.util.Date;
 //import com.genexus.*;
 import java.util.Enumeration;
-import java.sql.*;
-import java.util.Date;
 
 import com.genexus.Application;
 import com.genexus.ApplicationContext;
 import com.genexus.ModelContext;
-import com.genexus.db.driver.GXConnection;
 import com.genexus.db.driver.DataSource;
+import com.genexus.db.driver.GXConnection;
 
 public final class ServerUserInformation extends UserInformation
 {

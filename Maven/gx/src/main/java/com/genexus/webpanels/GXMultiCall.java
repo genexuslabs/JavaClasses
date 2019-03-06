@@ -1,12 +1,16 @@
 package com.genexus.webpanels;
-import com.genexus.*;
+import java.lang.reflect.Method;
+
+import javax.servlet.ServletInputStream;
+
+import com.genexus.Application;
+import com.genexus.GXutil;
+import com.genexus.ModelContext;
 import com.genexus.db.Namespace;
 import com.genexus.db.UserInformation;
 import com.genexus.internet.HttpContext;
 
 import json.org.json.JSONArray;
-
-import javax.servlet.ServletInputStream;import java.lang.reflect.*;
 
 public class GXMultiCall extends GXWebObjectStub
 {		private final static String METHOD_EXECUTE = "execute";	

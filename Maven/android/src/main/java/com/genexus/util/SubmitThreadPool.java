@@ -19,10 +19,14 @@
 /**
  **/
 package com.genexus.util;
-import com.genexus.*;
-import com.genexus.db.SQLAndroidSQLiteHelper;
+import java.util.Vector;
 
-import java.util.*;
+import com.genexus.GXParameterPacker;
+import com.genexus.GXParameterUnpacker;
+import com.genexus.ISubmitteable;
+import com.genexus.ModelContext;
+import com.genexus.Preferences;
+import com.genexus.db.SQLAndroidSQLiteHelper;
 
 public class SubmitThreadPool
 {

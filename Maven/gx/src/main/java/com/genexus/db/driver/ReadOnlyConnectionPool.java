@@ -13,8 +13,8 @@
 //
 
 package com.genexus.db.driver;
-import java.sql.*;
-import java.util.*;
+import java.sql.SQLException;
+
 import com.genexus.ModelContext;
 
 final class ReadOnlyConnectionPool extends ConnectionPool

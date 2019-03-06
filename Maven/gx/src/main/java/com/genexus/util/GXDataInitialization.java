@@ -1,9 +1,18 @@
 package com.genexus.util;
 
-import java.io.*;
-import com.genexus.xml.XMLReader;
+import java.io.File;
 import java.util.Vector;
-import com.genexus.*;
+
+import com.genexus.Application;
+import com.genexus.CommonUtil;
+import com.genexus.GXBCCollection;
+import com.genexus.GXBaseCollection;
+import com.genexus.GXProcedure;
+import com.genexus.GxSilentTrnSdt;
+import com.genexus.ModelContext;
+import com.genexus.Preferences;
+import com.genexus.SdtMessages_Message;
+import com.genexus.xml.XMLReader;
 
 public class GXDataInitialization extends GXProcedure {
 	static String packagePath = "";

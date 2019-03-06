@@ -22,8 +22,10 @@
 //
 package com.genexus.reports;
 
-import java.io.*;
-import com.genexus.*;
+import java.io.File;
+
+import com.genexus.ApplicationContext;
+import com.genexus.LoadLibrary;
 
 public class SunGXReportViewer implements IGXReportViewerImpl
 {

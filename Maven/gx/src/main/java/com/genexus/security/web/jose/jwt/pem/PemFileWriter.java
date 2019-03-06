@@ -1,12 +1,12 @@
 package com.genexus.security.web.jose.jwt.pem;
 
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemWriter;
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.security.Key;
+
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemWriter;
 
 /**
  * Can write PEM to disk - depends on BouncyCastle PemWriter

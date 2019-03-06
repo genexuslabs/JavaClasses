@@ -23,14 +23,9 @@
 //
 package com.genexus.reports;
 
-import java.io.OutputStream;
-import java.io.IOException;
 import com.genexus.GXProcedure;
-import com.genexus.ProcessInterruptedException;
 import com.genexus.ModelContext;
-import com.genexus.platform.NativeFunctions;
-import com.genexus.util.IGUIContext;
-import com.genexus.reports.GXReportMetadata;
+import com.genexus.ProcessInterruptedException;
 
 public abstract class GXReport extends GXProcedure
 {

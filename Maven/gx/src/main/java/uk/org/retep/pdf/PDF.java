@@ -14,12 +14,21 @@
 //
 package uk.org.retep.pdf;
 
-import java.awt.*;
-import java.io.*;
-import java.util.*;
-import java.awt.image.*;
-import com.genexus.reports.ParseINI;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.Image;
+import java.awt.PrintJob;
+import java.awt.image.ImageObserver;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.Vector;
+
 import com.genexus.reports.Const;
+import com.genexus.reports.ParseINI;
 
 /**
  * This class is the base of the PDF generator. A PDF class is created for a

@@ -49,9 +49,11 @@
 //Sincro28May1998
 
 package com.genexus.db.driver;
-import java.sql.*;
-import java.util.*;
 import java.io.PrintStream;
+import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.Hashtable;
 
 /**
  * Manejo de pool de cursores preparados para una conexi�n.

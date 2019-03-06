@@ -1,16 +1,14 @@
 package com.genexus.webpanels;
 
+import com.genexus.GXBaseCollection;
+import com.genexus.GXutil;
+import com.genexus.SdtMessages_Message;
 import com.genexus.internet.IGxJSONAble;
 import com.genexus.internet.IGxJSONSerializable;
 
-import json.org.json.*;
-
-import com.genexus.CommonUtil;
-import com.genexus.SdtMessages_Message;
-import com.genexus.GXBaseCollection;
-import com.genexus.GXutil;
-
-import java.io.*;
+import json.org.json.IJsonFormattable;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 
 public class HTMLObject implements IGxJSONAble, IGxJSONSerializable
 {

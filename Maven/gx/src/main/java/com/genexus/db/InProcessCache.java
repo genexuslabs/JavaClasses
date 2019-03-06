@@ -1,17 +1,14 @@
 package com.genexus.db;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.genexus.Application;
 import com.genexus.CommonUtil;
 import com.genexus.ICacheService;
-import com.genexus.CacheFactory;
-import com.genexus.util.*;
 import com.genexus.Preferences;
-
-import java.util.concurrent.ConcurrentHashMap;
-
-import com.genexus.management.CacheJMX;
 import com.genexus.management.CacheItemJMX;
+import com.genexus.management.CacheJMX;
+import com.genexus.util.DoubleLinkedQueue;
 
 /** $Log: InProcessCache.java,v $
 /** Revision 1.6  2005/07/22 23:03:47  iroqueta

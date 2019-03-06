@@ -11,7 +11,6 @@ import com.genexus.cryptography.encryption.symmetric.IGXSymEncryption;
 import com.genexus.cryptography.exception.AlgorithmNotSupportedException;
 import com.genexus.cryptography.exception.EncryptionException;
 import com.genexus.cryptography.exception.InvalidKeyLengthException;
-
 import com.genexus.webpanels.HttpContextWeb;
 
 public class GXSymEncryption {

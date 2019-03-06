@@ -7,9 +7,10 @@
 //
 package com.genexus;
 
-import com.genexus.internet.*;
-import com.genexus.util.*;
-import com.genexus.xml.*;
+import com.genexus.internet.GXFTPSafe;
+import com.genexus.internet.GXMailer;
+import com.genexus.util.DelimitedFilesSafe;
+import com.genexus.xml.XMLWriter;
 
 public class SessionInstances
 {

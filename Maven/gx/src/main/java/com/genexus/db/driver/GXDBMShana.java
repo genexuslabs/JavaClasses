@@ -4,9 +4,13 @@
 
 package com.genexus.db.driver;
 
-import com.genexus.CommonUtil;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
+
+import com.genexus.CommonUtil;
 
 public class GXDBMShana implements GXDBMS
 {

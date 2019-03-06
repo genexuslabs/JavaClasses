@@ -1,8 +1,8 @@
 package com.genexus;
 
-import java.io.*;
-import java.util.regex.Pattern;
+import java.io.File;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class GXDbFile
 {

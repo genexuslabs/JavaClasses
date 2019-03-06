@@ -1,15 +1,22 @@
 package com.genexus.reports;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.Writer;
 
 import com.artech.base.services.AndroidContext;
 import com.artech.base.services.IBluetoothPrinter;
-import com.genexus.*;
-import com.genexus.util.*;
-
-import java.io.FileNotFoundException;
-
+import com.genexus.CommonUtil;
+import com.genexus.GXProcedure;
+import com.genexus.ModelContext;
 import com.genexus.util.GXFile;
+import com.genexus.util.NullOutputStream;
 
 public abstract class GXReportText extends GXProcedure
 {

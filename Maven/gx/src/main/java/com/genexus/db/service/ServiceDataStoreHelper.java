@@ -1,8 +1,9 @@
 package com.genexus.db.service;
 
-import com.genexus.db.*;
 import java.math.BigDecimal;
 import java.util.UUID;
+
+import com.genexus.db.DataStoreHelperBase;
 
 public abstract class ServiceDataStoreHelper extends DataStoreHelperBase implements IServiceHelper
 {

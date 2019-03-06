@@ -1,8 +1,6 @@
 package com.genexus.performance;
 
-import java.util.*;
-
-import com.genexus.db.*;
+import java.util.Date;
 
 public class ProcedureJMX implements ProcedureJMXMBean{
 	

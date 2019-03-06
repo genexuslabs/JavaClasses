@@ -11,26 +11,36 @@
  */
 package com.genexus.webpanels;
 
-import com.genexus.*;
-import com.genexus.internet.*;
-import com.genexus.db.*;
-import com.genexus.security.GXSecurityProvider;
-import com.genexus.security.web.WebSecurityHelper;
-
-import json.org.json.*;
-
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Field;
-import java.lang.reflect.Array;
-
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Hashtable;
+
+import com.genexus.Application;
+import com.genexus.GXRuntimeException;
+import com.genexus.GXSimpleCollection;
+import com.genexus.GXutil;
+import com.genexus.ModelContext;
+import com.genexus.PrivateUtilities;
+import com.genexus.db.UserInformation;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
+import com.genexus.internet.HttpContext;
+import com.genexus.internet.IGxJSONSerializable;
+import com.genexus.security.GXSecurityProvider;
+
+import json.org.json.IJsonFormattable;
+import json.org.json.JSONArray;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 
 class DataIntegrityException extends Exception
 {

@@ -1,6 +1,6 @@
 package com.genexus.internet;
 
-import javax.servlet.http.*;
+import javax.servlet.http.HttpServletRequest;
 
 public class HttpGXServletRequest {
   private HttpServletRequest request = null;

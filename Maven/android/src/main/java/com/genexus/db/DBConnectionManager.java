@@ -1,23 +1,17 @@
 package com.genexus.db;
 
-import com.genexus.ModelContext;
-import com.genexus.common.classes.AbstractModelContext;
-import com.genexus.Application;
-import com.genexus.ApplicationContext;
-import com.genexus.ClientContext;
-import com.genexus.CommonUtil;
-import com.genexus.ErrorManager;
-
-import com.genexus.db.driver.GXConnection;
-import com.genexus.db.driver.DataSource;
-import com.genexus.db.driver.GXPreparedStatement;
-import com.genexus.db.driver.GXCallableStatement;
-
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Vector;
+
+import com.genexus.ClientContext;
+import com.genexus.CommonUtil;
+import com.genexus.ModelContext;
+import com.genexus.common.classes.AbstractModelContext;
+import com.genexus.db.driver.DataSource;
+import com.genexus.db.driver.GXConnection;
 
 public abstract class DBConnectionManager
 {

@@ -19,19 +19,17 @@
 //
 package com.genexus.db;
 
+import java.sql.SQLException;
 import java.util.Enumeration;
-import java.sql.*;
 
-
-
-import com.genexus.db.driver.GXConnection;
-import com.genexus.db.driver.DataSource;
+import com.genexus.Application;
 import com.genexus.ClientPreferences;
+import com.genexus.CommonUtil;
 import com.genexus.LocalUtil;
 import com.genexus.Messages;
-import com.genexus.CommonUtil;
-import com.genexus.Application;
 import com.genexus.ModelContext;
+import com.genexus.db.driver.DataSource;
+import com.genexus.db.driver.GXConnection;
 
 public class LocalUserInformation extends UserInformation
 {

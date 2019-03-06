@@ -1,25 +1,25 @@
 package com.genexus;
 
-import java.io.IOException;
-import java.text.ParseException;
 import java.io.StringWriter;
-import java.lang.Double;
+import java.text.ParseException;
 import java.util.Locale;
-import com.genexus.internet.IGxJSONSerializable;
-import org.simpleframework.xml.*;
-//import org.noggit.JSONParser.*;
 
 import org.locationtech.spatial4j.context.SpatialContext;
 import org.locationtech.spatial4j.context.SpatialContextFactory;
 import org.locationtech.spatial4j.context.jts.JtsSpatialContextFactory;
-import org.locationtech.spatial4j.exception.InvalidShapeException;
 import org.locationtech.spatial4j.distance.DistanceCalculator;
 import org.locationtech.spatial4j.distance.DistanceUtils;
-import org.locationtech.spatial4j.distance.GeodesicSphereDistCalc;
-import org.locationtech.spatial4j.io.*;
-import org.locationtech.spatial4j.shape.*;
-import org.locationtech.spatial4j.shape.*;
-import org.locationtech.spatial4j.shape.jts.*;
+import org.locationtech.spatial4j.exception.InvalidShapeException;
+import org.locationtech.spatial4j.io.ShapeReader;
+import org.locationtech.spatial4j.io.ShapeWriter;
+import org.locationtech.spatial4j.shape.Point;
+import org.locationtech.spatial4j.shape.Shape;
+import org.locationtech.spatial4j.shape.SpatialRelation;
+//import org.noggit.JSONParser.*;
+import org.simpleframework.xml.Root;
+import org.simpleframework.xml.Text;
+
+import com.genexus.internet.IGxJSONSerializable;
 
 
 @Root

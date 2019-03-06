@@ -5,9 +5,12 @@
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
 package com.genexus.db.driver;
-import java.util.*;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import org.apache.commons.collections.SequencedHashMap;
+
 import com.genexus.DebugFlag;
 
 /**

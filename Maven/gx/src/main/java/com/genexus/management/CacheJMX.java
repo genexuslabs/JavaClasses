@@ -1,12 +1,12 @@
 package com.genexus.management;
 
-import java.util.*;
+import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 
-
-import com.genexus.db.*;
 import com.genexus.CacheFactory;
 import com.genexus.Preferences;
+import com.genexus.db.CacheValue;
+import com.genexus.db.InProcessCache;
 
 public class CacheJMX implements CacheJMXMBean{
 	

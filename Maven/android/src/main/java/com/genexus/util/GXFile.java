@@ -32,18 +32,24 @@ package com.genexus.util;
 // - Agrego metodo XSLTApply
 //
 //
-
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.LineIterator;
+import org.apache.commons.io.output.FileWriterWithEncoding;
+
 import com.artech.base.services.AndroidContext;
 import com.genexus.CommonUtil;
 import com.genexus.common.classes.AbstractGXFile;
-
-import org.apache.commons.io.*;
-import org.apache.commons.io.output.*;
 
 public class GXFile extends AbstractGXFile {
 	private File FileSource;

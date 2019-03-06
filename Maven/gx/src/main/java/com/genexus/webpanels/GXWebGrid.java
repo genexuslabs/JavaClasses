@@ -1,11 +1,14 @@
 package com.genexus.webpanels;
 
+import java.util.ArrayList;
+
 import com.genexus.ModelContext;
 import com.genexus.internet.IGxJSONAble;
 
-import json.org.json.*;
-
-import java.util.*;
+import json.org.json.IJsonFormattable;
+import json.org.json.JSONArray;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 
 public class GXWebGrid implements IGxJSONAble
 {

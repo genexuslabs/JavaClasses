@@ -1,6 +1,6 @@
 package com.genexus.management;
 
-import java.util.*;
+import java.util.Date;
 
 import com.genexus.db.driver.GXConnection;
 

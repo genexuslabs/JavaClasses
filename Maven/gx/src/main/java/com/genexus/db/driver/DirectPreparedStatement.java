@@ -2,7 +2,9 @@ package com.genexus.db.driver;
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Vector;
+
 import com.genexus.DebugFlag;
 
 /**

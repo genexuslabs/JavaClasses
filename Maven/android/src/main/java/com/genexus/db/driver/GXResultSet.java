@@ -133,10 +133,10 @@ import java.sql.SQLXML;
 import java.sql.Statement;
 import java.util.Calendar;
 
+import com.genexus.CommonUtil;
 import com.genexus.DebugFlag;
 import com.genexus.GXDbFile;
 import com.genexus.db.IGXResultSet;
-import com.genexus.CommonUtil;
 
 /**
 * Esta clase es un wrapper de un ResultSet real. Le agrega debugging y algunos procesamientos en

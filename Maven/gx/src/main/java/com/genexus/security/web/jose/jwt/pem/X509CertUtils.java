@@ -1,12 +1,12 @@
 package com.genexus.security.web.jose.jwt.pem;
 
-import org.apache.commons.codec.binary.Base64;
-
 import java.io.ByteArrayInputStream;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+
+import org.apache.commons.codec.binary.Base64;
 
 
 /**

@@ -1,12 +1,13 @@
 package com.genexus.util;
 
+import java.io.File;
 import java.util.Hashtable;
-import java.io.*;
+
 import com.genexus.ApplicationContext;
 import com.genexus.ModelContext;
-import com.genexus.webpanels.HttpContextWeb;
 import com.genexus.internet.HttpContext;
-import com.genexus.xml.*;
+import com.genexus.webpanels.HttpContextWeb;
+import com.genexus.xml.XMLReader;
 
 public class GXServices {
 	private static final boolean DEBUG = com.genexus.DebugFlag.DEBUG;

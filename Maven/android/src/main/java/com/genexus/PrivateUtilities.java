@@ -1,16 +1,28 @@
 package com.genexus;
 
-import com.genexus.platform.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.PushbackInputStream;
+import java.lang.reflect.Field;
+import java.util.Properties;
+import java.util.Random;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
-import java.util.*;
-import java.util.zip.*;
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-
-import com.genexus.util.*;
-
-import java.lang.reflect.*;
+import com.genexus.platform.NativeFunctions;
+import com.genexus.util.Codecs;
+import com.genexus.util.IniFile;
 
 public final class PrivateUtilities
 {
@@ -936,21 +948,23 @@ loop:	while (true)
       	File d = new File(directorio);
   		String ent[] = d.list();
 
-  		for (int i = 0; i < ent.length; i++)
-      	{ 
-      		File k = new File(directorio + "\\" + ent[i]);
-
-        	if (k.isDirectory())
-          		delTree(directorio + "\\" + ent[i]);
-        	else
-			{
-        		if	(!k.delete())
-					throw new IOException("Can't delete " + k.getName());
-			}
+  		if (ent != null) {
+	  		for (int i = 0; i < ent.length; i++)
+	      	{ 
+	      		File k = new File(directorio + "\\" + ent[i]);
+	
+	        	if (k.isDirectory())
+	          		delTree(directorio + "\\" + ent[i]);
+	        	else
+				{
+	        		if	(!k.delete())
+						throw new IOException("Can't delete " + k.getName());
+				}
+	  		}
+	
+	      	if	(!d.delete())
+				throw new IOException("Can't delete " + d.getName());
   		}
-
-      	if	(!d.delete())
-			throw new IOException("Can't delete " + d.getName());
 	}	
 
 	public static String replaceString(String in, String patternIn, String patternOut)

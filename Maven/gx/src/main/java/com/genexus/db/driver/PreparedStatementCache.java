@@ -8,13 +8,12 @@ package com.genexus.db.driver;
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.*;
-
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import com.genexus.DebugFlag;
-import com.genexus.db.*;
+import com.genexus.db.DBConnectionManager;
+import com.genexus.db.UserInformation;
 
 /**
  * @author aaguiar

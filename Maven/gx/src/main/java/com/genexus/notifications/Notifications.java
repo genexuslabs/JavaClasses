@@ -1,15 +1,11 @@
 package com.genexus.notifications;
 
-import java.io.IOException;
-
-import com.genexus.notifications.android.AuthenticationUtil;
 import com.genexus.notifications.android.MessageUtil;
+import com.genexus.notifications.properties.Certificates;
 import com.genexus.notifications.properties.Properties;
 
 import javapns.Push;
 import javapns.notification.Payload;
-
-import com.genexus.notifications.properties.Certificates;
 
 
 public class Notifications {

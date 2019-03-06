@@ -1,9 +1,11 @@
 package com.genexus.performance;
 
-import com.genexus.db.*;
+import java.util.ArrayList;
+import java.util.Vector;
 
-import javax.management.*;
-import java.util.*;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.ObjectName;
 
 public class MBeanUtils {
 	

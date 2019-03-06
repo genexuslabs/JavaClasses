@@ -3,8 +3,7 @@
 
 package com.genexus.webpanels;
 
-import java.util.*;
-import java.io.*;
+import java.util.Hashtable;
 
 public class BlobsCleaner
 {

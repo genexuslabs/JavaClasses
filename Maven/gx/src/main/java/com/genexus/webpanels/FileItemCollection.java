@@ -12,10 +12,12 @@
 
 package com.genexus.webpanels;
 
-import java.util.Vector;
 import java.io.InputStream;
+import java.util.Vector;
+
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
+
 import com.genexus.Application;
 import com.genexus.GXDbFile;
 import com.genexus.util.GXServices;

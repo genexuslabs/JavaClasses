@@ -1,6 +1,6 @@
 package com.genexus.performance;
 
-import java.util.*;
+import java.util.Date;
 
 public interface ProcedureJMXMBean
 {

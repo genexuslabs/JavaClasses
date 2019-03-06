@@ -10,7 +10,6 @@
 //
 package com.genexus.internet;
 
-import com.genexus.util.*;
 import com.genexus.platform.INativeFunctions;
 import com.genexus.platform.NativeFunctions;
 

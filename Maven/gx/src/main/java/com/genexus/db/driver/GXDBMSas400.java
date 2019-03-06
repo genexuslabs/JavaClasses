@@ -47,11 +47,16 @@
 
 package com.genexus.db.driver;
 
-import com.genexus.CommonUtil;
+import java.lang.reflect.Method;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
 
-import java.sql.*;
-import java.util.Date;
-import java.lang.reflect.*;
+import com.genexus.CommonUtil;
 
 public class GXDBMSas400 implements GXDBMS
 {	

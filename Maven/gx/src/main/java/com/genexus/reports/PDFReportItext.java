@@ -1,4 +1,5 @@
 package com.genexus.reports;
+import java.awt.Color;
 /**
  * Formato del archivo PDFReport.INI
  * ---------------------------------
@@ -45,30 +46,50 @@ package com.genexus.reports;
  *    van a aplicar para todas las combinaciones de bold/italic para dicho font
  *
  */
-import java.io.*;
-import com.genexus.*;
-import com.genexus.util.TemporaryFiles;
-import com.genexus.platform.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.StringTokenizer;
+import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.genexus.CommonUtil;
+import com.genexus.ModelContext;
 import com.genexus.internet.HttpContext;
+import com.genexus.platform.INativeFunctions;
+import com.genexus.platform.NativeFunctions;
+import com.genexus.util.TemporaryFiles;
 import com.genexus.webpanels.HttpContextWeb;
-import java.awt.Color;
-import java.awt.event.*;
-import java.util.*;
-import com.lowagie.text.*;
-import com.lowagie.text.pdf.BaseFont;
-import com.lowagie.text.pdf.Barcode;
-import com.lowagie.text.pdf.Barcode128;
-import com.lowagie.text.pdf.PdfWriter;
-import com.lowagie.text.pdf.ColumnText;
-import com.lowagie.text.pdf.PdfContentByte;
-import com.lowagie.text.pdf.PdfTemplate;
-import com.lowagie.text.pdf.PdfName;
-import com.lowagie.text.pdf.PdfNumber;
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Element;
+import com.lowagie.text.Font;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.Image;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Phrase;
+import com.lowagie.text.Rectangle;
 import com.lowagie.text.html.simpleparser.HTMLWorker;
 import com.lowagie.text.html.simpleparser.StyleSheet;
+import com.lowagie.text.pdf.Barcode;
+import com.lowagie.text.pdf.Barcode128;
+import com.lowagie.text.pdf.BaseFont;
+import com.lowagie.text.pdf.ColumnText;
+import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfName;
+import com.lowagie.text.pdf.PdfNumber;
+import com.lowagie.text.pdf.PdfTemplate;
+import com.lowagie.text.pdf.PdfWriter;
+
 import uk.org.retep.pdf.PDFFont;
 import uk.org.retep.pdf.Type1FontMetrics;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class PDFReportItext implements IReportHandler
 {

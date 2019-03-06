@@ -1,25 +1,47 @@
 package com.genexus.internet;
 
-import com.genexus.*;
-import com.genexus.util.*;
-import com.genexus.db.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Vector;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.BOMInputStream;
+
+import com.genexus.Application;
+import com.genexus.ApplicationContext;
+import com.genexus.CommonUtil;
+import com.genexus.HTMLDocType;
+import com.genexus.HTMLElement;
+import com.genexus.IHttpContext;
+import com.genexus.ImagesPath;
+import com.genexus.Messages;
+import com.genexus.ModelContext;
+import com.genexus.Preferences;
+import com.genexus.PrivateUtilities;
+import com.genexus.usercontrols.UserControlFactoryImpl;
+import com.genexus.util.Codecs;
+import com.genexus.util.Encryption;
+import com.genexus.util.GXMap;
+import com.genexus.util.ThemeHelper;
 import com.genexus.webpanels.GXResourceProvider;
+import com.genexus.webpanels.GXWebObjectBase;
 import com.genexus.webpanels.WebSession;
 
 import json.org.json.IJsonFormattable;
 import json.org.json.JSONArray;
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
-
-import com.genexus.webpanels.GXWebObjectBase;
-import com.genexus.usercontrols.UserControlFactoryImpl;
-import javax.servlet.*;
-import javax.servlet.http.*;
-import java.io.*;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.BOMInputStream;
-import java.util.*;
-import java.util.zip.*;
 
 public abstract class HttpContext 
 		extends HttpAjaxContext implements IHttpContext

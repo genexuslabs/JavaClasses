@@ -21,8 +21,9 @@
 package uk.org.retep.pdf;
 
 import java.awt.Font;
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
 
 /**
  * This class defines a font within a PDF document.

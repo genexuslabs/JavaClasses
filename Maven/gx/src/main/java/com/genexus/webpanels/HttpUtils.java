@@ -1,9 +1,10 @@
 package com.genexus.webpanels;
-import org.apache.commons.fileupload.*;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.StringTokenizer;
+
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 

@@ -1,54 +1,18 @@
-// $Log: GXReorganization.java,v $
-// Revision 1.5  2005/08/26 21:24:13  aaguiar
-// - Los progs de manejo de redundancias llamaban a la addMsg que no tenia instanciado el Log,
-//   con lo cual se caia la app
-//
-// Revision 1.4  2005/05/10 17:34:01  gusbro
-// - Al finalizar una reorg hago un commit sino no funcionan bien los drivers de inet
-//
-// Revision 1.3  2005/02/16 20:52:17  iroqueta
-// Se estaba tomando mal el nombre de la base de datos en una reorg con db2 si habia mas de un datasource.
-//
-// Revision 1.2  2004/04/13 22:50:48  gusbro
-// - Agrego metodo getMainDBName utilizado en reorgs con AS400
-//
-// Revision 1.1.1.1  2002/04/17 19:52:44  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2002/04/17 19:52:44  gusbro
-// GeneXus Java Olimar
-//
-//
-//   Rev 1.6   23 Sep 1998 19:48:24   AAGUIAR
-//
-//   Rev 1.5   23 Jul 1998 18:58:56   AAGUIAR
-//	- Se sacan los mensajes del resource file.
-//
-//   Rev 1.4   Jun 02 1998 15:16:04   AAGUIAR
-//	-	Se cambio mensaje que se despliega cuando no se
-//		hace una reorg por la preference de reorganize
-//		server tables = No.
-//
-//   Rev 1.3   Jun 01 1998 18:07:14   AAGUIAR
-//	-	Se cambiaron las lecturas de preferences, para
-//		adaptarlas al nuevo modelo.
-//
-//   Rev 1.2   May 29 1998 10:05:12   AAGUIAR
-//	-	Se cambiaron las lecturas de preferences, para
-//		adaptarlas al nuevo modelo.
-//
-//   Rev 1.1   May 28 1998 10:00:38   DMENDEZ
-//Sincro28May1998
-
 package com.genexus;
-import java.io.*;
-import java.util.*;
-import java.lang.reflect.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.Vector;
 
-import com.genexus.util.*;
-import com.genexus.db.*;
+import com.genexus.db.Namespace;
+import com.genexus.db.UserInformation;
 import com.genexus.platform.INativeFunctions;
 import com.genexus.platform.NativeFunctions;
+import com.genexus.util.ReorgSubmitThreadPool;
 
 public abstract class GXReorganization
 {
@@ -157,7 +121,7 @@ System.err.println("Sigo...");
 	{
 		if (!executingResume)
 		{
-			addMsg(msg.getMessage("GXM_table_recordcount", new Object[] { tableName, new Integer(recordCount) }));
+			addMsg(msg.getMessage("GXM_table_recordcount", new Object[] { tableName, Integer.valueOf(recordCount) }));
 			//addMsg("Table " + tableName + " has " + recordCount + " records.");
 		}
 	}	

@@ -13,8 +13,8 @@ import java.sql.SQLException;
 
 import com.artech.base.services.IGxProcedure;
 import com.artech.base.services.IPropertiesObject;
-import com.genexus.GXProcedure;
 import com.genexus.CommonUtil;
+import com.genexus.GXProcedure;
 import com.genexus.ModelContext;
 import com.genexus.db.Cursor;
 import com.genexus.db.DataStoreHelperBase;

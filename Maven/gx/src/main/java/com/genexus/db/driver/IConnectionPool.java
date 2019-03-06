@@ -8,11 +8,11 @@
 //
 
 package com.genexus.db.driver;
-import com.genexus.ModelContext;
-
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Enumeration;
+
+import com.genexus.ModelContext;
 
 public interface IConnectionPool
 {

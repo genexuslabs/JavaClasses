@@ -7,7 +7,13 @@
 //
 package com.genexus.internet;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringReader;
+
 import com.genexus.util.Codecs;
 
 class QuotedPrintableDecoder implements MimeDecoder

@@ -1,11 +1,13 @@
 package com.genexus.cryptography.hashing;
 
-import com.genexus.cryptography.Utils;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+
+import com.genexus.cryptography.Utils;
 
 public class KeyedHashProvider implements IGXHashing {
     private static final String HMAC_SHA256_ALGORITHM = "HmacSHA256";

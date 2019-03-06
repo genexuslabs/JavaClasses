@@ -1,7 +1,5 @@
 package com.genexus.webpanels;
 
-import java.io.*;
-
 public class HTMLLabel extends HTMLObject implements ILabel 
 {
 	private String caption;

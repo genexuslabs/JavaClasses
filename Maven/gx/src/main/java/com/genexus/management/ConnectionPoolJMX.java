@@ -1,6 +1,8 @@
 package com.genexus.management;
 
-import javax.management.*;
+import javax.management.MBeanNotificationInfo;
+import javax.management.Notification;
+import javax.management.NotificationBroadcasterSupport;
 
 import com.genexus.db.driver.ConnectionPool;
 

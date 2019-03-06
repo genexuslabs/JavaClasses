@@ -13,8 +13,8 @@
 // GeneXus Java Olimar
 //
 package uk.org.retep.pdf;
-import java.util.*;
 import java.awt.Font;
+import java.util.Hashtable;
 
 /** Esta clase contiene toda la info sobre las m�tricas de un font
  * Se accede a ella mediante m�todos est�ticos

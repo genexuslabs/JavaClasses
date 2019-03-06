@@ -190,27 +190,35 @@
 
 package com.genexus.db.driver;
 
-import java.sql.*;
-
-import java.io.*;
-import java.util.*;
-import java.lang.reflect.*;
+import java.sql.Blob;
+import java.sql.CallableStatement;
+import java.sql.Clob;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
+import java.sql.NClob;
+import java.sql.PreparedStatement;
+import java.sql.SQLClientInfoException;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.SQLXML;
+import java.sql.Savepoint;
+import java.sql.Statement;
+import java.sql.Struct;
+import java.util.ArrayList;
+import java.util.Properties;
 import java.util.concurrent.Executor;
 
 import com.genexus.Application;
-import com.genexus.ApplicationContext;
-import com.genexus.DebugFlag;
 import com.genexus.CommonUtil;
-import com.genexus.PrivateUtilities;
+import com.genexus.DebugFlag;
+import com.genexus.ModelContext;
 import com.genexus.common.classes.AbstractGXConnection;
 import com.genexus.common.classes.IGXPreparedStatement;
-import com.genexus.platform.INativeFunctions;
-import com.genexus.platform.NativeFunctions;
-import com.genexus.ModelContext;
+import com.genexus.db.BatchUpdateCursor;
+import com.genexus.db.Cursor;
 import com.genexus.db.DBConnectionManager;
 import com.genexus.db.UserInformation;
-import com.genexus.db.Cursor;
-import com.genexus.db.BatchUpdateCursor;
 
 public final class GXConnection extends AbstractGXConnection implements Connection
 {

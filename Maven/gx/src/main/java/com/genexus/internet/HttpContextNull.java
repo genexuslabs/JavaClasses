@@ -49,16 +49,18 @@
 //
 package com.genexus.internet;
 
-import com.genexus.*;
+import java.util.Hashtable;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import com.genexus.Application;
-import com.genexus.db.*;
+import com.genexus.GXutil;
+import com.genexus.ModelContext;
+import com.genexus.db.DBConnectionManager;
 import com.genexus.webpanels.WebSession;
 
-import json.org.json.*;
-
-import javax.servlet.http.*;
-
-import java.util.*;
+import json.org.json.JSONObject;
 
 public class HttpContextNull extends HttpContext
 {

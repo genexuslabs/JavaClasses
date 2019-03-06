@@ -1,22 +1,26 @@
 package com.genexus.ws;
 
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Collections;
-import javax.xml.namespace.QName;
-import javax.xml.ws.handler.soap.SOAPHandler;
-import javax.xml.ws.handler.MessageContext;
-import javax.xml.ws.handler.soap.SOAPMessageContext;
-import javax.xml.soap.*;
-import javax.xml.parsers.DocumentBuilderFactory;
-import org.w3c.dom.*;
-import java.io.InputStream;
 import java.io.ByteArrayInputStream;
-import com.genexus.ws.GXWSAddressing;
-import com.genexus.ws.GXWSAddressingEndPoint;
-import com.genexus.internet.Location;
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.soap.SOAPElement;
+import javax.xml.soap.SOAPEnvelope;
+import javax.xml.soap.SOAPHeader;
+import javax.xml.soap.SOAPHeaderElement;
+import javax.xml.soap.SOAPMessage;
+import javax.xml.ws.handler.MessageContext;
+import javax.xml.ws.handler.soap.SOAPHandler;
+import javax.xml.ws.handler.soap.SOAPMessageContext;
+
+import org.w3c.dom.Document;
+
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
+import com.genexus.internet.Location;
 
 public class GXHandlerConsumerChain implements SOAPHandler<SOAPMessageContext>
 {

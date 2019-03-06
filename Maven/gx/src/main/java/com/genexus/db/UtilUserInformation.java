@@ -1,13 +1,14 @@
 package com.genexus.db;
 
-import java.sql.*;
+import java.sql.SQLException;
+
+import com.genexus.Application;
+import com.genexus.LocalUtil;
+import com.genexus.Messages;
 
 //import com.genexus.*;
 
 import com.genexus.db.driver.GXConnection;
-import com.genexus.LocalUtil;
-import com.genexus.Messages;
-import com.genexus.Application;
 
 public class UtilUserInformation extends UserInformation
 {

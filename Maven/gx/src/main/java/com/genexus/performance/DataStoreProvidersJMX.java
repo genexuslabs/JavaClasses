@@ -1,6 +1,6 @@
 package com.genexus.performance;
 
-import com.genexus.db.*;
+import com.genexus.db.DataStoreProvider;
 
 public class DataStoreProvidersJMX implements DataStoreProvidersJMXMBean{
 

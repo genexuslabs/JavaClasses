@@ -1,9 +1,13 @@
 package com.genexus.db.driver;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import com.genexus.CommonUtil;
 import com.genexus.db.service.ServiceError;
 import com.genexus.db.service.ServiceException;
-import java.sql.*;
 
 public class GXDBMSservice implements GXDBMS
 {

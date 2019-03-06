@@ -17,10 +17,11 @@
 
 package com.genexus.db.driver;
 
-import java.sql.*;
-import java.util.*;
-import com.genexus.ModelContext;
+import java.sql.SQLException;
+import java.util.Enumeration;
+
 import com.genexus.ApplicationContext;
+import com.genexus.ModelContext;
 
 final class ReadWriteConnectionPool extends ConnectionPool
 {

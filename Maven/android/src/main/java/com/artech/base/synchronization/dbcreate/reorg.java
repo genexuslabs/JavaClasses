@@ -1,9 +1,13 @@
 package com.artech.base.synchronization.dbcreate;
 
-import java.sql.*;
-import com.genexus.db.*;
-import com.genexus.*;
-import com.genexus.util.*;
+import java.sql.SQLException;
+
+import com.genexus.ExecuteDirectSQL;
+import com.genexus.GXProcedure;
+import com.genexus.GXReorganization;
+import com.genexus.ModelContext;
+import com.genexus.db.DBConnectionManager;
+import com.genexus.util.ReorgSubmitThreadPool;
 
 public final  class reorg extends GXProcedure
 {

@@ -14,10 +14,18 @@
 //
 package uk.org.retep.pdf;
 
-import java.awt.*;
-import java.awt.image.*;
-import java.io.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.Toolkit;
+import java.awt.image.ImageObserver;
+import java.io.PrintWriter;
+import java.io.Serializable;
 
 /**
  * This class is our implementation of AWT's Graphics class. It provides a

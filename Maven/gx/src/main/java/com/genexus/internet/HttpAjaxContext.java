@@ -1,14 +1,20 @@
 // $Log: HttpAjaxContext.java,v $
 package com.genexus.internet;
 
-import java.util.*;
-import com.genexus.webpanels.GXWebRow;
-
-import json.org.json.*;
-
 import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Stack;
+
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
+import com.genexus.webpanels.GXWebRow;
+
+import json.org.json.IJsonFormattable;
+import json.org.json.JSONArray;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 
 public abstract class HttpAjaxContext
 {

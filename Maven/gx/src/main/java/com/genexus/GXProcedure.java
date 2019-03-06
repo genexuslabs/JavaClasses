@@ -41,13 +41,16 @@
 //
 package com.genexus;
 
-import java.util.*;
 import java.sql.SQLException;
-import com.genexus.reports.*;
+import java.util.Date;
+
 import com.genexus.common.classes.AbstractModelContext;
-import com.genexus.db.*;
-import com.genexus.util.*;
-import com.genexus.performance.*;
+import com.genexus.db.Namespace;
+import com.genexus.db.UserInformation;
+import com.genexus.performance.ProcedureInfo;
+import com.genexus.performance.ProceduresInfo;
+import com.genexus.util.ReorgSubmitThreadPool;
+import com.genexus.util.SubmitThreadPool;
 
 public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 {
@@ -200,7 +203,7 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 		String lowURL = CommonUtil.lower(jumpURL);
 		String packageName = context.getPackageName();
 
-		// Convierte el 'call', agregandole el package.
+		// Convert 'call', adding package when needed
 		if	(com.genexus.webpanels.GXWebPanel.getStaticGeneration() && (lowURL.startsWith("http:" + packageName + "h") || lowURL.startsWith("https:" + packageName + "h")))
 		{
 			return  com.genexus.webpanels.WebUtils.getDynURL() + jumpURL.substring(lowURL.indexOf(':') + 1);
@@ -219,7 +222,7 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 		ReorgSubmitThreadPool.submitReorg(blockName, message, this, id);
 	}	
 	
-	/** Este metodo es redefinido por la clase GX generada cuando hay submits
+	/** This method is overridden by subclass in the generated code
 	 */
 	public void submit(int id, Object [] submitParms, AbstractModelContext ctx){ ; }
 	public void submit(int id, Object [] submitParms){ ; }

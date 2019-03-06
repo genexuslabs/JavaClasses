@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import com.genexus.common.classes.AbstractModelContext;
-import com.genexus.common.interfaces.IClientPreferences;
 import com.genexus.db.driver.DataSource;
 import com.genexus.internet.HttpContext;
 import com.genexus.internet.HttpContextNull;

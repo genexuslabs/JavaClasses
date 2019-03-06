@@ -1,21 +1,16 @@
 package com.genexus.db;
 
-import java.util.Hashtable;
+import java.sql.SQLException;
 import java.util.Enumeration;
-import java.sql.*;
+import java.util.Hashtable;
 
-import com.genexus.CommonUtil;
-import com.genexus.LocalUtil;
-import com.genexus.GXParameterPacker;
 import com.genexus.Application;
-import com.genexus.ModelContext;
+import com.genexus.LocalUtil;
 import com.genexus.Messages;
-import com.genexus.Preferences;
+import com.genexus.ModelContext;
 import com.genexus.common.classes.AbstractUserInformation;
-import com.genexus.ApplicationContext;
-import com.genexus.db.driver.GXConnection;
 import com.genexus.db.driver.DataSource;
-import com.genexus.platform.NativeFunctions;
+import com.genexus.db.driver.GXConnection;
 
 public abstract class UserInformation extends AbstractUserInformation
 {

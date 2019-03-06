@@ -10,11 +10,10 @@
 //
 package com.genexus.internet;
 
-import com.genexus.util.*;
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import java.io.IOException;
 
 public class MailRecipientCollection
 {

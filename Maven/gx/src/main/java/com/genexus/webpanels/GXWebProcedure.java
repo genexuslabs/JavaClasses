@@ -6,17 +6,18 @@
 package com.genexus.webpanels;
 
 import java.io.PrintWriter;
-import javax.xml.ws.WebServiceContext;
-import javax.servlet.http.*;
+
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
 
 import com.genexus.ModelContext;
-
 import com.genexus.db.UserInformation;
-import com.genexus.internet.HttpContext;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
+import com.genexus.internet.HttpContext;
 import com.genexus.ws.GXHandlerChain;
 
 public abstract class GXWebProcedure extends GXWebObjectBase

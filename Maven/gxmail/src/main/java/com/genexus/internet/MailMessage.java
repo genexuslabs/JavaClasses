@@ -23,8 +23,12 @@
 //
 package com.genexus.internet;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;

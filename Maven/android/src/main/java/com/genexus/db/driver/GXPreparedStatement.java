@@ -99,15 +99,10 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringBufferInputStream;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -120,17 +115,17 @@ import java.sql.RowId;
 import java.sql.SQLException;
 import java.sql.SQLXML;
 import java.sql.Timestamp;
-import java.util.Calendar;
 import java.util.Arrays;
+import java.util.Calendar;
 
 import org.apache.commons.io.FileUtils;
 
 import com.artech.base.services.AndroidContext;
 import com.genexus.AndroidLog;
+import com.genexus.CommonUtil;
 import com.genexus.DebugFlag;
 import com.genexus.GXDbFile;
 import com.genexus.common.classes.IGXPreparedStatement;
-import com.genexus.CommonUtil;
 
 
 /**

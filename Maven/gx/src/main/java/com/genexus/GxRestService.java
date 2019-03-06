@@ -1,21 +1,24 @@
 package com.genexus;
 
-import com.genexus.*;
-import com.genexus.webpanels.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-import json.org.json.*;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-import com.genexus.db.*;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
-import com.genexus.internet.*;
-
-import javax.servlet.http.*;
-import javax.servlet.*;
-import java.util.Date;
-import java.text.*;
-import com.genexus.security.GXSecurityProvider;
+import com.genexus.internet.HttpContext;
+import com.genexus.internet.MsgList;
 import com.genexus.security.GXResult;
+import com.genexus.security.GXSecurityProvider;
+import com.genexus.webpanels.GXWebObjectBase;
+import com.genexus.webpanels.HttpContextWeb;
+
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 
 abstract public class GxRestService extends GXWebObjectBase 
 {
@@ -201,7 +204,7 @@ abstract public class GxRestService extends GXWebObjectBase
 				if (!packageName.equals(""))
 					packageName += ".";
 				Class synchronizerClass = Class.forName(packageName + synchronizer);
-				GxRestService synchronizerRestService = (GxRestService) synchronizerClass.newInstance();
+				GxRestService synchronizerRestService = (GxRestService) synchronizerClass.getConstructor().newInstance();
 				if (synchronizerRestService!=null && synchronizerRestService.IsSynchronizer()){
 					validSynchronizer = true;
 					return isAuthenticated(myServletRequest, synchronizerRestService.IntegratedSecurityLevel(), synchronizerRestService.IntegratedSecurityEnabled(), synchronizerRestService.ExecutePermissionPrefix());

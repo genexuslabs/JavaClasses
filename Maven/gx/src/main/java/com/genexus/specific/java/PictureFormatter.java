@@ -1,7 +1,7 @@
 package com.genexus.specific.java;
 
-import com.genexus.GXPictureFix;
 import com.genexus.CommonUtil;
+import com.genexus.GXPictureFix;
 import com.genexus.common.interfaces.IExtensionPictureFormatter;
 
 public class PictureFormatter implements IExtensionPictureFormatter {

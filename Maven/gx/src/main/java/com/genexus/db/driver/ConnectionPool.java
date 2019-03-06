@@ -35,18 +35,22 @@
 //
 
 package com.genexus.db.driver;
-import java.sql.*;
-import java.util.*;
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
 
 import com.genexus.Application;
-import com.genexus.DebugFlag;
 import com.genexus.CommonUtil;
-import com.genexus.util.*;
-import com.genexus.PrivateUtilities;
-import com.genexus.GXJTA;
+import com.genexus.DebugFlag;
 import com.genexus.ModelContext;
-import com.genexus.db.*;
+import com.genexus.PrivateUtilities;
+import com.genexus.db.DBConnectionManager;
+import com.genexus.db.UserInformation;
 import com.genexus.management.ConnectionPoolJMX;
 
 public abstract class ConnectionPool

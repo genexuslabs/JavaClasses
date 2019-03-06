@@ -1,9 +1,13 @@
 // $Log: HttpAjaxContext.java,v $
 package com.genexus.internet;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Stack;
 
-import json.org.json.*;
+import json.org.json.IJsonFormattable;
+import json.org.json.JSONArray;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 
 public abstract class HttpAjaxContext
 {

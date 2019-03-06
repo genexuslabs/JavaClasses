@@ -1,6 +1,4 @@
 package com.genexus.util;
-import java.util.*;
-
 import java.util.concurrent.ConcurrentHashMap;
 /**
  * Esta clase implementa una cola doblemente encadenada

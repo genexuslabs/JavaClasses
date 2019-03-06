@@ -1,7 +1,7 @@
 package com.genexus.specific.android;
 
-import com.genexus.common.interfaces.IExtensionGXDirectory;
 import com.artech.base.services.AndroidContext;
+import com.genexus.common.interfaces.IExtensionGXDirectory;
 
 public class GXDirectory implements IExtensionGXDirectory {
 	@Override

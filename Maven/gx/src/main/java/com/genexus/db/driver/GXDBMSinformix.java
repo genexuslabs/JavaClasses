@@ -37,10 +37,13 @@
 package com.genexus.db.driver;
 
 import java.lang.reflect.Method;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Date;
 
-import com.genexus.CommonUtil;
 import com.genexus.CommonUtil;
 
 public class GXDBMSinformix implements GXDBMS

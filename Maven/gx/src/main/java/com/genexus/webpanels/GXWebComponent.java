@@ -1,12 +1,7 @@
 package com.genexus.webpanels;
 
-import java.util.Hashtable;
-
 import com.genexus.ModelContext;
-import com.genexus.Application;
 import com.genexus.internet.HttpContext;
-import com.genexus.GXRuntimeException;
-import com.genexus.CommonUtil;
 
 /**
 * Tiene que extender webpanel porque se puede correr directamente como un webpanel..

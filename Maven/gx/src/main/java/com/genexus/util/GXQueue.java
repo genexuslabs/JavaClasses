@@ -1,13 +1,32 @@
 package com.genexus.util;
 
-import com.genexus.ModelContext;
-import com.genexus.util.*;
-import com.genexus.Application;
-import com.genexus.internet.*;
-import java.util.*;
 import java.io.File;
-import javax.naming.*;
-import javax.jms.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
+
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.QueueBrowser;
+import javax.jms.QueueConnection;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.QueueReceiver;
+import javax.jms.QueueSender;
+import javax.jms.QueueSession;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.jms.TopicConnection;
+import javax.jms.TopicConnectionFactory;
+import javax.jms.TopicPublisher;
+import javax.jms.TopicSession;
+import javax.jms.TopicSubscriber;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+import com.genexus.Application;
+import com.genexus.ModelContext;
 
 public class GXQueue implements MessageListener{
   private static Hashtable qsessions = new Hashtable();

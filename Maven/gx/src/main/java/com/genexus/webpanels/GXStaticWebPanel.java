@@ -1,12 +1,19 @@
 package com.genexus.webpanels;
 
-import com.genexus.*;
-import com.genexus.internet.*;
-import com.genexus.db.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
 
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
+import com.genexus.CommonUtil;
+import com.genexus.ModelContext;
+import com.genexus.PrivateUtilities;
+import com.genexus.internet.HttpContext;
+import com.genexus.internet.HttpContextNull;
 
 public abstract class GXStaticWebPanel extends GXWebPanel
 {

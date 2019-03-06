@@ -1,113 +1,24 @@
-// $Log: Application.java,v $
-// Revision 1.28  2006/02/07 11:45:47  iroqueta
-// Cambio el init.
-// Ahora el mismo se llama tambien desde un EJB por si el EJB se llama desde una aplic no GX.
-// Para que se ejecute una sola vez pregunto en el init si el mismo ya no se corrio alguna vez y en ese caso no hace nada.
-//
-// Revision 1.27  2005/10/20 13:24:28  iroqueta
-// Hago llegar el contexto al getconnection para poder implementar bien los metodos before y after connection
-//
-// Revision 1.26  2005/08/03 20:03:26  iroqueta
-// El isJMXEnabled ahora se fija en la preference del modelo para ver si esta habilitado
-//
-// Revision 1.25  2005/07/21 15:05:00  iroqueta
-// Implementacion de soporte de JMX
-//
-// Revision 1.24  2005/06/29 21:04:54  alevin
-// - Agrego la variable nullObject y se la asigno al realMainProgram al hacer cleanup,
-//   sino podia pasar que se quede en loop al hacer cleanup, por ejemplo; si se llama
-//   a un workpanel en el evento Exit de GeneXus.
-//
-// Revision 1.23  2005/04/08 17:41:48  iroqueta
-// Agrego variable estatica usingQueue para indicar si tengo que hacer commit de las Queues o no...
-// Solo se hace commit de las queues si creo alguna Queue.
-//
-// Revision 1.22  2005/04/08 14:43:04  iroqueta
-// Implementacion de commit y rollback de las colas de mensajes cuando se hace un commit o un rollback.
-//
-// Revision 1.21  2005/03/15 21:09:16  gusbro
-// - Cambios para soportar pool de threads de submit
-//
-// Revision 1.20  2005/03/07 18:52:55  iroqueta
-// Al crear el ModelContext seteo en la Application la className para luego poder leerla en la clase Message para saber de donde leer el recurso del lenguaje
-//
-// Revision 1.19  2004/09/28 18:32:43  iroqueta
-// Los event handling se estaban llamando sin el java package name en caso de que hubiera uno en la KB.
-//
-// Revision 1.18  2004/09/17 15:18:03  iroqueta
-// Arreglo para que la clase SessionBean solo se use en el caso de usar EJBs
-//
-// Revision 1.17  2004/09/16 17:58:34  iroqueta
-// Agrego compilacion condicional para c# para que no moleste la implementacion de EJBs
-//
-// Revision 1.16  2004/09/15 16:16:55  iroqueta
-// Cambio para que los event handling se ejecuten solo una vez (antes se hacia una vez por cada data store)
-//
-// Revision 1.15  2004/09/09 18:44:02  iroqueta
-// Se implementó el soporte para que las TRNs de los EJBs puedan ser manejadas por el contenedor.
-//
-// Revision 1.14  2004/08/20 20:06:19  iroqueta
-// Soporte para las funciones SetUserId y SetWrkSt
-//
-// Revision 1.13  2004/07/16 15:55:18  gusbro
-// - Si se ejecutaba un proc desde el commandline se bloqueaba la VM
-//
-// Revision 1.12  2004/07/12 18:27:09  gusbro
-// - Cambios en el shut down hook porque con SWT ocurrian deadlocks dado
-//   que el UI thread en ese momento ya no existe
-//
-// Revision 1.11  2004/06/23 20:29:38  gusbro
-// - Agrego preferences para EventHandling
-//
-// Revision 1.10  2004/06/07 19:09:56  gusbro
-// - Al hacer un commit/rollback se llama al proc definido en la preference DBACTION_PROC
-//
-// Revision 1.9  2004/05/26 20:54:16  dmendez
-// Se maneja correctamente las utls si no hay jta presente.
-//
-// Revision 1.8  2004/05/24 21:06:21  dmendez
-// Soporte de JTA
-//
-// Revision 1.7  2004/05/11 20:45:24  gusbro
-// - Encierro en try-catch la addShutdownHook, porque puede que no se tengan permisos
-//
-// Revision 1.6  2003/11/27 18:59:04  gusbro
-// *** empty log message ***
-//
-// Revision 1.5  2003/11/27 18:51:11  gusbro
-// *** empty log message ***
-//
-// Revision 1.4  2003/11/11 21:45:16  gusbro
-// - Agregi hook de shutdown para hacer el cleanup (JDK1.3+)
-//
-// Revision 1.3  2003/06/11 14:01:21  gusbro
-// - Cambios para ejecutar el evento Exit en todos los wkps/trns al salir de la aplicacion
-//
-// Revision 1.2  2002/07/23 18:51:58  aaguiar
-// - No se hace al cleanupMDIClient si ya se hizo cleanup
-//
-// Revision 1.1.1.1  2002/05/15 21:18:14  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2002/05/15 21:18:14  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus;
 
-import com.genexus.db.*;
-import com.genexus.util.GXServices;
-import com.genexus.db.driver.ExternalProvider;
-import com.genexus.diagnostics.core.ILogger;
-import com.genexus.diagnostics.core.LogManager;
-import com.genexus.util.*;
-import com.genexus.platform.NativeFunctions;
-import com.genexus.specific.java.Connect;
-
+import java.sql.SQLException;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Vector;
-import java.util.Date;
-import java.sql.SQLException;
+
+import com.genexus.db.DBConnectionManager;
+import com.genexus.db.DynamicExecute;
+import com.genexus.db.Namespace;
+import com.genexus.db.UserInformation;
+import com.genexus.db.driver.ExternalProvider;
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
+import com.genexus.specific.java.Connect;
+import com.genexus.util.GXQueue;
+import com.genexus.util.GXService;
+import com.genexus.util.GXServices;
+import com.genexus.util.ReorgSubmitThreadPool;
+import com.genexus.util.SubmitThreadPool;
 
 public class Application
 {

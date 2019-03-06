@@ -11,9 +11,12 @@
 package uk.org.retep.pdf;
 
 import java.awt.Image;
-import java.awt.image.*;
-import java.io.*;
-import java.util.*;
+import java.awt.image.ImageObserver;
+import java.awt.image.PixelGrabber;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
 
 /**
  * This implements the Image XObject

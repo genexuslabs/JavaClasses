@@ -1,7 +1,9 @@
 package com.genexus.db.driver;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
+
 import com.genexus.common.classes.AbstractDataSource;
 
 public class DataSource extends AbstractDataSource

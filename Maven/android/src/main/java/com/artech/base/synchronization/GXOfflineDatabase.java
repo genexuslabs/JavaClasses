@@ -1,10 +1,12 @@
 package com.artech.base.synchronization;
 
-import com.genexus.*;
+import java.io.InputStream;
+import java.util.LinkedHashMap;
+
+import com.genexus.GXProcedure;
+import com.genexus.ModelContext;
 import com.genexus.internet.StringCollection;
 import com.genexus.util.GxJsonReader;
-import java.util.LinkedHashMap;
-import java.io.InputStream;
 
 public abstract class GXOfflineDatabase extends GXProcedure {
 	private GxJsonReader reader;

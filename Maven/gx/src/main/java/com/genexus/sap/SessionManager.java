@@ -1,17 +1,17 @@
 package com.genexus.sap;
 
 
+import java.util.Properties;
+
+import com.genexus.ModelContext;
+import com.genexus.diagnostics.Log;
+import com.sap.conn.jco.AbapException;
 import com.sap.conn.jco.JCoContext;
 import com.sap.conn.jco.JCoDestination;
 import com.sap.conn.jco.JCoDestinationManager;
 import com.sap.conn.jco.JCoException;
-import com.sap.conn.jco.AbapException;
 import com.sap.conn.jco.JCoFunction;
-import com.sap.conn.jco.JCoFunctionTemplate;
-import com.sap.conn.jco.ext.*;
-import java.util.Properties;
-import com.genexus.ModelContext;
-import com.genexus.diagnostics.Log;
+import com.sap.conn.jco.ext.DestinationDataProvider;
 
 public class SessionManager
 {

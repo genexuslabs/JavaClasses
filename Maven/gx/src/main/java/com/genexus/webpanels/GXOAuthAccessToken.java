@@ -1,13 +1,15 @@
 package com.genexus.webpanels;
 
-import com.genexus.*;
+import com.genexus.Application;
+import com.genexus.ModelContext;
+import com.genexus.PrivateUtilities;
 import com.genexus.internet.HttpContext;
+import com.genexus.security.GXResult;
 import com.genexus.security.GXSecurityProvider;
 import com.genexus.security.OutData;
 
-import json.org.json.*;
-
-import com.genexus.security.GXResult;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 
 public class GXOAuthAccessToken extends GXWebObjectStub
 {   

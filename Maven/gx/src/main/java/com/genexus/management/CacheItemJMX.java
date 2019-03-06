@@ -1,6 +1,6 @@
 package com.genexus.management;
 
-import com.genexus.db.*;
+import com.genexus.db.CacheValue;
 
 public class CacheItemJMX implements CacheItemJMXMBean{
 	

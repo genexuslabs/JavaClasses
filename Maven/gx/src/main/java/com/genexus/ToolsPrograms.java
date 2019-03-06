@@ -1,8 +1,5 @@
 package com.genexus;
 
-import com.genexus.*;
-import com.genexus.util.*;
-
 public class ToolsPrograms
 {
 	static String packagePath = "";

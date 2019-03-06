@@ -20,13 +20,20 @@
 //
 package com.genexus.internet;
 
-import javax.servlet.http.*;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.Hashtable;
+
 import com.genexus.CommonUtil;
 import com.genexus.PrivateUtilities;
 import com.genexus.com.IHttpResponse;
-import com.genexus.webpanels.*;
+import com.genexus.webpanels.FileItemCollection;
+import com.genexus.webpanels.HttpContextWeb;
 
 /**
 * Esta clase esta disponible en los webprocs para grabar informacion en el response
