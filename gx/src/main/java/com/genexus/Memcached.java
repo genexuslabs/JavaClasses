@@ -2,12 +2,16 @@ package com.genexus;
 
 import java.io.IOException;
 
-import com.genexus.Application;
 import com.genexus.util.GXService;
 import com.genexus.util.GXServices;
-import net.spy.memcached.*;
-import net.spy.memcached.auth.*;
+
+import net.spy.memcached.AddrUtil;
+import net.spy.memcached.BinaryConnectionFactory;
+import net.spy.memcached.ConnectionFactoryBuilder;
 import net.spy.memcached.ConnectionFactoryBuilder.Protocol;
+import net.spy.memcached.MemcachedClient;
+import net.spy.memcached.auth.AuthDescriptor;
+import net.spy.memcached.auth.PlainCallbackHandler;
 
 public class Memcached implements ICacheService {
 

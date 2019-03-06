@@ -2,10 +2,12 @@ package com.genexus.usercontrols;
 import java.io.File;
 import java.io.StringWriter;
 import java.util.Date;
-import com.github.mustachejava.*;
 
 import com.genexus.ModelContext;
 import com.genexus.util.GXMap;
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheFactory;
 
 public class UserControlGenerator 
 {

@@ -1,8 +1,9 @@
 package com.genexus.performance;
 
-import java.util.*;
 import java.io.PrintStream;
-import com.genexus.db.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
+
 import com.genexus.Application;
 
 public class DataStoreProviderInfo

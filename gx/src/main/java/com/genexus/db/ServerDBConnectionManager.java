@@ -26,12 +26,12 @@
 
 package com.genexus.db;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.SQLException;
+import java.util.Enumeration;
 
-import com.genexus.ModelContext;
 import com.genexus.Application;
 import com.genexus.ApplicationContext;
+import com.genexus.ModelContext;
 import com.genexus.ServerPreferences;
 import com.genexus.db.driver.GXConnection;
 

@@ -6,7 +6,9 @@
 
 package com.genexus.webpanels;
 
-import com.genexus.*;
+import com.genexus.Application;
+import com.genexus.ApplicationContext;
+import com.genexus.ModelContext;
 import com.genexus.internet.HttpContext;
 
 public class WebApplicationStartup 

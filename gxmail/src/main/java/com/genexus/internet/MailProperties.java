@@ -17,7 +17,9 @@
 //
 package com.genexus.internet;
 
-import java.util.*;
+import java.util.Hashtable;
+import java.util.StringTokenizer;
+
 import com.genexus.CommonUtil;
 
 class MailProperties extends Hashtable

@@ -90,39 +90,48 @@
 
 package com.genexus.db.driver;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringBufferInputStream;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.sql.Array;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.NClob;
+import java.sql.PreparedStatement;
+import java.sql.Ref;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.RowId;
+import java.sql.SQLException;
+import java.sql.SQLXML;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Enumeration;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 
-import com.genexus.ModelContext;
-import java.sql.Blob;
-import java.sql.Array;
-import java.sql.NClob;
-import java.sql.Ref;
-import java.sql.Clob;
-import java.sql.ResultSetMetaData;
-import java.sql.RowId;
-import java.sql.SQLXML;
-import java.io.*;
-import java.net.*;
-
+import com.genexus.Application;
 import com.genexus.CommonUtil;
 import com.genexus.DebugFlag;
-import com.genexus.PrivateUtilities;
-import com.genexus.common.classes.IGXPreparedStatement;
-import com.genexus.util.GXServices;
-
-import java.lang.reflect.*;
 import com.genexus.GXDbFile;
-import com.genexus.Application;
+import com.genexus.ModelContext;
+import com.genexus.common.classes.IGXPreparedStatement;
 import com.genexus.util.GXFile;
-import com.genexus.diagnostics.Log;
+import com.genexus.util.GXServices;
 
 /**
 * Esta clase es un wrapper de un PreparedStatement real. Le agrega debugging y algunos procesamientos en

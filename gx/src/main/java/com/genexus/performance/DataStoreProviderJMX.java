@@ -1,10 +1,10 @@
 package com.genexus.performance;
 
-import java.io.PrintStream;
 import java.io.FileOutputStream;
+import java.io.PrintStream;
 
-import com.genexus.db.*;
 import com.genexus.CommonUtil;
+import com.genexus.db.DataStoreProvider;
 
 public class DataStoreProviderJMX implements DataStoreProviderJMXMBean{
 	

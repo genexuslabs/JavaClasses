@@ -11,12 +11,8 @@
 /**/
 package com.genexus.webpanels;
 
-import com.genexus.*;
-import com.genexus.internet.*;
-
-import json.org.json.*;
-
-import java.util.Hashtable;
+import com.genexus.ModelContext;
+import com.genexus.internet.HttpContext;
 
 public abstract class GXDataArea extends GXWebPanel
 {

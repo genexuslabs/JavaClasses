@@ -1,7 +1,7 @@
 package com.genexus.performance;
 
-import java.util.*;
 import java.io.PrintStream;
+import java.util.Date;
 
 import com.genexus.Application;
 

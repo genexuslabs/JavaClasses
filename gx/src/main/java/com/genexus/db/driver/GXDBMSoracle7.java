@@ -50,10 +50,14 @@
 
 package com.genexus.db.driver;
 
-import com.genexus.CommonUtil;
-import java.sql.*;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
-import java.io.*;
+
+import com.genexus.CommonUtil;
 
 public class GXDBMSoracle7 implements GXDBMS
 {	

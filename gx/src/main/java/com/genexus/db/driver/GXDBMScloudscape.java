@@ -3,10 +3,15 @@
 
 package com.genexus.db.driver;
 
-import com.genexus.CommonUtil;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Date;
 import java.util.Properties;
+
+import com.genexus.CommonUtil;
 
 // Referenced classes of package com.genexus.db.driver:
 //            DataSource, GXConnection, GXDBMS

@@ -1,21 +1,37 @@
 package com.genexus.db.driver;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
 import java.math.BigDecimal;
-import java.sql.*;
-
+import java.sql.Array;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.NClob;
+import java.sql.Ref;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.RowId;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.SQLXML;
+import java.sql.Statement;
 import java.util.Calendar;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.genexus.Application;
-import com.genexus.ModelContext;
 import com.genexus.CommonUtil;
-import com.genexus.db.IGXResultSet;
 import com.genexus.DebugFlag;
 import com.genexus.GXDbFile;
+import com.genexus.ModelContext;
+import com.genexus.db.IGXResultSet;
 import com.genexus.util.GXFile;
 import com.genexus.util.GXServices;
-
-import java.io.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter, IGXResultSet
 {

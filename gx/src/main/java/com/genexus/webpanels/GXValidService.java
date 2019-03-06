@@ -1,8 +1,5 @@
 package com.genexus.webpanels;
-import com.genexus.*;
-import com.genexus.internet.HttpContext;import com.genexus.internet.StringCollection;
-
-import json.org.json.JSONObject;
+import com.genexus.internet.HttpContext;import com.genexus.internet.StringCollection;
 
 public class GXValidService extends GXWebObjectStub
 {   

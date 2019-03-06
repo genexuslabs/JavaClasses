@@ -19,8 +19,13 @@
 /**
  **/
 package com.genexus.util;
-import com.genexus.*;
-import java.util.*;
+import java.util.Vector;
+
+import com.genexus.GXParameterPacker;
+import com.genexus.GXParameterUnpacker;
+import com.genexus.ISubmitteable;
+import com.genexus.ModelContext;
+import com.genexus.Preferences;
 
 public class SubmitThreadPool
 {

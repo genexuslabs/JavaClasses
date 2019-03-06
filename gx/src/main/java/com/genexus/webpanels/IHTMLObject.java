@@ -1,5 +1,4 @@
 package com.genexus.webpanels;
-import java.io.*;
 
 public interface IHTMLObject 
 {

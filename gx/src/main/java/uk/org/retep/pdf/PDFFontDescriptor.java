@@ -18,8 +18,11 @@
 // GeneXus Java Olimar
 //
 package uk.org.retep.pdf;
-import java.awt.*;
-import java.io.*;
+import java.awt.Font;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * Title:

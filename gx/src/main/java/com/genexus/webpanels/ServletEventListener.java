@@ -9,14 +9,30 @@
 //
 
 package com.genexus.webpanels;
-import com.genexus.*;
-import com.genexus.platform.*;
-import com.genexus.util.*;
-import com.genexus.db.*;
-import com.genexus.webpanels.*;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Enumeration;
-import java.sql.*;
-import javax.servlet.*;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+
+import com.genexus.Application;
+import com.genexus.ApplicationContext;
+import com.genexus.ClientContext;
+import com.genexus.ClientPreferences;
+import com.genexus.CommonUtil;
+import com.genexus.GXutil;
+import com.genexus.LocalUtil;
+import com.genexus.Messages;
+import com.genexus.ModelContext;
+import com.genexus.db.DBConnectionManager;
+import com.genexus.db.Namespace;
+import com.genexus.platform.NativeFunctions;
+import com.genexus.util.GXServices;
+import com.genexus.util.PropertiesManager;
+import com.genexus.util.SubmitThreadPool;
 
 public class ServletEventListener implements ServletContextListener
 {

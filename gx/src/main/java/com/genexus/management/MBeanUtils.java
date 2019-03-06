@@ -1,11 +1,22 @@
 package com.genexus.management;
 
-import com.genexus.db.*;
-import com.genexus.db.driver.*;
+import java.util.ArrayList;
+import java.util.Vector;
 
-import javax.management.*;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 
-import java.util.*;
+import com.genexus.db.CacheValue;
+import com.genexus.db.InProcessCache;
+import com.genexus.db.LocalUserInformation;
+import com.genexus.db.Namespace;
+import com.genexus.db.ServerUserInformation;
+import com.genexus.db.driver.ConnectionPool;
+import com.genexus.db.driver.DataSource;
+import com.genexus.db.driver.GXConnection;
 
 public class MBeanUtils {
 	

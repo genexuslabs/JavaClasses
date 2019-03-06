@@ -1,8 +1,9 @@
 package com.genexus.webpanels;
 
+import java.lang.reflect.Method;
+
 import com.genexus.ModelContext;
 import com.genexus.internet.HttpContext;
-import java.lang.reflect.Method;
 
 public class GXWebStdMethods
 {

@@ -2,7 +2,6 @@ package com.genexus.specific.android;
 
 import java.util.Date;
 
-import com.genexus.GXObjectHelper;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.db.UserInformation;
 

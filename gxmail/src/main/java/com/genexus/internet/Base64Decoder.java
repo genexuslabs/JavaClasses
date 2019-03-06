@@ -10,7 +10,8 @@
 //
 package com.genexus.internet;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
 
 class Base64Decoder implements MimeDecoder
 {

@@ -1,8 +1,10 @@
 package com.genexus.webpanels;
 
-import com.genexus.internet.*;
+import com.genexus.internet.HttpAjaxContext;
+import com.genexus.internet.IGxJSONAble;
 
-import json.org.json.*;
+import json.org.json.IJsonFormattable;
+import json.org.json.JSONArray;
 
 public class GXWindow implements IGxJSONAble
 {

@@ -1,62 +1,9 @@
-// $Log: ClientPreferences.java,v $
-// Revision 1.13  2008/10/14 19:15:22  cmurialdo
-// -Se se tiene en el client.exe.config este seteo <add  key="FIELD_EXIT_GRID" value="FOXPRO"/> y el Enter como parte del FIELD EXIT, entonces se comporta como FIELD EXIT Fox pro, SAC 19417.
-// -Cuando se tenia un grid con Load at Startup=No y When to Refresh=When grid receives focus no se cargaba el grid la primera vez que el mismo tomaba el foco (porque la variable loadedFirstTime era inicializada en true). Es parte del sac 24805.
-//
-// Revision 1.10  2006/12/01 20:23:30  iroqueta
-// Cambio para que las pictures de los date puedan quedar todos vacios si el valor es empty.
-// Developed by Claudia
-//
-// Revision 1.9  2005/07/12 19:28:01  gusbro
-// - La mapFunctionKey estaba retornando 'F12' si era 'none'
-//
-// Revision 1.8  2004/12/16 20:54:26  dmendez
-// propiedad TMPMEDIA_DIR
-//
-// Revision 1.7  2004/03/25 21:04:08  gusbro
-// - Agrego SWT a la lista de posibles UI
-//
-// Revision 1.6  2003/06/03 17:27:17  gusbro
-// - Agrego field exit 'TabEnter'
-//
-// Revision 1.5  2003/05/19 18:20:21  gusbro
-// - Agrego properties CALC y CALENDAR
-//
-// Revision 1.4  2003/05/02 21:45:28  gusbro
-// - se agrega la property CALENDAR
-//
-// Revision 1.3  2002/10/30 20:32:34  aaguiar
-// - La show status devuelve true si esta en el developer menu o en una gxutility
-//
-// Revision 1.2  2002/10/29 14:36:12  aaguiar
-// - Se agrego la preference SHOW_STATUS
-//
-// Revision 1.1.1.1  2001/10/30 14:04:02  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2001/10/30 14:04:02  gusbro
-// GeneXus Java Olimar
-//
-//
-//   Rev 1.3   10 Aug 1998 16:39:50   AAGUIAR
-//	-	Se usa la PrivateUtilities.loadProperties en vez de GXutil.loadProperties
-//
-//   Rev 1.2   Jun 30 1998 10:06:48   AAGUIAR
-//	-	Se agrego la preference AUTO_REMOTE
-//	-	Se cambio la constante ORB_RMI por ORB_SUN_RMI.
-//
-//   Rev 1.1   Jun 18 1998 12:23:54   AAGUIAR
-//	-	Se soporta la preference field_exit y key_refresh.
-//
-//   Rev 1.0   May 29 1998 10:03:22   AAGUIAR
-//	-	Creaci�n de la clase.
-				  
-
 package com.genexus;
 
+import java.util.Hashtable;
+
 import com.genexus.common.interfaces.IClientPreferences;
-import com.genexus.util.*;		    
-import java.util.*;		    
+import com.genexus.util.IniFile;		    
 
 public final class ClientPreferences extends Preferences implements IClientPreferences
 {

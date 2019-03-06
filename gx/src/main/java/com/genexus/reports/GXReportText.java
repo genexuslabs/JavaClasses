@@ -19,14 +19,32 @@
 //
 package com.genexus.reports;
 
-import java.io.*;
-import com.genexus.*;
-import com.genexus.util.*;
-import com.genexus.webpanels.HttpContextWeb;
-import com.genexus.internet.HttpContext;
-import com.genexus.platform.*;
-import javax.print.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.Writer;
+
+import javax.print.Doc;
+import javax.print.DocFlavor;
+import javax.print.DocPrintJob;
+import javax.print.PrintException;
+import javax.print.PrintService;
+import javax.print.PrintServiceLookup;
+import javax.print.SimpleDoc;
+
+import com.genexus.CommonUtil;
+import com.genexus.GXProcedure;
+import com.genexus.ModelContext;
+import com.genexus.internet.HttpContext;
+import com.genexus.platform.NativeFunctions;
+import com.genexus.util.NullOutputStream;
+import com.genexus.webpanels.HttpContextWeb;
 
 public abstract class GXReportText extends GXProcedure
 {

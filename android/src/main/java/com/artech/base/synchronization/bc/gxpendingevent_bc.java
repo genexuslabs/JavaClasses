@@ -9,12 +9,23 @@
 
 package com.artech.base.synchronization.bc;
 
-import com.genexus.*;
-import com.genexus.common.classes.AbstractModelContext;
-import com.genexus.db.*;
-import com.genexus.search.GXContentInfo;
+import java.sql.SQLException;
 
-import java.sql.*;
+import com.genexus.Application;
+import com.genexus.CommonUtil;
+import com.genexus.IGxSilentTrn;
+import com.genexus.ModelContext;
+import com.genexus.common.classes.AbstractModelContext;
+import com.genexus.db.Cursor;
+import com.genexus.db.DataStoreHelperBase;
+import com.genexus.db.DataStoreProvider;
+import com.genexus.db.ForEachCursor;
+import com.genexus.db.IDataStoreProvider;
+import com.genexus.db.IFieldGetter;
+import com.genexus.db.IFieldSetter;
+import com.genexus.db.ILocalDataStoreHelper;
+import com.genexus.db.UpdateCursor;
+import com.genexus.search.GXContentInfo;
 
 public final  class gxpendingevent_bc extends com.genexus.dummy.GXSDPanel implements IGxSilentTrn
 {

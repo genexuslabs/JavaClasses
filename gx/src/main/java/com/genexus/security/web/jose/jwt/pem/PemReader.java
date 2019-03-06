@@ -1,15 +1,20 @@
 package com.genexus.security.web.jose.jwt.pem;
 
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
 import java.io.File;
 import java.io.IOException;
-import java.security.*;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 /**
  * Read operations for PEM files

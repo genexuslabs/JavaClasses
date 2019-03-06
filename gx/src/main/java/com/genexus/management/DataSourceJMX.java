@@ -1,6 +1,6 @@
 package com.genexus.management;
 
-import com.genexus.db.driver.*;
+import com.genexus.db.driver.DataSource;
 
 public class DataSourceJMX implements DataSourceJMXMBean{
 	

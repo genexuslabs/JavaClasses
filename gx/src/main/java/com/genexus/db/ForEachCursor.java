@@ -10,18 +10,18 @@
 
 package com.genexus.db;
 
-import com.genexus.db.driver.GXResultSet;
-import com.genexus.db.driver.DataSource;
-import com.genexus.db.driver.GXDBDebug;
-import com.genexus.DebugFlag;
+import java.sql.SQLException;
+import java.util.Enumeration;
+
 import com.genexus.CacheFactory;
 import com.genexus.CommonUtil;
+import com.genexus.DebugFlag;
 import com.genexus.Preferences;
 import com.genexus.common.classes.AbstractDataSource;
 import com.genexus.common.classes.AbstractDataStoreProviderBase;
-
-import java.sql.SQLException;
-import java.util.Enumeration;
+import com.genexus.db.driver.DataSource;
+import com.genexus.db.driver.GXDBDebug;
+import com.genexus.db.driver.GXResultSet;
 
 
 public class ForEachCursor extends Cursor implements IForEachCursor

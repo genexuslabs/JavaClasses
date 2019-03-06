@@ -1,10 +1,9 @@
 package com.genexus;
 
+import java.util.Hashtable;
+
 import com.genexus.common.interfaces.IClientPreferences;
-import com.genexus.util.*;		    
-import java.util.*;		    
-import java.io.*;
-import java.net.URL;
+import com.genexus.util.IniFile;
 
 
 public final class ClientPreferences extends Preferences implements IClientPreferences

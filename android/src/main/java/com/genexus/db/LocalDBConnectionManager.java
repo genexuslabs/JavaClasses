@@ -14,13 +14,11 @@
 
 package com.genexus.db;
 
-import java.sql.*;
+import java.sql.SQLException;
 
 import com.genexus.ModelContext;
 import com.genexus.ServerPreferences;
-import com.genexus.common.classes.AbstractGXConnection;
 import com.genexus.common.classes.AbstractModelContext;
-import com.genexus.common.classes.AbstractUserInformation;
 import com.genexus.db.driver.GXConnection;
 
 final class LocalDBConnectionManager extends DBConnectionManager

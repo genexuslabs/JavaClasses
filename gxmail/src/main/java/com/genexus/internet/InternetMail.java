@@ -7,9 +7,6 @@
 //
 package com.genexus.internet;
 
-
-import java.util.Date;
-
 public class InternetMail implements IMailImplementation, GXInternetConstants
 {
 	private GXSMTPSession smtp;

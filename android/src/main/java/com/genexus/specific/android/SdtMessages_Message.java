@@ -1,9 +1,9 @@
 package com.genexus.specific.android;
 
+import com.artech.base.services.IEntity;
 import com.genexus.CommonUtil;
 import com.genexus.GXutil;
 import com.genexus.common.interfaces.IExtensionSdtMessages_Message;
-import com.artech.base.services.*;
 
 public class SdtMessages_Message implements IExtensionSdtMessages_Message {
 

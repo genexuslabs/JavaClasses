@@ -3,8 +3,11 @@
 
 package com.genexus.webpanels;
 
-import java.util.*;
-import java.io.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Hashtable;
+import java.util.Iterator;
+
 import com.genexus.util.GXFile;
 
 public class BlobsCleaner

@@ -1,17 +1,12 @@
 package com.genexus.internet;
 
-/**
-* Esta clase esta disponible en los webprocs para leer la informacion del request.
-*/
-import com.genexus.CommonUtil;
-import com.genexus.PrivateUtilities;
-import com.genexus.webpanels.*;
-import java.util.Date;
-import java.util.Enumeration;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.InputStream;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+
+import com.genexus.PrivateUtilities;
+import com.genexus.webpanels.HttpContextWeb;
 
 public class HttpRequestWeb extends HttpRequest
 {

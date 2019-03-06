@@ -32,16 +32,21 @@ package com.genexus.util;
 //
 //
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
-import com.genexus.common.classes.AbstractGXFile;
-import org.apache.commons.io.*;
-import org.apache.commons.io.output.*;
-import com.genexus.CommonUtil;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.LineIterator;
+import org.apache.commons.io.output.FileWriterWithEncoding;
+
 import com.genexus.Application;
-import java.net.URI;
+import com.genexus.CommonUtil;
+import com.genexus.common.classes.AbstractGXFile;
 
 public class GXFile extends AbstractGXFile {
 

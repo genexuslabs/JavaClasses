@@ -7,8 +7,13 @@
           Main DBMS: sqlite
 */
 package com.artech.base.synchronization.bc;
-import com.genexus.*;
-import com.artech.base.services.*;
+import com.artech.base.services.IEntity;
+import com.artech.base.services.IGxBusinessComponent;
+import com.genexus.CommonUtil;
+import com.genexus.GXutil;
+import com.genexus.GxSilentTrnSdt;
+import com.genexus.IGxSilentTrn;
+import com.genexus.ModelContext;
 
 public final  class SdtGxPendingEvent extends GxSilentTrnSdt implements Cloneable, java.io.Serializable, IGxBusinessComponent
 {

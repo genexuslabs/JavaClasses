@@ -1,22 +1,26 @@
 package com.genexus.sap;
 
-import com.genexus.*;
-import com.genexus.xml.*;
-
-import com.genexus.internet.IGxJSONAble;
-import com.genexus.internet.IGxJSONSerializable;
-import com.genexus.ModelContext;
-import java.util.*;
 import java.math.BigDecimal;
-import com.sap.conn.jco.*;
-import com.sap.conn.jco.ext.*;
+import java.util.Date;
+import java.util.Iterator;
 
-import json.org.json.IJsonFormattable;
+import com.genexus.GXSimpleCollection;
+import com.genexus.ModelContext;
+import com.genexus.internet.IGxJSONAble;
+import com.sap.conn.jco.AbapException;
+import com.sap.conn.jco.JCoContext;
+import com.sap.conn.jco.JCoDestination;
+import com.sap.conn.jco.JCoDestinationManager;
+import com.sap.conn.jco.JCoException;
+import com.sap.conn.jco.JCoField;
+import com.sap.conn.jco.JCoFunction;
+import com.sap.conn.jco.JCoMetaData;
+import com.sap.conn.jco.JCoStructure;
+import com.sap.conn.jco.JCoTable;
+
 import json.org.json.JSONArray;
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
-
-import com.sap.conn.jco.JCoMetaData;
 
 public class EnterpriseConnect
 {

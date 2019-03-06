@@ -7,10 +7,16 @@
 //
 package uk.org.retep.pdf;
 
-import java.awt.*;
-import java.io.*;
-import java.util.*;
-import java.awt.image.*;
+import java.awt.Font;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.image.ImageObserver;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.Enumeration;
+import java.util.Vector;
 
 /**
  * This class defines a single page within a document.

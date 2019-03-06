@@ -4,7 +4,6 @@ import java.util.Hashtable;
 
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.IExtensionHttpClient;
-import com.artech.base.services.AndroidContext;
 import com.genexus.util.GXFile;
 
 import HTTPClient.HTTPConnection;

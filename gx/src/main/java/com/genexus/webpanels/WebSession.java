@@ -1,17 +1,16 @@
 package com.genexus.webpanels;
 
 
-import com.genexus.*;
-import com.genexus.internet.*;
-import com.genexus.db.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import com.genexus.CommonUtil;
+import com.genexus.internet.HttpContext;
 import com.genexus.util.Encryption;
-
-import javax.servlet.*;
-import javax.servlet.http.*;				  
-
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
 import com.genexus.util.SubmitThreadPool;
 
 public class WebSession

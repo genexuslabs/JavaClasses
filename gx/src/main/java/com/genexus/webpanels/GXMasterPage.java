@@ -4,8 +4,8 @@
 /**/
 package com.genexus.webpanels;
 
-import com.genexus.*;
-import com.genexus.internet.*;
+import com.genexus.ModelContext;
+import com.genexus.internet.HttpContext;
 
 public abstract class GXMasterPage extends GXWebPanel
 {

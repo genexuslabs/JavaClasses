@@ -1,7 +1,8 @@
 package com.genexus.management;
 
-import com.genexus.db.*;
-import java.util.*;
+import java.util.Date;
+
+import com.genexus.db.ServerUserInformation;
 
 public class ServerUserInformationJMX implements ServerUserInformationJMXMBean{
 

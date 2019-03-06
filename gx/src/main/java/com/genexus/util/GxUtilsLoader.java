@@ -11,9 +11,13 @@
 //
 package com.genexus.util; 
 
-import java.util.zip.*;
-import java.util.*;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Hashtable;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 public class GxUtilsLoader extends ClassLoader
 {

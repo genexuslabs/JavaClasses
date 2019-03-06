@@ -1,8 +1,11 @@
 package uk.org.retep.pdf.j2;
 
-import java.awt.*;
-import java.io.*;
-import java.util.*;
+import java.awt.Graphics;
+import java.awt.PrintGraphics;
+import java.awt.PrintJob;
+import java.awt.Rectangle;
+import java.io.PrintWriter;
+import java.io.Serializable;
 
 import uk.org.retep.pdf.PDFPage;
 

@@ -1,15 +1,11 @@
 package com.genexus.db.driver;
 
-import com.genexus.db.DBConnectionManager;
-import com.genexus.util.*;
-
-import java.util.Enumeration;
-import java.util.Hashtable;
+import java.sql.SQLException;
 import java.util.Dictionary;
+import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 
-
-import java.sql.SQLException;
+import com.genexus.db.DBConnectionManager;
 
 class PoolDBConnectionState
 {

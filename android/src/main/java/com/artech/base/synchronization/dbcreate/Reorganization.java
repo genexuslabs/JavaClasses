@@ -1,16 +1,6 @@
-/*
-               File: Reorganization
-        Description: No description for object
-             Author: GeneXus Android Generator version 10_4_0-88937
-       Generated on: March 17, 2015 16:37:57.95
-       Program type: Callable routine
-          Main DBMS: sqlite
-*/
 package com.artech.base.synchronization.dbcreate;
-import com.genexus.*;
-import com.genexus.db.*;
-import java.sql.*;
-import com.artech.base.services.*;
+import com.genexus.GXReorganization;
+import com.genexus.ModelContext;
 
 public final  class Reorganization extends GXReorganization
 {

@@ -1,11 +1,12 @@
 package com.genexus.db;
 
 import java.sql.SQLException;
-import com.genexus.ModelContext;
-import com.genexus.IErrorHandler;
+
 import com.genexus.GXRuntimeException;
+import com.genexus.IErrorHandler;
+import com.genexus.ModelContext;
 import com.genexus.db.driver.GXDBMS;
-import com.genexus.util.*;
+import com.genexus.util.ReorgSubmitThreadPool;
 
 
 public class DefaultExceptionErrorHandler

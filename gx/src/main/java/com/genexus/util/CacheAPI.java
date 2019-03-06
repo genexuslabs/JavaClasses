@@ -1,8 +1,5 @@
 package com.genexus.util;
 
-import java.util.Date;
-
-import com.genexus.CommonUtil;
 import com.genexus.CacheFactory;
 import com.genexus.ICacheService;
 

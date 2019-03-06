@@ -3,7 +3,6 @@ package com.genexus.db;
 import java.io.Serializable;
 import java.util.Date;
 
-import com.genexus.CommonUtil;
 import com.genexus.GXutil;
 
 /** $Log: CacheKey.java,v $

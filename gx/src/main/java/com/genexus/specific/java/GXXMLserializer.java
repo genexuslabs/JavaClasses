@@ -2,13 +2,13 @@ package com.genexus.specific.java;
 
 import java.io.StringWriter;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
 
 import com.genexus.common.interfaces.IExtensionGXXMLSerializer;
 import com.genexus.wrapper.GXCollectionWrapper;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Marshaller;
 
 public class GXXMLserializer implements IExtensionGXXMLSerializer {
 

@@ -1,7 +1,6 @@
 package com.genexus.management;
 
-import com.genexus.db.*;
-import java.util.*;
+import com.genexus.db.Namespace;
 
 public class NamespaceJMX implements NamespaceJMXMBean{
 	

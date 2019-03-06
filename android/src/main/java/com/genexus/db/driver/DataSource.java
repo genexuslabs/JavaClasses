@@ -6,6 +6,7 @@
 package com.genexus.db.driver;
 
 import java.sql.SQLException;
+
 import com.genexus.common.classes.AbstractDataSource;
 
 public class DataSource extends AbstractDataSource

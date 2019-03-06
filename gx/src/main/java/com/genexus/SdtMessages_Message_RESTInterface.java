@@ -1,17 +1,11 @@
-/*
-               File: SdtMessages_Message_RESTInterface
-        Description: Register New User
-             Author: GeneXus Java Generator version 15_0_0-93885
-       Generated on: November 4, 2015 11:58:39.99
-       Program type: Callable routine
-          Main DBMS: mysql
-*/
 package com.genexus;
 
-import com.genexus.*;
-import javax.xml.bind.annotation.*;
-import com.fasterxml.jackson.annotation.*;
-import java.util.*;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @XmlType(name =  "Messages.Message" , namespace = "Genexus" , propOrder={ "id", "type", "description" })
 @JsonPropertyOrder(alphabetic=true)

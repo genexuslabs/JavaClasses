@@ -1,18 +1,33 @@
 package com.genexus;
 
-import com.genexus.common.interfaces.SpecificImplementation;
-import com.genexus.platform.*;
-
-import java.util.*;
-import java.util.zip.*;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.PushbackInputStream;
+import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import org.apache.commons.lang.StringUtils;
+import java.util.Properties;
+import java.util.Random;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
-import com.genexus.util.*;
-
-import java.lang.reflect.*;
+import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.platform.NativeFunctions;
+import com.genexus.util.Codecs;
+import com.genexus.util.IniFile;
 
 public final class PrivateUtilities
 {

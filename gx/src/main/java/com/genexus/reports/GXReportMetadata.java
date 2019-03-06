@@ -1,11 +1,11 @@
 package com.genexus.reports;
 
 import java.util.Hashtable;
-import java.io.*;
-import com.genexus.xml.*;
+
 import com.genexus.ModelContext;
-import com.genexus.webpanels.HttpContextWeb;
 import com.genexus.internet.HttpContext;
+import com.genexus.webpanels.HttpContextWeb;
+import com.genexus.xml.XMLReader;
 
 public class GXReportMetadata 
 {

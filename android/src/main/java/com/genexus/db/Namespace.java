@@ -1,20 +1,19 @@
 package com.genexus.db;
 
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 import com.artech.base.services.AndroidContext;
-import com.genexus.Application;
-import com.genexus.ModelContext;
 import com.genexus.ApplicationContext;
-import com.genexus.GXJarClassLoader;
-import com.genexus.Preferences;
-import com.genexus.ServerPreferences;
-import com.genexus.common.classes.AbstractNamespace;
 import com.genexus.CommonUtil;
-import com.genexus.util.*;
+import com.genexus.GXJarClassLoader;
+import com.genexus.ModelContext;
+import com.genexus.Preferences;
+import com.genexus.common.classes.AbstractNamespace;
 import com.genexus.db.driver.DataSource;
 import com.genexus.db.driver.GXDBDebug;
 import com.genexus.db.driver.JDBCLogConfig;
+import com.genexus.util.IniFile;
 
 public class Namespace extends AbstractNamespace
 {

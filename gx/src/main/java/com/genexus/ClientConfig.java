@@ -1,12 +1,6 @@
-// $Log: ClientConfig.java,v $
-// Revision 1.1.2.1  2005/09/20 13:18:00  alevin
-// - Release Inicial
-//
-//
-
 package com.genexus;
 
-import com.genexus.util.*;
+import com.genexus.util.GxUtilsLoader;
 
 public class ClientConfig
 {

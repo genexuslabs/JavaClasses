@@ -1,15 +1,12 @@
 package com.genexus.cryptography;
 
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 
 import com.genexus.cryptography.hashing.IGXHashing;
 import com.genexus.cryptography.hashing.KeyedHashProvider;
 import com.genexus.cryptography.hashing.MessageDigestProvider;
-
-import java.security.InvalidKeyException;
-import java.security.SignatureException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class GXHashing {
 

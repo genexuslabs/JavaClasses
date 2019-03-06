@@ -13,19 +13,18 @@
 //
 package com.genexus.internet;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.util.Date;
+import java.util.Enumeration;
+
 /**
 * Esta clase esta disponible en los webprocs para leer la informacion del request.
 */
 import com.genexus.CommonUtil;
-import com.genexus.PrivateUtilities;
-import com.genexus.webpanels.*;
-import java.util.Date;
-import java.util.Enumeration;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.InputStream;
-
 import com.genexus.webpanels.FileItemCollection;
+import com.genexus.webpanels.HttpContextWeb;
 
 public abstract class HttpRequest implements IHttpRequest
 {	

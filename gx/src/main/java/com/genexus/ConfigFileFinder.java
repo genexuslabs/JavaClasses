@@ -1,14 +1,12 @@
-// $Log: ConfigFileFinder.java,v $
-// Revision 1.1  2002/01/30 18:47:00  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2002/01/30 18:47:00  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus;
 
-import java.io.*;
-import com.genexus.util.*;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+
+import com.genexus.util.IniFile;
 
 public class ConfigFileFinder
 {
@@ -28,9 +26,7 @@ public class ConfigFileFinder
 			}
 		}
 		
-		// Esto es para soportar que los programas de GX seteen donde
-		// tiene que estar el .cfg
-
+		// This is for GeneXus programs set where is the .cfg file
 		if	(is == null && defaultResourceClass != null)
 		{
 			is = ResourceReader.getResourceAsStream(defaultResourceClass, fileName);

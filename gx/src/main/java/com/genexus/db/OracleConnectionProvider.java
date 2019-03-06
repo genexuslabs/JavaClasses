@@ -1,10 +1,11 @@
 package com.genexus.db;
 
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
 import com.genexus.ModelContext;
 import com.genexus.common.classes.AbstractModelContext;
 import com.genexus.db.driver.GXConnection;
-import java.sql.SQLException;
-import java.sql.DriverManager;
 
 public class OracleConnectionProvider implements IConnectionProvider
 {

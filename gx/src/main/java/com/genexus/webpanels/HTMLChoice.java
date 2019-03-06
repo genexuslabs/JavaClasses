@@ -1,13 +1,15 @@
 package com.genexus.webpanels;
 
-import java.util.*;
-import java.io.*;
+import java.util.HashMap;
+import java.util.Vector;
 
-import com.genexus.internet.IGxJSONAble;
+import com.genexus.CommonUtil;
+import com.genexus.GXutil;
 
-import json.org.json.*;
-
-import com.genexus.*;
+import json.org.json.IJsonFormattable;
+import json.org.json.JSONArray;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 
 public class HTMLChoice extends HTMLObject implements IChoice
 {

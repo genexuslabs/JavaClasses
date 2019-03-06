@@ -7,12 +7,15 @@
 //
 package com.genexus;
 
-import java.util.*;		    
-import java.net.URL;		    
-import java.io.*;
-import com.genexus.util.*;
-import com.genexus.platform.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+
 import com.artech.base.services.AndroidContext;
+import com.genexus.util.IniFile;
 
 public class ConfigFileFinder
 {

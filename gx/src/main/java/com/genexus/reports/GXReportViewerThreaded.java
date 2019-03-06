@@ -40,21 +40,22 @@
 //
 package com.genexus.reports;
 
-import com.genexus.ICleanedup;
-import com.genexus.ProcessInterruptedException;
-import com.genexus.ResourceReader;
-import com.genexus.CommonUtil;
-import com.genexus.ApplicationContext;
-import com.genexus.Application;
-import com.genexus.PrivateUtilities;
-import com.genexus.RunnableThrows;
-import com.genexus.util.ThreadedCommandQueue;
-import com.genexus.platform.NativeFunctions;
-import com.genexus.platform.INativeFunctions;
-
 import java.io.File;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
+
+import com.genexus.Application;
+import com.genexus.ApplicationContext;
+import com.genexus.CommonUtil;
+import com.genexus.ICleanedup;
+import com.genexus.PrivateUtilities;
+import com.genexus.ProcessInterruptedException;
+import com.genexus.ResourceReader;
+import com.genexus.RunnableThrows;
+import com.genexus.platform.INativeFunctions;
+import com.genexus.platform.NativeFunctions;
+import com.genexus.util.ThreadedCommandQueue;
 
 public class GXReportViewerThreaded implements IReportHandler, ICleanedup
 {

@@ -1,13 +1,31 @@
 package com.genexus.internet;
 
-import java.io.*;
-import java.util.*;
-import javax.mail.*;
-import javax.mail.internet.MimeUtility;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Properties;
+
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Header;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.NoSuchProviderException;
+import javax.mail.Part;
+import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeUtility;
 
 import com.genexus.common.interfaces.SpecificImplementation;
-import com.sun.mail.pop3.*;
+import com.sun.mail.pop3.POP3Folder;
+import com.sun.mail.pop3.POP3Store;
 
 public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
 {

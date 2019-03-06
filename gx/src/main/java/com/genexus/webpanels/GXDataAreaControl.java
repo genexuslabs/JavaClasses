@@ -4,9 +4,6 @@
 /**/
 package com.genexus.webpanels;
 
-import com.genexus.*;
-import com.genexus.internet.*;
-
 public class GXDataAreaControl
 {
     GXDataArea DataAreaObject;

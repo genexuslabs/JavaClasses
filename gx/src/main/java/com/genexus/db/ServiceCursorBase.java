@@ -1,16 +1,18 @@
 package com.genexus.db;
 
-import com.genexus.db.driver.*;
+import java.sql.SQLException;
+import java.util.Enumeration;
+
 import com.genexus.CacheFactory;
 import com.genexus.CommonUtil;
 import com.genexus.Preferences;
 import com.genexus.common.classes.AbstractDataSource;
 import com.genexus.common.classes.AbstractDataStoreProviderBase;
-import com.genexus.db.service.IServiceHelper;
+import com.genexus.db.driver.DataSource;
+import com.genexus.db.driver.GXConnection;
+import com.genexus.db.driver.GXResultSet;
 import com.genexus.db.service.IQuery;
-
-import java.sql.SQLException;
-import java.util.Enumeration;
+import com.genexus.db.service.IServiceHelper;
 
 public class ServiceCursorBase extends Cursor
 {

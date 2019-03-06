@@ -1,7 +1,5 @@
 package com.genexus.specific.java;
 
-import com.genexus.GxSilentTrnSdt;
-import com.genexus.IGxSilentTrn;
 import com.genexus.common.interfaces.IExtensionGXSilentTrnSdt;
 import com.genexus.common.interfaces.IPendingEventHelper;
 

@@ -1,6 +1,5 @@
 package com.genexus.internet;
 
-import com.genexus.internet.GXWebNotificationInfo;
 import com.genexus.ModelContext;
 
     public class GXWebProgressIndicator

@@ -1,6 +1,8 @@
 package com.genexus.configuration;
 
-import com.genexus.util.*;
+import com.genexus.util.GXService;
+import com.genexus.util.GXServices;
+import com.genexus.util.IniFile;
 
 public class ConfigurationManager {
 

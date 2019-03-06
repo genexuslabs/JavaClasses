@@ -1,8 +1,13 @@
 package com.genexus.util;
 
-import java.lang.reflect.*;
-import java.util.jar.*;
-import java.io.*;
+import java.io.FileInputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
+
 import com.genexus.xml.XMLWriter;
 
 public class JavaInspector 

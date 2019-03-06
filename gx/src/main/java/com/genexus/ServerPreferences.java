@@ -1,19 +1,7 @@
-// $Log: ServerPreferences.java,v $
-// Revision 1.2  2002/09/23 18:03:59  gusbro
-// - Se agrega el entry 'OnDisconnect' al server.cfg para indicar el proc a ejecutar al desconectarse un usuario
-//
-// Revision 1.1.1.1  2001/10/19 18:13:02  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2001/10/19 18:13:02  gusbro
-// GeneXus Java Olimar
-//
-
 package com.genexus;
 
-import java.util.*;		    
-import java.io.*;
-import java.net.URL;
+import java.util.Hashtable;
+
 import com.genexus.util.IniFile;
 
 public final class ServerPreferences extends Preferences

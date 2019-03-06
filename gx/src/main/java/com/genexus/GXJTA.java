@@ -1,31 +1,12 @@
-// $Log: GXJTA.java,v $
-// Revision 1.6  2006/04/28 21:35:27  iroqueta
-// El isJTATX no estaba considerando el caso de una aplic en 3 capas.
-//
-// Revision 1.5  2006/04/19 20:00:40  iroqueta
-// Se usa JTA solo si se tiene definido mas de un DataStore
-//
-// Revision 1.4  2004/08/26 17:31:48  iroqueta
-// Se controla de no trabajar con transacciones si se tiene la preference de integridad transaccional en No
-//
-// Revision 1.3  2004/06/25 13:51:34  iroqueta
-// JTA - solo se usa si se utiliza el pool de los servidores J2EE
-//
-// Revision 1.2  2004/05/26 20:54:16  dmendez
-// Se maneja correctamente las utls si no hay jta presente.
-//
-// Revision 1.1  2004/05/24 20:46:34  dmendez
-// Soporte de JTA
-//
 package com.genexus;
-import javax.transaction.UserTransaction;
-import javax.naming.InitialContext;
 import java.sql.SQLException;
-import com.genexus.db.driver.GXDBDebug;
-import com.genexus.util.*;
+
+import javax.naming.InitialContext;
+import javax.transaction.UserTransaction;
+
 import com.genexus.db.Namespace;
-import com.genexus.ModelContext;
 import com.genexus.db.ServerConnectionManager;
+import com.genexus.db.driver.GXDBDebug;
 
 public class GXJTA
 {
@@ -49,7 +30,7 @@ public class GXJTA
 		
 		if (nameSpace.getDataSourceCount() == 1 || nameSpace.iniFile.getProperty(nameSpace.getName(), "JTA", "0").equals("0"))
 		{
-			isJTAavail = new Boolean(false);
+			isJTAavail = Boolean.valueOf(false);
 			return false;
 		}
 		

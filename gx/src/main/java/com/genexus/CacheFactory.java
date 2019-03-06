@@ -1,10 +1,11 @@
 package com.genexus;
 
-import com.genexus.db.*;
-import com.genexus.util.GXService;
-import com.genexus.util.GXServices;
+import com.genexus.db.CacheValue;
+import com.genexus.db.InProcessCache;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
+import com.genexus.util.GXService;
+import com.genexus.util.GXServices;
 
 public class CacheFactory {
 

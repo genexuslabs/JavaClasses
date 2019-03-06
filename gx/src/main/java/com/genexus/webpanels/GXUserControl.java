@@ -1,7 +1,6 @@
 package com.genexus.webpanels;
-import com.genexus.util.GXMap;
-import com.genexus.internet.HttpContext;
 import com.genexus.ModelContext;
+import com.genexus.util.GXMap;
 
 public class GXUserControl 
 {

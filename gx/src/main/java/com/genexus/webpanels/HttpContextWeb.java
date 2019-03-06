@@ -1,32 +1,56 @@
 package com.genexus.webpanels;
 
-import com.genexus.*;
-import com.genexus.internet.*;
-import com.genexus.db.*;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TimeZone;
+import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.zip.GZIPOutputStream;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.commons.fileupload.DiskFileUpload;
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileUpload;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
+import com.genexus.Application;
+import com.genexus.CommonUtil;
+import com.genexus.GXutil;
+import com.genexus.HTMLDocType;
+import com.genexus.ModelContext;
+import com.genexus.PrivateUtilities;
+import com.genexus.internet.GXNavigationHelper;
+import com.genexus.internet.HttpContext;
+import com.genexus.internet.HttpRequest;
+import com.genexus.internet.HttpRequestWeb;
+import com.genexus.internet.HttpResponse;
+import com.genexus.internet.MsgList;
+import com.genexus.util.Base64;
 import com.genexus.util.GXFile;
 import com.genexus.util.GXServices;
 
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
-
-import java.io.*;
-import java.net.URL;
-import java.util.*;
-import java.util.zip.*;
-import org.apache.commons.fileupload.*;
-import org.apache.commons.fileupload.servlet.*;
-import com.genexus.util.Base64;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
-
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import org.apache.logging.log4j.Logger;
 
 public class HttpContextWeb extends HttpContext {
 	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(HttpContextWeb.class);

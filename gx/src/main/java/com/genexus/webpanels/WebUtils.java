@@ -10,22 +10,27 @@
 
 package com.genexus.webpanels;
 
-import java.util.Date;
-import com.genexus.CommonUtil;
-import com.genexus.PrivateUtilities;
-import com.genexus.diagnostics.Log;
-import com.genexus.diagnostics.core.ILogger;
-import com.genexus.diagnostics.core.LogManager;
-import com.genexus.GXRuntimeException;
-import com.genexus.GXutil;
-import com.genexus.ModelContext;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
+import java.util.Date;
+import java.util.Set;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BOMInputStream;
-import java.io.*;
-import com.genexus.xml.*;
-import java.util.*;
+
+import com.genexus.CommonUtil;
+import com.genexus.GXutil;
+import com.genexus.ModelContext;
+import com.genexus.PrivateUtilities;
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
+import com.genexus.xml.XMLReader;
 
 
 public class WebUtils

@@ -1,7 +1,6 @@
 package com.genexus.specific.java;
 
 import com.genexus.ModelContext;
-import com.genexus.common.classes.AbstractModelContext;
 import com.genexus.common.interfaces.IExtensionDynamicExecute;
 
 public class DynamicExecute implements IExtensionDynamicExecute {

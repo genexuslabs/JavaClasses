@@ -1,9 +1,8 @@
 package com.genexus.specific.android;
 
-import com.artech.base.services.AndroidContext;
 import java.io.InputStream;
 
-import com.genexus.ModelContext;
+import com.artech.base.services.AndroidContext;
 import com.genexus.common.interfaces.IExtensionImagesPath;
 
 public class ImagesPath implements IExtensionImagesPath {

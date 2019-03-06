@@ -11,11 +11,10 @@
 
 package com.genexus.db;
 
-import java.sql.*;
+import java.sql.SQLException;
 
 import com.genexus.ModelContext;
 import com.genexus.ServerPreferences;
-
 import com.genexus.db.driver.GXConnection;
 
 final class UtilConnectionManager extends DBConnectionManager

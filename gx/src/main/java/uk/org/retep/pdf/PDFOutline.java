@@ -7,8 +7,11 @@
 //
 package uk.org.retep.pdf;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.Enumeration;
+import java.util.Vector;
 
 /**
  * This class manages the documents outlines (also known as bookmarks).

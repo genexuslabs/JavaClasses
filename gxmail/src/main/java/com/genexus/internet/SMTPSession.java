@@ -89,15 +89,33 @@
 
 package com.genexus.internet;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.PushbackInputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Locale;
+import java.util.StringTokenizer;
+import java.util.TimeZone;
+
+import org.apache.commons.codec.binary.Base64OutputStream;
+import org.apache.commons.lang.StringUtils;
 
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
-import com.genexus.platform.*;
-import org.apache.commons.codec.binary.Base64OutputStream;
-import org.apache.commons.lang.StringUtils;
+import com.genexus.platform.INativeFunctions;
 
 final class SMTPSession implements GXInternetConstants,ISMTPSession
 {

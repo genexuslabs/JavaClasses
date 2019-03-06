@@ -1,9 +1,10 @@
 package com.genexus.performance;
 
-import java.util.*;
-import javax.management.*;
+import java.util.Date;
 
-import com.genexus.db.*;
+import javax.management.MBeanNotificationInfo;
+import javax.management.Notification;
+import javax.management.NotificationBroadcasterSupport;
 
 public class SentenceJMX extends NotificationBroadcasterSupport implements SentenceJMXMBean{
 	

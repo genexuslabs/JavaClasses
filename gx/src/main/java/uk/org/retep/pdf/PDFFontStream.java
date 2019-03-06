@@ -7,9 +7,12 @@
 //
 package uk.org.retep.pdf;
 
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.util.zip.DeflaterOutputStream;
 
 /**
  * This class implements a PDF stream object. In PDF, streams contain data

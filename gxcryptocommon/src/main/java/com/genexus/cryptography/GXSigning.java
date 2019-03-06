@@ -3,15 +3,16 @@ package com.genexus.cryptography;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
+
+import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.cms.CMSException;
-import com.genexus.cryptography.GXCertificate;
+
 import com.genexus.cryptography.exception.PrivateKeyNotFoundException;
 import com.genexus.cryptography.exception.PublicKeyNotFoundException;
 import com.genexus.cryptography.exception.SignatureException;
 import com.genexus.cryptography.signing.IPkcsSign;
 import com.genexus.cryptography.signing.standards.PKCS1Signature;
 import com.genexus.cryptography.signing.standards.PKCS7Signature;
-import org.apache.commons.codec.binary.Base64;
 
 public class GXSigning {
 

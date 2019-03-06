@@ -1,12 +1,14 @@
 package com.genexus.util;
 
-import com.google.gson.stream.JsonReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+
 import org.apache.commons.lang.CharEncoding;
+
 import com.genexus.internet.StringCollection;
+import com.google.gson.stream.JsonReader;
 
 public class GxJsonReader {
 	private JsonReader reader;

@@ -41,13 +41,14 @@
 //
 package com.genexus;
 
-import java.util.*;
 import java.sql.SQLException;
+import java.util.Date;
 
 import com.genexus.common.classes.AbstractModelContext;
-import com.genexus.common.interfaces.SpecificImplementation;
-import com.genexus.db.*;
-import com.genexus.util.*;
+import com.genexus.db.Namespace;
+import com.genexus.db.UserInformation;
+import com.genexus.util.ReorgSubmitThreadPool;
+import com.genexus.util.SubmitThreadPool;
 
 public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 {

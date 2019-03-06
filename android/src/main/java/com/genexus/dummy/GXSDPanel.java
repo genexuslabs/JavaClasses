@@ -2,10 +2,13 @@ package com.genexus.dummy;
 
 import java.sql.SQLException;
 
-import com.genexus.*;
+import com.genexus.GXObjectHelper;
+import com.genexus.ISubmitteable;
+import com.genexus.LocalUtil;
+import com.genexus.ModelContext;
 import com.genexus.common.classes.AbstractModelContext;
-import com.genexus.db.*;
-import com.genexus.internet.*;
+import com.genexus.db.UserInformation;
+import com.genexus.internet.HttpContext;
 
 public class GXSDPanel implements ISubmitteable
 {

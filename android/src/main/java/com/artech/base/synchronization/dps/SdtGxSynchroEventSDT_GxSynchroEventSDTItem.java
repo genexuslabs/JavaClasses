@@ -7,9 +7,10 @@
           Main DBMS: sqlite
 */
 package com.artech.base.synchronization.dps;
-import com.genexus.*;
-import com.genexus.xml.*;
-import com.artech.base.services.*;
+import com.artech.base.services.IEntity;
+import com.genexus.GXutil;
+import com.genexus.ModelContext;
+import com.genexus.xml.GXXMLSerializable;
 
 public final  class SdtGxSynchroEventSDT_GxSynchroEventSDTItem extends GXXMLSerializable implements Cloneable, java.io.Serializable
 {

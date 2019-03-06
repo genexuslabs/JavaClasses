@@ -1,22 +1,15 @@
 package com.genexus.security.web;
 
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
 import java.util.Map;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.security.web.jose.jwt.JWTSigner;
 import com.genexus.security.web.jose.jwt.JWTVerifier;
-import com.genexus.security.web.jose.jwt.JWTVerifyException;
 
 import json.org.json.JSONObject;
 

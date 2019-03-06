@@ -57,7 +57,6 @@ import java.util.Hashtable;
 
 import com.artech.base.services.AndroidContext;
 import com.genexus.Application;
-import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
 import com.genexus.db.DBConnectionManager;
 

@@ -25,10 +25,10 @@ package com.genexus.db;
  *
  */
 
-import com.genexus.db.driver.*;
 import java.sql.SQLException;
-import com.genexus.ApplicationContext;
+
 import com.genexus.Application;
+import com.genexus.db.driver.DataSource;
 import com.genexus.util.ReorgSubmitThreadPool;
 
 public class DBConnection

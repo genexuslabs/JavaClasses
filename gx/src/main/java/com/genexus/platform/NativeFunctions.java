@@ -1,7 +1,5 @@
 package com.genexus.platform;
 
-import java.lang.reflect.InvocationTargetException;
-
 import com.genexus.CommonUtil;
 
 public class NativeFunctions

@@ -7,9 +7,14 @@
 //
 package uk.org.retep.pdf;
 
-import java.awt.*;
-import java.io.*;
-import java.util.*;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.PrintJob;
+import java.awt.Rectangle;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.Vector;
 
 /**
  * This class extends awt's PrintJob, to provide a simple method of writing

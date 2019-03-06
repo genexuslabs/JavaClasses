@@ -1,9 +1,9 @@
 package com.genexus.security.web.jose.jwt;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * Represents Exception related to Audience - for example illegal audience on JWT Verification

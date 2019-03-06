@@ -1,9 +1,10 @@
 package com.genexus.cryptography.hashing;
 
-import com.genexus.cryptography.Utils;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import com.genexus.cryptography.Utils;
 
 public class IncrementalDigestProvider implements IGXIncrementalHashing {
 

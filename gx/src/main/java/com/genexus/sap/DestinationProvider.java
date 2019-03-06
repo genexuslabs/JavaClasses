@@ -1,14 +1,12 @@
 package com.genexus.sap;
 
-import java.util.Properties;
 import java.util.Hashtable;
-import com.sap.conn.jco.JCoDestination;
-import com.sap.conn.jco.JCoDestinationManager;
-import com.sap.conn.jco.JCoException;
+import java.util.Properties;
+
+import com.genexus.diagnostics.Log;
 import com.sap.conn.jco.ext.DestinationDataEventListener;
 import com.sap.conn.jco.ext.DestinationDataProvider;
 import com.sap.conn.jco.ext.Environment;
-import com.genexus.diagnostics.Log;
 
 public class DestinationProvider implements DestinationDataProvider 
 {

@@ -2,11 +2,8 @@ package com.genexus.specific.android;
 
 import java.io.InputStream;
 
-import com.genexus.CommonUtil;
-import com.genexus.ModelContext;
-import com.genexus.common.interfaces.IExtensionMessages;
 import com.artech.base.services.AndroidContext;
-import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.common.interfaces.IExtensionMessages;
 
 
 public class Messages implements IExtensionMessages {

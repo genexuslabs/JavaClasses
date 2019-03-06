@@ -42,16 +42,18 @@
 
 package com.genexus;
 
-import java.io.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.table.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Vector;
 
-import com.genexus.util.*;
-import com.genexus.common.interfaces.IReorganization;
-import com.genexus.db.*;
+import com.genexus.db.Namespace;
+import com.genexus.db.UserInformation;
 import com.genexus.platform.INativeFunctions;
 import com.genexus.platform.NativeFunctions;
+import com.genexus.util.ReorgSubmitThreadPool;
 
 public abstract class GXReorganization/*extends Applet*/
 {

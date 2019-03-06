@@ -1,86 +1,20 @@
-// $Log: ModelContext.java,v $
-// Revision 1.24  2008-05-26 15:03:53  alevin
-// - Arreglo memory leak con los FileItems cuando se tenian inputs de tipo file en la pantalla.
-// - Arreglo para que no se hagan redirects luego de que el response fue comiteado.
-//
-// Revision 1.21  2006/04/18 18:20:46  alevin
-// - En el beforeGetConnection y en el afterGetConnection cambio la forma en que
-//   se obtiene el nombre de la clase del proc (incluyendo en package), dependiendo
-//   de si estoy en el AppServer o no.
-//
-// Revision 1.20  2006/04/05 20:19:31  alevin
-// - Arreglo en el beforeGetConnection para que si estoy con AppServer mande al
-//   constructor el handle dado.
-//
-// Revision 1.19  2006/03/01 18:02:14  iroqueta
-// Hago que los metodos aftergetconnection y beforegetconnection tomen en cuenta el package del modelo si esta seteado.
-//
-// Revision 1.18  2005/12/02 16:59:59  gusbro
-// - Al crear un ModelContext seteo el httpContext asociado al ModelContext del thread
-//
-// Revision 1.17  2005/11/28 17:29:25  iroqueta
-// Hago que no se cierre el DBconn cuando se retorna del proc llamado en el before connect.
-// Cuando se cerraba traia el problema de que se cerraba el cursor cuando se llama a un proc dentro de un for each que tiene un for each usando el pool del servidor.
-//
-// Revision 1.16  2005/10/18 16:33:37  gusbro
-// Cambio compilacion condicioanl para que se definan after y before connect "dummies" para
-// que no falle la compilacion en .Net.
-//
-// Revision 1.15  2005/10/18 12:23:31  iroqueta
-// Implementacion del before connect para las aplics que usan el pool de GeneXus.
-// Para que se pueda usar se implemento un array de pools que se indexan por el string de conexion + el usuario de la conexion.
-//
-// Revision 1.14  2005/09/28 20:27:09  aaguiar
-// - Pongo protected la variable prefs
-//
-// Revision 1.13  2005/05/25 15:57:51  gusbro
-// - Agrego metodos para obtener ModelContext asociados al thread actual
-//
-// Revision 1.12  2005/03/07 18:52:55  iroqueta
-// Al crear el ModelContext seteo en la Application la className para luego poder leerla en la clase Message para saber de donde leer el recurso del lenguaje
-//
-// Revision 1.11  2004/09/17 15:18:17  iroqueta
-// Arreglo para que la clase SessionBean solo se use en el caso de usar EJBs
-//
-// Revision 1.10  2004/09/16 17:58:26  iroqueta
-// Agrego compilacion condicional para c# para que no moleste la implementacion de EJBs
-//
-// Revision 1.9  2004/09/09 18:44:02  iroqueta
-// Se implement� el soporte para que las TRNs de los EJBs puedan ser masnejadas por el contenedor.
-//
-// Revision 1.8  2004/08/20 20:04:35  iroqueta
-// Soporte para las funciones SetUserId y SetWrkSt
-//
-// Revision 1.7  2004/05/26 20:54:16  dmendez
-// Se maneja correctamente las utls si no hay jta presente.
-//
-// Revision 1.6  2004/05/24 21:06:21  dmendez
-// Soporte de JTA
-//
-// Revision 1.5  2003/04/21 18:09:28  aaguiar
-// - Optimizacion en la getPreferences
-//
-// Revision 1.4  2002/09/10 13:16:55  aaguiar
-// - Se agrego un metodo copy()
-//
-// Revision 1.3  2002/08/01 21:31:17  gusbro
-// - Se agrega la getWorkstationId
-//
-// Revision 1.2  2002/07/29 18:40:33  gusbro
-// Se pasa la convertURL al HttpContext
-//
-// Revision 1.1.1.1  2002/04/19 17:39:44  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus;
 
-import com.genexus.internet.HttpContext;
-import com.genexus.util.*;
-import java.util.*;
-import com.genexus.internet.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Date;
+import java.util.TimeZone;
+
 import com.genexus.common.classes.AbstractModelContext;
 import com.genexus.db.driver.DataSource;
-import java.lang.reflect.*;
+import com.genexus.internet.HttpContext;
+import com.genexus.internet.HttpContextNull;
+import com.genexus.util.GUIContextNull;
+import com.genexus.util.GXThreadLocal;
+import com.genexus.util.GXTimeZone;
+import com.genexus.util.IGUIContext;
+import com.genexus.util.IThreadLocal;
 
 public final class ModelContext extends AbstractModelContext
 {

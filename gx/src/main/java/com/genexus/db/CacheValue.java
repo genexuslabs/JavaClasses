@@ -1,9 +1,8 @@
 package com.genexus.db;
-import java.util.*;
 import java.io.Serializable;
-import java.sql.*;
-import com.genexus.CommonUtil;
-import com.genexus.ModelContext;
+import java.util.Enumeration;
+import java.util.TimeZone;
+import java.util.Vector;
 
 /** $Log: CacheValue.java,v $
 /** Revision 1.5  2007/03/14 21:53:05  alevin

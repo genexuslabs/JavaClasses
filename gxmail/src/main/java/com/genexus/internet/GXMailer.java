@@ -8,12 +8,12 @@
 package com.genexus.internet;
 
 
+import java.io.IOException;
+import java.util.Hashtable;
+
 import com.genexus.CommonUtil;
 
 import gxmail.Configuration;
-
-import java.io.IOException;
-import java.util.Hashtable;
 
 public class GXMailer
 {
