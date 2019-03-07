@@ -4,11 +4,19 @@
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>genexus</groupId>
-	<artifactId>genexus.classes</artifactId>
+
+	<groupId>com.genexus</groupId>
+	<artifactId>parent</artifactId>
+	<version>1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	<version>1.0</version>
-	<name>All the parts</name>
+
+	<name>GeneXus Standard Classes for Java and Android (Parent)</name>
+	<url>https://github.com/genexuslabs/JavaClasses</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
 	<modules>
 		<module>common</module>
 		<module>gxcryptocommon</module>
@@ -20,6 +28,22 @@
 		<module>android</module>
 		<module>gxandroidpublisher</module>
 	</modules>
+
+	<repositories>
+		<repository>
+			<id>mit-public</id>
+			<name>MIT Public</name>
+			<url>http://maven.mit.edu/nexus/content/repositories/public</url>
+		</repository>
+	</repositories>
+
+	<licenses>
+		<license>
+			<name>Apache 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -58,5 +82,32 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.1.1</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/libs</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.7</version>
+			</plugin>
+		</plugins>
 	</build>
 </project>

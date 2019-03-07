@@ -3,39 +3,48 @@
 		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.genexus</groupId>
-	<artifactId>gxclassR</artifactId>
-	<version>1.0</version>
-	<name>gxclassR</name>
-	<url>http://www.genexus.com</url>
+
+	<parent>
+		<groupId>com.genexus</groupId>
+		<artifactId>parent</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>server</artifactId>
+	<name>GeneXus Standard classes for the Server</name>
+
 	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.6</maven.compiler.source>
 		<maven.compiler.target>1.6</maven.compiler.target>
 	</properties>
+
 	<dependencies>
 		<dependency>
-			<groupId>gx</groupId>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>gxcryptocommon</artifactId>
-			<version>1.0.0</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>javapns</groupId>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>gxmail</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>javapns</artifactId>
-			<version>1.0.0</version>
+			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.genexus</groupId>
-			<artifactId>gx.common</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
+
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-collections4</artifactId>
 			<version>4.1</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/javax.xml.ws/jaxws-api -->
 		<dependency>
 			<groupId>javax.xml.ws</groupId>
 			<artifactId>jaxws-api</artifactId>
@@ -46,14 +55,12 @@
 			<artifactId>commons-codec</artifactId>
 			<version>1.4</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/javax.ejb/ejb-api -->
 		<dependency>
 			<groupId>javax.ejb</groupId>
 			<artifactId>ejb-api</artifactId>
 			<version>3.0</version>
 			<scope>provided</scope>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.glassfish.main.javaee-api/javax.jms -->
 		<dependency>
 			<groupId>org.glassfish.main.javaee-api</groupId>
 			<artifactId>javax.jms</artifactId>
@@ -64,7 +71,6 @@
 			<artifactId>commons-io</artifactId>
 			<version>2.2</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk15on -->
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpkix-jdk15on</artifactId>
@@ -111,41 +117,25 @@
 			<version>3.0.1</version>
 		</dependency>
 		<dependency>
-			<groupId>gxmail</groupId>
-			<artifactId>gxmail</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/javax.transaction/jta -->
-		<dependency>
 			<groupId>javax.transaction</groupId>
 			<artifactId>jta</artifactId>
 			<version>1.1</version>
 		</dependency>
-		<!-- dependency>
-			<groupId>com.itextpdf</groupId>
-			<artifactId>itextpdf</artifactId>
-			<version>5.5.8</version>
-		</dependency-->
-		<!-- https://mvnrepository.com/artifact/org.apache.santuario/xmlsec -->
-		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-annotations</artifactId>
-			<version>2.9.8</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
 			<version>2.9.8</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>2.9.8</version>
+		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 			<version>2.9.8</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.google.apis/google-api-services-androidpublisher -->
 		<dependency>
 			<groupId>com.google.apis</groupId>
 			<artifactId>google-api-services-androidpublisher</artifactId>
@@ -156,7 +146,6 @@
 			<artifactId>spymemcached</artifactId>
 			<version>2.10.3</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.lowagie/itext -->
 		<dependency>
 			<groupId>com.lowagie</groupId>
 			<artifactId>itext</artifactId>
@@ -168,54 +157,27 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.simpleframework/simple-xml -->
 		<dependency>
 			<groupId>org.simpleframework</groupId>
 			<artifactId>simple-xml</artifactId>
 			<version>2.7.1</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/redis.clients/jedis -->
 		<dependency>
 			<groupId>redis.clients</groupId>
 			<artifactId>jedis</artifactId>
 			<version>2.9.0</version>
 		</dependency>
 		<dependency>
-			<groupId>sapjco</groupId>
-			<artifactId>sapjco</artifactId>
-			<version>3.0</version>
+			<groupId>com.sap.conn.jco</groupId>
+			<artifactId>sapjco3</artifactId>
+			<version>3.0.14</version>
 		</dependency>
 	</dependencies>
+
 	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>2.7</version>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.1.1</version>
-				<executions>
-					<execution>
-						<id>copy-dependencies</id>
-						<phase>package</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/libs</outputDirectory>
-							<overWriteReleases>false</overWriteReleases>
-							<overWriteSnapshots>false</overWriteSnapshots>
-							<overWriteIfNewer>true</overWriteIfNewer>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
 		<finalName>${project.artifactId}</finalName>
 	</build>
+
 	<reporting>
 		<plugins>
 			<plugin>
