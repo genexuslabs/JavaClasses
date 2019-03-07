@@ -10,8 +10,8 @@
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>server</artifactId>
-	<name>GeneXus Standard classes for the Server</name>
+	<artifactId>java</artifactId>
+	<name>GeneXus Standard classes for the Java generator</name>
 
 	<properties>
 		<maven.compiler.source>1.6</maven.compiler.source>
