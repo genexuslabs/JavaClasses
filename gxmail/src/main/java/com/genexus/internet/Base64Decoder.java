@@ -24,7 +24,7 @@ class Base64Decoder implements MimeDecoder
 		super();
 	}
 
-	public void decode(MailReader input, OutputStream out) throws IOException
+	public void decode( MailReader input, OutputStream out) throws IOException
 	{
 		int	i, num, len, j;
 		long	d, val;

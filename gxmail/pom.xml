@@ -1,48 +1,54 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <groupId>gxmail</groupId>
-  <artifactId>gxmail</artifactId>
-  <version>1.0.0</version>
-  <packaging>jar</packaging>
+	<groupId>gxmail</groupId>
+	<artifactId>gxmail</artifactId>
+	<version>1.0.0</version>
+	<packaging>jar</packaging>
 
-  <name>gxmail</name>
-  <url>http://maven.apache.org</url>
+	<name>gxmail</name>
+	<url>http://maven.apache.org</url>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 
-  <dependencies>
-  		<!-- https://mvnrepository.com/artifact/com.sun.mail/pop3 -->
+	<dependencies>
+		<!-- https://mvnrepository.com/artifact/com.sun.mail/pop3 -->
 		<dependency>
 			<groupId>com.sun.mail</groupId>
 			<artifactId>pop3</artifactId>
 			<version>1.6.3</version>
 		</dependency>
-  
-  <dependency>
+		<!-- https://mvnrepository.com/artifact/javax.xml.ws/jaxws-api -->
+		<dependency>
+			<groupId>javax.xml.ws</groupId>
+			<artifactId>jaxws-api</artifactId>
+			<version>2.2.1</version>
+		</dependency>
+		<dependency>
 			<groupId>com.genexus</groupId>
 			<artifactId>gx.common</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-  <build>
-	<plugins>
-       
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-project-info-reports-plugin</artifactId>
-            <version>2.7</version>
-        </plugin>
-       
-        </plugins>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.7</version>
+			</plugin>
+
+		</plugins>
 	</build>
 </project>

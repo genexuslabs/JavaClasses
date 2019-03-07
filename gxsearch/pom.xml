@@ -1,32 +1,33 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-  <groupId>gxsearch</groupId>
-  <artifactId>gxsearch</artifactId>
-  <version>1.0.0</version>
-  <packaging>jar</packaging>
+	<groupId>gxsearch</groupId>
+	<artifactId>gxsearch</artifactId>
+	<version>1.0.0</version>
+	<packaging>jar</packaging>
 
-  <name>gxsearch</name>
-  <url>http://maven.apache.org</url>
+	<name>gxsearch</name>
+	<url>http://maven.apache.org</url>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 
-  <dependencies>
-  	<dependency>
+	<dependencies>
+		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-scratchpad</artifactId>
 			<version>3.2-FINAL</version>
-				
+
 		</dependency>
-			<dependency>
+		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>
 			<version>3.17</version>
 		</dependency>
-  	<!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
+		<!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
 		<!-- https://mvnrepository.com/artifact/org.apache.poi/poi-scratchpad -->
 		<!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
 		<dependency>
@@ -34,7 +35,7 @@
 			<artifactId>poi</artifactId>
 			<version>3.17</version>
 		</dependency>
-  	<!-- https://mvnrepository.com/artifact/org.openoffice/juh -->
+		<!-- https://mvnrepository.com/artifact/org.openoffice/juh -->
 		<dependency>
 			<groupId>org.openoffice</groupId>
 			<artifactId>juh</artifactId>
@@ -52,13 +53,12 @@
 			<artifactId>ridl</artifactId>
 			<version>4.1.2</version>
 		</dependency>
-  <dependency>
-  <groupId>com.genexus</groupId>
-	<artifactId>gxclassR</artifactId>
-	<version>1.0</version>
-  
-  </dependency>
-  <dependency>
+		<dependency>
+			<groupId>com.genexus</groupId>
+			<artifactId>gxclassR</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-core</artifactId>
 			<version>2.2.0</version>
@@ -72,25 +72,28 @@
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-spellchecker</artifactId>
 			<version>2.2.0</version>
-
 		</dependency>
-		
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-  <build>
-	<plugins>
-       
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-project-info-reports-plugin</artifactId>
-            <version>2.7</version>
-        </plugin>
-       
-        </plugins>
+		<dependency>
+			<groupId>org.w3c.tidy</groupId>
+			<artifactId>com.springsource.org.w3c.tidy</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.7</version>
+			</plugin>
+
+		</plugins>
 	</build>
 </project>

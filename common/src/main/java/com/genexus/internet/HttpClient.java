@@ -903,7 +903,7 @@ public class HttpClient
 	}
 
 	public static InputStream getInputStream(String stringURL) throws IOException
-	{ // Para este tipo de requests siempre estamos creando una nueva instancia de HTTPConnection
+	{ // for this request always create a new HTTPConnection
 		try
 		{
 		    URI url = new URI(stringURL);
