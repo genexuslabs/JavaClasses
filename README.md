@@ -57,8 +57,6 @@ The dependencies between the projects are specified in each pom.xml within their
 
 - Download or clone the project.
 - Open a windows command prompt and move to the <project dir> directory
-- Run mvnLocal.bat
-  This will install 1 legacy jar file in the local repository of Maven. And the SAP jar file.
 - mvn compile (will compile the whole project)
 
 # How to build a specific project
