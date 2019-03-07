@@ -1,33 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+	<modelVersion>4.0.0</modelVersion>
 
-    <groupId>genexus</groupId>
-    <artifactId>genexus.classes</artifactId>
-    <packaging>pom</packaging>
-    <version>1.0</version>
-    <name>All the parts</name>
+	<groupId>com.genexus</groupId>
+	<artifactId>parent</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
 
-    <modules>
-        <module>common</module>
-        <module>gxcryptocommon</module>
-        <module>gxmail</module>
-        <module>gx</module>
-        <module>javapns</module>
-        <module>gxoffice</module>
+	<name>GeneXus Standard Classes for Java and Android (Parent)</name>
+	<url>https://github.com/genexuslabs/JavaClasses</url>
 
-        <module>apacheandroid</module>
-        <module>android</module>
-   		<module>gxandroidpublisher</module>
-   
-    </modules>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 
-    <build>
-        <pluginManagement>
-            <plugins>
-            	<plugin>
+	<modules>
+		<module>common</module>
+
+		<module>java</module>
+		<module>gxandroidpublisher</module>
+		<module>gxcryptocommon</module>
+		<module>gxmail</module>
+		<module>gxoffice</module>
+		<module>gxsearch</module>
+		<module>javapns</module>
+
+		<module>apacheandroid</module>
+		<module>android</module>
+	</modules>
+
+	<repositories>
+		<repository>
+			<id>mit-public</id>
+			<name>MIT Public</name>
+			<url>http://maven.mit.edu/nexus/content/repositories/public</url>
+		</repository>
+	</repositories>
+
+	<licenses>
+		<license>
+			<name>Apache 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
 					<version>3.1.1</version>
@@ -47,26 +70,47 @@
 						</execution>
 					</executions>
 				</plugin>
-				
-				  <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-project-info-reports-plugin</artifactId>
-            <version>2.7</version>
-        </plugin>
-			
-	            <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <configuration>
-                        <source>1.8</source>
-                        <target>1.8</target>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
-
-    <dependencies>
-        
-    </dependencies>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-project-info-reports-plugin</artifactId>
+					<version>2.7</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<configuration>
+						<source>1.8</source>
+						<target>1.8</target>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.1.1</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/libs</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.7</version>
+			</plugin>
+		</plugins>
+	</build>
 </project>
