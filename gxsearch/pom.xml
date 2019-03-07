@@ -65,9 +65,9 @@
 			<version>2.2.0</version>
 		</dependency>
 		<dependency>
-			<groupId>org.w3c.tidy</groupId>
-			<artifactId>com.springsource.org.w3c.tidy</artifactId>
-			<version>1.0</version>
+			<groupId>net.sf.jtidy</groupId>
+			<artifactId>jtidy</artifactId>
+			<version>r938</version>
 		</dependency>
 	</dependencies>
 </project>

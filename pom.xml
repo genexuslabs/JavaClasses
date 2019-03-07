@@ -19,14 +19,17 @@
 
 	<modules>
 		<module>common</module>
+
+		<module>java</module>
+		<module>gxandroidpublisher</module>
 		<module>gxcryptocommon</module>
 		<module>gxmail</module>
-		<module>gx</module>
-		<module>javapns</module>
 		<module>gxoffice</module>
+		<module>gxsearch</module>
+		<module>javapns</module>
+
 		<module>apacheandroid</module>
 		<module>android</module>
-		<module>gxandroidpublisher</module>
 	</modules>
 
 	<repositories>
