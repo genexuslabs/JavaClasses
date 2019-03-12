@@ -1,11 +1,3 @@
-// $Log: GXDBDebug.java,v $
-// Revision 1.1  2001/10/12 22:03:42  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/10/12 22:03:42  gusbro
-// GeneXus Java Olimar
-//
-
 package com.genexus.db.driver;
 
 import java.io.BufferedWriter;

@@ -1,10 +1,3 @@
-// $Log: PasswordChanger.java,v $
-// Revision 1.1  2002/01/08 17:46:20  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2002/01/08 17:46:20  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus;
 import java.io.*;
 

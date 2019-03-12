@@ -1,9 +1,3 @@
-// $Log: IExcelCells.java,v $
-// Revision 1.1  2005/07/12 17:38:07  gusbro
-// Release inicial
-//
-//
-
 package com.genexus.gxoffice;
 import java.util.*;
 

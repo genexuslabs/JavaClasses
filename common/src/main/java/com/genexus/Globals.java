@@ -1,10 +1,4 @@
-// $Log: Globals.java,v $
-// Revision 1.1  2002/01/09 14:55:38  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2002/01/09 14:55:38  gusbro
-// GeneXus Java Olimar
-//
+
 package com.genexus;
 
 public class Globals

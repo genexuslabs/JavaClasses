@@ -1,10 +1,3 @@
-// $Log: DefaultSSLConnection.java,v $
-// Revision 1.1  2001/09/05 16:56:48  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/09/05 16:56:48  gusbro
-// GeneXus Java Olimar
-//
 package HTTPClient;
 
 /**

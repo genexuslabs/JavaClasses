@@ -1,10 +1,4 @@
-// $Log: PDFOutline.java,v $
-// Revision 1.1  2000/02/08 11:55:10  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2000/02/08 11:55:10  gusbro
-// GeneXus Java Olimar
-//
+
 package uk.org.retep.pdf;
 
 import java.io.IOException;

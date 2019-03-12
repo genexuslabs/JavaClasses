@@ -1,11 +1,3 @@
-// $Log: GXTypeConstants.java,v $
-// Revision 1.1  2001/04/27 19:34:42  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/04/27 19:34:42  gusbro
-// GeneXus Java Olimar
-//
-
 package com.genexus;
 
 public final class GXTypeConstants

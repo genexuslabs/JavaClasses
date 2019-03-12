@@ -1,10 +1,4 @@
-// $Log: LoadLibrary.java,v $
-// Revision 1.1  2001/10/11 19:53:40  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/10/11 19:53:40  gusbro
-// GeneXus Java Olimar
-//
+
 package com.genexus;
 
 import java.io.*;

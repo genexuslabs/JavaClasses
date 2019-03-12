@@ -1,8 +1,3 @@
-// $Log: GXWebProcedure.java,v $
-// Revision 1.3  2002/09/05 16:52:46  gusbro
-// - Arreglo para que NO use el pragma no-cache con HTTPS
-//
-
 package com.genexus.webpanels;
 
 import java.io.PrintWriter;

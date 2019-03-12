@@ -1,21 +1,3 @@
-// $Log: GXPicture.java,v $
-// Revision 1.1  2002/04/17 17:50:56  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2002/04/17 17:50:56  gusbro
-// GeneXus Java Olimar
-//
-//
-//   Rev 1.6   23 Sep 1998 19:48:20   AAGUIAR
-//
-//   Rev 1.5   May 28 1998 10:00:32   DMENDEZ
-//Sincro28May1998
-//
-//   Rev 1.4   27 May 1998 13:40:22   GMilano
-//No change.
-// 
-//    Rev 1.3   06 Feb 1998 16:58:26   GMilano
-// Usados por Gaston
 
 package com.genexus;
 

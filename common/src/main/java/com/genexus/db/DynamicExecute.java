@@ -1,21 +1,4 @@
 package com.genexus.db;
-/** $Log: DynamicExecute.java,v $
-/** Revision 1.7  2005/08/15 19:08:53  gusbro
-/** - El getPrimitiveType para boolean estaba tirando un mensaje en la consola, ahora no lo tira m�s
-/**
-/** Revision 1.6  2005/05/25 16:43:51  gusbro
-/** - Obtengo el ModelContext a partir de ModelContext.getModelContext
-/**
-/** Revision 1.5  2005/04/13 18:31:33  iroqueta
-/** Cambio en el call dinamico para que no capture ningun error, sino que tire RuntimeExceptions
-/**
-/** Revision 1.4  2004/12/27 21:04:47  iroqueta
-/** Cambio en el call dinamico para que si no esta la clase a la que se le hace el call de un RuntimeException en lugar de capturar el error.
-/**
-/** Revision 1.3  2004/06/23 20:12:11  gusbro
-/** - Retorno un boolean indicando si se pudo realizar el execute
-/**
- */
 
 import com.genexus.common.classes.AbstractModelContext;
 import com.genexus.common.interfaces.SpecificImplementation;

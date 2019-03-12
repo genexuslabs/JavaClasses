@@ -1,30 +1,4 @@
 package com.genexus.db;
-/** Encapsula el tipo de dato DBConnection de GX
- * $Log: DBConnection.java,v $
- * Revision 1.7  2005/05/04 21:46:31  iroqueta
- * Hago llegar el contexto al constructor del GXConnection
- *
- * Revision 1.6  2005/05/04 20:00:06  iroqueta
- * Se agregan las propiedades ExternalDatasourceName y UseExternalDatasource para el tipo de datos DBConnection.
- * Ademas se puse el metodo getDataSource para poder ser llamado desde el GXConnection en el beforeConnect
- *
- * Revision 1.5  2005/02/16 19:35:43  iroqueta
- * Paso el LoginInServer al datastore, antes estaba en el namespace
- *
- * Revision 1.4  2003/05/22 20:33:43  gusbro
- * - Agrego soporte para poder cambiar de DB con el AS
- *
- * Revision 1.3  2003/05/08 16:39:11  gusbro
- * - Faltaban 2 metodos y se cambio el tipo de dato de retorno de int a short
- *
- * Revision 1.2  2003/05/06 17:28:33  gusbro
- * - Los metodos connect() y disconnect() ahora retornan el codigo de error o 0 si la operacion tuvo �xito
- *
- * Revision 1.1  2003/04/30 22:37:09  gusbro
- * - Clase para encapsular el tipo de dato DBConnection de GX
- *
- */
-
 import java.sql.SQLException;
 
 import com.genexus.Application;

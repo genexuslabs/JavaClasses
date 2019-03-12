@@ -5,15 +5,6 @@ import com.genexus.common.classes.AbstractDataStoreProviderBase;
 import com.genexus.common.classes.IGXPreparedStatement;
 import java.sql.SQLException;
 
-
-/**
- * This stores the state of a single cursor. It's used in the 'server side' 
- *
- * @version	1.0, 15/11/00
- * @author	Andres Aguiar
- * @since	Solis
- */
-
 public class CallCursor extends Cursor
 {
 	Object[] buffers;

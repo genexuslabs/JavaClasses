@@ -1,14 +1,3 @@
-// $Log: GxSilentTrnSdt.java,v $
-// Revision 1.3  2004/09/30 14:20:02  dmendez
-// Por cambio en la especificacion de los BC el metodo Delete llama al metodo Save.
-//
-// Revision 1.2  2004/09/17 21:45:34  dmendez
-// Messagelist como estructura
-// Soporte de updates optimizados (APC)
-//
-// Revision 1.1  2004/09/08 20:34:50  dmendez
-// Revision inicial
-//
 package com.genexus;
 import com.genexus.common.classes.AbstractModelContext;
 import com.genexus.common.interfaces.IPendingEventHelper;

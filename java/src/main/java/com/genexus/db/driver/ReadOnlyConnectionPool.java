@@ -1,16 +1,4 @@
-// $Log: ReadOnlyConnectionPool.java,v $
-// Revision 1.3  2005/07/21 15:10:58  iroqueta
-// Implementacion de soporte de JMX
-//
-// Revision 1.2  2005/02/18 21:19:27  iroqueta
-// Le hago llegar el ModelContext al GXConnection para poder pasarselo al proc que se llama para obtener el nombre del datasource al cual conectarse.
-//
-// Revision 1.1  2001/11/16 14:34:56  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/11/16 14:34:56  gusbro
-// GeneXus Java Olimar
-//
+
 
 package com.genexus.db.driver;
 import java.sql.SQLException;

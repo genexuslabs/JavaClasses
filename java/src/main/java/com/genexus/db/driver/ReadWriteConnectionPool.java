@@ -1,20 +1,3 @@
-// $Log: ReadWriteConnectionPool.java,v $
-// Revision 1.4  2005/07/21 15:10:58  iroqueta
-// Implementacion de soporte de JMX
-//
-// Revision 1.3  2005/02/18 21:19:27  iroqueta
-// Le hago llegar el ModelContext al GXConnection para poder pasarselo al proc que se llama para obtener el nombre del datasource al cual conectarse.
-//
-// Revision 1.2  2003/05/07 16:03:17  aaguiar
-// - Cambio menor en la IsAvailable
-//
-// Revision 1.1.1.1  2001/11/16 13:51:52  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2001/11/16 13:51:52  gusbro
-// GeneXus Java Olimar
-//
-
 package com.genexus.db.driver;
 
 import java.sql.SQLException;

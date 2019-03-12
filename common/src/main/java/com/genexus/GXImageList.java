@@ -1,13 +1,4 @@
-// $Log: GXImageList.java,v $
-// Revision 1.2  2004/03/26 22:37:57  gusbro
-// - Agrego gxjavaicon.jpg a la lista
-//
-// Revision 1.1.1.1  2000/12/06 20:49:48  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2000/12/06 20:49:48  gusbro
-// GeneXus Java Olimar
-//
+
 package com.genexus;
 import java.util.Hashtable;
 

@@ -10,30 +10,7 @@ import com.genexus.management.CacheItemJMX;
 import com.genexus.management.CacheJMX;
 import com.genexus.util.DoubleLinkedQueue;
 
-/** $Log: InProcessCache.java,v $
-/** Revision 1.6  2005/07/22 23:03:47  iroqueta
-/** Agrego ifdefs para que no de problemas JMX en .NET
-/**
-/** Revision 1.5  2005/07/21 15:10:38  iroqueta
-/** Implementacion de soporte de JMX
-/**
-/** Revision 1.4  2004/02/20 19:40:59  gusbro
-/** - El TTL ahora esta medido en minutos
-/**
-/** Revision 1.3  2004/02/19 20:47:30  gusbro
-/** - La preference STORAGE_SIZE en el cfg esta medida en KBs y yo aca lo mido todo en bytes
-/**
-/** Revision 1.2  2004/02/19 17:08:56  gusbro
-/** .
-/**
-/** Revision 1.1  2004/02/10 16:41:09  gusbro
-/** - Release inicial
-/**
- *  Implementa el cache de resultados.
- *  Notas: Deberíamos usar soft references, para que la VM libere automáticamente memoria
- *         cuando la necesite. El problema es que las soft references son JDK1.2+, así que
- *         por ahora no lo metemos para ser compatibles con MS
- */
+
 public class InProcessCache implements ICacheService
 {
 	protected long cacheStorageSize;

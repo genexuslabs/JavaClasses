@@ -1,10 +1,3 @@
-// $Log: InternetMail.java,v $
-// Revision 1.1  2001/09/27 18:10:52  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/09/27 18:10:52  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.internet;
 
 public class InternetMail implements IMailImplementation, GXInternetConstants

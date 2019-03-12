@@ -1,9 +1,3 @@
-// $Log: MimeEncoder.java,v $
-// Revision 1.1.2.1  2006/03/03 19:24:52  alevin
-// - Initial release.
-//
-//
-
 package com.genexus.internet;
 
 import java.io.*;

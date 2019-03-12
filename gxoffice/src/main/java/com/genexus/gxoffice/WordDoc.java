@@ -1,13 +1,5 @@
 package com.genexus.gxoffice;
 import java.io.File;
-// $Log: WordDoc.java,v $
-// Revision 1.1.2.3  2006/06/09 18:39:32  alevin
-// - Cambio en el Open para soportar path relativos en web.
-//
-// Revision 1.1.2.2  2005/12/22 16:10:53  gusbro
-// - No estaba andando el setTemplate
-//
-//
 
 public class WordDoc
 {

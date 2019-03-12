@@ -1,36 +1,4 @@
 package com.genexus.util;
-// $Log: GXFile.java,v $
-// Revision 1.1.2.14  2006/10/06 21:01:29  alevin
-// - Agrego el metodo setBlobToDelete.
-//
-// Revision 1.1.2.13  2006/07/12 16:15:47  dmendez
-// getfilename/getfileext. Se cambio de gxutil para gxfile estos metodos porque daban problema con .net que comparte la gxutil
-//
-// Revision 1.1.2.12  2006/07/04 19:23:18  dmendez
-// Error en getNameNoExt, se devolvia string vacio si no habia extension.
-//
-// Revision 1.1.2.11  2006/06/26 20:09:09  dmendez
-// Metodos getExt/getNameNoExt
-//
-// Revision 1.1.2.10  2006/06/08 13:06:07  dmendez
-// SetExtension acepta que se le pase una extension vacia sin contatener punto separador de extension.
-//
-// Revision 1.1.2.9  2006/03/01 18:19:58  iroqueta
-// Cambio el metodo getdirectory del tipo file por getpath
-//
-// Revision 1.1.2.8  2005/12/23 16:54:20  iroqueta
-// Implementacion del metodo getDirectory para el tipo de datos File
-//
-// Revision 1.1.2.7  2005/10/18 12:52:36  iroqueta
-// El metodo exists() deja de retornar un byte y ahora retorna boolean
-//
-// Revision 1.1.2.6  2005/05/18 17:46:50  dmendez
-// Metodo setExt para usarlo con propiedad FileType de blobs
-//
-// Revision 1.1.2.5  2005/05/10 18:51:58  gusbro
-// - Agrego metodo XSLTApply
-//
-//
 
 import java.io.File;
 import java.io.IOException;

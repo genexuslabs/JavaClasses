@@ -1,23 +1,3 @@
-// $Log: ParseINI.java,v $
-// Revision 1.5  2006/05/04 16:17:07  gusbro
-// - Arreglo en el save. Quedaba un caso de borde cuando una entrada tenia cerca de 500 bytes
-//
-// Revision 1.4  2006/03/30 19:19:04  alevin
-// - El readEntry(), cuando tenias una propiedad= y nada despu�s, le�a como
-//   valor de esa propiedad la l�nea siguiente. (CMurialdo)
-//
-// Revision 1.3  2003/12/08 20:28:11  gusbro
-// - Arreglo en save
-//
-// Revision 1.2  2003/11/26 16:30:55  gusbro
-// - Cambio para que el nombre de la seccion pueda tener hasta 16384 caracteres
-//
-// Revision 1.1.1.1  2001/04/17 14:40:48  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2001/04/17 14:40:48  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.reports;
 
 import java.io.EOFException;

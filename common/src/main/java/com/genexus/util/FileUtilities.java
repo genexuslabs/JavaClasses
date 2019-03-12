@@ -4,9 +4,7 @@ import java.io.*;
 
 public class FileUtilities
 {
-	/**
-	* Devuelve el path corriente.
-	*/
+
 	public static String getCurrentPath()
 	{
 		String fileWithPoint = new File(".").getAbsolutePath();

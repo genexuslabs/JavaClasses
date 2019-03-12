@@ -1,13 +1,4 @@
-// $Log: PDFImage.java,v $
-// Revision 1.1  2002/06/24 20:39:36  gusbro
-// Initial revision
-//
-// Revision 1.2  2002/06/24 20:39:36  gusbro
-// *** empty log message ***
-//
-// Revision 1.1.1.1  2001/06/25 17:16:30  gusbro
-// GeneXus Java Olimar
-//
+
 package uk.org.retep.pdf;
 
 import java.awt.Image;

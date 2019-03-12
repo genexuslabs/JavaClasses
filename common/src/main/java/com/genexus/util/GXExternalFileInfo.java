@@ -7,7 +7,6 @@ import com.genexus.*;
 import com.genexus.common.interfaces.SpecificImplementation;
 
 import java.util.Date;
-//import org.apache.commons.io.IOUtils;
 
 public class GXExternalFileInfo implements IGXFileInfo {
 

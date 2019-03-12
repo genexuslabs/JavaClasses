@@ -1,14 +1,3 @@
-/*$Log: GXDataArea.java,v $
-/*Revision 1.1.2.3  2005/11/09 12:51:33  iroqueta
-/*El metodo executeStartEvent ya no retorna void sino byte
-/*
-/*Revision 1.1.2.2  2005/03/28 15:50:22  dmendez
-/*Se implementa objeto form para poder manejarlo en master pages como unico
-/*para el master page y placeholder.
-/*
-/*Revision 1.1.2.1  2004/12/13 19:40:17  dmendez
-/*Soporte de MasterPages
-/**/
 package com.genexus.webpanels;
 
 import com.genexus.ModelContext;

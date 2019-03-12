@@ -1,10 +1,4 @@
-// $Log: GlobalConstants.java,v $
-// Revision 1.1  2001/05/07 00:35:00  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/05/07 00:35:00  gusbro
-// GeneXus Java Olimar
-//
+
 /*
  * @(#)GlobalConstants.java				0.3-3 06/05/2001
  *

@@ -1,15 +1,3 @@
-// $Log: StringCollection.java,v $
-// Revision 1.2  2005/07/26 21:07:05  iroqueta
-// El add estaba filtrando que no se agregara si el valor era vacio.
-// Eso lo saque porque sino no funcionan los combos dinamicos con desc vacias.
-// Si da algun problema habria que hacer este mismo filtro antes de llamar al add en lugar de dentro del add.
-//
-// Revision 1.1  2001/07/16 18:57:42  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/07/16 18:57:42  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.internet;
 import com.genexus.util.*;
 

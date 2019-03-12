@@ -1,29 +1,3 @@
-// $Log: IReportHandler.java,v $
-// Revision 1.6  2006/11/29 15:02:19  alevin
-// - (CMurialdo) Cambios para soportar nuevas propiedades en rectangulos de los reportes  (cornerradio para cada esquina y nuevos valores del style de lineas y lados de rectangulo).
-//
-// Revision 1.5  2006/06/20 14:26:51  iroqueta
-// Implementacion de las propiedades CornersRadio y Style para los rect�ngulos y Style para las l�neas.
-// Solo es valido para los reportes PDFs con la implementacion de iText.
-//
-// Revision 1.4  2006/04/24 18:37:11  iroqueta
-// No se estaba heredando el MT y MB entre reportes... SAC 20051.
-// Para que se pueda hacer se implmento el setM_top, setM_bot y getM_top, getM_bot en la interface IReportHandler.
-//
-// Revision 1.3  2005/08/16 22:04:26  alevin
-// - Agrego el metodo cleanup.
-//
-// Revision 1.2  2005/07/05 16:55:54  iroqueta
-// Implementacion de aspectRatio en las imagenes de reportes.
-// La idea por ahora es que se puede configurar en el config.gx si se quiere mantener al aspect ratio o no en las imagenes de reportes.
-// Por el momento solo esta implementado en los reportes pdfs que usen itext.
-//
-// Revision 1.1  2001/10/29 12:42:16  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/10/29 12:42:16  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.reports;
 
 import com.genexus.ProcessInterruptedException;

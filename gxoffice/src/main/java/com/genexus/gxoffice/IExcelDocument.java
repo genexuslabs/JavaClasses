@@ -1,9 +1,3 @@
-// $Log: IExcelDocument.java,v $
-// Revision 1.1  2005/07/12 17:37:57  gusbro
-// Release inicial
-//
-//
-
 package com.genexus.gxoffice;
 
 public interface IExcelDocument

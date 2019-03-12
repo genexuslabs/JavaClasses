@@ -1,7 +1,3 @@
-// $Log: GXDBMShana.java,v $
-// soporte hana
-//
-
 package com.genexus.db.driver;
 
 import java.sql.Connection;

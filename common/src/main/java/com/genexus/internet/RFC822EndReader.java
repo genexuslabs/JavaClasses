@@ -1,10 +1,3 @@
-// $Log: RFC822EndReader.java,v $
-// Revision 1.1  2000/10/20 21:37:18  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2000/10/20 21:37:18  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.internet;
 
 import java.io.*;

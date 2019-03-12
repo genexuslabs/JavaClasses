@@ -1,13 +1,3 @@
-// $Log: TypeConstantsConstants.java,v $
-// Revision 1.2  2004/05/19 19:17:06  gusbro
-// - Agrego constantes para collections y arrays
-//
-// Revision 1.1  2002/07/17 19:12:55  gusbro
-// Pasaje de Interfaz a Clase para que marche con C#
-//
-// Revision 1.1.1.1  2002/03/26 17:18:28  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus;
 
 public class TypeConstantsConstants

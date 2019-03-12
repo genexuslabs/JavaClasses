@@ -1,26 +1,3 @@
-// $Log: GXDBMS.java,v $
-// Revision 1.5  2006/12/18 16:34:17  alevin
-// - (CMuriando) Implementacion de las propiedades "Lock time-out" y "Lock retry count".
-//
-// Revision 1.4  2004/09/17 21:45:34  dmendez
-// Messagelist como estructura
-// Soporte de updates optimizados (APC)
-//
-// Revision 1.3  2004/05/27 20:26:52  gusbro
-// - Agrego getId que devuelve un entero identificando el DBMS
-//
-// Revision 1.2  2002/12/06 19:13:32  aaguiar
-// - Se agrego el isAlive. Por ahora hace el getservertime()
-//
-// Revision 1.1.1.1  2002/05/15 21:23:02  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2002/05/15 21:23:02  gusbro
-// GeneXus Java Olimar
-//
-//
-//   Rev 1.6   23 Sep 1998 19:48:14   AAGUIAR
-
 package com.genexus.db.driver;
 
 import java.sql.Connection;

@@ -4,25 +4,7 @@ import java.util.Enumeration;
 import java.util.TimeZone;
 import java.util.Vector;
 
-/** $Log: CacheValue.java,v $
-/** Revision 1.5  2007/03/14 21:53:05  alevin
-/** - Arreglo para solucionar casos en que se tenia una tabla cacheada y en ella se tienen atributos con
-/**   AllowNulls = Yes. Cuando se hace un SELECT sobre la tabla se obtienen mal los valores del resultado
-/**   cacheado porque se mezclan en el array los valores de "wasNull" con los de las columnas.
-/**
-/** Revision 1.4  2006/07/24 19:43:37  alevin
-/** - Agrego un getBLOBFile que recibe el nombre del archivo.
-/**
-/** Revision 1.3  2005/07/21 15:10:38  iroqueta
-/** Implementacion de soporte de JMX
-/**
-/** Revision 1.2  2004/02/19 17:08:56  gusbro
-/** .
-/**
-/** Revision 1.1  2004/02/10 16:41:09  gusbro
-/** - Release inicial
-/**
- */
+
 public class CacheValue implements Serializable
 {
 	private static final long serialVersionUID = 1L;

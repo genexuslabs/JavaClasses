@@ -1,26 +1,3 @@
-// $Log: MailMessage.java,v $
-// Revision 1.5  2006/11/30 15:14:31  alevin
-// - Cambios para desencodear bien los mensajes japoneses de acuerdo al RFC1468.
-//   Se agrega la clase JapaneseMimeDecoder.
-//
-// Revision 1.4  2006/07/07 20:27:30  alevin
-// - Agrego getReceivedDate.
-//
-// Revision 1.3  2006/07/05 13:48:47  alevin
-// - Arreglo en el readBody, el texto html se estaba leyendo como adjunto del mensaje.
-//   Ahora no se lee como adjunto y se guarda en un string buffer. Agrego el getHtmlText.
-//
-// Revision 1.2  2006/07/04 22:07:25  alevin
-// - En el readeHeader() salgo del loop cuando temp es null.
-//   En el constructor llamo al readUnreadedBytes luego del readMessage(), en algunos casos
-//   hay mails que tienen footers luego del ultimo terminator.
-//
-// Revision 1.1  2001/12/14 17:49:58  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/12/14 17:49:58  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.internet;
 
 import java.io.ByteArrayOutputStream;

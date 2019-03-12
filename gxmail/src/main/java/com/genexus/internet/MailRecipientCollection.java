@@ -1,13 +1,3 @@
-// $Log: MailRecipientCollection.java,v $
-// Revision 1.2  2003/02/21 14:36:53  gusbro
-// - fix: Al hacer un add de un recipient se inserta una copia del recipient
-//
-// Revision 1.1.1.1  2001/09/27 18:04:54  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2001/09/27 18:04:54  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.internet;
 
 import java.io.IOException;

@@ -1,16 +1,4 @@
-// $Log: HttpRequest.java,v $
-// Revision 1.3  2004/10/27 20:54:15  dmendez
-// Soporte de upload control
-//
-// Revision 1.2  2004/07/29 19:30:21  iroqueta
-// Arreglo para que funcione bien la ScriptName
-//
-// Revision 1.1  2002/04/19 18:10:30  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2002/04/19 18:10:30  gusbro
-// GeneXus Java Olimar
-//
+
 package com.genexus.internet;
 
 import java.io.IOException;

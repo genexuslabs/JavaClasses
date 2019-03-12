@@ -1,23 +1,3 @@
-// $Log: HttpResponse.java,v $
-// Revision 1.5  2006/11/27 19:00:34  alevin
-// - El header Content-Disposition cuando tiene filename se manda url-encoded y con UTF8
-//   para soportar el envio de caracteres unicode (no solo ASCII). SAC 20138.
-//
-// Revision 1.4  2006/07/06 16:52:45  dmendez
-// Faltaba trim al parametro en la getContentType
-//
-// Revision 1.3  2004/12/01 18:21:45  iroqueta
-// Faltaba un close en el addFile.
-//
-// Revision 1.2  2004/10/27 20:54:15  dmendez
-// Soporte de upload control
-//
-// Revision 1.1  2002/04/19 18:10:40  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2002/04/19 18:10:40  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.internet;
 
 import java.io.BufferedInputStream;

@@ -1,39 +1,3 @@
-// $Log: GXDBMSinformix.java,v $
-// Revision 1.10  2007/10/12 18:53:17  cmurialdo
-// No se estaba respetando la propiedad lock timeout en informix.
-//
-// Revision 1.9  2007/07/01 18:54:05  iroqueta
-// Implemento el getDBMSId para Oracle y dejo todo pronto para que se puede implementar en la clase correspondiente a cada DBMS.
-//
-// Revision 1.8  2006/12/18 16:34:17  alevin
-// - (CMuriando) Implementacion de las propiedades "Lock time-out" y "Lock retry count".
-//
-// Revision 1.7  2004/09/20 11:35:09  iroqueta
-// Comento el setCommitedChanges, porque causaba un error de cast cuando se ejecutaba como logged....
-// Igual el setCommitedChanges se hace en el GXConnection.
-//
-// Revision 1.6  2004/09/17 21:45:34  dmendez
-// Messagelist como estructura
-// Soporte de updates optimizados (APC)
-//
-// Revision 1.5  2004/05/27 20:26:52  gusbro
-// - Agrego getId que devuelve un entero identificando el DBMS
-//
-// Revision 1.4  2003/11/04 14:44:31  gusbro
-// - Faltaba un caso duplicate al actualizar un campo unique
-//
-// Revision 1.3  2002/12/06 19:13:32  aaguiar
-// - Se agrego el isAlive. Por ahora hace el getservertime()
-//
-// Revision 1.2  2002/07/04 21:54:40  gusbro
-// Cambios para que compile en J#
-//
-// Revision 1.1.1.1  2002/05/15 21:43:58  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2002/05/15 21:43:58  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.db.driver;
 
 import java.lang.reflect.Method;

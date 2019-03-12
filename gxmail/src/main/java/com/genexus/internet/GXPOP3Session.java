@@ -1,16 +1,4 @@
-// $Log: GXPOP3Session.java,v $
-// Revision 1.3  2006/04/26 22:04:27  alevin
-// - Agrego property Secure
-//
-// Revision 1.2  2006/01/25 19:51:26  iroqueta
-// Implementacion de los metodos skip y getNextUID
-//
-// Revision 1.1  2001/07/04 22:27:22  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/07/04 22:27:22  gusbro
-// GeneXus Java Olimar
-//
+
 package com.genexus.internet;
 
 public class GXPOP3Session implements GXInternetConstants

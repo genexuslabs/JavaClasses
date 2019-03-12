@@ -1,13 +1,4 @@
-// $Log: Base64Decoder.java,v $
-// Revision 1.2  2006/07/04 22:05:51  alevin
-// - Arreglo en el decode, en algunos casos daba ArrayIndexOutOfBounds.
-//
-// Revision 1.1  1999/06/30 15:19:50  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  1999/06/30 15:19:50  gusbro
-// GeneXus Java Olimar
-//
+
 package com.genexus.internet;
 
 import java.io.IOException;

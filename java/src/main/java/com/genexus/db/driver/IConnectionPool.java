@@ -1,11 +1,3 @@
-// $Log: IConnectionPool.java,v $
-// Revision 1.2  2004/09/09 18:44:02  iroqueta
-// Se implement� el soporte para que las TRNs de los EJBs puedan ser manejadas por el contenedor.
-//
-// Revision 1.1  2004/02/13 20:21:28  gusbro
-// - Cambios para que en modelos web si se esta usando un datasource del motor
-//   de servlets que no se use el pool de conexiones
-//
 
 package com.genexus.db.driver;
 import java.sql.Connection;

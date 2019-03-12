@@ -1,13 +1,4 @@
-// $Log: MemoLines.java,v $
-// Revision 1.2  2003/10/03 15:19:36  gusbro
-// - Fix del SAC 13212
-//
-// Revision 1.1.1.1  2001/10/30 14:43:26  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2001/10/30 14:43:26  gusbro
-// GeneXus Java Olimar
-//
+
 
 package com.genexus.util;
 

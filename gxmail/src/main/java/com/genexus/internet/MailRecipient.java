@@ -1,14 +1,3 @@
-// $Log: MailRecipient.java,v $
-// Revision 1.2  2008/10/31 17:28:32  alevin
-// - Cambio para que el encoding de los recipients se haga al armar la lista, sino quedaba mal formado el string y al
-//   recibir el mail no se veian todas las direcciones que estaban en el TO. SAC24284
-//
-// Revision 1.1  2002/04/04 21:00:34  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2002/04/04 21:00:34  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.internet;
 
 import java.io.IOException;

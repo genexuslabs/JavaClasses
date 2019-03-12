@@ -1,10 +1,4 @@
-// $Log: GXJarClassLoader.java,v $
-// Revision 1.1  2001/09/21 20:24:06  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/09/21 20:24:06  gusbro
-// GeneXus Java Olimar
-//
+
 package com.genexus;
 import java.io.*;
 import java.util.*;
@@ -31,12 +25,14 @@ public class GXJarClassLoader extends ClassLoader
     public GXJarClassLoader(String location, boolean autoReload)
 	{
         this.source = location.trim().toLowerCase();
-        this.autoReload = autoReload;        
+        this.autoReload = autoReload;
+        
         sourceIsJAR = new File(source).isFile();
         loadDepth = 0;
         if(!autoReload)openJar();
         if(DEBUG)
-            System.out.println("## GXJarClassLoader: Initialized (autoReloading: " + autoReload + ")");	}
+            System.out.println("## GXJarClassLoader: Initialized (autoReloading: " + autoReload + ")");
+	}
     
     /** Obtiene el ClassLoader asociado. En efecto lo que hace es retornarse a s� mismo en el
      * caso en que el autoReload sea false o que el ClassLoader siga siendo v�lido y sino retorna
@@ -64,7 +60,8 @@ public class GXJarClassLoader extends ClassLoader
     }
 
 	public Class loadClass(String className) throws ClassNotFoundException 
-	{    	Class cls = (loadClass(className, true));
+	{
+    	Class cls = (loadClass(className, true));
         
         return cls;
 	}
@@ -108,7 +105,8 @@ public class GXJarClassLoader extends ClassLoader
 
         // Primero vemos si es una SystemClass
         try 
-    	{        	result = super.findSystemClass(className);
+    	{
+        	result = super.findSystemClass(className);
         	return result;
         }
     	catch (Throwable e) { ; }
@@ -157,7 +155,9 @@ public class GXJarClassLoader extends ClassLoader
 
         // Ahora 'cerramos' el Jar, porque sino no permitimos que se pueda sobreescribir
         // Esto s�lo lo hacemos si este ClassLoader tiene el flag de autoReload marcado
-        // Aparte se 'cierra' unicamente en el caso en que loadDepth sea 1        if(autoReload)closeJar();
+        // Aparte se 'cierra' unicamente en el caso en que loadDepth sea 1
+        if(autoReload)closeJar();
+
     	return result;
 	}
     

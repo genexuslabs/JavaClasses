@@ -1,20 +1,3 @@
-// $Log: MailProperties.java,v $
-// Revision 1.4  2006/11/30 15:14:31  alevin
-// - Cambios para desencodear bien los mensajes japoneses de acuerdo al RFC1468.
-//   Se agrega la clase JapaneseMimeDecoder.
-//
-// Revision 1.3  2006/11/23 16:27:45  alevin
-// - Arreglo para leer bien los subjects que vienen en japones.
-//
-// Revision 1.2  2006/07/10 13:53:38  alevin
-// - En el putKey, el header Received se tiene que guardar solo una vez (el primero).
-//
-// Revision 1.1  2001/12/07 18:11:54  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/12/07 18:11:54  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.internet;
 
 import java.util.Hashtable;

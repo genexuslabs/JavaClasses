@@ -1,26 +1,3 @@
-// $Log: GXReport.java,v $
-// Revision 1.5  2005/10/04 17:29:48  gusbro
-// - Agrego un constructor nuevo que recibe un boolean para saber si ejecutar en una nueva UTL
-//
-// Revision 1.4  2005/07/08 23:09:16  gusbro
-// - Cambio en la openGXReport para que si el nombre del archivo termina en .pdf
-//   te lo abra con el Acrobat
-//
-// Revision 1.3  2004/11/03 16:56:45  iroqueta
-// La implementacion de reportes PDF usando itext solo se usa si se ejecuta con la VM de Sun.
-//
-// Revision 1.2  2004/10/25 15:29:24  iroqueta
-// Implementacion de los reportes PDFs usando la lib iText
-//
-// Revision 1.1  2002/06/10 17:14:42  gusbro
-// Initial revision
-//
-// Revision 1.2  2002/06/10 17:14:41  aaguiar
-// - Se le pasa el context al PDFReport
-//
-// Revision 1.1.1.1  2001/12/11 13:21:46  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.reports;
 
 import com.genexus.GXProcedure;

@@ -7,34 +7,7 @@ import java.util.Vector;
 
 import com.genexus.DebugFlag;
 
-/**
- * $Log: DirectPreparedStatement.java,v $
- * Revision 1.7  2005/11/28 14:14:43  gusbro
- * - Agrego dropCursor
- *
- * Revision 1.6  2005/07/21 15:10:58  iroqueta
- * Implementacion de soporte de JMX
- *
- * Revision 1.5  2005/05/25 15:31:52  iroqueta
- * Se implementa el metodo freeAllCursors para que sea llamado al hacer el disconnect de una conexion en el pool y asegurarnos que todos los contadores que indican si la conexion esta libre queden bien (Programacion defensiva)
- *
- * Revision 1.4  2004/05/25 17:05:09  gusbro
- * - Al hacer un setNotInUse de un CallableStatement no cierro el statement, porque
- *   se pueden pedir los resultados al propio statement. Dejo para cerrarlo en la dropAll
- *
- * Revision 1.3  2004/03/09 18:12:22  gusbro
- * - Cambio un remove por removeElement para que se pueda compilar en J#
- *
- * Revision 1.2  2004/02/25 15:26:27  gusbro
- * - Se cierra el cursor al ejecutarse setNotInUse()
- *
- * Revision 1.1  2003/12/30 22:56:06  gusbro
- * - Esta clase es un replacemente del PreparedStatementeCache para cuando la
- *   conexion es mediante un datasource del motor de servlets. Esta clase no cachea nada
- *   sino que delega el trabajo al datasource
- *
- *
- */
+
 public class DirectPreparedStatement implements IPreparedStatementCache
 {
 	private static final boolean DEBUG       = DebugFlag.DEBUG;

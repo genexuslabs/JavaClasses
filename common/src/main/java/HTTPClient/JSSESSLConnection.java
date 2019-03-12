@@ -1,13 +1,4 @@
-// $Log: JSSESSLConnection.java,v $
-// Revision 1.2  2002/12/18 20:58:19  gusbro
-// -
-//
-// Revision 1.1.1.1  2001/09/07 20:42:08  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2001/09/07 20:42:08  gusbro
-// GeneXus Java Olimar
-//
+
 package HTTPClient;
 
 /**

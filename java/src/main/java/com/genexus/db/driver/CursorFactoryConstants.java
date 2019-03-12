@@ -1,10 +1,4 @@
-// $Log: CursorFactoryConstants.java,v $
-// Revision 1.1  2001/07/20 15:09:44  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/07/20 15:09:44  gusbro
-// GeneXus Java Olimar
-//
+
 
 package com.genexus.db.driver;
 				

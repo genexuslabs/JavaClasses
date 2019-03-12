@@ -1,10 +1,3 @@
-// $Log: GXMailMessage.java,v $
-// Revision 1.1  2001/12/28 20:45:20  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/12/28 20:45:20  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.internet;
 
 import java.util.Date;

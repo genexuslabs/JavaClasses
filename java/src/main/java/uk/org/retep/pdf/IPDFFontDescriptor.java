@@ -1,28 +1,12 @@
-// $Log: IPDFFontDescriptor.java,v $
-// Revision 1.1  2001/04/11 18:36:58  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/04/11 18:36:58  gusbro
-// GeneXus Java Olimar
-//
+
 package uk.org.retep.pdf;
 
-/**
- * Title:
- * Description:
- * Copyright:    Copyright (c) 2001
- * Company: ARTECH
- * @author gb
- * @version 1.0
- */
 
-/**
- *  Esta clase maneja los FontDescriptors de un Font (para los TrueType Fonts)
- */
  public interface IPDFFontDescriptor
  {
 
-       /** Inicializa un PDFObject FontDescriptor con Font embebido
+     
+  /** Inicializa un PDFObject FontDescriptor con Font embebido
    *  @param font PDFFont a describir
    */
    public void init(PDFFont font, boolean embeed);

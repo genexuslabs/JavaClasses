@@ -1,17 +1,4 @@
-// $Log: PDFFontMetrics.java,v $
-// Revision 1.3  2004/03/16 16:12:34  gusbro
-// - Imprimo un hint indicando que probablemente falta hacer un FontSubstitution cuando detecto
-//   que se intenta obtener el width de un caracter mayor a 255
-//
-// Revision 1.2  2004/03/03 18:12:22  gusbro
-// - Cambios para soportar fonts CJK
-//
-// Revision 1.1.1.1  2001/08/10 18:48:48  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2001/08/10 18:48:48  gusbro
-// GeneXus Java Olimar
-//
+
 package uk.org.retep.pdf;
 import java.awt.Font;
 import java.util.Hashtable;

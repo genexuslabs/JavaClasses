@@ -1,10 +1,3 @@
-// $Log: GXTransactionMethods.java,v $
-// Revision 1.1  2001/10/30 14:05:28  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/10/30 14:05:28  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus;
 
 public interface GXTransactionMethods

@@ -1,9 +1,3 @@
-// $Log: WebApplicationStartup.java,v $
-// Revision 1.3  2005/12/02 16:54:19  gusbro
-// - Seteo el httpContext al model context del thread
-//
-//
-
 package com.genexus.webpanels;
 
 import com.genexus.Application;

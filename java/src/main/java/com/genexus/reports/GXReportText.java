@@ -1,22 +1,3 @@
-// $Log: GXReportText.java,v $
-// Revision 1.5  2006/01/31 13:36:31  iroqueta
-// Los form feed solo se mandan si el output es PRN (SAC 18548)
-//
-// Revision 1.4  2005/10/25 21:18:06  alevin
-// - Escribo los Form Feeds en ASCII.
-//
-// Revision 1.3  2005/10/04 17:29:48  gusbro
-// - Agrego un constructor nuevo que recibe un boolean para saber si ejecutar en una nueva UTL
-//
-// Revision 1.2  2005/06/24 18:03:48  gusbro
-// - Convierto los \\n en newlines de la plataforma
-//
-// Revision 1.1  2001/10/29 12:44:14  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/10/29 12:44:14  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.reports;
 
 import java.io.BufferedWriter;

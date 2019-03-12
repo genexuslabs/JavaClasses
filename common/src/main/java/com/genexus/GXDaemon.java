@@ -1,10 +1,3 @@
-// $Log: GXDaemon.java,v $
-// Revision 1.1  2001/10/30 17:30:20  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/10/30 17:30:20  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus;
 
 import com.genexus.common.interfaces.SpecificImplementation;

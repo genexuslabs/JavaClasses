@@ -1,7 +1,3 @@
-/*$Log: GXMasterPage.java,v $
-/*Revision 1.1.2.1  2004/12/13 19:40:17  dmendez
-/*Soporte de MasterPages
-/**/
 package com.genexus.webpanels;
 
 import com.genexus.ModelContext;

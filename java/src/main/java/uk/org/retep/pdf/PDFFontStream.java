@@ -1,10 +1,4 @@
-// $Log: PDFFontStream.java,v $
-// Revision 1.1  2001/06/25 17:15:50  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/06/25 17:15:50  gusbro
-// GeneXus Java Olimar
-//
+
 package uk.org.retep.pdf;
 
 import java.io.ByteArrayOutputStream;

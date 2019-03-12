@@ -1,10 +1,4 @@
-// $Log: PDFJob.java,v $
-// Revision 1.1  2001/03/13 15:05:16  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/03/13 15:05:16  gusbro
-// GeneXus Java Olimar
-//
+
 package uk.org.retep.pdf;
 
 import java.awt.Dimension;

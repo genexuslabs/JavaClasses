@@ -1,23 +1,3 @@
-// $Log: ExecuteDirectSQL.java,v $
-// Revision 1.2  2005/10/20 13:24:28  iroqueta
-// Hago llegar el contexto al getconnection para poder implementar bien los metodos before y after connection
-//
-// Revision 1.1  2001/08/07 17:07:24  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/08/07 17:07:24  gusbro
-// GeneXus Java Olimar
-//
-//
-//   Rev 1.10   23 Sep 1998 19:48:32   AAGUIAR
-//
-//   Rev 1.7   May 29 1998 10:04:54   AAGUIAR
-//	-	Se cambiaron las lecturas de preferences, para
-//		adaptarlas al nuevo modelo.
-//
-//   Rev 1.6   May 28 1998 10:02:16   AAGUIAR
-//Sincro28May1998
-
 package com.genexus;
 
 import java.sql.SQLException;

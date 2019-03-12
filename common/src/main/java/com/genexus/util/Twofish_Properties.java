@@ -1,20 +1,4 @@
-// $Id: Twofish_Properties.java,v 1.1 2001/08/03 20:55:02 gusbro Exp $
-//
-// $Log: Twofish_Properties.java,v $
-// Revision 1.1  2001/08/03 20:55:02  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/08/03 20:55:02  gusbro
-// GeneXus Java Olimar
-//
-// Revision 1.0  1998/03/24  raif
-// + start of history.
-//
-// $Endlog$
-/*
- * Copyright (c) 1997, 1998 Systemics Ltd on behalf of
- * the Cryptix Development Team. All rights reserved.
- */
+
 package com.genexus.util;
 
 import java.io.FileInputStream;

@@ -1,23 +1,3 @@
-/** $Log: SubmitThreadPool.java,v $
-/** Revision 1.6  2007/11/20 19:29:50  iroqueta
-/** El httpContext.getWebSession().invalidate() solo hay que hacerlo cuando el ambiente es web.
-/**
-/** Revision 1.5  2007/10/09 15:20:54  alevin
-/** - Mejoras en la invalidaci�n de la session cuando para cuando se accede a la misma en un thread submit.
-/**
-/** Revision 1.4  2005/07/12 22:11:24  gusbro
-/** - Hago copia de los parametros aunque haya una posicion libre en el pool de threads
-/**
-/** Revision 1.3  2005/03/29 19:58:07  gusbro
-/** - Seteo nombre de los threads de submit
-/**
-/** Revision 1.2  2005/03/15 20:49:55  gusbro
-/** - Arreglo problemas de deadlock y pasaje de parametros
-/**
-/** Revision 1.1  2003/11/04 20:29:06  gusbro
-/** - Agrego pool de threads para submit en web
-/**
- **/
 package com.genexus.util;
 import java.util.Vector;
 

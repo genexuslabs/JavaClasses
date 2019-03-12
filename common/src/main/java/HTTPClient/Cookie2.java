@@ -1,10 +1,3 @@
-// $Log: Cookie2.java,v $
-// Revision 1.1  2001/05/07 02:42:32  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/05/07 02:42:32  gusbro
-// GeneXus Java Olimar
-//
 /*
  * @(#)Cookie2.java					0.3-3 06/05/2001
  *

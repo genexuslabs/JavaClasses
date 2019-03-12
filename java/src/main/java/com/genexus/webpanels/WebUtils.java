@@ -1,13 +1,3 @@
-/** $Log: WebUtils.java,v $
-/** Revision 1.4  2006/03/16 14:43:08  alevin
-/** - Cuando falla el getWebComponent retorna un GXWebComponentNull.
-/**
-/** Revision 1.3  2005/02/10 15:53:28  gusbro
-/** - En la parseDateParm faltaba chequear un caso para determinar si es nullDate
-/**
-/**
- **/
-
 package com.genexus.webpanels;
 
 import java.io.BufferedReader;

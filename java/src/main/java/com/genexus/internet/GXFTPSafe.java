@@ -1,13 +1,4 @@
-// $Log: GXFTPSafe.java,v $
-// Revision 1.2  2002/10/15 18:47:45  aaguiar
-// - Se agrego una funcion gxftpcmd para ejecutar un comando dado
-//
-// Revision 1.1.1.1  2002/04/17 20:09:56  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2002/04/17 20:09:56  gusbro
-// GeneXus Java Olimar
-//
+
 package com.genexus.internet;
 
 import com.genexus.platform.INativeFunctions;

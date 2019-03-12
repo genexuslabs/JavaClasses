@@ -1,12 +1,4 @@
-// $Log: ForEachCursor.java,v $
-// Revision 1.6  2005/09/08 20:30:34  iroqueta
-// Quito el ultimo put porque hacia que la conexion quedara con uncommitedchanges en el caso de las TRNs porque todas los for each cursors tienen currentof.
-// Como el problema le daba solo a delarrobla y era muy dificil que pasara se prefiriio sacar el put anterior.
-//
-// Revision 1.5  2005/05/25 18:50:19  gusbro
-// - En los selects con currentof marco uncommited changes en true
-//
-//
+
 
 package com.genexus.db;
 

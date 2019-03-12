@@ -1,8 +1,4 @@
-// $Log: XSLT.java,v $
-// Revision 1.2  2005/05/10 18:58:56  gusbro
-// Release inicial
-//
-//
+
 
 package com.genexus.util;
 import java.io.*;

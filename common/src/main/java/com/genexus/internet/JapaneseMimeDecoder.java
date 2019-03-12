@@ -1,8 +1,3 @@
-// $Log: JapaneseMimeDecoder.java,v $
-// Revision 1.1.2.1  2006/11/30 15:14:32  alevin
-// - Cambios para desencodear bien los mensajes japoneses de acuerdo al RFC1468.
-//   Se agrega la clase JapaneseMimeDecoder.
-//
 
 package com.genexus.internet;
 

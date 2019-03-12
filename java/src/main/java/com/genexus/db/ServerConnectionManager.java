@@ -1,27 +1,3 @@
-// $Log: ServerConnectionManager.java,v $
-// Revision 1.1  2000/12/27 15:15:52  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2000/12/27 15:15:52  gusbro
-// GeneXus Java Olimar
-//
-//
-//   Rev 1.4   23 Sep 1998 19:48:26   AAGUIAR
-//
-//   Rev 1.3   10 Aug 1998 16:08:34   AAGUIAR
-//- No se mata la conexi�n si est� ejecutando en el cliente.
-//- Se cambiaron \n por System.getProperty("line.separator");
-//
-//   Rev 1.2   Jun 29 1998 14:29:30   AAGUIAR
-//	-	Se hace un throw cuando hay errores de conexion.
-//	-	Se trajo el metodo registerDriver y getNewConnection
-//		del Application.java
-//	-	Se optimizaron algunos loops
-//
-//   Rev 1.1   Jun 02 1998 08:55:52   AAGUIAR
-//	-	Se cambiaron llamadas a m�todos que leian 
-//		valores de preferences en Application por
-//		m�todos que las leen en Preferences.
 
 package com.genexus.db;
 

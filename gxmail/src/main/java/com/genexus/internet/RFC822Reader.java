@@ -1,19 +1,4 @@
-// $Log: RFC822Reader.java,v $
-// Revision 1.4  2006/07/05 19:12:43  alevin
-// - Saco el if(reader.ready()) del metodo readUnreadedBytes.
-//
-// Revision 1.3  2006/07/05 13:44:53  alevin
-// - En el readUnreadedBytes saco el try - catch y agrego el throws.
-//
-// Revision 1.2  2006/07/04 22:07:58  alevin
-// - Agrego el metodo readUnreadedBytes.
-//
-// Revision 1.1  2001/12/10 17:06:10  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/12/10 17:06:10  gusbro
-// GeneXus Java Olimar
-//
+
 package com.genexus.internet;
 
 import java.io.BufferedReader;

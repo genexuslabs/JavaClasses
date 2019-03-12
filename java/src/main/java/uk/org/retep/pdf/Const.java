@@ -1,10 +1,4 @@
-// $Log: Const.java,v $
-// Revision 1.1  2001/05/22 17:09:50  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/05/22 17:09:50  gusbro
-// GeneXus Java Olimar
-//
+
 package uk.org.retep.pdf;
 
 public interface Const

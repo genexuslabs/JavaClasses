@@ -1,10 +1,3 @@
-// $Log: GXObjectHelper.java,v $
-// Revision 1.1  2001/08/24 21:21:30  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/08/24 21:21:30  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus;
 
 

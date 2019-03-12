@@ -1,19 +1,4 @@
-// $Log: TypeConstants.java,v $
-// Revision 1.4  2004/05/19 19:17:06  gusbro
-// - Agrego constantes para collections y arrays
-//
-// Revision 1.3  2003/03/12 15:35:13  gusbro
-// - Cambios para J# (la interfaz pasa a ser una clase)
-//
-// Revision 1.2  2002/12/04 21:43:41  aaguiar
-// - Se bancan BLOBs
-//
-// Revision 1.1.1.1  2002/03/26 17:18:28  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2002/03/26 17:18:28  gusbro
-// GeneXus Java Olimar
-//
+
 package com.genexus;
 
 public class TypeConstants

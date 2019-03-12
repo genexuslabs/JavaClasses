@@ -1,10 +1,4 @@
-// $Log: Utilities.java,v $
-// Revision 1.1  2001/08/09 18:37:20  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/08/09 18:37:20  gusbro
-// GeneXus Java Olimar
-//
+
 package uk.org.retep.pdf;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;

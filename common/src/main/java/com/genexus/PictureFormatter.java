@@ -1,23 +1,4 @@
-// $Log: PictureFormatter.java,v $
-// Revision 1.5  2006/12/01 20:24:10  iroqueta
-// Cambio para que las pictures de los date puedan quedar todos vacios si el valor es empty.
-// Developed by Claudia
-//
-// Revision 1.4  2004/05/25 20:18:53  gusbro
-// - Arreglo para que funcionen las pictures tipo ZZZ.Z9
-//
-// Revision 1.3  2003/03/17 19:11:35  gusbro
-// - Cambios para soportar pictures del tipo $,$$$,$$$.99 en reportes
-//
-// Revision 1.2  2002/07/23 18:53:07  aaguiar
-// - Arreglo en la IsTimeInPicture para que banque pictures 99-99-99 99
-//
-// Revision 1.1.1.1  2000/12/06 21:00:42  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2000/12/06 21:00:42  gusbro
-// GeneXus Java Olimar
-//
+
 package com.genexus;
 
 import com.genexus.common.interfaces.SpecificImplementation;

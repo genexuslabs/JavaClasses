@@ -1,26 +1,3 @@
-// $Log: XMLWriter.java,v $
-// Revision 1.10  2004/05/20 16:54:50  gusbro
-// - No estaba funcionando los numericos con BigDecimal
-//
-// Revision 1.9  2003/10/22 15:38:36  gusbro
-// - paso la normalizeEncoding a la GXutil
-//
-// Revision 1.8  2003/09/09 21:03:25  gusbro
-// - Cuando el encoding es UTF8 ponemos UTF-8
-//
-// Revision 1.7  2003/06/30 21:59:40  gusbro
-// - Arreglos para considerar el encoding al utilizar el httpClient.openRequest
-//
-// Revision 1.6  2003/06/30 20:06:46  gusbro
-// - No estaba quedando bien seteado el encoding en el xml si no se pasaba
-//   ningun encoding en la writeStartDocument
-//
-// Revision 1.5  2003/04/09 19:57:27  gusbro
-// - Cuando se tiene el encoding ISO8859_xxx se pasa a ISO-8859-xxx
-//
-// Revision 1.4  2003/03/13 18:33:28  gusbro
-// - Cambios en el manejo de los encodings
-//
 
 package com.genexus.xml;
 

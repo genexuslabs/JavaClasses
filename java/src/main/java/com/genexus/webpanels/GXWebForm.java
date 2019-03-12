@@ -1,12 +1,3 @@
-/*$Log: GXWebForm.java,v $
-/*Revision 1.1.2.2  2006/10/26 15:38:16  alevin
-/*- Renombro el setClass a setThemeClass y el getCSSClass a getThemeClass.
-/*
-/*Revision 1.1.2.1  2005/03/28 15:50:22  dmendez
-/*Se implementa objeto form para poder manejarlo en master pages como unico
-/*para el master page y placeholder.
-/**/
-
 package com.genexus.webpanels;
 
 public class GXWebForm

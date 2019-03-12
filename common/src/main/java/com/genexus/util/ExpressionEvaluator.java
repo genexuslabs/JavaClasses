@@ -1,8 +1,3 @@
-// $Log: ExpressionEvaluator.java,v $
-// Revision 1.1  2006/02/14 20:06:24  gusbro
-// Release inicial
-//
-//
 
 package com.genexus.util;
 

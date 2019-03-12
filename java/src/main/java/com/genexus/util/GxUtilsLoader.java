@@ -1,15 +1,4 @@
-// $Log: GxUtilsLoader.java,v $
-// Revision 1.4  2005/09/20 13:16:39  alevin
-// - Agrego llamado al Client Config.
-//
-// Revision 1.3  2005/05/25 16:05:00  gusbro
-// - Agrego un catch para imprimir errores de invocacion
-//
-// Revision 1.2  2005/05/13 15:33:28  gusbro
-// - Release Inicial
-//
-//
-package com.genexus.util; 
+package com.genexus.util;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -107,7 +96,8 @@ public class GxUtilsLoader extends ClassLoader
 	
 	
 	public Class loadClass(String className) throws ClassNotFoundException 
-	{		Class cls = (loadClass(className, true));
+	{
+		Class cls = (loadClass(className, true));
 		
 		return cls;
 	}
@@ -154,7 +144,8 @@ public class GxUtilsLoader extends ClassLoader
 
 		// Primero vemos si es una SystemClass
 		try 
-		{			result = super.findSystemClass(className);
+		{
+			result = super.findSystemClass(className);
 			return result;
 		}
 		catch (Throwable e) { ; }

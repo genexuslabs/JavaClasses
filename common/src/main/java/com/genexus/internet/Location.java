@@ -1,22 +1,3 @@
-// $Log: Location.java,v $
-// Revision 1.5  2006/06/14 12:20:06  iroqueta
-// Agrego propiedades Proxyauthentication, Proxyauthenticationmethod, Proxyauthenticationuser, Proxyauthenticationrealm y Proxyauthenticationpassword
-//
-// Revision 1.4  2006/06/12 18:35:47  iroqueta
-// Implementacion de las propiedades ProxyServerHost y ProxyServerPort para el tipo de datos location
-//
-// Revision 1.3  2005/09/08 17:23:57  iroqueta
-// Agrego la propiedad GroupLocation
-//
-// Revision 1.2  2004/02/17 19:34:04  gusbro
-// - Agrego property CancelOnError
-//
-// Revision 1.1.1.1  2001/12/27 19:11:58  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2001/12/27 19:11:58  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.internet;
 
 public class Location

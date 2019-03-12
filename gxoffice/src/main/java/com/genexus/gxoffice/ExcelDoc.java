@@ -1,18 +1,3 @@
-// $Log: ExcelDoc.java,v $
-// Revision 1.5  2006/06/07 17:33:19  alevin
-// - Cambio en el Open para soportar path relativos en web.
-//
-// Revision 1.4  2005/07/12 19:00:04  gusbro
-// - Cambios para permitir usar POI
-//
-// Revision 1.3  2005/07/12 18:38:25  gusbro
-// - Cambios para permitir usar POI
-//
-// Revision 1.1  2005/07/12 17:38:20  gusbro
-// Release inicial
-//
-//
-
 package com.genexus.gxoffice;
 import java.util.*;
 import java.io.*;

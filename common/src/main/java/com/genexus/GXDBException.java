@@ -1,10 +1,4 @@
-// $Log: GXDBException.java,v $
-// Revision 1.1  1999/08/04 01:05:54  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  1999/08/04 01:05:54  gusbro
-// GeneXus Java Olimar
-//
+
 package com.genexus;
 
 import com.genexus.common.classes.AbstractModelContext;

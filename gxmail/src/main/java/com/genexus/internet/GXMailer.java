@@ -1,10 +1,4 @@
-// $Log: GXMailer.java,v $
-// Revision 1.1  2002/04/18 19:26:48  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2002/04/18 19:26:48  gusbro
-// GeneXus Java Olimar
-//
+
 package com.genexus.internet;
 
 

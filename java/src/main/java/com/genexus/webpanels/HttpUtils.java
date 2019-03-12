@@ -8,30 +8,6 @@ import java.util.StringTokenizer;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 
-// Referenced classes of package javax.servlet.http:
-//            HttpServletRequest
-
-/** Esta clase es una modificacion de javax.servlet.http.HttpUtils.
- * La diferencia es que los datos del POST se leen con el encoding UTF-8
- * $Log: HttpUtils.java,v $
- * Revision 1.5  2006/03/02 12:46:44  dmendez
- * Faltaba pasar parametro el getstring del multipartform para 'avisarle'
- * que el encoding es UTF8.
- *
- * Revision 1.4  2004/12/16 20:53:05  dmendez
- * Soporte de confirmacion con upload controls
- *
- * Revision 1.3  2004/10/27 20:54:15  dmendez
- * Soporte de upload control
- *
- * Revision 1.2  2004/02/17 19:43:19  gusbro
- * - Si falla la conversion utilizando UTF-8 utilizo el encoding de la VM
- *
- * Revision 1.1  2004/02/17 19:29:59  gusbro
- * - Cambios para trabajar con UTF-8
- *
- */
-
 public class HttpUtils
 {
 

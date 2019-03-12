@@ -1,14 +1,3 @@
-/**$Log: GXWebPanel.java,v $
-/**Revision 1.4  2005/02/24 22:00:23  iroqueta
-/**Soporte para poder llamar webpanels desde procs.
-/**
-/**Revision 1.3  2004/12/13 19:40:17  dmendez
-/**Soporte de MasterPages
-/**
-/**Revision 1.2  2003/08/15 20:39:42  gusbro
-/**- Muevo la formatLink para la GXWebObjectBase
-/**
- */
 package com.genexus.webpanels;
 
 import java.io.BufferedOutputStream;

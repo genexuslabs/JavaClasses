@@ -1,25 +1,3 @@
-// $Log: SunGXReportViewer.java,v $
-// Revision 1.6  2005/01/21 21:02:10  iroqueta
-// Se puso publica la clase para poder usarla desde el ThreadedCommandQueue.java
-//
-// Revision 1.5  2004/04/13 18:43:24  gusbro
-// - Arreglos para fonts asiaticos
-//
-// Revision 1.4  2004/03/22 17:17:46  gusbro
-// - Por un cambio en la rbuildj.dll estaban quedando deshabilitadas las opciones Open y Save As
-//
-// Revision 1.3  2004/03/15 19:04:01  gusbro
-// - Arreglo en llamada a la dll cuando se tenian encodings asiaticos
-//
-// Revision 1.2  2002/10/30 19:00:33  gusbro
-// - Se agrega la GxGetMainFrameHandle que obtiene el handle del frame del reportViewer
-//
-// Revision 1.1.1.1  2001/07/30 21:32:34  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2001/07/30 21:32:34  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.reports;
 
 import java.io.File;

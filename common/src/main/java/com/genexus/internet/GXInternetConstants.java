@@ -1,19 +1,4 @@
-// $Log: GXInternetConstants.java,v $
-// Revision 1.4  2006/07/07 20:24:59  alevin
-// - Agrego constante RECEIVED.
-//
-// Revision 1.3  2006/07/05 19:15:26  alevin
-// - Agrego MAIL_LastNotSupported.
-//
-// Revision 1.2  2002/09/02 19:48:29  aaguiar
-// - Se cambio el casing de content-type
-//
-// Revision 1.1.1.1  2000/11/22 16:28:44  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2000/11/22 16:28:44  gusbro
-// GeneXus Java Olimar
-//
+
 package com.genexus.internet;
 
 public interface GXInternetConstants

@@ -1,13 +1,3 @@
-// $Log: ServletEventListener.java,v $
-// Revision 1.3  2006/10/06 21:00:22  alevin
-// - Implementacion del borrado de blobs temporales cuando se destruye el contexto o cuando
-//   se destruyen las sessiones.
-//
-// Revision 1.2  2005/11/16 14:42:00  gusbro
-// - Agrego un try-catch al ApplicationServer.shutdown()
-//
-//
-
 package com.genexus.webpanels;
 import java.sql.Driver;
 import java.sql.DriverManager;

@@ -1,20 +1,4 @@
-// $Log: DecimalUtil.java,v $
-// Revision 1.5  2006/03/09 17:30:20  alevin
-// - En el unexponentString hago un trim del String recibido.
-//
-// Revision 1.4  2005/11/01 13:00:03  alevin
-// - Agrego el metodo unscientificString para convertir un BigDecimal a un String sin
-//   notacion cientifica.
-//
-// Revision 1.3  2002/09/13 22:34:31  aaguiar
-// - La unexponentString devuelve 0 si falla la conversion a numerico.
-//
-// Revision 1.2  2002/07/05 17:02:17  aaguiar
-// - Se definio la pow para BigDecimals
-//
-// Revision 1.1.1.1  2002/03/01 15:20:56  gusbro
-// GeneXus Java Olimar
-//
+
 package com.genexus;
 
 import java.math.BigDecimal;

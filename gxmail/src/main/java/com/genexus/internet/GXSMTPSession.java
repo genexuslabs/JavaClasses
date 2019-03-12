@@ -1,13 +1,4 @@
-// $Log: GXSMTPSession.java,v $
-// Revision 1.2  2006/04/26 22:04:27  alevin
-// - Agrego property Secure
-//
-// Revision 1.1  2001/10/24 19:33:06  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/10/24 19:33:06  gusbro
-// GeneXus Java Olimar
-//
+
 package com.genexus.internet;
 
 public class GXSMTPSession 

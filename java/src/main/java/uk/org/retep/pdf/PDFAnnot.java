@@ -1,10 +1,4 @@
-// $Log: PDFAnnot.java,v $
-// Revision 1.1  2000/02/08 11:55:06  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2000/02/08 11:55:06  gusbro
-// GeneXus Java Olimar
-//
+
 package uk.org.retep.pdf;
 
 import java.io.IOException;

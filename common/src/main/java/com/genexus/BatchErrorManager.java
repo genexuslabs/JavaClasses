@@ -1,13 +1,4 @@
-// $Log: BatchErrorManager.java,v $
-// Revision 1.2  2002/08/27 23:10:32  gusbro
-// - emprolijamiento
-//
-// Revision 1.1.1.1  1999/11/30 14:18:42  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  1999/11/30 14:18:42  gusbro
-// GeneXus Java Olimar
-//
+
 package com.genexus;
 
 public class BatchErrorManager implements ErrorManager

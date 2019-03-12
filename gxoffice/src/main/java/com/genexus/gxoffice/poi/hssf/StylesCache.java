@@ -1,10 +1,3 @@
-// $Log: StylesCache.java,v $
-// Revision 1.1.2.1  2007/05/23 19:21:33  alevin
-// - Se estaban creando styles y fonts cada vez que se modificabauna celda; se implementa un cache para los
-//   styles y se agrega el metodo getInternalFont que busca un font y si no esta lo crea. SAC21801.
-//
-//
-
 package com.genexus.gxoffice.poi.hssf;
 
 import org.apache.poi.hssf.util.HSSFColor;

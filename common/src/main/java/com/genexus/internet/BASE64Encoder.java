@@ -1,27 +1,3 @@
-// $Log: BASE64Encoder.java,v $
-// Revision 1.3  2004/11/30 19:23:35  iroqueta
-// Se cambia el encodeBuffer(InputStream in, OutputStream out) para arreglar el SAC 17216
-//
-// Revision 1.2  2004/09/01 18:43:33  iroqueta
-// Arreglo para cuando se manda mail con Qmail..
-// Se esta codificando el mensaje con un \\r\\n en lugar de solo un \\n
-//
-// Revision 1.1  2001/07/31 17:07:20  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/07/31 17:07:20  gusbro
-// GeneXus Java Olimar
-//
-/*
- * $Id: BASE64Encoder.java,v 1.3 2004/11/30 19:23:35 iroqueta Exp $
- *
- * Copyright 1997 Hewlett-Packard Company
- *
- * This file may be copied, modified and distributed only in
- * accordance with the terms of the limited licence contained
- * in the accompanying file LICENSE.TXT.
- */
-
 package com.genexus.internet;
 
 import java.io.*;

@@ -1,16 +1,3 @@
-// $Log: NetComponentsFTPClient.java,v $
-// Revision 1.3  2004/11/08 18:07:07  iroqueta
-// Arreglo en el put para solucionar el SAC 17115
-//
-// Revision 1.2  2002/10/15 18:47:45  aaguiar
-// - Se agrego una funcion gxftpcmd para ejecutar un comando dado
-//
-// Revision 1.1.1.1  2002/03/08 14:19:42  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2002/03/08 14:19:42  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.internet;
 
 import java.io.BufferedInputStream;

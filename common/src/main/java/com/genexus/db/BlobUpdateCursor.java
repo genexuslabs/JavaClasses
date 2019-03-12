@@ -1,15 +1,3 @@
-/**
- * $Log: BlobUpdateCursor.java,v $
- * Revision 1.3  2005/11/28 14:06:51  gusbro
- * - Se estaban 'perdiendo' cursores
- *
- * Revision 1.2  2005/09/02 23:19:43  gusbro
- * - Agrego soporte para grabar nulos en los campos blob de Oracle
- *
- * Revision 1.1  2004/03/17 20:04:02  gusbro
- * - Agrego soporte de blobs para Oracle
- *
- */
 package com.genexus.db;
 
 import java.util.*;

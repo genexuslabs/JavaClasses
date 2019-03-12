@@ -1,4 +1,3 @@
-// $Log: HttpAjaxContext.java,v $
 package com.genexus.internet;
 
 import java.util.ArrayList;

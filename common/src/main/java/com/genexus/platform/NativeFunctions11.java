@@ -1,8 +1,3 @@
-// $Log: NativeFunctions11.java,v $
-// Revision 1.4  2005/05/25 16:45:36  gusbro
-// - Agrego manejo de variables per thread
-//
-//
 package com.genexus.platform;
 
 import com.genexus.*;

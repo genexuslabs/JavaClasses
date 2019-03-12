@@ -1,20 +1,4 @@
-// $Log: Type1FontMetrics.java,v $
-// Revision 1.4  2004/10/25 15:30:05  iroqueta
-// Implementacion de los reportes PDFs usando la lib iText
-//
-// Revision 1.3  2004/03/03 19:37:16  gusbro
-// - El Acrobat 5 usa distintos nombres de font para los chinos y coreanos, asi que metemos alias nuevos
-//   para ellos
-//
-// Revision 1.2  2004/03/03 18:12:22  gusbro
-// - Cambios para soportar fonts CJK
-//
-// Revision 1.1.1.1  2001/08/10 18:21:34  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2001/08/10 18:21:34  gusbro
-// GeneXus Java Olimar
-//
+
 package uk.org.retep.pdf;
 
 /* Esta clase provee de las m�tricas de los fonts Type1 utilizados por Adobe

@@ -1,9 +1,3 @@
-// $Log: TLSConnection.java,v $
-// Revision 1.1.2.1  2006/04/26 22:02:43  alevin
-// - Initial Revision.
-//
-//
-
 package HTTPClient;
 
 import java.net.Socket;

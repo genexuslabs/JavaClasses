@@ -1,20 +1,3 @@
-// $Log: CharacterEncoder.java,v $
-// Revision 1.1  2000/11/22 16:28:02  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2000/11/22 16:28:02  gusbro
-// GeneXus Java Olimar
-//
-/*
- * $Id: CharacterEncoder.java,v 1.1 2000/11/22 16:28:02 gusbro Exp $
- * 
- * Copyright 1997 Hewlett-Packard Company
- * 
- * This file may be copied, modified and distributed only in
- * accordance with the terms of the limited licence contained
- * in the accompanying file LICENSE.TXT.
- */
-
 package com.genexus.internet;
 
 import java.io.*;

@@ -1,10 +1,3 @@
-// $Log: AuthorizationHandler.java,v $
-// Revision 1.1  2001/07/20 16:43:38  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/07/20 16:43:38  gusbro
-// GeneXus Java Olimar
-//
 /*
  * @(#)AuthorizationHandler.java			0.3-3 06/05/2001
  *

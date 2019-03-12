@@ -1,30 +1,9 @@
-// $Log: Codecs.java,v $
-// Revision 1.3  2006/07/04 22:04:59  alevin
-// - En el base64Decode(byte[]) habia casos muy particulares en que leyendo un mail daba
-//    ArrayIndexOutOfBounds.
-//
-// Revision 1.2  2005/04/26 18:14:54  dmendez
-// Se puso el codigo para hacer encode/decode de los valores en urls.
-// El codigo se obtuvo del jdk 1.4 clases urlencode urldecode para no requerir jdk 1.4.
-//
-// Revision 1.1  2001/10/30 18:47:34  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/10/30 18:47:34  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.util;
 
 import java.io.*;
 import java.util.*;
 
 
-/**
- * This class collects various encoders and decoders.
- *
- * @version	0.3-3  06/05/2001
- * @author	Ronald Tschal�r
- */
 public class Codecs
 {
     private static byte[]  Base64EncMap, Base64DecMap;

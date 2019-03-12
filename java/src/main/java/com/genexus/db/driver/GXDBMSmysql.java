@@ -1,37 +1,3 @@
-// $Log: GXDBMSmysql.java,v $
-// Revision 1.11  2006/12/18 16:34:17  alevin
-// - (CMuriando) Implementacion de las propiedades "Lock time-out" y "Lock retry count".
-//
-// Revision 1.9  2005/08/02 18:08:07  gusbro
-// - Saco un mensaje de debug que estaba 'colado' desde rev 1.2
-//
-// Revision 1.8  2005/07/22 23:52:23  gusbro
-// - Agrego caso para ignorar el 'create database' error
-//
-// Revision 1.7  2005/04/05 17:53:29  iroqueta
-// En el metodo ObjectNotFound se agrega tambien el error 1025 para el caso del DROP FOREIGN KEY cuando no existe.
-// El error que retorna el MySQL no es del todo correcto no deberia de ser 1025 porque ese se refiere al rename.
-//
-// Revision 1.6  2004/09/17 21:45:34  dmendez
-// Messagelist como estructura
-// Soporte de updates optimizados (APC)
-//
-// Revision 1.5  2004/05/27 20:26:52  gusbro
-// - Agrego getId que devuelve un entero identificando el DBMS
-//
-// Revision 1.4  2004/05/05 17:50:29  dmendez
-// El error 1064 aparecia como error de acceso pero tambien es un sintaz error asi que se saco.
-//
-// Revision 1.3  2004/04/29 20:37:53  dmendez
-// ObjectLocked retornaba true haciendo que los errores de update reintentaran indefinidamente.
-//
-// Revision 1.2  2004/04/28 22:33:19  dmendez
-// Se maneja problema con commit/rollback si autocommit=true
-//
-// Revision 1.1  2004/04/27 21:30:11  dmendez
-// soporte mysql
-//
-
 package com.genexus.db.driver;
 
 import java.sql.Connection;

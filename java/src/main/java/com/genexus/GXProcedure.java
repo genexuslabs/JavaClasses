@@ -1,44 +1,4 @@
-// $Log: GXProcedure.java,v $
-// Revision 1.11  2006/05/26 16:38:29  iroqueta
-// El arreglo del put anterior solo tiene sentido para 3 capas.
-// Le puse que solo se corra en el caso de 3 capas, porque sino da un error de nullpointer al ejecutar un EJB porque el context.prefs es nulo en ese caso.
-//
-// Revision 1.10  2006/04/05 20:21:30  alevin
-// - Arreglo en el constructor para que si las preferences no tienen NAME_SPACE
-//   se lo agrego. Pasaba por ejemplo en el beforeConnect en tres capas que las
-//   server preferences no lo tienen.
-//
-// Revision 1.9  2005/10/04 17:27:04  aaguiar
-// - Arreglo al put anterior
-//
-// Revision 1.8  2005/09/28 20:27:24  aaguiar
-// - Arreglo para execute in new UTL en appserver
-//
-// Revision 1.7  2005/07/22 23:18:18  iroqueta
-// Agrego ifdefs para que no de problemas JMX en .NET
-//
-// Revision 1.6  2005/07/21 15:06:48  iroqueta
-// Implementacion de soporte de JMX
-//
-// Revision 1.5  2005/03/28 20:53:39  iroqueta
-// Implementacion de Message Driven Bean.
-// Agrego la propiedad ejbMessageCall para determinar cuando se esta llamando a un Message Driven Bean o a un Session Bean.
-//
-// Revision 1.4  2005/03/15 21:09:16  gusbro
-// - Cambios para soportar pool de threads de submit
-//
-// Revision 1.3  2005/02/24 22:00:50  iroqueta
-// Soporte para poder llamar webpanels desde procs.
-//
-// Revision 1.2  2004/02/19 20:12:42  gusbro
-// - Cambios para soportar ejecutar el proc en una nueva UTL
-//
-// Revision 1.1.1.1  2002/04/19 17:38:06  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2002/04/19 17:38:06  gusbro
-// GeneXus Java Olimar
-//
+
 package com.genexus;
 
 import java.sql.SQLException;

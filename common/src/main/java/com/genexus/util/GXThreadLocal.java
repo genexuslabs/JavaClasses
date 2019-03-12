@@ -1,8 +1,3 @@
-// $Log: GXThreadLocal.java,v $
-// Revision 1.1  2005/05/25 16:41:11  gusbro
-// Release Inicial
-//
-//
 
 package com.genexus.util;
 import com.genexus.common.interfaces.SpecificImplementation;

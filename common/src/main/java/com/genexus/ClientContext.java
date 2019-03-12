@@ -1,10 +1,3 @@
-// $Log: ClientContext.java,v $
-// Revision 1.1  2001/12/28 19:44:46  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/12/28 19:44:46  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus;
 
 import com.genexus.common.classes.AbstractModelContext;

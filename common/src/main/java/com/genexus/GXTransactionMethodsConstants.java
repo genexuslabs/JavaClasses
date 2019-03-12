@@ -1,10 +1,4 @@
-// $Log: GXTransactionMethodsConstants.java,v $
-// Revision 1.1  2002/07/17 19:11:53  gusbro
-// Pasaje de Interfaz a Clase para que marche con C#
-//
-// Revision 1.1.1.1  2001/10/30 14:05:28  gusbro
-// GeneXus Java Olimar
-//
+
 package com.genexus;
 
 public class GXTransactionMethodsConstants

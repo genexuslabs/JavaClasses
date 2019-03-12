@@ -1,30 +1,3 @@
-// $Log: MsgList.java,v $
-// Revision 1.7  2006/01/25 17:13:20  alevin
-// - Cambio el tipo de DisplayMode de byte a short.
-//
-// Revision 1.6  2004/09/21 19:58:51  dmendez
-// MsgList se deriva de Vector como estaba antes.
-//
-// Revision 1.5  2004/09/21 18:12:23  dmendez
-// Se manejan los mensajes en la clase Msg
-//
-// Revision 1.4  2004/09/19 18:29:15  dmendez
-// Soporte de type en mensajes.
-// Metodo size y alementAt en collections
-//
-// Revision 1.3  2004/09/17 21:45:34  dmendez
-// Messagelist como estructura
-// Soporte de updates optimizados (APC)
-//
-// Revision 1.2  2003/03/11 20:13:46  gusbro
-// - Se agregan los metodos setDisplaymode y getDisplaymode
-//
-// Revision 1.1.1.1  2002/01/10 19:57:06  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2002/01/10 19:57:06  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.internet;
 
 import java.util.Vector;

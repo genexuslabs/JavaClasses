@@ -5,17 +5,7 @@ import java.util.Date;
 
 import com.genexus.GXutil;
 
-/** $Log: CacheKey.java,v $
-/** Revision 1.3  2005/07/21 15:10:38  iroqueta
-/** Implementacion de soporte de JMX
-/**
-/** Revision 1.2  2004/02/19 17:08:56  gusbro
-/** .
-/**
-/** Revision 1.1  2004/02/10 16:41:09  gusbro
-/** - Release inicial
-/**
- */
+
 @SuppressWarnings("serial")
 public class CacheKey implements Serializable
 {

@@ -1,34 +1,4 @@
-// $Log: POP3Session.java,v $
-// Revision 1.8  2006/08/10 20:14:42  alevin
-// - Cambio en el getConnectionSocket, si se esta con la VM de MS no se crea un secure
-//   socket.
-//
-// Revision 1.7  2006/07/07 20:26:39  alevin
-// - Arreglo en el receive para que se seteen bien las propiedades DateSent y DateReceived.
-//
-// Revision 1.6  2006/07/05 19:14:34  alevin
-// - En el doCommand, hay casos que con gmail viene una linea antes de la respuesta cuando
-//   se manda un comando RETR.
-//   En el login se da el error MAIL_LastNotSupported si da error el comando LAST.
-//
-// Revision 1.5  2006/07/05 13:46:10  alevin
-// - En el receive hago un setHtmltext sel GXMailMessage.
-//
-// Revision 1.4  2006/04/26 22:04:47  alevin
-// - Agrego soporte de conexiones seguras.
-//
-// Revision 1.3  2006/01/25 19:51:39  iroqueta
-// Implementacion de los metodos skip y getNextUID
-//
-// Revision 1.2  2002/08/12 17:19:16  gusbro
-// - fix: se arreglan problemas con el directorio de los attachments
-//
-// Revision 1.1.1.1  2002/04/17 20:17:12  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2002/04/17 20:17:12  gusbro
-// GeneXus Java Olimar
-//
+
 package com.genexus.internet;
 
 import java.io.BufferedReader;

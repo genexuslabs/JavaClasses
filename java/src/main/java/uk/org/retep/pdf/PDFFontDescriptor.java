@@ -1,22 +1,4 @@
-// $Log: PDFFontDescriptor.java,v $
-// Revision 1.4  2005/03/11 22:12:26  iroqueta
-// Arreglo para que no se consuma memoria cuando se quiere usar un font TrueType
-//
-// Revision 1.3  2004/10/25 15:30:05  iroqueta
-// Implementacion de los reportes PDFs usando la lib iText
-//
-// Revision 1.2  2004/03/03 18:12:22  gusbro
-// - Cambios para soportar fonts CJK
-//
-// Revision 1.1.1.1  2002/06/24 20:39:36  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.2  2002/06/24 20:39:36  gusbro
-// *** empty log message ***
-//
-// Revision 1.1.1.1  2001/08/22 18:20:14  gusbro
-// GeneXus Java Olimar
-//
+
 package uk.org.retep.pdf;
 import java.awt.Font;
 import java.io.BufferedInputStream;

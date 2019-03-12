@@ -1,6 +1,3 @@
-// $Log:
-//
-
 package com.genexus.webpanels;
 
 import javax.servlet.http.HttpSessionActivationListener;

@@ -1,29 +1,4 @@
-// $Log: ResourceReader.java,v $
-// Revision 1.7  2005/11/18 22:58:03  aaguiar
-// - Cambio para JSharp
-//
-// Revision 1.6  2005/11/09 14:22:48  aaguiar
-// - Cambios para JSharp
-//
-// Revision 1.5  2004/04/27 22:10:24  gusbro
-// - Saco un printStackTrace
-//
-// Revision 1.4  2004/04/07 19:28:51  gusbro
-// - Faltaba un caso en el put anterior
-//
-// Revision 1.3  2004/04/07 18:32:10  gusbro
-// - En JSharp los nombres de bitmaps de las GXResources van en min�scula
-//
-// Revision 1.2  2004/01/16 18:13:19  gusbro
-// - En servlets, al hacer un getFile con path relativo en vez de ir a buscar al directorio actual del motor
-//   de servlets, se va a buscar a partir de la servletDefaultPath
-//
-// Revision 1.1.1.1  2002/03/27 20:22:14  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2002/03/27 20:22:14  gusbro
-// GeneXus Java Olimar
-//
+
 package com.genexus;
 
 import java.io.*;

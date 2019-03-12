@@ -1,10 +1,3 @@
-// $Log: QuotedPrintableDecoder.java,v $
-// Revision 1.1  2001/10/30 21:55:32  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/10/30 21:55:32  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.internet;
 
 import java.io.BufferedReader;

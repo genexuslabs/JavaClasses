@@ -1,11 +1,3 @@
-// $Log: Msg.java,v $
-// Revision 1.2  2006/02/06 17:03:54  gusbro
-// - Implementa Serializable
-//
-// Revision 1.1  2004/09/21 18:11:44  dmendez
-// Mensajes de error
-//
-
 package com.genexus.internet;
 
 import json.org.json.IJsonFormattable;

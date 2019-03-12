@@ -1,33 +1,3 @@
-// $Log: ExcelDocument.java,v $
-// Revision 1.7  2007/05/23 19:21:33  alevin
-// - Se estaban creando styles y fonts cada vez que se modificabauna celda; se implementa un cache para los
-//   styles y se agrega el metodo getInternalFont que busca un font y si no esta lo crea. SAC21801.
-//
-// Revision 1.6  2007/05/09 17:38:18  alevin
-// - Cambios para poder abrir un archivo de Excel en forma readonly. SAC 22260
-//
-// Revision 1.5  2006/10/18 16:02:28  alevin
-// - No estaba funcionando el SelectSheet.
-//
-// Revision 1.4  2006/06/05 20:39:40  alevin
-// - Arreglo para que se pueda aplicar un template.
-//
-//
-/*
- * Created on 23/06/2005
- * 
- * 13/7/5 Willy:
- * 		Cambio de package
- * 		Se implementa IExcelDocument
- * 
- * 12/7/5 Willy: entran los fuentes al svn	
- * 
- * 9/7/5  Diego: 
- * 		GxError support added
- * 				
- *
- */
- 
 package com.genexus.gxoffice.poi.hssf;
 
 import org.apache.poi.hssf.usermodel.HSSFRow;

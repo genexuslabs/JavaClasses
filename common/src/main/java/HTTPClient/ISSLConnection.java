@@ -1,10 +1,4 @@
-// $Log: ISSLConnection.java,v $
-// Revision 1.1  2001/09/05 15:25:56  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/09/05 15:25:56  gusbro
-// GeneXus Java Olimar
-//
+
 package HTTPClient;
 
 /**

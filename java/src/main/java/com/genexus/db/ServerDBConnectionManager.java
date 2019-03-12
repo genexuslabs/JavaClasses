@@ -1,28 +1,3 @@
-// $Log: ServerDBConnectionManager.java,v $
-// Revision 1.7  2005/05/26 21:17:09  iroqueta
-// En el killConnection hago catch de una exception mas general, para que termine el proceso
-//
-// Revision 1.6  2004/09/09 18:44:02  iroqueta
-// Se implement� el soporte para que las TRNs de los EJBs puedan ser manejadas por el contenedor.
-//
-// Revision 1.5  2003/09/18 21:16:20  gusbro
-// - Cambios para que la ejecucion del proc 'onDisconnect' no sea tenida en cuenta en modelos web
-//
-// Revision 1.4  2003/09/04 17:51:41  gusbro
-// - Atrapo excepcion en onDisconnect
-//
-// Revision 1.3  2002/11/06 19:33:05  gusbro
-// - fix: en el killConnections() el for tenia mal puesta la condicion de fin, ahora se podria sacar el try-catch que lo envuelve
-//
-// Revision 1.2  2002/09/23 18:02:39  gusbro
-// - Al desconectar un usuario se ejecuta el proc indicado en el server.cfg con el entry (OnDisconnect)
-//
-// Revision 1.1.1.1  2001/10/29 17:16:30  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2001/10/29 17:16:30  gusbro
-// GeneXus Java Olimar
-//
 
 package com.genexus.db;
 

@@ -1,30 +1,3 @@
-// $Log: HTTPConnection.java,v $
-// Revision 1.7  2006/07/14 18:30:50  iroqueta
-// No habia quedado bien el put anterior.
-// El host y port que se le pasaba a la autorizacion estaban nulos.
-//
-// Revision 1.6  2006/06/14 12:24:44  iroqueta
-// Agrego autorizacion para el proxy.
-// Metodos addDigestProxyAuthorization y addBasicProxyAuthorization
-//
-// Revision 1.5  2006/06/06 13:26:00  iroqueta
-// Se implementa la propiedad TcpNoDelay.
-// Esto es una propiedad que se le puede indicar al socket para que no se espere 200 ms en los request.
-// Si no se indica esto las aplicaciones 3 capas HTTP se tornan muy lentas porque al tener muchos request seguidos y en cada uno esperar 200 ms el request general se torna muy lento.
-// Por ahora solo se le pone en true en las aplicaciones 3 capas HTTP.
-// SAC 20308
-//
-// Revision 1.4  2005/03/14 21:52:30  gusbro
-// - Agrego metodos getDefaultProxyPort() y getDefaultProxyHost()
-//
-// Revision 1.3  2005/03/09 18:14:27  gusbro
-// - Arreglo problemas con el manejo de proxies cuando hay hosts para los cuales hay que hacer
-//   proxy y otros para los que no hay que hacerlo
-//
-// Revision 1.1  2001/05/07 00:35:00  gusbro
-// Initial revision
-//
-
 /*
  * @(#)HTTPConnection.java				0.3-3I 06/05/2001
  *

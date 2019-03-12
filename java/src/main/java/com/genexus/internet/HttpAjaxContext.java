@@ -1,4 +1,4 @@
-// $Log: HttpAjaxContext.java,v $
+
 package com.genexus.internet;
 
 import java.lang.reflect.Array;

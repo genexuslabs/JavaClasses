@@ -1,37 +1,3 @@
-// $Log: GXCallableStatement.java,v $
-// Revision 1.9  2007/03/14 21:53:05  alevin
-// - Arreglo para solucionar casos en que se tenia una tabla cacheada y en ella se tienen atributos con
-//   AllowNulls = Yes. Cuando se hace un SELECT sobre la tabla se obtienen mal los valores del resultado
-//   cacheado porque se mezclan en el array los valores de "wasNull" con los de las columnas.
-//
-// Revision 1.8  2006/07/24 19:43:53  alevin
-// - Agrego un getBLOBFile que recibe el nombre del archivo.
-//
-// Revision 1.7  2005/07/21 15:10:58  iroqueta
-// Implementacion de soporte de JMX
-//
-// Revision 1.6  2005/04/20 15:40:26  iroqueta
-// Comento el con.setNotInUse(this) del metodo execute y creo un metodo setNotInUse para que sea llamado desde la clase DataStoreProvider luego de hacer el getResults.
-//
-// Revision 1.5  2005/02/08 18:03:31  gusbro
-// - Al llamar a un stored procedure solo marco uncommitedChanges si la conexion es RW
-//
-// Revision 1.4  2004/05/26 18:01:39  gusbro
-// - Se mostraba mal el mensaje de succesful call en el log
-//
-// Revision 1.3  2003/04/21 18:11:48  aaguiar
-// - Cambios en la implementacion del prepared statement cache
-//
-// Revision 1.2  2003/03/26 18:50:14  aaguiar
-// - Se le pasa la extension a la getBlobFile
-//
-// Revision 1.1.1.1  2002/04/10 12:05:02  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2002/04/10 12:05:02  gusbro
-// GeneXus Java Olimar
-//
-
 package com.genexus.db.driver;
 
 import java.io.InputStream;

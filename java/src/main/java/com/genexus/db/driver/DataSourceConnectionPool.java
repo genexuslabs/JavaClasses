@@ -1,28 +1,3 @@
-// $Log: DataSourceConnectionPool.java,v $
-// Revision 1.5  2005/04/21 13:29:02  iroqueta
-// En el metodo disconnect(int handle) atrapo las SQLException y en caso de que haya alguna lo tiro al final para que haga todo lo que tiene que hacer el metodo y no termine por la mitad
-//
-// Revision 1.4  2005/02/18 21:19:27  iroqueta
-// Le hago llegar el ModelContext al GXConnection para poder pasarselo al proc que se llama para obtener el nombre del datasource al cual conectarse.
-//
-// Revision 1.3  2004/09/09 18:44:02  iroqueta
-// Se implement� el soporte para que las TRNs de los EJBs puedan ser manejadas por el contenedor.
-//
-// Revision 1.2  2004/02/13 20:21:28  gusbro
-// - Cambios para que en modelos web si se esta usando un datasource del motor
-//   de servlets que no se use el pool de conexiones
-//
-// Revision 1.1.1.1  2001/07/23 19:49:32  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2001/07/23 19:49:32  gusbro
-// GeneXus Java Olimar
-//
-/**
-* El DataSource connection pool maneja un connection pool para un dataSource,
-* y tiene un pool RO y un pool RW por cada usuario del DBMS.
-*
-*/
 package com.genexus.db.driver;
 
 import java.sql.Connection;

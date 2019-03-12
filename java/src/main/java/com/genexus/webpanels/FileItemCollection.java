@@ -1,15 +1,3 @@
-// $Log: FileItemCollection.java,v $
-// Revision 1.1.2.3  2008-05-26 15:03:53  alevin
-// - Arreglo memory leak con los FileItems cuando se tenian inputs de tipo file en la pantalla.
-// - Arreglo para que no se hagan redirects luego de que el response fue comiteado.
-//
-// Revision 1.1.2.2  2004/12/16 20:53:05  dmendez
-// Soporte de confirmacion con upload controls
-//
-// Revision 1.1.2.1  2004/10/28 13:56:05  dmendez
-// Revision inicial
-//
-
 package com.genexus.webpanels;
 
 import java.io.InputStream;

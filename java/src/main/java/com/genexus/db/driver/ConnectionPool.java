@@ -1,39 +1,3 @@
-// $Log: ConnectionPool.java,v $
-// Revision 1.10  2005/09/08 16:16:19  iroqueta
-// Implementacion del dump en XML para JMX
-//
-// Revision 1.9  2005/08/03 17:43:24  iroqueta
-// El setMaxPoolSize solo lo hago si el pool no tiene tama�o ilimitado y el valor a asignar es mayor del valor actual.
-// Ademas si lo hago notifico a todos los que estan esperando para que puedan obtener una conexion sin esperar a que se venza el timeout
-//
-// Revision 1.8  2005/07/22 21:12:31  iroqueta
-// Agrego ifdefs para que no de problemas JMX en .NET
-//
-// Revision 1.7  2005/07/21 15:10:58  iroqueta
-// Implementacion de soporte de JMX
-//
-// Revision 1.6  2005/04/21 13:48:00  iroqueta
-// En el metodo disconnect(int handle) atrapo las SQLException y en caso de que haya alguna lo tiro al final para que haga todo lo que tiene que hacer el metodo y no termine por la mitad
-//
-// Revision 1.5  2005/02/18 21:19:27  iroqueta
-// Le hago llegar el ModelContext al GXConnection para poder pasarselo al proc que se llama para obtener el nombre del datasource al cual conectarse.
-//
-// Revision 1.4  2004/08/02 19:48:42  gusbro
-// - Hab�an problemas de sincronizaci�n de threads
-//
-// Revision 1.3  2004/06/25 13:51:34  iroqueta
-// JTA - solo se usa si se utiliza el pool de los servidores J2EE
-//
-// Revision 1.2  2004/02/19 18:17:35  gusbro
-// - Pongo publica la disconnect
-//
-// Revision 1.1.1.1  2001/11/16 14:32:26  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2001/11/16 14:32:26  gusbro
-// GeneXus Java Olimar
-//
-
 package com.genexus.db.driver;
 import java.io.FileOutputStream;
 import java.io.IOException;

@@ -1,13 +1,3 @@
-// $Log: UtilConnectionManager.java,v $
-// Revision 1.2  2004/09/09 18:44:02  iroqueta
-// Se implement� el soporte para que las TRNs de los EJBs puedan ser manejadas por el contenedor.
-//
-// Revision 1.1  2001/07/20 18:39:58  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/07/20 18:39:58  gusbro
-// GeneXus Java Olimar
-//
 
 package com.genexus.db;
 

@@ -1,10 +1,3 @@
-// $Log: IMailImplementation.java,v $
-// Revision 1.1  2001/09/27 18:10:46  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/09/27 18:10:46  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.internet;
 
 public interface IMailImplementation

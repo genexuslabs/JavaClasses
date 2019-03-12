@@ -1,17 +1,4 @@
-// $Log: PDFGraphics.java,v $
-// Revision 1.2  2004/09/27 16:46:32  iroqueta
-// Ciertos caracteres japoneses no se mostraban en forma correcta...
-// A esos caracteres se le agrega un "\" luego del mismo para que se vean en forma correcta.
-//
-// Revision 1.1  2002/06/24 20:39:36  gusbro
-// Initial revision
-//
-// Revision 1.2  2002/06/24 20:39:36  gusbro
-// *** empty log message ***
-//
-// Revision 1.1.1.1  2001/11/06 20:09:48  gusbro
-// GeneXus Java Olimar
-//
+
 package uk.org.retep.pdf;
 
 import java.awt.Color;

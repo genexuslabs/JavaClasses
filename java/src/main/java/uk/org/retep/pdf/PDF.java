@@ -1,17 +1,4 @@
-// $Log: PDF.java,v $
-// Revision 1.3  2004/09/27 16:46:05  iroqueta
-// Ciertos caracteres japoneses no se mostraban en forma correcta...
-// A esos caracteres se le agrega un "\" luego del mismo para que se vean en forma correcta.
-//
-// Revision 1.2  2004/03/03 18:12:22  gusbro
-// - Cambios para soportar fonts CJK
-//
-// Revision 1.1.1.1  2001/06/11 17:59:52  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2001/06/11 17:59:52  gusbro
-// GeneXus Java Olimar
-//
+
 package uk.org.retep.pdf;
 
 import java.awt.Font;

@@ -1,10 +1,4 @@
-// $Log: PDFPage.java,v $
-// Revision 1.1  2002/01/04 20:28:48  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2002/01/04 20:28:48  gusbro
-// GeneXus Java Olimar
-//
+
 package uk.org.retep.pdf;
 
 import java.awt.Font;

@@ -1,20 +1,3 @@
-// $Log: GXStatement.java,v $
-// Revision 1.4  2005/07/21 15:10:58  iroqueta
-// Implementacion de soporte de JMX
-//
-// Revision 1.3  2004/02/25 15:27:21  gusbro
-// - Cambio en el log 'close' por 'close stmt' para diferenciarlo del close de la connection
-//
-// Revision 1.2  2003/04/21 18:11:48  aaguiar
-// - Cambios en la implementacion del prepared statement cache
-//
-// Revision 1.1.1.1  2002/04/10 12:04:02  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2002/04/10 12:04:02  gusbro
-// GeneXus Java Olimar
-//
-
 package com.genexus.db.driver;
 
 import java.sql.Connection;

@@ -1,16 +1,6 @@
 package com.genexus.util;
 import java.util.concurrent.ConcurrentHashMap;
-/**
- * Esta clase implementa una cola doblemente encadenada
- * de tal manera que con O(1) se pueda mover un item desde cualquier
- * posicion hacia el comienzo de la cola
- * La usamos para el Cache de resultados, para mantener una LRU
- * 
- * $Log: DoubleLinkedQueue.java,v $
- * Revision 1.2  2004/02/17 19:42:09  gusbro
- * - Release inicial
- *
- */
+
 public class DoubleLinkedQueue
 {
 	private LinkedNode first, last, empty;

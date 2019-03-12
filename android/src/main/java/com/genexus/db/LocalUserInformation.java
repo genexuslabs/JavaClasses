@@ -1,22 +1,3 @@
-// $Log: LocalUserInformation.java,v $
-// Revision 1.5  2005/08/03 18:57:46  iroqueta
-// Agrego soporte para poder desconectar un usuario por medio de JMX
-//
-// Revision 1.4  2005/05/04 21:46:31  iroqueta
-// Hago llegar el contexto al constructor del GXConnection
-//
-// Revision 1.3  2005/02/16 19:35:43  iroqueta
-// Paso el LoginInServer al datastore, antes estaba en el namespace
-//
-// Revision 1.2  2003/04/30 22:36:19  gusbro
-// - Cambios para soportar el tipo de datos DBConnection en GX
-//
-// Revision 1.1.1.1  2002/05/08 19:11:32  gusbro
-// Entran los fuentes al CVS
-//
-// Revision 1.1.1.1  2002/05/08 19:11:32  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.db;
 
 import java.sql.SQLException;

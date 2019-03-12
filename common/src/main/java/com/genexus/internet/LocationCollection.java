@@ -1,10 +1,3 @@
-// $Log: LocationCollection.java,v $
-// Revision 1.1  2002/01/09 14:52:34  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2002/01/09 14:52:34  gusbro
-// GeneXus Java Olimar
-//
 package com.genexus.internet;
 import java.util.Hashtable;
 import com.genexus.*;

@@ -1,10 +1,3 @@
-// $Log: SSLSocketException.java,v $
-// Revision 1.1  2001/09/05 14:46:26  gusbro
-// Initial revision
-//
-// Revision 1.1.1.1  2001/09/05 14:46:26  gusbro
-// GeneXus Java Olimar
-//
 package HTTPClient;
 
 /**
