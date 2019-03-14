@@ -10,7 +10,7 @@ Note that this is a **Work in Progress**. **These classes are not intended to be
 | gxcryptocommon | Classes common to Android and Java related to Cryptography
 | apacheandroid | Android apache class dependence. These were separated by size issues. They are candidates to disappear in the near future
 | gxmail | Classes related to mail handling
-| server | Java standard classes
+| java | Java standard classes
 | gxoffice | Formerly Java classes are now separated to be included only when using office. 
 | gxsearch | Formerly in Java classes are now separated to be included only when using search.
 | gxandroidpublisher and javapns | They are necessary for when you have Push Notifications in your old implementation. These are projects that should disappear in the short term.
@@ -21,7 +21,7 @@ The dependencies between the projects are specified in each pom.xml within their
 # How to compile
 
 ## Requirements
-- JDK 6 or greater
+- JDK 8 or greater
 - Maven 3.6 or greater
 
 # Instructions
