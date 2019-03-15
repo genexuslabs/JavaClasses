@@ -1,23 +1,11 @@
 package HTTPClient;
 
-/**
- * Title: Clases manejo SSL
- * Description:
- * Copyright:    Copyright (c) 2001
- * Company:
- * @author gb
- * @version 1.0
- */
-
 import java.net.*;
 import java.io.*;
 
-/** Esta clase provee un default Binding SSL
- *  Si se intenta conectar mediante HTTPS, se tirar� una SSLSocketException
- */
 public class DefaultSSLConnection implements ISSLConnection
 {
-    public DefaultSSLConnection() { ; }
+    public DefaultSSLConnection() {  }
 
     public Socket processSSLSocket(Socket fromSocket, String host, int port) throws IOException
     {

@@ -237,9 +237,7 @@ public class Application
 		exitApplet();
 	}
 
-	/**
-	* @deprecated
-	*/
+
 	public static ClientPreferences getClientPreferences()
 	{
 		return ((ModelContext)ClientContext.getModelContext()).getClientPreferences();
