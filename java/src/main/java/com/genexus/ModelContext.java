@@ -150,6 +150,7 @@ public final class ModelContext extends AbstractModelContext
 			newContext.httpContext.setDefaultPath(ctx.getDefaultPath());
 			newContext.httpContext.setStaticContentBase(ctx.getStaticContentBase());
 			newContext.httpContext.setClientId(ctx.getClientId());
+			newContext.httpContext.setLanguage(ctx.getLanguage());
 		}
 		return newContext;
 	}

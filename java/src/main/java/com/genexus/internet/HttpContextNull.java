@@ -219,7 +219,12 @@ public class HttpContextNull extends HttpContext
 
 	public String getCookie(String name)
 	{
-		return cookies.get(name);
+		Object o = cookies.get(name);
+		if (o != null) 
+		{
+			return (String)o;
+		}
+		return "";
 	}
 	public javax.servlet.http.Cookie[] getCookies()
 	{

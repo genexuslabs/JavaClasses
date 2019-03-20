@@ -1,6 +1,8 @@
-package com.genexus.ws;
+package com.genexus.ws.addressing;
 
-public class GXWSAddressingEndPoint
+import com.genexus.common.interfaces.IGXWSAddressingEndPoint;
+
+public class GXWSAddressingEndPoint implements IGXWSAddressingEndPoint
 {
 	private String address;
 	private String portType;

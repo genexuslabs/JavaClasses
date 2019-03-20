@@ -1,5 +1,8 @@
 package com.genexus.internet;
 
+import com.genexus.common.interfaces.IGXWSAddressing;
+import com.genexus.common.interfaces.IGXWSSecurity;
+
 public class Location
 {
 	private String host = "";
@@ -19,6 +22,8 @@ public class Location
 	private String proxyAuthenticationUser  = "";
 	private String proxyAuthenticationRealm  = "";
 	private String proxyAuthenticationPassword  = "";
+	private IGXWSAddressing wsAddressing;
+	private IGXWSSecurity wsSecurity;
 	private String certificate = "";
 	private short cancelOnError = 0;
 	private String GroupLocation;
@@ -110,6 +115,16 @@ public class Location
 	{
 		return proxyAuthenticationPassword;
 	}
+	
+	public IGXWSAddressing getWSAddressing()
+	{
+		return wsAddressing;
+	}
+	
+	public IGXWSSecurity getWSSecurity()
+	{
+		return wsSecurity;
+	}	
 
 	public String getCertificate()
 	{
@@ -195,6 +210,16 @@ public class Location
 	{
 		this.proxyAuthenticationPassword = authenticationPassword;
 	}
+	
+	public void setWSAddressing(IGXWSAddressing wsAddressing)
+	{
+		this.wsAddressing = wsAddressing;
+	}	
+	
+	public void setWSSecurity(IGXWSSecurity wsSecurity)
+	{
+		this.wsSecurity = wsSecurity;
+	}	
 
 	public void setCertificate(String path)
 	{

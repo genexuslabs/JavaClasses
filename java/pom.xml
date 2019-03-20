@@ -172,6 +172,11 @@
 			<artifactId>sapjco3</artifactId>
 			<version>3.0.14</version>
 		</dependency>
+		<dependency>
+		    <groupId>org.apache.ws.security</groupId>
+		    <artifactId>wss4j</artifactId>
+		    <version>1.6.19</version>
+		</dependency>		
 	</dependencies>
 
 	<build>
