@@ -20,6 +20,16 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.bouncycastle.bcpkix-jdk15on.1.57.org.bouncycastle</groupId>
+			<artifactId>bcpkix-jdk15on</artifactId>
+			<version>1.57</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle.bcprov-jdk15on.1.57.org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk15on</artifactId>
+			<version>1.57</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.santuario</groupId>
 			<artifactId>xmlsec</artifactId>
 			<version>2.1.2</version>
