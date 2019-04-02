@@ -16,7 +16,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>java</artifactId>
+			<artifactId>gxclasses-java</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
