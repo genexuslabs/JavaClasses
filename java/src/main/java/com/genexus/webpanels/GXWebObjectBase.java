@@ -260,6 +260,7 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 		{
 			((ThreadLocal)com.genexus.CommonUtil.threadCalendar).getClass().getMethod("remove", new Class[0]).invoke(com.genexus.CommonUtil.threadCalendar, (java.lang.Object[])new Class[0]);
 			((ThreadLocal)com.genexus.ModelContext.threadModelContext).getClass().getMethod("remove", new Class[0]).invoke(com.genexus.ModelContext.threadModelContext, (java.lang.Object[])new Class[0]);
+			HTTPClient.StreamDemultiplexor.cleanup();
 		}
 		catch (NoSuchMethodException e)
 		{

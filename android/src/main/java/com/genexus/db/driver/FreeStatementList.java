@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import org.apache.commons.collections.SequencedHashMap;
+import org.apache.commons.collections4.map.LinkedMap;
 
 import com.genexus.DebugFlag;
 
@@ -23,7 +23,7 @@ public class FreeStatementList {
 
 	// freeCache tiene una lista de sentencias SQL, y para cada una tiene una lista de statements
 	// preparados.
-	SequencedHashMap freeCache;
+	LinkedMap freeCache;
 	GXConnection jdbcConnection;
 	int statementCount;
 
@@ -31,7 +31,7 @@ public class FreeStatementList {
 
 	FreeStatementList(int maxSize, GXConnection jdbcConnection)
 	{
-		freeCache = new SequencedHashMap(maxSize);
+		freeCache = new LinkedMap(maxSize);
 		this.jdbcConnection = jdbcConnection;
 		this.statementCount = 0;
 	}
@@ -77,7 +77,7 @@ public class FreeStatementList {
 	{
 		GXPreparedStatement stmt = null;
 		// Asume que el size de freeCache > 0.
-		StatementList statementList = (StatementList) freeCache.getFirstValue();
+		StatementList statementList = (StatementList) freeCache.get(freeCache.firstKey());
 			
 		for (Iterator j = statementList.iterator(); j.hasNext(); )
 		{

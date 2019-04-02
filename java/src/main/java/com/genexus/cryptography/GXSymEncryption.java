@@ -11,11 +11,10 @@ import com.genexus.cryptography.encryption.symmetric.IGXSymEncryption;
 import com.genexus.cryptography.exception.AlgorithmNotSupportedException;
 import com.genexus.cryptography.exception.EncryptionException;
 import com.genexus.cryptography.exception.InvalidKeyLengthException;
-import com.genexus.webpanels.HttpContextWeb;
 
 public class GXSymEncryption {
 
-	private static Logger logger = org.apache.logging.log4j.LogManager.getLogger(HttpContextWeb.class);
+	private static Logger logger = org.apache.logging.log4j.LogManager.getLogger(GXSymEncryption.class);
 	
 	private int _lastError;
 	private String _lastErrorDescription;
@@ -146,7 +145,7 @@ public class GXSymEncryption {
 
 	public void setKeySize(int keySize) {
 		isDirty = isDirty || this._keySize != keySize;
-		this._keySize = keySize * 8;
+		this._keySize = keySize;
 
 	}
 

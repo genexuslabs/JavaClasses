@@ -1,14 +1,17 @@
-package com.genexus.ws;
+package com.genexus.ws.addressing;
 
-public class GXWSAddressing
+import com.genexus.common.interfaces.IGXWSAddressing;
+import com.genexus.common.interfaces.IGXWSAddressingEndPoint;
+
+public class GXWSAddressing implements IGXWSAddressing
 {
 	private String to;
 	private String action;
 	private String messageID;
 	private String relatesTo;
-	private GXWSAddressingEndPoint from;
-	private GXWSAddressingEndPoint replyTo;
-	private GXWSAddressingEndPoint faultTo;
+	private IGXWSAddressingEndPoint from;
+	private IGXWSAddressingEndPoint replyTo;
+	private IGXWSAddressingEndPoint faultTo;
 	
 
 	public GXWSAddressing()
@@ -62,32 +65,32 @@ public class GXWSAddressing
 		this.relatesTo = relatesTo.trim();
 	}	
 	
-	public GXWSAddressingEndPoint getFrom()
+	public IGXWSAddressingEndPoint getFrom()
 	{
 		return from;
 	}
 
-	public void setFrom(GXWSAddressingEndPoint from)
+	public void setFrom(IGXWSAddressingEndPoint from)
 	{
 		this.from = from;
 	}	
 	
-	public GXWSAddressingEndPoint getReplyTo()
+	public IGXWSAddressingEndPoint getReplyTo()
 	{
 		return replyTo;
 	}
 
-	public void setReplyTo(GXWSAddressingEndPoint replyTo)
+	public void setReplyTo(IGXWSAddressingEndPoint replyTo)
 	{
 		this.replyTo = replyTo;
 	}
 	
-	public GXWSAddressingEndPoint getFaultTo()
+	public IGXWSAddressingEndPoint getFaultTo()
 	{
 		return faultTo;
 	}
 
-	public void setFaultTo(GXWSAddressingEndPoint faultTo)
+	public void setFaultTo(IGXWSAddressingEndPoint faultTo)
 	{
 		this.faultTo = faultTo;
 	}		

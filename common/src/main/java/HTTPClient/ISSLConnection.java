@@ -32,7 +32,7 @@ public interface ISSLConnection {
 	 *            Puerto a conectar
 	 * @return Socket a ser utilizado en la conexi�n
 	 */
-	public Socket processSSLSocket(Socket fromSocket, String host, int port) throws IOException;
+	Socket processSSLSocket(Socket fromSocket, String host, int port) throws IOException;
 
 	/**
 	 * Obtiene un SSLSocket (o puede obtener un Socket com�n y luego ser
@@ -43,7 +43,7 @@ public interface ISSLConnection {
 	 * @param port
 	 *            puerto a utilizar
 	 */
-	public Socket getSSLSocket(InetAddress addr, int port) throws IOException;
+	Socket getSSLSocket(InetAddress addr, int port) throws IOException;
 
 	/**
 	 * Obtiene un SSLSocket (o puede obtener un Socket com�n y luego ser
@@ -58,12 +58,12 @@ public interface ISSLConnection {
 	 * @param localPort
 	 *            puerto local
 	 */
-	public Socket getSSLSocket(InetAddress addr, int port, InetAddress localAddr, int localPort) throws IOException;
+	Socket getSSLSocket(InetAddress addr, int port, InetAddress localAddr, int localPort) throws IOException;
 
 	/**
 	 * Este m�todo es llamado en el RedirectionModule para obtener una nueva
 	 * instancia de ISSLConnection Aqui se puede inicializar esta nueva instancia
 	 * con los valores deseados
 	 */
-	public Object clone();
+	Object clone();
 }

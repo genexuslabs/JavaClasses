@@ -54,8 +54,14 @@ public class CipherSymProvider implements IGXSymEncryption {
 	}
 
 	public String decrypt(String text) throws EncryptionException {
-		byte[] data = Base64.decode(text);// Codecs.base64Decode(text.getBytes());			
-		return encryption(Cipher.DECRYPT_MODE, data);				
+		byte[] data = null;
+		try {
+			data = Codecs.base64Decode(text.getBytes(Constants.UNICODE));
+			return encryption(Cipher.DECRYPT_MODE, data);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		return "";				
 	}
 
 	private String encryption(int mode, byte[] data) throws EncryptionException {
@@ -93,7 +99,7 @@ public class CipherSymProvider implements IGXSymEncryption {
 		try {
 			kg = KeyGenerator.getInstance(_alg);
 			if (keysize > 0) {
-				kg.init(keysize / 8);
+				kg.init(keysize);
 			}
 		} catch (NoSuchAlgorithmException e) {
 
@@ -102,7 +108,7 @@ public class CipherSymProvider implements IGXSymEncryption {
 			throw new InvalidKeyLengthException(e);
 		}
 		byte[] result = kg.generateKey().getEncoded();
-		_keySize = result.length * 8;
+		_keySize = result.length;
 		return result;
 	}
 

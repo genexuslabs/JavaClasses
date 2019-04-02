@@ -96,8 +96,6 @@ public class HttpRequest implements IHttpRequest
 
 	public String getScriptName()
 	{
-	  //String servletPath = httpContext.getRequest().getServletPath();
-		//get servlet path from android
 		String servletPath = AndroidContext.ApplicationContext.getRootUri();
 		
 	  return servletPath.substring(servletPath.lastIndexOf("/") +1 , servletPath.length());
@@ -156,7 +154,7 @@ public class HttpRequest implements IHttpRequest
 			return;
 
 		// asctime() format is missing an explicit GMT specifier
-		if (raw_date.toUpperCase().indexOf("GMT") == -1)
+		if (!raw_date.contains("GMT"))
 		    raw_date += " GMT";
 
 		Date   date = CommonUtil.nullDate();
@@ -209,7 +207,7 @@ public class HttpRequest implements IHttpRequest
 
 	public void getVariable(String key, double[] value)
 	{
-		value[0] = (double) CommonUtil.val(getVariable(key));
+		value[0] = CommonUtil.val(getVariable(key));
 	}
 
 	public String[] getVariables()

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Stack;
 
-import org.apache.commons.collections.SequencedHashMap;
+import org.apache.commons.collections4.map.LinkedMap;
 
 import com.genexus.DebugFlag;
 
@@ -26,7 +26,7 @@ public class FreeStatementList {
 	 * A sequence of sql statements strings with a list of Statements for each string sentence. Be aware this list is not threa safe
 	 * so we MUST use objectLock to ensure right concurrency
 	 */
-	private SequencedHashMap freeCache;
+	private LinkedMap freeCache;
 	/***
 	 * the underline connection
 	 */
@@ -40,7 +40,7 @@ public class FreeStatementList {
 
 	FreeStatementList(int maxSize, GXConnection jdbcConnection)
 	{
-		freeCache = new SequencedHashMap(maxSize);
+		freeCache = new LinkedMap(maxSize);
 		this.jdbcConnection = jdbcConnection;
 		this.statementCount = 0;
 	}
@@ -91,7 +91,7 @@ public class FreeStatementList {
 		StatementList statementList = null;
 		synchronized (objectLock) {
 			// Asume que el size de freeCache > 0.
-			statementList = (StatementList) freeCache.getFirstValue();
+			statementList = (StatementList) freeCache.get(freeCache.firstKey());
 			freeCache.remove(statementList.peek().getCacheId(jdbcConnection));
 			statementCount -= statementList.size();
 		}
