@@ -21,6 +21,8 @@ public class NotificationParameters {
 				e1.printStackTrace();
 			}
 		}
+
+
 		return json.toString();
 	}
 	

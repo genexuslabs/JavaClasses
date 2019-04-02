@@ -16,20 +16,17 @@
 
 	<modules>
 		<module>common</module>
-
-		<module>java</module>
 		<module>gxandroidpublisher</module>
 		<module>gxcryptocommon</module>
 		<module>gxmail</module>
 		<module>gxoffice</module>
 		<module>gxsearch</module>
 		<module>javapns</module>
-
 		<module>apacheandroid</module>
 		<module>android</module>
     	<module>gxgeospatial</module>
-    <module>gxodata</module>
-    <module>gxexternalproviders</module>
+	    <module>gxodata</module>
+		<module>gxexternalproviders</module>
   </modules>
 
 	<repositories>

@@ -13,22 +13,11 @@
   <name>gxgeospatial</name>
   <url>http://maven.apache.org</url>
   <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
     <!-- https://mvnrepository.com/artifact/org.locationtech.spatial4j/spatial4j -->
     <dependency>
       <groupId>org.locationtech.spatial4j</groupId>
       <artifactId>spatial4j</artifactId>
       <version>0.6</version>
-    </dependency>
-    <dependency>
-      <groupId>org.simpleframework</groupId>
-      <artifactId>simple-xml</artifactId>
-      <version>2.7.1</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/net.sf.geographiclib/GeographicLib-Java -->
     <dependency>
