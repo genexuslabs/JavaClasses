@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.util.TimeZone;
 
 import com.genexus.configuration.ConfigurationManager;
-import com.sun.org.glassfish.gmbal.Description;
 import org.apache.commons.lang.StringUtils;
 
 import com.genexus.Application;
@@ -105,7 +104,6 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 	 * @return
 	 */
 	@SuppressWarnings("unused")
-	@Description("Part of Generator API")
 	protected void initializeTheme() {
 		this.httpContext.setDefaultTheme(ConfigurationManager.getValue("Theme"));
 	}
