@@ -468,6 +468,7 @@ System.err.println("Sigo...");
 	
 	public static void addExecutedStatement(String statement)
 	{
+		String newline = CommonUtil.newLine( );
 		//Si la sentencia es la que se usa para ignorar el mensaje de drop column en Iseries no se escribe en el archivo de resume
 		if (statement.trim().startsWith(replyIgnore))
 		{
@@ -492,10 +493,11 @@ System.err.println("Sigo...");
 	}
 		
 	private static FileWriter output;
-	private static final String newline = CommonUtil.newLine( );
+	//private static final String newline = CommonUtil.newLine( );
 	
 	private static void serializeExecutedStatements()
 	{
+		String newline = CommonUtil.newLine( );
 		try
 		{
 			output = new FileWriter(resumeFileName, true);

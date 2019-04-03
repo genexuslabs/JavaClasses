@@ -26,7 +26,6 @@ public final class ModelContext extends AbstractModelContext
 	private HttpContext httpContext = new HttpContextNull();
 	private IGUIContext guiContext  = new GUIContextNull();
 	private SessionInstances sessionInstances;
-	public Globals globals = new Globals();
 	private String staticContentBase = "";
     private GxEjbContext ctx = null;
     private int afterConnectHandle = 0;

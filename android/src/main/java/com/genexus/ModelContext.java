@@ -25,7 +25,6 @@ public final class ModelContext extends AbstractModelContext
 	private boolean poolConnections;
 	private HttpContext httpContext = new HttpContextNull();
 	private IGUIContext guiContext  = new GUIContextNull();
-	public Globals globals = new Globals();
 	private String staticContentBase = "";
 	private int afterConnectHandle = 0;
 		
