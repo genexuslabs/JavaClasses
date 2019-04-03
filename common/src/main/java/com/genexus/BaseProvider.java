@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.genexus.xml.XMLReader;
 import org.apache.commons.lang.StringUtils;
 
 import com.genexus.GXSmartCacheProvider.DataUpdateStatus;
@@ -13,7 +14,6 @@ import com.genexus.common.interfaces.IGXSmartCacheProvider;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.util.GXDirectory;
 import com.genexus.util.GXFileCollection;
-import com.genexus.xml.IXMLReader;
 
 public abstract class BaseProvider implements IGXSmartCacheProvider
 	{
@@ -39,7 +39,7 @@ public abstract class BaseProvider implements IGXSmartCacheProvider
 				ConcurrentHashMap<String, Vector<String>> qTables = new ConcurrentHashMap<String, Vector<String>>();
 				GXDirectory configurationDirectory = new GXDirectory(configurationDirectoryPath);
 				GXFileCollection files = configurationDirectory.getFiles();
-				IXMLReader reader = SpecificImplementation.Application.createXMLReader();
+				XMLReader reader = new XMLReader();
 				short ok;
 				for(int i=1; i <= files.getItemCount(); i++)
 				{

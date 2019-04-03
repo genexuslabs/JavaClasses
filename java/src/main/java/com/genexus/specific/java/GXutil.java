@@ -9,6 +9,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
+import com.genexus.CommonUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -49,8 +50,9 @@ public class GXutil implements IExtensionGXutil {
 	}
 
 	@Override
-	public Calendar getCalendar() {
-		return null;
+	public Calendar getCalendar()
+	{
+		return CommonUtil.getCalendar();
 	}
 
 	@SuppressWarnings("deprecation")

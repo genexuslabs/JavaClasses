@@ -55,7 +55,8 @@ public class GXDataInitialization extends GXProcedure {
 			System.exit(result);
 		}
 		catch(Throwable ex)
-		{ 
+		{
+			ex.printStackTrace();
 			System.out.println(ex.toString());
 			System.exit(1);
 		}

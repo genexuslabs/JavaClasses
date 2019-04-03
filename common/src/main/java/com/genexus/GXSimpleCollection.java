@@ -25,7 +25,7 @@ import com.genexus.internet.StringCollection;
 import com.genexus.util.GXMap;
 import com.genexus.util.Quicksort;
 import com.genexus.xml.GXXMLSerializer;
-import com.genexus.xml.IXMLReader;
+import com.genexus.xml.XMLReader;
 import com.genexus.xml.GXXMLSerializable;
 
 import com.genexus.xml.XMLWriter;
@@ -92,12 +92,12 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 		return true;
 	}
 
-	public short readxml(IXMLReader reader)
+	public short readxml(XMLReader reader)
 	{
 		return readxml(reader, "");
 	}
 
-	public short readxml( IXMLReader oReader ,
+	public short readxml( XMLReader oReader ,
 			String sName )
 	{
 		short currError ;
@@ -125,7 +125,7 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 		return currError ;
 	}
 	public short readEncodedArray( String arrayType ,
-			IXMLReader oReader )
+			XMLReader oReader )
 	{
 		short currError ;
 		int arrayLength ;
@@ -149,7 +149,7 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 		}
 		return currError ;
 	}
-	private short readIntegralCollectionFromXML(IXMLReader reader, String itemName)
+	private short readIntegralCollectionFromXML(XMLReader reader, String itemName)
 	{
 		reader.read();
 		short currError = reader.read();
@@ -237,7 +237,7 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 		}
 	}
 
-	public short AddObjectInstance(IXMLReader reader)
+	public short AddObjectInstance(XMLReader reader)
 	{
 		try
 		{
@@ -288,12 +288,12 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 		}
     }
 
-	public short readCollection( IXMLReader oReader )
+	public short readCollection( XMLReader oReader )
 	{
 		return readxmlcollection(oReader, "", "");
 	}
 
-	public short readxmlcollection( IXMLReader oReader ,
+	public short readxmlcollection( XMLReader oReader ,
 			String sName ,
 			String itemName )
 	{
@@ -359,7 +359,7 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
                 GXXMLSerializer.deserializeSimpleXml(this, xml);
                 return true;
             } else {
-				IXMLReader reader = SpecificImplementation.Application.createXMLReader();
+				XMLReader reader = new XMLReader();
 				reader.openFromString(xml);
 				short result;
 				result = readIntegralCollectionFromXML(reader, "item");

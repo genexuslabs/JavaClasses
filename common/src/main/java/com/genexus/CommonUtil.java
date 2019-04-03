@@ -293,9 +293,6 @@ public final class CommonUtil
 
 	public static Calendar getCalendar()
 	{
-		Calendar calendar = SpecificImplementation.GXutil.getCalendar();
-		if (calendar != null)
-			return calendar;
 		return (Calendar)threadCalendar.get();
 	}
 
