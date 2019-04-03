@@ -133,6 +133,7 @@ public final class CommonUtil
 		}
 		catch (Exception e)
 		{
+			e.printStackTrace();
 			System.err.println("GXUtil static constructor error: " + e.getMessage());
 			throw new ExceptionInInitializerError("GXUtil static constructor error: " + e.getMessage());
 

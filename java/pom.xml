@@ -10,7 +10,7 @@
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>java</artifactId>
+	<artifactId>gxclasses-java</artifactId>
 	<name>GeneXus Standard classes for the Java generator</name>
 
 	<properties>
@@ -152,10 +152,6 @@
 		    <version>1.6.19</version>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<finalName>${project.artifactId}</finalName>
-	</build>
 
 	<reporting>
 		<plugins>

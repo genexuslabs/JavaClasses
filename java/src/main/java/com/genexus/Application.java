@@ -79,7 +79,7 @@ public class Application
 			getConnectionManager().disconnect(handle);
 
 		}
-		catch (SQLException e)
+		catch (Throwable e)
 		{
 			logger.error("cleanupConnection/Can't disconnect " + handle, e);
 		}

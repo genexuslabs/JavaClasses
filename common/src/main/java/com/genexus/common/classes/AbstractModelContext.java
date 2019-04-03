@@ -2,11 +2,14 @@ package com.genexus.common.classes;
 
 import java.util.TimeZone;
 
+import com.genexus.Globals;
 import com.genexus.IHttpContext;
 import com.genexus.common.interfaces.IClientPreferences;
 
 
 public abstract class AbstractModelContext {
+
+	public Globals globals = new Globals();
 
 	public abstract TimeZone getClientTimeZone();
 
