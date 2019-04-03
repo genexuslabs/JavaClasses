@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.TimeZone;
 
+import com.genexus.configuration.ConfigurationManager;
 import org.apache.commons.lang.StringUtils;
 
 import com.genexus.Application;
@@ -96,6 +97,15 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 		this.remoteHandle = ui.getHandle();
 
 		initState(context, ui);
+	}
+
+	/***
+	 * Return the DefaultTheme for all WebPanels and Transactions.
+	 * @return
+	 */
+	@SuppressWarnings("unused")
+	protected void initializeTheme() {
+		this.httpContext.setDefaultTheme(ConfigurationManager.getValue("Theme"));
 	}
 
 	protected void init(HttpContext httpContext, Class contextClass)
@@ -339,9 +349,12 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 
 	/** Este metodo es redefinido por la clase GX generada cuando hay submits
 	 */
-	public void submit(int id, Object [] submitParms, AbstractModelContext ctx){ ; }
-	public void submit(int id, Object [] submitParms){ ; }
-	public void submitReorg(int id, Object [] submitParms) throws SQLException{ ; }
+	public void submit(int id, Object [] submitParms, AbstractModelContext ctx){
+	}
+	public void submit(int id, Object [] submitParms){
+	}
+	public void submitReorg(int id, Object [] submitParms) throws SQLException{
+	}
 
 	protected String formatLink(String jumpURL)
 	{
@@ -491,31 +504,31 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 				}
 				else
 				{
-					if (Integer.class.isInstance(Value))
+					if (Value instanceof Integer)
 					{
 						return serialize(localUtil.format(((Integer)Value).intValue(), Pic));
 					}
 					else
 					{
-						if (Short.class.isInstance(Value))
+						if (Value instanceof Short)
 						{
 							return serialize(localUtil.format(((Short)Value).shortValue(), Pic));
 						}
 						else
 						{
-							if (Long.class.isInstance(Value))
+							if (Value instanceof Long)
 							{
 								return serialize(localUtil.format(((Long)Value).longValue(), Pic));
 							}
 							else
 							{
-								if (Double.class.isInstance(Value))
+								if (Value instanceof Double)
 								{
 									return serialize(localUtil.format(((Double)Value).doubleValue(), Pic));
 								}
 								else
 								{
-									if (Float.class.isInstance(Value))
+									if (Value instanceof Float)
 									{
 										return serialize(localUtil.format(((Float)Value).floatValue(), Pic));
 									}
