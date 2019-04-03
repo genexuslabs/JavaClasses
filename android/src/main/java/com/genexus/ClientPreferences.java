@@ -502,4 +502,9 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 		  }
 		  return docType;
 	  }
+
+	public boolean getJDBC_LOG() {
+		return iniFile.getProperty(defaultSection, "JDBC_LOG", "0").equals("1");
+	}
+
 }

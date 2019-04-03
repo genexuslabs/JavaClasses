@@ -34,4 +34,6 @@ public interface IClientPreferences {
 
 	public String getSMTP_HOST();
 
+	public boolean getJDBC_LOG();
+
 }

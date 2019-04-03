@@ -27,7 +27,6 @@ public class UserLog {
 		return log;
 	}
 
-
 	public static void write( int logLevel, String message, String topic) {
 		ILogger log = getLogger(topic);
 

@@ -143,14 +143,11 @@ public class Application
 		if	(!initialized)
 		{	
 			com.genexus.specific.android.Connect.init();
-			
 			initialized = true;
-			
 			Application.gxCfg = gxCfg;
 			ClientContext.setModelContext(new ModelContext(gxCfg));
-
+			DebugFlag.DEBUG = ClientContext.getModelContext().getClientPreferences().getJDBC_LOG();
 			Namespace.createNamespaces(((ModelContext)ClientContext.getModelContext()).getPreferences().getIniFile());
-			
 			startDateTime = new Date();
 		}
 	}
