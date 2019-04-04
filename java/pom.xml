@@ -11,7 +11,7 @@
 	</parent>
 
 	<artifactId>gxclasses-java</artifactId>
-	<name>GeneXus Standard classes for the Java generator</name>
+	<name>GeneXus Standard Classes for Java</name>
 
 	<properties>
 		<maven.compiler.source>1.6</maven.compiler.source>

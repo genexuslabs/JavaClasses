@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>gxexternalproviders</artifactId>
-  <name>gxexternalproviders</name>
+  <name>GeneXus External Providers</name>
 
   <dependencies>
     <dependency>

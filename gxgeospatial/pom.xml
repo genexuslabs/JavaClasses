@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>gxgeospatial</artifactId>
-  <name>gxgeospatial</name>
+  <name>GeneXus Geospatial</name>
 
   <dependencies>
 	<dependency>

@@ -11,7 +11,7 @@
 	</parent>
 
 	<artifactId>gxstdclasses-android</artifactId>
-	<name>android</name>
+	<name>GeneXus Standard Classes for Android</name>
 
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>

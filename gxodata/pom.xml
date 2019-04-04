@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>gxodata</artifactId>
-  <name>gxodata</name>
+  <name>GeneXus OData</name>
 
   <dependencies>
 	<dependency>
