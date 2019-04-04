@@ -2591,7 +2591,7 @@ public final class CommonUtil
 		return pagingSelect;
 	}
 
-	public static Object convertObjectTo(Object obj, Class toClass, boolean fail) {
+	public static Object convertObjectTo(Object obj, Class toClass, boolean fail) throws Exception {
         String objStr = obj.toString();
         String className = toClass.getName();
 
@@ -2914,7 +2914,7 @@ public final class CommonUtil
 		return roundDecimal(DecimalUtil.unexponentString(Double.toString(in)), decimals).doubleValue();
 	}
 
-	public static Object convertObjectTo(Object obj, Class toClass) {
+	public static Object convertObjectTo(Object obj, Class toClass) throws Exception{
 		return convertObjectTo(obj, toClass, true);
 	}
 
