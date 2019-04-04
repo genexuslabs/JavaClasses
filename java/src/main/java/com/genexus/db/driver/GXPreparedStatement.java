@@ -1310,6 +1310,10 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		return blobFiles;
 	}
 
+
+
+
+
 	public void setBLOBFile(java.sql.Blob blob, String fileName) throws SQLException
 	{
 		if	(fileName != null && !fileName.trim().equals("") && !fileName.toLowerCase().trim().endsWith("about:blank"))

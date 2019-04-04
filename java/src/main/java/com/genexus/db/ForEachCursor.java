@@ -314,8 +314,10 @@ public class ForEachCursor extends Cursor implements IForEachCursor
 	    public void setGXDbFileURI(int index, String fileName, String blobPath, int length, String tableName, String fieldName) throws SQLException {}
 	    public void setGXDbFileURI(int index, String fileName, String blobPath, int length) throws SQLException {}
 	    public void setBytes(int index, byte value[]) throws SQLException {}
-	    public void setDateTime(int index, java.util.Date value, boolean onlyTime) throws SQLException {}
-	    public void setDateTime(int index, java.util.Date value, boolean onlyTime, boolean hasmilliseconds) throws SQLException {}
+
+		public void setDateTime(int index, java.util.Date value, boolean onlyTime) throws SQLException {}
+		public void setDateTime(int index, java.util.Date value, boolean onlyTime, boolean hasmilliseconds) throws SQLException{}
+
 	    public void setDateTime(int index, java.util.Date value, boolean onlyTime, boolean onlyDate, boolean hasmilliseconds) throws SQLException {}
 	    public void setDate(int index, java.util.Date value) throws SQLException {}
 	    public void setDate(int index, java.sql.Date value) throws SQLException {}

@@ -38,15 +38,6 @@ import com.genexus.GXDbFile;
 import com.genexus.common.classes.IGXPreparedStatement;
 
 
-/**
-* Esta clase es un wrapper de un PreparedStatement real. Le agrega debugging y algunos procesamientos en
-* las funciones set<Type> para ajustarlas a las necesidades de los programas generados.
-* <p>
-* No tiene sincronizaci�n, dado que los ResultSets nunca son usados simult�neamente desde
-* dos threads.
-* <p>
-* Las funciones que no deber�an ser llamadas nunca, generan una l�nea con "Warning" en el Log.
-*/
 public class GXPreparedStatement extends GXStatement implements PreparedStatement, com.genexus.db.IFieldSetter, IGXPreparedStatement
 {
 	private static final boolean DEBUG       = DebugFlag.DEBUG;
@@ -72,6 +63,8 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
         {
           this(stmt, con, handle, sqlSentence, cursorId, false);
         }
+
+
 
 	public GXPreparedStatement(PreparedStatement stmt, GXConnection con, int handle, String sqlSentence, String cursorId, boolean currentOf)
 	{
@@ -732,7 +725,12 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		stmt.setString(index, value);
 	}
 
-    public void setGXDbFileURI(int index, String fileName, String blobPath, int length) throws SQLException
+	public void setGXDbFileURI(int index, String fileName, String blobPath, int length) throws SQLException
+	{
+		setGXDbFileURI(index, fileName, blobPath, length, null, null);
+	}
+
+    public void setGXDbFileURI(int index, String fileName, String blobPath, int length, String tableName, String fieldName) throws SQLException
     {
     	if (blobPath.trim().length() == 0)
     		setVarchar(index, fileName, length, false);
@@ -867,10 +865,10 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 
 	public void setDateTime(int index, java.util.Date value, boolean onlyTime) throws SQLException
 	{
-		setDateTime(index, value, onlyTime, false, false);
+		setDateTime(index, value, onlyTime, false);
 	}
-	
-	public void setDateTime(int index, java.util.Date value, boolean onlyTime, boolean onlyDate, boolean hasmilliseconds) throws SQLException
+
+	public void setDateTime(int index, java.util.Date value, boolean onlyTime, boolean hasmilliseconds) throws SQLException
 	{
 		if	(onlyTime && !value.equals(CommonUtil.nullDate()))
 		{
@@ -885,7 +883,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 				value = newValue;
 		}
 
-		if (!onlyDate)
+	//TODO: WHAT IS THIS FOR ANDROID?	if (!onlyonlyDate)
 			value = con.getContext().local2DBserver(value, hasmilliseconds);
 		
 		if	(DEBUG)
@@ -956,7 +954,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 
 		if	(con.getDBMS().useDateTimeInDate())
 		{
-			setDateTime(index, value, false, true, false);
+			setDateTime(index, value, false);
 		}
 		else if (con.getDBMS().useCharInDate())
 		{
@@ -982,7 +980,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			try
 			{
 				if	(con.getDBMS().useDateTimeInDate())
-					setDateTime(index, value, false, true, false);
+					setDateTime(index, value, false, true);
 				else
 				{
 					stmt.setDate(index, value);
@@ -997,7 +995,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		else
 		{
 			if	(con.getDBMS().useDateTimeInDate())
-				setDateTime(index, value, false, true, false);
+				setDateTime(index, value, false, true);
 			else
 			{
 				stmt.setDate(index, value);
@@ -1068,6 +1066,8 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		}
 	}
 
+
+
     public void setUnicodeStream(int index, java.io.InputStream value, int length) throws SQLException
 	{
 		if	(DEBUG)
@@ -1106,6 +1106,11 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 	}
 
 	public void setBLOBFile(int index, String fileName) throws SQLException
+	{
+		setBLOBFile(index, fileName, false);
+	}
+
+    public void setBLOBFile(int index, String fileName, boolean isMultiMedia) throws SQLException
 	{
 		if(skipSetBlobs)
 		{
