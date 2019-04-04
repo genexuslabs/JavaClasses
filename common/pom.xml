@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>common</artifactId>
-	<name>Common classes</name>
+	<name>GeneXus Common</name>
 
 	<properties>
 		<maven.compiler.source>1.6</maven.compiler.source>

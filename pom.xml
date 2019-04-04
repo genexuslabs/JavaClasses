@@ -7,7 +7,8 @@
 	<version>1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<name>GeneXus Standard Classes for Java and Android (Parent)</name>
+	<name>GeneXus Standard Classes (Parent)</name>
+	<description>Core classes for the runtime used by Java and Android apps generated with GeneXus</description>
 	<url>https://github.com/genexuslabs/JavaClasses</url>
 
 	<properties>
@@ -37,16 +38,6 @@
 			<id>mit-public</id>
 			<name>MIT Public</name>
 			<url>http://maven.mit.edu/nexus/content/repositories/public</url>
-		</repository>
-		<repository>
-			<id>genexus.nexus.snapshot</id>
-			<name>GeneXus Internal Snapshot Repository</name>
-			<url>http://nexus.genexus.com/repository/maven-snapshots/</url>
-		</repository>
-		<repository>
-			<id>genexus.nexus.release</id>
-			<name>GeneXus Internal Repository</name>
-			<url>http://nexus.genexus.com/repository/maven-releases/</url>
 		</repository>
 	</repositories>	
 
@@ -115,17 +106,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<distributionManagement>
-		<repository>
-			<id>genexus.nexus.release</id>
-			<name>GeneXus Internal Repository</name>
-			<url>http://nexus.genexus.com/repository/maven-releases/</url>
-		</repository>
-		<snapshotRepository>
-			<id>genexus.nexus.snapshot</id>
-			<name>GeneXus Internal Snapshot Repository</name>
-			<url>http://nexus.genexus.com/repository/maven-snapshots/</url>
-		</snapshotRepository>
-	</distributionManagement>
 </project>

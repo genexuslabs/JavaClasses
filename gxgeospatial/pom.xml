@@ -7,42 +7,30 @@
     <artifactId>parent</artifactId>
     <version>1.0-SNAPSHOT</version>
   </parent>
-  <groupId>com.genexus</groupId>
+
   <artifactId>gxgeospatial</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <name>gxgeospatial</name>
-  <url>http://maven.apache.org</url>
+  <name>GeneXus Geospatial</name>
 
-    <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-    </properties>
-
-
-    <dependencies>
-    <!-- https://mvnrepository.com/artifact/org.locationtech.spatial4j/spatial4j -->
+  <dependencies>
+	<dependency>
+	  <groupId>${project.groupId}</groupId>
+	  <artifactId>gxclasses-java</artifactId>
+	  <version>${project.version}</version>
+	</dependency>
     <dependency>
       <groupId>org.locationtech.spatial4j</groupId>
       <artifactId>spatial4j</artifactId>
       <version>0.6</version>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/net.sf.geographiclib/GeographicLib-Java -->
     <dependency>
       <groupId>net.sf.geographiclib</groupId>
       <artifactId>GeographicLib-Java</artifactId>
       <version>1.49</version>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/org.noggit/noggit -->
     <dependency>
       <groupId>org.noggit</groupId>
       <artifactId>noggit</artifactId>
       <version>0.5</version>
     </dependency>
-    <dependency>
-      <groupId>com.genexus</groupId>
-      <artifactId>gxclasses-java</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
-
   </dependencies>
 </project>

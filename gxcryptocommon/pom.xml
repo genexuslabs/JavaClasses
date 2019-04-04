@@ -11,7 +11,7 @@
 	</parent>
 
 	<artifactId>gxcryptocommon</artifactId>
-	<name>GeneXus Cryptography common</name>
+	<name>GeneXus Cryptography</name>
 
 	<dependencies>
 		<dependency>

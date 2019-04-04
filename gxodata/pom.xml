@@ -7,54 +7,35 @@
     <artifactId>parent</artifactId>
     <version>1.0-SNAPSHOT</version>
   </parent>
-  <groupId>com.genexus</groupId>
-  <artifactId>gxodata</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <name>gxodata</name>
-  <url>http://maven.apache.org</url>
 
-  <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-  </properties>
+  <artifactId>gxodata</artifactId>
+  <name>GeneXus OData</name>
 
   <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.genexus</groupId>
-      <artifactId>gxclasses-java</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/org.apache.olingo/odata-commons-api -->
+	<dependency>
+	  <groupId>${project.groupId}</groupId>
+	  <artifactId>gxclasses-java</artifactId>
+	  <version>${project.version}</version>
+	</dependency>
     <dependency>
       <groupId>org.apache.olingo</groupId>
       <artifactId>odata-commons-api</artifactId>
       <version>4.3.0</version>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/org.apache.olingo/odata-commons-core -->
     <dependency>
       <groupId>org.apache.olingo</groupId>
       <artifactId>odata-commons-core</artifactId>
       <version>4.3.0</version>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/org.apache.olingo/odata-client-api -->
     <dependency>
       <groupId>org.apache.olingo</groupId>
       <artifactId>odata-client-api</artifactId>
       <version>4.3.0</version>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/org.apache.olingo/odata-client-core -->
     <dependency>
       <groupId>org.apache.olingo</groupId>
       <artifactId>odata-client-core</artifactId>
       <version>4.3.0</version>
     </dependency>
-
-
   </dependencies>
 </project>
