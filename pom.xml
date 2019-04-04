@@ -36,16 +36,6 @@
 			<name>MIT Public</name>
 			<url>http://maven.mit.edu/nexus/content/repositories/public</url>
 		</repository>
-		<repository>
-			<id>genexus.nexus.snapshot</id>
-			<name>GeneXus Internal Snapshot Repository</name>
-			<url>http://nexus.genexus.com/repository/maven-snapshots/</url>
-		</repository>
-		<repository>
-			<id>genexus.nexus.release</id>
-			<name>GeneXus Internal Repository</name>
-			<url>http://nexus.genexus.com/repository/maven-releases/</url>
-		</repository>
 	</repositories>	
 
 	<licenses>
@@ -121,17 +111,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<distributionManagement>
-		<repository>
-			<id>genexus.nexus.release</id>
-			<name>GeneXus Internal Repository</name>
-			<url>http://nexus.genexus.com/repository/maven-releases/</url>
-		</repository>
-		<snapshotRepository>
-			<id>genexus.nexus.snapshot</id>
-			<name>GeneXus Internal Snapshot Repository</name>
-			<url>http://nexus.genexus.com/repository/maven-snapshots/</url>
-		</snapshotRepository>
-	</distributionManagement>
 </project>
