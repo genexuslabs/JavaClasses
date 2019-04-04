@@ -31,7 +31,7 @@ import com.genexus.ResourceReader;
 import com.genexus.internet.IHttpRequest;
 import com.genexus.CommonUtil;
 
-public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHandler, IXMLReader
+public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHandler
 {
 	/* Constants */
 	private final int ERROR_FILE_NOT_FOUND = 1;
@@ -46,8 +46,11 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	public final int ValidationSchema			= 3;
 	public final int ValidationXDR				= 4;
 	
-	/* Data */		//current node
-	Node node;	
+	/* Data */
+	
+	//current node
+	Node node;
+	
     protected StandardParserConfiguration parserConfiguration;
 	private NodesQueue nodesQueue;
 	private XMLInputSource inputSource;
@@ -102,40 +105,98 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
     // ContentHandler methods
     /*****************************************************************************/
 
-    public void startDocument(XMLLocator locator, String encoding, Augmentations a) throws XNIException 	{
+    public void startDocument(XMLLocator locator, String encoding, Augmentations a) throws XNIException 
+	{
     } 
-	public void startDocument(XMLLocator locator, String encoding) throws XNIException 	{
-    } 		public void endDocument(Augmentations a) throws XNIException	{	}
+	public void startDocument(XMLLocator locator, String encoding) throws XNIException 
+	{
+    } 
+	
+	public void endDocument(Augmentations a) throws XNIException
+	{
+	}
 
-	public void endDocument() throws XNIException	{	}
+	public void endDocument() throws XNIException
+	{
+	}
 
-    public void startElement(QName qelement, XMLAttributes attrs, Augmentations a) throws XNIException 	{	
-		startElement(qelement, attrs);    } 
+    public void startElement(QName qelement, XMLAttributes attrs, Augmentations a) throws XNIException 
+	{	
+		startElement(qelement, attrs);
+    } 
 
-    public void startElement(QName qelement, XMLAttributes attrs) throws XNIException 	{			inDocument = true;
-		flushTextBuffer();		ElementNode element = (ElementNode)elementsPool.getFree();		if (element == null) 		{			element = new ElementNode(qelement.rawname, qelement.prefix, qelement.localpart, qelement.uri, attrs, true);
-			elementsPool.add(element);		}		else		{			element.setName(qelement.rawname);			element.setPrefix(qelement.prefix);			element.setLocalName(qelement.localpart);			element.setNamespaceURI(qelement.uri);
+    public void startElement(QName qelement, XMLAttributes attrs) throws XNIException 
+	{	
+		inDocument = true;
+		flushTextBuffer();
+		ElementNode element = (ElementNode)elementsPool.getFree();
+		if (element == null) 
+		{
+			element = new ElementNode(qelement.rawname, qelement.prefix, qelement.localpart, qelement.uri, attrs, true);
+			elementsPool.add(element);
+		}
+		else
+		{
+			element.setName(qelement.rawname);
+			element.setPrefix(qelement.prefix);
+			element.setLocalName(qelement.localpart);
+			element.setNamespaceURI(qelement.uri);
 			element.setAttributes(attrs);
-			element.setValue("");		}		nodesQueue.addElement(element);
+			element.setValue("");
+		}
+		nodesQueue.addElement(element);
     } 
 
     public void endElement(QName qelement, Augmentations a) throws XNIException
 	{
-		endElement(qelement);	}					   
+		endElement(qelement);
+	}
+					   
     public void endElement(QName qelement) throws XNIException
-	{		flushTextBuffer();
-		EndTagNode tag = (EndTagNode)endtagsPool.getFree();		if (tag == null) 		{			tag = new EndTagNode(qelement.rawname, qelement.prefix, qelement.localpart, qelement.uri);		}		else		{
-			tag.setName(qelement.rawname);			tag.setPrefix(qelement.prefix);			tag.setLocalName(qelement.localpart);			tag.setNamespaceURI(qelement.uri);		}		nodesQueue.addElement(tag);
-	}					   
-    public void emptyElement(QName qelement, XMLAttributes attrs, Augmentations a) throws XNIException 	{
-		emptyElement(qelement, attrs);    } 	
-    public void emptyElement(QName qelement, XMLAttributes attrs) throws XNIException 	{		startElement(qelement, attrs);		endElement(qelement);
-    } 	
-	public void startPrefixMapping(java.lang.String prefix, java.lang.String uri, Augmentations a) throws XNIException	{	}
+	{
+		flushTextBuffer();
+		EndTagNode tag = (EndTagNode)endtagsPool.getFree();
+		if (tag == null) 
+		{
+			tag = new EndTagNode(qelement.rawname, qelement.prefix, qelement.localpart, qelement.uri);
+		}
+		else
+		{
+			tag.setName(qelement.rawname);
+			tag.setPrefix(qelement.prefix);
+			tag.setLocalName(qelement.localpart);
+			tag.setNamespaceURI(qelement.uri);
+		}
+		nodesQueue.addElement(tag);
+	}
+					   
+    public void emptyElement(QName qelement, XMLAttributes attrs, Augmentations a) throws XNIException 
+	{
+		emptyElement(qelement, attrs);
+    } 
 	
-	public void startPrefixMapping(java.lang.String prefix, java.lang.String uri) throws XNIException	{	}
-							   	public void endPrefixMapping(java.lang.String prefix, Augmentations a) throws XNIException	{	}
-		public void endPrefixMapping(java.lang.String prefix) throws XNIException	{	}	
+    public void emptyElement(QName qelement, XMLAttributes attrs) throws XNIException 
+	{
+		startElement(qelement, attrs);
+		endElement(qelement);
+    } 
+	
+	public void startPrefixMapping(java.lang.String prefix, java.lang.String uri, Augmentations a) throws XNIException
+	{
+	}
+	
+	public void startPrefixMapping(java.lang.String prefix, java.lang.String uri) throws XNIException
+	{
+	}
+							   
+	public void endPrefixMapping(java.lang.String prefix, Augmentations a) throws XNIException
+	{
+	}
+	
+	public void endPrefixMapping(java.lang.String prefix) throws XNIException
+	{
+	}
+	
 	/**
 	*	Le saca a un string los 'espacios' de adelante y atras. Como espacios se entienden los
 	*	\n \t \r ' ' 
@@ -171,7 +232,8 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 
 		return value.substring(begin, end + 1);
 	}
-		private boolean isSpace(char ch) 
+	
+	private boolean isSpace(char ch) 
 	{
 		return (ch == ' ' || ch == '\n' || ch == '\t' || ch == '\r');
 	}
@@ -187,73 +249,124 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 		}
 
 		return true;
-	}		
-	private void flushTextBuffer()	{	
+	}	
+	
+	private void flushTextBuffer()
+	{	
 		if (pendingText)
 		{
-			int nodeType;			String value = textBuffer.toString();
+			int nodeType;
+			String value = textBuffer.toString();
 		
 			if (inCDATA)
 				nodeType = Node.CDATA;
 			else
 				nodeType = (isWhiteSpace(value)) ? Node.WHITE_SPACE : Node.TEXT;
-						ValuedNode vnode = (ValuedNode)valuedNodesPool.getFree();			if (vnode != null)			{
+			
+			ValuedNode vnode = (ValuedNode)valuedNodesPool.getFree();
+			if (vnode != null)
+			{
 				vnode.setValue(value);
-				vnode.setNodeType(nodeType);			}			else			{
-				vnode = new ValuedNode(nodeType, value);			}			nodesQueue.addElement(vnode);			textBuffer.setLength(0);			pendingText = false;
-		}	}		public void startCDATA(Augmentations a) throws XNIException
+				vnode.setNodeType(nodeType);
+			}
+			else
+			{
+				vnode = new ValuedNode(nodeType, value);
+			}
+			nodesQueue.addElement(vnode);
+			textBuffer.setLength(0);
+			pendingText = false;
+		}
+	}
+	
+	public void startCDATA(Augmentations a) throws XNIException
 	{
 		startCDATA();
 	}
-		public void startCDATA() throws XNIException
+	
+	public void startCDATA() throws XNIException
 	{
 		flushTextBuffer();
-		pendingText = true;		inCDATA = true;
+		pendingText = true;
+		inCDATA = true;
 	}
-		public void endCDATA(Augmentations a) throws XNIException
+	
+	public void endCDATA(Augmentations a) throws XNIException
 	{
 		endCDATA();
 	}
 
 	public void endCDATA() throws XNIException
 	{
-		flushTextBuffer();		inCDATA = false;
+		flushTextBuffer();
+		inCDATA = false;
 	}
 
-    public void characters(XMLString text, Augmentations a) throws XNIException 	{
+    public void characters(XMLString text, Augmentations a) throws XNIException 
+	{
 		characters(text);
     } 
     
-    public void characters(XMLString text) throws XNIException 	{
-		if (!inDocument) return;		pendingText = true;		textBuffer.append(text.toString());
+    public void characters(XMLString text) throws XNIException 
+	{
+		if (!inDocument) return;
+		pendingText = true;
+		textBuffer.append(text.toString());
     } 
     
-    public void ignorableWhitespace(XMLString text, Augmentations a) throws XNIException 	{		ignorableWhitespace(text);
+    public void ignorableWhitespace(XMLString text, Augmentations a) throws XNIException 
+	{
+		ignorableWhitespace(text);
     } 
     
-    public void ignorableWhitespace(XMLString text) throws XNIException 	{		characters(text);
+    public void ignorableWhitespace(XMLString text) throws XNIException 
+	{
+		characters(text);
     } 
     
-    public void processingInstruction(String target, XMLString data, Augmentations a) throws XNIException 	{    
+    public void processingInstruction(String target, XMLString data, Augmentations a) throws XNIException 
+	{    
 		processingInstruction(target, data);
     } 
 	
-    public void processingInstruction(String target, XMLString data) throws XNIException 	{    
-		flushTextBuffer();		PInstructionNode pinode = (PInstructionNode)pinstructionsPool.getFree();		if (pinode == null) 		{			pinode = new PInstructionNode(target, data.toString());		}		else		{
-			pinode.setName(target);			pinode.setValue(data.toString());		}		nodesQueue.addElement(pinode);
+    public void processingInstruction(String target, XMLString data) throws XNIException 
+	{    
+		flushTextBuffer();
+		PInstructionNode pinode = (PInstructionNode)pinstructionsPool.getFree();
+		if (pinode == null) 
+		{
+			pinode = new PInstructionNode(target, data.toString());
+		}
+		else
+		{
+			pinode.setName(target);
+			pinode.setValue(data.toString());
+		}
+		nodesQueue.addElement(pinode);
     } 
 	
 	public void comment(XMLString text, Augmentations a) throws XNIException
 	{
 		comment(text);
-	}	
+	}
+	
 	public void comment(XMLString text) throws XNIException
 	{
-		flushTextBuffer();		ValuedNode vnode = (ValuedNode)valuedNodesPool.getFree();		if (vnode != null)		{
+		flushTextBuffer();
+		ValuedNode vnode = (ValuedNode)valuedNodesPool.getFree();
+		if (vnode != null)
+		{
 			vnode.setValue(text.toString());
-			vnode.setNodeType(Node.COMMENT);		}		else		{
-			vnode = new ValuedNode(Node.COMMENT, text.toString());		}		nodesQueue.addElement(vnode);		
-	}	
+			vnode.setNodeType(Node.COMMENT);
+		}
+		else
+		{
+			vnode = new ValuedNode(Node.COMMENT, text.toString());
+		}
+		nodesQueue.addElement(vnode);
+		
+	}
+	
 	public void startEntity(java.lang.String name,
 							java.lang.String publicId,
 							java.lang.String systemId,
@@ -261,7 +374,11 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 							java.lang.String encoding)
                  throws XNIException
 	{
-	}		public void endEntity(java.lang.String name) throws XNIException	{	}
+	}
+	
+	public void endEntity(java.lang.String name) throws XNIException
+	{
+	}
 	
 	public void textDecl(java.lang.String version, java.lang.String encoding, Augmentations a) throws XNIException
 	{
@@ -290,16 +407,26 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 							java.lang.String systemId, Augmentations a)
                  throws XNIException
 	{
-		doctypeDecl(rootElement, publicId, systemId);	}
+		doctypeDecl(rootElement, publicId, systemId);
+	}
 	
 	public void doctypeDecl(java.lang.String rootElement,
 							java.lang.String publicId,
 							java.lang.String systemId)
                  throws XNIException
-	{		flushTextBuffer();		ValuedNode vnode = (ValuedNode)valuedNodesPool.getFree();		if (vnode != null)		{
+	{
+		flushTextBuffer();
+		ValuedNode vnode = (ValuedNode)valuedNodesPool.getFree();
+		if (vnode != null)
+		{
 			vnode.setValue(rootElement);
-			vnode.setNodeType(Node.DOCUMENT_TYPE);		}		else		{
-			vnode = new ValuedNode(Node.DOCUMENT_TYPE, rootElement);		}		nodesQueue.addElement(vnode);
+			vnode.setNodeType(Node.DOCUMENT_TYPE);
+		}
+		else
+		{
+			vnode = new ValuedNode(Node.DOCUMENT_TYPE, rootElement);
+		}
+		nodesQueue.addElement(vnode);
 	}
 	
 	
@@ -308,25 +435,33 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
     //
     // XMLErrorHandler methods
     //
-    public void warning(String domain, String key, XMLParseException ex) throws XNIException 	{		errCode = ERROR_PARSING;
+    public void warning(String domain, String key, XMLParseException ex) throws XNIException 
+	{
+		errCode = ERROR_PARSING;
 		errDescription = ex.getMessage();
 		errLineNumber = ex.getLineNumber();
-		errLinePos = ex.getColumnNumber();		throw new XNIException(ex);
+		errLinePos = ex.getColumnNumber();
+		throw new XNIException(ex);
     } 
 
     
-    public void error(String domain, String key, XMLParseException ex) throws XNIException 	{		errCode = ERROR_PARSING;
+    public void error(String domain, String key, XMLParseException ex) throws XNIException 
+	{
+		errCode = ERROR_PARSING;
 		errDescription = ex.getMessage();
 		errLineNumber = ex.getLineNumber();
-		errLinePos = ex.getColumnNumber();		throw new XNIException(ex);
+		errLinePos = ex.getColumnNumber();
+		throw new XNIException(ex);
     } 
 
     
-    public void fatalError(String domain, String key, XMLParseException ex) throws XNIException 	{
+    public void fatalError(String domain, String key, XMLParseException ex) throws XNIException 
+	{
         errCode = ERROR_PARSING;
 		errDescription = ex.getMessage();
 		errLineNumber = ex.getLineNumber();
-		errLinePos = ex.getColumnNumber();		throw new XNIException(ex);
+		errLinePos = ex.getColumnNumber();
+		throw new XNIException(ex);
     } 
 
 /*****************************************************************************/
@@ -702,8 +837,12 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 		try
 		{
 			if (documentEncoding.length() > 0)
-				inputSource = new XMLInputSource(null, null, null, client.getInputStream(), documentEncoding);			else				inputSource = new XMLInputSource(null, null, null, client.getInputStream(), null);
-			parserConfiguration.setInputSource(inputSource);		}		catch (IOException e)
+				inputSource = new XMLInputSource(null, null, null, client.getInputStream(), documentEncoding);
+			else
+				inputSource = new XMLInputSource(null, null, null, client.getInputStream(), null);
+			parserConfiguration.setInputSource(inputSource);
+		}
+		catch (IOException e)
 		{
 			errCode = ERROR_IO;
 			errDescription = e.getMessage();
@@ -716,8 +855,12 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 		try
 		{
 			if (documentEncoding.length() > 0)
-				inputSource = new XMLInputSource(null, null, null, client.getInputStream(), documentEncoding);			else				inputSource = new XMLInputSource(null, null, null, client.getInputStream(), null);
-			parserConfiguration.setInputSource(inputSource);		}		catch (IOException e)
+				inputSource = new XMLInputSource(null, null, null, client.getInputStream(), documentEncoding);
+			else
+				inputSource = new XMLInputSource(null, null, null, client.getInputStream(), null);
+			parserConfiguration.setInputSource(inputSource);
+		}
+		catch (IOException e)
 		{
 			errCode = ERROR_IO;
 			errDescription = e.getMessage();
@@ -743,7 +886,8 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 			}
 			parserConfiguration.cleanup();			
         }
-        catch (IOException e) 		{
+        catch (IOException e) 
+		{
             errCode = ERROR_IO;
 			errDescription = e.getMessage();
 	    }
@@ -784,7 +928,12 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	}
 	
 	public void setLinesNormalization (int Normalization)
-	{		linesNormalization = Normalization;		if (linesNormalization == 0)			parserConfiguration.setFeature("http:www.genexus.com.uy/java/xmlreader/linesNormalization", false);		else			parserConfiguration.setFeature("http:www.genexus.com.uy/java/xmlreader/linesNormalization", true);
+	{
+		linesNormalization = Normalization;
+		if (linesNormalization == 0)
+			parserConfiguration.setFeature("http:www.genexus.com.uy/java/xmlreader/linesNormalization", false);
+		else
+			parserConfiguration.setFeature("http:www.genexus.com.uy/java/xmlreader/linesNormalization", true);
 	}
 	
 	public short getLinesNormalization ()

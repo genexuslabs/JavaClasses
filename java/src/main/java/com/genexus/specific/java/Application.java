@@ -21,7 +21,6 @@ import com.genexus.internet.HttpResponse;
 import com.genexus.util.IniFile;
 import com.genexus.webpanels.GXWebObjectStub;
 import com.genexus.wrapper.GXCollectionWrapper;
-import com.genexus.xml.IXMLReader;
 import com.genexus.xml.XMLReader;
 
 public class Application implements IExtensionApplication {
@@ -164,11 +163,6 @@ public class Application implements IExtensionApplication {
 	public AbstractGXConnection getConnection(AbstractModelContext context, int remoteHandle, String dataStore,
 			boolean readOnly, boolean sticky) throws SQLException {
 		return DBConnectionManager.getInstance((ModelContext) context).getConnection((ModelContext) context, remoteHandle, dataStore, readOnly, sticky);
-	}
-
-	@Override
-	public IXMLReader createXMLReader() {
-		return new XMLReader();
 	}
 
 	@Override

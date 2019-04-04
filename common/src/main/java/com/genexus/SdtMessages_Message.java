@@ -11,7 +11,7 @@ package com.genexus ;
 import com.genexus.common.classes.AbstractModelContext;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.xml.GXXMLSerializable;
-import com.genexus.xml.IXMLReader;
+import com.genexus.xml.XMLReader;
 
 public final  class SdtMessages_Message extends GXXMLSerializable implements Cloneable, java.io.Serializable
 {
@@ -47,7 +47,7 @@ public final  class SdtMessages_Message extends GXXMLSerializable implements Clo
 		return (String) mapper.get(value);
 	}
 
-	public short readxml( IXMLReader oReader ,
+	public short readxml( XMLReader oReader ,
 			String sName )
 	{
 		short GXSoapError = 1 ;

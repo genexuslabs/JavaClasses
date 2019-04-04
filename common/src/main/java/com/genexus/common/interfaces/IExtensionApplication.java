@@ -10,7 +10,6 @@ import com.genexus.common.classes.AbstractNamespace;
 import com.genexus.common.classes.AbstractUserInformation;
 
 import com.genexus.util.IniFile;
-import com.genexus.xml.IXMLReader;
 
 public interface IExtensionApplication {
 	void exit();
@@ -67,8 +66,6 @@ public interface IExtensionApplication {
 
 	AbstractGXConnection getConnection(AbstractModelContext context, int remoteHandle, String dataStore,
 			boolean readOnly, boolean sticky) throws SQLException;
-
-	IXMLReader createXMLReader();
 
 	AbstractModelContext getModelContext(Class<?> modelContextClass);
 

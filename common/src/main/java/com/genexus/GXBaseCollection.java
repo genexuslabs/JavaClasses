@@ -8,7 +8,7 @@ import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.internet.IGxJSONAble;
 import com.genexus.xml.GXXMLSerializable;
 import com.genexus.xml.GXXMLSerializer;
-import com.genexus.xml.IXMLReader;
+import com.genexus.xml.XMLReader;
 import com.genexus.xml.XMLWriter;
 
 import json.org.json.IJsonFormattable;
@@ -54,7 +54,7 @@ public class GXBaseCollection<T extends GXXMLSerializable> extends GXSimpleColle
 	{
 		return false;
 	}
-	private short readCollectionFromXML(IXMLReader reader)
+	private short readCollectionFromXML(XMLReader reader)
 	{
 		removeAllItems();
 		try
@@ -118,7 +118,7 @@ public class GXBaseCollection<T extends GXXMLSerializable> extends GXSimpleColle
 	}
 
 	@Override
-	public short AddObjectInstance(IXMLReader reader)
+	public short AddObjectInstance(XMLReader reader)
 	{
 		try
 		{
@@ -171,7 +171,7 @@ public class GXBaseCollection<T extends GXXMLSerializable> extends GXSimpleColle
 	public boolean fromxml(String xml, GXBaseCollection<SdtMessages_Message> messages, String collName)
 	{
 		try{
-			IXMLReader reader = SpecificImplementation.Application.createXMLReader();
+			XMLReader reader = new XMLReader();
 			reader.openFromString(xml);
 			short result;
 			result = readCollectionFromXML(reader);

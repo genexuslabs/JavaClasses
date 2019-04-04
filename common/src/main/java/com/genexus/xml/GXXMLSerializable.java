@@ -54,7 +54,7 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 		}
 		oWriter.writeRawText(toxml(false, sIncludeState, sName, sNameSpace));
 	}
-	public short readxml( IXMLReader oReader, String sName ) {
+	public short readxml( XMLReader oReader, String sName ) {
 		try
 		{
 			String xml = oReader.readRawXML();//UpdateNodeDefaultNamespace(oReader.readRawXML(), oReader.getNamespaceURI(), false);
@@ -74,7 +74,7 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 
 	public GXProperties getStateAttributes( ){return null;}
 
-	public short readxml(IXMLReader reader)
+	public short readxml(XMLReader reader)
 	{
 		return readxml(reader, "");
 	}
@@ -165,7 +165,7 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 				return true;
 			}else{
 				short nResult ;
-				IXMLReader oReader = SpecificImplementation.Application.createXMLReader();
+				XMLReader oReader = new XMLReader();
 				oReader.openFromString(sXML);
 				oReader.read();
 				nResult = readxml(oReader, sName) ;

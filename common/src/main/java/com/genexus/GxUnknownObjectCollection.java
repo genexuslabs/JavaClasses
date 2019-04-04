@@ -32,12 +32,12 @@ public class GxUnknownObjectCollection extends GXSimpleCollection
 		}
 	}
 	
-	public short readxml(IXMLReader reader, String sName)
+	public short readxml(XMLReader reader, String sName)
 	{
 		return 0;
 	}
 	
-	public short readxmlcollection( IXMLReader oReader, String sName, String itemName )
+	public short readxmlcollection( XMLReader oReader, String sName, String itemName )
 	{	
 		return 0;
 	}
