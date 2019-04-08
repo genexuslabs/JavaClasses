@@ -41,8 +41,7 @@ public final class CommonUtil
 	{
 		try
 		{
-		originalTimeZone = GXTimeZone.getDefaultOriginal();
-
+			originalTimeZone = GXTimeZone.getDefaultOriginal();
 			defaultTimeZone = GXTimeZone.getDefault();
 			defaultLocale   = Locale.getDefault();
 
