@@ -62,7 +62,7 @@ public final class GXutil
 
 	public static String accessKeyCaption(String OCaption)
 	{
-		return CommonUtil.accessKey(OCaption);
+		return CommonUtil.accessKeyCaption(OCaption);
 	}
 
 	public static Calendar getCalendar()
