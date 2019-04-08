@@ -16,6 +16,7 @@ public final class Connect {
 	public static void init()
 	{
 		SpecificImplementation.Application = new Application();
+		SpecificImplementation.FileUtils = new FileUtils();
 		SpecificImplementation.Cursor = new Cursor();
 		SpecificImplementation.BatchUpdateCursor = new BatchUpdateCursor();
 		SpecificImplementation.HttpClient = new HttpClient();
