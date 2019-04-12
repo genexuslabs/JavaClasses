@@ -34,12 +34,12 @@ public final class GXGridState extends GXXMLSerializable implements Cloneable, j
 
    public GXGridState( int remoteHandle ,  ModelContext context )
    {
-      super( remoteHandle, context, "SdtGridState");
+      super( remoteHandle, context, "GXGridState");
    }
 
    public GXGridState( int remoteHandle, com.genexus.common.classes.AbstractModelContext context )
    {
-      super( remoteHandle, (ModelContext)context, "SdtGridState");
+      super( remoteHandle, (ModelContext)context, "GXGridState");
    }
 
    public GXGridState(HttpContext context, String gridName, String programName, Runnable varsFromState, Runnable varsToState)
@@ -70,7 +70,7 @@ public final class GXGridState extends GXXMLSerializable implements Cloneable, j
 	{
       WebSession session = httpContext.getWebSession();
 		fromJSonString(session.getValue(gridName));
-		varsToState.run();
+      varsToState.run();
 		session.setValue(gridName, toJSonString());
 	}
 
@@ -103,36 +103,6 @@ public final class GXGridState extends GXXMLSerializable implements Cloneable, j
       return value;
    }
 
-   public short readxml( com.genexus.xml.XMLReader oReader ,
-                         String sName )
-   {
-      return 1;
-   }
-
-   public void writexml( com.genexus.xml.XMLWriter oWriter ,
-                         String sName ,
-                         String sNameSpace )
-   {
-      writexml(oWriter, sName, sNameSpace, true);
-   }
-
-   public void writexml( com.genexus.xml.XMLWriter oWriter ,
-                         String sName ,
-                         String sNameSpace ,
-                         boolean sIncludeState )
-   {
-     
-   }
-
-   public long getnumericvalue( com.genexus.xml.XMLReader oReader )
-   {
-      if ( GXutil.notNumeric( oReader.getValue()) )
-      {
-         formatError = true ;
-      }
-      return GXutil.lval( oReader.getValue()) ;
-   }
-
    public void tojson( )
    {
       tojson( true) ;
@@ -147,8 +117,6 @@ public final class GXGridState extends GXXMLSerializable implements Cloneable, j
                        boolean includeNonInitialized )
    {
       AddObjectProperty("CurrentPage", gxTv_GXGridState_Currentpage, false, false);
-      AddObjectProperty("OrderedBy", gxTv_GXGridState_Orderedby, false, false);
-      AddObjectProperty("HidingSearch", gxTv_GXGridState_Hidingsearch, false, false);
       if ( gxTv_GXGridState_Filtervalues != null )
       {
          AddObjectProperty("FilterValues", gxTv_GXGridState_Filtervalues, false, false);
@@ -165,31 +133,11 @@ public final class GXGridState extends GXXMLSerializable implements Cloneable, j
       gxTv_GXGridState_Currentpage = value ;
    }
 
-   public short getgxTv_GXGridState_Orderedby( )
-   {
-      return gxTv_GXGridState_Orderedby ;
-   }
-
-   public void setgxTv_GXGridState_Orderedby( short value )
-   {
-      gxTv_GXGridState_Orderedby = value ;
-   }
-
-   public byte getgxTv_GXGridState_Hidingsearch( )
-   {
-      return gxTv_GXGridState_Hidingsearch ;
-   }
-
-   public void setgxTv_GXGridState_Hidingsearch( byte value )
-   {
-      gxTv_GXGridState_Hidingsearch = value ;
-   }
-
    public GXBaseCollection<GXGridState_FilterValue> getgxTv_GXGridState_Filtervalues( )
    {
       if ( gxTv_GXGridState_Filtervalues == null )
       {
-         gxTv_GXGridState_Filtervalues = new GXBaseCollection<GXGridState_FilterValue>(GXGridState_FilterValue.class, "GridState.FilterValue", "AjaxSampleValidacion", remoteHandle);
+         gxTv_GXGridState_Filtervalues = new GXBaseCollection<GXGridState_FilterValue>(GXGridState_FilterValue.class, "GXGridState.FilterValue", "", remoteHandle);
       }
       gxTv_GXGridState_Filtervalues_N = (byte)(0) ;
       return gxTv_GXGridState_Filtervalues ;
@@ -229,7 +177,6 @@ public final class GXGridState extends GXXMLSerializable implements Cloneable, j
    public void initialize( )
    {
       gxTv_GXGridState_Filtervalues_N = (byte)(1) ;
-      sTagName = "" ;
    }
 
    public GXGridState Clone( )
@@ -237,15 +184,8 @@ public final class GXGridState extends GXXMLSerializable implements Cloneable, j
       return (GXGridState)(clone()) ;
    }
 
-   protected byte gxTv_GXGridState_Hidingsearch ;
    protected byte gxTv_GXGridState_Filtervalues_N ;
    protected int gxTv_GXGridState_Currentpage ;
-   protected short gxTv_GXGridState_Orderedby ;
-   protected short readOk ;
-   protected short nOutParmCount ;
-   protected String sTagName ;
-   protected boolean formatError ;
-   protected GXBaseCollection<GXGridState_FilterValue> gxTv_GXGridState_Filtervalues_aux ;
    protected GXBaseCollection<GXGridState_FilterValue> gxTv_GXGridState_Filtervalues=null ;
 }
 

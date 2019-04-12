@@ -37,36 +37,9 @@ public final  class GXGridState_FilterValue extends GXXMLSerializable implements
       super( remoteHandle, (ModelContext)context, "GXGridState_FilterValue");
    }
 
-
-   private static java.util.HashMap mapper = new java.util.HashMap();
-   static
-   {
-   }
-
    public String getJsonMap( String value )
    {
-      return (String) mapper.get(value);
-   }
-
-   public short readxml( com.genexus.xml.XMLReader oReader ,
-                         String sName )
-   {
-      return 1 ;
-   }
-
-   public void writexml( com.genexus.xml.XMLWriter oWriter ,
-                         String sName ,
-                         String sNameSpace )
-   {
-      writexml(oWriter, sName, sNameSpace, true);
-   }
-
-   public void writexml( com.genexus.xml.XMLWriter oWriter ,
-                         String sName ,
-                         String sNameSpace ,
-                         boolean sIncludeState )
-   {
-     
+      return value;
    }
 
    public void tojson( )
@@ -103,7 +76,6 @@ public final  class GXGridState_FilterValue extends GXXMLSerializable implements
    public void initialize( )
    {
       gxTv_GXGridState_FilterValue_Value = "" ;
-      sTagName = "" ;
    }
 
    public GXGridState_FilterValue Clone( )
@@ -111,10 +83,6 @@ public final  class GXGridState_FilterValue extends GXXMLSerializable implements
       return (GXGridState_FilterValue)(clone()) ;
    }
 
-   protected short readOk ;
-   protected short nOutParmCount ;
-   protected String sTagName ;
-   protected boolean formatError ;
    protected String gxTv_GXGridState_FilterValue_Value ;
 }
 
