@@ -184,9 +184,9 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 	
 	/** This method is overridden by subclass in the generated code
 	 */
-	public void submit(int id, Object [] submitParms, AbstractModelContext ctx){ ; }
-	public void submit(int id, Object [] submitParms){ ; }
-	public void submitReorg(int id, Object [] submitParms) throws SQLException{ ; }
+	public void submit(int id, Object [] submitParms, AbstractModelContext ctx){  }
+	public void submit(int id, Object [] submitParms){  }
+	public void submitReorg(int id, Object [] submitParms) throws SQLException{  }
 	
 	
 	public void setejbMessageCall()

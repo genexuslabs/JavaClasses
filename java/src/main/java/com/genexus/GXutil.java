@@ -24,20 +24,6 @@ public final class GXutil
 {
 	public static boolean Confirmed = false;
 
-	static final char ASTER = '%';
-	static final char QMARK = '_';
-	static final int SECONDS_IN_DAY = 86400;
-
-	public static TimeZone 	defaultTimeZone;
-	public static Locale	defaultLocale;
-
-	static TimeZone 	originalTimeZone;
-	public static IThreadLocal threadCalendar;
-
-	private static Random random;
-	private static Date nullDate;
-
-
 	public static void writeLogln( String message)
 	{
 		CommonUtil.writeLogln(message);
@@ -60,7 +46,7 @@ public final class GXutil
 
 	public static String accessKeyCaption(String OCaption)
 	{
-		return CommonUtil.accessKey(OCaption);
+		return CommonUtil.accessKeyCaption(OCaption);
 	}
 
 	public static Calendar getCalendar()
@@ -920,14 +906,14 @@ public final class GXutil
 	public static String serverTime(ModelContext context, int handle, String dataSource)
 	{
 		SimpleDateFormat time_df = new java.text.SimpleDateFormat("HH:mm:ss");
-		time_df.setTimeZone(defaultTimeZone);
+		time_df.setTimeZone(CommonUtil.defaultTimeZone);
 		return SpecificImplementation.GXutil.serverTime(time_df, context, handle, dataSource);
 	}
 
 	public static String serverTime(ModelContext context, int handle, com.genexus.db.IDataStoreProvider dataStore)
 	{
 		SimpleDateFormat time_df = new java.text.SimpleDateFormat("HH:mm:ss");
-		time_df.setTimeZone(defaultTimeZone);
+		time_df.setTimeZone(CommonUtil.defaultTimeZone);
 		return SpecificImplementation.GXutil.serverTime(time_df, context, handle, dataStore);
 	}
 
