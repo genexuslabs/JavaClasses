@@ -42,10 +42,10 @@ public final class GXGridState extends GXXMLSerializable implements Cloneable, j
       super( remoteHandle, (ModelContext)context, "GXGridState");
    }
 
-   public GXGridState(HttpContext context, String gridName, String programName, Runnable varsFromState, Runnable varsToState)
+   public GXGridState(ModelContext context, String gridName, String programName, Runnable varsFromState, Runnable varsToState)
    {
-      this(  new ModelContext(GXGridState.class));
-      this.httpContext = context;
+      this(context);
+      this.httpContext = context.getHttpContext();
       this.gridName = programName + "_" + gridName + "_GridState";
       this.varsFromState = varsFromState;
       this.varsToState = varsToState;
@@ -53,7 +53,7 @@ public final class GXGridState extends GXXMLSerializable implements Cloneable, j
 
 	public String filterValues(int idx)
 	{
-		return getgxTv_GXGridState_Filtervalues().elementAt(-1+1).getgxTv_GXGridState_FilterValue_Value();
+		return getgxTv_GXGridState_Filtervalues().elementAt(idx-1).getgxTv_GXGridState_FilterValue_Value();
 	}
 	public void clearFilterValues()
 	{
