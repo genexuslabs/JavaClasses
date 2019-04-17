@@ -14,12 +14,18 @@ import com.genexus.webpanels.*;
 import com.genexus.internet.*;
 import java.util.*;
 import java.util.concurrent.Callable;
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 
 public final class GXGridState extends GXXMLSerializable implements Cloneable, java.io.Serializable
 {
+   public static final ILogger logger = LogManager.getLogger(GXGridState.class);
    String gridName;
    Runnable varsFromState;
    Runnable varsToState;
+   String varsFromStateMethod;
+   String varsToStateMethod;
+   Object parent;
    HttpContext httpContext;
 
    public GXGridState( )
@@ -50,7 +56,38 @@ public final class GXGridState extends GXXMLSerializable implements Cloneable, j
       this.varsFromState = varsFromState;
       this.varsToState = varsToState;
    }
-
+   //Cosntructor por java <= 1.7
+   public GXGridState(ModelContext context, String gridName, String programName, GXWebObjectBase parent, String varsFromStateMethod, String varsToStateMethod)
+   {
+      this(context);
+      this.httpContext = context.getHttpContext();
+      this.gridName = programName + "_" + gridName + "_GridState";
+      this.varsFromStateMethod = varsFromStateMethod;
+      this.varsToStateMethod = varsToStateMethod;
+      this.parent = parent;
+   }
+   private void runVarsToState(){
+      if (this.varsToState!=null)
+         varsToState.run();
+      else{
+         try{
+            parent.getClass().getMethod(varsToStateMethod).invoke(parent, (Object[]) null);
+         }catch(Exception ex){
+            logger.error("Error invoking method " + varsToStateMethod + " for grid state " + gridName, ex);
+         }
+      }
+   }
+   private void runVarsFromState(){
+      if (this.varsFromState!=null)
+         varsFromState.run();
+      else{
+         try{
+            parent.getClass().getMethod(varsFromStateMethod).invoke(parent, (Object[]) null);
+         }catch(Exception ex){
+            logger.error("Error invoking method " + varsFromStateMethod + " for grid state " + gridName, ex);
+         }
+      }
+   }
 	public String filterValues(int idx)
 	{
 		return getgxTv_GXGridState_Filtervalues().elementAt(idx-1).getgxTv_GXGridState_FilterValue_Value();
@@ -70,7 +107,7 @@ public final class GXGridState extends GXXMLSerializable implements Cloneable, j
 	{
       WebSession session = httpContext.getWebSession();
 		fromJSonString(session.getValue(gridName));
-      varsToState.run();
+      runVarsToState();
 		session.setValue(gridName, toJSonString());
 	}
 
@@ -81,7 +118,7 @@ public final class GXGridState extends GXXMLSerializable implements Cloneable, j
       if ( GXutil.strcmp(httpRequest.getMethod(), "GET") == 0 )
 		{
 			fromJSonString(session.getValue(gridName));
-			varsFromState.run();
+			runVarsFromState();
 		}
 	}
    public int getFiltercount()
