@@ -12,10 +12,13 @@
     <artifactId>gxodata</artifactId>
     <name>GeneXus OData</name>
 
+    <build>
+        <finalName>gxodata</finalName>
+    </build>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>gxclasses-java</artifactId>
+            <artifactId>gxclassR</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

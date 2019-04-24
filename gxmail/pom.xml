@@ -14,6 +14,7 @@
 	<name>GeneXus Mail</name>
 
 	<build>
+		<finalName>gxmail</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -29,7 +30,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>common</artifactId>
+			<artifactId>gxcommon</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

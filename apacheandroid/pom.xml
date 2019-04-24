@@ -11,5 +11,8 @@
 
 	<artifactId>apacheandroid</artifactId>
 	<name>Apache Android classes</name>
+	<build>
+		<finalName>apacheandroid</finalName>
+	</build>
 
 </project>

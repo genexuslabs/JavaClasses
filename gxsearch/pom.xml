@@ -13,6 +13,7 @@
 	<artifactId>gxsearch</artifactId>
 	<name>GeneXus Search</name>
 	<build>
+		<finalName>gxsearch</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -27,7 +28,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>gxclasses-java</artifactId>
+			<artifactId>gxclassR</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

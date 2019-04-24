@@ -11,12 +11,14 @@
 
     <artifactId>gxexternalproviders</artifactId>
     <name>GeneXus External Providers</name>
-
+    <build>
+        <finalName>gxexternalproviders</finalName>
+    </build>
 
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>gxclasses-java</artifactId>
+            <artifactId>gxclassR</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

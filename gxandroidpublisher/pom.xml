@@ -14,6 +14,7 @@
     <name>GeneXus Android Publisher</name>
 
     <build>
+        <finalName>gxandroidpublisher</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -34,7 +35,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>gxclasses-java</artifactId>
+            <artifactId>gxclassR</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
