@@ -3165,4 +3165,14 @@ public final class CommonUtil
 	    e.printStackTrace(writer);
 	    return bytes.toString();
 	}
+
+	public static String getClassName(String pgmName) {
+		// Esta la usa el developerMenu, que saca el package del client.cfg
+		String classPackage = SpecificImplementation.Application.getClientPreferences().getPACKAGE();
+
+		if	(!classPackage.equals(""))
+			classPackage += ".";
+
+		return classPackage + pgmName.replace('\\', '.').trim();
+	}
 }

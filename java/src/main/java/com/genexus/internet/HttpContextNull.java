@@ -8,12 +8,13 @@ import javax.servlet.http.HttpServletResponse;
 import com.genexus.Application;
 import com.genexus.GXutil;
 import com.genexus.ModelContext;
+import com.genexus.common.interfaces.IHttpContextNull;
 import com.genexus.db.DBConnectionManager;
 import com.genexus.webpanels.WebSession;
 
 import json.org.json.JSONObject;
 
-public class HttpContextNull extends HttpContext
+public class HttpContextNull extends HttpContext implements IHttpContextNull
 {
        private HttpRequest httprequest;
        private HttpGXServletRequest request;

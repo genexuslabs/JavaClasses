@@ -5,6 +5,7 @@ import java.util.TimeZone;
 import com.genexus.Globals;
 import com.genexus.IHttpContext;
 import com.genexus.common.interfaces.IClientPreferences;
+import com.genexus.common.interfaces.IHttpContextNull;
 
 
 public abstract class AbstractModelContext {
@@ -36,4 +37,8 @@ public abstract class AbstractModelContext {
 	public abstract void setThreadModelContext(Object ctx);
 
 	public abstract String getServerKey();
+
+    public boolean isNullHttpContext() {
+    	 return getHttpContext() instanceof IHttpContextNull;
+    }
 }

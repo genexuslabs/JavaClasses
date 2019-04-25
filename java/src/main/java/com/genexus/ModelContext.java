@@ -15,6 +15,7 @@ import com.genexus.util.GXThreadLocal;
 import com.genexus.util.GXTimeZone;
 import com.genexus.util.IGUIContext;
 import com.genexus.util.IThreadLocal;
+import com.genexus.common.interfaces.SpecificImplementation;
 
 public final class ModelContext extends AbstractModelContext
 {
@@ -25,16 +26,17 @@ public final class ModelContext extends AbstractModelContext
 	private boolean poolConnections;
 	private HttpContext httpContext = new HttpContextNull();
 	private IGUIContext guiContext  = new GUIContextNull();
-	private SessionInstances sessionInstances;
 	private String staticContentBase = "";
-    private GxEjbContext ctx = null;
-    private int afterConnectHandle = 0;
+	private int afterConnectHandle = 0;
+
+
 	public boolean inBeforeCommit = false;
 	public boolean inAfterCommit = false;
 	public boolean inBeforeRollback = false;
 	public boolean inAfterRollback = false; 
 	public boolean inErrorHandler = false;
-		
+
+
 	public static IThreadLocal threadModelContext = GXThreadLocal.newThreadLocal(); 
 	
 	public static ModelContext getModelContext()
@@ -59,6 +61,12 @@ public final class ModelContext extends AbstractModelContext
 	{
 		threadModelContext.set(null);
 	}
+	
+    public boolean isTimezoneSet()
+    {
+    	return SpecificImplementation.ModelContext.isTimezonSet();
+    }
+	
 	
 	public static ModelContext getModelContext(Class packageClass)
 	{
@@ -87,21 +95,7 @@ public final class ModelContext extends AbstractModelContext
 
 	public ModelContext(Class packageClass)
 	{
-		if (gxcfgPackageClass != null)
-		{
-			this.packageClass = gxcfgPackageClass;
-		}
-		else
-		{
-			if (threadModelContext.get() == null)
-			{
-				this.packageClass = packageClass;
-			}
-			else
-			{
-				this.packageClass = ModelContext.getModelContext().packageClass;
-			}
-		}
+		SpecificImplementation.ModelContext.initPackageClass(this, packageClass);
 		if(threadModelContext.get() != null)
 		{
 			httpContext = ((ModelContext)threadModelContext.get()).getHttpContext();
@@ -165,20 +159,7 @@ public final class ModelContext extends AbstractModelContext
 		return ret;
 	}
 	
-	private static String[] copyKeys = { "GAMConCli", "GAMSession", "GAMError", "GAMErrorURL", "GAMRemote" };
-	private static void initializeSubmitSession(ModelContext oldContext, ModelContext newContext) {
-		HttpContext httpCtx = oldContext.getHttpContext();
-		HttpContext newHttpCtx = newContext.getHttpContext();		
-		if (httpCtx != null && newHttpCtx != null) {		
-			com.genexus.webpanels.WebSession ws = newHttpCtx.getWebSession();
-			for (int i = 0; i < copyKeys.length && ws != null; i++){
-				Object value = httpCtx.getSessionValue(copyKeys[i]);
-				if (value != null) {
-					ws.setValue(copyKeys[i], value.toString());			
-				}
-			}
-		}	
-	}
+
 	
 	public SessionInstances getSessionInstances()
 	{
@@ -212,7 +193,7 @@ public final class ModelContext extends AbstractModelContext
 
 	public String getPackageName()
 	{
-		return PrivateUtilities.getPackageName(packageClass);
+		return CommonUtil.getPackageName(packageClass);
 	}
 
 	public Class getPackageClass()
@@ -381,7 +362,7 @@ public final class ModelContext extends AbstractModelContext
                 }
                 else
                 {
-					proc = GXutil.getClassName(proc);
+					proc = com.genexus.GXutil.getClassName(proc);
                 }
 				Class c = Class.forName(proc);
 				Class[] parTypes = new Class[] {int.class, ModelContext.class};
@@ -448,7 +429,7 @@ public final class ModelContext extends AbstractModelContext
                     }
                     else
                     {
-						proc = GXutil.getClassName(proc);
+						proc = com.genexus.GXutil.getClassName(proc);
                     }
 					Class c = Class.forName(proc);
 					Class[] parTypes = new Class[] {int.class, ModelContext.class};
@@ -532,10 +513,7 @@ public final class ModelContext extends AbstractModelContext
 		return TimeZone.getTimeZone(getTimeZone());
 	}
     
-    public boolean isTimezoneSet()
-    {
-    	return !(httpContext instanceof HttpContextNull);
-    }
+
     
     private TimeZone _getClientTimeZone()
     {

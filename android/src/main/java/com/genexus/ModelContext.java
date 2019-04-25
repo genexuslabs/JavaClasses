@@ -20,6 +20,7 @@ import com.genexus.util.IThreadLocal;
 public final class ModelContext extends AbstractModelContext
 {
 	public Class packageClass;
+	public static Class gxcfgPackageClass;
 	private String nameSpace;
 	private String nameHost;
 	private boolean poolConnections;
@@ -27,6 +28,11 @@ public final class ModelContext extends AbstractModelContext
 	private IGUIContext guiContext  = new GUIContextNull();
 	private String staticContentBase = "";
 	private int afterConnectHandle = 0;
+	public boolean inBeforeCommit = false;
+	public boolean inAfterCommit = false;
+	public boolean inBeforeRollback = false;
+	public boolean inAfterRollback = false; 
+	public boolean inErrorHandler = false;
 		
 	public static IThreadLocal threadModelContext = GXThreadLocal.newThreadLocal(); 
 	
@@ -38,7 +44,7 @@ public final class ModelContext extends AbstractModelContext
 		{
 			if(context == null)
 			{
-				System.err.println("Cannot find ModelContext for thread " + Thread.currentThread());
+				System.err.println(new Date() + " - Cannot find ModelContext for thread " + Thread.currentThread() );
 			}
 		}
 		return context;
@@ -56,8 +62,9 @@ public final class ModelContext extends AbstractModelContext
 	
     public boolean isTimezoneSet()
     {
-    	return true;
+    	return SpecificImplementation.ModelContext.isTimezonSet();
     }
+	
 	
 	public static ModelContext getModelContext(Class packageClass)
 	{
@@ -82,14 +89,11 @@ public final class ModelContext extends AbstractModelContext
 		{
 			return ModelContext.getModelContext().packageClass;
 		}
-	}			
+	}
 
 	public ModelContext(Class packageClass)
 	{
-		if (Application.getContextClassName() == null)
-			this.packageClass = packageClass;
-		else
-			this.packageClass = Application.getContextClassName();
+		SpecificImplementation.ModelContext.initPackageClass(this, packageClass);
 		if(threadModelContext.get() != null)
 		{
 			httpContext = ((ModelContext)threadModelContext.get()).getHttpContext();
@@ -106,7 +110,8 @@ public final class ModelContext extends AbstractModelContext
 			// Esto pasa si corro una app no GX (appserver, Serverconfig, etc)
 			this.staticContentBase = "";
 		}
-		httpContext.setStaticContentBase(staticContentBase);		
+		if (httpContext!=null)
+			httpContext.setStaticContentBase(staticContentBase);		
 		if (threadModelContext.get() == null)
 			threadModelContext.set(this);
 	}
@@ -255,12 +260,27 @@ public final class ModelContext extends AbstractModelContext
 			return "";
 	}
 
-        public short SetWrkSt(String wrkSt, int handle)
-        {
-          return httpContext.setWrkSt(handle, wrkSt);
-        }
+	public String getUserId(String key, int handle, com.genexus.db.IDataStoreProvider dataStore)
+	{
+		if (httpContext!=null)
+			return httpContext.getUserId(key, this, handle, dataStore);
+		else
+			return "";
+	}
 
-        public String getWorkstationId(int handle)
+    public short SetWrkSt(String wrkSt, int handle)
+    {
+		if (httpContext!=null)
+			return httpContext.setWrkSt(handle, wrkSt);
+		else
+			return 0;
+    }
+
+	public String getDeviceId(int handle) {
+		return com.genexus.ClientInformation.getId();
+	}
+	
+    public String getWorkstationId(int handle)
 	{
 		if (httpContext!=null)
 			return httpContext.getWorkstationId(handle);
@@ -268,6 +288,13 @@ public final class ModelContext extends AbstractModelContext
 			return "";
 	}
 
+	public String getApplicationId(int handle)
+	{
+		if (httpContext!=null)
+			return httpContext.getApplicationId(handle);
+		else
+			return "";
+	}
 
 	public void msgStatus(String msg)
 	{
