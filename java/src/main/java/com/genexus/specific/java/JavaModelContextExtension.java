@@ -308,7 +308,7 @@ public class JavaModelContextExtension implements IExtensionModelContext {
         if (TZ != null && !TZ.equals(""))
             setTimeZone(context, (String)TZ);
         if (context.getCurrentTimeZone() == null)
-            context.setCurrentTimeZone(getClientTimeZone(context));
+            context.setCurrentTimeZone(_getClientTimeZone(context));
         return context.getCurrentTimeZone().getID();
     }
 

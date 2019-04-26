@@ -100,6 +100,41 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		return httpContext.isAjaxCallMode();
 	}
 
+	public GXMasterPage createMasterPage(String fullClassName) {
+
+		String masterPage = this.context.getPreferences().getProperty("MasterPage", "");
+		if (fullClassName.equals("(default)")) // Is the default
+		{
+			if (masterPage.isEmpty())
+			{
+				logger.error("The default master page is not present on the client.cfg file, please add the MasterPage key to the client.cfg.");
+				return null;
+			}
+			fullClassName = masterPage;
+		}
+		if (fullClassName.equals("(none)")) // none Master Page
+		{
+			return new NoneMasterPage((HttpContext) this.context.getHttpContext());
+		}
+		try {
+			Class masterPageClass = Class.forName(fullClassName);
+			return (GXMasterPage) masterPageClass.getConstructor(HttpContext.class).newInstance((HttpContext) context.getHttpContext());
+		} catch (ClassNotFoundException e) {
+			logger.error("MasterPage not found: " + fullClassName);
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+
 	protected Object dyncall(String MethodName)
 	{
 		Method m = getMethod(getClass(), MethodName);
