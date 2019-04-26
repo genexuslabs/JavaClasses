@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import com.genexus.internet.HttpContext;
 import com.genexus.util.GXFile;
 
 public class BlobsCleaner
@@ -112,7 +113,7 @@ public class BlobsCleaner
 	private WebSession getCurrentSession()
 	{
 		WebSession session = null;
-		com.genexus.internet.HttpContext webContext = com.genexus.ModelContext.getModelContext().getHttpContext();
+		com.genexus.internet.HttpContext webContext = (HttpContext) com.genexus.ModelContext.getModelContext().getHttpContext();
 		if((webContext != null) && (webContext instanceof com.genexus.webpanels.HttpContextWeb))
 		{
 			session = webContext.getWebSession();

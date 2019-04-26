@@ -12,6 +12,7 @@ import java.util.TimeZone;
 import java.util.Vector;
 
 import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.internet.HttpContext;
 import com.genexus.internet.StringCollection;
 import com.genexus.platform.INativeFunctions;
 import com.genexus.platform.NativeFunctions;
@@ -1295,7 +1296,7 @@ public final class GXutil
 		}
 		else
 		{
- 			boolean isRest = ModelContext.getModelContext() == null || ModelContext.getModelContext().getHttpContext().isRestService();
+ 			boolean isRest = ModelContext.getModelContext() == null || ((HttpContext)ModelContext.getModelContext().getHttpContext()).isRestService();
 			isRest = CommonUtil.shouldConvertDateTime(value, isRest);
 			Date valueAux = Application.getClientPreferences().useTimezoneFix() ? (isRest ? DateTimeToUTC(value): value ): value;
 			return dateFormat.format(valueAux).replace(" ", "T");		
@@ -1335,11 +1336,11 @@ public final class GXutil
 					{
 						dateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 					}
-										
+
 					Date valueAux = dateFormat.parse(valuetmp);
 					if (Application.getClientPreferences().useTimezoneFix())
 					{
-						boolean isRest = !ModelContext.getModelContext().isTimezoneSet() || ModelContext.getModelContext().getHttpContext().isRestService();
+						boolean isRest = !ModelContext.getModelContext().isTimezoneSet() || ((HttpContext)ModelContext.getModelContext().getHttpContext()).isRestService();
 						isRest = CommonUtil.shouldConvertDateTime(valueAux, isRest);
 						if (isRest)
 						{
@@ -1445,7 +1446,7 @@ public final class GXutil
 
 	public static int setLanguage(String language, ModelContext context,
                                   com.genexus.db.UserInformation ui) {
-        int res = context.getHttpContext().setLanguage(language);
+        int res = ((HttpContext)context.getHttpContext()).setLanguage(language);
         ui.setLocalUtil(context.getHttpContext().getLanguageProperty(
                 "decimal_point").charAt(0),
                         context.getHttpContext().getLanguageProperty("date_fmt"),

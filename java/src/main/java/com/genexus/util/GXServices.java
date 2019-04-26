@@ -77,8 +77,7 @@ public class GXServices {
 			return envVariable + File.separator;
 		
 		if (ModelContext.getModelContext() != null) {
-			HttpContext webContext = ModelContext.getModelContext()
-					.getHttpContext();
+			HttpContext webContext = (HttpContext) ModelContext.getModelContext().getHttpContext();
 			if ((webContext != null) && (webContext instanceof HttpContextWeb)) {
 				baseDir = com.genexus.ModelContext.getModelContext()
 						.getHttpContext().getDefaultPath()

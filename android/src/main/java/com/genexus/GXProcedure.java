@@ -3,9 +3,10 @@ package com.genexus;
 import java.sql.SQLException;
 import java.util.Date;
 
-import com.genexus.common.classes.AbstractModelContext;
+import com.genexus.ModelContext;
 import com.genexus.db.Namespace;
 import com.genexus.db.UserInformation;
+import com.genexus.internet.HttpContext;
 import com.genexus.util.ReorgSubmitThreadPool;
 import com.genexus.util.SubmitThreadPool;
 
@@ -58,7 +59,7 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 		}
 
 		localUtil    	  = ui.getLocalUtil();
-		httpContext = context.getHttpContext();
+		httpContext = (HttpContext) context.getHttpContext();
 	}
 
 	public void handleError()
@@ -120,7 +121,7 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 	/** Este metodo es redefinido por la clase GX generada cuando hay submits
 	 */
 	public void submit(int id, Object [] submitParms){ ; }
-	public void submit(int id, Object [] submitParms, AbstractModelContext context){ ; }
+	public void submit(int id, Object [] submitParms, ModelContext context){ ; }
 	public void submitReorg(int id, Object [] submitParms) throws SQLException{ ; }
 	
 	

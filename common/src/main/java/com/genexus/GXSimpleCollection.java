@@ -16,7 +16,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 
 import com.genexus.common.classes.AbstractGXFile;
-import com.genexus.common.classes.AbstractModelContext;
+import com.genexus.ModelContext;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.db.DynamicExecute;
 import com.genexus.internet.IGxJSONAble;
@@ -696,7 +696,7 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 	 *	parm(IN: &SDT1, IN: &SDT2, OUT: INT)
 	 * O sea, los 2 primero parametros son los SDTs a comparar y el tercero es el resultado
 	 */
-	public void sortproc(String procName, AbstractModelContext modelContext, int handle)
+	public void sortproc(String procName, ModelContext modelContext, int handle)
 	{
 		//Quicksort.sort(vector, new ProcComparer(procName, modelContext, handle));
 	}
@@ -717,9 +717,9 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 	class ProcComparer implements com.genexus.util.Comparer
 	{
 		private String procName;
-		private AbstractModelContext modelContext;
+		private ModelContext modelContext;
 		private int handle;
-		public ProcComparer(String procName, AbstractModelContext modelContext, int handle)
+		public ProcComparer(String procName, ModelContext modelContext, int handle)
 		{
 			this.procName = procName.trim().toLowerCase();
 			this.modelContext = modelContext;

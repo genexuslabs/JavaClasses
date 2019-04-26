@@ -2,7 +2,7 @@ package com.genexus.internet;
 
 import com.genexus.ModelContext;
 
-    public class GXWebProgressIndicator
+public class GXWebProgressIndicator
     {        
 		private static String ID = "GX_PROGRESS_BAR";
         private GXWebNotification notification;        

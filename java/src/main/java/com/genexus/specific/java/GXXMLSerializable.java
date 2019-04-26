@@ -6,8 +6,6 @@ import com.genexus.ModelContext;
 import com.genexus.PrivateUtilities;
 import com.genexus.common.interfaces.IExtensionGXXMLSerializable;
 
-import javax.xml.ws.WebServiceFeature;
-
 public class GXXMLSerializable implements IExtensionGXXMLSerializable {
 	String externalHandlerManager = "com.genexus.util.GXSoapHandler";
 	

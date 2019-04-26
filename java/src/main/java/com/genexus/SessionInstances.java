@@ -6,14 +6,14 @@ import com.genexus.internet.GXMailer;
 import com.genexus.util.DelimitedFilesSafe;
 import com.genexus.xml.XMLWriter;
 
-public class SessionInstances
+public class SessionInstances implements ISessionInstances
 {
 	private GXMailer mailer;
 	private GXFTPSafe ftp;
 	private XMLWriter xml;
 	private DelimitedFilesSafe delimited;
 
-	public GXMailer getMailer()
+	public IGXMailer getMailer()
 	{
 		if	(mailer == null)
 			mailer = new GXMailer();
@@ -21,7 +21,7 @@ public class SessionInstances
 		return mailer;
 	}
 
-	public GXFTPSafe getFTP()
+	public IGXFTPSafe getFTP()
 	{
 		if	(ftp == null)
 		{
@@ -31,7 +31,7 @@ public class SessionInstances
 		return ftp;
 	}
 
-	public XMLWriter getXMLWriter()
+	public IXMLWriter getXMLWriter()
 	{
 		if	(xml == null)
 			xml  = new XMLWriter();
@@ -39,7 +39,7 @@ public class SessionInstances
 		return xml;
 	}
 	
-	public DelimitedFilesSafe getDelimitedFiles()
+	public IDelimitedFilesSafe getDelimitedFiles()
 	{
 		if	(delimited == null)
 			delimited = new DelimitedFilesSafe();

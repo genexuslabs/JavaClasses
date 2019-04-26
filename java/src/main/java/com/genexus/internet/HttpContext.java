@@ -15,20 +15,10 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.genexus.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BOMInputStream;
 
-import com.genexus.Application;
-import com.genexus.ApplicationContext;
-import com.genexus.CommonUtil;
-import com.genexus.HTMLDocType;
-import com.genexus.HTMLElement;
-import com.genexus.IHttpContext;
-import com.genexus.ImagesPath;
-import com.genexus.Messages;
-import com.genexus.ModelContext;
-import com.genexus.Preferences;
-import com.genexus.PrivateUtilities;
 import com.genexus.usercontrols.UserControlFactoryImpl;
 import com.genexus.util.Codecs;
 import com.genexus.util.Encryption;
@@ -259,7 +249,7 @@ public abstract class HttpContext
 	public abstract String getUserId(String key, ModelContext context, int handle, com.genexus.db.IDataStoreProvider dataStore);
 	public abstract String getRemoteAddr();
 	public abstract boolean isLocalStorageSupported();
-        public abstract boolean isSmartDevice();
+	public abstract boolean isSmartDevice();
 	public abstract int getBrowserType();
 	public abstract boolean isIE55();
 	public abstract String getDefaultPath();
@@ -473,7 +463,7 @@ public abstract class HttpContext
 	{
 		if (CACHE_INVALIDATION_TOKEN == null || CACHE_INVALIDATION_TOKEN.trim().length() == 0)
 		{
-			String token = this.context.getPreferences().getProperty("CACHE_INVALIDATION_TOKEN", "");
+			String token = ((Preferences)this.context.getPreferences()).getProperty("CACHE_INVALIDATION_TOKEN", "");
 			if (token == null || token.trim().length() == 0)
 			{
 				CACHE_INVALIDATION_TOKEN = new java.text.DecimalFormat("#").format(CommonUtil.random() * 1000000);
@@ -509,9 +499,9 @@ public abstract class HttpContext
 		if (this.drawGridsAtServer == -1)
 		{
 			this.drawGridsAtServer = 0;
-			if( this.getContext().getPreferences().propertyExists("DrawGridsAtServer"))
+			if( ((Preferences)this.getContext().getPreferences()).propertyExists("DrawGridsAtServer"))
 			{
-				String prop = this.getContext().getPreferences().getProperty("DrawGridsAtServer", "no");
+				String prop = ((Preferences)this.getContext().getPreferences()).getProperty("DrawGridsAtServer", "no");
 				if (prop.equalsIgnoreCase("always"))
 				{
 					this.drawGridsAtServer = 1;
@@ -813,12 +803,12 @@ public abstract class HttpContext
 	
 	public boolean useBase64ViewState()
 	{
-		return this.context.getPreferences().getProperty("UseBase64ViewState", "n").equals("y");
+		return ((Preferences)this.context.getPreferences()).getProperty("UseBase64ViewState", "n").equals("y");
 	}
 	
 	public boolean useSecurityTokenValidation()
 	{
-		return this.context.getPreferences().getProperty("ValidateSecurityToken", "y").equals("y");
+		return ((Preferences)this.context.getPreferences()).getProperty("ValidateSecurityToken", "y").equals("y");
 	}
 	
 	protected void addNavigationHidden()

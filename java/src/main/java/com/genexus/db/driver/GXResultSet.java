@@ -24,12 +24,9 @@ import java.sql.Statement;
 import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.genexus.Application;
-import com.genexus.CommonUtil;
-import com.genexus.DebugFlag;
-import com.genexus.GXDbFile;
-import com.genexus.ModelContext;
+import com.genexus.*;
 import com.genexus.db.IGXResultSet;
+import com.genexus.internet.HttpContext;
 import com.genexus.util.GXFile;
 import com.genexus.util.GXServices;
 
@@ -1061,7 +1058,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 				}
 				if(con.getContext() != null)
 				{
-					com.genexus.internet.HttpContext webContext = con.getContext().getHttpContext();
+					com.genexus.internet.HttpContext webContext = (HttpContext) con.getContext().getHttpContext();
 					if((webContext != null) && (webContext instanceof com.genexus.webpanels.HttpContextWeb))
 					{
 						try

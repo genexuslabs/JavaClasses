@@ -9,13 +9,13 @@ import java.util.Vector;
 import com.genexus.ClientContext;
 import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
-import com.genexus.common.classes.AbstractModelContext;
+import com.genexus.ModelContext;
 import com.genexus.db.driver.DataSource;
 import com.genexus.db.driver.GXConnection;
 
 public abstract class DBConnectionManager
 {
-	public abstract GXConnection getConnection(AbstractModelContext context, int handle, String dataSource, boolean readOnly, boolean sticky) throws SQLException;
+	public abstract GXConnection getConnection(ModelContext context, int handle, String dataSource, boolean readOnly, boolean sticky) throws SQLException;
 	public abstract void dropAllCursors(int handle);
 	public abstract boolean isConnected(int handle, String dataSource);
 
@@ -126,7 +126,7 @@ public abstract class DBConnectionManager
 
 	private Object createKBLock = new Object();
 	
-	public void executeStatement(AbstractModelContext context, int handle, String dataSource, String sqlSentence) throws SQLException
+	public void executeStatement(ModelContext context, int handle, String dataSource, String sqlSentence) throws SQLException
 	{
 		GXConnection con = getConnection(context, handle, dataSource, false, true);
 		synchronized (createKBLock) {
@@ -292,7 +292,7 @@ public abstract class DBConnectionManager
 			}
 			catch(Throwable e)
 			{
-				logger.warn("DBConnectionManager.disconnectAll: ", e);				
+				System.err.println("DBConnectionManager.disconnectAll: " + e.toString());
 			}
 		}
 	}

@@ -30,7 +30,6 @@ public class DataSource extends AbstractDataSource
 	public boolean 	jdbcIntegrity;
 	public String  	informixDB;
 	public int 	   	maxCursors;
-	public String 	name;
 	public String 	schema;
 	public boolean  initializeNew;
 	public GXDBMSsqlite 	dbms;

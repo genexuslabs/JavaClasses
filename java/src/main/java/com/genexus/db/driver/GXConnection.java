@@ -24,13 +24,7 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
-import com.genexus.Application;
-import com.genexus.ApplicationContext;
-import com.genexus.CommonUtil;
-import com.genexus.DebugFlag;
-import com.genexus.GXJTA;
-import com.genexus.ModelContext;
-import com.genexus.PrivateUtilities;
+import com.genexus.*;
 import com.genexus.common.classes.AbstractGXConnection;
 import com.genexus.common.classes.IGXPreparedStatement;
 import com.genexus.db.BatchUpdateCursor;
@@ -43,6 +37,8 @@ import com.genexus.diagnostics.core.LogManager;
 import com.genexus.management.ConnectionJMX;
 import com.genexus.platform.INativeFunctions;
 import com.genexus.platform.NativeFunctions;
+
+import javax.xml.crypto.Data;
 
 public final class GXConnection extends AbstractGXConnection implements Connection
 {
@@ -155,7 +151,7 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 			//En el caso de una aplicacion en dos capas hay que llamar al Before Connect aca
 			if(!ApplicationContext.getInstance().getPoolConnections())
 			{
-				DataSource dataSource1 = context.beforeGetConnection(handle, dataSource);
+				DataSource dataSource1 = (DataSource) context.beforeGetConnection(handle, dataSource);
 				if (dataSource1 != null)
 				{
 					dataSource = dataSource1;

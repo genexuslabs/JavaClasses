@@ -13,12 +13,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
 
-import com.genexus.Application;
-import com.genexus.GXRuntimeException;
-import com.genexus.GXSimpleCollection;
-import com.genexus.GXutil;
-import com.genexus.ModelContext;
-import com.genexus.PrivateUtilities;
+import com.genexus.*;
 import com.genexus.db.UserInformation;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
@@ -221,7 +216,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 	{
 	  	try
 	  	{
-	  		context.getHttpContext().setOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
+			((HttpContext)context.getHttpContext()).setOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
 	  	}
 	  	catch (IOException e)
 	  	{

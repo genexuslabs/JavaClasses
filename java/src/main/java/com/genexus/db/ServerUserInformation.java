@@ -106,7 +106,7 @@ public final class ServerUserInformation extends UserInformation
 
 		synchronized (lock) 
 		{
-			dataSourceAux = context.beforeGetConnection(handle, getNamespace().getDataSource(dataSourceName));
+			dataSourceAux = (DataSource) context.beforeGetConnection(handle, getNamespace().getDataSource(dataSourceName));
 			if (dataSourceAux != null)
 			{
 				dataSource = dataSourceAux.copy();

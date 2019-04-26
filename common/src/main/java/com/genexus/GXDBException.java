@@ -1,7 +1,7 @@
 
 package com.genexus;
 
-import com.genexus.common.classes.AbstractModelContext;
+import com.genexus.ModelContext;
 import com.genexus.common.interfaces.SpecificImplementation;
 
 public class GXDBException extends Exception 
@@ -15,17 +15,17 @@ public class GXDBException extends Exception
 				" SQLState   : " + e.getSQLState());
 	}
 	
-	public GXDBException(AbstractModelContext context, int handle, String message, Exception e)
+	public GXDBException(ModelContext context, int handle, String message, Exception e)
 	{
 		this(context, handle, message + "\n" + e.getMessage());
 	}
 
-	public GXDBException(AbstractModelContext  context, int handle, String message, java.sql.SQLException e)
+	public GXDBException(ModelContext  context, int handle, String message, java.sql.SQLException e)
 	{
 		this(context, handle, message + "\n" + parseSQLException(e));
 	}
 
-	public GXDBException(AbstractModelContext  context, int handle, String message)
+	public GXDBException(ModelContext  context, int handle, String message)
 	{
 		super(message);
 		this.handle = handle;

@@ -9,6 +9,7 @@ import com.genexus.common.interfaces.IHttpContextNull;
 
 
 public abstract class AbstractModelContext {
+	private int afterConnectHandle = 0;
 
 	public Globals globals = new Globals();
 
@@ -41,4 +42,21 @@ public abstract class AbstractModelContext {
     public boolean isNullHttpContext() {
     	 return getHttpContext() instanceof IHttpContextNull;
     }
+
+	public int getAfterConnectHandle()
+	{
+		return afterConnectHandle;
+	}
+
+	public void setAfterConnectHandle(int handle){
+		afterConnectHandle = handle;
+	}
+
+	private TimeZone _currentTimeZone;
+	public TimeZone getCurrentTimeZone() {
+		return _currentTimeZone;
+	}
+	public void setCurrentTimeZone(TimeZone tz) {
+		_currentTimeZone = tz;
+	}
 }

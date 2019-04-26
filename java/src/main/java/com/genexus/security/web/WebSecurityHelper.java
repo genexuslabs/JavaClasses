@@ -2,10 +2,10 @@ package com.genexus.security.web;
 
 import java.util.Date;
 
+import com.genexus.ModelContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import com.genexus.ModelContext;
 import com.genexus.security.web.SecureTokenHelper.SecurityMode;
 import com.genexus.webpanels.WebUtils;
 
