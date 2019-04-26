@@ -100,7 +100,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		return httpContext.isAjaxCallMode();
 	}
 
-	public GXMasterPage createMasterPage(String fullClassName) {
+	public GXMasterPage createMasterPage(int remoteHandle, String fullClassName) {
 
 		String masterPage = this.context.getPreferences().getProperty("MasterPage", "");
 		if (fullClassName.equals("(default)")) // Is the default
@@ -110,7 +110,8 @@ public abstract class GXWebPanel extends GXWebObjectBase
 				logger.error("The default master page is not present on the client.cfg file, please add the MasterPage key to the client.cfg.");
 				return null;
 			}
-			fullClassName = masterPage;
+			String namespace = this.context.getPreferences().getProperty("NAME_SPACE", "");
+			fullClassName = namespace.isEmpty() ? masterPage.toLowerCase() + "_impl" : namespace.trim() + "." + masterPage + "_impl";
 		}
 		if (fullClassName.equals("(none)")) // none Master Page
 		{
@@ -118,7 +119,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		}
 		try {
 			Class masterPageClass = Class.forName(fullClassName);
-			return (GXMasterPage) masterPageClass.getConstructor(HttpContext.class).newInstance((HttpContext) context.getHttpContext());
+			return (GXMasterPage) masterPageClass.getConstructor(int.class, ModelContext.class).newInstance(remoteHandle, context.copy());
 		} catch (ClassNotFoundException e) {
 			logger.error("MasterPage not found: " + fullClassName);
 			e.printStackTrace();
