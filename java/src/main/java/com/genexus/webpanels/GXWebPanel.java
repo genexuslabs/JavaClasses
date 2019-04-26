@@ -117,6 +117,9 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		{
 			return new NoneMasterPage((HttpContext) this.context.getHttpContext());
 		}
+		else{
+			fullClassName = fullClassName + "_impl";
+		}
 		try {
 			Class masterPageClass = Class.forName(fullClassName);
 			return (GXMasterPage) masterPageClass.getConstructor(int.class, ModelContext.class).newInstance(remoteHandle, context.copy());
