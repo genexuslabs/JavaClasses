@@ -38,4 +38,24 @@ public interface IHttpContext {
 
 	void pushCurrentUrl();
 
+	void webGetSessionValue(String name, byte[] value);
+
+	void webGetSessionValue(String name, short[] value);
+
+	void webGetSessionValue(String name, int[] value);
+
+	void webGetSessionValue(String name, long[] value);
+
+	void webGetSessionValue(String name, float[] value);
+
+	void webGetSessionValue(String name, double[] value);
+
+	void webGetSessionValue(String name, String[] value);
+
+	void webPutSessionValue(String name, Object value);
+	void webPutSessionValue(String name, long value);
+	void webPutSessionValue(String name, double value);
+
+
+
 }
