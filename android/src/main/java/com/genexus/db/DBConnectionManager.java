@@ -9,13 +9,13 @@ import java.util.Vector;
 import com.genexus.ClientContext;
 import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
-import com.genexus.common.classes.AbstractModelContext;
+import com.genexus.ModelContext;
 import com.genexus.db.driver.DataSource;
 import com.genexus.db.driver.GXConnection;
 
 public abstract class DBConnectionManager
 {
-	public abstract GXConnection getConnection(AbstractModelContext context, int handle, String dataSource, boolean readOnly, boolean sticky) throws SQLException;
+	public abstract GXConnection getConnection(ModelContext context, int handle, String dataSource, boolean readOnly, boolean sticky) throws SQLException;
 	public abstract void dropAllCursors(int handle);
 	public abstract boolean isConnected(int handle, String dataSource);
 
@@ -126,7 +126,7 @@ public abstract class DBConnectionManager
 
 	private Object createKBLock = new Object();
 	
-	public void executeStatement(AbstractModelContext context, int handle, String dataSource, String sqlSentence) throws SQLException
+	public void executeStatement(ModelContext context, int handle, String dataSource, String sqlSentence) throws SQLException
 	{
 		GXConnection con = getConnection(context, handle, dataSource, false, true);
 		synchronized (createKBLock) {
@@ -243,17 +243,17 @@ public abstract class DBConnectionManager
 
 	public int getFirstHandle()
 	{
-		for (Enumeration en = userConnections.keys(); en.hasMoreElements(); )
-			return ((Integer) en.nextElement()).intValue();
+		for (Enumeration<Integer> en = userConnections.keys(); en.hasMoreElements(); )
+			return en.nextElement().intValue();
 
 		throw new InternalError("There arent any registered handles");
 	}
 
 	public int getClientHandle(int remoteHandle)
 	{
-		for (Enumeration en = userConnections.elements(); en.hasMoreElements(); )
+		for (Enumeration<UserInformation> en = userConnections.elements(); en.hasMoreElements(); )
 		{
-			UserInformation ui = (UserInformation) en.nextElement();
+			UserInformation ui = en.nextElement();
 
 			if	(ui.hasRemoteHandle(remoteHandle))
 				return ui.getHandle();
@@ -279,17 +279,18 @@ public abstract class DBConnectionManager
 
 	public void disconnectAll()
 	{
-		Vector handles = new Vector();
-		for(Enumeration enum1 = userConnections.keys(); enum1.hasMoreElements();)
+		Vector<Integer> handles = new Vector<Integer>();
+		for(Enumeration<Integer> enum1 = userConnections.keys(); enum1.hasMoreElements();)
 		{
 			handles.addElement(enum1.nextElement());
 		}
-		for(Enumeration enum1 = handles.elements(); enum1.hasMoreElements();)
+		for(Enumeration<Integer> enum1 = handles.elements(); enum1.hasMoreElements();)
 		{
 			try
 			{
-				disconnect(((Integer)enum1.nextElement()).intValue());
-			}catch(Throwable e)
+				disconnect(enum1.nextElement().intValue());
+			}
+			catch(Throwable e)
 			{
 				System.err.println("DBConnectionManager.disconnectAll: " + e.toString());
 			}

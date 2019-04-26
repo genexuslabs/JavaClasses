@@ -4,7 +4,7 @@ import java.sql.SQLException;
 
 import com.genexus.ModelContext;
 import com.genexus.ServerPreferences;
-import com.genexus.common.classes.AbstractModelContext;
+import com.genexus.ModelContext;
 import com.genexus.db.driver.GXConnection;
 
 final class LocalDBConnectionManager extends DBConnectionManager
@@ -35,7 +35,7 @@ final class LocalDBConnectionManager extends DBConnectionManager
 	}
 
 
-	public GXConnection getConnection(AbstractModelContext context, int handle, String dataSource, boolean readOnly, boolean sticky) throws SQLException
+	public GXConnection getConnection(ModelContext context, int handle, String dataSource, boolean readOnly, boolean sticky) throws SQLException
 	{
 		return ((LocalUserInformation) getUserInformation(handle)).getConnection((ModelContext)context, dataSource);
 	}

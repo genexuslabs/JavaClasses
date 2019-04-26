@@ -11,6 +11,7 @@ import com.genexus.ModelContext;
 import com.genexus.common.classes.AbstractUserInformation;
 import com.genexus.db.driver.DataSource;
 import com.genexus.db.driver.GXConnection;
+import com.genexus.internet.HttpContext;
 
 public abstract class UserInformation extends AbstractUserInformation
 {
@@ -168,7 +169,7 @@ public abstract class UserInformation extends AbstractUserInformation
 				ModelContext tempContext = ModelContext.getModelContext();
 				if (tempContext!=null)
 				{
-					int res = tempContext.getHttpContext().setLanguage(androidLanguage);
+					int res = ((HttpContext) tempContext.getHttpContext()).setLanguage(androidLanguage);
 					this.setLocalUtil(
 							tempContext.getHttpContext().getLanguageProperty("decimal_point").charAt(0),
 							tempContext.getHttpContext().getLanguageProperty("date_fmt"),

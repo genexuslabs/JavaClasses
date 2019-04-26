@@ -5,7 +5,7 @@ import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.genexus.common.classes.AbstractModelContext;
+import com.genexus.ModelContext;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.db.DynamicExecute;
 import com.genexus.GxUnknownObjectCollection;
@@ -22,7 +22,7 @@ import java.math.*;
  */
 public class ExpressionEvaluator
 {
-	AbstractModelContext context;
+	ModelContext context;
 	int handle;
 	boolean throwExceptions = false;
 	//Hashtable parms = new Hashtable();
@@ -33,13 +33,13 @@ public class ExpressionEvaluator
 	short EVALUATION_ERROR = 4;
 	short EXTERNAL_FUNCTION_ERROR = 5;
 
-	public ExpressionEvaluator(AbstractModelContext context, int handle, String varParms)
+	public ExpressionEvaluator(ModelContext context, int handle, String varParms)
 	{
 		this.handle = handle;
 		this.context = context;
 		setParms(varParms);		
 	}
-	public ExpressionEvaluator(AbstractModelContext context, int handle)
+	public ExpressionEvaluator(ModelContext context, int handle)
 	{
 		this.handle = handle;
 		this.context = context;
@@ -145,12 +145,12 @@ public class ExpressionEvaluator
 		this.throwExceptions = throwExceptions;
 	}
 
-	public static BigDecimal eval(AbstractModelContext context, int handle, String expression, String parms)
+	public static BigDecimal eval(ModelContext context, int handle, String expression, String parms)
 	{
 		return new ExpressionEvaluator(context, handle, parms).eval(expression).getDecimal();
 	}
 
-	public static BigDecimal eval(AbstractModelContext context, int handle, String expression, byte [] err, String [] errMsg, String parms)
+	public static BigDecimal eval(ModelContext context, int handle, String expression, byte [] err, String [] errMsg, String parms)
 	{
 		err[0] = 1; 
 		errMsg[0] = "";

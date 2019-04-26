@@ -16,6 +16,7 @@ public final class Connect {
 	public static void init()
 	{
 		SpecificImplementation.Application = new Application();
+		SpecificImplementation.ModelContext = new JavaModelContextExtension();
 		SpecificImplementation.FileUtils = new FileUtils();
 		SpecificImplementation.Cursor = new Cursor();
 		SpecificImplementation.BatchUpdateCursor = new BatchUpdateCursor();

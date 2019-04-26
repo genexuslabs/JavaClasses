@@ -1,4 +1,5 @@
 package com.genexus.gxoffice;
+import javax.xml.ws.spi.http.HttpContext;
 import java.io.File;
 
 public class WordDoc
@@ -63,7 +64,7 @@ public class WordDoc
 	{
 		if(com.genexus.ModelContext.getModelContext() != null)
 		{
-            com.genexus.internet.HttpContext webContext = com.genexus.ModelContext.getModelContext().getHttpContext();
+            com.genexus.internet.HttpContext webContext = (com.genexus.internet.HttpContext) com.genexus.ModelContext.getModelContext().getHttpContext();
             if( (webContext != null) && (webContext instanceof com.genexus.webpanels.HttpContextWeb))
 			{
 				if (!new File(wName).isAbsolute())

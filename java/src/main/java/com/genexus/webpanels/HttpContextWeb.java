@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.genexus.*;
 import org.apache.commons.fileupload.DiskFileUpload;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileUpload;
@@ -33,12 +34,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import com.genexus.Application;
-import com.genexus.CommonUtil;
-import com.genexus.GXutil;
-import com.genexus.HTMLDocType;
-import com.genexus.ModelContext;
-import com.genexus.PrivateUtilities;
 import com.genexus.internet.GXNavigationHelper;
 import com.genexus.internet.HttpContext;
 import com.genexus.internet.HttpRequest;
@@ -423,7 +418,7 @@ public class HttpContextWeb extends HttpContext {
 
 	public boolean forwardAsWebCallMethod() {
 		if (context != null) {
-			return context.getPreferences().getProperty("WEB_CALL_METHOD", "Redirect").equalsIgnoreCase("Forward");
+			return ((Preferences)context.getPreferences()).getProperty("WEB_CALL_METHOD", "Redirect").equalsIgnoreCase("Forward");
 		}
 		return false;
 	}

@@ -3,15 +3,14 @@ package com.genexus.util;
 import java.util.StringTokenizer;
 import java.util.Date;
 import java.io.*;
-import com.genexus.platform.INativeFunctions;
-import com.genexus.RunnableThrows;
-import com.genexus.common.interfaces.SpecificImplementation;
-import com.genexus.CommonUtil;
-import com.genexus.DecimalUtil;
-import java.math.BigDecimal;
-import com.genexus.DebugFlag;
 
-public class DelimitedFilesSafe
+import com.genexus.*;
+import com.genexus.platform.INativeFunctions;
+import com.genexus.common.interfaces.SpecificImplementation;
+
+import java.math.BigDecimal;
+
+public class DelimitedFilesSafe implements IDelimitedFilesSafe
 {
 	// variables
 

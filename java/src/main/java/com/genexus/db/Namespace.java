@@ -3,13 +3,7 @@ package com.genexus.db;
 import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.genexus.Application;
-import com.genexus.ApplicationContext;
-import com.genexus.CommonUtil;
-import com.genexus.GXJarClassLoader;
-import com.genexus.GXutil;
-import com.genexus.ModelContext;
-import com.genexus.Preferences;
+import com.genexus.*;
 import com.genexus.common.classes.AbstractNamespace;
 import com.genexus.db.driver.DataSource;
 import com.genexus.db.driver.GXDBDebug;

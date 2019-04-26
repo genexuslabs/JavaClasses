@@ -2,14 +2,14 @@ package com.genexus;
 
 import java.sql.SQLException;
 
-import com.genexus.common.classes.AbstractModelContext;
+import com.genexus.ModelContext;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.db.*;
 import com.genexus.util.*;
 
 public class ExecuteDirectSQL
 {
-	public static void execute(AbstractModelContext context, int handle, String dataSource, String Statement)
+	public static void execute(ModelContext context, int handle, String dataSource, String Statement)
 	{						 
 		try
 		{
@@ -32,7 +32,7 @@ public class ExecuteDirectSQL
 		}
 	}
 
-	public static void executeWithThrow(AbstractModelContext context, int handle, String dataSource, String Statement) throws SQLException
+	public static void executeWithThrow(ModelContext context, int handle, String dataSource, String Statement) throws SQLException
 	{
 		try
 		{

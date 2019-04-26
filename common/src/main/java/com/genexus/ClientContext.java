@@ -1,7 +1,5 @@
 package com.genexus;
 
-import com.genexus.common.classes.AbstractModelContext;
-
 public class ClientContext
 {
 	static private LocalUtil localUtil;
@@ -21,13 +19,13 @@ public class ClientContext
 		return localUtil.getMessages();
 	}
 
-	private static AbstractModelContext modelContext;
-	public static AbstractModelContext getModelContext()
+	private static ModelContext modelContext;
+	public static ModelContext getModelContext()
 	{
 		return modelContext;
 	}
 
-	public static void setModelContext(AbstractModelContext modelContext)
+	public static void setModelContext(ModelContext modelContext)
 	{
 		ClientContext.modelContext = modelContext;
 	}

@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
+import com.genexus.internet.HttpContext;
 import com.genexus.internet.IGxJSONAble;
 
 import json.org.json.IJsonFormattable;
@@ -78,9 +79,9 @@ public class GXWebRow implements IGxJSONAble
                     this.firstRowAdded = true;
                     return;
             }
-			   context.getHttpContext().drawingGrid = true;
+            ((HttpContext)context.getHttpContext()).drawingGrid = true;
             GXWebStdMethods.callMethod(this.context, controlType, props, _parentGrid.getGridName());
-			   context.getHttpContext().drawingGrid = false;
+            ((HttpContext)context.getHttpContext()).drawingGrid = false;
             if (!this._parentGrid.isFreestyle())
             {
            		GXWebStdMethods.closeTag(this.context, "cell");
@@ -109,7 +110,7 @@ public class GXWebRow implements IGxJSONAble
 	 		JSONArray colPropsRev = new JSONArray(); //ColProps Reversed
 			Object value = "";
 			JSONArray colProps = new JSONArray();
-			boolean equal =  it != null && !context.getHttpContext().isAjaxCallMode() ;
+			boolean equal =  it != null && !((HttpContext)context.getHttpContext()).isAjaxCallMode() ;
             Object current = null;
 
             for (int i = props.length - 1; i >= 0; i--)

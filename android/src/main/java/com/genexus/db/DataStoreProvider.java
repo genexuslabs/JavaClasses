@@ -3,11 +3,7 @@ package com.genexus.db;
 import java.sql.SQLException;
 import java.util.Date;
 
-import com.genexus.Application;
-import com.genexus.ApplicationContext;
-import com.genexus.CommonUtil;
-import com.genexus.GXReorganization;
-import com.genexus.ModelContext;
+import com.genexus.*;
 import com.genexus.db.driver.DataSource;
 import com.genexus.db.driver.GXCallableStatement;
 

@@ -122,7 +122,7 @@ public class ExcelDoc
     	File path = new File(p1);
 		if(com.genexus.ModelContext.getModelContext() != null)
 		{
-			com.genexus.internet.HttpContext webContext = com.genexus.ModelContext.getModelContext().getHttpContext();
+			com.genexus.internet.HttpContext webContext = (com.genexus.internet.HttpContext) com.genexus.ModelContext.getModelContext().getHttpContext();
 			if( (webContext != null) && (webContext instanceof com.genexus.webpanels.HttpContextWeb))
 			{
             	if (!path.isAbsolute())
@@ -212,7 +212,7 @@ public class ExcelDoc
 	{
 		if(!makeExternalUpload && com.genexus.ModelContext.getModelContext() != null)
 		{
-            com.genexus.internet.HttpContext webContext = com.genexus.ModelContext.getModelContext().getHttpContext();
+            com.genexus.internet.HttpContext webContext = (com.genexus.internet.HttpContext) com.genexus.ModelContext.getModelContext().getHttpContext();
             if( (webContext != null) && (webContext instanceof com.genexus.webpanels.HttpContextWeb))
 			{
 				if (!new File(xlName).isAbsolute())

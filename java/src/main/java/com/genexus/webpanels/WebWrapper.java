@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import javax.servlet.http.HttpServletRequest;
 
 import com.genexus.ModelContext;
+import com.genexus.internet.HttpContext;
 import com.genexus.internet.HttpContextNull;
 import com.genexus.internet.HttpRequest;
 
@@ -26,18 +27,19 @@ public class WebWrapper
 	public void setSource(GXWebPanel panel)
 	{
 		this.panel = panel;
-                ModelContext context = panel.getModelContext();
-                HttpRequest httpReq = context.getHttpContext().getHttpRequest();
-                HttpServletRequest httpSerReq = context.getHttpContext().getRequest();
+		ModelContext context = panel.getModelContext();
+		HttpContext httpContext = (HttpContext) context.getHttpContext();
+		HttpRequest httpReq = httpContext.getHttpRequest();
+		HttpServletRequest httpSerReq = httpContext.getRequest();
 		context.setHttpContext(new HttpContextNull());
-                context.getHttpContext().setHttpRequest(httpReq);
-                context.getHttpContext().setRequest(httpSerReq);
-                context.getHttpContext().setContext(context);
-		panel.setHttpContext(context.getHttpContext());
+		httpContext.setHttpRequest(httpReq);
+		httpContext.setRequest(httpSerReq);
+		httpContext.setContext(context);
+		panel.setHttpContext(httpContext);
 		panel.getHttpContext().setCompression(false);
 		panel.getHttpContext().setBuffered(false);
 		panel.getHttpContext().useUtf8 = true;
-                panel.getHttpContext().setOutputStream(new java.io.ByteArrayOutputStream());
+		panel.getHttpContext().setOutputStream(new java.io.ByteArrayOutputStream());
 	}
 
 	public GXWebPanel getSource()
