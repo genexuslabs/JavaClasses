@@ -278,7 +278,7 @@ public class JavaModelContextExtension implements IExtensionModelContext {
 
     private TimeZone _getClientTimeZone(ModelContext model)
     {
-        if (model != null)
+        if (model != null && model.getCurrentTimeZone() != null)
             return model.getCurrentTimeZone();
         String sTZ = null;
         HttpContext httpContext = (HttpContext) model.getHttpContext();
