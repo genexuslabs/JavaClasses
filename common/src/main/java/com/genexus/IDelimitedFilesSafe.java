@@ -4,6 +4,7 @@ import java.util.Date;
 
 public interface IDelimitedFilesSafe {
     byte dfrgtxt(String[] str);
+	byte dfrgtxt(String[] str, int len);
     byte dfrgnum(double[] num);
     byte dfrgdate(java.util.Date[] date, String fmt, String sep);
     byte dfropen(String filename);
