@@ -68,7 +68,7 @@
 		<dependency>
 			<groupId>com.github.spullara.mustache.java</groupId>
 			<artifactId>compiler</artifactId>
-			<version>0.9.6</version>
+			<version>0.8.18</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-logging</groupId>
