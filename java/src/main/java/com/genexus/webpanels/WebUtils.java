@@ -11,12 +11,13 @@ import java.text.StringCharacterIterator;
 import java.util.Date;
 import java.util.Set;
 
+import com.genexus.ModelContext;
+import com.genexus.internet.HttpContext;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BOMInputStream;
 
 import com.genexus.CommonUtil;
 import com.genexus.GXutil;
-import com.genexus.ModelContext;
 import com.genexus.PrivateUtilities;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
@@ -463,7 +464,7 @@ public class WebUtils
             String GXKey = "";
             if (keySourceType.equalsIgnoreCase("SESSION"))
 			{
-            	GXKey = com.genexus.util.Encryption.decrypt64(context.getHttpContext().getCookie("GX_SESSION_ID"), context.getServerKey());
+            	GXKey = com.genexus.util.Encryption.decrypt64(((HttpContext) context.getHttpContext()).getCookie("GX_SESSION_ID"), context.getServerKey());
             }
             else
 			{            	

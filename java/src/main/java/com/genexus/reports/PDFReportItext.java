@@ -288,7 +288,7 @@ public class PDFReportItext implements IReportHandler
 		pageSize = null;
 		stringTotalPages = new Vector();
 		documentImages = new ConcurrentHashMap<String, Image>();
-		httpContext = context.getHttpContext();
+		httpContext = (HttpContext) context.getHttpContext();
 
         if(defaultRelativePrepend == null)
 		{
@@ -1962,7 +1962,7 @@ public class PDFReportItext implements IReportHandler
 			{
 				if (ModelContext.getModelContext() != null) 
 				{
-					HttpContext webContext = ModelContext.getModelContext().getHttpContext();
+					HttpContext webContext = (HttpContext) ModelContext.getModelContext().getHttpContext();
 					if ((webContext != null) && (webContext instanceof HttpContextWeb))
 					{
 						outputDir = com.genexus.ModelContext.getModelContext().getHttpContext().getDefaultPath() + File.separator;

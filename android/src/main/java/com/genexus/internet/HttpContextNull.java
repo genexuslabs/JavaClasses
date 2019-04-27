@@ -10,6 +10,7 @@ import com.artech.base.services.AndroidContext;
 import com.genexus.Application;
 import com.genexus.ModelContext;
 import com.genexus.db.DBConnectionManager;
+import com.genexus.db.IDataStoreProvider;
 
 public class HttpContextNull extends HttpContext
 {
@@ -102,7 +103,12 @@ public class HttpContextNull extends HttpContext
 	  return wrkstId;
 	}
 
-       public short setUserId(int handle, String user, String dataSource)
+	@Override
+	public String getApplicationId(int handle) {
+		return null;
+	}
+
+	public short setUserId(int handle, String user, String dataSource)
        {
 	 DBConnectionManager.getInstance().getUserInformation(handle).setProperty("JAVA_USERID", user.toUpperCase());
 	 return 1;
@@ -124,12 +130,27 @@ public class HttpContextNull extends HttpContext
 		return user;
 	}
 
+	@Override
+	public String getUserId(String key, ModelContext modelContext, int handle, IDataStoreProvider dataStore) {
+		return null;
+	}
+
 	public String getRemoteAddr()
 	{
 		return "";
 	}
 
-        public boolean isSmartDevice()
+	@Override
+	public String getImageSrcSet(String baseImage) {
+		return null;
+	}
+
+	@Override
+	public boolean isLocalStorageSupported() {
+		return false;
+	}
+
+	public boolean isSmartDevice()
         {
             return false;
         }

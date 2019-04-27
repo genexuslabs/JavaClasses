@@ -1,12 +1,12 @@
 package com.genexus.db.driver;
 
+import com.genexus.ModelContext;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
-
-import com.genexus.ModelContext;
 
 public final class DirectConnectionPool implements IConnectionPool
 {

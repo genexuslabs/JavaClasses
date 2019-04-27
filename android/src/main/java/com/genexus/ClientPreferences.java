@@ -396,6 +396,16 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 		return iniFile.getProperty(defaultSection, "COMPRESS_HTML", "1").equals("1");
 	}
 
+	@Override
+	public String getIE_COMPATIBILITY() {
+		return null;
+	}
+
+	@Override
+	public int getHttpBufferSize() {
+		return 0;
+	}
+
 	public String getWEB_IMAGE_DIR()
 	{
 		String dir = iniFile.getProperty(defaultSection, "WEB_IMAGE_DIR", "");
@@ -445,6 +455,11 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 			return dir + "/";
 
 		return dir;
+	}
+
+	@Override
+	public String getPRINT_LAYOUT_METADATA_DIR() {
+		return null;
 	}
 
 	public String getUSE_ENCRYPTION()

@@ -394,7 +394,7 @@ public abstract class HttpAjaxContext
                             ctrlProps.put(Property, Value);
                             }
                         }
-                        com.genexus.internet.HttpContext webContext = com.genexus.ModelContext.getModelContext().getHttpContext();
+                        com.genexus.internet.HttpContext webContext = (HttpContext) com.genexus.ModelContext.getModelContext().getHttpContext();
                         if (webContext != null && !webContext.isAjaxRequest())
                         {
                             ajax_rsp_assign_hidden(Control + "_" + Property.substring(0, 1) + Property.substring(1).toLowerCase(), Value);
@@ -487,7 +487,7 @@ public abstract class HttpAjaxContext
         public void AddComponentObject(String cmpCtx, String objName, boolean justCreated)
         {
             try {
-                com.genexus.internet.HttpContext webContext = com.genexus.ModelContext.getModelContext().getHttpContext();
+                com.genexus.internet.HttpContext webContext = (HttpContext) com.genexus.ModelContext.getModelContext().getHttpContext();
 				if (justCreated)
 				{
 					webContext.DeletePostValuePrefix(cmpCtx);

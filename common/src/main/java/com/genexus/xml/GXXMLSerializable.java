@@ -1,7 +1,7 @@
 package com.genexus.xml;
 import com.genexus.*;
 import com.genexus.common.classes.AbstractGXFile;
-import com.genexus.common.classes.AbstractModelContext;
+import com.genexus.ModelContext;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.util.GXProperties;
 
@@ -17,12 +17,12 @@ import com.genexus.internet.IGxJSONSerializable;
 
 public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJSONAble, IGxJSONSerializable
 {
-	public GXXMLSerializable(AbstractModelContext context, String type)
+	public GXXMLSerializable(ModelContext context, String type)
 	{
 		this(-1, context, type);
 	}
 
-	public GXXMLSerializable(int remoteHandle, AbstractModelContext context, String type)
+	public GXXMLSerializable(int remoteHandle, ModelContext context, String type)
 	{
 		this.remoteHandle = remoteHandle;
 		this.context = context;
@@ -38,7 +38,7 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 	protected String arrayItemName;
 	protected String type;
 	public static LocalUtil localUtil = new LocalUtil('.', "MDY", "24", 40, "eng");
-	protected transient AbstractModelContext context;
+	protected transient ModelContext context;
 	protected transient int remoteHandle;
 	protected String soapHeaderRaw;
 

@@ -10,13 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.genexus.Application;
-import com.genexus.ApplicationContext;
-import com.genexus.CacheFactory;
-import com.genexus.CommonUtil;
-import com.genexus.GXReorganization;
-import com.genexus.GXutil;
-import com.genexus.ModelContext;
+import com.genexus.*;
 import com.genexus.db.driver.DataSource;
 import com.genexus.db.driver.GXCallableStatement;
 import com.genexus.db.driver.GXConnection;

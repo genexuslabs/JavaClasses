@@ -16,6 +16,7 @@ public final class Connect {
 	
 		SpecificImplementation.FileUtils = new FileUtils();
 		SpecificImplementation.Application = new Application();
+		SpecificImplementation.ModelContext = new AndroidModelContextExtension();
 		SpecificImplementation.LogManager = new LogManager();
 		SpecificImplementation.UserLog = new UserLog();
 		SpecificImplementation.HttpClient = new HttpClient();

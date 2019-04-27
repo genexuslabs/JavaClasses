@@ -21,7 +21,7 @@ public class GXReportMetadata
 	  
 	  if(ModelContext.getModelContext() != null)
 	  {
-		  HttpContext webContext = ModelContext.getModelContext().getHttpContext();
+		  HttpContext webContext = (HttpContext) ModelContext.getModelContext().getHttpContext();
 		  if( (webContext != null) && (webContext instanceof HttpContextWeb))
 		  {
 			  this.fileName = ( (HttpContextWeb) webContext).getRealPath(this.fileName);

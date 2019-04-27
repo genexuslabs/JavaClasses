@@ -31,15 +31,11 @@ import java.sql.SQLXML;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Enumeration;
 
-import com.genexus.Application;
-import com.genexus.CommonUtil;
-import com.genexus.DebugFlag;
-import com.genexus.GXDbFile;
-import com.genexus.ModelContext;
+import com.genexus.*;
 import com.genexus.common.classes.IGXPreparedStatement;
+import com.genexus.internet.HttpContext;
 import com.genexus.util.GXFile;
 import com.genexus.util.GXServices;
 
@@ -1001,7 +997,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 							fileName = folder + "/" + tableName + "/" + fieldName + "/" + fileName;
 							if (con.getContext() != null)
 							{
-								com.genexus.internet.HttpContext webContext = con.getContext().getHttpContext();
+								com.genexus.internet.HttpContext webContext = (HttpContext) con.getContext().getHttpContext();
 								if((webContext != null) && (webContext instanceof com.genexus.webpanels.HttpContextWeb) && (blobPath.startsWith(webContext.getContextPath()) || blobPath.startsWith(webContext.getDefaultPath())))
 								{
 									blobPath = ((com.genexus.webpanels.HttpContextWeb)webContext).getRealPath(blobPath);
@@ -1378,7 +1374,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 
 			if (con.getContext() != null)
 			{
-				com.genexus.internet.HttpContext webContext = con.getContext().getHttpContext();
+				com.genexus.internet.HttpContext webContext = (HttpContext) con.getContext().getHttpContext();
 				if((webContext != null) && (webContext instanceof com.genexus.webpanels.HttpContextWeb))
 				{
 					fileName = ((com.genexus.webpanels.HttpContextWeb)webContext).getRealPath(fileName);

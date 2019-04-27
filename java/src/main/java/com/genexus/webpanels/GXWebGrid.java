@@ -3,6 +3,7 @@ package com.genexus.webpanels;
 import java.util.ArrayList;
 
 import com.genexus.ModelContext;
+import com.genexus.internet.HttpContext;
 import com.genexus.internet.IGxJSONAble;
 
 import json.org.json.IJsonFormattable;
@@ -60,16 +61,17 @@ public class GXWebGrid implements IGxJSONAble
 
     public void SetWrapped(int wrapped)
     {
+        HttpContext httpContext = (HttpContext) this.context.getHttpContext();
         this.wrapped = (wrapped==1);
         if (!this.wrapped)
         {
-            this.wrapped = this.context.getHttpContext().drawGridsAtServer();
+            this.wrapped = httpContext.drawGridsAtServer();
         }
         if (!this.wrapped)
         {
-            this.wrapped = this.context.getHttpContext().getWrapped();
+            this.wrapped = httpContext.getWrapped();
         }
-		this.context.getHttpContext().setWrapped(this.wrapped);
+        httpContext.setWrapped(this.wrapped);
     }
 
     public int GetWrapped()
@@ -153,11 +155,12 @@ public class GXWebGrid implements IGxJSONAble
 
     public String GridValuesHidden()
     {
-    		String values = GetValues().toString();
-    		if (!this.context.getHttpContext().isAjaxRequest() && !this.context.getHttpContext().isSpaRequest())
-    		{
-    			values = WebUtils.htmlEncode(values, true);
-    		}
+        HttpContext httpContext = (HttpContext) this.context.getHttpContext();
+        String values = GetValues().toString();
+        if (!httpContext.isAjaxRequest() && !httpContext.isSpaRequest())
+        {
+            values = WebUtils.htmlEncode(values, true);
+        }
         return values;
     }
 

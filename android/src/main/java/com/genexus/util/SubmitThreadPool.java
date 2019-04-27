@@ -1,12 +1,9 @@
 package com.genexus.util;
 import java.util.Vector;
 
-import com.genexus.GXParameterPacker;
-import com.genexus.GXParameterUnpacker;
-import com.genexus.ISubmitteable;
-import com.genexus.ModelContext;
-import com.genexus.Preferences;
+import com.genexus.*;
 import com.genexus.db.SQLAndroidSQLiteHelper;
+import com.genexus.internet.HttpContext;
 
 public class SubmitThreadPool
 {
@@ -33,7 +30,7 @@ public class SubmitThreadPool
 			{
 				public void run()
 				{
-                    com.genexus.internet.HttpContext httpContext = ModelContext.getModelContext().getHttpContext();
+                    com.genexus.internet.HttpContext httpContext = (HttpContext) ModelContext.getModelContext().getHttpContext();
 					
                     SQLAndroidSQLiteHelper.beginTransaction();
                     proc.submit(id, submitParms);
@@ -167,8 +164,7 @@ class SubmitThread extends Thread
 	
 	public void run()
 	{		
-            com.genexus.internet.HttpContext httpContext = ModelContext.getModelContext().getHttpContext();
-
+		com.genexus.internet.HttpContext httpContext = (HttpContext) ModelContext.getModelContext().getHttpContext();
 		synchronized(this)
 		{
 			initialized = true;

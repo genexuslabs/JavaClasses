@@ -1,5 +1,5 @@
 package com.genexus;
-import com.genexus.common.classes.AbstractModelContext;
+import com.genexus.ModelContext;
 import com.genexus.common.interfaces.IPendingEventHelper;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.util.GXProperties;
@@ -15,7 +15,7 @@ public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 	GXProperties dirties = new GXProperties();
 
 	IGxSilentTrn trn;
-	public GxSilentTrnSdt( AbstractModelContext context, String type)
+	public GxSilentTrnSdt( ModelContext context, String type)
 	{
 		super( context, type);
 	}
@@ -321,7 +321,7 @@ public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 		return qualifiedName.toString();
 	}
 
-	public static GxSilentTrnSdt create(String name, String namespace, AbstractModelContext context, int remoteHandle)
+	public static GxSilentTrnSdt create(String name, String namespace, ModelContext context, int remoteHandle)
 	{
 		String classPackage = SpecificImplementation.Application.getPACKAGE();
 
@@ -344,7 +344,7 @@ public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 		}
 	}
 
-	public static GXBCCollection createCollection(String name, String namespace, AbstractModelContext context, int remoteHandle)
+	public static GXBCCollection createCollection(String name, String namespace, ModelContext context, int remoteHandle)
 	{
 		String classPackage = SpecificImplementation.Application.getPACKAGE();
 

@@ -1,5 +1,7 @@
 package com.genexus;
 
+import com.genexus.internet.HttpContext;
+
 import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -143,12 +145,12 @@ public class GXDbFile
 	{
 		return (blob.trim().length() == 0) ? uri : "";
 	}
-	public static String pathToUrl(String path, com.genexus.internet.HttpContext webContext)
+	public static String pathToUrl(String path, IHttpContext webContext)
 	{
 		if (path.startsWith("http:") || path.startsWith("https:"))
 			return path;
 
-		if (webContext.getHttpRequest() == null)
+		if (((HttpContext)webContext).getHttpRequest() == null)
 		{
 			try
 			{
@@ -162,14 +164,13 @@ public class GXDbFile
 			return path;
 		}
 
-		return webContext.getResource(webContext.convertURL(path));
+		return ((HttpContext)webContext).getResource(webContext.convertURL(path));
 	}
 	
 	public static String pathToUrl(String path)
 	{
 		ModelContext context = ModelContext.getModelContext();
-		com.genexus.internet.HttpContext webContext = context.getHttpContext();
-		return pathToUrl(path, webContext);
+		return pathToUrl(path, context.getHttpContext());
 	}
 	
 	public static String getDbFileFullUri(String gxdbFileUri) 

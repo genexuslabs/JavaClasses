@@ -1,10 +1,11 @@
 
 package com.genexus.internet;
 
+import com.genexus.IGXFTPSafe;
 import com.genexus.platform.INativeFunctions;
 import com.genexus.platform.NativeFunctions;
 
-public class GXFTPSafe
+public class GXFTPSafe implements IGXFTPSafe
 {
 	public IFTPClient client;
 
@@ -25,7 +26,6 @@ public class GXFTPSafe
 		return this.lastError;
 	}
 
-
 	public synchronized void connect(final String host, final String user, final String password)
 	{	
 		NativeFunctions.getInstance().executeWithPermissions(
@@ -35,7 +35,6 @@ public class GXFTPSafe
 							lastError = client.connect(host, user, password);
 						}
 					}, INativeFunctions.ALL);
-
 	}
 	
 	public void disconnect()

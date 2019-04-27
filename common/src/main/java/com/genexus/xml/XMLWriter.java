@@ -2,6 +2,8 @@
 package com.genexus.xml;
 
 import java.io.*;
+
+import com.genexus.IXMLWriter;
 import com.genexus.util.NameValuePair;
 import com.genexus.CommonUtil;
 import java.util.*;
@@ -11,7 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import java.math.BigDecimal;
 
 
-public class XMLWriter
+public class XMLWriter implements IXMLWriter
 {
 	private static final byte GXSUCCESS = 0;
 	private static final byte GXFAIL    = 1;

@@ -10,13 +10,13 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import com.genexus.CommonUtil;
+import com.genexus.ModelContext;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import com.genexus.Application;
-import com.genexus.ModelContext;
 import com.genexus.PrivateUtilities;
-import com.genexus.common.classes.AbstractModelContext;
+import com.genexus.ModelContext;
 import com.genexus.common.interfaces.IExtensionGXutil;
 import com.genexus.db.IDataStoreProvider;
 import com.genexus.util.CacheAPI;
@@ -236,7 +236,7 @@ public class GXutil implements IExtensionGXutil {
 	}
 
 	@Override
-	public Date DateTimefromTimeZone(Date d, String id, AbstractModelContext modelContext) {
+	public Date DateTimefromTimeZone(Date d, String id, ModelContext modelContext) {
 		return com.genexus.GXutil.DateTimefromTimeZone(d, id, (ModelContext) modelContext);
 	}
 

@@ -1,7 +1,7 @@
 package com.genexus;
 
 
-import com.genexus.common.classes.AbstractModelContext;
+import com.genexus.ModelContext;
 import com.genexus.common.classes.AbstractNamespace;
 import com.genexus.common.classes.AbstractUserInformation;
 import com.genexus.common.interfaces.IClientPreferences;
@@ -9,7 +9,7 @@ import com.genexus.common.interfaces.SpecificImplementation;
 
 public class GXObjectHelper
 {
-	public static AbstractUserInformation getUserInformation(AbstractModelContext context, int remoteHandle)
+	public static AbstractUserInformation getUserInformation(ModelContext context, int remoteHandle)
 	{
 		AbstractUserInformation ui;
 

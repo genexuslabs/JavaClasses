@@ -13,12 +13,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
 
-import com.genexus.Application;
-import com.genexus.GXRuntimeException;
-import com.genexus.GXSimpleCollection;
-import com.genexus.GXutil;
-import com.genexus.ModelContext;
-import com.genexus.PrivateUtilities;
+import com.genexus.*;
 import com.genexus.db.UserInformation;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
@@ -104,6 +99,45 @@ public abstract class GXWebPanel extends GXWebObjectBase
 	{
 		return httpContext.isAjaxCallMode();
 	}
+
+	public GXMasterPage createMasterPage(int remoteHandle, String fullClassName) {
+
+		String masterPage = this.context.getPreferences().getProperty("MasterPage", "");
+		if (fullClassName.equals("(default)")) // Is the default
+		{
+			if (masterPage.isEmpty())
+			{
+				logger.error("The default master page is not present on the client.cfg file, please add the MasterPage key to the client.cfg.");
+				return null;
+			}
+			String namespace = this.context.getPreferences().getProperty("NAME_SPACE", "");
+			fullClassName = namespace.isEmpty() ? masterPage.toLowerCase() + "_impl" : namespace.trim() + "." + masterPage + "_impl";
+		}
+		if (fullClassName.equals("(none)")) // none Master Page
+		{
+			return new NoneMasterPage((HttpContext) this.context.getHttpContext());
+		}
+		else{
+			fullClassName = fullClassName + "_impl";
+		}
+		try {
+			Class masterPageClass = Class.forName(fullClassName);
+			return (GXMasterPage) masterPageClass.getConstructor(int.class, ModelContext.class).newInstance(remoteHandle, context.copy());
+		} catch (ClassNotFoundException e) {
+			logger.error("MasterPage not found: " + fullClassName);
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 
 	protected Object dyncall(String MethodName)
 	{
@@ -221,7 +255,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 	{
 	  	try
 	  	{
-	  		context.getHttpContext().setOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
+			((HttpContext)context.getHttpContext()).setOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
 	  	}
 	  	catch (IOException e)
 	  	{

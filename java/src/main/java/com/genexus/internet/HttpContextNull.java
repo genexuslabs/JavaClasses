@@ -2,18 +2,21 @@ package com.genexus.internet;
 
 import java.util.Hashtable;
 
+import javax.ejb.EJBContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.genexus.Application;
 import com.genexus.GXutil;
+import com.genexus.GxEjbContext;
 import com.genexus.ModelContext;
+import com.genexus.common.interfaces.IHttpContextNull;
 import com.genexus.db.DBConnectionManager;
 import com.genexus.webpanels.WebSession;
 
 import json.org.json.JSONObject;
 
-public class HttpContextNull extends HttpContext
+public class HttpContextNull extends HttpContext implements IHttpContextNull
 {
        private HttpRequest httprequest;
        private HttpGXServletRequest request;
@@ -128,7 +131,7 @@ public class HttpContextNull extends HttpContext
 	public String getUserId(String key, ModelContext context, int handle, String dataSource)
 	{
           if (context.getSessionContext() != null) //Si estoy en el contexto de un EJB
-             return context.getSessionContext().getUserId();
+             return ((GxEjbContext)context.getSessionContext()).getUserId();
 
 		if	(key.toLowerCase().equals("server") &&  !Application.getUserIdServerAsUserId(handle))
 		{
@@ -146,7 +149,7 @@ public class HttpContextNull extends HttpContext
 	public String getUserId(String key, ModelContext context, int handle, com.genexus.db.IDataStoreProvider dataStore)
 	{
         if (context.getSessionContext() != null) //Si estoy en el contexto de un EJB
-             return context.getSessionContext().getUserId();
+             return ((GxEjbContext)context.getSessionContext()).getUserId();
 
 		if	(key.toLowerCase().equals("server") &&  !Application.getUserIdServerAsUserId(handle))
 		{

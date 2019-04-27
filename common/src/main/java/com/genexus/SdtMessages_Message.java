@@ -8,7 +8,7 @@
  */
 package com.genexus ;
 
-import com.genexus.common.classes.AbstractModelContext;
+import com.genexus.ModelContext;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.xml.GXXMLSerializable;
 import com.genexus.xml.XMLReader;
@@ -20,13 +20,13 @@ public final  class SdtMessages_Message extends GXXMLSerializable implements Clo
 		this(SpecificImplementation.Application.createModelContext(SdtMessages_Message.class));
 	}
 
-	public SdtMessages_Message( AbstractModelContext context )
+	public SdtMessages_Message( ModelContext context )
 	{
 		super( context, "SdtMessages_Message");
 	}
 
 	public SdtMessages_Message( int remoteHandle ,
-			AbstractModelContext context )
+			ModelContext context )
 	{
 		super( remoteHandle, context, "SdtMessages_Message");
 	}
