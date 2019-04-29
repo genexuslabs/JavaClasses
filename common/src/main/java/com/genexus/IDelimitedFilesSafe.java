@@ -1,10 +1,12 @@
 package com.genexus;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 public interface IDelimitedFilesSafe {
     byte dfrgtxt(String[] str);
     byte dfrgnum(double[] num);
+    byte dfrgnum(BigDecimal[] num);
     byte dfrgdate(java.util.Date[] date, String fmt, String sep);
     byte dfropen(String filename);
 
