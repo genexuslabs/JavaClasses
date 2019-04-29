@@ -111,7 +111,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 				return null;
 			}
 			String namespace = this.context.getPreferences().getProperty("NAME_SPACE", "");
-			fullClassName = namespace.isEmpty() ? masterPage.toLowerCase() + "_impl" : namespace.trim() + "." + masterPage + "_impl";
+			fullClassName = namespace.isEmpty() ? masterPage.toLowerCase() + "_impl" : namespace.trim() + "." + masterPage.toLowerCase() + "_impl";
 		}
 		if (fullClassName.equals("(none)")) // none Master Page
 		{
