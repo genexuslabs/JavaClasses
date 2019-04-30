@@ -33,8 +33,9 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 	}
 
 	public HttpContextNull()
-	{		
-		request = null;		
+	{
+
+		request = null;
 		webSession = new WebSession(null);		
 		httprequest = new HttpRequestNull(this);
 		cookies = new Hashtable<String, String>();
@@ -357,12 +358,15 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 		//throw new InternalError();
 	}
 
-        public void setRequest(HttpServletRequest request)
-        {
-          this.request = new HttpGXServletRequest();
-          this.request.setHttpServletRequest(request);
-        }
+	public void setRequest(HttpServletRequest request) {
+		this.request = new HttpGXServletRequest();
+		this.request.setHttpServletRequest(request);
+	}
 
+	@Override
+	public void sendResponseStatus(int statusCode, String statusDescription){
+
+	}
 	public HttpServletResponse getResponse()
 	{
 		throw new InternalError();
