@@ -518,8 +518,9 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 		  return docType;
 	  }
 
-	public boolean getJDBC_LOG() {
-		return iniFile.getProperty(defaultSection, "JDBC_LOG", "0").equals("1");
+	public boolean getJDBC_LOGEnabled() {
+		String name = iniFile.getProperty(defaultSection, "Namespace1");
+		return iniFile.getProperty(name, "JDBCLogEnabled", "0").equals("1");
 	}
 
 }

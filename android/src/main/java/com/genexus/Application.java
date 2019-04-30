@@ -146,7 +146,7 @@ public class Application
 			initialized = true;
 			Application.gxCfg = gxCfg;
 			ClientContext.setModelContext(new ModelContext(gxCfg));
-			DebugFlag.DEBUG = ClientContext.getModelContext().getClientPreferences().getJDBC_LOG();
+			DebugFlag.DEBUG = ClientContext.getModelContext().getClientPreferences().getJDBC_LOGEnabled();
 			Namespace.createNamespaces(((ModelContext)ClientContext.getModelContext()).getPreferences().getIniFile());
 			startDateTime = new Date();
 		}

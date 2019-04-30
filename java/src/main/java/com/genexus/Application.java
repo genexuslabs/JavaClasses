@@ -133,6 +133,7 @@ public class Application
 				if (!initialized) {
 					Application.gxCfg = gxCfg;
 					ClientContext.setModelContext(new ModelContext(gxCfg));
+					DebugFlag.DEBUG = ClientContext.getModelContext().getClientPreferences().getJDBC_LOGEnabled();
 					Namespace.createNamespaces(((ModelContext) ClientContext.getModelContext()).getPreferences().getIniFile());
 					startDateTime = new Date();
 					initialized = true;
