@@ -987,7 +987,126 @@ public class ODataClientHelper
         GxFilterArg rightFilter = getFilterArg(argFactory, right);
         return new GxFilterArgOp(argFactory.concat(leftFilter, rightFilter), leftFilter, rightFilter);
     }
+    
+    public GxURIFilterRel startswith(Object obj, Object arg)
+    {
+        FilterFactory filterFactory = getFilterFactory();
+        FilterArgFactory argFactory = getArgFactory();
+        GxFilterArg objFilter = getFilterArg(argFactory, obj);
+        GxFilterArg argFilter = getFilterArg(argFactory, arg);
+        return new GxURIFilterRelMatch(filterFactory.match(argFactory.startswith(objFilter, argFilter)), objFilter, argFilter);
+    }
 
+    public GxURIFilterRel endswith(Object obj, Object arg)
+    {
+        FilterFactory filterFactory = getFilterFactory();
+        FilterArgFactory argFactory = getArgFactory();
+        GxFilterArg objFilter = getFilterArg(argFactory, obj);
+        GxFilterArg argFilter = getFilterArg(argFactory, arg);
+        return new GxURIFilterRelMatch(filterFactory.match(argFactory.endswith(objFilter, argFilter)), objFilter, argFilter);
+    }
+
+    public GxFilterArg length(Object arg)
+    {
+        FilterArgFactory argFactory = getArgFactory();
+        GxFilterArg filter = getFilterArg(argFactory, arg);
+        return new GxFilterArg(argFactory.length(filter));
+    }
+
+    public GxFilterArg indexof(Object obj, Object arg)
+    {
+        FilterArgFactory argFactory = getArgFactory();
+        GxFilterArg objFilter = getFilterArg(argFactory, obj);
+        GxFilterArg argFilter = getFilterArg(argFactory, arg);
+        return new GxFilterArg(argFactory.indexof(objFilter, argFilter));
+    }
+
+    public GxFilterArg substring(Object obj, Object pos, Object length)
+    {
+        FilterArgFactory argFactory = getArgFactory();
+        GxFilterArg objFilter = getFilterArg(argFactory, obj);
+        GxFilterArg posFilter = getFilterArg(argFactory, pos);
+        GxFilterArg lengthFilter = getFilterArg(argFactory, length);
+        return new GxFilterArg(argFactory.substring(objFilter, posFilter, lengthFilter));
+    }
+
+    public GxFilterArg tolower(Object arg)
+    {
+        FilterArgFactory argFactory = getArgFactory();
+        GxFilterArg filter = getFilterArg(argFactory, arg, true);
+        return new GxFilterArg(argFactory.tolower(filter));
+    }
+    
+    public GxFilterArg toupper(Object arg)
+    {
+        FilterArgFactory argFactory = getArgFactory();
+        GxFilterArg filter = getFilterArg(argFactory, arg, true);
+        return new GxFilterArg(argFactory.toupper(filter));
+    }
+    
+    public GxFilterArg trim(Object arg)
+    {
+        FilterArgFactory argFactory = getArgFactory();
+        GxFilterArg filter = getFilterArg(argFactory, arg);
+        return new GxFilterArg(argFactory.trim(filter));
+    }
+
+    public GxFilterArg year(Object arg)
+    {
+        FilterArgFactory argFactory = getArgFactory();
+        GxFilterArg filter = getFilterArg(argFactory, arg);
+        return new GxFilterArg(argFactory.year(filter));
+    }
+
+    public GxFilterArg month(Object arg)
+    {
+        FilterArgFactory argFactory = getArgFactory();
+        GxFilterArg filter = getFilterArg(argFactory, arg);
+        return new GxFilterArg(argFactory.month(filter));
+    }
+
+    public GxFilterArg day(Object arg)
+    {
+        FilterArgFactory argFactory = getArgFactory();
+        GxFilterArg filter = getFilterArg(argFactory, arg);
+        return new GxFilterArg(argFactory.day(filter));
+    }
+
+    public GxFilterArg hour(Object arg)
+    {
+        FilterArgFactory argFactory = getArgFactory();
+        GxFilterArg filter = getFilterArg(argFactory, arg);
+        return new GxFilterArg(argFactory.hour(filter));
+    }
+
+    public GxFilterArg minute(Object arg)
+    {
+        FilterArgFactory argFactory = getArgFactory();
+        GxFilterArg filter = getFilterArg(argFactory, arg);
+        return new GxFilterArg(argFactory.minute(filter));
+    }
+
+    public GxFilterArg second(Object arg)
+    {
+        FilterArgFactory argFactory = getArgFactory();
+        GxFilterArg filter = getFilterArg(argFactory, arg);
+        return new GxFilterArg(argFactory.second(filter));
+    }
+
+    public GxFilterArg milliseconds(Object arg)
+    {
+        FilterArgFactory argFactory = getArgFactory();
+        GxFilterArg filter = getFilterArg(argFactory, arg);
+        return mul(new GxFilterArg(argFactory.fractionalseconds(filter)), 1000);
+    }
+
+    public GxFilterArg floor(Object arg)
+    {
+        FilterArgFactory argFactory = getArgFactory();
+        GxFilterArg filter = getFilterArg(argFactory, arg);
+        return new GxFilterArg(argFactory.floor(filter));
+    }
+    
     private GxURIFilterRel relational(GxURIOp op, URIFilter filter, GxFilterArg left, GxFilterArg right)
     {
         return new GxURIFilterRel(op, filter, left, right);
@@ -1013,7 +1132,7 @@ public class ODataClientHelper
         FilterArgFactory argFactory = filterFactory.getArgFactory();
         GxFilterArg leftArg = getFilterArg(argFactory, left);
         GxFilterArg rightArg = getFilterArg(argFactory, right);
-        return new GxURIFilterRelEq(GxURIOp.NE, filterFactory.eq(leftArg, rightArg), leftArg, rightArg, left, right);
+        return new GxURIFilterRelEq(GxURIOp.NE, filterFactory.ne(leftArg, rightArg), leftArg, rightArg, left, right);
     }
 
     public GxURIFilterRel gt(Object left, Object right)
