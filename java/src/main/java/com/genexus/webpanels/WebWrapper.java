@@ -28,14 +28,13 @@ public class WebWrapper
 	{
 		this.panel = panel;
 		ModelContext context = panel.getModelContext();
-		HttpContext httpContext = (HttpContext) context.getHttpContext();
-		HttpRequest httpReq = httpContext.getHttpRequest();
-		HttpServletRequest httpSerReq = httpContext.getRequest();
+		HttpRequest httpReq = ((HttpContext) context.getHttpContext()).getHttpRequest();
+		HttpServletRequest httpSerReq = ((HttpContext) context.getHttpContext()).getRequest();
 		context.setHttpContext(new HttpContextNull());
-		httpContext.setHttpRequest(httpReq);
-		httpContext.setRequest(httpSerReq);
-		httpContext.setContext(context);
-		panel.setHttpContext(httpContext);
+		((HttpContext) context.getHttpContext()).setHttpRequest(httpReq);
+		((HttpContext) context.getHttpContext()).setRequest(httpSerReq);
+		((HttpContext) context.getHttpContext()).setContext(context);
+		panel.setHttpContext(((HttpContext) context.getHttpContext()));
 		panel.getHttpContext().setCompression(false);
 		panel.getHttpContext().setBuffered(false);
 		panel.getHttpContext().useUtf8 = true;
