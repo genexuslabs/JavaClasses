@@ -1,8 +1,6 @@
 package com.genexus.webpanels;
 import java.io.ByteArrayOutputStream;
-
 import javax.servlet.http.HttpServletRequest;
-
 import com.genexus.ModelContext;
 import com.genexus.internet.HttpContext;
 import com.genexus.internet.HttpContextNull;
