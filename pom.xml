@@ -22,6 +22,7 @@
 		<module>gxandroidpublisher</module>
 		<module>gxcryptocommon</module>
 		<module>gxmail</module>
+		<module>gxmaps</module>
 		<module>gxoffice</module>
 		<module>gxsearch</module>
 		<module>javapns</module>

@@ -34,6 +34,8 @@ public interface IClientPreferences {
 
 	public String getSMTP_HOST();
 
+	public String getGOOGLE_API_KEY();
+
 	public boolean getJDBC_LOG();
 
 }
