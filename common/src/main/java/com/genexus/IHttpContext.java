@@ -11,6 +11,8 @@ public interface IHttpContext {
 	String getHeader(String string);
 	String getClientId();
 
+	String getMessage(String code, String language);
+
 	String getUserId(String key, ModelContext modelContext, int handle, String dataSource);
 	String getUserId(String key, ModelContext modelContext, int handle, com.genexus.db.IDataStoreProvider dataStore);
 
