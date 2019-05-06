@@ -6,7 +6,7 @@ import com.genexus.GXObjectHelper;
 import com.genexus.ISubmitteable;
 import com.genexus.LocalUtil;
 import com.genexus.ModelContext;
-import com.genexus.common.classes.AbstractModelContext;
+import com.genexus.ModelContext;
 import com.genexus.db.UserInformation;
 import com.genexus.internet.HttpContext;
 
@@ -33,7 +33,7 @@ public class GXSDPanel implements ISubmitteable
 	protected void initState(ModelContext context, UserInformation ui)
 	{
 		localUtil   = ui.getLocalUtil();
-		httpContext = context.getHttpContext();
+		httpContext = (HttpContext) context.getHttpContext();
 		httpContext.setContext( context);
 	}
 	
@@ -65,7 +65,7 @@ public class GXSDPanel implements ISubmitteable
 	public void submitReorg(int id, Object [] submitParms) throws SQLException{ ; }
 
 	@Override
-	public void submit(int submitId, Object[] submitParms, AbstractModelContext ctx) {
+	public void submit(int submitId, Object[] submitParms, ModelContext ctx) {
 	}
 	
 	

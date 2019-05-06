@@ -6,6 +6,7 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Vector;
 
+import com.genexus.common.interfaces.IPreferences;
 import com.genexus.db.DBConnectionManager;
 import com.genexus.db.DynamicExecute;
 import com.genexus.db.Namespace;
@@ -132,6 +133,7 @@ public class Application
 				if (!initialized) {
 					Application.gxCfg = gxCfg;
 					ClientContext.setModelContext(new ModelContext(gxCfg));
+					DebugFlag.DEBUG = ClientContext.getModelContext().getClientPreferences().getJDBC_LOGEnabled();
 					Namespace.createNamespaces(((ModelContext) ClientContext.getModelContext()).getPreferences().getIniFile());
 					startDateTime = new Date();
 					initialized = true;
@@ -240,7 +242,7 @@ public class Application
 
 	public static ClientPreferences getClientPreferences()
 	{
-		return ((ModelContext)ClientContext.getModelContext()).getClientPreferences();
+		return (ClientPreferences) (ClientContext.getModelContext()).getClientPreferences();
 	}
 
 	public static void addCleanup(ICleanedup o)
@@ -647,7 +649,7 @@ public class Application
               	executeEvent(context, info, objName, "before_rollback", dataSourceName);
               	context.inBeforeRollback = false;
               }
-              context.getSessionContext().setRollback();
+			  ((GxEjbContext) context.getSessionContext()).setRollback();
 							if (!context.inAfterRollback)
 							{
 								context.inAfterRollback = true;
@@ -661,7 +663,7 @@ public class Application
 		  
 	}
 
-			public static void setContextClassName(Class Name)
+	  public static void setContextClassName(Class Name)
       {
           ClassName = Name;
       }
@@ -680,7 +682,7 @@ public class Application
 				  return false;
 			  }
 			  Preferences preferences;
-				preferences = ((ModelContext)ClientContext.getModelContext()).getPreferences();
+				preferences = (Preferences) (ClientContext.getModelContext()).getPreferences();
 
 			  if (!preferences.getProperty("ENABLE_MANAGEMENT", "0").equals("0"))
 			  {

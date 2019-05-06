@@ -1,7 +1,7 @@
 package com.genexus.db;
 					   
 import com.genexus.IHttpContext;
-import com.genexus.common.classes.AbstractModelContext;
+import com.genexus.ModelContext;
 
 /**
  * This is the base class for the generated set of 'foreachs' for one datastore
@@ -57,7 +57,7 @@ public abstract class DataStoreHelperBase
 		return "DEFAULT";
 	}
 	
-	public Object[] getDynamicStatement( int cursor ,  AbstractModelContext context, int remoteHandle, IHttpContext httpContext, Object [] dynConstraints )
+	public Object[] getDynamicStatement( int cursor ,  ModelContext context, int remoteHandle, IHttpContext httpContext, Object [] dynConstraints )
 	{
 		return null;
 	}

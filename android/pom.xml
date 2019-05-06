@@ -10,9 +10,11 @@
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>gxstdclasses-android</artifactId>
+	<artifactId>gxandroid</artifactId>
 	<name>GeneXus Standard Classes for Android</name>
-
+	<build>
+		<finalName>gxandroid</finalName>
+	</build>
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -26,7 +28,7 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>common</artifactId>
+			<artifactId>gxcommon</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

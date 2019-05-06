@@ -43,15 +43,10 @@ public final class GXGridState extends GXXMLSerializable implements Cloneable, j
       super( remoteHandle, context, "GXGridState");
    }
 
-   public GXGridState( int remoteHandle, com.genexus.common.classes.AbstractModelContext context )
-   {
-      super( remoteHandle, (ModelContext)context, "GXGridState");
-   }
-
    public GXGridState(ModelContext context, String gridName, String programName, Runnable varsFromState, Runnable varsToState)
    {
       this(context);
-      this.httpContext = context.getHttpContext();
+      this.httpContext = (HttpContext) context.getHttpContext();
       this.gridName = programName + "_" + gridName + "_GridState";
       this.varsFromState = varsFromState;
       this.varsToState = varsToState;
@@ -60,7 +55,7 @@ public final class GXGridState extends GXXMLSerializable implements Cloneable, j
    public GXGridState(ModelContext context, String gridName, String programName, GXWebObjectBase parent, String varsFromStateMethod, String varsToStateMethod)
    {
       this(context);
-      this.httpContext = context.getHttpContext();
+      this.httpContext = (HttpContext) context.getHttpContext();
       this.gridName = programName + "_" + gridName + "_GridState";
       this.varsFromStateMethod = varsFromStateMethod;
       this.varsToStateMethod = varsToStateMethod;

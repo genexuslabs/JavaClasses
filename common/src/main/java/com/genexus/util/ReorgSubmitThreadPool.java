@@ -1,6 +1,6 @@
 package com.genexus.util;
 import com.genexus.*;
-import com.genexus.common.classes.AbstractModelContext;
+import com.genexus.ModelContext;
 import com.genexus.common.interfaces.SpecificImplementation;
 
 import java.util.*;
@@ -255,7 +255,7 @@ class ReorgSubmitThread extends Thread
 	private int submitId;
 	private boolean initialized = false;
 	private String blockName;
-	private AbstractModelContext ctx;
+	private ModelContext ctx;
 	
 	public ReorgSubmitThread(int index)
 	{
@@ -331,7 +331,7 @@ class ReorgSubmitThread extends Thread
 		return inUse;
 	}
 	
-	public void setProc(String blockName, ISubmitteable proc, int submitId, AbstractModelContext ctx)
+	public void setProc(String blockName, ISubmitteable proc, int submitId, ModelContext ctx)
 	{
 		this.blockName = blockName;
 		this.proc = proc;

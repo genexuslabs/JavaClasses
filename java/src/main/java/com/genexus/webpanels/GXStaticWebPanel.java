@@ -41,7 +41,7 @@ public abstract class GXStaticWebPanel extends GXWebPanel
 	public GXStaticWebPanel(int remoteHandle, ModelContext context)
 	{
 		super(remoteHandle, context);
-		oldHttpContext = context.getHttpContext();
+		oldHttpContext = (HttpContext) context.getHttpContext();
 		httpContext = new HttpContextNull();
 
 		context.setHttpContext(httpContext);
@@ -53,7 +53,7 @@ public abstract class GXStaticWebPanel extends GXWebPanel
 	  	try
 	  	{
 			visitedLinks.put(fileName, "");
-	  		context.getHttpContext().setOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
+			((HttpContext) context.getHttpContext()).setOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
 
 			addMessage("Creating " + fileName + "...");
 

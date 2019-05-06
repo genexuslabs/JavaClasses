@@ -68,7 +68,7 @@ public abstract class GXReportText extends GXProcedure
 				{
 					if (ModelContext.getModelContext() != null) 
 					{
-						HttpContext webContext = ModelContext.getModelContext().getHttpContext();
+						HttpContext webContext = (HttpContext) ModelContext.getModelContext().getHttpContext();
 						if ((webContext != null) && (webContext instanceof HttpContextWeb))
 						{
 							this.fileName = com.genexus.ModelContext.getModelContext().getHttpContext().getDefaultPath() + File.separator + fileName;

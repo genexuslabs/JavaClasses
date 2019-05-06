@@ -14,6 +14,8 @@
 	<name>GeneXus Office</name>
 
 	<build>
+		<finalName>gxoffice</finalName>
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -34,7 +36,7 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>gxclasses-java</artifactId>
+			<artifactId>gxclassR</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

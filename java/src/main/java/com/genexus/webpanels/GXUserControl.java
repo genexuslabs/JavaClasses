@@ -1,5 +1,6 @@
 package com.genexus.webpanels;
 import com.genexus.ModelContext;
+import com.genexus.internet.HttpContext;
 import com.genexus.util.GXMap;
 
 public class GXUserControl 
@@ -28,13 +29,13 @@ public class GXUserControl
 					
 			}
 		}
-		public void sendProperty(ModelContext context, String componentPrefix, boolean isMasterPage, String internalName, String propertyName, String propertyValue) 
+		public void sendProperty(ModelContext context, String componentPrefix, boolean isMasterPage, String internalName, String propertyName, String propertyValue)
 		{
-			context.getHttpContext().ajax_rsp_assign_uc_prop(componentPrefix, isMasterPage, internalName, propertyName, propertyValue);
+			((HttpContext)context.getHttpContext()).ajax_rsp_assign_uc_prop(componentPrefix, isMasterPage, internalName, propertyName, propertyValue);
 			setProperty(propertyName, propertyValue);
 		}
 		public void render(ModelContext context, String controlType, String internalName, String htmlId)
 		{
-			context.getHttpContext().renderUserControl(controlType, internalName, htmlId, propertyBag);
+			((HttpContext)context.getHttpContext()).renderUserControl(controlType, internalName, htmlId, propertyBag);
 		}
 }

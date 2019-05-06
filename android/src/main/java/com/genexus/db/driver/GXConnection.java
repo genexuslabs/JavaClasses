@@ -120,7 +120,7 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 			}
 
 
-				DataSource dataSource1 = context.beforeGetConnection(handle, dataSource);
+				DataSource dataSource1 = (DataSource) context.beforeGetConnection(handle, dataSource);
 				if (dataSource1 != null)
 				{
 					dataSource = dataSource1;

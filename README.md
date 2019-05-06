@@ -21,7 +21,7 @@ The dependencies between the projects are specified in each pom.xml within their
 # How to compile
 
 ## Requirements
-- JDK 8 or greater
+- JDK 9 or greater
 - Maven 3.6 or greater
 
 # Instructions

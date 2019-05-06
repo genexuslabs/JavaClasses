@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import com.genexus.CommonUtil;
-import com.genexus.common.classes.AbstractModelContext;
+import com.genexus.ModelContext;
 
 
 public interface IExtensionGXutil {
@@ -61,7 +61,7 @@ public interface IExtensionGXutil {
 
 	String getClassName(String lowerCase);
 
-	Date DateTimefromTimeZone(Date d, String id, AbstractModelContext modelContext);
+	Date DateTimefromTimeZone(Date d, String id, ModelContext modelContext);
 
 	String getTempFileName(String subtype); 
 

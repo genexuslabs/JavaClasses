@@ -8,20 +8,12 @@ public class GXTimeZone
 
 	public static TimeZone getDefaultOriginal()
 	{
-		if (originalTimeZone == null)
-		{
-			return GXTimeZone.getDefault();
-		}
-		else
-		{
-			return originalTimeZone;
-		}
+		return GXTimeZone.getDefault();
 	}
-
 
 	public static TimeZone getDefault()
 	{
-		TimeZone tz = 	TimeZone.getDefault();
+		TimeZone tz = TimeZone.getDefault();
 		return tz;
 	}
 }

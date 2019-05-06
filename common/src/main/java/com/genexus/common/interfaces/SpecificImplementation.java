@@ -26,6 +26,7 @@ public class SpecificImplementation {
 	public static IExtensionSdtMessages_Message				SdtMessages_Message;
 	public static IExtensionHTTPConnection					HTTPConnection;
 	public static ICryptoAlhorithms 						Algorithms;
+	public static IExtensionModelContext					ModelContext;
 	public static boolean KeepDecimals;
 	public static String MillisecondMask;
 	public static boolean SupportPending;

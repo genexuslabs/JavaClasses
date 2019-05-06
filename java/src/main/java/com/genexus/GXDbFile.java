@@ -1,5 +1,7 @@
 package com.genexus;
 
+import com.genexus.internet.HttpContext;
+
 import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -168,7 +170,7 @@ public class GXDbFile
 		return (blob.trim().length() == 0) ? uri : "";
 	}
 	
-	public static String pathToUrl(String path, com.genexus.internet.HttpContext webContext)
+	public static String pathToUrl(String path, IHttpContext webContext)
 	{
 		if (path.startsWith("http:") || path.startsWith("https:") || path.startsWith("data:"))
 			return path;
@@ -187,13 +189,13 @@ public class GXDbFile
 			return path;
 		}
 
-		return webContext.getResource(webContext.convertURL(path));
+		return ((HttpContext)webContext).getResource(webContext.convertURL(path));
 	}
 	
 	public static String pathToUrl(String path)
 	{
 		ModelContext context = ModelContext.getModelContext();
-		com.genexus.internet.HttpContext webContext = context.getHttpContext();
+		com.genexus.internet.HttpContext webContext = (HttpContext) context.getHttpContext();
 		return pathToUrl(path, webContext);
 	}
 

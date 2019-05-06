@@ -45,7 +45,7 @@ public abstract class GXWebProcedure extends GXWebObjectBase
 		}
 	}
 	
-	public GXWebProcedure(int remoteHandle ,ModelContext context)
+	public GXWebProcedure(int remoteHandle , ModelContext context)
 	{
 		super(remoteHandle ,context);
 	}	

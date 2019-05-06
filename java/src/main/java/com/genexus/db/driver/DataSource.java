@@ -27,7 +27,6 @@ public class DataSource extends AbstractDataSource
 	public String   dbmsName;
 	public String  	informixDB;
 	public int 	   	maxCursors;
-	public String 	name;
 	public String 	schema;
 	public boolean  initializeNew;
 	public GXDBMS 	dbms;
@@ -49,8 +48,8 @@ public class DataSource extends AbstractDataSource
 	private int 	rwPoolRecycleMins;
 	private int 	rwPoolRecycleType;
 	public  int		waitRecord;
-        public  int	lockRetryCount;
-        public boolean loginInServer;
+	public  int	lockRetryCount;
+	public boolean loginInServer;
 
 	private JDBCLogConfig jdbcLogCfg;
 

@@ -5,9 +5,11 @@ import java.util.TimeZone;
 import com.genexus.Globals;
 import com.genexus.IHttpContext;
 import com.genexus.common.interfaces.IClientPreferences;
+import com.genexus.common.interfaces.IHttpContextNull;
 
 
 public abstract class AbstractModelContext {
+	private int afterConnectHandle = 0;
 
 	public Globals globals = new Globals();
 
@@ -36,4 +38,25 @@ public abstract class AbstractModelContext {
 	public abstract void setThreadModelContext(Object ctx);
 
 	public abstract String getServerKey();
+
+    public boolean isNullHttpContext() {
+    	 return getHttpContext() instanceof IHttpContextNull;
+    }
+
+	public int getAfterConnectHandle()
+	{
+		return afterConnectHandle;
+	}
+
+	public void setAfterConnectHandle(int handle){
+		afterConnectHandle = handle;
+	}
+
+	private TimeZone _currentTimeZone;
+	public TimeZone getCurrentTimeZone() {
+		return _currentTimeZone;
+	}
+	public void setCurrentTimeZone(TimeZone tz) {
+		_currentTimeZone = tz;
+	}
 }

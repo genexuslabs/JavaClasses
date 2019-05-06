@@ -3,10 +3,9 @@ package com.genexus;
 
 import java.sql.SQLException;
 import java.util.Date;
-
-import com.genexus.common.classes.AbstractModelContext;
 import com.genexus.db.Namespace;
 import com.genexus.db.UserInformation;
+import com.genexus.internet.HttpContext;
 import com.genexus.performance.ProcedureInfo;
 import com.genexus.performance.ProceduresInfo;
 import com.genexus.util.ReorgSubmitThreadPool;
@@ -83,14 +82,16 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 					else
 					{						
 						context.prefs = ServerPreferences.getInstance(context.packageClass);
-						context.prefs.iniFile.setProperty(context.prefs.defaultSection, "NAME_SPACE", Application.getConnectionManager().getUserInformation(parentHandle).getNamespace().getName());
+						Preferences specificPrefs = (Preferences) context.getPreferences();
+						specificPrefs.iniFile.setProperty(specificPrefs.defaultSection, "NAME_SPACE", Application.getConnectionManager().getUserInformation(parentHandle).getNamespace().getName());
 					}
 				}
 				if (ApplicationContext.getInstance().isApplicationServer())
 				{
 					if(context.prefs.getProperty("NAME_SPACE", "").equals(""))
 					{
-						context.prefs.iniFile.setProperty(context.prefs.defaultSection, "NAME_SPACE", Application.getConnectionManager().getUserInformation(parentHandle).getNamespace().getName());
+						Preferences specificPrefs = (Preferences) context.getPreferences();
+						specificPrefs.iniFile.setProperty(specificPrefs.defaultSection, "NAME_SPACE", Application.getConnectionManager().getUserInformation(parentHandle).getNamespace().getName());
 					}
 				}
 				ui = Application.getConnectionManager().createUserInformation(Namespace.getNamespace(context.getNAME_SPACE()));
@@ -103,7 +104,7 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 
 		localUtil    	  = ui.getLocalUtil();
 		if (context != null)
-			httpContext = context.getHttpContext();
+			httpContext = (HttpContext) context.getHttpContext();
 	}
 
 	public Object me()
@@ -184,7 +185,7 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 	
 	/** This method is overridden by subclass in the generated code
 	 */
-	public void submit(int id, Object [] submitParms, AbstractModelContext ctx){  }
+	public void submit(int id, Object [] submitParms, ModelContext ctx){  }
 	public void submit(int id, Object [] submitParms){  }
 	public void submitReorg(int id, Object [] submitParms) throws SQLException{  }
 	

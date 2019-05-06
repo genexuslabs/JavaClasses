@@ -10,13 +10,13 @@
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>gxclasses-java</artifactId>
+	<artifactId>gxclassR</artifactId>
 	<name>GeneXus Standard Classes for Java</name>
 
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>common</artifactId>
+			<artifactId>gxcommon</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -68,7 +68,7 @@
 		<dependency>
 			<groupId>com.github.spullara.mustache.java</groupId>
 			<artifactId>compiler</artifactId>
-			<version>0.9.6</version>
+			<version>0.8.18</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-logging</groupId>
@@ -148,6 +148,7 @@
 		</dependency>
 	</dependencies>
 	<build>
+		<finalName>gxclassR</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

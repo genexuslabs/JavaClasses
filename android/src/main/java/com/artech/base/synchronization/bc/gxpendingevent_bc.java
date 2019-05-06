@@ -15,7 +15,7 @@ import com.genexus.Application;
 import com.genexus.CommonUtil;
 import com.genexus.IGxSilentTrn;
 import com.genexus.ModelContext;
-import com.genexus.common.classes.AbstractModelContext;
+import com.genexus.ModelContext;
 import com.genexus.db.Cursor;
 import com.genexus.db.DataStoreHelperBase;
 import com.genexus.db.DataStoreProvider;
@@ -1067,7 +1067,7 @@ public final  class gxpendingevent_bc extends com.genexus.dummy.GXSDPanel implem
    private String[] BC00012_A9PendingEventFiles ;
 
     @Override
-	public void submit(int submitId, Object[] submitParms, AbstractModelContext ctx) {
+	public void submit(int submitId, Object[] submitParms, ModelContext ctx) {
 	}
 	
 	@Override

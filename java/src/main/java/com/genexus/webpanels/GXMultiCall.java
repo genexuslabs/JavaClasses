@@ -1,5 +1,6 @@
 package com.genexus.webpanels;
-import java.lang.reflect.Method;
+
+import java.lang.reflect.Method;
 
 import javax.servlet.ServletInputStream;
 
@@ -13,10 +14,13 @@ import com.genexus.internet.HttpContext;
 import json.org.json.JSONArray;
 
 public class GXMultiCall extends GXWebObjectStub
-{		private final static String METHOD_EXECUTE = "execute";	
+{	
+	private final static String METHOD_EXECUTE = "execute";
+	
     protected void doExecute(HttpContext context) throws Exception
     {
-		new WebApplicationStartup().init(Application.gxCfg, context);				context.doNotCompress(true);
+		new WebApplicationStartup().init(Application.gxCfg, context);		
+		context.doNotCompress(true);
 		String procName = context.GetNextPar().toLowerCase();
 		ModelContext modelContext = ModelContext.getModelContext(Application.gxCfg);
 		String appPackage = modelContext.getPackageName();
@@ -24,7 +28,8 @@ public class GXMultiCall extends GXWebObjectStub
 		{
 			appPackage = appPackage + ".";
 		}
-		modelContext.setHttpContext(context);		
+		modelContext.setHttpContext(context);
+		
 		String restProcName = procName + "_services_rest";
 		try
 		{
@@ -70,9 +75,11 @@ public class GXMultiCall extends GXWebObjectStub
 		Application.cleanupConnection(remoteHandle);
 		
 		context.setStream();		
-				try
+		
+		try
 		{
-			context.getResponse().setContentType("application/json");			context.getResponse().setStatus(200);
+			context.getResponse().setContentType("application/json");
+			context.getResponse().setStatus(200);
 			context.writeText("");
 			context.getResponse().flushBuffer();
 			return;			
@@ -81,16 +88,24 @@ public class GXMultiCall extends GXWebObjectStub
 		{
 			context.sendResponseStatus(404, e.getMessage());
 		}
-    }	   protected boolean IntegratedSecurityEnabled( )
+    }
+	
+   protected boolean IntegratedSecurityEnabled( )
    {
       return false;
-   }	      protected int IntegratedSecurityLevel( )
+   }	
+   
+   protected int IntegratedSecurityLevel( )
    {
       return 0;
-   }         protected String IntegratedSecurityPermissionPrefix( )
+   }   
+   
+   protected String IntegratedSecurityPermissionPrefix( )
    {
       return "";
-   }      private String parsePostData(int len, ServletInputStream in)
+   }
+   
+   private String parsePostData(int len, ServletInputStream in)
    {
 	   if(len <= 0)
 		   return new String();
@@ -122,7 +137,8 @@ public class GXMultiCall extends GXWebObjectStub
 	   catch(java.io.UnsupportedEncodingException e)
 	   {
 		   throw new IllegalArgumentException(e.getMessage());
-	   }   }
+	   }
+   }
 	   
    protected void init(HttpContext context )
    {

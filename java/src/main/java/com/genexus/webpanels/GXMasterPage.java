@@ -5,7 +5,7 @@ import com.genexus.internet.HttpContext;
 
 public abstract class GXMasterPage extends GXWebPanel
 {
-  GXDataArea DataAreaObject;
+  	GXDataArea DataAreaObject;
 	
 	private boolean _ShowMPWhenPopUp;
 

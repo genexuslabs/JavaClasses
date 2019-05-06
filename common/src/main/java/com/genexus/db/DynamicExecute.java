@@ -1,6 +1,6 @@
 package com.genexus.db;
 
-import com.genexus.common.classes.AbstractModelContext;
+import com.genexus.ModelContext;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.CommonUtil;
 import java.math.BigDecimal;
@@ -16,7 +16,7 @@ public class DynamicExecute
 		dynamicExecute(SpecificImplementation.Application.getModelContext(SpecificImplementation.Application.getModelContextClass()), handle, SpecificImplementation.Application.getApplicationClass(), SpecificImplementation.GXutil.getClassName(pgmName.toLowerCase()), new Object[0]);
 	}
 
-	public static String dynamicWebExecute(AbstractModelContext context, int handle, Class servlet, String wjLoc, String wjAuxLoc, String sPackage, String sPgmName, Object[] parms)
+	public static String dynamicWebExecute(ModelContext context, int handle, Class servlet, String wjLoc, String wjAuxLoc, String sPackage, String sPgmName, Object[] parms)
 	{
 		String classPackage = SpecificImplementation.Application.getPACKAGE();
 		if	(!classPackage.equals(""))
@@ -136,7 +136,7 @@ public class DynamicExecute
         }
         return true;
     }
-	private static boolean dynamicExecute2(AbstractModelContext context, int handle, Class caller, String pgmName, Object[] parms)
+	private static boolean dynamicExecute2(ModelContext context, int handle, Class caller, String pgmName, Object[] parms)
 	{
 		Class[] parmTypes = new Class [parms.length];
 
@@ -186,7 +186,7 @@ public class DynamicExecute
 	}
 
 	private final static String METHOD_EXECUTE = "execute"; // El m�todo a ejecutar en la clase
-	public static boolean dynamicExecute(AbstractModelContext context, int handle, Class caller, String className, Object[] params)
+	public static boolean dynamicExecute(ModelContext context, int handle, Class caller, String className, Object[] params)
 	{
 		Object [] callingParams = new Object[params.length]; // Contiene el verdadero array a pasarle a la clase
 		boolean [] needToUpdateParams = new boolean[params.length]; // Indica si hay que actualizar el array de parametros(params) al terminar la invocaci�n del m�todo. Solo se deben actualizar los parametros que en destino son 'arrays', que son los que pueden sufrir modificaci�n

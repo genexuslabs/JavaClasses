@@ -67,10 +67,10 @@ public class GXWebStdMethods
                 Class webStdFuncs = getWebStdClass(context);
                 if (webStdFuncs != null)
                 {
-                    HttpContext httpContext = context.getHttpContext();
+                    HttpContext httpContext = (HttpContext) context.getHttpContext();
                     if (httpContext != null)
                     {
-			boolean addCallerPgm = true;
+                        boolean addCallerPgm = true;
                         Method method = null;
                         if (controlType.equalsIgnoreCase("edit"))
                         {
@@ -155,7 +155,7 @@ public class GXWebStdMethods
                             }
                             catch(Exception e)
                             {
-                                context.getHttpContext().writeTextNL("<table>");
+                                httpContext.writeTextNL("<table>");
                             }
                             method = null;
                         }
@@ -202,44 +202,46 @@ public class GXWebStdMethods
 
     public static void openTag(ModelContext context, String tag, Object[] parms)
     {
+        HttpContext httpContext = (HttpContext) context.getHttpContext();
         if (tag.equalsIgnoreCase("row"))
         {
-            context.getHttpContext().writeTextNL("<tr>");
+            httpContext.writeTextNL("<tr>");
         }
         else if (tag.equalsIgnoreCase("cell"))
         {
-            context.getHttpContext().writeText("<td ");
+            httpContext.writeText("<td ");
             String parm = parms[0].toString();
             if (parm != null && !parm.equals(""))
             {
-                context.getHttpContext().writeText(" background=\"" + parm + "\" ");
+                httpContext.writeText(" background=\"" + parm + "\" ");
             }
             parm = parms[1].toString();
             if (parm != null && !parm.equals(""))
 	    {
-            	context.getHttpContext().writeText(" " + parm + " ");
+            httpContext.writeText(" " + parm + " ");
 	    }
-            context.getHttpContext().writeTextNL(">");
+            httpContext.writeTextNL(">");
         }
         else if (tag.equalsIgnoreCase("usercontrol"))
         {
-            context.getHttpContext().writeTextNL("<div class=\"gx_usercontrol\" id=\"" + parms[0].toString() + "\"></div>");
+            httpContext.writeTextNL("<div class=\"gx_usercontrol\" id=\"" + parms[0].toString() + "\"></div>");
         }
     }
 
     public static void closeTag(ModelContext context, String tag)
     {
+        HttpContext httpContext = (HttpContext) context.getHttpContext();
         if (tag.equalsIgnoreCase("table"))
         {
-            context.getHttpContext().writeTextNL("</table>");
+            httpContext.writeTextNL("</table>");
         }
         else if (tag.equalsIgnoreCase("row"))
         {
-            context.getHttpContext().writeTextNL("</tr>");
+            httpContext.writeTextNL("</tr>");
         }
         else if (tag.equalsIgnoreCase("cell"))
         {
-            context.getHttpContext().writeTextNL("</td>");
+            httpContext.writeTextNL("</td>");
         }
     }
 }

@@ -7,9 +7,10 @@ import java.util.Hashtable;
 
 import com.genexus.CommonUtil;
 
+import com.genexus.IGXMailer;
 import gxmail.Configuration;
 
-public class GXMailer
+public class GXMailer implements IGXMailer
 {
 	private IMailImplementation mailer;
 	private String mode = "";

@@ -7,18 +7,10 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import com.genexus.*;
 import org.apache.logging.log4j.util.Strings;
 
 import com.artech.base.services.AndroidContext;
-import com.genexus.Application;
-import com.genexus.CommonUtil;
-import com.genexus.HTMLDocType;
-import com.genexus.HTMLElement;
-import com.genexus.IHttpContext;
-import com.genexus.ImagesPath;
-import com.genexus.Messages;
-import com.genexus.ModelContext;
-import com.genexus.Preferences;
 import com.genexus.util.Codecs;
 import com.genexus.util.Encryption;
 

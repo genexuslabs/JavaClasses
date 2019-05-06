@@ -31,12 +31,6 @@ public final  class GXGridState_FilterValue extends GXXMLSerializable implements
       super( remoteHandle, context, "GXGridState_FilterValue");
    }
 
-   public GXGridState_FilterValue( int remoteHandle ,
-                                    com.genexus.common.classes.AbstractModelContext context )
-   {
-      super( remoteHandle, (ModelContext)context, "GXGridState_FilterValue");
-   }
-
    public String getJsonMap( String value )
    {
       return value;

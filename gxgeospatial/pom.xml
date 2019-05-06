@@ -12,10 +12,14 @@
     <artifactId>gxgeospatial</artifactId>
     <name>GeneXus Geospatial</name>
 
+    <build>
+        <finalName>gxgeospatial</finalName>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>gxclasses-java</artifactId>
+            <artifactId>gxclassR</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

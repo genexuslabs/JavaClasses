@@ -29,7 +29,7 @@ public class GXWebNotification {
 	
     public GXWebNotification(ModelContext gxContext)
     {    	
-        _ctx = gxContext.getHttpContext();
+        _ctx = (HttpContext) gxContext.getHttpContext();
         if (ws == null)
         {        			
 			try {
