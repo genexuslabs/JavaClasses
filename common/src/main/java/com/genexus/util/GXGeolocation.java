@@ -10,8 +10,8 @@ import java.net.ProtocolException;
 import java.net.URLEncoder;
 import java.net.URL;
 
+import com.genexus.ClientContext;
 import com.genexus.xml.*;
-
 import json.org.json.*;
 
 public class GXGeolocation
@@ -82,7 +82,7 @@ public class GXGeolocation
 		return (int)distance;
 	}
 	
-	private static String getContentFromURL(String urlString)
+	public static String getContentFromURL(String urlString)
 	{
 		HttpURLConnection connection = null;
 		BufferedReader rd  = null;
@@ -128,16 +128,24 @@ public class GXGeolocation
 		
 		return result;
 	}
-	
+
+	public static String getAPIKey(){
+		return ClientContext.getModelContext().getClientPreferences().getGOOGLE_API_KEY();	
+	}
+
 	public static java.util.Vector getAddress(String location)
 	{
-		String urlString = "http://maps.google.com/maps/api/geocode/json?latlng=" + location.trim() + "&sensor=false";
+		String urlString = "https://maps.google.com/maps/api/geocode/json?latlng=" + location.trim() + "&sensor=false";
 		// replace space to avoid File not found exception
 		// http://stackoverflow.com/questions/19092243/keep-getting-java-io-filenotfoundexception-exeption-at-monodroid-application
+		String apiKey = getAPIKey();
+    
+		if (apiKey.length() > 0) {
+			urlString += urlString + "&key=" + apiKey;
+		}
 		urlString = urlString.replace(" ", "+");
 
-		String response = GXGeolocation.getContentFromURL(urlString);
-		
+		String response = GXGeolocation.getContentFromURL(urlString);		
 		java.util.Vector result = new java.util.Vector();
 		
 		if (response!=null)
@@ -163,9 +171,14 @@ public class GXGeolocation
 	{
 		java.util.Vector result = new java.util.Vector();
 		try {
-		String urlString = "http://maps.google.com/maps/api/geocode/json?address=" + URLEncoder.encode(address, "utf-8") + "&sensor=false";
-		String response = GXGeolocation.getContentFromURL(urlString);
-
+			
+			String urlString = "https://maps.google.com/maps/api/geocode/json?address=" + URLEncoder.encode(address, "utf-8") + "&sensor=false";
+			String apiKey = getAPIKey();
+			if (apiKey.length() > 0) {
+				urlString += urlString + "&key=" + apiKey;
+			}
+			
+			String response = GXGeolocation.getContentFromURL(urlString);
 			JSONObject json = new JSONObject(response);
 			if (json.has("results")) {
 				JSONArray results = json.optJSONArray("results");
@@ -181,6 +194,12 @@ public class GXGeolocation
 							}
 						}
 					}
+				}
+			}
+			else {
+				if (json.has("error_message")) {
+					String error_message = json.optString("error_message");
+					return result;	
 				}
 			}
 		}

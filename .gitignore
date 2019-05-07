@@ -8,3 +8,11 @@ target/
 
 # Mac OS
 .DS_Store
+
+.project
+.factorypath
+.classpath
+.settings
+*.versionsBackup
+
+
