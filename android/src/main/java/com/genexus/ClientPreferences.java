@@ -478,6 +478,12 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 			
 		return dir;
 	}
+
+	public String getGOOGLE_API_KEY()
+	{
+		String key = iniFile.getProperty(defaultSection, "GoogleApiKey", "");
+		return key;
+	}
 	
 	
 	

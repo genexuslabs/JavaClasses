@@ -34,13 +34,15 @@ public interface IClientPreferences {
 
 	public String getSMTP_HOST();
 
+	public String getGOOGLE_API_KEY();
+
 	public boolean getJDBC_LOGEnabled();
 
-    String getTMPMEDIA_DIR();
+  String getTMPMEDIA_DIR();
 
-    boolean getCOMPRESS_HTML();
+  boolean getCOMPRESS_HTML();
 
-    String getIE_COMPATIBILITY();
+  String getIE_COMPATIBILITY();
 
 	String getProperty(String integratedSecurityLoginWeb, String s);
 
@@ -48,5 +50,5 @@ public interface IClientPreferences {
 
 	String getWEB_STATIC_DIR();
 
-    String getPRINT_LAYOUT_METADATA_DIR();
+  String getPRINT_LAYOUT_METADATA_DIR();
 }
