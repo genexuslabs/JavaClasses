@@ -42,9 +42,9 @@
 		<repository>
 			<id>nexus-release</id>
 			<name>GeneXus Nexus Release</name>
-			<url>http://nexus.genexus.com/repository/maven-releases</url>
+			<url>http://nexus.genexus.com/repository/maven-external-dependencies</url>
 		</repository>
-	</repositories>	
+	</repositories>
 
 	<licenses>
 		<license>
