@@ -587,8 +587,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 							}
 							catch(Exception ex1)
 							{
-								System.err.println("Error parseGridsDataParms row parameter " + ex1.getMessage());
-								ex1.printStackTrace();
+								logger.error("Error parseGridsDataParms row parameter ", ex1);
 							}
 						}
 					}
@@ -924,8 +923,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
                                             catch (Exception ex)
                                             {
                                                 anyError = true;
-												System.err.println("Failed checkParmsIntegrity 403 Forbidden action Exception");
-                                                System.err.println(ex.toString());
+												logger.error("Failed checkParmsIntegrity 403 Forbidden action Exception", ex);
 												httpContext.sendResponseStatus(403, "Forbidden action");
 												throw new DataIntegrityException("Failed checkParmIntegrity 403 Forbidden action Exception");
                                             }
@@ -992,8 +990,8 @@ public abstract class GXWebPanel extends GXWebObjectBase
                                         catch (Exception ex)
                                         {
                                             anyError = true;
-											System.err.println("Failed checkParmsIntegrity 403 Forbidden action Exception");
-                                            System.err.println(ex.toString());
+
+											logger.error("Failed checkParmsIntegrity 403 Forbidden action Exception", ex);
 											httpContext.sendResponseStatus(403, "Forbidden action");
 											throw new DataIntegrityException("Failed checkParmIntegrity 403 Forbidden action Exception");
                                         }
@@ -1017,8 +1015,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
                     }
 					catch(Exception ex)
 					{
-						System.err.println("Error DynAjaxEvent parameter: " + (parm.has("av") ? parm.getString("av") : "null") + "  beforeInvoke " + ex.getMessage());
-						ex.printStackTrace();
+						logger.error("Error DynAjaxEvent parameter: " + (parm.has("av") ? parm.getString("av") : "null") + "  beforeInvoke " + ex.getMessage(), ex);
 					}
                     if (!parm.has("postForm"))
                     {
@@ -1033,8 +1030,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 					}
 					catch(Exception ex1)
 					{
-						System.err.println("Error DynAjaxEvent grid and row parameter " + ex1.getMessage());
-						ex1.printStackTrace();
+						logger.error("Error DynAjaxEvent grid and row parameter ", ex1);
 					}
 				}
 				SetFieldValue("wbLoad", true);
@@ -1047,11 +1043,11 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		    String sContext = targetObj.isMasterPage() ? "gxmpage_" : cmpContext;
             if (!targetObj.verifySecureSignedToken(sContext + sRow, parm, picture, jwt) && !targetObj.verifySecureSignedToken(sContext, parm, picture, jwt))
             {
-				System.err.println("Failed checkParmIntegrity 403 Forbidden action with parm:" + inParmMetadata);
-				System.err.println(String.format("ParmValue: '%s' [%s]", parm.toString(), parm.getClass().toString()));
-				System.err.println("row:" + sRow);
-				System.err.println("hash_i:" + hash_i + " inHashValues.Length:" + inHashValues.length());
-				System.err.println("Received jwt:" + jwt);
+				logger.error("Failed checkParmIntegrity 403 Forbidden action with parm:" + inParmMetadata);
+				logger.error(String.format("ParmValue: '%s' [%s]", parm.toString(), parm.getClass().toString()));
+				logger.error("row:" + sRow);
+				logger.error("hash_i:" + hash_i + " inHashValues.Length:" + inHashValues.length());
+				logger.error("Received jwt:" + jwt);
 				httpContext.sendResponseStatus(403, "Forbidden action");
                 throw new DataIntegrityException("Failed checkParmIntegrity 403 Forbidden action with parm:" + inParmMetadata);
             }
@@ -1078,8 +1074,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 
 					}catch(Exception iex)
 					{
-						System.err.println("Error doInvoke class: " + targetObj.getClass() + " handler:" + handler + " exMessage:" + iex.getMessage());
-						iex.printStackTrace();
+						logger.error("Error doInvoke class: " + targetObj.getClass() + " handler:" + handler + " exMessage:" , iex);
 						throw iex;
 					}
 				}
