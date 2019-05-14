@@ -679,7 +679,8 @@ public abstract class GXWebPanel extends GXWebObjectBase
 					}
 					eventCount++;
 				}
-			} catch (JSONException ex) {
+			} catch (Exception ex) {
+				logger.error("Failed to parse event metadata", ex);
 				anyError = true;
 			}
 		}
