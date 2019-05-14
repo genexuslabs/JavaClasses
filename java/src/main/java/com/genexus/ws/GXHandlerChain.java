@@ -11,7 +11,7 @@ import com.genexus.diagnostics.core.LogManager;
 
 public class GXHandlerChain implements SOAPHandler<SOAPMessageContext>
 {
-	public static final ILogger logger = LogManager.getLogger(GXHandlerChain.class);
+	private static ILogger logger = null;
 	public static final String GX_SOAP_BODY = "GXSoapBody";
 	
   public Set<QName> getHeaders()
@@ -21,6 +21,10 @@ public class GXHandlerChain implements SOAPHandler<SOAPMessageContext>
   
   public boolean handleMessage(SOAPMessageContext messageContext)
   {
+  	if (logger == null) {
+		logger = LogManager.getLogger(GXHandlerChain.class);
+	}
+
 			Boolean outboundProperty = (Boolean) messageContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
   		java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();;
   		try
