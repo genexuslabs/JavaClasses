@@ -30,7 +30,7 @@ import org.json.JSONException;
 
 
 @Root
-public final class GXGeospatial implements java.io.Serializable, IGxJSONSerializable{
+public final class GXGeospatial implements java.io.Serializable, IGxJSONSerializable {
 
 	private Shape innerShape;
 	private String lastError;
@@ -131,6 +131,12 @@ public final class GXGeospatial implements java.io.Serializable, IGxJSONSerializ
 		srid = value;
 	}
 
+	@Override
+	public String toString()
+	{
+		return this.toWKT();
+	}
+	
 	public String toWKT()
 	{
 		return this.toWKTSQL("");	
@@ -280,13 +286,20 @@ public final class GXGeospatial implements java.io.Serializable, IGxJSONSerializ
 	{
 		lastErrorCode = 0;
 		lastError = "";
-		if (geoJSONString.contains("Polygon"))
+		if (geoJSONString.contains("type"))
 		{
-			isJTS = true;
-			initJTSContext(); // set context to JTS
+			if (geoJSONString.contains("Polygon"))
+			{
+				isJTS = true;
+				initJTSContext(); // set context to JTS
+			}
+			ShapeReader rdr =  ctx.getFormats().getGeoJsonReader();
+			readShape(rdr, geoJSONString);
 		}
-		ShapeReader rdr =  ctx.getFormats().getGeoJsonReader();
-		readShape(rdr, geoJSONString);
+		else 
+		{
+			this.fromWKT(geoJSONString);
+		}
 	}
 
 	public static boolean isNullOrEmpty(GXGeospatial geo)

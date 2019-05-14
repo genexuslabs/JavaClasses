@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+				 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -125,7 +125,8 @@
 			<artifactId>itext</artifactId>
 			<version>2.1.7</version>
 			<exclusions>
-				<exclusion>  <!-- declare the exclusion here -->
+				<exclusion>
+					<!-- declare the exclusion here -->
 					<groupId>bouncycastle</groupId>
 					<artifactId>bcmail-jdk14</artifactId>
 				</exclusion>
@@ -142,11 +143,17 @@
 			<version>3.0.14</version>
 		</dependency>
 		<dependency>
-		    <groupId>org.apache.ws.security</groupId>
-		    <artifactId>wss4j</artifactId>
-		    <version>1.6.19</version>
+			<groupId>org.apache.ws.security</groupId>
+			<artifactId>wss4j</artifactId>
+			<version>1.6.19</version>
+		</dependency>
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc6</artifactId>
+			<version>12.1.0.1.0</version>
 		</dependency>
 	</dependencies>
+	
 	<build>
 		<finalName>gxclassR</finalName>
 		<plugins>
