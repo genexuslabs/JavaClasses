@@ -45,8 +45,8 @@ public class Utils {
 	
 	public static void logError(Exception e) {
 		System.err.println(e.getMessage());
-	}	
-	
+	}
+
 	public static void logError(String msg, Exception e) {
 		System.err.println(String.format("%s - %s", msg, e.getMessage()));
 	}
