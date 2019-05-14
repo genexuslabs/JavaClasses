@@ -538,7 +538,10 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 			{
 				try
 				{
-					con = ds.getConnection();
+					if (!setDataSourceOracleFixedString(ds))
+					{
+						con = ds.getConnection();
+					}
 					return;
 				}catch(SQLException sqle)
 				{ // Si hay alguna excepcion al pedir una conexi�n del datasource que teniamos
@@ -553,12 +556,32 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 			ds = (javax.sql.DataSource) ic.lookup(dataSourceName);
 			JDBCDataSourceMappings.put(dataSourceName, ds);
 
-			con = ds.getConnection();
+			if (!setDataSourceOracleFixedString(ds))
+			{				
+				con = ds.getConnection();
+			}
 		}
 		catch (javax.naming.NamingException e)
 		{
 			throw new RuntimeException(e.getMessage());
 		}
+	}
+	
+	private boolean setDataSourceOracleFixedString(javax.sql.DataSource ds) throws SQLException
+	{
+			if (dataSource.dbms instanceof GXDBMSoracle7)
+			{
+				if (ds.isWrapperFor(oracle.jdbc.pool.OracleDataSource.class))
+				{
+					oracle.jdbc.pool.OracleDataSource oracle_datasource = ds.unwrap(oracle.jdbc.pool.OracleDataSource.class);
+					Properties dataSourceProps = new Properties();
+					dataSource.dbms.setConnectionProperties(dataSourceProps);
+					oracle_datasource.setConnectionProperties(dataSourceProps);
+					con = oracle_datasource.getConnection();
+					return true;
+				}
+			}
+			return false;		
 	}
 
 	public GXConnection()
