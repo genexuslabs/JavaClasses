@@ -1,5 +1,7 @@
 package com.genexus;
 
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 import com.genexus.util.*;
 
 import json.org.json.JSONObject;
@@ -36,6 +38,8 @@ public final class CommonUtil
 	public static final String [][] ENCODING_JAVA_IANA;
 	private static Random random;
 	private static Date nullDate;
+
+	public static final ILogger logger = LogManager.getLogger(CommonUtil.class);
 
 	static
 	{
@@ -132,12 +136,9 @@ public final class CommonUtil
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
-			System.err.println("GXUtil static constructor error: " + e.getMessage());
+			logger.error("GXUtil static constructor error: ", e);
 			throw new ExceptionInInitializerError("GXUtil static constructor error: " + e.getMessage());
-
 		}
-
 	}
 	
 	public static String removeAllQuotes(String fileName)
@@ -198,7 +199,7 @@ public final class CommonUtil
 		}
 		catch (IOException e)
 		{
-			System.err.println("Error writing file " + fileName + ":" + e.getMessage());
+			logger.debug("Error writing file " + fileName + ":" + e.getMessage());
 		}
 		finally 
 		{
@@ -212,32 +213,18 @@ public final class CommonUtil
 
 	public static void writeLogln( String message)
 	{
-
-		if(DebugFlag.DEBUG)
-		{
-			System.err.println(message);
-		}
-
+		logger.error( message);
 	}
 
 	public static void writeLogRaw( String message, Object obj)
 	{
-
-		if(DebugFlag.DEBUG)
-		{
-			System.err.print(message);
-			System.err.println(obj.toString());
-		}
-
+		logger.error(message);
+		logger.error(obj.toString());
 	}
 
 	public static void writeLog( String message)
 	{
-		if(DebugFlag.DEBUG)
-		{
-			System.err.println(message);
-			new Throwable().printStackTrace();
-		}
+		logger.error(message, new Throwable());
 	}
 
 	public static String accessKey(String OCaption)
@@ -1358,12 +1345,12 @@ public final class CommonUtil
 
 	public static void msg(Object panel, String sText)
 	{
-		System.err.println("msg: " + sText);
+		logger.debug("msg: " + sText);
 	}
 
 	public static void error(Object panel, String sText)
 	{
-		System.err.println("err: " + sText);
+		logger.error("err: " + sText);
 	}
 
 
@@ -1668,7 +1655,7 @@ public final class CommonUtil
 		}
 		catch(UnsupportedEncodingException e)
 		{
-			System.err.println(e.toString());
+			logger.debug(e.toString());
 			return 0;
 		}
 	}
@@ -2535,7 +2522,7 @@ public final class CommonUtil
 		}
 		catch (Exception ex)
 		{
-			System.err.println("getHash - " + s + " - " + hashAlgorithm + " - " +  ex.toString());
+			logger.error("getHash - " + s + " - " + hashAlgorithm + " - " +  ex.toString());
 		}
 		if (bytesOfMessage != null)
 		{
