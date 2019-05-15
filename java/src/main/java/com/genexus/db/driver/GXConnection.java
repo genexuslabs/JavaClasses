@@ -569,8 +569,7 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 	
 	private boolean setDataSourceOracleFixedString(javax.sql.DataSource ds) throws SQLException
 	{
-			if (dataSource.dbms instanceof GXDBMSoracle7)
-			{
+			if (dataSource.dbms instanceof GXDBMSoracle7) {
 				try {
 					Class oracleDataStourceClass = Class.forName("oracle.jdbc.pool.OracleDataSource");
 					if (ds.isWrapperFor(oracleDataStourceClass)) {
@@ -583,10 +582,10 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 						con = dataSource.getConnection();
 						return true;
 					}
-				}
-				catch (Exception ex) {
+				} catch (ClassNotFoundException cex) {
+				} catch (Exception ex) {
 					log(GXDBDebug.LOG_MIN, "Error setting oracle FixedString");
-					if	(isLogEnabled()) logSQLException(handle, ex);
+					if (isLogEnabled()) logSQLException(handle, ex);
 				}
 			}
 			return false;		
