@@ -1,5 +1,6 @@
 package com.genexus.cryptography;
 
+import java.io.ByteArrayOutputStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -21,6 +22,8 @@ import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.apache.xml.security.transforms.Transforms;
 import org.apache.xml.security.utils.ElementProxy;
+import org.apache.xml.security.utils.XMLUtils;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -144,7 +147,9 @@ public class GXXMLDsig {
 					Node p = element.getParentNode();
 					p.replaceChild(doc.importNode(docToBeSigned.getDocumentElement(), true), element);
 				}
-				return Utils.serialize(doc);
+				ByteArrayOutputStream byteArray = new ByteArrayOutputStream();				
+				XMLUtils.outputDOMc14nWithComments(doc, byteArray);
+				return new String(byteArray.toByteArray());
 
 			} catch (NoSuchAlgorithmException e) {
 				Utils.logError(e);
