@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Date;
 import java.util.Enumeration;
+import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -156,7 +157,32 @@ public abstract class HttpContext
 	private boolean wrapped = false;
 	private int drawGridsAtServer = -1;
 	private boolean ignoreSpa = false;
+
+	private String serviceWorkerFileName = "service-worker.js";
+	private Boolean isServiceWorkerDefinedFlag = null;
+
+	private String webAppManifestFileName = "manifest.json";
+	private Boolean isWebAppManifestDefinedFlag = null;
 	
+
+	private boolean isServiceWorkerDefined()
+	{
+		if (isServiceWorkerDefinedFlag == null)
+		{
+			isServiceWorkerDefinedFlag = Boolean.valueOf(checkFileExists(serviceWorkerFileName));
+		}
+		return isServiceWorkerDefinedFlag == Boolean.valueOf(true);
+	}
+
+	private boolean isWebAppManifestDefined()
+	{
+		if (isWebAppManifestDefinedFlag == null)
+		{
+			isWebAppManifestDefinedFlag = Boolean.valueOf(checkFileExists(webAppManifestFileName));
+		}
+		return isWebAppManifestDefinedFlag == Boolean.valueOf(true);
+	}
+
 	public boolean isOutputEnabled()
 	{
 		return this.isEnabled;
@@ -356,7 +382,37 @@ public abstract class HttpContext
 					AddJavascriptSource(deferredJsSrc, "", false, true);
 				}
 			}
+			// After including gxgral, set the Service Worker Url if one is defined
+			if (jsSrc.equals("gxgral.js") && isServiceWorkerDefined())
+			{
+				writeTextNL("<script>gx.serviceWorkerUrl = \"" + oldConvertURL(serviceWorkerFileName) + "\";</script>");
+			}
 		}
+	}
+
+	public void addWebAppManifest()
+	{
+		if (isWebAppManifestDefined())
+		{
+			writeTextNL("<link rel=\"manifest\" href=\"" + oldConvertURL(webAppManifestFileName) + "\">");
+		}
+	}
+
+	private boolean checkFileExists(String fileName)
+	{
+		boolean fileExists = false;
+		try
+		{
+			File file = new File(getDefaultPath() + staticContentBase + fileName);
+			fileExists =  file.exists() && file.isFile();
+			com.genexus.diagnostics.Log.info("Searching if file exists (" + fileName + "). Found: " + String.valueOf(fileExists));
+		}
+		catch (Exception e)
+		{
+			fileExists = false;
+			com.genexus.diagnostics.Log.info("Failed searching for a file (" + fileName + ")");
+		}
+		return fileExists;
 	}
 
 
