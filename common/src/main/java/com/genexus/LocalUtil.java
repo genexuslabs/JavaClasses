@@ -1084,7 +1084,15 @@ public class LocalUtil
 		}
 		catch (ParseException e)
 		{
-			return null;
+			df.setLenient(true);
+			try
+			{
+				return applyYearLimit( df.parse(date), patternDate + patternTime);
+			}
+			catch (ParseException ex)
+			{
+				return null;
+			}
 		}
 	}
 
