@@ -583,6 +583,7 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 						return true;
 					}
 				} catch (ClassNotFoundException cex) {
+					if (isLogEnabled()) log(handle, "setDataSourceOracleFixedString class oracle.jdbc.pool.OracleDataSource does not exist on classpath");
 				} catch (Exception ex) {
 					log(GXDBDebug.LOG_MIN, "Error setting oracle FixedString");
 					if (isLogEnabled()) logSQLException(handle, ex);
