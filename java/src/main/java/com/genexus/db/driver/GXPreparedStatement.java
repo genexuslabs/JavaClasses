@@ -779,11 +779,12 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 	{
 		try{
 			// oracle NCHAR/NVARCHAR/NCLOB unicode columns require some
-			// special handling to configure them correctly; 
-			stmt.getClass().getMethod("setFormOfUse", new Class[]{ int.class, short.class }).
-			invoke(stmt,new Object[]{ new Integer(index),
-					Class.forName("oracle.jdbc.OraclePreparedStatement").getField("FORM_NCHAR").get(null)});
-		} 
+			// special handling to configure them correctly;
+			Method setFormOfUseMth =  stmt.getClass().getMethod("setFormOfUse", new Class[]{ int.class, short.class });
+			if (setFormOfUseMth!=null && setFormOfUseMth.isAccessible()) {
+				setFormOfUseMth.invoke(stmt, new Object[]{new Integer(index), Class.forName("oracle.jdbc.OraclePreparedStatement").getField("FORM_NCHAR").get(null)});
+			}
+		}
 		catch (Exception ex1) 
 		{
 			System.out.println(ex1.getMessage());
