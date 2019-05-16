@@ -35,11 +35,6 @@
       <name>MIT Public</name>
       <url>http://maven.mit.edu/nexus/content/repositories/public</url>
     </repository>
-    <repository>
-      <id>nexus-release</id>
-      <name>GeneXus Nexus Release</name>
-      <url>http://nexus.genexus.com/repository/maven-external-dependencies</url>
-    </repository>
   </repositories>
   <licenses>
     <license>

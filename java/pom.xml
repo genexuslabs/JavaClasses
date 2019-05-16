@@ -147,11 +147,6 @@
 			<artifactId>wss4j</artifactId>
 			<version>1.6.19</version>
 		</dependency>
-		<dependency>
-			<groupId>com.oracle</groupId>
-			<artifactId>ojdbc6</artifactId>
-			<version>12.1.0.1.0</version>
-		</dependency>
 	</dependencies>
 	
 	<build>
