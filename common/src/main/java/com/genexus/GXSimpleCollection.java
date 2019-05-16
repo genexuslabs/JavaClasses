@@ -1128,6 +1128,10 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 					{
 						currObj = new Double(jsonArr.getDouble(i));
 					}
+					else if (elementsType == java.math.BigDecimal.class)
+					{
+						currObj = java.math.BigDecimal.valueOf(jsonArr.getDouble(i));
+					}
 					else if (elementsType == Long.class)
 					{
 						currObj = new Long(jsonArr.getLong(i));
