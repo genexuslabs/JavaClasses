@@ -29,7 +29,7 @@ public class PictureFormatter
 			// HACK: las fechas-horas que vienen todas con 0 tambien las asumimos como
 			// nulas.
 
-			if	(car != ' ' && car != '/' && car != '-' && car != ':' && car != '0')
+			if	(car != ' ' && car != '/' && car != '-' && car != ':' && car != '0' && car != 'T')
 				return false;
 		}
 
