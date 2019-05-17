@@ -26,7 +26,7 @@ public class GXMaps {
         return new LocationInfo();       
     }
 
-    public static LocationInfo getCurrentLocation(int minAccuracy, int _timeout, boolean includeHAndS, GXSimpleCollection<Boolean> ignoreErrors) {
+    public static LocationInfo getCurrentLocation(int minAccuracy, int _timeout, boolean includeHAndS, Boolean ignoreErrors) {
             return new LocationInfo();       
     }
     
