@@ -29,7 +29,7 @@ public class FileUtils implements com.genexus.common.interfaces.IExtensionFileUt
 
 	@Override
 	public void writeLines(File fileSource, String encoding, Vector value, boolean append) throws IOException {
-		org.apache.commons.io.FileUtils.writeLines(fileSource, value, encoding, append);
+		org.apache.commons.io.FileUtils.writeLines(fileSource, encoding, value, append);
 	}
 
 	@Override
