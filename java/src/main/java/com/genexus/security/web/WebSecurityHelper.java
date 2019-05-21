@@ -46,7 +46,7 @@ public class WebSecurityHelper {
     		 return false;            
     	 boolean ret = !StringUtils.isBlank(pgmName) && token.get_pgmName().equals(pgmName) && issuer.equals(token.get_issuer()) &&
     			 StripInvalidChars(value).equals(StripInvalidChars(token.get_value())) && new Date().compareTo(token.get_expiration()) < 0;
-		 if (!ret && (com.genexus.DebugFlag.DEBUG || log.isDebugEnabled())) {
+		 if (!ret && log.isDebugEnabled()) {
 			 String lsep = System.getProperty("line.separator");
 			 
 			 StringBuilder stringBuilder = new StringBuilder();
@@ -64,7 +64,7 @@ public class WebSecurityHelper {
 			if (!(new Date().compareTo(token.get_expiration()) < 0)) {
 				stringBuilder.append("Verify: token expired ");
 			}
-			log.debug(stringBuilder.toString());
+			log.error(stringBuilder.toString());
 		 }
 		 return ret;
      }
