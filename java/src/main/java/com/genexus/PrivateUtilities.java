@@ -239,7 +239,7 @@ public final class PrivateUtilities
 		String fileName;
 		do
 		{
-			fileName  = ((int) (random.nextDouble() * 10000000)) + extension;
+			fileName  = java.util.UUID.randomUUID().toString() + extension;
 		}
 		while (new File(fileName).exists());
 	
@@ -264,19 +264,24 @@ public final class PrivateUtilities
 	}
 	
 	public static String checkFileNameLength(String baseDir, String fileName, String extension ) 
-	{		
-		if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS) 
+	{
+		int pathLength;
+		int fileNameLength = fileName.length();
+		int extensionLength = extension.length();
+		if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS)
 		{
-			int pathLength = baseDir.length() + fileName.length() + extension.length();
-			if (pathLength > 250)
+			pathLength = baseDir.length() + fileNameLength + extensionLength;
+			if (pathLength > 260)
 			{
-				fileName = fileName.substring(0, (fileName.length() - (pathLength - 250) ));		
+				fileName = fileName.substring(fileNameLength + baseDir.length() - 260 + extensionLength, fileNameLength);
 			}
 		}
 		else
-		{			
-			if (fileName.length() > 150)
-				fileName = fileName.substring(0, 150);		
+		{
+			pathLength = fileNameLength + extensionLength;
+			if (pathLength > 255) {
+				fileName = fileName.substring(fileNameLength - 255 + extensionLength, fileNameLength);
+			}
 		}
 		return fileName;
 	}
