@@ -21,14 +21,15 @@ public class WebApplicationStartup
 	private synchronized void initImpl(Class baseClass, HttpContext httpContext)
 	{
 		if	(!initialized)
-		{				
+		{
+			String basePath = httpContext.getDefaultPath();
 			ApplicationContext appContext = ApplicationContext.getInstance();
 
 			appContext.setMsgsToUI(false);
 			appContext.setServletEngine(true);
-			appContext.setServletEngineDefaultPath(httpContext.getDefaultPath());
+			appContext.setServletEngineDefaultPath(basePath);
 
-      		Application.init(baseClass, false);
+      		Application.init(baseClass, false, basePath);
 			ModelContext.getModelContext(baseClass).setHttpContext(httpContext);
 			initialized = true;
 		}

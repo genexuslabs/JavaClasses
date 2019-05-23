@@ -84,13 +84,12 @@ public class ServletEventListener implements ServletContextListener
 		{
 			try
 			{
+				String basePath = context.getRealPath("/");
 				Class gxcfgClass = Class.forName(gxcfg);
 				ApplicationContext appContext = ApplicationContext.getInstance();
 				appContext.setServletEngine(true);
-				String basePath = context.getRealPath("/");
-				com.genexus.diagnostics.core.LogManager.initialize(basePath);
 				appContext.setServletEngineDefaultPath(basePath);
-				Application.init(gxcfgClass);
+				Application.init(gxcfgClass, basePath);
 			}
 			catch (Exception e) {
 			}

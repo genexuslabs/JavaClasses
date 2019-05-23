@@ -25,9 +25,8 @@ public class Application
 {
 	static {
 		Connect.init();
-		com.genexus.diagnostics.core.LogManager.initialize(".");
 	}
-	public static final ILogger logger = LogManager.getLogger(Application.class);
+	public static ILogger logger = null;
 
 	public static boolean usingQueue = false;
 	private static final boolean DEBUG = DebugFlag.DEBUG;
@@ -46,6 +45,8 @@ public class Application
 	static Class ClassName = null;
 
 	private static volatile ExternalProvider externalProvider = null;
+	private static Object objectLock = new Object();
+	private static volatile boolean initialized = false;
 
 
 	public static void onExitCleanup()
@@ -118,19 +119,27 @@ public class Application
 
 	public static void init(Class gxCfg)
 	{
-		init(gxCfg, true);
+		init(gxCfg, true, ".");
 	}
 
-	private static Object objectLock = new Object();
-
-	private static volatile boolean initialized = false;
+	public static void init(Class gxCfg, String basePath)
+	{
+		init(gxCfg, true, basePath);
+	}
 
 	public static void init(Class gxCfg, boolean doLogin)
+	{
+		init(gxCfg, doLogin, ".");
+	}
+
+	public static void init(Class gxCfg, boolean doLogin, String basePath)
 	{
 		if	(!initialized)
 		{
 			synchronized (objectLock) {
 				if (!initialized) {
+					LogManager.initialize(basePath);
+					logger = LogManager.getLogger(Application.class);
 					Application.gxCfg = gxCfg;
 					ClientContext.setModelContext(new ModelContext(gxCfg));
 					DebugFlag.DEBUG = ClientContext.getModelContext().getClientPreferences().getJDBC_LOGEnabled();
