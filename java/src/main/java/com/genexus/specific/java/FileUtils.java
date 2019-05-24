@@ -12,7 +12,7 @@ public class FileUtils implements com.genexus.common.interfaces.IExtensionFileUt
 
 	@Override
 	public String readFileToString(File fileSource, String normalizeEncodingName) throws IOException {
-		return org.apache.commons.io.FileUtils.readFileToString(fileSource);
+		return org.apache.commons.io.FileUtils.readFileToString(fileSource, normalizeEncodingName);
 	}
 
 	@Override
