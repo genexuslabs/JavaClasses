@@ -115,8 +115,8 @@ public abstract class GXWebObjectStub extends HttpServlet
 				ApplicationContext appContext = ApplicationContext.getInstance();
 				appContext.setServletEngine(true);
 				Application.init(gxcfgClass);
-				logger = LogManager.getLogger(GXWebObjectStub.class);
 			}
+			logger = LogManager.getLogger(GXWebObjectStub.class);
 			httpContext = new HttpContextWeb(method, req, res, getServletContext());
 			if (DEBUG)
 				dumpRequestInfo(httpContext);
