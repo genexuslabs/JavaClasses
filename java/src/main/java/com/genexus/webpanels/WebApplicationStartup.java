@@ -29,7 +29,7 @@ public class WebApplicationStartup
 			appContext.setServletEngine(true);
 			appContext.setServletEngineDefaultPath(basePath);
 
-      		Application.init(baseClass, false, basePath);
+      		Application.init(baseClass, false);
 			ModelContext.getModelContext(baseClass).setHttpContext(httpContext);
 			initialized = true;
 		}

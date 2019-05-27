@@ -19,7 +19,7 @@ import com.genexus.security.GXSecurityProvider;
 
 public abstract class GXWebObjectStub extends HttpServlet
 {
-	public static ILogger logger = null;
+	public static ILogger logger = LogManager.getLogger(GXWebObjectStub.class);
 
 	private static final boolean DEBUG       = DebugFlag.DEBUG;
 
@@ -116,7 +116,6 @@ public abstract class GXWebObjectStub extends HttpServlet
 				appContext.setServletEngine(true);
 				Application.init(gxcfgClass);
 			}
-			logger = LogManager.getLogger(GXWebObjectStub.class);
 			httpContext = new HttpContextWeb(method, req, res, getServletContext());
 			if (DEBUG)
 				dumpRequestInfo(httpContext);
