@@ -8,4 +8,6 @@ public abstract class AbstractGXFile {
 
 	public abstract String getNameNoExt() ;
 
+	public abstract long getLength();
+
 }
