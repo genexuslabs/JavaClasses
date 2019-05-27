@@ -6,7 +6,6 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Vector;
 
-import com.genexus.common.interfaces.IPreferences;
 import com.genexus.db.DBConnectionManager;
 import com.genexus.db.DynamicExecute;
 import com.genexus.db.Namespace;
@@ -21,12 +20,13 @@ import com.genexus.util.GXServices;
 import com.genexus.util.ReorgSubmitThreadPool;
 import com.genexus.util.SubmitThreadPool;
 
+
 public class Application
 {
 	static {
 		Connect.init();
 	}
-	public static ILogger logger = null;
+	public static ILogger logger = LogManager.getLogger(Application.class);
 
 	public static boolean usingQueue = false;
 	private static final boolean DEBUG = DebugFlag.DEBUG;
@@ -119,27 +119,15 @@ public class Application
 
 	public static void init(Class gxCfg)
 	{
-		init(gxCfg, true, ".");
-	}
-
-	public static void init(Class gxCfg, String basePath)
-	{
-		init(gxCfg, true, basePath);
+		init(gxCfg, true);
 	}
 
 	public static void init(Class gxCfg, boolean doLogin)
-	{
-		init(gxCfg, doLogin, ".");
-	}
-
-	public static void init(Class gxCfg, boolean doLogin, String basePath)
 	{
 		if	(!initialized)
 		{
 			synchronized (objectLock) {
 				if (!initialized) {
-					LogManager.initialize(basePath);
-					logger = LogManager.getLogger(Application.class);
 					Application.gxCfg = gxCfg;
 					ClientContext.setModelContext(new ModelContext(gxCfg));
 					DebugFlag.DEBUG = ClientContext.getModelContext().getClientPreferences().getJDBC_LOGEnabled();
