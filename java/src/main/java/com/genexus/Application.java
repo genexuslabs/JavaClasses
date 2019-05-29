@@ -26,6 +26,7 @@ public class Application
 	static {
 		Connect.init();
 	}
+
 	public static ILogger logger = LogManager.getLogger(Application.class);
 
 	public static boolean usingQueue = false;
@@ -47,7 +48,6 @@ public class Application
 	private static volatile ExternalProvider externalProvider = null;
 	private static Object objectLock = new Object();
 	private static volatile boolean initialized = false;
-
 
 	public static void onExitCleanup()
 	{

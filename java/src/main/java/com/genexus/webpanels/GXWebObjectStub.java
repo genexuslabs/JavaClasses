@@ -16,10 +16,9 @@ import com.genexus.internet.HttpContext;
 import com.genexus.security.GXResult;
 import com.genexus.security.GXSecurityProvider;
 
-
 public abstract class GXWebObjectStub extends HttpServlet
 {
-	public static ILogger logger = LogManager.getLogger(GXWebObjectStub.class);
+	public static ILogger logger = null;
 
 	private static final boolean DEBUG       = DebugFlag.DEBUG;
 
@@ -103,8 +102,8 @@ public abstract class GXWebObjectStub extends HttpServlet
 
 	private void callExecute(String method, HttpServletRequest req, HttpServletResponse res) throws ServletException
 	{
+		initialize(req, res);
 		HttpContext httpContext = null;
-		setResponseBufferSize(res);
 		try
 		{
 			String gxcfg = getServletContext().getInitParameter("gxcfg");
@@ -215,6 +214,13 @@ public abstract class GXWebObjectStub extends HttpServlet
 				dumpRequestInfo(httpContext);
 			throw new ServletException(com.genexus.PrivateUtilities.getStackTraceAsString(e));
 		}
+	}
+
+	private void initialize(HttpServletRequest req, HttpServletResponse res) {
+		if (logger == null) {
+			logger = com.genexus.specific.java.LogManager.initialize(req.getServletContext().getRealPath("/"), GXWebObjectStub.class);
+		}
+		setResponseBufferSize(res);
 	}
 
 	private void setResponseBufferSize(HttpServletResponse res) {
