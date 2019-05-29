@@ -81,7 +81,7 @@ public class ServletEventListener implements ServletContextListener
 	{
 		ServletContext context = event.getServletContext();
 		String basePath = context.getRealPath("/");
-		LogManager.configure(basePath);
+		LogManager.initialize(basePath);
 		String gxcfg = context.getInitParameter("gxcfg");
 		if (gxcfg != null)
 		{
