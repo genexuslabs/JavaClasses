@@ -311,14 +311,13 @@ public class IniFile {
 	private final String ENVVAR_PREFIX = "GX_";
 
 	private String getEnvironmentValue(String section, String key){
-
 		if (section != null && !section.isEmpty() && section != "Client"){
 			for(int i = 0; i < m_invalidChars.length; i++)
 				section = section.replace(m_invalidChars[i], "_");
-			key = section + "_" + ENVVAR_PREFIX + key;
+			key = String.format("%s%s_%s", ENVVAR_PREFIX, section.toUpperCase(), key.toUpperCase());
 		}
 		else
-			key = ENVVAR_PREFIX + key;
+			key = String.format("%s%s", ENVVAR_PREFIX, key.toUpperCase());
 
 		return System.getenv(key);
 	} 
