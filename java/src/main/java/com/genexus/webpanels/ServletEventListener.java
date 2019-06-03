@@ -12,6 +12,7 @@ import com.genexus.*;
 import com.genexus.db.DBConnectionManager;
 import com.genexus.db.Namespace;
 import com.genexus.platform.NativeFunctions;
+import com.genexus.specific.java.LogManager;
 import com.genexus.util.GXServices;
 import com.genexus.util.PropertiesManager;
 import com.genexus.util.SubmitThreadPool;
@@ -79,6 +80,8 @@ public class ServletEventListener implements ServletContextListener
 	public void contextInitialized(ServletContextEvent event)
 	{
 		ServletContext context = event.getServletContext();
+		String basePath = context.getRealPath("/");
+		LogManager.initialize(basePath);
 		String gxcfg = context.getInitParameter("gxcfg");
 		if (gxcfg != null)
 		{
@@ -87,8 +90,6 @@ public class ServletEventListener implements ServletContextListener
 				Class gxcfgClass = Class.forName(gxcfg);
 				ApplicationContext appContext = ApplicationContext.getInstance();
 				appContext.setServletEngine(true);
-				String basePath = context.getRealPath("/");
-				com.genexus.diagnostics.core.LogManager.initialize(basePath);
 				appContext.setServletEngineDefaultPath(basePath);
 				Application.init(gxcfgClass);
 			}
