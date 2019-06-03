@@ -22,7 +22,7 @@ import json.org.json.JSONObject;
 
 abstract public class GxRestService extends GXWebObjectBase 
 {
-	private static final ILogger logger = LogManager.getLogger(GxRestService.class);
+	private static ILogger logger = null;
 	
 	protected JSONObject errorJson;
 	protected boolean error = false;
@@ -59,6 +59,7 @@ abstract public class GxRestService extends GXWebObjectBase
 	HttpContext restHttpContext;
 	public void init(String requestMethod, HttpServletRequest myServletRequest, HttpServletResponse myServletResponse, ServletContext myContext)
 	{
+		initLogger(myContext);
 		try
 		{
 			String gxcfg = myContext.getInitParameter("gxcfg");
@@ -83,8 +84,14 @@ abstract public class GxRestService extends GXWebObjectBase
 			logger.error("Could not initialize Rest Service", e);
 		}
 	}
-	
-   public void webExecute( )
+
+	private void initLogger(ServletContext myContext) {
+		if (logger == null) {
+			logger = com.genexus.specific.java.LogManager.initialize(myContext.getRealPath("/"), GxRestService.class);
+		}
+	}
+
+	public void webExecute( )
    {
    }
 

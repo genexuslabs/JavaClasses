@@ -4,12 +4,13 @@ import com.genexus.Application;
 import com.genexus.ApplicationContext;
 import com.genexus.ModelContext;
 import com.genexus.internet.HttpContext;
+import com.genexus.specific.java.LogManager;
 
-public class WebApplicationStartup 
+public class WebApplicationStartup
 {
-	static boolean initialized = false;
+	private static boolean initialized = false;
 
-	public void init(Class baseClass, HttpContext httpContext)
+	public static void init(Class baseClass, HttpContext httpContext)
 	{
 		if (!initialized)
 		{
@@ -18,16 +19,17 @@ public class WebApplicationStartup
 	}
 	
 	
-	private synchronized void initImpl(Class baseClass, HttpContext httpContext)
+	private static synchronized void initImpl(Class baseClass, HttpContext httpContext)
 	{
 		if	(!initialized)
-		{				
+		{
+			String basePath = httpContext.getDefaultPath();
 			ApplicationContext appContext = ApplicationContext.getInstance();
 
 			appContext.setMsgsToUI(false);
 			appContext.setServletEngine(true);
-			appContext.setServletEngineDefaultPath(httpContext.getDefaultPath());
-
+			appContext.setServletEngineDefaultPath(basePath);
+			LogManager.initialize(basePath);
       		Application.init(baseClass, false);
 			ModelContext.getModelContext(baseClass).setHttpContext(httpContext);
 			initialized = true;

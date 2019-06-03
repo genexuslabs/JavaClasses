@@ -6,7 +6,6 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Vector;
 
-import com.genexus.common.interfaces.IPreferences;
 import com.genexus.db.DBConnectionManager;
 import com.genexus.db.DynamicExecute;
 import com.genexus.db.Namespace;
@@ -21,13 +20,14 @@ import com.genexus.util.GXServices;
 import com.genexus.util.ReorgSubmitThreadPool;
 import com.genexus.util.SubmitThreadPool;
 
+
 public class Application
 {
 	static {
 		Connect.init();
-		com.genexus.diagnostics.core.LogManager.initialize(".");
 	}
-	public static final ILogger logger = LogManager.getLogger(Application.class);
+
+	public static ILogger logger = LogManager.getLogger(Application.class);
 
 	public static boolean usingQueue = false;
 	private static final boolean DEBUG = DebugFlag.DEBUG;
@@ -46,7 +46,8 @@ public class Application
 	static Class ClassName = null;
 
 	private static volatile ExternalProvider externalProvider = null;
-
+	private static Object objectLock = new Object();
+	private static volatile boolean initialized = false;
 
 	public static void onExitCleanup()
 	{
@@ -120,10 +121,6 @@ public class Application
 	{
 		init(gxCfg, true);
 	}
-
-	private static Object objectLock = new Object();
-
-	private static volatile boolean initialized = false;
 
 	public static void init(Class gxCfg, boolean doLogin)
 	{

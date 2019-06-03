@@ -6,52 +6,52 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
+import javax.xml.ws.WebServiceContext;
+import javax.annotation.Resource;
+import javax.servlet.ServletContext;
+
 import com.genexus.diagnostics.core.ILogger;
-import com.genexus.diagnostics.core.LogManager;
+import com.genexus.specific.java.LogManager;
 
-public class GXHandlerChain implements SOAPHandler<SOAPMessageContext>
-{
-	private static ILogger logger = null;
-	public static final String GX_SOAP_BODY = "GXSoapBody";
-	
-  public Set<QName> getHeaders()
-  {
-    return Collections.emptySet();
-  }
-  
-  public boolean handleMessage(SOAPMessageContext messageContext)
-  {
-  	if (logger == null) {
-		logger = LogManager.getLogger(GXHandlerChain.class);
-	}
 
-			Boolean outboundProperty = (Boolean) messageContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
-  		java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();;
-  		try
-  		{
-  			messageContext.getMessage().writeTo(out);
-  			String messageBody = new String(out.toByteArray(), "utf-8"); 
-				if (Boolean.FALSE.equals(outboundProperty)) 
-				{  				
-  				messageContext.put(GX_SOAP_BODY, messageBody);
-  				messageContext.setScope(GX_SOAP_BODY, MessageContext.Scope.APPLICATION);
-  			}
-  			
-				logger.debug(messageBody);
-  		}
-			catch (Exception e) 
-			{
-					logger.error("Exception in handler: ", e);
-			}				
-      return true;
-  }
-  
-  public boolean handleFault(SOAPMessageContext messageContext)
-  {
-    return true;
-  }
-  
-  public void close(MessageContext messageContext)
-  {
-  }
+public class GXHandlerChain implements SOAPHandler<SOAPMessageContext> {
+    private static ILogger logger = null;
+    public static final String GX_SOAP_BODY = "GXSoapBody";
+
+    public Set<QName> getHeaders() {
+        return Collections.emptySet();
+    }
+
+    public boolean handleMessage(SOAPMessageContext messageContext) {
+        initialize(messageContext);
+        Boolean outboundProperty = (Boolean) messageContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        ;
+        try {
+            messageContext.getMessage().writeTo(out);
+            String messageBody = new String(out.toByteArray(), "utf-8");
+            if (Boolean.FALSE.equals(outboundProperty)) {
+                messageContext.put(GX_SOAP_BODY, messageBody);
+                messageContext.setScope(GX_SOAP_BODY, MessageContext.Scope.APPLICATION);
+            }
+            logger.debug(messageBody);
+        } catch (Exception e) {
+            logger.error("Exception in handler: ", e);
+        }
+        return true;
+    }
+
+    private void initialize(SOAPMessageContext messageContext) {
+        if (logger == null) {
+            ServletContext servletContext = (ServletContext) messageContext.get(MessageContext.SERVLET_CONTEXT);
+            logger = LogManager.initialize(servletContext.getRealPath("/"), GXHandlerChain.class);
+        }
+    }
+
+    public boolean handleFault(SOAPMessageContext messageContext) {
+        return true;
+    }
+
+    public void close(MessageContext messageContext) {
+    }
 }

@@ -18,7 +18,7 @@ public class GXObjectUploadServices extends GXWebObjectStub
 {   
     protected void doExecute(HttpContext context) throws Exception
     {
-        new WebApplicationStartup().init(Application.gxCfg, context);
+        WebApplicationStartup.init(Application.gxCfg, context);
         context.setStream();
         
 		try
