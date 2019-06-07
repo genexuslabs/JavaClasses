@@ -2540,7 +2540,7 @@ public final class CommonUtil
 
 	public static String encodeJSON(String in)
 	{
-		String encoded = JSONObject.quote(in).replaceAll("'", "\u0027");
+		String encoded = JSONObject.quote(in).replaceAll("'", "\\\\u0027");
 		return encoded.substring(1, encoded.length() - 1);
 	}
 
