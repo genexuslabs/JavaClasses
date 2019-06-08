@@ -1,3 +1,5 @@
+[![Build Status](https://dev.azure.com/gxazure/Java-classes/_apis/build/status/genexuslabs.JavaClasses?branchName=master)](https://dev.azure.com/gxazure/Java-classes/_build/latest?definitionId=2&branchName=master)
+
 # GeneXus Standard Classes for Java
 
 Note that this is a **Work in Progress**. **These classes are not intended to be used as release library yet**.
