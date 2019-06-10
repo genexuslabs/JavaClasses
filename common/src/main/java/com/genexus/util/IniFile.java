@@ -286,8 +286,10 @@ public class IniFile {
 	}
 
 	private String getPropertyImpl(String section, String key) {
-		String output = null;
-		key = getMappedProperty(section, key);
+		String mapped = getMappedProperty(section, key);
+		if (mapped != null && !mapped.isEmpty())
+			return System.getenv(mapped);
+
 		String envVal = getEnvironmentValue(section, key);
 		if (envVal != null && !envVal.isEmpty())
 			return envVal;
@@ -301,42 +303,46 @@ public class IniFile {
 		if (prop != null) {
 			Value value = (Value) prop.get(key.toUpperCase());
 			if (value != null) {
-				output = value.value;
+				return value.value;
 			}
 		}
-		return output;
+		return null;
 	}
 
-	private String[] m_invalidChars = { ".","|" }; 
+	private String[] m_invalidChars = { ".","|",":" }; 
 	private final String ENVVAR_PREFIX = "GX_";
 
 	private String getEnvironmentValue(String section, String key){
-		if (section != null && !section.isEmpty() && section != "Client"){
-			for(int i = 0; i < m_invalidChars.length; i++)
-				section = section.replace(m_invalidChars[i], "_");
-			key = String.format("%s%s_%s", ENVVAR_PREFIX, section.toUpperCase(), key.toUpperCase());
-		}
-		else
-			key = String.format("%s%s", ENVVAR_PREFIX, key.toUpperCase());
+		String fullKey = getFullSectionKey(section, key);
+		for(int i = 0; i < m_invalidChars.length; i++)
+			fullKey = fullKey.replace(m_invalidChars[i], "_");
 
-		return System.getenv(key);
+		return System.getenv(String.format("%s%s", ENVVAR_PREFIX, fullKey.toUpperCase()));
 	} 
 
-	private String getMappedProperty(String section, String key){
-		if (getConfMapping() != null && getConfMapping().containsKey(key))
-			return getConfMapping().get(key);
+	private String getFullSectionKey(String section, String key){
+		if (section != null && !section.isEmpty() && section != "Client")
+			return String.format("%s:%s", section, key);
+		else
+			return key;
+	}
 
-		return key;
+	private String getMappedProperty(String section, String key){
+		String fullKey = getFullSectionKey(section, key);
+		if (getConfMapping() != null && getConfMapping().containsKey(fullKey))
+			return getConfMapping().get(fullKey);
+
+		return null;
 	}
 
 	static ConcurrentHashMap<String, String> getConfMapping(){
-	
 		if (s_confMapping == null){
 			String folderPath = ApplicationContext.getInstance().getServletEngineDefaultPath() + File.separatorChar + "WEB-INF";
 			File envMapping = new File(folderPath, CONFMAPPING_FILE);
 			if (envMapping.isFile()) {
 				GXFileInfo mapping = new GXFileInfo(envMapping);
 				try {
+
 					String jsonTxt = mapping.readAllText("");
 					JSONObject jObject = new JSONObject(jsonTxt);
 
@@ -353,9 +359,10 @@ public class IniFile {
 					s_confMapping = new ConcurrentHashMap<String,String>(); 
 				}
 			}
-			else
+			else{
 				s_confMapping = new ConcurrentHashMap<String,String>(); 
 			}
+		}
 
 		return s_confMapping;
 	} 
