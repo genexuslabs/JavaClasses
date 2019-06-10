@@ -340,13 +340,23 @@ public final class GXutil
 
 	public static Date DateTimeToUTC(Date value)
 	{
-		return CommonUtil.DateTimeToUTC(value, TimeZone.getDefault());
+		if ( emptyDate( value))
+			return value;
+		if (ModelContext.getModelContext() == null)
+		{
+			TimeZone tz = (TimeZone)com.genexus.GXutil.threadTimeZone.get();
+			if (tz != null)
+				return DateTimeToUTC(value, tz);
+			else
+				return DateTimeToUTC(value, TimeZone.getDefault());
+		}
+		else
+			return DateTimeToUTC(value, ModelContext.getModelContext().getClientTimeZone());
 	}
-
 
 	public static Date DateTimeToUTC(Date value, TimeZone tz)
 	{
-		return CommonUtil.DateTimeToUTC(value, TimeZone.getDefault());
+		return CommonUtil.DateTimeToUTC(value, tz);
 	}
 
 	public static Date DateTimeFromUTC(Date value)
