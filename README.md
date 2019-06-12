@@ -40,6 +40,11 @@ The dependencies between the projects are specified in each pom.xml within their
 - ```cd java```
 - ```mvn dependency:copy-dependencies```
 
+### Bulid with Docker container.
+There's a PowerShell script called [docker-run.ps1](./docker-run.ps1) that will spin up a container with the needed runtime to compile the sources.
+Running the script will pull the [maven:3.6.1-jdk-11-slim](https://hub.docker.com/_/maven?tab=description) image an create a container with these files mounte under /usr/src. From there you can follow the instructions from above to compile and/or package the classes.  
+Once you compiled or packaged everything you needed, you can stop the container by typing 'exit' at the bash command prompt or executing `docker stop java-maven`. Running the docker-run.ps1 script again will spin up the stopped container, so what had been downloaded in previous runs will still be there.
+
 ## How to create a Site with the specification of each module?
 - ```mvn site```
 

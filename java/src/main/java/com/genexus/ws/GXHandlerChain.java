@@ -15,9 +15,6 @@ import com.genexus.specific.java.LogManager;
 
 
 public class GXHandlerChain implements SOAPHandler<SOAPMessageContext> {
-    @Resource
-    private WebServiceContext context;
-
     private static ILogger logger = null;
     public static final String GX_SOAP_BODY = "GXSoapBody";
 
@@ -26,7 +23,7 @@ public class GXHandlerChain implements SOAPHandler<SOAPMessageContext> {
     }
 
     public boolean handleMessage(SOAPMessageContext messageContext) {
-        initialize();
+        initialize(messageContext);
         Boolean outboundProperty = (Boolean) messageContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
         java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
         ;
@@ -44,9 +41,9 @@ public class GXHandlerChain implements SOAPHandler<SOAPMessageContext> {
         return true;
     }
 
-    private void initialize() {
+    private void initialize(SOAPMessageContext messageContext) {
         if (logger == null) {
-            ServletContext servletContext = (ServletContext) context.getMessageContext().get(MessageContext.SERVLET_CONTEXT);
+            ServletContext servletContext = (ServletContext) messageContext.get(MessageContext.SERVLET_CONTEXT);
             logger = LogManager.initialize(servletContext.getRealPath("/"), GXHandlerChain.class);
         }
     }
