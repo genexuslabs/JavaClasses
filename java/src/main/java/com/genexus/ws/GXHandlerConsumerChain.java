@@ -75,7 +75,7 @@ public class GXHandlerConsumerChain implements SOAPHandler<SOAPMessageContext>
 
 			//ws-addressing
 			IGXWSAddressing wsAddressing = location.getWSAddressing();
-			if (Boolean.TRUE.equals(outboundProperty) && soapHeaderRaw == null && !wsAddressing.getMessageID().isEmpty())
+			if (wsAddressing != null && Boolean.TRUE.equals(outboundProperty) && soapHeaderRaw == null && !wsAddressing.getMessageID().isEmpty())
 			{
 				header.addNamespaceDeclaration("wsa", WSSECURITY_ADDRESSING_URL);
 
@@ -121,9 +121,14 @@ public class GXHandlerConsumerChain implements SOAPHandler<SOAPMessageContext>
 			}
 
 			//ws-security
-			IGXWSSignature wsSignature = location.getWSSecurity().getSignature();
-			IGXWSEncryption wsEncryption = location.getWSSecurity().getEncryption();
-			if (Boolean.TRUE.equals(outboundProperty) && soapHeaderRaw == null && (!wsSignature.getAlias().isEmpty() || !wsEncryption.getAlias().isEmpty()))
+			IGXWSSignature wsSignature = null;
+			IGXWSEncryption wsEncryption = null;
+			if (location.getWSSecurity() != null) {
+				wsSignature = location.getWSSecurity().getSignature();
+				wsEncryption = location.getWSSecurity().getEncryption();
+			}
+
+			if (Boolean.TRUE.equals(outboundProperty) && soapHeaderRaw == null && ((wsSignature != null && !wsSignature.getAlias().isEmpty()) || (wsEncryption != null && !wsEncryption.getAlias().isEmpty())))
 			{
 				Document doc = messageToDocument(messageContext.getMessage());
 
