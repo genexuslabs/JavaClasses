@@ -121,7 +121,13 @@ public class GXServices {
 		service.setType(type);
 		service.setClassName(className);
 		service.setProperties(properties);
-		if (!services.containsKey(type)){
+		if (services.containsKey(type)){
+			GXService prev = services.get(type);
+			services.remove(type);
+			services.put(prev.getType() + ":" + prev.getName(), prev);
+			services.put(service.getType() + ":" + service.getName(), service);
+		}
+		else{
 			services.put(type, service);
 		}
 	}
