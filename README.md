@@ -88,3 +88,7 @@ Once you compiled or packaged everything you needed, you can stop the container 
     See the License for the specific language governing permissions and
     limitations under the License.
 
+  ## Agreement on Compatibility from now on
+  
+  Interfaces started to be used in this refactoring process, and GeneXus SA commits evolving some of them maintaining compatibility.
+
