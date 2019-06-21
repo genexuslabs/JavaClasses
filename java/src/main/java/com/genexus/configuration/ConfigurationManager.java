@@ -55,15 +55,23 @@ public class ConfigurationManager {
 	}
 
 	private static String getValueFromGXServices(GXServices services, String propName){
-		
+
 		String[] tokens = propName.split(":");
-		if (tokens.length != 2)
+		if (tokens.length < 2 || tokens.length > 3)
 			return null;
 
-		GXService service = services.get(tokens[0]);
+		String key = tokens[0];
+		String property = tokens[1];
+		if (tokens.length == 3)
+		{
+			key = String.format("%s:%s", tokens[0],tokens[1]);
+			property = tokens[2];
+		}
+
+		GXService service = services.get(key);
 		if (service == null)
 			return null;
 
-		return service.getProperties().get(tokens[1]);
+		return service.getProperties().get(property);
 	}
 }
