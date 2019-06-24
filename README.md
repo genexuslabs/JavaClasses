@@ -57,4 +57,4 @@ Once you compiled or packaged everything you needed, you can stop the container 
   
   ## Agreement on Compatibility from now on
   
-  Interfaces started to be used in this refactoring process, and GeneXus SA commits evolving some of them maintaining compatibility.
+  With interfaces now in place since the v16 Upgrade 4 release, GeneXus SA commits to evolve them while maintaining compatibility.
