@@ -98,10 +98,14 @@ public class Memcached implements ICacheService {
 	}
 
 	@Override
-	public <T> void setAll(String cacheid, String[] keys, T value) {
-		String[] prefixedKeys = getKey(cacheid, keys);
-		for(String key: prefixedKeys){
-			set(key, value);
+	public <T> void setAll(String cacheid, String[] keys, T[] values, int expirationSeconds) {
+		if (keys!=null && values!=null && keys.length == values.length) {
+			String[] prefixedKeys = getKey(cacheid, keys);
+			int idx = 0;
+			for (String key : prefixedKeys) {
+				set(key, values[idx], expirationSeconds);
+				idx++;
+			}
 		}
 	}
 

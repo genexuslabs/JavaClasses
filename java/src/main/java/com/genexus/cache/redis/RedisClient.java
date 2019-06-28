@@ -102,17 +102,24 @@ public class RedisClient implements ICacheService, Closeable{
 		}
 	}
 
-	public <T> void setAll(String cacheid, String[] keys, T value) {
+	public <T> void setAll(String cacheid, String[] keys, T[] values, int expirationSeconds) {
 		Jedis jedis = null;
 		try {
-			String[] prefixedKeys = getKey(cacheid, keys);
-			jedis = pool.getResource();
-			String valueJSON = objMapper.writeValueAsString(value);
-			Pipeline p = jedis.pipelined();
-			for(String key: prefixedKeys){
-				p.set(key, valueJSON);
+			if (keys!=null && values!=null && keys.length == values.length) {
+				String[] prefixedKeys = getKey(cacheid, keys);
+				jedis = pool.getResource();
+				Pipeline p = jedis.pipelined();
+				int idx = 0;
+				for (String key : prefixedKeys) {
+					String valueJSON = objMapper.writeValueAsString(values[idx]);
+					if (expirationSeconds > 0)
+						p.setex(key, expirationSeconds, valueJSON);
+					else
+						p.set(key, valueJSON);
+					idx++;
+				}
+				p.sync();
 			}
-			p.sync();
 		} catch (Exception e) {
 			logger.error("SetAll with TTL failed", e);
 		}
