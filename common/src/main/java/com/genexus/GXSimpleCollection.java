@@ -1112,6 +1112,12 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 						currObj = constructor.newInstance(arglist);
 						((IGxJSONAble)currObj).FromJSONObject((IJsonFormattable)jsonObj);
 					}
+					if (IGxJSONSerializable.class.isAssignableFrom(elementsType))
+					{
+						Constructor constructor = elementsType.getConstructor(parTypes);
+						currObj = constructor.newInstance(arglist);
+						((IGxJSONSerializable)currObj).fromJSonString(jsonObj.toString());
+					}
 					if (elementsType == Integer.class)
 					{
 						currObj = new Integer(jsonArr.getInt(i));
