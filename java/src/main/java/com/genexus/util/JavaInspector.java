@@ -8,6 +8,8 @@ import java.lang.reflect.Modifier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
+import com.genexus.specific.java.Connect;
+import com.genexus.specific.java.LogManager;
 import com.genexus.xml.XMLWriter;
 
 public class JavaInspector 
@@ -21,13 +23,15 @@ public class JavaInspector
 	{	
 		try 
 		{
+			Connect.init();
+			LogManager.initialize(".");
 			XMLWriter writer = new XMLWriter();
 			writer.setEncoding("UTF8");
 			writer.xmlStart("JavaInspector.xml");
 			writer.writeStartDocument("UTF-8");
             writer.writeStartElement("ArrayOfClassDefinition");
 				writer.writeAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-				writer.writeAttribute("xmlns:xsd", "http://www.w3.org/2001/XMLSchema");			
+				writer.writeAttribute("xmlns:xsd", "http://www.w3.org/2001/XMLSchema");
 			
 				System.out.println("Inspection proccess started");
 				if (args[0].toUpperCase().endsWith(".JAR") || args[0].toUpperCase().endsWith(".ZIP"))

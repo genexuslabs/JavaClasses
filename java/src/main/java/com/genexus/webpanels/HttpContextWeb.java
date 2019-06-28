@@ -1133,6 +1133,10 @@ public class HttpContextWeb extends HttpContext {
 		if (path == null) // AWS LAMBDA SERVERLESS
 			path = System.getenv("LAMBDA_TASK_ROOT");
 
+		if (path == null) // AWS LAMBDA SERVERLESS
+			path = System.getProperty("LAMBDA_TASK_ROOT");
+
+
 		if (path.endsWith(File.separator)) {
 			path = path.substring(0, path.length() - 1);
 		}
