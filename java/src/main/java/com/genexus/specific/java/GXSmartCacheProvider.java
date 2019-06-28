@@ -63,7 +63,8 @@ public class GXSmartCacheProvider implements IExtensionGXSmartCacheProvider {
 				Date  dt = CommonUtil.now(false,false);
 				if (!tablesUpdatedInUTL.isEmpty()) {
 					normalizeKey(tablesUpdatedInUTL);
-					getUpdatedTables().setAll(CacheFactory.CACHE_SD, tablesUpdatedInUTL.toArray(new String[tablesUpdatedInUTL.size()]), dt);
+
+					getUpdatedTables().setAll(CacheFactory.CACHE_SD, tablesUpdatedInUTL.toArray(new String[tablesUpdatedInUTL.size()]), Collections.nCopies(tablesUpdatedInUTL.size(), dt).toArray(), 0);
 					tablesUpdatedInUTL.clear();
 				}
 			}
