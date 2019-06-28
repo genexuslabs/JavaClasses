@@ -1,5 +1,8 @@
 package com.genexus.db;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.genexus.Application;
@@ -75,6 +78,16 @@ public class InProcessCache implements ICacheService
 		return get(getKey(cacheid, key), type);
 	}
 
+	@Override
+	public <T> List<T> getAll(String cacheid, String[] keys, Class<T> type) {
+		String[] prefixedKeys = getKey(cacheid, keys);
+		List<T> values = new ArrayList<T>();
+		for (String key : prefixedKeys) {
+			values.add(get(key, type));
+		}
+		return values;
+	}
+
 	@SuppressWarnings("unchecked")
 	private <T> T get(String key, Class<T> type)
 	{
@@ -83,7 +96,7 @@ public class InProcessCache implements ICacheService
 			getStatsFor(key).hits++;
 		}
 		CacheValue value = cache.get(key);
-	
+
 		if(value == null)
 		{
 			return null;
@@ -153,6 +166,14 @@ public class InProcessCache implements ICacheService
 		set(getKey(cacheid, key), value, expirationSeconds);
 	}
 
+	@Override
+	public <T> void setAll(String cacheid, String[] keys, T value) {
+		String[] prefixedKeys = getKey(cacheid, keys);
+		for(String key: prefixedKeys){
+			set(key, value);
+		}
+	}
+
 	private <T> void set(String key, T value, int expirationSeconds)
 	{
 		if (value instanceof CacheValue)
@@ -200,7 +221,7 @@ public class InProcessCache implements ICacheService
 		cache.clear();
 	}
 
-	private String getKey(String cacheid, String key)
+	private Long getKeyPrefix(String cacheid)
 	{
 		Long prefix = get(cacheid, Long.class);
 		if (prefix == null)
@@ -208,9 +229,25 @@ public class InProcessCache implements ICacheService
 			prefix = CommonUtil.now(false,false).getTime();
 			set(cacheid, Long.valueOf(prefix));
 		}
+		return prefix;
+	}
+	private String getKey(String cacheid, String key)
+	{
+		return formatKey(cacheid, key, getKeyPrefix(cacheid));
+	}
+	private String[] getKey(String cacheid, String[] keys)
+	{
+		Long prefix = getKeyPrefix(cacheid);
+		String[] prefixedKeys = new String[keys.length];
+		for (int idx =0; idx<keys.length; idx++){
+			prefixedKeys[idx] = formatKey(cacheid, keys[idx], prefix);
+		}
+		return prefixedKeys;
+	}
+	private String formatKey(String cacheid, String key, Long prefix)
+	{
 		return cacheid + prefix + CommonUtil.getHash(key);
 	}
-
 	/** Agrega un cacheValue al cache
 	 */
 	private void add(String key, CacheValue value)
