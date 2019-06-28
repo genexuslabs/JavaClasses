@@ -2,6 +2,8 @@ package com.genexus;
 
 import java.io.File;
 import java.util.Date;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,6 +22,7 @@ public abstract class BaseProvider implements IGXSmartCacheProvider
 		ConcurrentHashMap<String, Vector<String>> queryTables;	
 		protected Date startupDate;
 		Object syncLock = new Object();
+		protected static final String FORCED_INVALIDATE = "SD";
 
 
 		protected String normalizeKey(String key)
@@ -29,7 +32,13 @@ public abstract class BaseProvider implements IGXSmartCacheProvider
 			else
 				return key;
 		}
-		
+		protected void normalizeKey(List<String> keys) {
+			ListIterator<String> iterator = keys.listIterator();
+			while (iterator.hasNext()) {
+				String s = iterator.next();
+				iterator.set(normalizeKey(s));
+			}
+		}
 		private void loadQueryTables()
 		{
 			if (isEnabled())
@@ -44,12 +53,13 @@ public abstract class BaseProvider implements IGXSmartCacheProvider
 				for(int i=1; i <= files.getItemCount(); i++)
 				{
 					Vector<String> lst = new Vector<String>();
+					lst.add(FORCED_INVALIDATE); // Caso en que se invalido el cache manualmente
 					AbstractGXFile xmlFile = files.item(i);
 					reader.open(xmlFile.getAbsoluteName());
 					ok = reader.readType(1, "Table");
 					while (ok == 1)
 					{
-						lst.add((String) reader.getAttributeByName("name"));
+						lst.add(normalizeKey((String) reader.getAttributeByName("name")));
 						ok = reader.readType(1, "Table");
 					}
 					reader.close();

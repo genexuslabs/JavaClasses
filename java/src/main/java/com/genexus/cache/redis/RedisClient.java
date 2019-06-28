@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -22,6 +23,8 @@ import com.genexus.util.GXServices;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.Pipeline;
+
 
 public class RedisClient implements ICacheService, Closeable{
 	public static final ILogger logger = LogManager.getLogger(RedisClient.class);
@@ -99,6 +102,25 @@ public class RedisClient implements ICacheService, Closeable{
 		}
 	}
 
+	public <T> void setAll(String cacheid, String[] keys, T value) {
+		Jedis jedis = null;
+		try {
+			String[] prefixedKeys = getKey(cacheid, keys);
+			jedis = pool.getResource();
+			String valueJSON = objMapper.writeValueAsString(value);
+			Pipeline p = jedis.pipelined();
+			for(String key: prefixedKeys){
+				p.set(key, valueJSON);
+			}
+			p.sync();
+		} catch (Exception e) {
+			logger.error("SetAll with TTL failed", e);
+		}
+		finally {
+			close(jedis);
+		}
+	}
+
 	private <T> T get(String key, Class<T> type) {
 		Jedis jedis = null;
 		try {
@@ -120,13 +142,13 @@ public class RedisClient implements ICacheService, Closeable{
 		}
 		return null;
 	}
-	
-	public <T> List<T> getAll(Class<T> type, String... keys) {
+	public <T> List<T> getAll(String cacheid, String[] keys, Class<T> type){
 		List<T> result = null;
 		Jedis jedis = null;
 		try {
+			String[] prefixedKeys = getKey(cacheid, keys);
 			jedis = pool.getResource();	
-			List<String> json = jedis.mget(keys);
+			List<String> json = jedis.mget(prefixedKeys);
 			result = new ArrayList<T>();
 			for (String val: json) {
 				if (val != null)
@@ -215,14 +237,31 @@ public class RedisClient implements ICacheService, Closeable{
 	}
 
 	private String getKey(String cacheid, String key) {
+		return String.format(keyPattern, cacheid, getKeyPrefix(cacheid), com.genexus.CommonUtil.getHash(key));
+	}
+
+	private String[] getKey(String cacheid, String[] keys)
+	{
+		Long prefix = getKeyPrefix(cacheid);
+		String[] prefixedKeys = new String[keys.length];
+		for (int idx =0; idx<keys.length; idx++){
+			prefixedKeys[idx] = formatKey(cacheid, keys[idx], prefix);
+		}
+		return prefixedKeys;
+	}
+	private String formatKey(String cacheid, String key, Long prefix)
+	{
+		return String.format(keyPattern, cacheid, prefix, com.genexus.CommonUtil.getHash(key));
+	}
+
+	private Long getKeyPrefix(String cacheid) {
 		Long prefix = get(cacheid, Long.class);
 		if (prefix == null) {
 			prefix = new java.util.Date().getTime();
 			set(cacheid, Long.valueOf(prefix));
 		}
-		return String.format(keyPattern, cacheid, prefix, com.genexus.CommonUtil.getHash(key));
+		return prefix;
 	}
-
 	@Override
 	public void close() throws IOException {
 		if (pool != null)
