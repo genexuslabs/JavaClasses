@@ -254,6 +254,10 @@ public class Application
 		for (int i = 0; i < toCleanup.size(); i++)
 			((ICleanedup) toCleanup.elementAt(i)).cleanup();
 		toCleanup.removeAllElements();
+
+		if (Preferences.getDefaultPreferences().getCACHING()){
+			CacheFactory.getInstance().close();
+		}
 	}
 
 	public static void cleanupOnError()

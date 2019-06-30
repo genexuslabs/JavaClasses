@@ -225,6 +225,10 @@ public class InProcessCache implements ICacheService
 		cache.clear();
 	}
 
+	@Override
+	public void close() {
+	}
+
 	private Long getKeyPrefix(String cacheid)
 	{
 		Long prefix = get(cacheid, Long.class);

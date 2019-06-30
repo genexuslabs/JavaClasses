@@ -14,4 +14,5 @@ public interface ICacheService
 	void clearCache(String cacheid);
 	void clearKey(String key);
 	void clearAllCaches();
+	void close();
 }
