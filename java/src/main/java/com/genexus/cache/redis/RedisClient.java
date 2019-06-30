@@ -270,7 +270,7 @@ public class RedisClient implements ICacheService, Closeable{
 		return prefix;
 	}
 	@Override
-	public void close() throws IOException {
+	public void close()  {
 		if (pool != null)
 			pool.destroy();
 	}

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import com.genexus.util.GXService;
 import com.genexus.util.GXServices;
 
@@ -17,7 +16,6 @@ import net.spy.memcached.auth.AuthDescriptor;
 import net.spy.memcached.auth.PlainCallbackHandler;
 
 public class Memcached implements ICacheService {
-
 	MemcachedClient _cache;
 
 	public Memcached() throws IOException {
@@ -125,7 +123,12 @@ public class Memcached implements ICacheService {
 	public void clearAllCaches() {
 		_cache.flush();
 	}
-	
+
+	@Override
+	public void close() {
+		_cache.shutdown();
+	}
+
 	private String getKey(String cacheid, String key)
 	{
 		return formatKey(cacheid, key, getKeyPrefix(cacheid));
