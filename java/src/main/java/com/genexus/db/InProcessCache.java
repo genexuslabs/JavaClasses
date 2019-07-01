@@ -7,14 +7,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.genexus.Application;
 import com.genexus.CommonUtil;
-import com.genexus.ICacheService;
+import com.genexus.ICacheService2;
 import com.genexus.Preferences;
 import com.genexus.management.CacheItemJMX;
 import com.genexus.management.CacheJMX;
 import com.genexus.util.DoubleLinkedQueue;
 
 
-public class InProcessCache implements ICacheService
+public class InProcessCache implements ICacheService2
 {
 	protected long cacheStorageSize;
 	protected long currentSize;
@@ -224,11 +224,7 @@ public class InProcessCache implements ICacheService
 	public void clearAllCaches() {
 		cache.clear();
 	}
-
-	@Override
-	public void close() {
-	}
-
+	
 	private Long getKeyPrefix(String cacheid)
 	{
 		Long prefix = get(cacheid, Long.class);

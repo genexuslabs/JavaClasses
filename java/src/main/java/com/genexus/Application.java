@@ -1,5 +1,7 @@
 package com.genexus;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.Enumeration;
@@ -256,7 +258,14 @@ public class Application
 		toCleanup.removeAllElements();
 
 		if (Preferences.getDefaultPreferences().getCACHING()){
-			CacheFactory.getInstance().close();
+			ICacheService cacheService = CacheFactory.getInstance();
+			if (cacheService instanceof Closeable){
+				try {
+					((Closeable) cacheService).close();
+				}catch (IOException ioex){
+					logger.error("Can´t close cache service", ioex);
+				}
+			}
 		}
 	}
 
