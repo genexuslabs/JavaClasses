@@ -44,7 +44,6 @@ public final class Connect {
 		SpecificImplementation.MillisecondMask = "S";
 		SpecificImplementation.cdowMask = "EEEEE";
 		SpecificImplementation.SupportPending = false;
-		SpecificImplementation.AddToArrayCurrent = false;
 		JSONObject.extension = new JSONObjectExtension();
 		}
 		
