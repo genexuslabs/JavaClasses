@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.genexus.Application;
-import com.genexus.ICacheService;
+import com.genexus.ICacheService2;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.util.GXService;
@@ -26,7 +26,7 @@ import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Pipeline;
 
 
-public class RedisClient implements ICacheService, Closeable{
+public class RedisClient implements ICacheService2, Closeable{
 	public static final ILogger logger = LogManager.getLogger(RedisClient.class);
 	private String keyPattern = "%s_%s_%s"; //Namespace_KEY
 	private JedisPool pool;
@@ -270,7 +270,7 @@ public class RedisClient implements ICacheService, Closeable{
 		return prefix;
 	}
 	@Override
-	public void close()  {
+	public void close()  throws IOException {
 		if (pool != null)
 			pool.destroy();
 	}

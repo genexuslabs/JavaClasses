@@ -1,5 +1,6 @@
 package com.genexus;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +16,7 @@ import net.spy.memcached.MemcachedClient;
 import net.spy.memcached.auth.AuthDescriptor;
 import net.spy.memcached.auth.PlainCallbackHandler;
 
-public class Memcached implements ICacheService {
+public class Memcached implements ICacheService2, Closeable {
 	MemcachedClient _cache;
 
 	public Memcached() throws IOException {

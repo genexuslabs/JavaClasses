@@ -3,12 +3,9 @@ package com.genexus.specific.java;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.genexus.CacheFactory;
-import com.genexus.CommonUtil;
+import com.genexus.*;
 import com.genexus.GXSmartCacheProvider.DataUpdateStatus;
 import com.genexus.GXSmartCacheProvider.SmartCacheStatus;
-import com.genexus.ICacheService;
-import com.genexus.Preferences;
 import com.genexus.common.interfaces.IExtensionGXSmartCacheProvider;
 import com.genexus.common.interfaces.IGXSmartCacheProvider;
 import com.genexus.diagnostics.Log;
@@ -62,9 +59,16 @@ public class GXSmartCacheProvider implements IExtensionGXSmartCacheProvider {
 			{
 				Date  dt = CommonUtil.now(false,false);
 				if (!tablesUpdatedInUTL.isEmpty()) {
+					ICacheService updTables = getUpdatedTables();
 					normalizeKey(tablesUpdatedInUTL);
-
-					getUpdatedTables().setAll(CacheFactory.CACHE_SD, tablesUpdatedInUTL.toArray(new String[tablesUpdatedInUTL.size()]), Collections.nCopies(tablesUpdatedInUTL.size(), dt).toArray(), 0);
+					if (updTables instanceof ICacheService2) {
+						((ICacheService2)updTables).setAll(CacheFactory.CACHE_SD, tablesUpdatedInUTL.toArray(new String[tablesUpdatedInUTL.size()]), Collections.nCopies(tablesUpdatedInUTL.size(), dt).toArray(), 0);
+					}else {
+						for(String tbl:tablesUpdatedInUTL)
+						{
+							updTables.<Date>set(CacheFactory.CACHE_SD, tbl, dt);
+						}
+					}
 					tablesUpdatedInUTL.clear();
 				}
 			}
@@ -83,8 +87,19 @@ public class GXSmartCacheProvider implements IExtensionGXSmartCacheProvider {
 
 					Vector<String> qTables = qryTables.get(queryId);
 					String[] qTablesArray = qTables.toArray(new String[qTables.size()]);
+					List<Date> dateUpdates;
 
-					List<Date> dateUpdates = updTables.getAll(CacheFactory.CACHE_SD, qTablesArray, Date.class); //Value is null date for non-existing key in cache
+					if (updTables instanceof ICacheService2) {
+						dateUpdates = ((ICacheService2)updTables).getAll(CacheFactory.CACHE_SD, qTablesArray, Date.class); //Value is null date for non-existing key in cache
+					}else{
+						dateUpdates = new Vector<Date>();
+						for(String qTable:qTables)
+						{
+							if (updTables.containtsKey(CacheFactory.CACHE_SD, qTable)) {
+								dateUpdates.add(updTables.<Date>get(CacheFactory.CACHE_SD, qTable, Date.class));
+							}
+						}
+					}
 					Date maxDateUpdated = MaxDate(dateUpdates);//Obtiene la fecha de modificación mas nueva.
 					if (maxDateUpdated!=null && maxDateUpdated.after(dateUpdated))
 						dateUpdated = maxDateUpdated;
