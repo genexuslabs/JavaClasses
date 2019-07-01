@@ -20,8 +20,6 @@ public abstract class AbstractGXFile {
 
 	public abstract String getURI();
 
-	public abstract String htmlClean();
-
 	public abstract void open(String string);
 
 	public abstract void openRead(String string);
