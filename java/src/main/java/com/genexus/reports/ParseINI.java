@@ -62,6 +62,35 @@ public class ParseINI
 			general=new Hashtable();
 		}
 	}
+	public ParseINI(String filename, String configurationTemplateFile)  throws IOException
+	{
+		try
+		{
+			File file = new File(filename);
+			String inputFileNameOrTemplate = null;
+			if (file.exists()){
+				inputFileNameOrTemplate = filename;
+			}else{
+				(new FileWriter(filename)).close(); // Creo el archivo
+				if (new File(configurationTemplateFile).exists()) {
+					inputFileNameOrTemplate = configurationTemplateFile;
+				}
+			}
+			if (inputFileNameOrTemplate!=null) {
+				FileInputStream inputStream = new FileInputStream(inputFileNameOrTemplate);
+				load(inputStream);
+				inputStream.close();
+			}else{
+				general=new Hashtable();
+			}
+			this.filename = file.getAbsolutePath();
+		}
+		catch(FileNotFoundException fnfe)
+		{ // Si debo crear el archivo
+			(new FileWriter(filename)).close(); // Creo el archivo
+			general=new Hashtable();
+		}
+	}
 
 	/**
 	* @param inputStream InputStream de donde obtener el INI
@@ -71,8 +100,7 @@ public class ParseINI
 		load(inputStream);
 	}
 
-
-	/** Indica si se ha modificado el INI
+    /** Indica si se ha modificado el INI
 	 * @return true si se ha modificado el .INI
 	 */
 	public boolean need2Save()

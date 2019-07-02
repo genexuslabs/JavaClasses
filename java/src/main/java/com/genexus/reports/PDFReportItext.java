@@ -52,13 +52,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.StringTokenizer;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.genexus.ClientContext;
 import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
 import com.genexus.internet.HttpContext;
@@ -121,6 +118,7 @@ public class PDFReportItext implements IReportHandler
     private static INativeFunctions nativeCode = NativeFunctions.getInstance();
     private static Hashtable fontSubstitutes = new Hashtable(); // Contiene la tabla de substitutos de fonts (String <--> String)
 	private static String configurationFile = null;
+	private static String configurationTemplateFile = null;
 	private static String defaultRelativePrepend = null; // En aplicaciones web, contiene la ruta al root de la aplicación para ser agregado al inicio de las imagenes con path relativo
 	private static String defaultRelativePrependINI = null;
 	private static String webAppDir = null;
@@ -301,10 +299,12 @@ public class PDFReportItext implements IReportHandler
 			if(new File(defaultRelativePrepend + Const.WEB_INF).isDirectory())
 			{
 				configurationFile = defaultRelativePrepend + Const.WEB_INF + File.separatorChar + Const.INI_FILE; // Esto es para que en aplicaciones web el PDFReport.INI no quede visible en el server
+				configurationTemplateFile = defaultRelativePrepend + Const.WEB_INF + File.separatorChar + Const.INI_TEMPLATE_FILE;
 			}
 			else
 			{
 				configurationFile = defaultRelativePrepend + Const.INI_FILE;
+				configurationTemplateFile = defaultRelativePrepend + Const.INI_TEMPLATE_FILE;
 			}
 			webAppDir = defaultRelativePrepend;
 
@@ -357,7 +357,6 @@ public class PDFReportItext implements IReportHandler
 	
 	private void loadPrinterSettingsProps(String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex) 
 	{
-		
 		if(new File(defaultRelativePrependINI + Const.WEB_INF).isDirectory())
 		{
 			iniFile = defaultRelativePrependINI + Const.WEB_INF + File.separatorChar + iniFile;
@@ -365,7 +364,7 @@ public class PDFReportItext implements IReportHandler
 		else
 		{
 			iniFile = defaultRelativePrependINI + iniFile;
-		}		
+		}
 		
 		try
 		{
@@ -393,7 +392,7 @@ public class PDFReportItext implements IReportHandler
 	private void loadProps()
 	{
         try{
-            props = new ParseINI(configurationFile);
+            props = new ParseINI(configurationFile, configurationTemplateFile);
         }catch(IOException e){ props = new ParseINI(); }
 		
         props.setupGeneralProperty(Const.PDF_REPORT_INI_VERSION_ENTRY, Const.PDF_REPORT_INI_VERSION);
@@ -444,12 +443,12 @@ public class PDFReportItext implements IReportHandler
 		predefinedSearchPath = predefinedPath + predefinedSearchPath; // SearchPath= los viejos más los nuevos
 	}
 
-    public static final String getPredefinedSearchPaths()
-    {
+	public static final String getPredefinedSearchPaths()
+	{
 		return predefinedSearchPath;
-    }
+	}
 
-    private void init()
+	private void init()
     {
       Document.compress = true;
 	  try {
@@ -975,7 +974,7 @@ public class PDFReportItext implements IReportHandler
     public void GxAttris(String fontName, int fontSize, boolean fontBold, boolean fontItalic, boolean fontUnderline, boolean fontStrikethru, int Pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue)
     {
 		boolean isCJK = false;
-		boolean embeedFont = props.getBooleanGeneralProperty(Const.EMBEED_SECTION, false) && props.getBooleanProperty(Const.EMBEED_SECTION, fontName, false);
+		boolean embeedFont = isEmbeddedFont(fontName);
 		if (!embeedFont)
 		{
 			fontName = getSubstitute(fontName); // Veo si hay substitutos solo si el font no va a ir embebido
@@ -1131,9 +1130,9 @@ public class PDFReportItext implements IReportHandler
 		return locations;
 	}
 
-	private boolean isEmbeddedFont(String fontName)
-	{
-		return props.getBooleanGeneralProperty(Const.EMBEED_SECTION, false) && props.getBooleanProperty(Const.EMBEED_SECTION, fontName, false);
+	private boolean isEmbeddedFont(String realFontName) {
+		boolean generalEmbeedFont = props.getBooleanGeneralProperty(Const.EMBEED_SECTION, false);
+		return generalEmbeedFont && props.getBooleanProperty(Const.EMBEED_SECTION, realFontName, generalEmbeedFont);
 	}
 
 	public void setAsianFont(String fontName, String style)
