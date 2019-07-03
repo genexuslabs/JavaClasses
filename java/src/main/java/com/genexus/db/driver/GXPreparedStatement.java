@@ -1376,9 +1376,23 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			if (con.getContext() != null)
 			{
 				com.genexus.internet.HttpContext webContext = (HttpContext) con.getContext().getHttpContext();
-				if((webContext != null) && (webContext instanceof com.genexus.webpanels.HttpContextWeb))
+				if(webContext != null)
 				{
-					fileName = ((com.genexus.webpanels.HttpContextWeb)webContext).getRealPath(fileName);
+					if (webContext instanceof com.genexus.webpanels.HttpContextWeb) {
+						fileName = ((com.genexus.webpanels.HttpContextWeb) webContext).getRealPath(fileName);
+					}
+					else
+					{
+						if (!webContext.getDefaultPath().isEmpty() && !fileName.startsWith("http") && ! new File(fileName).isAbsolute())
+						{
+							if (fileName.startsWith(webContext.getContextPath()))
+							{
+								fileName = fileName.substring(webContext.getContextPath().length());
+							}
+
+							fileName = webContext.getDefaultPath() + File.separator + fileName;
+						}
+					}
 				}
 			}
 		}
