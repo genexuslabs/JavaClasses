@@ -55,7 +55,6 @@ import java.io.StringReader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.genexus.ClientContext;
 import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
 import com.genexus.internet.HttpContext;
