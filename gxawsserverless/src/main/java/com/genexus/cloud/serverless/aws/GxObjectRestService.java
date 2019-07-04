@@ -1,44 +1,41 @@
 package com.genexus.cloud.serverless.aws;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.genexus.Application;
 import com.genexus.GXutil;
+import com.genexus.GxRestService;
 import com.genexus.Preferences;
 import com.genexus.util.GXFile;
 import com.genexus.util.GXServices;
-
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
 
-public class StreamLambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyResponse> {
-
-    @Override
-    public AwsProxyResponse handleRequest(AwsProxyRequest arg0, Context arg1) {
-        try {
-            LambdaHandler.initialize();
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return processFile(arg0);
-    }
+import javax.servlet.ServletContext;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.UUID;
 
 
-    protected AwsProxyResponse processFile(AwsProxyRequest arg0) {
-        AwsProxyResponse response = new AwsProxyResponse();
-        String contentType = arg0.getHeaders().get("Content-Type");
+@Path("/gxobject")
+public class GxObjectRestService extends GxRestService {
+    @Context
+    private ServletContext myContext;
+    @Context
+    private javax.servlet.http.HttpServletRequest myServletRequest;
+    @Context
+    private javax.servlet.http.HttpServletResponse myServletResponse;
+
+    @POST
+    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8"})
+    public Response execute() {
+        super.init("POST", myServletRequest, myServletResponse, myContext);
+        Response.ResponseBuilder builder = Response.status(201);
+        String contentType = myServletRequest.getHeader("Content-Type");
         String ext = getExtension(contentType);
         String tempFileName = com.genexus.PrivateUtilities.getTempFileName(ext);
         String filePath;
@@ -47,32 +44,32 @@ public class StreamLambdaHandler implements RequestHandler<AwsProxyRequest, AwsP
         } else {
             filePath = Preferences.getDefaultPreferences().getBLOB_PATH().replace(java.io.File.separator, "/") + tempFileName;
         }
-        byte[] data = arg0.getBody().getBytes();
-        InputStream stream = new ByteArrayInputStream(Base64.getDecoder().decode(data));
-
-        GXFile gxFile = new GXFile(filePath, true);
-        gxFile.create(stream);
-
-        filePath = gxFile.getAbsolutePath();
-        String keyId = UUID.randomUUID().toString().replace("-", "");
-        Map<String, String> headers = new HashMap<String, String>();
-        headers.put("Content-Type", "application/json");
-        headers.put("GeneXus-Object-Id", keyId);
-        response.setHeaders(headers);
-        response.setStatusCode(201);
-
-
-        JSONObject jObj = new JSONObject();
+        InputStream stream = null;
         try {
-            jObj.put("object_id", GXutil.UPLOADPREFIX + keyId);
-            jObj.put("object_path", filePath);
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        response.setBody(jObj.toString());
-        return response;
+            stream = myServletRequest.getInputStream();
+            GXFile gxFile = new GXFile(filePath, true);
+            gxFile.create(stream);
+            filePath = gxFile.getAbsolutePath();
+            String keyId = UUID.randomUUID().toString().replace("-", "");
 
+            builder.header("Content-Type", "application/json");
+            builder.header("GeneXus-Object-Id", keyId);
+
+            JSONObject jObj = new JSONObject();
+            try {
+                jObj.put("object_id", GXutil.UPLOADPREFIX + keyId);
+                jObj.put("object_path", filePath);
+                builder.entity(jObj.toString());
+            } catch (JSONException e) {
+                builder = Response.status(500);
+                builder.entity(errorJson.toString());
+            }
+        } catch (IOException e) {
+            builder = Response.status(500);
+            System.err.println(e);
+            builder.entity(e.getMessage());
+        }
+        return builder.build();
     }
 
     protected boolean IntegratedSecurityEnabled() {
@@ -166,28 +163,5 @@ public class StreamLambdaHandler implements RequestHandler<AwsProxyRequest, AwsP
         }
         return "tmp";
     }
-
-
-    public static String readFullyAsString(InputStream inputStream, String encoding)
-            throws IOException {
-        return readFully(inputStream).toString(encoding);
-    }
-
-    public static byte[] readFullyAsBytes(InputStream inputStream)
-            throws IOException {
-        return readFully(inputStream).toByteArray();
-    }
-
-    private static ByteArrayOutputStream readFully(InputStream inputStream)
-            throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        int length = 0;
-        while ((length = inputStream.read(buffer)) != -1) {
-            baos.write(buffer, 0, length);
-        }
-        return baos;
-    }
-
-
 }
+
