@@ -1,10 +1,8 @@
 package com.genexus.cloud.serverless.aws;
 
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import com.genexus.Application;
-import com.genexus.GXutil;
-import com.genexus.GxRestService;
-import com.genexus.Preferences;
+import com.genexus.*;
+import com.genexus.util.CacheAPI;
 import com.genexus.util.GXFile;
 import com.genexus.util.GXServices;
 import json.org.json.JSONException;
@@ -50,7 +48,8 @@ public class GxObjectRestService extends GxRestService {
             GXFile gxFile = new GXFile(filePath, true);
             gxFile.create(stream);
             filePath = gxFile.getAbsolutePath();
-            String keyId = UUID.randomUUID().toString().replace("-", "");
+            String keyId = UUID.randomUUID().toString().replace("-","");
+            CacheAPI.files().set(keyId, filePath, CommonUtil.UPLOAD_TIMEOUT );
 
             builder.header("Content-Type", "application/json");
             builder.header("GeneXus-Object-Id", keyId);
