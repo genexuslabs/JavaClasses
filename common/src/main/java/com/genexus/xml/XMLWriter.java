@@ -37,6 +37,7 @@ public class XMLWriter implements IXMLWriter
 	private boolean openedWriter = true;
 	private boolean simpleElement = false;
 	private boolean textFlag = false;
+	private boolean printingEndElement = false;
 	
 	private String encoding = "";
 	private Writer out = null;
@@ -168,7 +169,9 @@ public class XMLWriter implements IXMLWriter
 	public byte xmlEndElement()
 	{
 		checkWriter();
+		printingEndElement = true;
 		CloseElementHeaderAndValue();
+		printingEndElement = false;
 
 		if (stack.empty())
 		{
@@ -431,7 +434,7 @@ public class XMLWriter implements IXMLWriter
 			}
 			attributes.removeAllElements();
 
-			if (bOpenValue)
+			if (bOpenValue || printingEndElement)
 			{
 				bOpenValue = false;
 
