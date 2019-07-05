@@ -73,7 +73,7 @@ public class ParseINI
 		init(filename);
 	}
 
-	private void init(String fileName) throws IOException{
+	private void init(String filename) throws IOException{
 		this.filename = new File(filename).getAbsolutePath();
 		try
 		{
