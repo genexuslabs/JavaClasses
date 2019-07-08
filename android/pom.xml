@@ -16,6 +16,11 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>gxcryptocommon</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>apacheandroid</artifactId>
 			<version>${project.version}</version>
 		</dependency>
