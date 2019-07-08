@@ -2,8 +2,7 @@ package com.genexus.reports;
 
 public class Const
 {
-    public static final java.awt.Color PAGE_BACK_COLOR = java.awt.Color.white;
-    
+
     public static final String ACROBAT_LOCATION = "Acrobat Location"; // Indica la ubicaci�n del Acrobat
     public static final String DEFAULT_ACROBAT_LOCATION = "Applications\\Acrobat.exe\\shell\\open\\command"; // Ubicaci�n del Acrobat por defecto en el registry 
     public static final String DEFAULT_ACROREAD_LOCATION = "Applications\\AcroRd32.exe\\shell\\open\\command"; // Ubicaci�n del Acrobat Reader por defecto en el registry 
