@@ -33,6 +33,8 @@
 		<module>gxodata</module>
 		<module>gxexternalproviders</module>
 		<module>gxawslambda</module>
+		<module>androidreports</module>
+
 	</modules>
 
 	<repositories>
