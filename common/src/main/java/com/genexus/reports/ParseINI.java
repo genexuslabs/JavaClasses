@@ -1,8 +1,8 @@
 package com.genexus.reports;
 
+import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
-import com.genexus.specific.java.FileUtils;
 
 import java.io.EOFException;
 import java.io.File;
@@ -64,7 +64,7 @@ public class ParseINI
 			if (!file.exists()){
 				File templateFile = new File(configurationTemplateFile);
 				if (templateFile.exists())
-					new FileUtils().copyFile(templateFile, file);
+					SpecificImplementation.FileUtils.copyFile(templateFile, file);
 			}
 		}
 		catch(IOException ex){
