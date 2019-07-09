@@ -8,6 +8,10 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
 
+import com.genexus.IHttpContext;
+import com.genexus.ModelContext;
+import com.genexus.internet.HttpContext;
+import com.genexus.webpanels.HttpContextWeb;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.io.output.FileWriterWithEncoding;
@@ -84,11 +88,19 @@ public class GXFile extends AbstractGXFile {
         if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) != null && !isLocal) {
         		FileSource = new GXExternalFileInfo(FileName, Application.getExternalProvider());
         } else {
+                String absoluteFileName = FileName;
         		try {
-        			URI uriFile = URI.create(FileName);
+        		    if (ModelContext.getModelContext() != null && ! new File(absoluteFileName).isAbsolute())
+                    {
+                        IHttpContext webContext = ModelContext.getModelContext().getHttpContext();
+                        if((webContext != null) && (webContext instanceof HttpContextWeb)) {
+                            absoluteFileName = ModelContext.getModelContext().getHttpContext().getDefaultPath() + File.separator + FileName;
+                        }
+                    }
+        			URI uriFile = URI.create(absoluteFileName);
         			FileSource = new GXFileInfo(new File(uriFile));
         		} catch(Exception e) {
-        				FileSource = new GXFileInfo(new File(FileName));
+        				FileSource = new GXFileInfo(new File(absoluteFileName));
         		}
         }
     }
