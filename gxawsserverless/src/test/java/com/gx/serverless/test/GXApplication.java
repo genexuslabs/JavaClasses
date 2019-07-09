@@ -7,10 +7,8 @@
           Main DBMS: SQL Server
 */
 package com.gx.serverless.test;
-import com.gx.serverless.*;
 import java.util.*;
 import javax.ws.rs.core.Application;
-import com.genexus.util.GXServices;
 import com.genexus.webpanels.WebUtils;
 
 public final  class GXApplication extends Application

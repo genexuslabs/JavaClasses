@@ -17,9 +17,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.UUID;
 
+import com.genexus.cloud.serverless.aws.GxObjectRestService;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Test;
 
@@ -43,13 +46,14 @@ public class JerseyAwsProxyTest {
     private static final String CUSTOM_HEADER_KEY = "x-custom-header";
     private static final String CUSTOM_HEADER_VALUE = "my-custom-value";
 
-    private ResourceConfig app = new ResourceConfig().packages("com.gx.serverless.test;com.genexus.serverless.proxy.test.jersey");
+    private ResourceConfig app;
 
     @Before
     public void setUpStreams() {
         try {
             System.setProperty("LAMBDA_TASK_ROOT", ".");
-            LambdaHandler.initialize();
+            LambdaHandler l = new LambdaHandler();
+            handler = LambdaHandler.handler;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -59,7 +63,7 @@ public class JerseyAwsProxyTest {
 
     }
 
-    private JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = JerseyLambdaContainerHandler.getAwsProxyHandler(app);
+    private JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = null;
 
     private static ObjectMapper objectMapper = new ObjectMapper();
 
@@ -211,6 +215,27 @@ public class JerseyAwsProxyTest {
         AwsProxyResponse output = handler.proxy(request, lambdaContext);
         assertEquals(200, output.getStatusCode());
         assertEquals("{\"ItemId\":12,\"ItemName\":\"12 Item\"}", output.getBody());
+    }
+
+
+    @Test
+    public void gxUploadServicesTest() {
+      File file = new File("pom.xml");
+        try {
+            FileInputStream stream = new FileInputStream(file);
+
+            AwsProxyRequest request = new AwsProxyRequestBuilder("/gxobject", "POST")
+                    .binaryBody(stream)
+                    .header("Content-Type", "text/xml")
+                    .build();
+
+            AwsProxyResponse output = handler.proxy(request, lambdaContext);
+            assertEquals(201, output.getStatusCode());
+            assert( output.getBody().contains("gxupload"));
+        }
+        catch (Exception e) {
+            fail(e.getMessage());
+        }
     }
 
 }
