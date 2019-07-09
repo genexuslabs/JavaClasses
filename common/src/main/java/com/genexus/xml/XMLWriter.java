@@ -37,6 +37,7 @@ public class XMLWriter implements IXMLWriter
 	private boolean openedWriter = true;
 	private boolean simpleElement = false;
 	private boolean textFlag = false;
+	private boolean printingEndElement = false;
 	
 	private String encoding = "";
 	private Writer out = null;
@@ -168,38 +169,39 @@ public class XMLWriter implements IXMLWriter
 	public byte xmlEndElement()
 	{
 		checkWriter();
+		printingEndElement = true;
 		CloseElementHeaderAndValue();
 
 		if (stack.empty())
 		{
 			errCode = GXFAIL;
 			errDescription = "Stack underflow";
+			printingEndElement = false;
 			return GXFAIL;
 		}
 		
 		
 		NameValuePair node = (NameValuePair) stack.pop();
-		
-		printIndentation();
 
-		String prefix = (String) namespaces.get(node.value);
-		if	(prefix == null)
-			prefix = "";
-		
-		try
+		if (printingEndElement)
 		{
-			if (StringUtils.isNotEmpty(prefix))
-				out.write("</" + prefix + ":" + node.name + ">\n"); 
-			else
-				out.write("</" + node.name + ">\n"); 
-		}
-		catch (NullPointerException e)
-		{
-			errCode = GXOUTPUT_ERROR;
-		}
-		catch (IOException e)
-		{
-			errCode = GXOUTPUT_ERROR;
+			printIndentation();
+
+			String prefix = (String) namespaces.get(node.value);
+			if (prefix == null)
+				prefix = "";
+
+			try {
+				if (StringUtils.isNotEmpty(prefix))
+					out.write("</" + prefix + ":" + node.name + ">\n");
+				else
+					out.write("</" + node.name + ">\n");
+			} catch (NullPointerException e) {
+				errCode = GXOUTPUT_ERROR;
+			} catch (IOException e) {
+				errCode = GXOUTPUT_ERROR;
+			}
+			printingEndElement = false;
 		}
 		inValue = 0;
 		return (byte)errCode;
@@ -458,10 +460,18 @@ public class XMLWriter implements IXMLWriter
 			}
 			else
 			{
-				if (inValue == 0)
-					out.write(">\n");
+				if (printingEndElement && IsBlank(sCurrValue))
+				{
+					out.write("/>\n");
+					printingEndElement = false;
+				}
 				else
-					out.write(">");
+				{
+					if (inValue == 0)
+						out.write(">\n");
+					else
+						out.write(">");
+				}
 			}
 
 			bOpenElementHeader = false;

@@ -149,7 +149,7 @@ public final class GXutil
 
     public static String formatDateTimeParm(Date date)
     {
-        return CommonUtil.formatDateParm(date);
+        return CommonUtil.formatDateTimeParm(date);
     }
 
     public static String formatDateParm(Date date)
