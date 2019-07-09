@@ -1105,6 +1105,9 @@ public final class CommonUtil
 	//Debe ignorar los caracteres invalidos
 	public static long lval(String text)
 	{
+		if (text == null)
+			return 0;
+
 		text = text.trim();
 		try
 		{
@@ -1154,6 +1157,9 @@ public final class CommonUtil
 
 	public static double val(String text, String sDSep)
 	{
+		if (text == null)
+			return 0;
+
 		text = text.trim();
 
 		try
