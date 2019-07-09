@@ -1,9 +1,8 @@
 package com.genexus.cloud.serverless.aws;
 
-import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.genexus.*;
 import com.genexus.util.CacheAPI;
-import com.genexus.util.GXFile;
+
 import com.genexus.util.GXServices;
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
@@ -13,11 +12,12 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.ByteArrayOutputStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 
+import com.genexus.webpanels.FileItem;
 
 @Path("/gxobject")
 public class GxObjectRestService extends GxRestService {
@@ -42,22 +42,18 @@ public class GxObjectRestService extends GxRestService {
         } else {
             filePath = Preferences.getDefaultPreferences().getBLOB_PATH().replace(java.io.File.separator, "/") + tempFileName;
         }
-        InputStream stream = null;
-        try {
-            stream = myServletRequest.getInputStream();
-            GXFile gxFile = new GXFile(filePath, true);
-            gxFile.create(stream);
-            filePath = gxFile.getAbsolutePath();
-            String keyId = UUID.randomUUID().toString().replace("-","");
-            CacheAPI.files().set(keyId, filePath, CommonUtil.UPLOAD_TIMEOUT );
+
+        try (InputStream stream = myServletRequest.getInputStream()) {
+            filePath = new FileItem(filePath, false, "", stream).getPath();
+            String keyId = UUID.randomUUID().toString().replace("-", "");
+            CacheAPI.files().set(keyId, filePath, CommonUtil.UPLOAD_TIMEOUT);
 
             builder.header("Content-Type", "application/json");
             builder.header("GeneXus-Object-Id", keyId);
 
             JSONObject jObj = new JSONObject();
             try {
-                jObj.put("object_id", GXutil.UPLOADPREFIX + keyId);
-                jObj.put("object_path", filePath);
+                jObj.put("object_id", CommonUtil.UPLOADPREFIX + keyId);
                 builder.entity(jObj.toString());
             } catch (JSONException e) {
                 builder = Response.status(500);
