@@ -219,7 +219,6 @@ public class JerseyAwsProxyTest {
 
 
     @Test
-    @Ignore
     public void gxUploadServicesTest() {
       File file = new File("pom.xml");
         try {
@@ -227,7 +226,7 @@ public class JerseyAwsProxyTest {
 
             AwsProxyRequest request = new AwsProxyRequestBuilder("/gxobject", "POST")
                     .binaryBody(stream)
-                    .header("Content-Type", "image/png")
+                    .header("Content-Type", "text/xml")
                     .build();
 
             AwsProxyResponse output = handler.proxy(request, lambdaContext);
