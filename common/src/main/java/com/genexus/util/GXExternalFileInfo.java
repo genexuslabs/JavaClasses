@@ -9,7 +9,7 @@ import com.genexus.common.interfaces.SpecificImplementation;
 import java.util.Date;
 
 public class GXExternalFileInfo implements IGXFileInfo {
-
+    private static int DEFAULT_OBJECT_EXPIRATION_MINUTES = 24 * 60;
     String name;
     ExternalProvider provider;
     String url;
@@ -144,7 +144,7 @@ public class GXExternalFileInfo implements IGXFileInfo {
             if(isDirectory())
                 return provider.getDirectory(name);
             else
-                return provider.get(name, isPrivate, 0);
+                return provider.get(name, isPrivate, DEFAULT_OBJECT_EXPIRATION_MINUTES);
         else
             return url;
     }
