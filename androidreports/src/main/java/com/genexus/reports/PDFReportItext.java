@@ -403,10 +403,10 @@ public class PDFReportItext implements IReportHandler
 		props.setupGeneralProperty(Const.LINE_CAP_PROJECTING_SQUARE, Const.DEFAULT_LINE_CAP_PROJECTING_SQUARE);
 		props.setupGeneralProperty(Const.BARCODE128_AS_IMAGE, Const.DEFAULT_BARCODE128_AS_IMAGE);
         props.setupGeneralProperty("DEBUG", "false");
-        props.setupGeneralProperty(Const.LEFT_MARGIN, Const.DEFAULT_LEFT_MARGIN);
-        props.setupGeneralProperty(Const.TOP_MARGIN, Const.DEFAULT_TOP_MARGIN);
+        props.setupGeneralProperty(Const.LEFT_MARGIN, ConstAndroid.DEFAULT_LEFT_MARGIN);
+        props.setupGeneralProperty(Const.TOP_MARGIN, ConstAndroid.DEFAULT_TOP_MARGIN);
 		props.setupGeneralProperty(Const.MARGINS_INSIDE_BORDER, Const.DEFAULT_MARGINS_INSIDE_BORDER);
-		props.setupGeneralProperty(Const.BOTTOM_MARGIN, Const.DEFAULT_BOTTOM_MARGIN);
+		props.setupGeneralProperty(Const.BOTTOM_MARGIN, ConstAndroid.DEFAULT_BOTTOM_MARGIN);
 		props.setupGeneralProperty(Const.OUTPUT_FILE_DIRECTORY, ".");
 		props.setupGeneralProperty(Const.LEADING, "2");
 		props.setupGeneralProperty(Const.RUN_DIRECTION, Const.RUN_DIRECTION_LTR);
@@ -1675,9 +1675,9 @@ public class PDFReportItext implements IReportHandler
         printerOutputMode = mode;
 
 			boolean ret;
-            ret = props.setupGeneralProperty(Const.LEFT_MARGIN, Const.DEFAULT_LEFT_MARGIN);
-            ret = props.setupGeneralProperty(Const.TOP_MARGIN, Const.DEFAULT_TOP_MARGIN);
-			ret = props.setupGeneralProperty(Const.BOTTOM_MARGIN, Const.DEFAULT_BOTTOM_MARGIN);
+            ret = props.setupGeneralProperty(Const.LEFT_MARGIN, ConstAndroid.DEFAULT_LEFT_MARGIN);
+            ret = props.setupGeneralProperty(Const.TOP_MARGIN, ConstAndroid.DEFAULT_TOP_MARGIN);
+			ret = props.setupGeneralProperty(Const.BOTTOM_MARGIN, ConstAndroid.DEFAULT_BOTTOM_MARGIN);
 			leftMargin = (float) (TO_CM_SCALE * Double.valueOf(props.getGeneralProperty(Const.LEFT_MARGIN)).doubleValue());
 			topMargin = (float) (TO_CM_SCALE * Double.valueOf(props.getGeneralProperty(Const.TOP_MARGIN)).doubleValue());
 			bottomMargin = (float) (Double.valueOf(props.getGeneralProperty(Const.BOTTOM_MARGIN)).doubleValue());
