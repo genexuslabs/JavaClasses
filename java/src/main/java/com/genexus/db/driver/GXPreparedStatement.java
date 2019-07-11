@@ -1387,7 +1387,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 						{
 							if (fileName.startsWith(webContext.getContextPath()))
 							{
-								fileName = fileName.substring(webContext.getContextPath().length());
+								fileName = fileName.substring(webContext.getContextPath().length() +1);
 							}
 
 							fileName = webContext.getDefaultPath() + File.separator + fileName;
