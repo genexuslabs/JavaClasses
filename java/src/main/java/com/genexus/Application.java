@@ -21,6 +21,7 @@ import com.genexus.util.GXService;
 import com.genexus.util.GXServices;
 import com.genexus.util.ReorgSubmitThreadPool;
 import com.genexus.util.SubmitThreadPool;
+import com.genexus.xml.XMLWriter;
 
 
 public class Application
@@ -134,6 +135,7 @@ public class Application
 					ClientContext.setModelContext(new ModelContext(gxCfg));
 					DebugFlag.DEBUG = ClientContext.getModelContext().getClientPreferences().getJDBC_LOGEnabled();
 					Namespace.createNamespaces(((ModelContext) ClientContext.getModelContext()).getPreferences().getIniFile());
+					XMLWriter.setUseTagToCloseElement(ClientContext.getModelContext().getClientPreferences().getProperty("UseTagToCloseElement", "0").equals("1"));
 					startDateTime = new Date();
 					initialized = true;
 				}
