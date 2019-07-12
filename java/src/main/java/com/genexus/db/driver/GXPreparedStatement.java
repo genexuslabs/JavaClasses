@@ -1361,7 +1361,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			fileName = com.genexus.GXutil.cutUploadPrefix(fileName);
 			try
 			{
-				if (fileName.toLowerCase().startsWith("http"))
+				if (fileName.toLowerCase().startsWith("http://") || fileName.toLowerCase().startsWith("https://"))
 				{
 					URL fileURL = new URL(fileName);
 					String blobPath = com.genexus.Preferences.getDefaultPreferences().getBLOB_PATH();
@@ -1388,7 +1388,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 					}
 					else
 					{
-						if (!webContext.getDefaultPath().isEmpty() && !fileName.startsWith("http") && ! new File(fileName).isAbsolute())
+						if (!webContext.getDefaultPath().isEmpty() && ! new File(fileName).isAbsolute())
 						{
 							if (fileName.startsWith(webContext.getContextPath()))
 							{
