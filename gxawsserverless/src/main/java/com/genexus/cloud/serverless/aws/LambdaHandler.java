@@ -2,6 +2,7 @@ package com.genexus.cloud.serverless.aws;
 
 import javax.ws.rs.core.Application;
 
+import com.genexus.specific.java.LogManager;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import com.amazonaws.serverless.proxy.jersey.JerseyLambdaContainerHandler;
@@ -16,7 +17,7 @@ import com.genexus.util.IniFile;
 public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyResponse> {
 
     private static ILogger logger = null;
-    private static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = null;
+    public static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = null;
     private static ResourceConfig jerseyApplication = null;
     private static final String BASE_REST_PATH = "/rest/";
 
@@ -29,18 +30,19 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
                 logger.error(errMsg);
                 throw new Exception(errMsg);
             }
+            jerseyApplication.register(GxObjectRestService.class);
             LambdaHandler.handler = JerseyLambdaContainerHandler.getAwsProxyHandler(LambdaHandler.jerseyApplication);
         }
     }
 
     public AwsProxyResponse handleRequest(AwsProxyRequest awsProxyRequest, Context context) {
-        String path = awsProxyRequest.getPath();
-        path = path.replace(BASE_REST_PATH, "/");
+        String path = awsProxyRequest.getPath().replace(BASE_REST_PATH, "/");
         awsProxyRequest.setPath(path);
         return this.handler.proxy(awsProxyRequest, context);
     }
 
-    public static Application initialize() throws Exception {
+    private static Application initialize() throws Exception {
+        LogManager.initialize(".");
         IniFile config = com.genexus.ConfigFileFinder.getConfigFile(null, "client.cfg", null);
         String className = config.getProperty("Client", "PACKAGE", null);
         Class<?> cls;

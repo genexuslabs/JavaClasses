@@ -15,4 +15,5 @@ target/
 .settings
 *.versionsBackup
 
-
+PublicTempStorage/
+PrivateTempStorage/
