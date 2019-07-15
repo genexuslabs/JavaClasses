@@ -448,6 +448,8 @@ public class HttpContextWeb extends HttpContext {
 		return contextPath;
 	}
 
+	public void setContextPath(String path) {}
+
 	public String getRealPath(String path) {
 		String realPath = path;
 
