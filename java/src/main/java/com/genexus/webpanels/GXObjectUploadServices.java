@@ -63,7 +63,7 @@ public class GXObjectUploadServices extends GXWebObjectStub
 						else
 						{
 							savedFileName = file.getPath();
-							url = file.getPath();
+							url = file.getAbsolutePath();
 							BlobsCleaner.getInstance().addBlobFile(fileName);
 						}
 
