@@ -122,6 +122,8 @@ public class GXQueue implements MessageListener{
           {
             result.setText(txtMessage.getText());
             result.setPriority(txtMessage.getJMSPriority());
+            result.setCorrelationId(txtMessage.getJMSCorrelationID());
+            result.setMessageID(txtMessage.getJMSMessageID());
             GXProperties msgProps = new GXProperties();
             Enumeration props = txtMessage.getPropertyNames();
             while (props.hasMoreElements())
@@ -178,6 +180,8 @@ public class GXQueue implements MessageListener{
           {
             result.setText(txtMessage.getText());
             result.setPriority(txtMessage.getJMSPriority());
+            result.setCorrelationId(txtMessage.getJMSCorrelationID());
+			result.setMessageID(txtMessage.getJMSMessageID());
             GXProperties msgProps = new GXProperties();
             Enumeration props = txtMessage.getPropertyNames();
             while (props.hasMoreElements())
@@ -351,6 +355,8 @@ public class GXQueue implements MessageListener{
     int index;
     int priority = qmessage.getPriority();
     String text = qmessage.getText();
+    String correlationId = qmessage.getCorrelationId();
+    String messageId = qmessage.getMessageID();
     GXProperties properties = qmessage.getProperties();
     try
     {
@@ -359,6 +365,9 @@ public class GXQueue implements MessageListener{
         QueueSender sender = qsession.createSender(queue);
         sender.setPriority(priority);
         message = qsession.createTextMessage();
+        message.setText(text);
+        message.setJMSCorrelationID(correlationId);
+        message.setJMSMessageID(messageId);
         message.setText(text);
         if (properties != null)
         {
@@ -376,6 +385,9 @@ public class GXQueue implements MessageListener{
           TopicPublisher publisher = tsession.createPublisher(topic);
           message = tsession.createTextMessage();
           message.setText(text);
+          message.setJMSPriority(priority);
+		  message.setJMSCorrelationID(correlationId);
+		  message.setJMSMessageID(messageId);
           if (properties != null)
           {
             index = 0;
@@ -414,6 +426,8 @@ public class GXQueue implements MessageListener{
             txtMessage = (TextMessage) message;
             result.setText(txtMessage.getText());
             result.setPriority(txtMessage.getJMSPriority());
+            result.setCorrelationId(txtMessage.getJMSCorrelationID());
+            result.setMessageID(txtMessage.getJMSMessageID());
             GXProperties msgProps = new GXProperties();
             Enumeration props = txtMessage.getPropertyNames();
             while (props.hasMoreElements())
@@ -463,6 +477,8 @@ public class GXQueue implements MessageListener{
         TextMessage txtMessage = (TextMessage) message;
         result.setText(txtMessage.getText());
         result.setPriority(txtMessage.getJMSPriority());
+        result.setCorrelationId(txtMessage.getJMSCorrelationID());
+        result.setMessageID(txtMessage.getJMSMessageID());
         GXProperties msgProps = new GXProperties();
         Enumeration props = txtMessage.getPropertyNames();
         while (props.hasMoreElements()) {
