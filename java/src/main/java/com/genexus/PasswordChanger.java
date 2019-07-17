@@ -2,6 +2,7 @@ package com.genexus;
 import java.io.*;
 
 import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.specific.java.Connect;
 import com.genexus.util.IniFile;
 public class PasswordChanger
 {
@@ -23,6 +24,7 @@ public class PasswordChanger
 		String datastore = "DEFAULT";
 		String user = null;
 		String password = null;
+		Connect.init();
 
 		for (int i = 0; i < arg.length; i++)
 		{
