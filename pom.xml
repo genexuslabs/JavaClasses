@@ -32,6 +32,7 @@
 		<module>gxgeospatial</module>
 		<module>gxodata</module>
 		<module>gxexternalproviders</module>
+		<module>gxawsserverless</module>
 	</modules>
 
 	<repositories>

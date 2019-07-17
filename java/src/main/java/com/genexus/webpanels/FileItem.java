@@ -56,7 +56,16 @@ public class FileItem
 	  }
 	  return "";
   }
-  
+
+	public String getAbsolutePath()
+	{
+		if (gxFile != null)
+		{
+			return gxFile.getAbsolutePath();
+		}
+		return "";
+	}
+
   public String getPath()
 	{
   	if (gxFile != null)

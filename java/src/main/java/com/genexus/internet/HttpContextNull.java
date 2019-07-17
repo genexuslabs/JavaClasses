@@ -22,6 +22,7 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
        private HttpGXServletRequest request;
 	   private WebSession webSession;
 	   private String defaultPath = "";
+	   private String contextPath = "";
 	   private Hashtable<String, String> cookies;	   
 
 	public HttpContext copy()
@@ -53,8 +54,10 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 
 	public String getContextPath()
 	{
-		return "";
+		return contextPath;
 	}
+
+	public void setContextPath(String path) {this.contextPath = path;}
 
 	public String getDefaultPath()
 	{
