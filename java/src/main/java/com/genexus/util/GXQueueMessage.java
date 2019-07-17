@@ -4,6 +4,8 @@ public class GXQueueMessage {
 
   String text;
   int priority;
+  String correlationId;
+  String messageId;
   GXProperties properties;
 
   public GXQueueMessage() {
@@ -29,6 +31,26 @@ public class GXQueueMessage {
   {
       this.priority = priority;
   }
+
+  public String getCorrelationId()
+	{
+		return correlationId;
+	}
+
+  public void setCorrelationId(String correlationId)
+	{
+		this.correlationId = correlationId;
+	}
+
+  public String getMessageID()
+	{
+		return messageId;
+	}
+
+  public void setMessageID(String messageId)
+	{
+		this.messageId = messageId;
+	}
 
   public GXProperties getProperties()
   {
