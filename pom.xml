@@ -32,9 +32,8 @@
 		<module>gxgeospatial</module>
 		<module>gxodata</module>
 		<module>gxexternalproviders</module>
-		<module>gxawslambda</module>
+        <module>gxawsserverless</module>
 		<module>androidreports</module>
-
 	</modules>
 
 	<repositories>

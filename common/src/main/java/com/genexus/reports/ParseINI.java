@@ -1,5 +1,9 @@
 package com.genexus.reports;
 
+import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
+
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,6 +28,7 @@ import java.util.Vector;
 
 public class ParseINI
 {
+	public static final ILogger logger = LogManager.getLogger(ParseINI.class);
 	private static final int MAX_LINE_LENGTH=255; // Maximo largo de una property
 	private static final byte SECTION_SEPARATOR_CHAR=(byte)'&'; // Separador interno de secciones
 	private static final String SECTION_SEPARATOR="&";
@@ -49,6 +54,26 @@ public class ParseINI
 
 	public ParseINI(String filename) throws IOException
 	{
+		init(filename);
+	}
+	public ParseINI(String filename, String configurationTemplateFile)  throws IOException
+	{
+		try
+		{
+			File file = new File(filename);
+			if (!file.exists()){
+				File templateFile = new File(configurationTemplateFile);
+				if (templateFile.exists())
+					SpecificImplementation.FileUtils.copyFile(templateFile, file);
+			}
+		}
+		catch(IOException ex){
+			logger.error("Error parsing ini " + filename + " template:" + configurationTemplateFile, ex);
+		}
+		init(filename);
+	}
+
+	private void init(String filename) throws IOException{
 		this.filename = new File(filename).getAbsolutePath();
 		try
 		{
@@ -71,8 +96,7 @@ public class ParseINI
 		load(inputStream);
 	}
 
-
-	/** Indica si se ha modificado el INI
+    /** Indica si se ha modificado el INI
 	 * @return true si se ha modificado el .INI
 	 */
 	public boolean need2Save()

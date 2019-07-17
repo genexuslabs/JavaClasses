@@ -10,7 +10,8 @@ public class Const
     public static final String DEFAULT_ACROBAT_EX_LOCATION2 = "AcroExch.Document\\shell\\open\\command"; // Este es otro lugar donde puede estar el acrobat (sobre HKEY_LOCAL_MACHINE)
     	
     public static final String INI_FILE = "PDFReport.ini";
-	public static final String WEB_INF = "WEB-INF";
+    public static final String INI_TEMPLATE_FILE = "PDFReport.template";
+    public static final String WEB_INF = "WEB-INF";
     public static final String EMBEED_DEFAULT = "false"; // Valor por defecto sobre si embeber o no los fonts
     public static final String SEARCH_FONTS_ALWAYS = "SearchNewFonts";   // Indica si siempre se va a buscar por nuevos fonts
     public static final String SEARCH_FONTS_ONCE = "SearchNewFontsOnce"; // Indica si se va abuscar por nuevos fonts por unica vez
@@ -86,7 +87,7 @@ public class Const
     public static final int OUTPUT_STREAM = 3; // Indica que la salida sera a un outputStream indicado anteriormente
 	public static final int OUTPUT_STREAM_PRINTER = 4; // Indica que la salida sera a un outputStream indicado anteriormente (pero ademas tiene output=only to printer)
 
-	public static float OPTIMAL_MINIMU_BAR_WIDTH_SMALL_FONT = 0.6f;
+    public static float OPTIMAL_MINIMU_BAR_WIDTH_SMALL_FONT = 0.6f;
 	public static float OPTIMAL_MINIMU_BAR_WIDTH_LARGE_FONT = 0.68f;
 	public static int LARGE_FONT_SIZE = 10;
 
