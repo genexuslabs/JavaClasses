@@ -865,10 +865,16 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 
 	public void setDateTime(int index, java.util.Date value, boolean onlyTime) throws SQLException
 	{
-		setDateTime(index, value, onlyTime, false);
+		setDateTime(index, value, onlyTime, false, false);
 	}
 
 	public void setDateTime(int index, java.util.Date value, boolean onlyTime, boolean hasmilliseconds) throws SQLException
+	{
+		setDateTime(index, value, onlyTime, false, hasmilliseconds);
+
+	}
+
+	public void setDateTime(int index, java.util.Date value, boolean onlyTime, boolean onlyDate, boolean hasmilliseconds) throws SQLException
 	{
 		if	(onlyTime && !value.equals(CommonUtil.nullDate()))
 		{
@@ -883,7 +889,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 				value = newValue;
 		}
 
-	//TODO: WHAT IS THIS FOR ANDROID?	if (!onlyonlyDate)
+		if (!onlyDate)
 			value = con.getContext().local2DBserver(value, hasmilliseconds);
 		
 		if	(DEBUG)
@@ -954,7 +960,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 
 		if	(con.getDBMS().useDateTimeInDate())
 		{
-			setDateTime(index, value, false);
+			setDateTime(index, value, false, true,false);
 		}
 		else if (con.getDBMS().useCharInDate())
 		{
@@ -980,7 +986,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			try
 			{
 				if	(con.getDBMS().useDateTimeInDate())
-					setDateTime(index, value, false, true);
+					setDateTime(index, value, false, true, false);
 				else
 				{
 					stmt.setDate(index, value);
@@ -995,7 +1001,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		else
 		{
 			if	(con.getDBMS().useDateTimeInDate())
-				setDateTime(index, value, false, true);
+				setDateTime(index, value, false, true, false);
 			else
 			{
 				stmt.setDate(index, value);

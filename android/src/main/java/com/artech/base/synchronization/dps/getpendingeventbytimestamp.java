@@ -207,7 +207,7 @@ final  class getpendingeventbytimestamp__default extends DataStoreHelperBase imp
 {
    protected Object[] conditional_P00022( ModelContext context ,
                                           int remoteHandle ,
-                                          com.genexus.internet.HttpContext httpContext ,
+                                          com.genexus.IHttpContext httpContext ,
                                           short AV5PendingEventStatus ,
                                           short A6PendingEventStatus )
    {
@@ -248,7 +248,7 @@ final  class getpendingeventbytimestamp__default extends DataStoreHelperBase imp
    public Object [] getDynamicStatement( int cursor ,
                                          ModelContext context ,
                                          int remoteHandle ,
-                                         com.genexus.internet.HttpContext httpContext ,
+                                         com.genexus.IHttpContext httpContext ,
                                          Object [] dynConstraints )
    {
       switch ( cursor )
