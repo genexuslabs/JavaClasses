@@ -27,8 +27,16 @@ import javax.naming.NamingException;
 
 import com.genexus.Application;
 import com.genexus.ModelContext;
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 
 public class GXQueue implements MessageListener{
+  public final int ERROR = 1;
+  public static final ILogger logger = LogManager.getLogger(GXQueue.class);
+
+  private int errCode;
+  private String errDescription = "";
+
   private static Hashtable qsessions = new Hashtable();
   private static Hashtable tsessions = new Hashtable();
   private static final String QUEUE  = "Queue";
@@ -88,12 +96,9 @@ public class GXQueue implements MessageListener{
     this.query = query;
   }
 
-  public void setBrowse(byte browse)
+  public void setBrowse(boolean browse)
   {
-    if (browse == 0)
-      this.browse = false;
-    else
-      this.browse = true;
+    this.browse = browse;
   }
 
   public boolean eof()
@@ -117,6 +122,8 @@ public class GXQueue implements MessageListener{
           {
             result.setText(txtMessage.getText());
             result.setPriority(txtMessage.getJMSPriority());
+            result.setCorrelationId(txtMessage.getJMSCorrelationID());
+            result.setMessageID(txtMessage.getJMSMessageID());
             GXProperties msgProps = new GXProperties();
             Enumeration props = txtMessage.getPropertyNames();
             while (props.hasMoreElements())
@@ -129,7 +136,7 @@ public class GXQueue implements MessageListener{
           }
           catch (JMSException e)
           {
-            System.err.println(e);
+            handleJMSException("GXQueue First method error: ", e);
             return null;
           }
         }
@@ -153,7 +160,7 @@ public class GXQueue implements MessageListener{
         return receive();
       }
       catch (JMSException e) {
-        System.err.println(e);
+        handleJMSException("GXQueue First method error: ", e);
         return null;
       }
     }
@@ -173,6 +180,8 @@ public class GXQueue implements MessageListener{
           {
             result.setText(txtMessage.getText());
             result.setPriority(txtMessage.getJMSPriority());
+            result.setCorrelationId(txtMessage.getJMSCorrelationID());
+			result.setMessageID(txtMessage.getJMSMessageID());
             GXProperties msgProps = new GXProperties();
             Enumeration props = txtMessage.getPropertyNames();
             while (props.hasMoreElements())
@@ -185,7 +194,7 @@ public class GXQueue implements MessageListener{
           }
           catch (JMSException e)
           {
-            System.err.println(e);
+            handleJMSException("GXQueue Next method error: ", e);
             return null;
           }
         }
@@ -260,12 +269,14 @@ public class GXQueue implements MessageListener{
         return true;
   }
 
-  public byte connect()
+  public boolean connect()
   {
     if (!readProvider())
     {
-      System.err.println("Provider doesn't exist");
-      return 0;
+      errCode = ERROR;
+      errDescription = "GXQueue Connect method error: Provider doesn't exist";
+      logger.error(errDescription);
+      return false;
     }
 
     InitialContext ctx = null;
@@ -326,16 +337,16 @@ public class GXQueue implements MessageListener{
     }
     catch (NamingException e)
     {
-      System.err.println(e);
-      return 0;
+      handleJMSException("GXQueue Connect method error: ", e);
+      return false;
     }
     catch (JMSException e)
     {
-      System.err.println(e);
-      return 0;
+      handleJMSException("GXQueue Connect method error: ", e);
+      return false;
     }
 
-    return 1;
+    return true;
   }
 
   public String send(GXQueueMessage qmessage)
@@ -344,6 +355,8 @@ public class GXQueue implements MessageListener{
     int index;
     int priority = qmessage.getPriority();
     String text = qmessage.getText();
+    String correlationId = qmessage.getCorrelationId();
+    String messageId = qmessage.getMessageID();
     GXProperties properties = qmessage.getProperties();
     try
     {
@@ -352,6 +365,9 @@ public class GXQueue implements MessageListener{
         QueueSender sender = qsession.createSender(queue);
         sender.setPriority(priority);
         message = qsession.createTextMessage();
+        message.setText(text);
+        message.setJMSCorrelationID(correlationId);
+        message.setJMSMessageID(messageId);
         message.setText(text);
         if (properties != null)
         {
@@ -369,6 +385,9 @@ public class GXQueue implements MessageListener{
           TopicPublisher publisher = tsession.createPublisher(topic);
           message = tsession.createTextMessage();
           message.setText(text);
+          message.setJMSPriority(priority);
+		  message.setJMSCorrelationID(correlationId);
+		  message.setJMSMessageID(messageId);
           if (properties != null)
           {
             index = 0;
@@ -384,7 +403,7 @@ public class GXQueue implements MessageListener{
     }
     catch (JMSException e)
     {
-      System.err.println(e);
+      handleJMSException("GXQueue Send method error: ", e);
       return "";
     }
   }
@@ -407,6 +426,8 @@ public class GXQueue implements MessageListener{
             txtMessage = (TextMessage) message;
             result.setText(txtMessage.getText());
             result.setPriority(txtMessage.getJMSPriority());
+            result.setCorrelationId(txtMessage.getJMSCorrelationID());
+            result.setMessageID(txtMessage.getJMSMessageID());
             GXProperties msgProps = new GXProperties();
             Enumeration props = txtMessage.getPropertyNames();
             while (props.hasMoreElements())
@@ -442,7 +463,7 @@ public class GXQueue implements MessageListener{
     }
     catch (JMSException e)
     {
-      System.err.println(e);
+      handleJMSException("GXQueue Receive method error: ", e);
       return result;
     }
   }
@@ -456,6 +477,8 @@ public class GXQueue implements MessageListener{
         TextMessage txtMessage = (TextMessage) message;
         result.setText(txtMessage.getText());
         result.setPriority(txtMessage.getJMSPriority());
+        result.setCorrelationId(txtMessage.getJMSCorrelationID());
+        result.setMessageID(txtMessage.getJMSMessageID());
         GXProperties msgProps = new GXProperties();
         Enumeration props = txtMessage.getPropertyNames();
         while (props.hasMoreElements()) {
@@ -469,7 +492,7 @@ public class GXQueue implements MessageListener{
     }
     catch (JMSException e)
     {
-        System.err.println(e);
+      handleJMSException("GXQueue OnMessage method error: ", e);
     }
   }
 
@@ -488,7 +511,7 @@ public class GXQueue implements MessageListener{
     }
     catch (JMSException e)
     {
-      System.err.println(e);
+      handleJMSException("GXQueue Browse method error: ", e);
     }
   }
 
@@ -513,7 +536,7 @@ public class GXQueue implements MessageListener{
     }
     catch (JMSException e)
     {
-      System.err.println(e);
+      handleJMSException("GXQueue Disconnect method error: ", e);
       return 0;
     }
     return 1;
@@ -529,7 +552,7 @@ public class GXQueue implements MessageListener{
       }
       catch (JMSException e)
       {
-        System.err.println(e);
+        logger.error("GXQueue CommitAll method error: ", e);
       }
     }
 
@@ -541,7 +564,7 @@ public class GXQueue implements MessageListener{
       }
       catch (JMSException e)
       {
-        System.err.println(e);
+        logger.error("GXQueue CommitAll method error: ", e);
       }
     }
   }
@@ -556,7 +579,7 @@ public class GXQueue implements MessageListener{
       }
       catch (JMSException e)
       {
-        System.err.println(e);
+        logger.error("GXQueue RollbackAll method error: ", e);
       }
     }
 
@@ -568,7 +591,7 @@ public class GXQueue implements MessageListener{
       }
       catch (JMSException e)
       {
-        System.err.println(e);
+        logger.error("GXQueue RollbackAll method error: ", e);
       }
     }
   }
@@ -584,7 +607,7 @@ public class GXQueue implements MessageListener{
           tsession.commit();
       }
       catch (JMSException e) {
-        System.err.println(e);
+        handleJMSException("GXQueue Commit method error: ", e);
       }
     }
   }
@@ -600,8 +623,25 @@ public class GXQueue implements MessageListener{
           tsession.rollback();
       }
       catch (JMSException e) {
-        System.err.println(e);
+        handleJMSException("GXQueue Rollback method error: ", e);
       }
     }
+  }
+
+  private void handleJMSException(String methodName, Exception e)
+  {
+    errCode = ERROR;
+    errDescription = e.getMessage();
+    logger.error(methodName, e);
+  }
+
+  public short getErrCode()
+  {
+    return (short) errCode;
+  }
+
+  public String getErrDescription()
+  {
+    return errDescription;
   }
 }
