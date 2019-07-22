@@ -1059,6 +1059,11 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		setDateTime(index, value, onlyTime, false);
 	}
 
+	public void setDateTime(int index, java.util.Date value, boolean onlyTime, boolean onlyDate, boolean hasmilliseconds) throws SQLException
+	{
+		setDateTime(index, value, onlyTime, hasmilliseconds);
+	}
+
 	public void setDateTime(int index, java.util.Date value, boolean onlyTime, boolean hasmilliseconds) throws SQLException
 	{
 		if	(onlyTime && !value.equals(CommonUtil.nullDate()))
