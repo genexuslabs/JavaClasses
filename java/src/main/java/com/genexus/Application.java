@@ -161,6 +161,7 @@ public class Application
 				}
 				catch (Exception e)
 				{
+					logger.error("Unrecognized External Provider class : " + providerService.getName() + " / " + providerService.getClassName(), e);
 					throw new InternalError("Unrecognized External Provider class : " + providerService.getName() + " / " + providerService.getClassName());
 				}
 			}

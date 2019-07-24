@@ -20,14 +20,14 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.UUID;
 
-import com.genexus.cloud.serverless.aws.GxObjectRestService;
+import com.genexus.webpanels.GXObjectUploadServices;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Test;
 
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
+import com.amazonaws.serverless.proxy.internal.servlet.*;
 import com.amazonaws.serverless.proxy.jersey.JerseyLambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
@@ -39,6 +39,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genexus.cloud.serverless.aws.LambdaHandler;
 import org.junit.*;
 
+
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Enumeration;
+import java.util.concurrent.CountDownLatch;
+import javax.servlet.*;
+
 /**
  * Unit test class for the Jersey AWS_PROXY default implementation
  */
@@ -47,12 +54,13 @@ public class JerseyAwsProxyTest {
     private static final String CUSTOM_HEADER_VALUE = "my-custom-value";
 
     private ResourceConfig app;
+    private LambdaHandler l;
 
     @Before
     public void setUpStreams() {
         try {
             System.setProperty("LAMBDA_TASK_ROOT", ".");
-            LambdaHandler l = new LambdaHandler();
+            l = new LambdaHandler();
             handler = LambdaHandler.handler;
         } catch (Exception e) {
             e.printStackTrace();
@@ -220,7 +228,7 @@ public class JerseyAwsProxyTest {
 
     @Test
     public void gxUploadServicesTest() {
-      File file = new File("pom.xml");
+        File file = new File("pom.xml");
         try {
             FileInputStream stream = new FileInputStream(file);
 
@@ -229,13 +237,78 @@ public class JerseyAwsProxyTest {
                     .header("Content-Type", "text/xml")
                     .build();
 
-            AwsProxyResponse output = handler.proxy(request, lambdaContext);
+            AwsProxyResponse output = l.handleRequest(request, lambdaContext);
             assertEquals(201, output.getStatusCode());
-            assert( output.getBody().contains("gxupload"));
-        }
-        catch (Exception e) {
+            assert (output.getBody().contains("gxupload"));
+        } catch (Exception e) {
             fail(e.getMessage());
         }
+    }
+
+
+    @Test
+    public void gxServletRequest() {
+        File file = new File("pom.xml");
+        try {
+            FileInputStream stream = new FileInputStream(file);
+
+            AwsProxyRequest request = new AwsProxyRequestBuilder("/gxobject", "POST")
+                    .binaryBody(stream)
+                    .header("Content-Type", "text/xml")
+                    .build();
+            AwsProxyHttpServletRequest servletRequest = new AwsProxyHttpServletRequest(request, null, null);
+
+            CountDownLatch latch = new CountDownLatch(0);
+
+            ServletContext servletContext = new AwsServletContext(null);//AwsServletContext.getInstance(lambdaContext, null);
+
+
+            HttpServlet servlet = new GXObjectUploadServices();
+            servlet.init(new ServletConfig() {
+                @Override
+                public String getServletName() {
+                    return "";
+                }
+
+                @Override
+                public ServletContext getServletContext() {
+                    return servletContext;
+                }
+
+                @Override
+                public String getInitParameter(String s) {
+                    return "";
+                }
+
+                @Override
+                public Enumeration<String> getInitParameterNames() {
+                    return null;
+                }
+            });
+            HttpServletResponse response = new AwsHttpServletResponse(servletRequest, latch);
+            servletRequest.setServletContext(servletContext);
+            servlet.service(servletRequest, response);
+            assertEquals(201, response.getStatus());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Test
+	@Ignore
+    public void gxTestOAuthAccessToken() {
+
+        AwsProxyRequest request = new AwsProxyRequestBuilder("/oauth/access_token", "POST")
+                .body("client_id=b0be5400435f42e588480fa06330f5ff&grant_type=password&username=ggallotti&password=gonzalo&scope=FullControl")
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                //.header("Content-Length", "116")
+                .build();
+
+        AwsProxyResponse output = l.handleRequest(request, lambdaContext);
+        System.out.println(output);
+        //assertEquals(200, output.getStatusCode());
+
     }
 
 }
