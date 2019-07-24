@@ -288,6 +288,7 @@ public abstract class HttpContext
 	public abstract void webPutSessionValue(String name, double value);
 	public abstract void webSessionId(String[] id);
 	public abstract String getContextPath();
+	public abstract void setContextPath(String context);
 	public abstract String webSessionId();
 	public abstract String getCookie(String name);
 	public abstract Cookie[] getCookies();

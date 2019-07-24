@@ -172,6 +172,7 @@ public class JavaModelContextExtension implements IExtensionModelContext {
         {
             HttpContext newHttpContext = (HttpContext) newContext.getHttpContext();
             newHttpContext.setDefaultPath(ctx.getDefaultPath());
+            newHttpContext.setContextPath(ctx.getContextPath());
             newHttpContext.setStaticContentBase(ctx.getStaticContentBase());
             newHttpContext.setClientId(ctx.getClientId());
             newHttpContext.setLanguage(ctx.getLanguage());
