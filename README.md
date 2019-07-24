@@ -57,3 +57,7 @@ Once you compiled or packaged everything you needed, you can stop the container 
  The site for each module can be found at <project dir>\target\site\index.html
 
   ![Site](site.png)
+  
+  ## Agreement on Compatibility from now on
+  
+  With interfaces now in place since the v16 Upgrade 4 release, GeneXus SA commits to evolve them while maintaining compatibility.
