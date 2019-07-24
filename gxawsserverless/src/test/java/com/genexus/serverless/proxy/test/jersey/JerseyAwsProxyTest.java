@@ -245,56 +245,6 @@ public class JerseyAwsProxyTest {
         }
     }
 
-
-    @Test
-    public void gxServletRequest() {
-        File file = new File("pom.xml");
-        try {
-            FileInputStream stream = new FileInputStream(file);
-
-            AwsProxyRequest request = new AwsProxyRequestBuilder("/gxobject", "POST")
-                    .binaryBody(stream)
-                    .header("Content-Type", "text/xml")
-                    .build();
-            AwsProxyHttpServletRequest servletRequest = new AwsProxyHttpServletRequest(request, null, null);
-
-            CountDownLatch latch = new CountDownLatch(0);
-
-            ServletContext servletContext = new AwsServletContext(null);//AwsServletContext.getInstance(lambdaContext, null);
-
-
-            HttpServlet servlet = new GXObjectUploadServices();
-            servlet.init(new ServletConfig() {
-                @Override
-                public String getServletName() {
-                    return "";
-                }
-
-                @Override
-                public ServletContext getServletContext() {
-                    return servletContext;
-                }
-
-                @Override
-                public String getInitParameter(String s) {
-                    return "";
-                }
-
-                @Override
-                public Enumeration<String> getInitParameterNames() {
-                    return null;
-                }
-            });
-            HttpServletResponse response = new AwsHttpServletResponse(servletRequest, latch);
-            servletRequest.setServletContext(servletContext);
-            servlet.service(servletRequest, response);
-            assertEquals(201, response.getStatus());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-
     @Test
 	@Ignore
     public void gxTestOAuthAccessToken() {
