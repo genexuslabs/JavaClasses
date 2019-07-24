@@ -827,11 +827,7 @@ public class HttpClient
 				}
 				try
 				{
-					if (SpecificImplementation.AddToArrayCurrent)
-						out = addToArray(out, CommonUtil.readToByteArray(new java.io.BufferedInputStream(new FileInputStream((File) curr))));
-					else
-						out = addToArray(out, CommonUtil.readToByteArray(new java.io.BufferedInputStream(new FileInputStream(file))));
-					
+					out = addToArray(out, CommonUtil.readToByteArray(new java.io.BufferedInputStream(new FileInputStream(file))));
 				}
 				catch (FileNotFoundException e)
 				{

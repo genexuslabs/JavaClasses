@@ -6,7 +6,7 @@
 
 	<groupId>com.genexus</groupId>
 	<artifactId>parent</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>GeneXus Standard Classes (Parent)</name>
@@ -32,6 +32,8 @@
 		<module>gxgeospatial</module>
 		<module>gxodata</module>
 		<module>gxexternalproviders</module>
+        <module>gxawsserverless</module>
+		<module>androidreports</module>
 	</modules>
 
 	<repositories>
@@ -39,11 +41,6 @@
 			<id>mit-public</id>
 			<name>MIT Public</name>
 			<url>http://maven.mit.edu/nexus/content/repositories/public</url>
-		</repository>
-		<repository>
-			<id>nexus-release</id>
-			<name>GeneXus Nexus Release</name>
-			<url>http://nexus.genexus.com/repository/maven-external-dependencies</url>
 		</repository>
 	</repositories>
 

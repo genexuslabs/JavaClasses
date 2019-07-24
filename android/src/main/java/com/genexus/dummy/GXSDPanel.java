@@ -9,6 +9,7 @@ import com.genexus.ModelContext;
 import com.genexus.ModelContext;
 import com.genexus.db.UserInformation;
 import com.genexus.internet.HttpContext;
+import com.genexus.search.GXContentInfo;
 
 public class GXSDPanel implements ISubmitteable
 {
@@ -67,7 +68,10 @@ public class GXSDPanel implements ISubmitteable
 	@Override
 	public void submit(int submitId, Object[] submitParms, ModelContext ctx) {
 	}
-	
-	
+
+	//@Override
+	public GXContentInfo getContentInfo() {
+		return null;
+	}
 	
 }

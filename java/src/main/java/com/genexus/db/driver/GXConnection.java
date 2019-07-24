@@ -569,16 +569,24 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 	
 	private boolean setDataSourceOracleFixedString(javax.sql.DataSource ds) throws SQLException
 	{
-			if (dataSource.dbms instanceof GXDBMSoracle7)
-			{
-				if (ds.isWrapperFor(oracle.jdbc.pool.OracleDataSource.class))
-				{
-					oracle.jdbc.pool.OracleDataSource oracle_datasource = ds.unwrap(oracle.jdbc.pool.OracleDataSource.class);
-					Properties dataSourceProps = new Properties();
-					dataSource.dbms.setConnectionProperties(dataSourceProps);
-					oracle_datasource.setConnectionProperties(dataSourceProps);
-					con = oracle_datasource.getConnection();
-					return true;
+			if (dataSource.dbms instanceof GXDBMSoracle7) {
+				try {
+					Class oracleDataStourceClass = Class.forName("oracle.jdbc.pool.OracleDataSource");
+					if (ds.isWrapperFor(oracleDataStourceClass)) {
+						Object oracle_datasource = ds.unwrap(oracleDataStourceClass);
+						Properties dataSourceProps = new Properties();
+						dataSource.dbms.setConnectionProperties(dataSourceProps);
+						Method setConnectionPropertiesMth = oracle_datasource.getClass().getMethod("setConnectionProperties", new Class[]{Properties.class});
+						setConnectionPropertiesMth.invoke(oracle_datasource, new Object[]{dataSourceProps});
+						javax.sql.DataSource dataSource = (javax.sql.DataSource) oracle_datasource;
+						con = dataSource.getConnection();
+						return true;
+					}
+				} catch (ClassNotFoundException cex) {
+					if (isLogEnabled()) log(handle, "setDataSourceOracleFixedString class oracle.jdbc.pool.OracleDataSource does not exist on classpath");
+				} catch (Exception ex) {
+					log(GXDBDebug.LOG_MIN, "Error setting oracle FixedString");
+					if (isLogEnabled()) logSQLException(handle, ex);
 				}
 			}
 			return false;		

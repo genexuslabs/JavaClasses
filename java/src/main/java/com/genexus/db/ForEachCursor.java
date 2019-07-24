@@ -317,8 +317,8 @@ public class ForEachCursor extends Cursor implements IForEachCursor
 
 		public void setDateTime(int index, java.util.Date value, boolean onlyTime) throws SQLException {}
 		public void setDateTime(int index, java.util.Date value, boolean onlyTime, boolean hasmilliseconds) throws SQLException{}
-
 	    public void setDateTime(int index, java.util.Date value, boolean onlyTime, boolean onlyDate, boolean hasmilliseconds) throws SQLException {}
+
 	    public void setDate(int index, java.util.Date value) throws SQLException {}
 	    public void setDate(int index, java.sql.Date value) throws SQLException {}
 	    public void setTime(int index, java.sql.Time value) throws SQLException {}

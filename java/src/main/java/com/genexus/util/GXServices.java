@@ -96,11 +96,14 @@ public class GXServices {
 
 	private void readServices(String basePath) {
 
-		String fullPath = basePath.equals("") ? configBaseDirectory() + SERVICES_DEV_FILE : SERVICES_DEV_FILE;
-		if (new File(fullPath).exists()){
+		if (basePath.equals(""))
+			basePath = configBaseDirectory();
+		if (new File(basePath + SERVICES_DEV_FILE).exists()){
 			loadFromFile(basePath, SERVICES_DEV_FILE, this);
 		}
-		loadFromFile(basePath, SERVICES_FILE, this);
+		if (new File(basePath + SERVICES_FILE).exists()){
+			loadFromFile(basePath, SERVICES_FILE, this);
+		}
 	}
 
 	private void processService(XMLReader reader) {
