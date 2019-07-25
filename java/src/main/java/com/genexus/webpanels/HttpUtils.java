@@ -1,4 +1,6 @@
 package com.genexus.webpanels;
+import org.apache.commons.io.IOUtils;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
@@ -103,42 +105,19 @@ public class HttpUtils
     	return ht;
     }
 
-    public static Hashtable parsePostData(int len, ServletInputStream in)
+    public static Hashtable parsePostData(ServletInputStream in)
     {
-	if(len <= 0)
-	    return new Hashtable();
-	if(in == null)
-	    throw new IllegalArgumentException();
-	byte postedBytes[] = new byte[len];
-	try
-	{
-	    int offset = 0;
-	    do
-	    {
-		int inputLen = in.read(postedBytes, offset, len - offset);
-		if(inputLen <= 0)
+		if(in == null)
+			throw new IllegalArgumentException();
+		try
 		{
-		    throw new IllegalArgumentException ("err.io.short_read : length " + len + " read : " + offset + " Content: \n" + new String(postedBytes));
+			return parseQueryString(IOUtils.toString(in, "8859_1"));
 		}
-		offset += inputLen;
-	    } while(len - offset > 0);
-	}
-	catch(IOException e)
-	{
-	    throw new IllegalArgumentException(e.getMessage());
-	}
-	try
-	{
-	    String postedBody = new String(postedBytes, 0, len, "8859_1");
-	    return parseQueryString(postedBody);
-	}
-	catch(UnsupportedEncodingException e)
-	{
-	    throw new IllegalArgumentException(e.getMessage());
-	}
+		catch(IOException e)
+		{
+			throw new IllegalArgumentException(e.getMessage());
+		}
     }
-
-	private static String encoding = "UTF8";
 
     private static String parseName(String s, StringBuffer sb)
     {
