@@ -145,4 +145,8 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 	protected void cleanup()
 	{
 	}
+
+	protected void trkCleanup()
+	{
+	}
 }
