@@ -219,8 +219,12 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 		httpContext.wjLoc = url;
 	}
 
-	private GXDebugInfo dbgInfo = null;
 	protected void cleanup()
+	{
+	}
+
+	private GXDebugInfo dbgInfo = null;
+	protected void trkCleanup()
 	{
 		if(dbgInfo != null)
 			dbgInfo.onCleanup();
