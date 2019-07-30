@@ -1070,10 +1070,7 @@ public final  class gxpendingevent_bc extends com.genexus.dummy.GXSDPanel implem
 	public void submit(int submitId, Object[] submitParms, ModelContext ctx) {
 	}
 	
-	@Override
-	public GXContentInfo getContentInfo() {
-		return null;
-	}
+
 }
 
 final  class gxpendingevent_bc__default extends DataStoreHelperBase implements ILocalDataStoreHelper
