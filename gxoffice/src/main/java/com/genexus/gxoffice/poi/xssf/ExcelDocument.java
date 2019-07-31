@@ -122,7 +122,7 @@ public class ExcelDocument implements IGxError,IExcelDocument{
 			for (int i = 0; i < sheetsCount; i++)
 			{
 				org.apache.poi.ss.usermodel.Sheet sheet = workBook.getSheetAt(i);
-				Row row = sheet.getRow(0);
+				Row row = sheet.getRow(sheet.getFirstRowNum());
 				int columnCount = row.getPhysicalNumberOfCells();			
 				for (int j = 0; j < columnCount; j++)
 				{

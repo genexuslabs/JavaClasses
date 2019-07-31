@@ -346,7 +346,7 @@ public class HttpContextWeb extends HttpContext {
 					if (FileUpload.isMultipartContent(request))
 						postData = parseMultipartPostData(getPostedparts());
 					else
-						postData = parsePostData(request, request.getContentLength(), request.getInputStream());
+						postData = parsePostData(request, request.getInputStream());
 				}
 				Object value = postData.get("GXState");
 				if (value != null) {
@@ -1129,10 +1129,10 @@ public class HttpContextWeb extends HttpContext {
 		return com.genexus.webpanels.HttpUtils.parseMultipartPostData(fileItemCollection);
 	}
 
-	static public Hashtable parsePostData(HttpServletRequest request, int len, ServletInputStream in) {
+	static public Hashtable parsePostData(HttpServletRequest request, ServletInputStream in) {
 		try {
 			// Nuestra versión del parsePostData utiliza UTF-8
-			return com.genexus.webpanels.HttpUtils.parsePostData(len, in);
+			return com.genexus.webpanels.HttpUtils.parsePostData(in);
 		} catch (IllegalArgumentException e) {
 			return com.genexus.webpanels.HttpUtils.parsePostData(request);
 		}
@@ -1161,12 +1161,11 @@ public class HttpContextWeb extends HttpContext {
 			return ((java.io.File) servletContext.getAttribute(servletContext.TEMPDIR)).getAbsolutePath();
 		}
 
-		if (path == null) // AWS LAMBDA SERVERLESS
+		if (path == null) { // AWS LAMBDA SERVERLESS
 			path = System.getenv("LAMBDA_TASK_ROOT");
-
-		if (path == null) // AWS LAMBDA SERVERLESS
-			path = System.getProperty("LAMBDA_TASK_ROOT");
-
+			if (path == null)
+				path = System.getProperty("LAMBDA_TASK_ROOT");
+		}
 
 		if (path.endsWith(File.separator)) {
 			path = path.substring(0, path.length() - 1);

@@ -32,6 +32,5 @@ public class SpecificImplementation {
 	public static boolean SupportPending;
 	public static String cdowMask;
 	public static boolean SendErrorOn401;
-	public static boolean AddToArrayCurrent;
 	public static String Base64Encode = "GB2312";
 }
