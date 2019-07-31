@@ -1,13 +1,12 @@
 package com.genexus.webpanels.gridstate ;
 import com.genexus.*;
-import com.genexus.internet.*;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.webpanels.GXWebObjectBase;
-import com.genexus.webpanels.WebSession;
+import com.genexus.xml.GXXMLSerializable;
 
 public final class GXGridStateHandler {
-	public static final ILogger logger = LogManager.getLogger(SdtGridState.class);
+	public static final ILogger logger = LogManager.getLogger(GXGridStateHandler.class);
 	private String gridName;
 	private Runnable varsFromState;
 	private Runnable varsToState;
@@ -15,12 +14,11 @@ public final class GXGridStateHandler {
 	private String varsToStateMethod;
 	private Object parent;
 	private ModelContext context;
-	private SdtGridState state;
+	private GXXMLSerializable state;
 
 	private GXGridStateHandler(ModelContext context, String gridName, String programName) {
 		this.context = context;
 		this.gridName = programName + "_" + gridName + "_GridState";
-		state = new SdtGridState(context);
 	}
 
 	public GXGridStateHandler(ModelContext context, String gridName, String programName, Runnable varsFromState, Runnable varsToState) {
@@ -62,54 +60,39 @@ public final class GXGridStateHandler {
 	}
 
 	public String filterValues(int idx) {
-		return state.getgxTv_SdtGridState_Inputvalues().elementAt(idx - 1).getgxTv_SdtGridState_InputValuesItem_Value();
+		return "";
 	}
 
 	public void clearFilterValues() {
-		state.getgxTv_SdtGridState_Inputvalues().clear();
+
 	}
 
 	public void addFilterValue(String name, String value) {
-		SdtGridState_InputValuesItem GridStateFilterValue = new SdtGridState_InputValuesItem(context);
-		GridStateFilterValue.setgxTv_SdtGridState_InputValuesItem_Name(name);
-		GridStateFilterValue.setgxTv_SdtGridState_InputValuesItem_Value(value);
-		state.getgxTv_SdtGridState_Inputvalues().add(GridStateFilterValue, 0);
 	}
 
 	public void saveGridState() {
-		WebSession session = ((HttpContext) context.getHttpContext()).getWebSession();
-		state.fromJSonString(session.getValue(gridName));
-		runVarsToState();
-		session.setValue(gridName, state.toJSonString());
 	}
 
 	public void loadGridState() {
-		HttpContext httpContext = (HttpContext) context.getHttpContext();
-		HttpRequest httpRequest = httpContext.getHttpRequest();
-		WebSession session = httpContext.getWebSession();
-		if (GXutil.strcmp(httpRequest.getMethod(), "GET") == 0) {
-			state.fromJSonString(session.getValue(gridName));
-			runVarsFromState();
-		}
 	}
 
 	public int getFiltercount() {
-		return state.getgxTv_SdtGridState_Inputvalues().size();
+		return 0;
 	}
 
 	public int getCurrentpage() {
-		return state.getgxTv_SdtGridState_Currentpage();
+		return 0;
 	}
 
 	public void setCurrentpage(int value) {
-		state.setgxTv_SdtGridState_Currentpage(value);
+
 	}
 
-	public SdtGridState getState() {
+	public GXXMLSerializable getState() {
 		return this.state;
 	}
 
-	public void setState(SdtGridState state) {
+	public void setState(GXXMLSerializable state) {
 		this.state = state;
 	}
 }
