@@ -15,6 +15,8 @@ import java.math.BigDecimal;
 
 public class XMLWriter implements IXMLWriter
 {
+	private static boolean useTagToCloseElement;
+
 	private static final byte GXSUCCESS = 0;
 	private static final byte GXFAIL    = 1;
 	private static final byte GXOUTPUT_ERROR = 2;
@@ -460,7 +462,7 @@ public class XMLWriter implements IXMLWriter
 			}
 			else
 			{
-				if (printingEndElement && IsBlank(sCurrValue))
+				if (printingEndElement && IsBlank(sCurrValue) && !useTagToCloseElement)
 				{
 					out.write("/>\n");
 					printingEndElement = false;
@@ -945,6 +947,10 @@ public class XMLWriter implements IXMLWriter
 
 		return GXSUCCESS;
 	}
-	
+
+	public static void setUseTagToCloseElement(boolean useTagToCloseElementParm)
+	{
+		useTagToCloseElement = useTagToCloseElementParm;
+	}
 }
 
