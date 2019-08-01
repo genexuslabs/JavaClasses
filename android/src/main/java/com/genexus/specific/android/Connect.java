@@ -35,7 +35,6 @@ public final class Connect {
 		SpecificImplementation.MillisecondMask = "SSS";
 		SpecificImplementation.SupportPending = true;
 		SpecificImplementation.cdowMask = "EEEE";
-		SpecificImplementation.AddToArrayCurrent = true;
 		SpecificImplementation.Base64Encode = "8859_1";
 		JSONObject.extension = new JSONObjectExtension();
 		

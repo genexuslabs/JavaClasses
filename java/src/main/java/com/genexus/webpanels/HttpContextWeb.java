@@ -346,7 +346,7 @@ public class HttpContextWeb extends HttpContext {
 					if (FileUpload.isMultipartContent(request))
 						postData = parseMultipartPostData(getPostedparts());
 					else
-						postData = parsePostData(request, request.getContentLength(), request.getInputStream());
+						postData = parsePostData(request, request.getInputStream());
 				}
 				Object value = postData.get("GXState");
 				if (value != null) {
@@ -447,6 +447,8 @@ public class HttpContextWeb extends HttpContext {
 
 		return contextPath;
 	}
+
+	public void setContextPath(String path) {}
 
 	public String getRealPath(String path) {
 		String realPath = path;
@@ -723,8 +725,15 @@ public class HttpContextWeb extends HttpContext {
 			if (request != null) {
 				Object obj = null;
 				HttpSession session = request.getSession(false);
-				if (session != null)
-					obj = session.getValue(CommonUtil.upper(name));
+				if (session != null) {
+					try {
+						obj = session.getValue(CommonUtil.upper(name));
+					}
+					catch (UnsupportedOperationException e)
+					{
+						//In some environments, websession is not supported
+					}
+				}
 				return obj;
 			}
 		} catch (Exception e) {
@@ -736,18 +745,40 @@ public class HttpContextWeb extends HttpContext {
 
 	// ---- Set values
 	public void webPutSessionValue(String name, Object value) {
-		if (request != null)
-			request.getSession(true).putValue(CommonUtil.upper(name), value);
+		if (request != null) {
+			try {
+				request.getSession(true).putValue(CommonUtil.upper(name), value);
+			}
+			catch (UnsupportedOperationException e)
+			{
+				//In some environments, websession is not supported
+			}
+		}
+
 	}
 
 	public void webPutSessionValue(String name, long value) {
-		if (request != null)
-			request.getSession(true).putValue(CommonUtil.upper(name), new Long(value));
+		if (request != null){
+			try {
+				request.getSession(true).putValue(CommonUtil.upper(name), new Long(value));
+			}
+			catch (UnsupportedOperationException e)
+			{
+				//In some environments, websession is not supported
+			}
+		}
 	}
 
 	public void webPutSessionValue(String name, double value) {
-		if (request != null)
-			request.getSession(true).putValue(CommonUtil.upper(name), new Double(value));
+		if (request != null){
+			try {
+				request.getSession(true).putValue(CommonUtil.upper(name), new Double(value));
+			}
+			catch (UnsupportedOperationException e)
+			{
+				//In some environments, websession is not supported
+			}
+		}
 	}
 
 	public void webSessionId(String[] id) {
@@ -1098,10 +1129,10 @@ public class HttpContextWeb extends HttpContext {
 		return com.genexus.webpanels.HttpUtils.parseMultipartPostData(fileItemCollection);
 	}
 
-	static public Hashtable parsePostData(HttpServletRequest request, int len, ServletInputStream in) {
+	static public Hashtable parsePostData(HttpServletRequest request, ServletInputStream in) {
 		try {
 			// Nuestra versión del parsePostData utiliza UTF-8
-			return com.genexus.webpanels.HttpUtils.parsePostData(len, in);
+			return com.genexus.webpanels.HttpUtils.parsePostData(in);
 		} catch (IllegalArgumentException e) {
 			return com.genexus.webpanels.HttpUtils.parsePostData(request);
 		}
@@ -1130,12 +1161,11 @@ public class HttpContextWeb extends HttpContext {
 			return ((java.io.File) servletContext.getAttribute(servletContext.TEMPDIR)).getAbsolutePath();
 		}
 
-		if (path == null) // AWS LAMBDA SERVERLESS
+		if (path == null) { // AWS LAMBDA SERVERLESS
 			path = System.getenv("LAMBDA_TASK_ROOT");
-
-		if (path == null) // AWS LAMBDA SERVERLESS
-			path = System.getProperty("LAMBDA_TASK_ROOT");
-
+			if (path == null)
+				path = System.getProperty("LAMBDA_TASK_ROOT");
+		}
 
 		if (path.endsWith(File.separator)) {
 			path = path.substring(0, path.length() - 1);

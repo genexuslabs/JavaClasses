@@ -927,6 +927,12 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
     {
 		setGXDbFileURI(index, fileName, blobPath, length, null, null);
 	}
+
+	public void setGXDbFileURI(int index, String fileName, String blobPath, int length, String tableName, String fieldName, boolean downloadContent) throws SQLException
+	{
+		setGXDbFileURI(index, fileName, blobPath, length, tableName, fieldName);
+	}
+
     public void setGXDbFileURI(int index, String fileName, String blobPath, int length, String tableName, String fieldName) throws SQLException
     {
 		 
@@ -1057,6 +1063,11 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 	public void setDateTime(int index, java.util.Date value, boolean onlyTime) throws SQLException
 	{
 		setDateTime(index, value, onlyTime, false);
+	}
+
+	public void setDateTime(int index, java.util.Date value, boolean onlyTime, boolean onlyDate, boolean hasmilliseconds) throws SQLException
+	{
+		setDateTime(index, value, onlyTime, hasmilliseconds);
 	}
 
 	public void setDateTime(int index, java.util.Date value, boolean onlyTime, boolean hasmilliseconds) throws SQLException
@@ -1344,6 +1355,11 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		setBLOBFile(index, fileName, false);
 	}
 
+	public void setBLOBFile(int index, String fileName, boolean isMultiMedia, boolean downloadContent) throws SQLException
+	{
+		setBLOBFile(index, fileName, isMultiMedia);
+	}
+
     public void setBLOBFile(int index, String fileName, boolean isMultiMedia) throws SQLException
 	{
 		if (isMultiMedia && Application.getGXServices().get(GXServices.STORAGE_SERVICE) != null)
@@ -1356,7 +1372,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			fileName = com.genexus.GXutil.cutUploadPrefix(fileName);
 			try
 			{
-				if (fileName.toLowerCase().startsWith("http"))
+				if (fileName.toLowerCase().startsWith("http://") || fileName.toLowerCase().startsWith("https://"))
 				{
 					URL fileURL = new URL(fileName);
 					String blobPath = com.genexus.Preferences.getDefaultPreferences().getBLOB_PATH();
@@ -1376,9 +1392,23 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			if (con.getContext() != null)
 			{
 				com.genexus.internet.HttpContext webContext = (HttpContext) con.getContext().getHttpContext();
-				if((webContext != null) && (webContext instanceof com.genexus.webpanels.HttpContextWeb))
+				if(webContext != null)
 				{
-					fileName = ((com.genexus.webpanels.HttpContextWeb)webContext).getRealPath(fileName);
+					if (webContext instanceof com.genexus.webpanels.HttpContextWeb) {
+						fileName = ((com.genexus.webpanels.HttpContextWeb) webContext).getRealPath(fileName);
+					}
+					else
+					{
+						if (!webContext.getDefaultPath().isEmpty() && ! new File(fileName).isAbsolute())
+						{
+							if (fileName.startsWith(webContext.getContextPath()))
+							{
+								fileName = fileName.substring(webContext.getContextPath().length() +1);
+							}
+
+							fileName = webContext.getDefaultPath() + File.separator + fileName;
+						}
+					}
 				}
 			}
 		}

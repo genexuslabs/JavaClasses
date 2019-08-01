@@ -19,6 +19,7 @@ import com.genexus.util.GXService;
 import com.genexus.util.GXServices;
 import com.genexus.util.ReorgSubmitThreadPool;
 import com.genexus.util.SubmitThreadPool;
+import com.genexus.xml.XMLWriter;
 
 
 public class Application
@@ -132,6 +133,7 @@ public class Application
 					ClientContext.setModelContext(new ModelContext(gxCfg));
 					DebugFlag.DEBUG = ClientContext.getModelContext().getClientPreferences().getJDBC_LOGEnabled();
 					Namespace.createNamespaces(((ModelContext) ClientContext.getModelContext()).getPreferences().getIniFile());
+					XMLWriter.setUseTagToCloseElement(ClientContext.getModelContext().getClientPreferences().getProperty("UseTagToCloseElement", "0").equals("1"));
 					startDateTime = new Date();
 					initialized = true;
 				}
@@ -157,6 +159,7 @@ public class Application
 				}
 				catch (Exception e)
 				{
+					logger.error("Unrecognized External Provider class : " + providerService.getName() + " / " + providerService.getClassName(), e);
 					throw new InternalError("Unrecognized External Provider class : " + providerService.getName() + " / " + providerService.getClassName());
 				}
 			}
