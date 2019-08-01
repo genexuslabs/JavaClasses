@@ -231,37 +231,25 @@ public class PDF implements Serializable
      * @param style java.awt.Font style (NORMAL, BOLD etc)
      * @return PDFFont defining this font
      */
-    public PDFFont getFont(String type, Font f)
-    {
-      String fontName = f.getName();
-      int style = f.getStyle();
-	for(Enumeration en = fonts.elements(); en.hasMoreElements(); ) {
-	    PDFFont ft = (PDFFont) en.nextElement();
-	    if(ft.equals(type,fontName,style))
-		return ft;
-	}
+    public PDFFont getFont(String type, Font f) {
+        String fontName = f.getName();
+        int style = f.getStyle();
+        for (Enumeration en = fonts.elements(); en.hasMoreElements(); ) {
+            PDFFont ft = (PDFFont) en.nextElement();
+            if (ft.equals(type, fontName, style))
+                return ft;
+        }
 
-	// the font wasn't found, so create it
-	fontid++;
-	PDFFont ft = new PDFFont("/F"+fontid,type, f);
-	add(ft);
-	if(ft.getType().equalsIgnoreCase("/TrueType"))
-	{ // Si el Font es un TrueTypeFont, debo agregar al diccionario un FontDescriptor
-		PDFFontDescriptor fontDescriptor = PDFFontDescriptor.getPDFFontDescriptor();
-		props.setupProperty(Const.EMBEED_SECTION, ft.getRealFontName(), props.getGeneralProperty(Const.EMBEED_SECTION, "false"));
+        // the font wasn't found, so create it
+        fontid++;
+        PDFFont ft = new PDFFont("/F" + fontid, type, f);
+        add(ft);
 
-		fontDescriptor.init(ft, props.getBooleanGeneralProperty(Const.EMBEED_SECTION, false) && props.getBooleanProperty(Const.EMBEED_SECTION, ft.getRealFontName(), false));
-		add((PDFFontDescriptor)fontDescriptor); // Agrego el fontDescriptor y obtengo el SerialID
-		ft.setFontDescriptor(fontDescriptor);
-		if(fontDescriptor.getEmbeededFontStream() != null) // Si tengo un Stream del EmbeededFont, lo agrego al diccionario
-			add(fontDescriptor.getEmbeededFontStream());
-	}
-
-	fonts.addElement(ft);
-	return ft;
+        fonts.addElement(ft);
+        return ft;
     }
 
-    public PDFImage getImage(String filename, Image image, int x, int y, int width, int height, ImageObserver obs)
+	public PDFImage getImage(String filename, Image image, int x, int y, int width, int height, ImageObserver obs)
     {
         for(Enumeration en = images.elements(); en.hasMoreElements(); ) {
             PDFImage im = (PDFImage) en.nextElement();
