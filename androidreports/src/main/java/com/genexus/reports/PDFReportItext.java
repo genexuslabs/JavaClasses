@@ -1717,32 +1717,13 @@ public class PDFReportItext implements IReportHandler
             //System.err.println("Invalid page Margin... Resetting to defaults");
         //}
 
-		//com.itextpdf.text.Rectangle pageSize2 = computePageSize(leftMargin, topMargin, pageWidth, pageLength-4000, props.getBooleanGeneralProperty(Const.MARGINS_INSIDE_BORDER, false));
-		
-		this.pageSize = computePageSize(leftMargin, topMargin, pageWidth, pageLength-4000, props.getBooleanGeneralProperty(Const.MARGINS_INSIDE_BORDER, false));
-	    
+
 		document = new Document(this.pageSize,0,0,0,0);
+
         init();
 
         //if(DEBUG)DEBUG_STREAM.println("GxPrintInit ---> Size:" + this.pageSize + " Orientation: " + (pageOrientation == PDFPage.PORTRAIT ? "Portrait" : "Landscape"));
 
-        // INIT AGAIN :
-        // Close de docuemnte
-        GxEndDocument();
-        
-        // create a new document to draw
-        try
-        {
-            setOutputStream(new FileOutputStream(docName));
-        }catch(IOException accessError)
-        { // Si no se puede generar el archivo, muestro el stackTrace y seteo el stream como NullOutputStream
-            accessError.printStackTrace(System.err);
-            outputStream = new com.genexus.util.NullOutputStream();
-            outputType = Const.OUTPUT_FILE; // Hago esto para no tener lios con el Acrobat
-        }
-        document = new Document(this.pageSize,0,0,0,0);
-        init();
-        
         return true;
     }
 
@@ -1829,12 +1810,6 @@ public class PDFReportItext implements IReportHandler
 
     public void GxEndDocument()
     {
-    	//cambio el tamanio a lo que se imprimio
-    	//Se ignora el parametro orientation para el calculo del pageSize, los valores de alto y ancho ya vienen invertidos si Orientation=2=landscape.
-        //this.pageSize = computePageSize(leftMargin, topMargin, 10304, 12500, props.getBooleanGeneralProperty(Const.MARGINS_INSIDE_BORDER, false));
-        //document.setPageSize(pageSize);
-    	
-    	
       if(document.getPageNumber() == 0)
       { // Si no hay ninguna página en el documento, agrego una vacia}
         writer.setPageEmpty(false);
