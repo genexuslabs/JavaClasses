@@ -33,6 +33,7 @@ public final class Connect {
 		SpecificImplementation.Algorithms = new CryptoAlghorithms();
 		// connect GXSilentTrn
 		SpecificImplementation.GXSilentTrnSdt = new GXSilentTrnSdt();
+		SpecificImplementation.SdtMessages_Message = new SdtMessages_Message();
 
 		SpecificImplementation.KeepDecimals = true;
 		SpecificImplementation.MillisecondMask = "SSS";
