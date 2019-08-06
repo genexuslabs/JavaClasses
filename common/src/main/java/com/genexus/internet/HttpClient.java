@@ -428,7 +428,10 @@ public class HttpClient
 
 			if	(method.equalsIgnoreCase("GET"))
 			{
-				res = con.Get(url, "", hashtableToNVPair(headersToSend));
+				if (contentToSend.size() > 0)
+					res = con.Get(url, "", hashtableToNVPair(headersToSend), getData());
+				else
+					res = con.Get(url, "", hashtableToNVPair(headersToSend));
 			}
 			else if (method.equalsIgnoreCase("POST"))
 			{
