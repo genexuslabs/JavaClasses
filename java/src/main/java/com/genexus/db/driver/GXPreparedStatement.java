@@ -927,6 +927,12 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
     {
 		setGXDbFileURI(index, fileName, blobPath, length, null, null);
 	}
+
+	public void setGXDbFileURI(int index, String fileName, String blobPath, int length, String tableName, String fieldName, boolean downloadContent) throws SQLException
+	{
+		setGXDbFileURI(index, fileName, blobPath, length, tableName, fieldName);
+	}
+
     public void setGXDbFileURI(int index, String fileName, String blobPath, int length, String tableName, String fieldName) throws SQLException
     {
 		 
@@ -1057,6 +1063,11 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 	public void setDateTime(int index, java.util.Date value, boolean onlyTime) throws SQLException
 	{
 		setDateTime(index, value, onlyTime, false);
+	}
+
+	public void setDateTime(int index, java.util.Date value, boolean onlyTime, boolean onlyDate, boolean hasmilliseconds) throws SQLException
+	{
+		setDateTime(index, value, onlyTime, hasmilliseconds);
 	}
 
 	public void setDateTime(int index, java.util.Date value, boolean onlyTime, boolean hasmilliseconds) throws SQLException
@@ -1342,6 +1353,11 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 	public void setBLOBFile(int index, String fileName) throws SQLException
 	{
 		setBLOBFile(index, fileName, false);
+	}
+
+	public void setBLOBFile(int index, String fileName, boolean isMultiMedia, boolean downloadContent) throws SQLException
+	{
+		setBLOBFile(index, fileName, isMultiMedia);
 	}
 
     public void setBLOBFile(int index, String fileName, boolean isMultiMedia) throws SQLException

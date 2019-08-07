@@ -428,7 +428,10 @@ public class HttpClient
 
 			if	(method.equalsIgnoreCase("GET"))
 			{
-				res = con.Get(url, "", hashtableToNVPair(headersToSend));
+				if (contentToSend.size() > 0)
+					res = con.Get(url, "", hashtableToNVPair(headersToSend), getData());
+				else
+					res = con.Get(url, "", hashtableToNVPair(headersToSend));
 			}
 			else if (method.equalsIgnoreCase("POST"))
 			{
@@ -827,11 +830,7 @@ public class HttpClient
 				}
 				try
 				{
-					if (SpecificImplementation.AddToArrayCurrent)
-						out = addToArray(out, CommonUtil.readToByteArray(new java.io.BufferedInputStream(new FileInputStream((File) curr))));
-					else
-						out = addToArray(out, CommonUtil.readToByteArray(new java.io.BufferedInputStream(new FileInputStream(file))));
-					
+					out = addToArray(out, CommonUtil.readToByteArray(new java.io.BufferedInputStream(new FileInputStream(file))));
 				}
 				catch (FileNotFoundException e)
 				{

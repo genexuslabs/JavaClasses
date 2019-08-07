@@ -12,7 +12,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.logging.log4j.Logger;
+import com.genexus.diagnostics.core.ILogger;
 import org.w3c.dom.Document;
 
 public class Utils {
@@ -37,12 +37,6 @@ public class Utils {
 		}
 	};
 		
-	public static void logError(Logger log, Throwable e) {
-		if (log.isErrorEnabled()) {
-			log.error(e.getMessage(), e);
-		}
-	}
-	
 	public static void logError(Exception e) {
 		System.err.println(e.getMessage());
 	}

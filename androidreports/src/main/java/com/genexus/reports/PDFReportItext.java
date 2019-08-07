@@ -1,5 +1,4 @@
 package com.genexus.reports;
-import java.awt.Color;
 /**
  * Formato del archivo PDFReport.INI
  * ---------------------------------
@@ -46,52 +45,50 @@ import java.awt.Color;
  *    van a aplicar para todas las combinaciones de bold/italic para dicho font
  *
  */
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.StringReader;
+import java.io.*;
+
+import com.artech.base.services.AndroidContext;
+import com.genexus.*;
+import com.genexus.util.TemporaryFiles;
+import com.genexus.platform.*;
+import com.genexus.internet.HttpContext;
+//#if !ANDROID
+//@switchedOff import com.genexus.webpanels.HttpContextWeb;
+//#endif
+//import java.awt.Color;
+//import java.awt.event.*;
+import com.itextpdf.text.BaseColor;
+
 import java.util.*;
+import java.util.List;
+
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.Barcode;
+import com.itextpdf.text.pdf.Barcode128;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.ColumnText;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfTemplate;
+import com.itextpdf.text.pdf.PdfName;
+import com.itextpdf.text.pdf.PdfNumber;
+import com.itextpdf.text.html.simpleparser.HTMLWorker;
+import com.itextpdf.text.html.simpleparser.StyleSheet;
+
+//import uk.org.retep.pdf.PDFFont;
+//import uk.org.retep.pdf.Type1FontMetrics;
+
+
+
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.genexus.CommonUtil;
-import com.genexus.ModelContext;
-import com.genexus.internet.HttpContext;
-import com.genexus.platform.INativeFunctions;
-import com.genexus.platform.NativeFunctions;
-import com.genexus.util.TemporaryFiles;
-import com.genexus.webpanels.HttpContextWeb;
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.Element;
-import com.lowagie.text.Font;
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.Image;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.Phrase;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.html.simpleparser.HTMLWorker;
-import com.lowagie.text.html.simpleparser.StyleSheet;
-import com.lowagie.text.pdf.Barcode;
-import com.lowagie.text.pdf.Barcode128;
-import com.lowagie.text.pdf.BaseFont;
-import com.lowagie.text.pdf.ColumnText;
-import com.lowagie.text.pdf.PdfContentByte;
-import com.lowagie.text.pdf.PdfName;
-import com.lowagie.text.pdf.PdfNumber;
-import com.lowagie.text.pdf.PdfTemplate;
-import com.lowagie.text.pdf.PdfWriter;
-
-import uk.org.retep.pdf.PDFFont;
-import uk.org.retep.pdf.Type1FontMetrics;
+import org.apache.commons.io.IOUtils;
 
 public class PDFReportItext implements IReportHandler
 {
     private int lineHeight, pageLines;
 
-    private com.lowagie.text.Rectangle pageSize;   // Contiene las dimensiones de la página
+    private com.itextpdf.text.Rectangle pageSize;   // Contiene las dimensiones de la página
     private int pageOrientation;  // Indica la orientacion de las páginas
     private Font font;
 	private BaseFont baseFont;
@@ -101,7 +98,7 @@ public class PDFReportItext implements IReportHandler
 	private int fontSize;
 	private boolean fontBold = false;
 	private boolean fontItalic = false;
-    private Color backColor, foreColor;
+    private BaseColor backColor, foreColor;
     public static PrintStream DEBUG_STREAM = System.out;
     private OutputStream outputStream = null; // Contiene el OutputStream de salida del reporte
     //private Point pageMargin = new Point(0,0); // Contiene el margen [left, top] de cada página
@@ -117,7 +114,6 @@ public class PDFReportItext implements IReportHandler
     private static INativeFunctions nativeCode = NativeFunctions.getInstance();
     private static Hashtable fontSubstitutes = new Hashtable(); // Contiene la tabla de substitutos de fonts (String <--> String)
 	private static String configurationFile = null;
-	private static String configurationTemplateFile = null;
 	private static String defaultRelativePrepend = null; // En aplicaciones web, contiene la ruta al root de la aplicación para ser agregado al inicio de las imagenes con path relativo
 	private static String defaultRelativePrependINI = null;
 	private static String webAppDir = null;
@@ -137,21 +133,21 @@ public class PDFReportItext implements IReportHandler
 	private BaseFont templateFont;
 	private int templateFontSize;
 	private boolean backFill = true;
-	private Color templateColorFill;
+	private BaseColor templateColorFill;
 	private int pages=0;
 	private boolean templateCreated = false;
 	public static float DASHES_UNITS_ON = 10;
 	public static float DASHES_UNITS_OFF = 10;
 	public static float DOTS_UNITS_OFF = 3;
-	public static float DOTS_UNITS_ON = 1;	
+	public static float DOTS_UNITS_ON = 1;
 	public boolean lineCapProjectingSquare = true;
 	public boolean barcode128AsImage = true;
 	ConcurrentHashMap<String, Image> documentImages;
 	public int runDirection = PdfWriter.RUN_DIRECTION_LTR;
 	public int justifiedType;
 
-	
-	private HttpContext httpContext = null;
+
+	private IHttpContext httpContext = null;
 	float[] STYLE_SOLID = new float[]{1,0};//0
 	float[] STYLE_NONE = null;//1
 	float[] STYLE_DOTTED, //2
@@ -195,9 +191,9 @@ public class PDFReportItext implements IReportHandler
 			}
 			catch(IOException e)
 			{
-				props = new ParseINI(); 
+				props = new ParseINI();
 			}
-			
+
       // Primero debo obtener la ubicación + ejecutable del Acrobat
       String acrobatLocation = props.getGeneralProperty(Const.ACROBAT_LOCATION); // Veo si esta fijada la ubicación del Acrobat en la property
       if(acrobatLocation == null)
@@ -215,7 +211,7 @@ public class PDFReportItext implements IReportHandler
      * utiliza esta property para obtener la ubicación + ejecutable del Acrobat, sino se busca en el Registry
      * @param pdfFilename Nombre del reporte a imprimir (con extensión)
      * @param silent Booleano que indica si se va a imprimir sin diálogo
-     * @exception Excepcion si no se puede realizar la operación
+     * @exception Exception si no se puede realizar la operación
      */
     public static void printReport(String pdfFilename, boolean silent) throws Exception
     {
@@ -224,21 +220,22 @@ public class PDFReportItext implements IReportHandler
 		  // En Linux esto no anda bien
 			pdfFilename = "\"" + new File(pdfFilename).getAbsolutePath() + "\"";
 		}
-		
+
 		String [] cmd = {};
 		String acrobatLocation = null;
-    try
-    {
-        // Primero debo obtener la ubicación + ejecutable del Acrobat
-        acrobatLocation = getAcrobatLocation();
-    }catch(Exception acrobatNotFound)
-    {
+
+		try
+    	{
+        	// Primero debo obtener la ubicación + ejecutable del Acrobat
+        	acrobatLocation = getAcrobatLocation();
+    	}catch(Exception acrobatNotFound)
+    	{
 			throw new Exception("Acrobat cannot be found in this machine: " + acrobatNotFound.getMessage());
-    }
-		
+    	}
+
 		//Se genera el PostScript
 		nativeCode.executeModal(acrobatLocation + " -toPostScript " + pdfFilename, false);
-			
+
 		//Se manda a imprimir a la impresora default
 		int pos = pdfFilename.lastIndexOf(".");
 		pdfFilename = pdfFilename.substring(0, pos) + ".ps";
@@ -249,7 +246,7 @@ public class PDFReportItext implements IReportHandler
     /** Muestra el reporte en pantalla
      * @param filename nombre del PDF a mostrar
      * @param modal indica si el PDF se va a mostrar en diálogo modal
-     * @exception Si no se puede encontrar el Acrobat
+     * @exception exception si no se puede encontrar el Acrobat
      */
     public static void showReport(String filename, boolean modal) throws Exception
     {
@@ -272,7 +269,7 @@ public class PDFReportItext implements IReportHandler
 		{
             nativeCode.executeModal(acrobatLocation + " " + filename, true);
 		}
-        else 
+        else
 		{
 			Runtime.getRuntime().exec(new String[] { acrobatLocation, filename});
 		}
@@ -285,7 +282,7 @@ public class PDFReportItext implements IReportHandler
 		pageSize = null;
 		stringTotalPages = new Vector();
 		documentImages = new ConcurrentHashMap<String, Image>();
-		httpContext = (HttpContext) context.getHttpContext();
+		httpContext = context.getHttpContext();
 
         if(defaultRelativePrepend == null)
 		{
@@ -298,16 +295,18 @@ public class PDFReportItext implements IReportHandler
 			if(new File(defaultRelativePrepend + Const.WEB_INF).isDirectory())
 			{
 				configurationFile = defaultRelativePrepend + Const.WEB_INF + File.separatorChar + Const.INI_FILE; // Esto es para que en aplicaciones web el PDFReport.INI no quede visible en el server
-				configurationTemplateFile = defaultRelativePrepend + Const.WEB_INF + File.separatorChar + Const.INI_TEMPLATE_FILE;
 			}
 			else
 			{
 				configurationFile = defaultRelativePrepend + Const.INI_FILE;
-				configurationTemplateFile = defaultRelativePrepend + Const.INI_TEMPLATE_FILE;
 			}
 			webAppDir = defaultRelativePrepend;
 
-			if(httpContext instanceof HttpContextWeb || !httpContext.getDefaultPath().isEmpty())
+			if(
+//#if !ANDROID
+//@switchedOff 				httpContext instanceof HttpContextWeb ||
+//#endif
+				!httpContext.getDefaultPath().isEmpty())
 			{
 				// @cambio: 23/07/03
 				// Para los reportes en el web, debemos tener en cuenta la preference 'Static Content Base URL' del modelo
@@ -317,9 +316,9 @@ public class PDFReportItext implements IReportHandler
 				// 'http://otroServer/xxxyyy' entonces ahi no le damos bola a la preference!
 				// Además, para mantener compatibilidad con las aplicaciones hasta ahora, si la imagen
 				// no se encuentra all\uFFFDElo que hacemos es ir a buscarla a %WebApp%
-				
+
 				// @cambio: 12/09/17
-				// Esto tambien se tiene que hacer para los reportes web que se llaman con submit 
+				// Esto tambien se tiene que hacer para los reportes web que se llaman con submit
 				// (ese es el caso en el cual el getDefaultPath no es Empty)
 
 				String staticContentBase = httpContext.getStaticContentBase();
@@ -351,11 +350,12 @@ public class PDFReportItext implements IReportHandler
 			firstTime = false;
 		}
     }
-	
+
 	private static boolean firstTime = true;
-	
-	private void loadPrinterSettingsProps(String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex) 
+
+	private void loadPrinterSettingsProps(String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex)
 	{
+
 		if(new File(defaultRelativePrependINI + Const.WEB_INF).isDirectory())
 		{
 			iniFile = defaultRelativePrependINI + Const.WEB_INF + File.separatorChar + iniFile;
@@ -364,16 +364,16 @@ public class PDFReportItext implements IReportHandler
 		{
 			iniFile = defaultRelativePrependINI + iniFile;
 		}
-		
+
 		try
 		{
 			this.form = form;
 			printerSettings = new ParseINI(iniFile);
 		}
 		catch(IOException e){ printerSettings = new ParseINI(); }
-		
+
 		mode = (mode==2)?3:0;
-		
+
 		printerSettings.setupProperty(form, Const.PRINTER, printer);
 		printerSettings.setupProperty(form, Const.MODE, mode + "");
 		printerSettings.setupProperty(form, Const.ORIENTATION, orientation+ "");
@@ -391,9 +391,9 @@ public class PDFReportItext implements IReportHandler
 	private void loadProps()
 	{
         try{
-            props = new ParseINI(configurationFile, configurationTemplateFile);
+            props = new ParseINI(configurationFile);
         }catch(IOException e){ props = new ParseINI(); }
-		
+
         props.setupGeneralProperty(Const.PDF_REPORT_INI_VERSION_ENTRY, Const.PDF_REPORT_INI_VERSION);
         props.setupGeneralProperty(Const.EMBEED_SECTION, Const.EMBEED_DEFAULT);
         props.setupGeneralProperty(Const.SEARCH_FONTS_ALWAYS, "false");
@@ -403,10 +403,10 @@ public class PDFReportItext implements IReportHandler
 		props.setupGeneralProperty(Const.LINE_CAP_PROJECTING_SQUARE, Const.DEFAULT_LINE_CAP_PROJECTING_SQUARE);
 		props.setupGeneralProperty(Const.BARCODE128_AS_IMAGE, Const.DEFAULT_BARCODE128_AS_IMAGE);
         props.setupGeneralProperty("DEBUG", "false");
-        props.setupGeneralProperty(Const.LEFT_MARGIN, Const.DEFAULT_LEFT_MARGIN);
-        props.setupGeneralProperty(Const.TOP_MARGIN, Const.DEFAULT_TOP_MARGIN);
+        props.setupGeneralProperty(Const.LEFT_MARGIN, ConstAndroid.DEFAULT_LEFT_MARGIN);
+        props.setupGeneralProperty(Const.TOP_MARGIN, ConstAndroid.DEFAULT_TOP_MARGIN);
 		props.setupGeneralProperty(Const.MARGINS_INSIDE_BORDER, Const.DEFAULT_MARGINS_INSIDE_BORDER);
-		props.setupGeneralProperty(Const.BOTTOM_MARGIN, Const.DEFAULT_BOTTOM_MARGIN);
+		props.setupGeneralProperty(Const.BOTTOM_MARGIN, ConstAndroid.DEFAULT_BOTTOM_MARGIN);
 		props.setupGeneralProperty(Const.OUTPUT_FILE_DIRECTORY, ".");
 		props.setupGeneralProperty(Const.LEADING, "2");
 		props.setupGeneralProperty(Const.RUN_DIRECTION, Const.RUN_DIRECTION_LTR);
@@ -430,8 +430,8 @@ public class PDFReportItext implements IReportHandler
 			DEBUG_STREAM = new PrintStream(new com.genexus.util.NullOutputStream());
 		}
 
-        uk.org.retep.pdf.Utilities.addPredefinedSearchPaths(new String[]{System.getProperty("java.awt.fonts", "c:\\windows\\fonts"),
-                                           System.getProperty("com.ms.windir", "c:\\windows") + "\\fonts"});
+        //uk.org.retep.pdf.Utilities.addPredefinedSearchPaths(new String[]{System.getProperty("java.awt.fonts", "c:\\windows\\fonts"),
+        //                                   System.getProperty("com.ms.windir", "c:\\windows") + "\\fonts"});
 	}
 
 	public static final void addPredefinedSearchPaths(String [] predefinedPaths)
@@ -442,12 +442,12 @@ public class PDFReportItext implements IReportHandler
 		predefinedSearchPath = predefinedPath + predefinedSearchPath; // SearchPath= los viejos más los nuevos
 	}
 
-	public static final String getPredefinedSearchPaths()
-	{
+    public static final String getPredefinedSearchPaths()
+    {
 		return predefinedSearchPath;
-	}
+    }
 
-	private void init()
+    private void init()
     {
       Document.compress = true;
 	  try {
@@ -469,7 +469,7 @@ public class PDFReportItext implements IReportHandler
     public void GxSetTextMode(int nHandle, int nGridX, int nGridY, int nPageLength)
     {
     }
-	
+
 	private float[] parsePattern(String patternStr)
 	{
 		if (patternStr!=null)
@@ -505,16 +505,16 @@ public class PDFReportItext implements IReportHandler
 				return STYLE_SOLID;
 		}
 	}
-	
+
 	/**
 	 * @param hideCorners indica si se deben ocultar los triangulos de las esquinas cuando el lado que los une esta oculto.
 	 */
-	private void drawRectangle(PdfContentByte cb, float x, float y, float w, float h, 
-		int styleTop, int styleBottom, int styleRight, int styleLeft, 
+	private void drawRectangle(PdfContentByte cb, float x, float y, float w, float h,
+		int styleTop, int styleBottom, int styleRight, int styleLeft,
 		float radioTL, float radioTR, float radioBL, float radioBR, float penAux, boolean hideCorners)
 	{
 
-	
+
 		float[] dashPatternTop = getDashedPattern(styleTop);
 		float[] dashPatternBottom = getDashedPattern(styleBottom);
 		float[] dashPatternLeft = getDashedPattern(styleLeft);
@@ -626,7 +626,7 @@ public class PDFReportItext implements IReportHandler
 				cb.curveTo(x + radioTL * b, y + h, x, y + h - radioTL * b, x, y + h - radioTL);
 			}
 		}
-            
+
 		//-------------------left line---------------------
 
 		if (styleLeft!=STYLE_NONE_CONST  && dashPatternLeft!=dashPatternTop)
@@ -642,7 +642,7 @@ public class PDFReportItext implements IReportHandler
 				cb.moveTo(x, y + h - radioTL);
 			}
 		}
-            
+
 		//-------------------bottom left corner---------------------
 		if (styleLeft!=STYLE_NONE_CONST)
 		{
@@ -660,9 +660,9 @@ public class PDFReportItext implements IReportHandler
 			}
 		}
 		cb.stroke();
-            
+
 	}
-	private void roundRectangle(PdfContentByte cb, float x, float y, float w, float h, 
+	private void roundRectangle(PdfContentByte cb, float x, float y, float w, float h,
 		float radioTL, float radioTR, float radioBL, float radioBR)
 	{
 
@@ -685,7 +685,7 @@ public class PDFReportItext implements IReportHandler
 		{
 			cb.curveTo(x + w - radioBR * b, y, x + w, y + radioBR * b, x + w, y + radioBR);
 		}
-		
+
 
 		cb.lineTo (x + w, y + h - radioTR);
 		if (radioTR>0)
@@ -703,18 +703,18 @@ public class PDFReportItext implements IReportHandler
 		{
 			cb.curveTo(x, y + radioBL * b, x + radioBL * b, y, x + radioBL, y);
 		}
-            
+
 	}
 	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue)
 	{
 		GxDrawRect(left, top, right, bottom, pen, foreRed, foreGreen, foreBlue, backMode, backRed, backGreen, backBlue, 0, 0);
 	}
-	
+
     public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue, int style, int cornerRadius)
     {
 		GxDrawRect(left, top, right, bottom, pen, foreRed, foreGreen, foreBlue, backMode, backRed, backGreen, backBlue, style, style, style, style, cornerRadius, cornerRadius, cornerRadius, cornerRadius);
 	}
-	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue, 
+	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue,
 		int styleTop, int styleBottom, int styleRight, int styleLeft, int cornerRadioTL, int cornerRadioTR, int cornerRadioBL, int cornerRadioBR)
 	{
 
@@ -725,16 +725,16 @@ public class PDFReportItext implements IReportHandler
 		float bottomAux = (float)convertScale(bottom);
 		float leftAux = (float)convertScale(left);
 		float topAux = (float)convertScale(top);
-		
+
 		cb.saveState();
-		
+
 		float x1, y1, x2, y2;
 		x1 = leftAux + leftMargin;
 		y1 = pageSize.getTop() - bottomAux - topMargin -bottomMargin;
 		x2 = rightAux + leftMargin;
 		y2 = pageSize.getTop() - topAux - topMargin -bottomMargin;
 
-		cb.setLineWidth(penAux);		
+		cb.setLineWidth(penAux);
 		cb.setLineCap(PdfContentByte.LINE_CAP_PROJECTING_SQUARE);
 
 		if (cornerRadioBL==0 && cornerRadioBR==0 && cornerRadioTL==0 && cornerRadioTR==0 && styleBottom==0 && styleLeft==0 && styleRight==0 && styleTop==0)
@@ -750,7 +750,7 @@ public class PDFReportItext implements IReportHandler
 
 			if (backMode!=0)
 			{
-				cb.setColorFill(new Color(backRed, backGreen, backBlue));
+				cb.setColorFill(new BaseColor(backRed, backGreen, backBlue));
 				cb.fillStroke();
 			}
 			cb.closePathStroke();
@@ -786,26 +786,26 @@ public class PDFReportItext implements IReportHandler
 			{
 				//Interior del rectangulo
 				cb.setRGBColorStroke(backRed, backGreen, backBlue);
-				cb.setLineWidth(0);		
+				cb.setLineWidth(0);
 					roundRectangle(cb, x1, y1, w, h,
 						cRadioTL, cRadioTR,
 						cRadioBL, cRadioBR);
-				cb.setColorFill(new Color(backRed, backGreen, backBlue));
+				cb.setColorFill(new BaseColor(backRed, backGreen, backBlue));
 				cb.fillStroke();
-				cb.setLineWidth(penAux);		
+				cb.setLineWidth(penAux);
 			}
 			if (pen > 0)
 			{
 				//Bordes del rectangulo
 				cb.setRGBColorStroke(foreRed, foreGreen, foreBlue);
-					drawRectangle(cb, x1, y1, w, h, 
+					drawRectangle(cb, x1, y1, w, h,
 						styleTop, styleBottom, styleRight, styleLeft,
 						cRadioTL, cRadioTR,
 						cRadioBL, cRadioBR, penAux, false);
 			}
 		}
 		cb.restoreState();
-		
+
 		if(DEBUG)DEBUG_STREAM.println("GxDrawRect -> (" + left + "," + top + ") - (" + right + "," + bottom + ")  BackMode: " + backMode + " Pen:" + pen);
     }
 
@@ -813,7 +813,7 @@ public class PDFReportItext implements IReportHandler
 	{
 		GxDrawLine(left, top,      right, bottom, width, foreRed, foreGreen, foreBlue, 0);
 	}
-	
+
     public void GxDrawLine(int left, int top, int right, int bottom, int width, int foreRed, int foreGreen, int foreBlue, int style)
     {
 		PdfContentByte cb = writer.getDirectContent();
@@ -823,7 +823,7 @@ public class PDFReportItext implements IReportHandler
 		float bottomAux = (float)convertScale(bottom);
 		float leftAux = (float)convertScale(left);
 		float topAux = (float)convertScale(top);
-		
+
         if(DEBUG)DEBUG_STREAM.println("GxDrawLine -> (" + left + "," + top + ") - (" + right + "," + bottom + ") Width: " + width);
 
 		float x1, y1, x2, y2;
@@ -847,26 +847,27 @@ public class PDFReportItext implements IReportHandler
 			cb.setLineDash(dashPattern, 0);
 		}
 		cb.moveTo(x1, y1);
-		cb.lineTo(x2, y2);			
+		cb.lineTo(x2, y2);
 		cb.stroke();
-			
+
 		cb.restoreState();
     }
 
-	public void GxDrawBitMap(String bitmap, int left, int top, int right, int bottom)	
+	public void GxDrawBitMap(String bitmap, int left, int top, int right, int bottom)
 	{
-		GxDrawBitMap(bitmap, left, top, right, bottom, 0);		
+		GxDrawBitMap(bitmap, left, top, right, bottom, 0);
 	}
-	
+
     public void GxDrawBitMap(String bitmap, int left, int top, int right, int bottom, int aspectRatio)
     {
 		try
 		{
 			//java.awt.Image image;
-			com.lowagie.text.Image image;
-			com.lowagie.text.Image imageRef;
+			com.itextpdf.text.Image image = null;
+			//com.itextpdf.text.Image imageRef;
 			try
 			{
+				// cache
 				if (documentImages != null && documentImages.containsKey(bitmap))
 				{
 					image = documentImages.get(bitmap);
@@ -874,43 +875,66 @@ public class PDFReportItext implements IReportHandler
 				else
 				{
 
-					if (!NativeFunctions.isWindows() && new File(bitmap).isAbsolute() && bitmap.startsWith(httpContext.getStaticContentBase()))
-					{
-						bitmap = bitmap.replace(httpContext.getStaticContentBase(), "");
-					}				
-				
-					if(!new File(bitmap).isAbsolute() && !bitmap.toLowerCase().startsWith("http:"))
+					// from resources
+					InputStream is = null;
+					
+					if (!(bitmap.toLowerCase().startsWith("http://") || bitmap.toLowerCase().startsWith("https://"))
+							&& bitmap.toLowerCase().contains("resources") )
+							{
+						int id = AndroidContext.ApplicationContext.getDataImageResourceId(bitmap); //$NON-NLS-1$
+						if (id != 0)
+						{
+							is = AndroidContext.ApplicationContext.openRawResource(id);
+							if (is!=null)
+							{
+								image = com.itextpdf.text.Image.getInstance(IOUtils.toByteArray(is));
+							}
+						}
+					}
+					// from local file
+					
+					// from remote http
+					
+					if(image == null)
 					{ 
-						if (bitmap.startsWith(httpContext.getStaticContentBase()))
+						if (!NativeFunctions.isWindows() && new File(bitmap).isAbsolute() && bitmap.startsWith(httpContext.getStaticContentBase()))
 						{
 							bitmap = bitmap.replace(httpContext.getStaticContentBase(), "");
-						}					
-						// Si la ruta a la imagen NO es absoluta, en aplicaciones Web le agregamos al comienzo la ruta al root de la aplicación
-					// más la staticContentBaseURL si ésta es relativa.
-						image = com.lowagie.text.Image.getInstance(defaultRelativePrepend + bitmap);
-						//image = com.genexus.uifactory.awt.AWTUIFactory.getImageNoWait(defaultRelativePrepend + bitmap);
-						if(image == null)
-						{ // Si all\uFFFDEno se encuentra la imagen, entonces la buscamos bajo el webAppDir (para mantener compatibilidad)
-							bitmap = webAppDir + bitmap;
-							image = com.lowagie.text.Image.getInstance(bitmap);
-							//image = com.genexus.uifactory.awt.AWTUIFactory.getImageNoWait(bitmap);
+						}
+
+						if(!new File(bitmap).isAbsolute() && !bitmap.toLowerCase().startsWith("http:"))
+						{
+							if (bitmap.startsWith(httpContext.getStaticContentBase()))
+							{
+								bitmap = bitmap.replace(httpContext.getStaticContentBase(), "");
+							}
+							// Si la ruta a la imagen NO es absoluta, en aplicaciones Web le agregamos al comienzo la ruta al root de la aplicación
+							// más la staticContentBaseURL si ésta es relativa.
+							image = com.itextpdf.text.Image.getInstance(defaultRelativePrepend + bitmap);
+							//image = com.genexus.uifactory.awt.AWTUIFactory.getImageNoWait(defaultRelativePrepend + bitmap);
+							if(image == null)
+							{ // Si all\uFFFDEno se encuentra la imagen, entonces la buscamos bajo el webAppDir (para mantener compatibilidad)
+								bitmap = webAppDir + bitmap;
+								image = com.itextpdf.text.Image.getInstance(bitmap);
+								//image = com.genexus.uifactory.awt.AWTUIFactory.getImageNoWait(bitmap);
+							}
+							else
+							{
+								bitmap = defaultRelativePrepend + bitmap;
+							}
 						}
 						else
 						{
-							bitmap = defaultRelativePrepend + bitmap;
+							image = com.itextpdf.text.Image.getInstance(bitmap);
+							//image = com.genexus.uifactory.awt.AWTUIFactory.getImageNoWait(bitmap);
 						}
-					}
-					else
-					{
-						image = com.lowagie.text.Image.getInstance(bitmap);
-						//image = com.genexus.uifactory.awt.AWTUIFactory.getImageNoWait(bitmap);
 					}
 				}
 			}
 			catch(java.lang.IllegalArgumentException ex)//Puede ser una url absoluta
 			{
 				java.net.URL url= new java.net.URL(bitmap);
-				image = com.lowagie.text.Image.getInstance(url);
+				image = com.itextpdf.text.Image.getInstance(url);
 			}
 
 			if (documentImages == null)
@@ -937,20 +961,20 @@ public class PDFReportItext implements IReportHandler
 				document.add(image);
 			}
 		}
-		catch(DocumentException de) 
+		catch(DocumentException de)
 		{
 			System.err.println(de.getMessage());
 		}
-		catch(IOException ioe) 
+		catch(IOException ioe)
 		{
 			System.err.println(ioe.getMessage());
 		}
-		catch(Exception e) 
+		catch(Exception e)
 		{
 			System.err.println(e.getMessage());
 		}
     }
-    
+
     public String getSubstitute(String fontName)
     {
 		Vector fontSubstitutesProcessed = new Vector();
@@ -973,7 +997,7 @@ public class PDFReportItext implements IReportHandler
     public void GxAttris(String fontName, int fontSize, boolean fontBold, boolean fontItalic, boolean fontUnderline, boolean fontStrikethru, int Pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue)
     {
 		boolean isCJK = false;
-		boolean embeedFont = isEmbeddedFont(fontName);
+		boolean embeedFont = props.getBooleanGeneralProperty(Const.EMBEED_SECTION, false) && props.getBooleanProperty(Const.EMBEED_SECTION, fontName, false);
 		if (!embeedFont)
 		{
 			fontName = getSubstitute(fontName); // Veo si hay substitutos solo si el font no va a ir embebido
@@ -986,7 +1010,9 @@ public class PDFReportItext implements IReportHandler
 			DEBUG_STREAM.println("\\-> Back (" + backRed + ", " + backGreen + ", " + backBlue + ")");
 		}
 
-		if (barcode128AsImage && fontName.toLowerCase().indexOf("barcode 128") >= 0 || fontName.toLowerCase().indexOf("barcode128") >= 0)
+		if (barcode128AsImage 
+				&& fontName.toLowerCase().indexOf("barcode 128") >= 0 || fontName.toLowerCase().indexOf("barcode128") >= 0
+				|| fontName.toLowerCase().indexOf("code 128") >= 0 || fontName.toLowerCase().indexOf("code128") >= 0 || fontName.toLowerCase().indexOf("code-128") >= 0)
 		{
 			barcode = new Barcode128();
 			barcode.setCodeType(Barcode128.CODE128);
@@ -995,75 +1021,76 @@ public class PDFReportItext implements IReportHandler
 		{
 			barcode = null;
 		}
-		this.fontUnderline = fontUnderline;        
-		this.fontStrikethru = fontStrikethru;        
+		this.fontUnderline = fontUnderline;
+		this.fontStrikethru = fontStrikethru;
         this.fontSize = fontSize;
         this.fontBold = fontBold;
         this.fontItalic = fontItalic;
-		foreColor = new Color(foreRed, foreGreen, foreBlue);
-        backColor = new Color(backRed, backGreen, backBlue);
-		
+		foreColor = new BaseColor(foreRed, foreGreen, foreBlue);
+        backColor = new BaseColor(backRed, backGreen, backBlue);
+
 		backFill = (backMode != 0);
 		try {
-			if (PDFFont.isType1(fontName))
-			{
-				//Me fijo si es un Asian font
-				for(int i = 0; i < Type1FontMetrics.CJKNames.length; i++)
-				{
-					if(Type1FontMetrics.CJKNames[i][0].equalsIgnoreCase(fontName) ||
-					   Type1FontMetrics.CJKNames[i][1].equalsIgnoreCase(fontName))
-					{
-						String style = "";
-						if (fontBold && fontItalic)
-							style = "BoldItalic";
-						else
-						{
-							if (fontItalic)
-								style = "Italic";
-							if (fontBold)
-								style = "Bold";
-						}
-						setAsianFont(fontName, style);
-						isCJK = true;
-						break;
-					}
-				}
-				if (!isCJK)
-				{
-					int style = 0;
-					if (fontBold && fontItalic)
-						style = style + 3;
-					else
-					{
-						if (fontItalic)
-							style = style + 2;
-						if (fontBold)
-							style = style + 1;
-					}
-					for(int i=0;i<PDFFont.base14.length;i++)
-					{
-						if(PDFFont.base14[i][0].equalsIgnoreCase(fontName))
-						{
-							fontName =  PDFFont.base14[i][1+style].substring(1);
-							break;
-						}
-					}
-					baseFont = BaseFont.createFont(fontName, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
-				}
-			}
-			else
-			{//Si el Font es true type
-				String fontPath = getFontLocation(fontName);
+			//if (PDFFont.isType1(fontName))
+			//{
+			//	//Me fijo si es un Asian font
+			//	for(int i = 0; i < Type1FontMetrics.CJKNames.length; i++)
+			//	{
+			//		if(Type1FontMetrics.CJKNames[i][0].equalsIgnoreCase(fontName) ||
+			//		   Type1FontMetrics.CJKNames[i][1].equalsIgnoreCase(fontName))
+			//		{
+			//			String style = "";
+			//			if (fontBold && fontItalic)
+			//				style = "BoldItalic";
+			//			else
+			//			{
+			//				if (fontItalic)
+			//					style = "Italic";
+			//				if (fontBold)
+			///					style = "Bold";
+			//			}
+			//			setAsianFont(fontName, style);
+			//			isCJK = true;
+			//			break;
+			//		}
+			//	}
+			//	if (!isCJK)
+			//	{
+			//		int style = 0;
+			//		if (fontBold && fontItalic)
+			//			style = style + 3;
+			//		else
+			//		{
+			//			if (fontItalic)
+			//				style = style + 2;
+			//			if (fontBold)
+			//				style = style + 1;
+			//		}
+			//		for(int i=0;i<PDFFont.base14.length;i++)
+			//		{
+			//			if(PDFFont.base14[i][0].equalsIgnoreCase(fontName))
+			//			{
+			//				fontName =  PDFFont.base14[i][1+style].substring(1);
+			//				break;
+			//			}
+			//		}
+			//		baseFont = BaseFont.createFont(fontName, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
+			//	}
+			//}
+			//else
+			//{//Si el Font es true type
+			
+			String fontPath = getFontLocation(fontName);
 				boolean foundFont = true;
 				if (fontPath.equals(""))
 				{
-					uk.org.retep.pdf.PDFFontDescriptor fontDescriptor = uk.org.retep.pdf.PDFFontDescriptor.getPDFFontDescriptor();
-					fontPath = fontDescriptor.getTrueTypeFontLocation(fontName, props);
-					if (fontPath.equals(""))
-					{
+					//uk.org.retep.pdf.PDFFontDescriptor fontDescriptor = uk.org.retep.pdf.PDFFontDescriptor.getPDFFontDescriptor();
+					//fontPath = fontDescriptor.getTrueTypeFontLocation(fontName, props);
+					//if (fontPath.equals(""))
+					//{
 						baseFont = BaseFont.createFont("Helvetica", BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
 						foundFont = false;
-					}
+					//}
 				}
 				if (foundFont)
 				{
@@ -1086,7 +1113,7 @@ public class PDFReportItext implements IReportHandler
 							baseFont = BaseFont.createFont(fontPath + style, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
 					}
 				}
-			}
+			//}
 		}
 		catch(DocumentException de) {
             System.err.println(de.getMessage());
@@ -1112,7 +1139,7 @@ public class PDFReportItext implements IReportHandler
 		Hashtable locations = new Hashtable();
 		if (msLocations != null)
 		{
-		   	for (Enumeration e = msLocations.keys(); e.hasMoreElements() ;) 
+		   	for (Enumeration e = msLocations.keys(); e.hasMoreElements() ;)
 		   	{
 				Object key = e.nextElement();
 				locations.put(key, msLocations.get(key));
@@ -1120,7 +1147,7 @@ public class PDFReportItext implements IReportHandler
 		}
 		if (sunLocations != null)
 		{
-		   	for (Enumeration e = sunLocations.keys(); e.hasMoreElements() ;) 
+		   	for (Enumeration e = sunLocations.keys(); e.hasMoreElements() ;)
 		   	{
 				Object key = e.nextElement();
 				locations.put(key, sunLocations.get(key));
@@ -1129,9 +1156,9 @@ public class PDFReportItext implements IReportHandler
 		return locations;
 	}
 
-	private boolean isEmbeddedFont(String realFontName) {
-		boolean generalEmbeedFont = props.getBooleanGeneralProperty(Const.EMBEED_SECTION, false);
-		return generalEmbeedFont && props.getBooleanProperty(Const.EMBEED_SECTION, realFontName, generalEmbeedFont);
+	private boolean isEmbeddedFont(String fontName)
+	{
+		return props.getBooleanGeneralProperty(Const.EMBEED_SECTION, false) && props.getBooleanProperty(Const.EMBEED_SECTION, fontName, false);
 	}
 
 	public void setAsianFont(String fontName, String style)
@@ -1182,7 +1209,7 @@ public class PDFReportItext implements IReportHandler
     public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat)
     {
 		GxDrawText(sTxt, left, top, right, bottom, align, htmlformat, 0);
-	}	
+	}
     public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border)
     {
 		GxDrawText(sTxt, left, top, right, bottom, align, htmlformat, border, 0);
@@ -1192,25 +1219,25 @@ public class PDFReportItext implements IReportHandler
     	boolean printRectangle = false;
     	if (props.getBooleanGeneralProperty(Const.BACK_FILL_IN_CONTROLS, true))
     		printRectangle = true;
-    		
+
     	if (printRectangle && (border == 1 || backFill))
     	{
     		GxDrawRect(left, top, right, bottom, border, foreColor.getRed(), foreColor.getGreen(), foreColor.getBlue(), backFill ? 1 : 0, backColor.getRed(), backColor.getGreen(), backColor.getBlue(), 0, 0);
-    	}    	
-		
+    	}
+
         PdfContentByte cb = writer.getDirectContent();
-		sTxt = CommonUtil.rtrim(sTxt);
-		
+		sTxt = GXutil.rtrim(sTxt);
+
 		Font font = new Font(baseFont, fontSize);
 		int arabicOptions = 0;
 		float captionHeight = 	baseFont.getFontDescriptor(baseFont.CAPHEIGHT, fontSize);
-		float rectangleWidth = baseFont.getWidthPoint(sTxt, fontSize); 
+		float rectangleWidth = baseFont.getWidthPoint(sTxt, fontSize);
 		float lineHeight = baseFont.getFontDescriptor(baseFont.BBOXURY, fontSize) - baseFont.getFontDescriptor(baseFont.BBOXLLY, fontSize);
 		float textBlockHeight = (float)convertScale(bottom-top);
 		int linesCount =   (int)(textBlockHeight/lineHeight);
 		int bottomOri = bottom;
 		int topOri = top;
-		
+
 		//Si se tiene un campo con mas de una linea y no tiene wrap, no es justify, y no es html, se simula que el campo tiene una sola linea
 		//asignando al bottom el top mas el lineHeight
 		if (linesCount >= 2 && !((align & 16) == 16) && htmlformat != 1)
@@ -1222,34 +1249,34 @@ public class PDFReportItext implements IReportHandler
 			//if valign == middle, no se cambia ni top ni bottom
 		}
 
-		float bottomAux = (float)convertScale(bottom) - ((float)convertScale(bottom-top) - captionHeight)/2;   
-		//Al bottom de los textos se le resta espacio entre el texto y el borde del textblock, 
+		float bottomAux = (float)convertScale(bottom) - ((float)convertScale(bottom-top) - captionHeight)/2;
+		//Al bottom de los textos se le resta espacio entre el texto y el borde del textblock,
 		//porque en el reporte genexus la x,y de un
 		//text es la x,y del cuadro que contiene el texto, y la api de itext espera la x,y del texto en si.
 		//Generalmente el cuadro es mas grande que lo que ocupa el texto realmente (depende del tipo de font)
 		//captionHeight esta convertido, bottom y top no.
-		float topAux = (float)convertScale(top) + ((float)convertScale(bottom-top) - captionHeight)/2;   
+		float topAux = (float)convertScale(top) + ((float)convertScale(bottom-top) - captionHeight)/2;
 
 
 		float startHeight = bottomAux - topAux - captionHeight;
-		
+
 		float leftAux = (float)convertScale(left);
 		float rightAux = (float)convertScale(right);
 		int alignment = align & 3;
 		boolean autoResize = (align & 256) == 256;
-		
+
         if (htmlformat == 1)
         {
             StyleSheet styles = new StyleSheet();
 			Hashtable locations = getFontLocations();
-			for (Enumeration e = locations.keys(); e.hasMoreElements() ;) 
+			for (Enumeration e = locations.keys(); e.hasMoreElements() ;)
 		   	{
 				String fontName = (String)e.nextElement();
 				String fontPath = (String)locations.get(fontName);
 				if (fontPath.equals(""))
 				{
-					uk.org.retep.pdf.PDFFontDescriptor fontDescriptor = uk.org.retep.pdf.PDFFontDescriptor.getPDFFontDescriptor();
-					fontPath = fontDescriptor.getTrueTypeFontLocation(fontName, props);
+					//uk.org.retep.pdf.PDFFontDescriptor fontDescriptor = uk.org.retep.pdf.PDFFontDescriptor.getPDFFontDescriptor();
+					//fontPath = fontDescriptor.getTrueTypeFontLocation(fontName, props);
 				}
 				if (!fontPath.equals(""))
 				{
@@ -1276,11 +1303,11 @@ public class PDFReportItext implements IReportHandler
                     0,//(float)this.pageSize.getTop() - bottomAux - topMargin - bottomMargin,
                     rightAux + leftMargin,
                     (float)this.pageSize.getTop() - topAux - topMargin - bottomMargin);
-                                        
+
 			Col.setYLine((float)this.pageSize.getTop() - topAux - topMargin - bottomMargin);
             try
             {
-                ArrayList objects = HTMLWorker.parseToList(new StringReader(sTxt), styles);
+                List<Element> objects = HTMLWorker.parseToList(new StringReader(sTxt), styles);
                 for (int k = 0; k < objects.size(); ++k)
                     Col.addElement((Element)objects.get(k));
             }
@@ -1289,7 +1316,7 @@ public class PDFReportItext implements IReportHandler
                 sTxt = ex1.getMessage();
                 try
                 {
-                    ArrayList objects = HTMLWorker.parseToList(new StringReader(sTxt), styles);
+                    List<Element> objects = HTMLWorker.parseToList(new StringReader(sTxt), styles);
                     for (int k = 0; k < objects.size(); ++k)
                         Col.addElement((Element)objects.get(k));
                 }
@@ -1302,7 +1329,7 @@ public class PDFReportItext implements IReportHandler
 				System.out.println("ERROR printing HTML text " + de.getMessage());
 			}
 		}
-		else 
+		else
 		if (barcode!=null)
 		{
 			if(DEBUG)DEBUG_STREAM.println("Barcode: --> " + barcode.getClass().getName());
@@ -1310,24 +1337,24 @@ public class PDFReportItext implements IReportHandler
 			{
 				barcode.setCode(sTxt);
 				barcode.setTextAlignment(alignment);
-				com.lowagie.text.Rectangle rectangle = new com.lowagie.text.Rectangle(0, 0);
+				com.itextpdf.text.Rectangle rectangle = new com.itextpdf.text.Rectangle(0, 0);
 				//El rectangulo tiene tamaño ok.
 				switch (alignment)
 				{
 					case 1: // Center Alignment
-						rectangle = new com.lowagie.text.Rectangle((leftAux + rightAux) / 2 + leftMargin - rectangleWidth / 2,
+						rectangle = new com.itextpdf.text.Rectangle((leftAux + rightAux) / 2 + leftMargin - rectangleWidth / 2,
 							(float)this.pageSize.getTop() - (float)convertScale(bottom) - topMargin - bottomMargin,
 							(leftAux + rightAux) / 2 + leftMargin + rectangleWidth / 2,
 							(float)this.pageSize.getTop() - (float)convertScale(top) - topMargin - bottomMargin);
 						break;
 					case 2: // Right Alignment
-						rectangle = new com.lowagie.text.Rectangle(rightAux + leftMargin - rectangleWidth,
+						rectangle = new com.itextpdf.text.Rectangle(rightAux + leftMargin - rectangleWidth,
 							(float)this.pageSize.getTop() - (float)convertScale(bottom) - topMargin - bottomMargin,
 							rightAux + leftMargin,
 							(float)this.pageSize.getTop() - (float)convertScale(top) - topMargin - bottomMargin);
 						break;
 					case 0: // Left Alignment
-						rectangle = new com.lowagie.text.Rectangle(leftAux + leftMargin,
+						rectangle = new com.itextpdf.text.Rectangle(leftAux + leftMargin,
 							(float)this.pageSize.getTop() - (float)convertScale(bottom) - topMargin - bottomMargin,
 							leftAux + leftMargin + rectangleWidth,
 							(float)this.pageSize.getTop() - (float)convertScale(top) - topMargin - bottomMargin);
@@ -1359,18 +1386,18 @@ public class PDFReportItext implements IReportHandler
 
 			if(backFill)
 			{
-				com.lowagie.text.Rectangle rectangle = new com.lowagie.text.Rectangle(0,0);
+				com.itextpdf.text.Rectangle rectangle = new com.itextpdf.text.Rectangle(0,0);
 				//Si el texto tiene background lo dibujo de esta forma
 				switch(alignment)
 				{
 				case 1: // Center Alignment
-					rectangle = new com.lowagie.text.Rectangle((leftAux + rightAux)/2 + leftMargin - rectangleWidth/2, (float)this.pageSize.getTop() -  bottomAux - topMargin -bottomMargin , (leftAux + rightAux)/2 + leftMargin + rectangleWidth/2, (float)this.pageSize.getTop() - topAux - topMargin -bottomMargin);				
+					rectangle = new com.itextpdf.text.Rectangle((leftAux + rightAux)/2 + leftMargin - rectangleWidth/2, (float)this.pageSize.getTop() -  bottomAux - topMargin -bottomMargin , (leftAux + rightAux)/2 + leftMargin + rectangleWidth/2, (float)this.pageSize.getTop() - topAux - topMargin -bottomMargin);
 					break;
 				case 2: // Right Alignment
-					rectangle = new com.lowagie.text.Rectangle(rightAux + leftMargin - rectangleWidth, (float)this.pageSize.getTop() -  bottomAux - topMargin -bottomMargin , rightAux + leftMargin, (float)this.pageSize.getTop() - topAux - topMargin -bottomMargin);				
+					rectangle = new com.itextpdf.text.Rectangle(rightAux + leftMargin - rectangleWidth, (float)this.pageSize.getTop() -  bottomAux - topMargin -bottomMargin , rightAux + leftMargin, (float)this.pageSize.getTop() - topAux - topMargin -bottomMargin);
 					break;
 				case 0: // Left Alignment
-					rectangle = new com.lowagie.text.Rectangle(leftAux + leftMargin, (float)this.pageSize.getTop() -  bottomAux - topMargin -bottomMargin , leftAux + leftMargin + rectangleWidth, (float)this.pageSize.getTop() - topAux - topMargin -bottomMargin);				
+					rectangle = new com.itextpdf.text.Rectangle(leftAux + leftMargin, (float)this.pageSize.getTop() -  bottomAux - topMargin -bottomMargin , leftAux + leftMargin + rectangleWidth, (float)this.pageSize.getTop() - topAux - topMargin -bottomMargin);
 					break;
 				}
 				rectangle.setBackgroundColor(backColor);
@@ -1378,41 +1405,41 @@ public class PDFReportItext implements IReportHandler
 				{
 					document.add(rectangle);
 				}
-				catch(DocumentException de) 
+				catch(DocumentException de)
 				{
 					System.err.println(de.getMessage());
 				}
 			}
-			
+
 			float underlineSeparation = lineHeight / 5;//Separacion entre el texto y la linea del subrayado
 			int underlineHeight = (int)underlineSeparation + (int)(underlineSeparation/4);
-			com.lowagie.text.Rectangle underline;
-			
+			com.itextpdf.text.Rectangle underline;
+
 			//Si el texto esta subrayado
 			if (fontUnderline)
 			{
-				underline = new com.lowagie.text.Rectangle(0,0);
-				
+				underline = new com.itextpdf.text.Rectangle(0,0);
+
 				switch(alignment)
 				{
 				case 1: // Center Alignment
-						underline = new com.lowagie.text.Rectangle( 
-							(leftAux + rightAux)/2 + leftMargin - rectangleWidth/2, 
-							this.pageSize.getTop() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation, 
-							(leftAux + rightAux)/2 + leftMargin + rectangleWidth/2, 
-							this.pageSize.getTop() - bottomAux - topMargin -bottomMargin + startHeight - underlineHeight);				
+						underline = new com.itextpdf.text.Rectangle(
+							(leftAux + rightAux)/2 + leftMargin - rectangleWidth/2,
+							this.pageSize.getTop() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation,
+							(leftAux + rightAux)/2 + leftMargin + rectangleWidth/2,
+							this.pageSize.getTop() - bottomAux - topMargin -bottomMargin + startHeight - underlineHeight);
 					break;
 				case 2: // Right Alignment
-						underline = new com.lowagie.text.Rectangle( rightAux + leftMargin - rectangleWidth , 
-							this.pageSize.getTop() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation, 
-							rightAux + leftMargin, 
-							this.pageSize.getTop() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);				
+						underline = new com.itextpdf.text.Rectangle( rightAux + leftMargin - rectangleWidth ,
+							this.pageSize.getTop() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation,
+							rightAux + leftMargin,
+							this.pageSize.getTop() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);
 					break;
 				case 0: // Left Alignment
-						underline = new com.lowagie.text.Rectangle( leftAux + leftMargin , 
-							this.pageSize.getTop() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation, 
-							leftAux + leftMargin + rectangleWidth, 
-							this.pageSize.getTop() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);				
+						underline = new com.itextpdf.text.Rectangle( leftAux + leftMargin ,
+							this.pageSize.getTop() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation,
+							leftAux + leftMargin + rectangleWidth,
+							this.pageSize.getTop() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);
 					break;
 				}
 				underline.setBackgroundColor(foreColor);
@@ -1420,38 +1447,38 @@ public class PDFReportItext implements IReportHandler
 				{
 					document.add(underline);
 				}
-				catch(DocumentException de) 
+				catch(DocumentException de)
 				{
 					System.err.println(de.getMessage());
 				}
 			}
-			
+
 			//Si el texto esta tachado
 			if (fontStrikethru)
 			{
-				underline = new com.lowagie.text.Rectangle(0,0);
+				underline = new com.itextpdf.text.Rectangle(0,0);
 				float strikethruSeparation = lineHeight / 2;
-				
+
 				switch(alignment)
 				{
 				case 1: // Center Alignment
-						underline = new com.lowagie.text.Rectangle( 
-							(leftAux + rightAux)/2 + leftMargin - rectangleWidth/2, 
-							this.pageSize.getTop() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation, 
-							(leftAux + rightAux)/2 + leftMargin + rectangleWidth/2, 
-							this.pageSize.getTop() - bottomAux - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);				
+						underline = new com.itextpdf.text.Rectangle(
+							(leftAux + rightAux)/2 + leftMargin - rectangleWidth/2,
+							this.pageSize.getTop() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation,
+							(leftAux + rightAux)/2 + leftMargin + rectangleWidth/2,
+							this.pageSize.getTop() - bottomAux - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
 					break;
 				case 2: // Right Alignment
-						underline = new com.lowagie.text.Rectangle( rightAux + leftMargin - rectangleWidth , 
-							this.pageSize.getTop() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation, 
-							rightAux + leftMargin, 
-							this.pageSize.getTop() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);				
+						underline = new com.itextpdf.text.Rectangle( rightAux + leftMargin - rectangleWidth ,
+							this.pageSize.getTop() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation,
+							rightAux + leftMargin,
+							this.pageSize.getTop() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
 					break;
 				case 0: // Left Alignment
-						underline = new com.lowagie.text.Rectangle( leftAux + leftMargin , 
-							this.pageSize.getTop() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation, 
-							leftAux + leftMargin + rectangleWidth, 
-							this.pageSize.getTop() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);				
+						underline = new com.itextpdf.text.Rectangle( leftAux + leftMargin ,
+							this.pageSize.getTop() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation,
+							leftAux + leftMargin + rectangleWidth,
+							this.pageSize.getTop() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
 					break;
 				}
 				underline.setBackgroundColor(foreColor);
@@ -1459,12 +1486,12 @@ public class PDFReportItext implements IReportHandler
 				{
 					document.add(underline);
 				}
-				catch(DocumentException de) 
+				catch(DocumentException de)
 				{
 					System.err.println(de.getMessage());
 				}
 			}
-			
+
 			if(sTxt.trim().equalsIgnoreCase("{{Pages}}"))
 			{// Si el texto es la cantidad de páginas del documento
 				if (!templateCreated)
@@ -1563,7 +1590,7 @@ public class PDFReportItext implements IReportHandler
 		float y = ct.getYLine();
 		int linesCount = ct.getLinesWritten();
 
-		//calculate a new rectangle for valign = middle 
+		//calculate a new rectangle for valign = middle
 		if (valign == VerticalAlign.MIDDLE.value())
 			ury = ury - ((y - lly) / 2) + leading;
 		else if (valign == VerticalAlign.BOTTOM.value())
@@ -1587,7 +1614,7 @@ public class PDFReportItext implements IReportHandler
 			Col.setAlignment(alignment);
 		Col.addText(p);
 		Col.go();
-	}    
+	}
     public void GxClearAttris()
     {
     }
@@ -1596,7 +1623,7 @@ public class PDFReportItext implements IReportHandler
     public static final double PAGE_SCALE_X = 20; // Indica la escala de la página
 	public static final double GX_PAGE_SCALE_Y_OLD = 15.45;
     public static final double GX_PAGE_SCALE_Y = 14.4; // Indica la escala de la página, GeneXus lleva otra escala para el tamaño de la hoja, (variando este parametro, se agranda o achica el tamaño imprimible por GeneXus)
-    //Por ejemplo: si en genexus se tiene un reporte con Paper Height de 1169 (A4) centésimos de pulgada (1/100 inch), 
+    //Por ejemplo: si en genexus se tiene un reporte con Paper Height de 1169 (A4) centésimos de pulgada (1/100 inch),
     //en el parámetro pageLength llega 16834 que esta en Twips (16834 = 1169*14.4). 1 twip = 1/1440 inch.
     //Con el valor anterior 15.45 estaba quedando un margen bottom fijo que no se podia eliminar (incluso seteando mb 0).
 	private static double TO_CM_SCALE =28.6;  // Escala CM -> metricas PDF (utilizado en el pageMargin)
@@ -1604,7 +1631,7 @@ public class PDFReportItext implements IReportHandler
     {
 		PPP = gxYPage[0];
 		loadPrinterSettingsProps(iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
-		
+
         if(outputStream != null)
 		{
 			if (output.equalsIgnoreCase("PRN"))
@@ -1621,7 +1648,8 @@ public class PDFReportItext implements IReportHandler
             else outputType = Const.OUTPUT_FILE;
 
             if(outputType == Const.OUTPUT_FILE)
-                TemporaryFiles.getInstance().removeFileFromList(docName);
+                //TemporaryFiles.getInstance().removeFileFromList(docName);
+            	GxSetDocName(docName);
             else
             {
                 String tempPrefix = docName;
@@ -1645,14 +1673,14 @@ public class PDFReportItext implements IReportHandler
             }
         }
         printerOutputMode = mode;
-			
+
 			boolean ret;
-            ret = props.setupGeneralProperty(Const.LEFT_MARGIN, Const.DEFAULT_LEFT_MARGIN);
-            ret = props.setupGeneralProperty(Const.TOP_MARGIN, Const.DEFAULT_TOP_MARGIN);
-			ret = props.setupGeneralProperty(Const.BOTTOM_MARGIN, Const.DEFAULT_BOTTOM_MARGIN);
+            ret = props.setupGeneralProperty(Const.LEFT_MARGIN, ConstAndroid.DEFAULT_LEFT_MARGIN);
+            ret = props.setupGeneralProperty(Const.TOP_MARGIN, ConstAndroid.DEFAULT_TOP_MARGIN);
+			ret = props.setupGeneralProperty(Const.BOTTOM_MARGIN, ConstAndroid.DEFAULT_BOTTOM_MARGIN);
 			leftMargin = (float) (TO_CM_SCALE * Double.valueOf(props.getGeneralProperty(Const.LEFT_MARGIN)).doubleValue());
 			topMargin = (float) (TO_CM_SCALE * Double.valueOf(props.getGeneralProperty(Const.TOP_MARGIN)).doubleValue());
-			bottomMargin = (float) (Double.valueOf(props.getGeneralProperty(Const.BOTTOM_MARGIN)).doubleValue()); 
+			bottomMargin = (float) (Double.valueOf(props.getGeneralProperty(Const.BOTTOM_MARGIN)).doubleValue());
 
 			lineCapProjectingSquare = props.getGeneralProperty(Const.LINE_CAP_PROJECTING_SQUARE).equals("true");
 			barcode128AsImage = props.getGeneralProperty(Const.BARCODE128_AS_IMAGE).equals("true");
@@ -1660,7 +1688,7 @@ public class PDFReportItext implements IReportHandler
 		STYLE_DASHED = parsePattern(props.getGeneralProperty(Const.STYLE_DASHED));
 		STYLE_LONG_DASHED = parsePattern(props.getGeneralProperty(Const.STYLE_LONG_DASHED));
 		STYLE_LONG_DOT_DASHED = parsePattern(props.getGeneralProperty(Const.STYLE_LONG_DOT_DASHED));
-		
+
 		runDirection = Integer.valueOf(props.getGeneralProperty(Const.RUN_DIRECTION)).intValue();
 
 		if (props.getBooleanGeneralProperty(Const.JUSTIFIED_TYPE_ALL, false))
@@ -1699,7 +1727,7 @@ public class PDFReportItext implements IReportHandler
         return true;
     }
 
-	private com.lowagie.text.Rectangle computePageSize(float leftMargin, float topMargin, int width, int length, boolean marginsInsideBorder)
+	private com.itextpdf.text.Rectangle computePageSize(float leftMargin, float topMargin, int width, int length, boolean marginsInsideBorder)
 	{
 		if ((leftMargin == 0 && topMargin == 0)||marginsInsideBorder)
 		{
@@ -1720,9 +1748,9 @@ public class PDFReportItext implements IReportHandler
 			else if (length == 15840 && width == 12240)
 				return PageSize.LETTER;
 			else
-				return new com.lowagie.text.Rectangle((int)(width / PAGE_SCALE_X) , (int)(length / PAGE_SCALE_Y) );
+				return new com.itextpdf.text.Rectangle((int)(width / PAGE_SCALE_X) , (int)(length / PAGE_SCALE_Y) );
 		}
-		return new com.lowagie.text.Rectangle((int)(width / PAGE_SCALE_X) + leftMargin, (int)(length / PAGE_SCALE_Y) + topMargin);
+		return new com.itextpdf.text.Rectangle((int)(width / PAGE_SCALE_X) + leftMargin, (int)(length / PAGE_SCALE_Y) + topMargin);
 	}
 
     public int getPageLines()
@@ -1746,20 +1774,20 @@ public class PDFReportItext implements IReportHandler
         if(DEBUG)DEBUG_STREAM.println("setLineHeight: " + lineHeight);
 		this.lineHeight = lineHeight;
     }
-	
+
 	int M_top ;
 	int M_bot ;
-	
+
 	public	int getM_top()
 	{
 		return M_top;
 	}
-	
+
     public int getM_bot()
 	{
 		return M_bot;
 	}
-	
+
 	public void setM_top(int M_top)
 	{
 		this.M_top = M_top;
@@ -1768,7 +1796,7 @@ public class PDFReportItext implements IReportHandler
 	public void setM_bot(int M_bot)
 	{
 		this.M_bot = M_bot;
-	}	
+	}
 
     public void GxEndPage()
     {
@@ -1821,53 +1849,54 @@ public class PDFReportItext implements IReportHandler
 			ex.printStackTrace(System.err);
 		}
 
-		String serverPrinting = props.getGeneralProperty(Const.SERVER_PRINTING);
-		boolean fit= props.getGeneralProperty(Const.ADJUST_TO_PAPER).equals("true");
-		if ((outputType==Const.OUTPUT_PRINTER || outputType==Const.OUTPUT_STREAM_PRINTER) && (httpContext instanceof HttpContextWeb && serverPrinting.equals("false")))
-		{
-			//writer.addJavaScript("if (this.external)\n");//Specifies whether the current document is being viewed in the Acrobat application or in an external window (such as a web browser).
-			//writer.addJavaScript("app.alert('SI es externa' + this.external);");
-
-			
-				writer.addJavaScript("var pp = this.getPrintParams();\n");
-				//writer.addJavaScript("pp.interactive = pp.constants.interactionLevel.automatic;\n");
-				String printerAux=printerSettings.getProperty(form, Const.PRINTER);
-				String printer = replace(printerAux, "\\", "\\\\");
-
-				if (printer!=null && !printer.equals(""))
-				{
-	                writer.addJavaScript("pp.printerName = \"" + printer + "\";\n");
-				}
-
-			if (fit)
-			{
-				writer.addJavaScript("pp.pageHandling = pp.constants.handling.fit;\n");
-			}
-			else
-			{
-				writer.addJavaScript("pp.pageHandling = pp.constants.handling.none;\n");
-			}
-
-				if (printerSettings.getProperty(form, Const.MODE, "3").startsWith("0"))//Show printer dialog Never
-				{
-					writer.addJavaScript("pp.interactive = pp.constants.interactionLevel.automatic;\n");
-					//No print dialog is displayed. During printing a progress monitor and cancel
-					//dialog is displayed and removed automatically when printing is complete.
-					for(int i = 0; i < copies; i++)
-					{
-						writer.addJavaScript("this.print(pp);\n");
-					}
-				}
-				else //Show printer dialog is sent directly to printer | always
-				{
-					writer.addJavaScript("pp.interactive = pp.constants.interactionLevel.full;\n");
-					//Displays the print dialog allowing the user to change print settings and requiring
-					//the user to press OK to continue. During printing a progress monitor and cancel
-					//dialog is displayed and removed automatically when printing is complete.
-					writer.addJavaScript("this.print(pp);\n");
-				}
-				
-		}
+//#if !ANDROID
+//@switchedOff 		String serverPrinting = props.getGeneralProperty(Const.SERVER_PRINTING);
+//@switchedOff 		boolean fit= props.getGeneralProperty(Const.ADJUST_TO_PAPER).equals("true");
+//@switchedOff 		if ((outputType==Const.OUTPUT_PRINTER || outputType==Const.OUTPUT_STREAM_PRINTER) && (httpContext instanceof HttpContextWeb && serverPrinting.equals("false")))
+//@switchedOff 		{
+//@switchedOff 			//writer.addJavaScript("if (this.external)\n");//Specifies whether the current document is being viewed in the Acrobat application or in an external window (such as a web browser).
+//@switchedOff 			//writer.addJavaScript("app.alert('SI es externa' + this.external);");
+//@switchedOff 
+//@switchedOff 
+//@switchedOff 				writer.addJavaScript("var pp = this.getPrintParams();\n");
+//@switchedOff 				//writer.addJavaScript("pp.interactive = pp.constants.interactionLevel.automatic;\n");
+//@switchedOff 				String printerAux=printerSettings.getProperty(form, Const.PRINTER);
+//@switchedOff 				String printer = replace(printerAux, "\\", "\\\\");
+//@switchedOff 
+//@switchedOff 				if (printer!=null && !printer.equals(""))
+//@switchedOff 				{
+//@switchedOff 	                writer.addJavaScript("pp.printerName = \"" + printer + "\";\n");
+//@switchedOff 				}
+//@switchedOff 
+//@switchedOff 			if (fit)
+//@switchedOff 			{
+//@switchedOff 				writer.addJavaScript("pp.pageHandling = pp.constants.handling.fit;\n");
+//@switchedOff 			}
+//@switchedOff 			else
+//@switchedOff 			{
+//@switchedOff 				writer.addJavaScript("pp.pageHandling = pp.constants.handling.none;\n");
+//@switchedOff 			}
+//@switchedOff 
+//@switchedOff 				if (printerSettings.getProperty(form, Const.MODE, "3").startsWith("0"))//Show printer dialog Never
+//@switchedOff 				{
+//@switchedOff 					writer.addJavaScript("pp.interactive = pp.constants.interactionLevel.automatic;\n");
+//@switchedOff 					//No print dialog is displayed. During printing a progress monitor and cancel
+//@switchedOff 					//dialog is displayed and removed automatically when printing is complete.
+//@switchedOff 					for(int i = 0; i < copies; i++)
+//@switchedOff 					{
+//@switchedOff 						writer.addJavaScript("this.print(pp);\n");
+//@switchedOff 					}
+//@switchedOff 				}
+//@switchedOff 				else //Show printer dialog is sent directly to printer | always
+//@switchedOff 				{
+//@switchedOff 					writer.addJavaScript("pp.interactive = pp.constants.interactionLevel.full;\n");
+//@switchedOff 					//Displays the print dialog allowing the user to change print settings and requiring
+//@switchedOff 					//the user to press OK to continue. During printing a progress monitor and cancel
+//@switchedOff 					//dialog is displayed and removed automatically when printing is complete.
+//@switchedOff 					writer.addJavaScript("this.print(pp);\n");
+//@switchedOff 				}
+//@switchedOff 		}
+//#endif
 
 		document.close();
 
@@ -1895,14 +1924,17 @@ public class PDFReportItext implements IReportHandler
             break;
         case Const.OUTPUT_PRINTER:
             try{ outputStream.close(); } catch(IOException e) { ; } // Cierro el archivo
-            try{
-				if (!(httpContext instanceof HttpContextWeb) || !serverPrinting.equals("false"))
-				{
-					printReport(docName, this.printerOutputMode == 1); 
-				}
-			} catch(Exception e){ // Si no se puede mostrar el reporte
-                e.printStackTrace(); 
-            }
+//#if !ANDROID
+//@switchedOff             try{
+//@switchedOff 				if (httpContext instanceof HttpContextWeb && serverPrinting.equals("false"))
+//@switchedOff 				{
+//@switchedOff 					printReport(docName, this.printerOutputMode == 1);
+//@switchedOff 				}
+//@switchedOff 
+//@switchedOff 			} catch(Exception e){ // Si no se puede mostrar el reporte
+//@switchedOff                 e.printStackTrace();
+//@switchedOff             }
+//#endif
             break;
         case Const.OUTPUT_FILE:
             try{ outputStream.close(); } catch(IOException e) { ; } // Cierro el archivo
@@ -1943,10 +1975,11 @@ public class PDFReportItext implements IReportHandler
     {
         this.docName = docName.trim();
         if(this.docName.indexOf('.') < 0)
-            this.docName += ".pdf";        
+            this.docName += ".pdf";
 		if(!new File(docName).isAbsolute())
 		{ // Si el nombre del documento es relativo, veo si hay que agregarle el outputDir
-			String outputDir = props.getGeneralProperty(Const.OUTPUT_FILE_DIRECTORY, "").replace(alternateSeparator, File.separatorChar).trim();
+			//String outputDir = props.getGeneralProperty(Const.OUTPUT_FILE_DIRECTORY, "").replace(alternateSeparator, File.separatorChar).trim();
+			String outputDir = AndroidContext.ApplicationContext.getExternalFilesPath();
 			if(!outputDir.equalsIgnoreCase("") && !outputDir.equalsIgnoreCase("."))
 			{
 				if(!outputDir.endsWith(File.separator))
@@ -1958,16 +1991,18 @@ public class PDFReportItext implements IReportHandler
 			}
 			else
 			{
-				if (ModelContext.getModelContext() != null) 
+				if (ModelContext.getModelContext() != null)
 				{
-					HttpContext webContext = (HttpContext) ModelContext.getModelContext().getHttpContext();
-					if ((webContext != null) && (webContext instanceof HttpContextWeb))
-					{
-						outputDir = com.genexus.ModelContext.getModelContext().getHttpContext().getDefaultPath() + File.separator;
-						this.docName = outputDir + this.docName;
-					}
+					IHttpContext webContext = ModelContext.getModelContext().getHttpContext();
+//#if !ANDROID
+//@switchedOff 					if ((webContext != null) && (webContext instanceof HttpContextWeb))
+//@switchedOff 					{
+//@switchedOff 						outputDir = com.genexus.ModelContext.getModelContext().getHttpContext().getDefaultPath() + File.separator;
+//@switchedOff 						this.docName = outputDir + this.docName;
+//@switchedOff 					}
+//#endif
 				}
-			}			
+			}
 		}
         if(this.docName.indexOf('.') < 0)
             this.docName += ".pdf";
@@ -2016,7 +2051,7 @@ public class PDFReportItext implements IReportHandler
     {
         this.modal = modal;
     }
-	
+
 	public void cleanup() {}
 
     public void setMetrics(String fontName, boolean bold, boolean italic, int ascent, int descent, int height, int maxAdvance, int[] sizes)
@@ -2030,7 +2065,7 @@ public class PDFReportItext implements IReportHandler
     {
         // Primero leemos la tabla de substitutos del Registry
         Hashtable tempInverseMappings = new Hashtable();
-        
+
         // Seteo algunos Mappings que Acrobat toma como Type1
         for(int i = 0; i < Const.FONT_SUBSTITUTES_TTF_TYPE1.length; i++)
         	fontSubstitutes.put(Const.FONT_SUBSTITUTES_TTF_TYPE1[i][0], Const.FONT_SUBSTITUTES_TTF_TYPE1[i][1]);
@@ -2073,25 +2108,25 @@ public class PDFReportItext implements IReportHandler
 		double result = value * SCALE_FACTOR / PPP;
 		return result;
 	}
-		
+
 	private double convertScale(double value)
 	{
 		double result = value * SCALE_FACTOR / PPP;
 		return result;
 	}
-	
+
 	private float reconvertScale(float value)
 	{
 		float result = value / (float)(SCALE_FACTOR / PPP);
 		return result;
-	}		
+	}
 
 	class FontProps
 	{
 		public int horizontal;
 		public int vertical;
 	}
-	
+
     /**
      * Helper method for toString()
      * @param s source string
@@ -2116,7 +2151,7 @@ public class PDFReportItext implements IReportHandler
 	    b.append(s.substring(p));
 
 	return b.toString();
-    }	
+    }
 
     /** Contiene un state de una pagina (atributos, etc) + un String a ingresar
      *  La idea es que se pueda agregar Strings en cualquier página al final del proceso del PDF
