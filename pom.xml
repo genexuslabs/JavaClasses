@@ -34,7 +34,8 @@
 		<module>gxexternalproviders</module>
         <module>gxawsserverless</module>
 		<module>androidreports</module>
-	</modules>
+        <module>gxwebsocket</module>
+    </modules>
 
 	<repositories>
 		<repository>
