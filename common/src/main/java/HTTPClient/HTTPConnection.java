@@ -1044,14 +1044,21 @@ static
      *                                the socket.
      * @exception ModuleException if an exception is encountered in any module.
      */
-    public HTTPResponse Get(String file, String query, NVPair[] headers)
+	public HTTPResponse Get(String file, String query, NVPair[] headers)
+		throws IOException, ModuleException
+	{
+		return Get(file, query, headers, null);
+	}
+
+
+    public HTTPResponse Get(String file, String query, NVPair[] headers, byte data[])
 		throws IOException, ModuleException
     {
 	String File = stripRef(file);
 	if (query != null  &&  query.length() > 0)
 	    File += "?" + Codecs.URLEncode(query);
 
-	return setupRequest("GET", File, headers, null, null);
+	return setupRequest("GET", File, headers, data, null);
     }
 
 
