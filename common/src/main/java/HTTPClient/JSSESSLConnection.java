@@ -1,6 +1,8 @@
 
 package HTTPClient;
 
+import com.genexus.common.interfaces.SpecificImplementation;
+
 import java.net.*;
 import java.io.IOException;
 
@@ -23,7 +25,9 @@ public class JSSESSLConnection implements ISSLConnection
 
     public Socket processSSLSocket(Socket fromSocket, String host, int port) throws IOException
     {
-		SSLSocket sock = (SSLSocket)sslFactory.createSocket(fromSocket, host, port, true);		
+		SSLSocket sock = (SSLSocket)sslFactory.createSocket(fromSocket, host, port, true);
+		if (SpecificImplementation.HttpClient != null)
+			SpecificImplementation.HttpClient.prepareSSLSocket( sock);
 		return sock;
     }
 
@@ -86,7 +90,7 @@ public class JSSESSLConnection implements ISSLConnection
      */
     public SSLSocketFactory getSSLSocketFactory()
     {
-	return sslFactory;
+		return sslFactory;
     }
 }	
 
