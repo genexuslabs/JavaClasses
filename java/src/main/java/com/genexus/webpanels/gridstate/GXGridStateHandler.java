@@ -100,7 +100,6 @@ public final class GXGridStateHandler {
 
 	public void setCurrentpage(int value) {
 		state.CurrentPage = value;
-		dirty = true;
 	}
 
 	public GXXMLSerializable getState() {
@@ -125,21 +124,22 @@ public final class GXGridStateHandler {
 
 	public void setState(GXXMLSerializable state) {
 		this.exposedSdtGridState = state;
-		stateFromJson(exposedSdtGridState.toJSonString());
-		dirty = true;
+		String jsonState = exposedSdtGridState.toJSonString();
+		stateFromJson(jsonState);
+		HttpContext httpContext = (HttpContext) context.getHttpContext();
+		WebSession session = httpContext.getWebSession();
+		session.setValue(gridName, jsonState);
 	}
 
 	public void clearFilterValues() {
 		state.InputValues.clear();
-		dirty = true;
 	}
 
 	public void addFilterValue(String name, String value) {
 		GridStateInputValuesItem item = new GridStateInputValuesItem();
 		item.Value = value;
 		item.Name = name;
-		state.InputValues.add(0, item);
-		dirty = true;
+		state.InputValues.add(item);
 	}
 
 	public int getFiltercount() {
