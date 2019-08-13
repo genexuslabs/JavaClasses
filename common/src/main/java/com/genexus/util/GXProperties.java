@@ -12,7 +12,7 @@ import com.genexus.GXBaseCollection;
 import java.util.Iterator;
 
 public class GXProperties implements IGxJSONSerializable{
-  private Vector vector = new Vector();
+  private Vector<GXProperty> vector = new Vector<GXProperty>();
   private boolean eof;
   private int lastElement;
 
@@ -34,7 +34,7 @@ public class GXProperties implements IGxJSONSerializable{
 	  int index = findElement(name);
 	  if ( index >= 0)
 	  {
-		  ((GXProperty) vector.elementAt(index)).setValue(value);
+		  vector.elementAt(index).setValue(value);
 	  }
 	  else
 	  {
@@ -43,8 +43,8 @@ public class GXProperties implements IGxJSONSerializable{
   }
   public String values() {
 	  StringBuilder builder = new StringBuilder();
-	  for (Object property : vector) {
-		  builder.append(((GXProperty) property).getValue());
+	  for (GXProperty property : vector) {
+		  builder.append(property.getValue());
 	  }
 	  return builder.toString();
   }
@@ -59,7 +59,7 @@ public class GXProperties implements IGxJSONSerializable{
   {
 	  int index = findElement(name);
 	  if (index >= 0)
-		return ((GXProperty)vector.elementAt(index)).getValue();
+		return vector.elementAt(index).getValue();
 	  else
 		  return "";
   }
@@ -92,7 +92,7 @@ public class GXProperties implements IGxJSONSerializable{
 
   public GXProperty item(int i)
   {
-    return (GXProperty) vector.elementAt(i);
+    return vector.elementAt(i);
   }
 
   public int count()
@@ -111,7 +111,7 @@ public class GXProperties implements IGxJSONSerializable{
 	  if (count() > 0)
 	  {
 		  lastElement = 0;
-		  return (GXProperty)vector.elementAt(0);
+		  return vector.elementAt(0);
 	  }
 	  else
 	  {
@@ -130,7 +130,7 @@ public class GXProperties implements IGxJSONSerializable{
 	  lastElement ++;
 	  if (count() > lastElement)
 	  {
-		  return (GXProperty)vector.elementAt(lastElement);
+		  return vector.elementAt(lastElement);
 	  }
 	  else
 	  {
