@@ -41,7 +41,7 @@ public class GXProperties implements IGxJSONSerializable{
 		  addToTheEnd(name, value);
 	  }
   }
-  public String values() {
+  public String toString() {
 	  StringBuilder builder = new StringBuilder();
 	  for (GXProperty property : vector) {
 		  builder.append(property.getValue());
