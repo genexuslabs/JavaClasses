@@ -105,7 +105,7 @@ public final class GXGridStateHandler {
 	public GXXMLSerializable getState() {
 		try {
 			if (dirty || exposedSdtGridState == null) {
-				Class sdtGridStateClass = Class.forName(SDTGridStateClass);
+				Class<?> sdtGridStateClass = Class.forName(SDTGridStateClass);
 				Class[] parTypes = new Class[]{ModelContext.class};
 				Constructor ctr = sdtGridStateClass.getConstructor(parTypes);
 				Object[] argList = new Object[]{context};
