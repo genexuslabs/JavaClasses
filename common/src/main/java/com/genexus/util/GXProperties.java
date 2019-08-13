@@ -26,7 +26,7 @@ public class GXProperties implements IGxJSONSerializable{
   
   public void add(String name, String value)
   {
-	  put(name, value);
+	  addToTheEnd(name, value);
   }
   
   public void put(String name, String value)
@@ -38,13 +38,23 @@ public class GXProperties implements IGxJSONSerializable{
 	  }
 	  else
 	  {
-		GXProperty prop = new GXProperty();
-		prop.setKey(name);
-		prop.setValue(value);
-		vector.addElement(prop);
+		  addToTheEnd(name, value);
 	  }
   }
-  
+  public String values() {
+	  StringBuilder builder = new StringBuilder();
+	  for (Object property : vector) {
+		  builder.append(((GXProperty) property).getValue());
+	  }
+	  return builder.toString();
+  }
+  private void addToTheEnd(String name, String value){
+
+	  GXProperty prop = new GXProperty();
+	  prop.setKey(name);
+	  prop.setValue(value);
+	  vector.addElement(prop);
+  }
   public String get(String name)
   {
 	  int index = findElement(name);
