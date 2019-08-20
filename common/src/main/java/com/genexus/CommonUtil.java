@@ -1029,6 +1029,13 @@ public final class CommonUtil
 
         return new String(buf);
     }
+	public static String ltrimstr(double value, int length, int decimals){
+		return ltrim(str(value, length, decimals));
+	}
+
+	public static String ltrimstr(long val, int digits, int decimals) {
+		return ltrim(str(val, digits, decimals));
+	}
 
 	public static String ltrim (String text)
 	{
