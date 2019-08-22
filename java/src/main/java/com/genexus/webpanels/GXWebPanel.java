@@ -706,7 +706,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 				Class fieldType = field.getType();
 				if (fieldType != null)
 				{
-					if (fieldType.getSuperclass() == GXSimpleCollection.class || fieldType.getSuperclass() == java.util.Vector.class)
+					if ( fieldType.getSuperclass() == GXBaseCollection.class || fieldType.getSuperclass() == GXSimpleCollection.class || fieldType.getSuperclass() == java.util.Vector.class)
 						SetCollectionFieldValue(fieldName, values);
 					else
 						SetFieldValue( targetVar, fieldName, value);
