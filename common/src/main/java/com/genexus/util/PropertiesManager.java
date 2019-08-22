@@ -47,7 +47,7 @@ public final class PropertiesManager
 			try
 			{
 			  	FileOutputStream outputStream = new FileOutputStream(fileName);
-				((Properties) propertyFiles.get(fileName)).save(outputStream, "");
+				((Properties) propertyFiles.get(fileName)).store(outputStream, "");
 				outputStream.close();
 			}
 			catch (IOException ex)

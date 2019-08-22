@@ -122,7 +122,7 @@ public class GXXMLSerializer {
         return result.toString();
     }
 
-    public static Object deserializeSimpleXml(Class instance, String xml) {
+    public static <T> T deserializeSimpleXml(Class<? extends T> instance, String xml) {
         Serializer serializer = new Persister();
         try {
             return serializer.read(instance, xml);

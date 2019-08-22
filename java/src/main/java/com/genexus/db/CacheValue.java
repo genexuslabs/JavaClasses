@@ -104,8 +104,9 @@ public class CacheValue implements Serializable
 	protected void setIsRemote(boolean isRemote)
 	{
 		this.isRemote = isRemote;
-	}	
+	}
 
+	@SuppressWarnings("unchecked")
 	public <T> void addItem(T value)
 	{
 		if (value instanceof String)

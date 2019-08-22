@@ -13,12 +13,12 @@ public class BlobsCleaner
 	private static BlobsCleaner instance = null;
 	
 	//Blobs archived by websession id
-	private Hashtable blobsTable;
+	private Hashtable<String, ArrayList<String>> blobsTable;
 	private static Object syncRoot = new Object();
 	
 	private BlobsCleaner()
 	{
-		blobsTable = new Hashtable();
+		blobsTable = new Hashtable<>();
 	}
 	
 	public static BlobsCleaner getInstance()
@@ -47,7 +47,7 @@ public class BlobsCleaner
 		{
 			if(blobsTable.get(sessionId) == null)
 			{
-				blobsTable.put(sessionId, new ArrayList());
+				blobsTable.put(sessionId, new ArrayList<>());
 			}
 		}
 		catch(Throwable e)
@@ -90,10 +90,10 @@ public class BlobsCleaner
 			if(session != null)
 			{
 				String sId = session.getId().toString();
-				Object obj = blobsTable.get(sId);
+				ArrayList<String> obj = blobsTable.get(sId);
 				if(obj != null)
 				{
-					((ArrayList)obj).add(filePath);
+					obj.add(filePath);
 				}
 			}
 		}
@@ -124,26 +124,26 @@ public class BlobsCleaner
 	
 	private void removeSessionFiles(String sessionId)
 	{
-		Object obj = blobsTable.get(sessionId);
+		ArrayList<String> obj = blobsTable.get(sessionId);
 		if(obj != null)
 		{
-			deleteAllFiles((ArrayList)obj);
+			deleteAllFiles(obj);
 			blobsTable.remove(sessionId);
 		}
 	}
 	
 	private void removeAllFiles()
 	{
-		Collection filesLists = blobsTable.values();
-		Iterator it = filesLists.iterator();
+		Collection<ArrayList<String>> filesLists = blobsTable.values();
+		Iterator<ArrayList<String>> it = filesLists.iterator();
 		while(it.hasNext())
 		{
-			deleteAllFiles((ArrayList)it.next());
+			deleteAllFiles(it.next());
 		}
 		blobsTable.clear();
 	}
 	
-	private void deleteAllFiles(ArrayList files)
+	private void deleteAllFiles(ArrayList<String> files)
 	{
 		Iterator it = files.iterator();
 		while(it.hasNext())

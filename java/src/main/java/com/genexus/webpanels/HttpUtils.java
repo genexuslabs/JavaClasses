@@ -13,9 +13,9 @@ import javax.servlet.http.HttpServletRequest;
 public class HttpUtils
 {
 
-  public static Hashtable parseMultipartPostData(FileItemCollection fileItemCollection)
+  public static Hashtable<String, String[]> parseMultipartPostData(FileItemCollection fileItemCollection)
   {
-    Hashtable ht = new Hashtable();
+    Hashtable<String, String[]> ht = new Hashtable<>();
     for (int i=0; i<fileItemCollection.getCount(); i++)
     {
       FileItem item = fileItemCollection.item(i);
@@ -47,11 +47,11 @@ public class HttpUtils
     return ht;
   }
 
-  public static Hashtable parseQueryString(String s)
+  public static Hashtable<String, String[]> parseQueryString(String s)
     {
 	if(s == null)
 	    throw new IllegalArgumentException();
-	Hashtable ht = new Hashtable();
+	Hashtable<String, String[]> ht = new Hashtable<>();
 	StringBuffer sb = new StringBuffer();
 	String key;
 	for(StringTokenizer st = new StringTokenizer(s, "&"); st.hasMoreTokens();)
@@ -68,7 +68,7 @@ public class HttpUtils
 	return ht;
     }
 
-    public static void pushValue( Hashtable ht, String key, String val)
+    public static void pushValue( Hashtable<String, String[]> ht, String key, String val)
     {
       String valArray[] = null;
       if(ht.containsKey(key))
@@ -87,11 +87,11 @@ public class HttpUtils
       ht.put(key, valArray);
     }
 
-    public static Hashtable parsePostData(HttpServletRequest request)
+    public static Hashtable<String, String[]> parsePostData(HttpServletRequest request)
     {
     	String paramName = null;
     	String paramValues[] = null;
-    	Hashtable ht = new Hashtable();
+    	Hashtable<String, String[]> ht = new Hashtable<>();
     	String value;
     	for(Enumeration params = request.getParameterNames(); params.hasMoreElements();)
     	{
@@ -105,7 +105,7 @@ public class HttpUtils
     	return ht;
     }
 
-    public static Hashtable parsePostData(ServletInputStream in)
+    public static Hashtable<String, String[]> parsePostData(ServletInputStream in)
     {
 		if(in == null)
 			throw new IllegalArgumentException();

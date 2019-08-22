@@ -9,8 +9,8 @@ import com.genexus.xml.XMLReader;
 
 public class GXReportMetadata 
 {
-  private Hashtable hash = new Hashtable();
-  private Hashtable attriHash = new Hashtable();
+  private Hashtable<Integer, Object> hash = new Hashtable<>();
+  private Hashtable<Integer, Attris> attriHash = new Hashtable<>();
   private String fileName;
   private IReportHandler reportHandler;
 
@@ -471,7 +471,7 @@ public class GXReportMetadata
   public void GxDrawText(int printBlock, int controlId, int Gx_line)
   {
 	  Integer key = new Integer(controlId);
-	  Attris att = (Attris)attriHash.get(key);
+	  Attris att = attriHash.get(key);
 	  if (att != null)
 	  {
 		reportHandler.GxAttris(att.fontName, att.fontSize, att.fontBold, att.fontItalic, att.fontUnderline, att.fontStrikethru, 0, att.foreColor.getRed(), att.foreColor.getGreen(), att.foreColor.getBlue(), att.backMode, att.backColor.getRed(), att.backColor.getGreen(), att.backColor.getBlue()) ;	  		  
@@ -486,7 +486,7 @@ public class GXReportMetadata
   public void GxDrawText(int printBlock, int controlId, int Gx_line, String value)
   {
 	  Integer key = new Integer(controlId);
-	  Attris att = (Attris)attriHash.get(key);
+	  Attris att = attriHash.get(key);
 	  if (att != null)
 	  {
 		reportHandler.GxAttris(att.fontName, att.fontSize, att.fontBold, att.fontItalic, att.fontUnderline, att.fontStrikethru, 0, att.foreColor.getRed(), att.foreColor.getGreen(), att.foreColor.getBlue(), att.backMode, att.backColor.getRed(), att.backColor.getGreen(), att.backColor.getBlue()) ;	  		  

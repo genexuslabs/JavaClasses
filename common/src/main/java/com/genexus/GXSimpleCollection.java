@@ -432,6 +432,7 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 
 	//-- Este add se usa cuando se quiere agregar a las lineas de un BC sin usar la logica de manteniomiento del estado
 	// de la linea
+	@SuppressWarnings("unchecked")
 	public void addBase( Object item)
 	{
 		super.add((T)item);
@@ -449,11 +450,13 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 
 	//-- Add
 
+	@SuppressWarnings("unchecked")
 	public void addInternal(Object item)
 	{
 		super.add((T)item);
 	}
 
+	@SuppressWarnings("unchecked")
 	public void add(Object item, int index)
 	{
 		if(index < 1 || index > size())
@@ -489,6 +492,7 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 			addInternal(new Integer(item));
 	}
 
+	@SuppressWarnings("unchecked")
 	public void addIntegralConstant(double item)
 	{
 		// Este caso es especial, pues las constantes enteras son de tipo int
@@ -516,6 +520,7 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public void addObject(Object obj){
 		super.add((T)obj);
 	}
@@ -805,7 +810,7 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 		Method [] members = new Method[cantMembers];
 		index = 0;
 		String managerName = elementsType.getName();
-		Class curElementType = Class.forName(managerName);
+		Class<?> curElementType = Class.forName(managerName);
 		//Class curElementType = elementsType;
 		for (int i = 0; i < cantMembers; i++) {
 			int index2 = memberList.indexOf('.', index);
@@ -883,6 +888,7 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 			return 0;
 		}
 
+		@SuppressWarnings("unchecked")
 		private int compareMember(MemberComparerItem comparer, Object a, Object b)
 		{
 			try
@@ -990,11 +996,13 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 		return super.clone();
 	}
 
+	@SuppressWarnings("unchecked")
 	public GXSimpleCollection<T> Clone()
 	{
 		return (GXSimpleCollection<T>)clone();
 	}
 
+	@SuppressWarnings("unchecked")
 	public Vector<T> getStruct()
 	{
 		return (Vector<T>)super.clone();
@@ -1283,6 +1291,7 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 
 	}
 
+	@SuppressWarnings("unchecked")
 	private boolean processArray(GxUnknownObjectCollection oldParent, GxUnknownObjectCollection parent, JSONArray localArray, int startIndex, int size )
 	{
 		GxUnknownObjectCollection tableCollection = new GxUnknownObjectCollection();

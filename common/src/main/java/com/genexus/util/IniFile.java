@@ -145,6 +145,7 @@ public class IniFile {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public void read() throws IOException {
 		sections = new Hashtable();
 		/*
@@ -178,8 +179,8 @@ public class IniFile {
 		br.close();
 	}
 
-	public Vector getPropertyList(String section, String prefix) {
-		Vector out = new Vector();
+	public Vector<String> getPropertyList(String section, String prefix) {
+		Vector<String> out = new Vector<>();
 
 		int idx = 0;
 		String tmp;
@@ -253,6 +254,7 @@ public class IniFile {
 		return sections.get(section.toUpperCase()) != null;
 	}
 
+	@SuppressWarnings("unchecked")
 	public void copySection(IniFile from, String sectionFrom, String sectionTo) {
 		Section newSection = from.getSection(sectionFrom);
 		newSection.key = sectionTo;
@@ -377,6 +379,7 @@ public class IniFile {
 		setProperty(section, key, CommonUtil.str(value, 10, 0).trim());
 	}
 
+	@SuppressWarnings("unchecked")
 	public void setProperty(String section, String key, String value) {
 		Section sec = (Section) sections.get(section.toUpperCase());
 		Hashtable sectionHash;

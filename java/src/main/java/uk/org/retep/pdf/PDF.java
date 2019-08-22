@@ -37,7 +37,7 @@ public class PDF implements Serializable
     /**
      * This vector contains each indirect object within the document.
      */
-    protected Vector objects;
+    protected Vector<Object> objects;
 
     /**
      * This is the Catalog object, which is required by each PDF Document
@@ -111,9 +111,9 @@ public class PDF implements Serializable
     /**
      * This holds the current fonts
      */
-    private Vector fonts;
+    private Vector<PDFFont> fonts;
 
-    private Vector images;
+    private Vector<PDFImage> images;
 
     /**
      * This holds the platform dependent package name
@@ -160,9 +160,9 @@ public class PDF implements Serializable
      */
     public PDF(int pagemode) {
 	objser = 1;
-	objects = new Vector();
-	fonts = new Vector();
-        images = new Vector();
+	objects = new Vector<>();
+	fonts = new Vector<>();
+        images = new Vector<>();
 
 	// Now create some standard objects
 	add(pages = new pages());
@@ -449,7 +449,7 @@ public class PDF implements Serializable
 	/**
 	 * This vector contains offsets of each object
 	 */
-	protected Vector offsets;
+	protected Vector<xref> offsets;
 
 	/**
 	 * This is used to track the /Root object (catalog)
@@ -470,7 +470,7 @@ public class PDF implements Serializable
 	{
 	    this.os = os;
 	    offset = 0;
-	    offsets = new Vector();
+	    offsets = new Vector<>();
 	    baos = new ByteArrayOutputStream();
 
 	    // Now write the PDF header
@@ -528,7 +528,7 @@ public class PDF implements Serializable
 	    // but just in case:
 	    int firstid = 0;			// First id in block
 	    int lastid = -1;			// The last id used
-	    Vector block = new Vector();	// xrefs in this block
+	    Vector<xref> block = new Vector<>();	// xrefs in this block
 
 	    // We need block 0 to exist
 	    block.addElement(new xref(0,0,65535));
@@ -594,7 +594,7 @@ public class PDF implements Serializable
 	 * @param block Vector containing the references in this block
 	 * @exception IOException on write error
 	 */
-	protected void writeblock(int firstid,Vector block) throws IOException
+	protected void writeblock(int firstid,Vector<xref> block) throws IOException
 	{
 	    baos.write(Integer.toString(firstid).getBytes());
 	    baos.write(" ".getBytes());
@@ -717,14 +717,14 @@ public class PDF implements Serializable
 	/**
 	 * This holds the pages
 	 */
-	private Vector pages;
+	private Vector<PDFPage> pages;
 
 	/**
 	 * This constructs a PDF Pages object.
 	 */
 	public pages() {
 	    super("/Pages");
-	    pages = new Vector();
+	    pages = new Vector<>();
 	}
 
 	/**

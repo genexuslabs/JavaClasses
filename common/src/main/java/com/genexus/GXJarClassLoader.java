@@ -10,8 +10,8 @@ public class GXJarClassLoader extends ClassLoader
     private String source;
 	private ZipFile zipFile = null;
     private boolean sourceIsJAR;
-    private Hashtable classTimeStamps = new Hashtable(); // Contiene el los timeStamps
-    private Hashtable classes = new Hashtable();
+    private Hashtable<String, Long> classTimeStamps = new Hashtable<>(); // Contiene el los timeStamps
+    private Hashtable<String, Class> classes = new Hashtable<>();
     private long jarTimeStamp = 0;
     private boolean autoReload;
     private int loadDepth; // Esta variable mantiene un depth de intentos de lectura del Zip
@@ -113,7 +113,7 @@ public class GXJarClassLoader extends ClassLoader
         		
         // Ahora la busco en el cache
         
-        if ((result = (Class) classes.get(className)) != null)
+        if ((result = classes.get(className)) != null)
     		return result;
 
 		// HACK:
@@ -140,7 +140,7 @@ public class GXJarClassLoader extends ClassLoader
             }catch(Throwable e) { ; }            
          	throw new ClassNotFoundException(className);
         }
-        result = defineClass(classBytes, 0, classBytes.length);
+        result = defineClass(className, classBytes, 0, classBytes.length);
     	
     	if (result == null) 
         {
@@ -216,7 +216,7 @@ public class GXJarClassLoader extends ClassLoader
             for(Enumeration enum1 = classTimeStamps.keys(); enum1.hasMoreElements();)
             {
             	String className = (String) enum1.nextElement();
-                if (new File(source + File.separator + className).lastModified() != ((Long)classTimeStamps.get(className)).longValue())
+                if (new File(source + File.separator + className).lastModified() != classTimeStamps.get(className).longValue())
                 	return true;
             }
             return false;

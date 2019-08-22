@@ -30,7 +30,7 @@ public class CacheFactory {
 								+ providerService.getClassName();
 						try {
 							logger.info("Loading providerService:" + providerService.getClassName());
-							Class type = Class.forName(providerService.getClassName());
+							Class<?> type = Class.forName(providerService.getClassName());
 							if (type != null) {
 								ICacheService cacheInstance = (ICacheService) type.getDeclaredConstructor()
 										.newInstance();

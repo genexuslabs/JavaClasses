@@ -8,7 +8,7 @@ import com.genexus.common.interfaces.IExtensionHttpClient;
 public class HttpClient implements IExtensionHttpClient {
 
 	@Override
-	public void addSDHeaders(String host, String baseURL, Hashtable headersToSend) {
+	public void addSDHeaders(String host, String baseURL, Hashtable<String, String> headersToSend) {
 
 	}
 

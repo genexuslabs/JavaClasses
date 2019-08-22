@@ -12,7 +12,7 @@ import HTTPClient.HTTPConnection;
 public class HttpClient implements IExtensionHttpClient {
 
 	@Override
-	public void addSDHeaders(String host, String baseURL, Hashtable headersToSend) {
+	public void addSDHeaders(String host, String baseURL, Hashtable<String, String> headersToSend) {
 		com.genexus.Preferences.getDefaultPreferences().getProperty("USER_LOG_NAMESPACE", "GeneXusUserLog");
 	}
 

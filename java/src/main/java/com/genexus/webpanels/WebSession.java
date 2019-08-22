@@ -16,7 +16,7 @@ import com.genexus.util.SubmitThreadPool;
 public class WebSession
 {
 	private HttpServletRequest request;
-        private Hashtable sessionValues;
+        private Hashtable<String, Object> sessionValues;
         private boolean invalidated;
 
 	public WebSession(HttpServletRequest request)
@@ -47,7 +47,7 @@ public class WebSession
         {
           if (sessionValues == null)
           {
-            sessionValues = new Hashtable();
+            sessionValues = new Hashtable<>();
           }
           sessionValues.put(key, value);
         }
@@ -197,7 +197,7 @@ public class WebSession
 			HttpSession session = getSession(false);
 			if (session != null)
 			{
-				Vector toRemove = new Vector();
+				Vector<String> toRemove = new Vector<>();
 				Enumeration e = session.getAttributeNames();
 				while (e.hasMoreElements())
 				{
