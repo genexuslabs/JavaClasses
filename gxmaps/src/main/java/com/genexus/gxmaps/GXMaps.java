@@ -96,7 +96,7 @@ public class GXMaps {
                     // each route
                     Double routeDistance = 0.0;
                     Double routeDuration = 0.0;
-                    String polyLineData = "";
+                    List<String> polyLineData = new LinkedList();
                     String travelMode = "";
                     String description = "";
                     if (jor.has("summary")) {
@@ -119,19 +119,23 @@ public class GXMaps {
                                     JSONObject jos = steps.optJSONObject(k);
                                         if (jos.has("polyline")) {
                                             String encodedLine = jos.getJSONObject("polyline").getString("points");
-                                            polyLineData += " " + DecodePolyLine(encodedLine);
+                                            String decodedLine = DecodePolyLine(encodedLine);
+                                            if (decodedLine.length() > 0) {
+                                                polyLineData.add(decodedLine);
+                                            }
                                         }
                                         travelMode = jos.getString("travel_mode");
                                     }       
                               
                             }
                         }
+                        String lineStringPoints = String.join(",", polyLineData);
                         Route currentRoute = new Route();
 					    currentRoute.setName( description);
 					    currentRoute.setTransportType( travelMode);
 					    currentRoute.setDistance(routeDistance);
 					    currentRoute.setExpectedTravelTime(routeDuration);
-					    currentRoute.setGeoline( new GXGeospatial("LINESTRING(" + polyLineData + ")"));
+					    currentRoute.setGeoline( new GXGeospatial("LINESTRING(" + lineStringPoints + ")"));
 					    directionsCalculated.getRoutes().add(currentRoute);
                     }
                 }

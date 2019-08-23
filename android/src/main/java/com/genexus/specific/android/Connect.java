@@ -31,6 +31,10 @@ public final class Connect {
 		SpecificImplementation.NativeFunctions = new NativeFunctions();
 		SpecificImplementation.PictureFormatter = new PictureFormatter();
 		SpecificImplementation.Algorithms = new CryptoAlghorithms();
+		// connect GXSilentTrn
+		SpecificImplementation.GXSilentTrnSdt = new GXSilentTrnSdt();
+		SpecificImplementation.SdtMessages_Message = new SdtMessages_Message();
+
 		SpecificImplementation.KeepDecimals = true;
 		SpecificImplementation.MillisecondMask = "SSS";
 		SpecificImplementation.SupportPending = true;
