@@ -42,7 +42,7 @@ public class GXReportViewerThreaded implements IReportHandler, ICleanedup
 	protected final String msReportViewer = "com.genexus.reports.MSGXReportViewer";
 	protected final String sunReportViewer = "com.genexus.reports.SunGXReportViewer";
 
-	protected Hashtable tmpFiles;
+	protected Hashtable<String, String> tmpFiles;
  	static ThreadedCommandQueue q;
  	static boolean firstRV = true;
 
@@ -287,7 +287,7 @@ public class GXReportViewerThreaded implements IReportHandler, ICleanedup
 				if	(tmpFiles == null)
 				{
 					new File(tempPath).mkdir();
-					tmpFiles = new Hashtable();
+					tmpFiles = new Hashtable<>();
 				}
 
 				if	(bitmap.lastIndexOf('/') >= 0)

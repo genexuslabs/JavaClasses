@@ -103,7 +103,7 @@ public class SentenceInfo
 			writer.writeCData(sqlSentence);
 		writer.writeEndElement();
 		writer.writeElement("Count",sentenceCount);
-		writer.writeElement("LastExecute",timeLastExecute.toGMTString());
+		writer.writeElement("LastExecute",timeLastExecute.toString());
 		writer.writeElement("TotalTime",totalTimeExecute);
 		writer.writeElement("AverageTime",averageTimeExecute);
 		writer.writeElement("WorstTime",worstTimeExecute);

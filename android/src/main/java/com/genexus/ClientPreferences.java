@@ -34,7 +34,7 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 	private String 	 	GXDB_LOCATION;
 	public  Boolean		CS_CONNECT;
 	public  String		LANGUAGE;
-	private Character	DECIMAL_POINT;				  
+	private Character	DECIMAL_POINT;
 	public  String		DATE_FMT;
 	public  String		TIME_FMT;
 	public  Byte		REMOTE_CALLS;
@@ -53,7 +53,7 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 	private Byte 		ESCAPE_FUNCTION;
 	private Boolean		FC_READONLY;
 	private HTMLDocType docType = HTMLDocType.UNDEFINED;
-	
+
 	private static ClientPreferences instance;
 	private static Hashtable preferences = new Hashtable();
 
@@ -65,7 +65,7 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 	private ClientPreferences(Class resourceClass, String name)
 	{
 		super(resourceClass, name, "Client");
-	}																				 
+	}
 /*
 	public ClientPreferences()
 	{
@@ -86,12 +86,12 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 		if	(ret == null)
 		{
 			ret = new ClientPreferences(resourceClass, ApplicationContext.getInstance().getReorganization()?"reorg.cfg":"client.cfg");
-			preferences.put(packageName, ret);	
+			preferences.put(packageName, ret);
 		}
 
 		return ret;
 	}
-	
+
 	public static void endClientPreferences()
 	{
 		preferences = null;
@@ -138,7 +138,7 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 
 			if		(prop.substring(0, 1).equals("N"))
 					JFC_LF = new Byte(LF_NATIVE);
-			else 
+			else
 				 	JFC_LF = new Byte(LF_CROSSPLATFORM);
 		}
 
@@ -161,7 +161,7 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 		{
 			FC_READONLY = new Boolean(  getProperty("FC_READONLY", "ORIGINAL").equalsIgnoreCase("ORIGINAL") );
 		}
-				
+
 		return FC_READONLY.booleanValue();
 	}
 
@@ -185,7 +185,7 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 		{
 			SUBFILE_ORDER = new Boolean(getProperty("SUBFILE_ORDER", "Y").equalsIgnoreCase("Y") );
 		}
-				
+
 		return SUBFILE_ORDER.booleanValue();
 	}
 
@@ -298,7 +298,7 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 
 	public char getDECIMAL_POINT()
 	{
-		if (DECIMAL_POINT == null) 
+		if (DECIMAL_POINT == null)
 		{
 				DECIMAL_POINT = new Character(getProperty("DECIMAL_POINT").charAt(0));
 		}
@@ -310,7 +310,7 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 	{
 			return bytePreference(YEAR_LIMIT, "YEAR_LIMIT");
 	}
-	
+
 	public boolean getConnectFirstRequest()
 	{
 		if	(CS_CONNECT == null)
@@ -322,7 +322,7 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 
 		return CS_CONNECT.booleanValue();
 	}
-			
+
 	public boolean getCS_REORGJAVA()
 	{
 		return booleanPreference(CS_REORGJAVA, "CS_REORG");
@@ -377,18 +377,18 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 	{
 		return iniFile.getProperty(defaultSection, "BLANK_EMPTY_DATE", "0").equals("1");
 	}
-	
+
 	public String getBUILD_NUMBER(int buildN)
-	{	
+	{
 		String buildNumber = iniFile.getProperty(defaultSection, "GX_BUILD_NUMBER", Integer.toString(buildN));
-		buildNumber = Integer.toString(Math.max( buildN,Integer.parseInt(buildNumber)));			
+		buildNumber = Integer.toString(Math.max( buildN,Integer.parseInt(buildNumber)));
 		return buildNumber;
 	}
 
 
 	public String getGXDB_LOCATION()
 	{
-		return getIniFile().getProperty(getNAME_SPACE(), "GXDB_LOCATION", "");		
+		return getIniFile().getProperty(getNAME_SPACE(), "GXDB_LOCATION", "");
 	}
 
 	public boolean getCOMPRESS_HTML()
@@ -415,16 +415,16 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 
 		return dir;
 	}
-	
+
 	int GX_NULL_TIMEZONEOFFSET = 9999;
 	public boolean useTimezoneFix()
 	{
-		return getOffsetStorageTimezone() != GX_NULL_TIMEZONEOFFSET;	
+		return getOffsetStorageTimezone() != GX_NULL_TIMEZONEOFFSET;
 	}
-	
+
 	static Integer GXOffsetStorageTimezone;
 	private static final Object lock = new Object();
-	
+
     public int getOffsetStorageTimezone()
     {
 		if (GXOffsetStorageTimezone == null) {
@@ -475,7 +475,7 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 
 		if	(!(dir.endsWith(separator)) && !dir.equals(""))
 			return dir + separator;
-			
+
 		return dir;
 	}
 
@@ -484,19 +484,19 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 		String key = iniFile.getProperty(defaultSection, "GoogleApiKey", "");
 		return key;
 	}
-	
-	
-	
+
+
+
 	public boolean getUSE_CALENDAR()
 	{
 		return iniFile.getProperty(defaultSection, "CALENDAR", "1").equals("1");
 	}
-	
+
 	public boolean getUSE_CALCULATOR()
 	{
 		return iniFile.getProperty(defaultSection, "CALC", "1").equals("1");
 	}
-	
+
 	public String getREORG_TIME_STAMP()
 	{
 		return getProperty("VER_STAMP");

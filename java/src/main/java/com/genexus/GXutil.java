@@ -1140,7 +1140,7 @@ public final class GXutil
 		}
 		catch(  UnsupportedEncodingException e)
 		{
-			return Codecs.encode(s);
+			return s;
 		}
 	}
 

@@ -7,7 +7,7 @@ import java.util.Hashtable;
 
 public interface IExtensionHttpClient {
 
-	void addSDHeaders(String host, String baseURL, Hashtable headersToSend);
+	void addSDHeaders(String host, String baseURL, Hashtable<String, String> headersToSend);
 
 	String normalizeEncodingName(String charset, String string);
 

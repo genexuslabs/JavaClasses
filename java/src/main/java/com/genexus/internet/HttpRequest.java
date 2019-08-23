@@ -4,6 +4,7 @@ package com.genexus.internet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.text.DateFormat;
 import java.util.Date;
 import java.util.Enumeration;
 
@@ -26,16 +27,6 @@ public abstract class HttpRequest implements IHttpRequest
 	{
 		this.httpContext = httpContext;
 		resetErrors();
-	}
-
-	public String getRepositoryPath()
-	{
-	  return httpContext.getRepositoryPath();
-	}
-
-	public void setRepositoryPath( String path)
-	{
-	  httpContext.setRepositoryPath( path);
 	}
 
 	public FileItemCollection getPostedparts()
@@ -171,9 +162,9 @@ public abstract class HttpRequest implements IHttpRequest
 		{
 			try
 		    {
-			    date = new Date(raw_date);
+			    date = DateFormat.getDateInstance().parse(raw_date);
 		    }
-			catch (IllegalArgumentException iae)
+			catch (java.text.ParseException iae)
 			{
 			    // some servers erroneously send a number, so let's try that
 			    long time;

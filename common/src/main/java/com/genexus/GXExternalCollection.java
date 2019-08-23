@@ -46,6 +46,7 @@ public class GXExternalCollection<T extends GXXMLSerializable> extends GXBaseCol
 		return add(item, 0);
 	}
 
+	@SuppressWarnings("unchecked")
 	public boolean add(T item, int index)
 	{
 		super.add(item);
@@ -65,7 +66,8 @@ public class GXExternalCollection<T extends GXXMLSerializable> extends GXBaseCol
 	{
 		vectorExternal = data;
 	}
-	
+
+	@SuppressWarnings("unchecked")
 	public Vector getStruct() 
 	{
 		Vector struct = new Vector();

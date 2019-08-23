@@ -115,7 +115,7 @@ public class PDFReportItext implements IReportHandler
     private boolean modal = false; // Indica si el diálogo debe ser modal o no modal en
     private String docName = "PDFReport.pdf"; // Nombre del documento a generar (se cambia con GxSetDocName)
     private static INativeFunctions nativeCode = NativeFunctions.getInstance();
-    private static Hashtable fontSubstitutes = new Hashtable(); // Contiene la tabla de substitutos de fonts (String <--> String)
+    private static Hashtable<String, String> fontSubstitutes = new Hashtable<>(); // Contiene la tabla de substitutos de fonts (String <--> String)
 	private static String configurationFile = null;
 	private static String configurationTemplateFile = null;
 	private static String defaultRelativePrepend = null; // En aplicaciones web, contiene la ruta al root de la aplicación para ser agregado al inicio de las imagenes con path relativo
@@ -953,18 +953,18 @@ public class PDFReportItext implements IReportHandler
     
     public String getSubstitute(String fontName)
     {
-		Vector fontSubstitutesProcessed = new Vector();
+		Vector<String> fontSubstitutesProcessed = new Vector<>();
     	String newFontName = fontName;
     	while( fontSubstitutes.containsKey(newFontName))
     	{
 			if (!fontSubstitutesProcessed.contains(newFontName))
 			{
 				fontSubstitutesProcessed.addElement(newFontName);
-    			newFontName = (String)fontSubstitutes.get(newFontName);
+    			newFontName = fontSubstitutes.get(newFontName);
 			}
 			else
 			{
-				return (String)fontSubstitutes.get(newFontName);
+				return fontSubstitutes.get(newFontName);
 			}
     	}
     	return newFontName;
@@ -1105,6 +1105,7 @@ public class PDFReportItext implements IReportHandler
 		}
 		return fontPath;
 	}
+	@SuppressWarnings("unchecked")
 	private Hashtable getFontLocations()
 	{
 		Hashtable msLocations = props.getSection(Const.MS_FONT_LOCATION);
@@ -2029,7 +2030,7 @@ public class PDFReportItext implements IReportHandler
     private void loadSubstituteTable()
     {
         // Primero leemos la tabla de substitutos del Registry
-        Hashtable tempInverseMappings = new Hashtable();
+        Hashtable<String, Vector<String>> tempInverseMappings = new Hashtable<>();
         
         // Seteo algunos Mappings que Acrobat toma como Type1
         for(int i = 0; i < Const.FONT_SUBSTITUTES_TTF_TYPE1.length; i++)
@@ -2043,11 +2044,11 @@ public class PDFReportItext implements IReportHandler
             for(Enumeration enumera = otherMappings.keys(); enumera.hasMoreElements();)
             {
                 String fontName = (String)enumera.nextElement();
-                fontSubstitutes.put(fontName, otherMappings.get(fontName));
+                fontSubstitutes.put(fontName, (String)otherMappings.get(fontName));
                 if(tempInverseMappings.containsKey(fontName)) // Con esto solucionamos el tema de la recursión de Fonts -> Fonts
                 {                                             // x ej: Si tenú} Font1-> Font2, y ahora tengo Font2->Font3, pongo cambio el 1º por Font1->Font3
                     String fontSubstitute = (String)otherMappings.get(fontName);
-                    for(Enumeration enum2 = ((Vector)tempInverseMappings.get(fontName)).elements(); enum2.hasMoreElements();)
+                    for(Enumeration<String> enum2 = tempInverseMappings.get(fontName).elements(); enum2.hasMoreElements();)
                         fontSubstitutes.put(enum2.nextElement(), fontSubstitute);
                 }
             }

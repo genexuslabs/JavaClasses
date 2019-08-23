@@ -12,7 +12,7 @@ import com.genexus.GXBaseCollection;
 import java.util.Iterator;
 
 public class GXProperties implements IGxJSONSerializable{
-  private Vector<GXProperty> vector = new Vector<GXProperty>();
+  private Vector<GXProperty> vector = new Vector<>();
   private boolean eof;
   private int lastElement;
 
@@ -172,7 +172,7 @@ public class GXProperties implements IGxJSONSerializable{
 				JSONObject jObj = new JSONObject(s);
 				Iterator<String> keys = jObj.keys();
 				while( keys.hasNext() ) {
-					String key = (String)keys.next();
+					String key = keys.next();
 					this.put(key, jObj.get(key).toString());
 				}
 				return true;

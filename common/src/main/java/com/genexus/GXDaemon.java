@@ -22,7 +22,7 @@ public class GXDaemon
 	{
 		String nextArgs[] = processParameters(args);
 
-		Class myClass;
+		Class<?> myClass;
 		try
 		{	
 			myClass = Class.forName(pgmName);

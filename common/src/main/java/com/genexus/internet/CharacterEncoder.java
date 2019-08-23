@@ -34,6 +34,6 @@ public abstract class CharacterEncoder {
     ByteArrayInputStream bin = new ByteArrayInputStream(buf);
     ByteArrayOutputStream bout = new ByteArrayOutputStream((int) (buf.length*1.4));
     try { encodeBuffer(bin, bout); } catch (IOException e) {}
-    return new String(bout.toByteArray(), 0);
+    return new String(bout.toByteArray());
   }
 }

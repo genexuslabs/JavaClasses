@@ -10,7 +10,7 @@ public class GXSecurityProvider
 		{
 			try
 			{
-				Class c = Class.forName("genexus.security.GAMSecurityProvider");
+				Class<?> c = Class.forName("genexus.security.GAMSecurityProvider");
 				instance = (SecurityProvider)c.getDeclaredConstructor().newInstance();
 			}
 			catch(Exception e)

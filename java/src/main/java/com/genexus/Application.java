@@ -44,7 +44,7 @@ public class Application
 
 	public static Class gxCfg = ApplicationContext.getInstance().getClass();
 	//public static ModelContext clientContext;
-	private static Vector toCleanup = new Vector();
+	private static Vector<ICleanedup> toCleanup = new Vector<>();
 	static LocalUtil localUtil;
 	static Class ClassName = null;
 
@@ -60,7 +60,7 @@ public class Application
 			{
 				try
 				{
-					ICleanedup cleanedUp = (ICleanedup)toCleanup.elementAt(i);
+					ICleanedup cleanedUp = toCleanup.elementAt(i);
 					if(!(cleanedUp instanceof com.genexus.reports.GXReportViewerThreaded))
 					{ //@HACK: el cleanup del ReportViewer queda esperando a que el usuario
 						// salga lo cual es inadmisible
@@ -257,7 +257,7 @@ public class Application
 		com.genexus.util.PropertiesManager.getInstance().flushProperties();
 
 		for (int i = 0; i < toCleanup.size(); i++)
-			((ICleanedup) toCleanup.elementAt(i)).cleanup();
+			toCleanup.elementAt(i).cleanup();
 		toCleanup.removeAllElements();
 
 		if (Preferences.getDefaultPreferences().getCACHING()){

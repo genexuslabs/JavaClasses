@@ -190,9 +190,9 @@ public class Utilities
 	 * @param separator String conteniendo el separador de partes
 	 * @return Vector de Strings conteniendo las partes separadas
 	 */
-	public static Vector parseLine(String line, String separator)
+	public static Vector<String> parseLine(String line, String separator)
 	{
-		Vector partes=new Vector();
+		Vector<String> partes=new Vector<>();
 		int index = 0,offset = 0;
 		int indexComillas;
 		boolean startingComillas = true;

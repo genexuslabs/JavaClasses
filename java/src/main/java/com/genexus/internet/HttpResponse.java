@@ -24,7 +24,7 @@ public class HttpResponse implements IHttpResponse
 {
 	private final int ERROR_IO = 1;
 
-	private Hashtable headers = new Hashtable();
+	private Hashtable<String, String> headers = new Hashtable<>();
 
 	private int errCode;
 	private String errDescription;
@@ -83,7 +83,7 @@ public class HttpResponse implements IHttpResponse
 
 	public String getHeader(String name)
 	{
-		String ret = (String) headers.get(name.toUpperCase());
+		String ret = headers.get(name.toUpperCase());
 		return ret == null?"":ret;
 	}
 

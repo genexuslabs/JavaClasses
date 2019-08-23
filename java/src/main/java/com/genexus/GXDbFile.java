@@ -180,7 +180,7 @@ public class GXDbFile
 			try
 			{
 				File file = new File(path);
-				return file.toURL().toString();
+				return file.toURI().toURL().toString();
 			}
 			catch (Exception e)
 			{
