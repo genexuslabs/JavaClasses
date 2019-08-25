@@ -6,7 +6,7 @@
 
 	<groupId>com.genexus</groupId>
 	<artifactId>parent</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<version>1.2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>GeneXus Standard Classes (Parent)</name>
@@ -32,9 +32,10 @@
 		<module>gxgeospatial</module>
 		<module>gxodata</module>
 		<module>gxexternalproviders</module>
+        <module>gxwebsocket</module>
         <module>gxawsserverless</module>
 		<module>androidreports</module>
-	</modules>
+    </modules>
 
 	<repositories>
 		<repository>
