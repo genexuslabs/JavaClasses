@@ -1193,7 +1193,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 				valueCalendar.setTime(value);
 
 				GregorianCalendar sGregorianCalendar = new GregorianCalendar();
-				sGregorianCalendar.set(valueCalendar.get(Calendar.YEAR), valueCalendar.get(Calendar.MONTH), valueCalendar.get(Calendar.DATE));
+				sGregorianCalendar.set(valueCalendar.get(Calendar.YEAR), valueCalendar.get(Calendar.MONTH), valueCalendar.get(Calendar.DATE), 0, 0, 0);
 				sDate = new java.sql.Date(sGregorianCalendar.getTime().getTime());
 			}
 			setDate(index, sDate);
