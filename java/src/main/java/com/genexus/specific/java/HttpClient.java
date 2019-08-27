@@ -5,6 +5,8 @@ import java.util.Hashtable;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.IExtensionHttpClient;
 
+import javax.net.ssl.SSLSocket;
+
 public class HttpClient implements IExtensionHttpClient {
 
 	@Override
@@ -29,4 +31,8 @@ public class HttpClient implements IExtensionHttpClient {
 		
 	}
 
+	@Override
+	public void prepareSSLSocket(SSLSocket sock) {
+
+	}
 }
