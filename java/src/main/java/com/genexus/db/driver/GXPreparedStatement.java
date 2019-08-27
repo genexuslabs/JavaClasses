@@ -1087,9 +1087,9 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			newCalendar.set(Calendar.SECOND, valueCalendar.get(Calendar.SECOND));
 
 			if (hasmilliseconds)
-			 	value = CommonUtil.dtaddms(newValue, (double)(CommonUtil.millisecond(value)/1000.0));
+			 	value = CommonUtil.dtaddms(newCalendar.getTime(), (double)(CommonUtil.millisecond(value)/1000.0));
 			else	 			
-				value = newValue;
+				value = newCalendar.getTime();
 		}
 
 		if (!onlyTime && ModelContext.getModelContext() != null)
