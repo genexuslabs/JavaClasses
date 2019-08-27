@@ -1,3 +1,8 @@
+| Branch | Status
+|---|---
+|master|[![Build Status](https://dev.azure.com/gxazure/Java-classes/_apis/build/status/Build%20JavaClasses%20(master)?branchName=master)](https://dev.azure.com/gxazure/Java-classes/_build/latest?definitionId=2&branchName=master)
+|beta|[![Build Status](https://dev.azure.com/gxazure/Java-classes/_apis/build/status/Build%20JavaClasses%20(beta)?branchName=beta)](https://dev.azure.com/gxazure/Java-classes/_build/latest?definitionId=6&branchName=beta)
+
 # GeneXus Standard Classes for Java
 
 These are the source of the GeneXus Standard Classes for Java, valid since GeneXus 16 Upgrade 4.
