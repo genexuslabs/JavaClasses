@@ -1157,7 +1157,11 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 					else if (elementsType == java.util.UUID.class)
 					{
 						currObj = CommonUtil.strToGuid(jsonArr.getString(i));
-					}					
+					}
+					else if (elementsType == String.class && currObj instanceof Number)
+					{
+						currObj = new String().valueOf(currObj);
+					}
 					addObject(currObj);
 				}
 			}
