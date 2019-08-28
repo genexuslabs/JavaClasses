@@ -419,6 +419,7 @@ public class GXDebugManager
                 case 0: return INITIALIZE;
                 case 1: return OBJ_CLEANUP;
                 case 2: return EXIT;
+				case 3: return PGM_INFO;
                 default: throw new IllegalArgumentException(String.format("GXDebugMsgCode(%d)", value));
             }
         }
