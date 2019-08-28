@@ -228,6 +228,11 @@ public final class GXCallableStatement extends GXPreparedStatement implements Ca
 		return GXDbFile.resolveUri(getVarchar(columnIndex));
 	}
 
+	public String getMultimediaUri(int columnIndex, boolean absPath) throws SQLException
+	{
+		return GXDbFile.resolveUri(getVarchar(columnIndex), absPath);
+	}
+
 	public String getString(int columnIndex, int length) throws SQLException
 	{
 		String value;

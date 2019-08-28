@@ -120,6 +120,10 @@ public class BufferIFieldGetter implements IFieldGetter {
         return ((String) value[columnIndex - 1]);
     }
 
+    public String getMultimediaUri(int columnIndex, boolean absPath) throws SQLException {
+        return ((String) value[columnIndex - 1]);
+    }
+
     public java.util.UUID getGUID(int columnIndex) throws SQLException {
         return ((java.util.UUID) value[columnIndex - 1]);
     }

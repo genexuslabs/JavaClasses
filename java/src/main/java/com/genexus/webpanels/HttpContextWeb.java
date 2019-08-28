@@ -107,6 +107,10 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getResourceRelative(String path) {
+		return getResourceRelative(path, true);
+	}
+
+	public String getResourceRelative(String path, boolean includeBasePath) {
 		if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) != null && !path.isEmpty()) {
 			GXFile gxFile = new GXFile(path);
 			String pathURL = gxFile.getAbsolutePath();
@@ -143,11 +147,14 @@ public class HttpContextWeb extends HttpContext {
 
 		Resource = Resource.replace('\\', '/');
 
-		if (Resource.startsWith("/"))
-			Resource = ContextPath + Resource;
-		else
-			Resource = ContextPath + "/" + Resource;
-
+		if (includeBasePath)
+		{
+			if (Resource.startsWith("/"))
+				Resource = ContextPath + Resource;
+			else
+				Resource = ContextPath + "/" + Resource;
+		}
+		
 		String baseName = FilenameUtils.getBaseName(Resource);
 		Resource = CommonUtil.replaceLast(Resource, baseName, PrivateUtilities.encodeFileName(baseName));
 		return Resource;

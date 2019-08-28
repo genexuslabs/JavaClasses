@@ -228,6 +228,11 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 		return getString(columnIndex);
 	}
 
+	public String getMultimediaUri(int columnIndex, boolean absPath) throws SQLException
+	{
+		return getString(columnIndex);
+	}
+
 	public java.util.UUID getGUID(int columnIndex) throws SQLException
 	{
 		return this.<java.util.UUID>getValue(getColumnIndex(columnIndex));
