@@ -310,8 +310,8 @@ public class GXDebugManager
 										Object [] info = (Object[])dbgItem.argObj;
 										stream.writeVLUInt(((IntPair)info[0]).left);
 										stream.writeVLUInt(((IntPair)info[0]).right);
-										stream.writeVLUInt(((PgmInfo)info[0]).dbgLines);
-										stream.writeInt(((PgmInfo)info[0]).hash);
+										stream.writeVLUInt(((PgmInfo)info[1]).dbgLines);
+										stream.writeInt(((PgmInfo)info[1]).hash);
                                         break;
                                     default:
                                         throw new IllegalArgumentException(String.format("Invalid DbgItem: %s", dbgItem));
