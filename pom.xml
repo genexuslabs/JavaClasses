@@ -32,9 +32,10 @@
 		<module>gxgeospatial</module>
 		<module>gxodata</module>
 		<module>gxexternalproviders</module>
+        <module>gxwebsocket</module>
         <module>gxawsserverless</module>
 		<module>androidreports</module>
-	</modules>
+    </modules>
 
 	<repositories>
 		<repository>

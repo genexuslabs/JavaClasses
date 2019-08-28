@@ -3,8 +3,8 @@ package com.genexus;
 import java.util.*;
 import java.lang.reflect.*;
 import com.genexus.xml.*;
-				  
-public class GxUnknownObjectCollection extends GXSimpleCollection
+
+public class GxUnknownObjectCollection<T> extends GXSimpleCollection<T>
 {	
 	public GxUnknownObjectCollection()
 	{
