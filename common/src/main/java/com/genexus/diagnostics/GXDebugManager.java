@@ -468,25 +468,56 @@ public class GXDebugManager
         private String toStringTicks(){ return (msgType == GXDebugMsgType.PGM_TRACE ? String.format(" elapsed:%d", ticks) : ""); }
     }
 
-    class IntPair
-    {
-        final int left;
-        final int right;
-        IntPair(int left, int right)
-        {
-            this.left = left;
-            this.right = right;
-        }
-    }
+	class IntPair
+	{
+		final int left;
+		final int right;
 
-    class PgmInfo
+		IntPair(int left, int right)
+		{
+			this.left = left;
+			this.right = right;
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return left ^ right;
+		}
+
+		@Override
+		public boolean equals(Object o)
+		{
+			return (o instanceof IntPair) &&
+				((IntPair) o).left == left &&
+				((IntPair) o).right == right;
+		}
+
+	}
+
+	class PgmInfo
 	{
 		final int dbgLines;
 		final long hash;
+
 		PgmInfo(int dbgLines, long hash)
 		{
 			this.dbgLines = dbgLines;
 			this.hash = hash;
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return dbgLines ^ ((int) hash);
+		}
+
+		@Override
+		public boolean equals(Object o)
+		{
+			return (o instanceof PgmInfo) &&
+				((PgmInfo) o).dbgLines == dbgLines &&
+				((PgmInfo) o).hash == hash;
 		}
 	}
 
