@@ -653,9 +653,9 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 			dbgInfo.onCleanup();
 	}
 
-	protected void initialize(int objClass, int objId)
+	protected void initialize(int objClass, int objId, int dbgLines, long hash)
 	{
-		dbgInfo = GXDebugManager.getInstance().getDbgInfo(context, objClass, objId);
+		dbgInfo = GXDebugManager.getInstance().getDbgInfo(context, objClass, objId, dbgLines, hash);
 	}
 
 	protected void trk(int lineNro)
@@ -670,4 +670,14 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 			dbgInfo.trk(lineNro, lineNro2);
 	}
 
+	protected void trkrng(int lineNro, int lineNro2)
+	{
+		trkrng(lineNro, 0, lineNro2, 0);
+	}
+
+	protected void trkrng(int lineNro, int colNro, int lineNro2, int colNro2)
+	{
+		if(dbgInfo != null)
+			dbgInfo.trkRng(lineNro, colNro, lineNro2, colNro2);
+	}
 }

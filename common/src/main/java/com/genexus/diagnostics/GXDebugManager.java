@@ -4,6 +4,7 @@ import com.genexus.ModelContext;
 
 import java.io.*;
 import java.nio.channels.FileChannel;
+import java.util.HashSet;
 import java.util.UUID;
 import java.util.Date;
 import java.util.concurrent.*;
@@ -57,11 +58,18 @@ public class GXDebugManager
         pushSystem(GXDebugMsgCode.INITIALIZE.toByteInt(), new Date());
     }
 
-    public GXDebugInfo getDbgInfo(ModelContext context, int objClass, int objId)
+    public GXDebugInfo getDbgInfo(ModelContext context, int objClass, int objId, int dbgLines, long hash)
     {
         synchronized(sessionLock)
         {
-            GXDebugInfo dbgInfo = new GXDebugInfo(newSId(), context, new PgmKey(objClass, objId));
+			IntPair objKey = new IntPair(objClass, objId);
+            GXDebugInfo dbgInfo = new GXDebugInfo(newSId(), context, objKey);
+			if (!pgmInfoTable.contains(objKey))
+			{
+				PgmInfo pgmInfoObj = new PgmInfo(dbgLines, hash);
+				pgmInfoTable.add(objKey);
+				pushSystem(GXDebugMsgCode.PGM_INFO.toByteInt(), new Object[]{objKey, pgmInfoObj});
+			}
             String clientId = context.getHttpContext().getClientId();
             GXDebugInfo parentDbgInfo = parentTable.get(clientId);
             dbgInfo.parent = parentDbgInfo;
@@ -84,6 +92,8 @@ public class GXDebugManager
     private final Object saveLock = new Object();
     private final Object mSaveLock = new Object();
     private final ConcurrentHashMap<String, GXDebugInfo> parentTable = new ConcurrentHashMap<String, GXDebugInfo>();
+	private final HashSet<IntPair> pgmInfoTable = new HashSet<IntPair>();
+
     private static ExecutorService executorService;
 
     protected GXDebugItem pushSystem(int cmdCode){ return pushSystem(cmdCode, null); }
@@ -92,15 +102,22 @@ public class GXDebugManager
         return mPush(null, GXDebugMsgType.SYSTEM, cmdCode, 0, arg);
     }
 
-    protected GXDebugItem push(GXDebugInfo dbgInfo, int lineNro, int lineNro2)
+    protected GXDebugItem push(GXDebugInfo dbgInfo, int lineNro, int colNro)
     {
-        return mPush(dbgInfo, GXDebugMsgType.PGM_TRACE, lineNro, lineNro2, null);
+        return mPush(dbgInfo, GXDebugMsgType.PGM_TRACE, lineNro, colNro, null);
     }
 
-    protected GXDebugItem pushPgm(GXDebugInfo dbgInfo, int parentSId, PgmKey pgmKey)
+    protected GXDebugItem pushPgm(GXDebugInfo dbgInfo, int parentSId, IntPair pgmKey)
     {
         return mPush(dbgInfo, GXDebugMsgType.REGISTER_PGM, parentSId, 0, pgmKey);
     }
+
+	protected GXDebugItem pushRange(GXDebugInfo dbgInfo, int lineNro, int colNro, int lineNro2, int colNro2)
+	{
+		if((colNro != 0 || colNro2 != 0))
+			return mPush(dbgInfo, GXDebugMsgType.PGM_TRACE_RANGE_WITH_COLS, lineNro, lineNro2, new IntPair(colNro, colNro2));
+		else return mPush(dbgInfo, GXDebugMsgType.PGM_TRACE_RANGE, lineNro, lineNro2, null);
+	}
 
     private GXDebugItem mPush(GXDebugInfo dbgInfo, GXDebugMsgType msgType, int arg1, int arg2, Object argObj)
     {
@@ -158,6 +175,7 @@ public class GXDebugManager
                 GXDebugItem[] swap = current;
                 current = next;
                 next = swap;
+                pgmInfoTable.clear();
                 dbgIndex = 0;
             }
             return currentItem;
@@ -288,6 +306,12 @@ public class GXDebugManager
                                         stream.writeVLUInt((Integer) dbgItem.argObj);
                                         break;
                                     case EXIT:
+									case PGM_INFO:
+										Object [] info = (Object[])dbgItem.argObj;
+										stream.writeVLUInt(((IntPair)info[0]).left);
+										stream.writeVLUInt(((IntPair)info[0]).right);
+										stream.writeVLUInt(((PgmInfo)info[0]).dbgLines);
+										stream.writeInt(((PgmInfo)info[0]).hash);
                                         break;
                                     default:
                                         throw new IllegalArgumentException(String.format("Invalid DbgItem: %s", dbgItem));
@@ -299,13 +323,27 @@ public class GXDebugManager
                                 stream.writePgmTrace(dbgItem.dbgInfo.sId, dbgItem.arg1, dbgItem.arg2, dbgItem.ticks);
                             }
                             break;
-                            case REGISTER_PGM:
+							case PGM_TRACE_RANGE:
+							case PGM_TRACE_RANGE_WITH_COLS:
+							{
+								stream.writeByte(dbgItem.msgType.toByteInt());
+								stream.writeVLUInt(dbgItem.dbgInfo.sId);
+								stream.writeVLUInt(dbgItem.arg1);
+								stream.writeVLUInt(dbgItem.arg2);
+								if(dbgItem.msgType == GXDebugMsgType.PGM_TRACE_RANGE_WITH_COLS)
+								{
+									stream.writeVLUInt(((IntPair)dbgItem.argObj).left);
+									stream.writeVLUInt(((IntPair)dbgItem.argObj).right);
+								}
+							}
+							break;
+                        	case REGISTER_PGM:
                             {
                                 stream.writeByte(dbgItem.msgType.toByteInt());
                                 stream.writeVLUInt(dbgItem.dbgInfo.sId);
                                 stream.writeVLUInt(dbgItem.arg1);
-                                stream.writeVLUInt(((PgmKey) dbgItem.argObj).objClass);
-                                stream.writeVLUInt(((PgmKey) dbgItem.argObj).objId);
+                                stream.writeVLUInt(((IntPair) dbgItem.argObj).left);
+                                stream.writeVLUInt(((IntPair) dbgItem.argObj).right);
                             }
                             break;
                             case SKIP:
@@ -334,16 +372,19 @@ public class GXDebugManager
     }
 
     private static final int _SYSTEM = 0x80;
+	private static final int _PGM_TRACE_RANGE = _SYSTEM | 0x20;
     enum GXDebugMsgType
     {
         SYSTEM(_SYSTEM),
         PGM_TRACE(0x00),
         REGISTER_PGM(_SYSTEM | 0x40),
+		PGM_TRACE_RANGE( _PGM_TRACE_RANGE),
+		PGM_TRACE_RANGE_WITH_COLS(_PGM_TRACE_RANGE | 0x01),
         INVALID(0xFE),  // aca esta el limite
         SKIP(0xFF),     // no se graba
-        TRACE_HAS_LINE2(0x40),
+        TRACE_HAS_COL(0x40),
         TRACE_HAS_SID(0x30),
-        TRACE_HAS_LINE1(0x07);
+        TRACE_HAS_LINE1(0x08);
 
         private final short value;
         GXDebugMsgType(int value)
@@ -362,6 +403,7 @@ public class GXDebugManager
         INITIALIZE(0),
         OBJ_CLEANUP(1),
         EXIT(2),
+		PGM_INFO(3),
         MASK_BITS(0x3);
 
         private final short value;
@@ -425,17 +467,27 @@ public class GXDebugManager
         private String toStringTicks(){ return (msgType == GXDebugMsgType.PGM_TRACE ? String.format(" elapsed:%d", ticks) : ""); }
     }
 
-    class PgmKey
+    class IntPair
     {
-        final int objClass;
-        final int objId;
-        PgmKey(int objClass, int objId)
+        final int left;
+        final int right;
+        IntPair(int left, int right)
         {
-            this.objClass = objClass;
-            this.objId = objId;
+            this.left = left;
+            this.right = right;
         }
-
     }
+
+    class PgmInfo
+	{
+		final int dbgLines;
+		final long hash;
+		PgmInfo(int dbgLines, long hash)
+		{
+			this.dbgLines = dbgLines;
+			this.hash = hash;
+		}
+	}
 
     static class Stopwatch
     {
@@ -590,22 +642,31 @@ public class GXDebugManager
             writeLong(sessionGuid.getMostSignificantBits());
         }
 
-        void writeLong(long value) throws IOException
-        {
-            for (int i = 0; i < 8; i++)
-            {
-                writeByte((byte) (value & 0xFF));
-                value >>= 8;
-            }
-        }
+		void writeLong(long value) throws IOException
+		{
+			for (int i = 0; i < 8; i++)
+			{
+				writeByte((byte) (value & 0xFF));
+				value >>= 8;
+			}
+		}
 
-        private int LastSId, LastLine1;
+		void writeInt(long value) throws IOException
+		{
+			for (int i = 0; i < 4; i++)
+			{
+				writeByte((byte) (value & 0xFF));
+				value >>= 8;
+			}
+		}
 
-        void writePgmTrace(int SId, int line1, int line2, long ticks) throws IOException
+		private int LastSId, LastLine1;
+
+        void writePgmTrace(int SId, int line1, int col, long ticks) throws IOException
         {
             int cmd = GXDebugMsgType.PGM_TRACE.toByteInt();
-            if (line2 != 0)
-                cmd |= GXDebugMsgType.TRACE_HAS_LINE2.toByteInt();
+            if (col != 0)
+                cmd |= GXDebugMsgType.TRACE_HAS_COL.toByteInt();
             boolean hasSId = false;
             switch (SId - LastSId)
             {
@@ -637,8 +698,8 @@ public class GXDebugManager
                 writeVLUInt(SId);
             if (hasLine1)
                 writeVLUInt(line1);
-            if (line2 != 0)
-                writeVLUInt(line2);
+            if (col != 0)
+                writeVLUInt(col);
 
             LastSId = SId;
             LastLine1 = line1;

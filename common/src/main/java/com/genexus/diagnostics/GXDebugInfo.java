@@ -5,14 +5,14 @@ import com.genexus.ModelContext;
 public class GXDebugInfo
 {
     final ModelContext context;
-    final GXDebugManager.PgmKey key;
+    final GXDebugManager.IntPair key;
     GXDebugInfo parent;
     final int sId;
 
     GXDebugManager.GXDebugItem lastItem;
     final GXDebugManager.Stopwatch stopwatch;
 
-    public GXDebugInfo(int sId, ModelContext context, GXDebugManager.PgmKey dbgKey)
+    public GXDebugInfo(int sId, ModelContext context, GXDebugManager.IntPair dbgKey)
     {
         this.sId = sId;
         this.context = context;
@@ -28,12 +28,19 @@ public class GXDebugInfo
         stopwatch.restart();
     }
 
-    public void trk(int lineNro, int lineNro2)
+    public void trk(int lineNro, int colNro)
     {
         updateTicks();
-        lastItem = GXDebugManager.getInstance().push(this, lineNro, lineNro2);
+        lastItem = GXDebugManager.getInstance().push(this, lineNro, colNro);
         stopwatch.restart();
     }
+
+    public void trkRng(int lineNro, int colNro, int lineNro2, int colNro2)
+	{
+		updateTicks();
+		lastItem = GXDebugManager.getInstance().pushRange(this, lineNro, colNro, lineNro2, colNro2);
+		stopwatch.restart();
+	}
 
     public void onExit()
     {
