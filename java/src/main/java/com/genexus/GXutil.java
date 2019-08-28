@@ -592,7 +592,7 @@ public final class GXutil
 
 	public static String ltrimstr(java.math.BigDecimal value, int length, int decimals)
 	{
-		return CommonUtil.ltrim(CommonUtil.str(value, length, decimals, true));
+		return CommonUtil.ltrimstr(value, length, decimals);
 	}
 	public static String ltrimstr(double value, int length, int decimals)
 	{

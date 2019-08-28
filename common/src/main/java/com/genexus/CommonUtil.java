@@ -1037,6 +1037,10 @@ public final class CommonUtil
 		return ltrim(str(value, length, decimals));
 	}
 
+	public static String ltrimstr(BigDecimal value, int length, int decimals){
+		return ltrim(str(value, length, decimals, true));
+	}
+
 	public static String ltrimstr(long val, int digits, int decimals) {
 		return ltrim(str(val, digits, decimals));
 	}
