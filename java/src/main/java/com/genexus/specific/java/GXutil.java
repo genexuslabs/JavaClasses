@@ -140,7 +140,10 @@ public class GXutil implements IExtensionGXutil {
 
 	@Override
 	public Date serverDate(Object context, int handle, Object dataStore) {
-		return com.genexus.CommonUtil.resetTime(((IDataStoreProvider) dataStore).serverNow());
+		if (dataStore == null)
+			return serverDate(context, handle, "DEFAULT");
+		else
+			return com.genexus.CommonUtil.resetTime(((IDataStoreProvider) dataStore).serverNow());
 	}
 
 	@Override
