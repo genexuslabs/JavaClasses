@@ -632,7 +632,29 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 
 	public int indexof(int item)
 	{
-		return indexof(new Integer(item));
+		// Este caso es especial, pues las constantes enteras son de tipo int
+		if(elementsType == Long.class)
+		{
+			return indexof((long)item);
+		}else if(elementsType == Short.class)
+		{
+			return indexof((short)item);
+		}else if(elementsType == Byte.class)
+		{
+			return indexof((byte)item);
+		}else if(elementsType == Float.class)
+		{
+			return indexof((float)item);
+		}else if(elementsType == Integer.class)
+		{
+			return indexof(new Integer(item));
+		}else if(elementsType == java.math.BigDecimal.class)
+		{
+			return indexof(new java.math.BigDecimal(item));
+		}else
+		{
+			return indexof(new Double(item));
+		}
 	}
 
 	public int indexof(long item)
