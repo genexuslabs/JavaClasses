@@ -100,6 +100,10 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		return httpContext.isAjaxCallMode();
 	}
 
+	public void addString(String value) {
+		httpContext.GX_webresponse.addString(value);
+	}
+
 	public GXMasterPage createMasterPage(int remoteHandle, String fullClassName) {
 
 		String masterPage = this.context.getPreferences().getProperty("MasterPage", "");
