@@ -176,6 +176,10 @@ public final class GXutil
 	{
         return CommonUtil.rtrim(text);
 	}
+	public static String rtrim(String[] text)
+	{
+		return CommonUtil.rtrim(text[0]);
+	}
 	public static boolean endsWith(String s1, String s2)
 	{
 		return CommonUtil.endsWith(s1, s2);
