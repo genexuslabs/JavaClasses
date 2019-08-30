@@ -154,6 +154,11 @@ public class HttpContextWeb extends HttpContext {
 			else
 				Resource = ContextPath + "/" + Resource;
 		}
+		else
+		{
+			if (Resource.startsWith("/"))
+				Resource = Resource.substring(1);
+		}
 		
 		String baseName = FilenameUtils.getBaseName(Resource);
 		Resource = CommonUtil.replaceLast(Resource, baseName, PrivateUtilities.encodeFileName(baseName));
