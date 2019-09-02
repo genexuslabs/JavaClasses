@@ -77,7 +77,7 @@ public class GXServices {
 	public String configBaseDirectory() {
 		if (ApplicationContext.getInstance().isSpringBootApp())
 			return "";
-
+		
 		String baseDir = "";
 		String envVariable = System.getenv("LAMBDA_TASK_ROOT");
 		if (envVariable != null && envVariable.length() > 0)
