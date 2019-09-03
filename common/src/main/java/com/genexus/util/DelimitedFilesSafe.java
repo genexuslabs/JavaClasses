@@ -1,5 +1,7 @@
 package com.genexus.util;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.StringTokenizer;
 import java.util.Date;
 import java.io.*;
@@ -535,7 +537,9 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 				}
 				else
 				{
-					retdate = new Date(year-1900, month - 1, day);
+					Calendar calendar = GregorianCalendar.getInstance();
+					calendar.set(year-1900, month - 1, day);
+					retdate = calendar.getTime();
 				}
 
 			}
@@ -855,9 +859,11 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 			}
 			else
 			{
-				day   =  CommonUtil.padl(Integer.toString(date.getDate()), 2, "0");
-				month =  CommonUtil.padl(Integer.toString(date.getMonth() + 1), 2, "0");
-				year  =  CommonUtil.padl(Integer.toString(date.getYear() + 1900), 4, "0");
+				Calendar calendar = GregorianCalendar.getInstance();
+				calendar.setTime(date);
+				day   =  CommonUtil.padl(Integer.toString(calendar.get(Calendar.DAY_OF_MONTH)), 2, "0");
+				month =  CommonUtil.padl(Integer.toString(calendar.get(Calendar.MONTH) + 1), 2, "0");
+				year  =  CommonUtil.padl(Integer.toString(calendar.get(Calendar.YEAR) + 1900), 4, "0");
 			}
 
 			if	(toWrite == null)

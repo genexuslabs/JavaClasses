@@ -12,7 +12,7 @@ import com.genexus.GXBaseCollection;
 import java.util.Iterator;
 
 public class GXProperties implements IGxJSONSerializable{
-  private Vector vector = new Vector();
+  private Vector<GXProperty> vector = new Vector<>();
   private boolean eof;
   private int lastElement;
 
@@ -34,7 +34,7 @@ public class GXProperties implements IGxJSONSerializable{
 	  int index = findElement(name);
 	  if ( index >= 0)
 	  {
-		  ((GXProperty) vector.elementAt(index)).setValue(value);
+		  vector.elementAt(index).setValue(value);
 	  }
 	  else
 	  {
@@ -49,7 +49,7 @@ public class GXProperties implements IGxJSONSerializable{
   {
 	  int index = findElement(name);
 	  if (index >= 0)
-		return ((GXProperty)vector.elementAt(index)).getValue();
+		return vector.elementAt(index).getValue();
 	  else
 		  return "";
   }
@@ -82,7 +82,7 @@ public class GXProperties implements IGxJSONSerializable{
 
   public GXProperty item(int i)
   {
-    return (GXProperty) vector.elementAt(i);
+    return vector.elementAt(i);
   }
 
   public int count()
@@ -101,7 +101,7 @@ public class GXProperties implements IGxJSONSerializable{
 	  if (count() > 0)
 	  {
 		  lastElement = 0;
-		  return (GXProperty)vector.elementAt(0);
+		  return vector.elementAt(0);
 	  }
 	  else
 	  {
@@ -120,7 +120,7 @@ public class GXProperties implements IGxJSONSerializable{
 	  lastElement ++;
 	  if (count() > lastElement)
 	  {
-		  return (GXProperty)vector.elementAt(lastElement);
+		  return vector.elementAt(lastElement);
 	  }
 	  else
 	  {
@@ -162,7 +162,7 @@ public class GXProperties implements IGxJSONSerializable{
 				JSONObject jObj = new JSONObject(s);
 				Iterator<String> keys = jObj.keys();
 				while( keys.hasNext() ) {
-					String key = (String)keys.next();
+					String key = keys.next();
 					this.put(key, jObj.get(key).toString());
 				}
 				return true;

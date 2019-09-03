@@ -186,7 +186,7 @@ public class GXutil implements IExtensionGXutil {
 	}
 
 	@Override
-	public Object convertObjectTo(Class toClass, String objStr) {
+	public Object convertObjectTo(Class<?> toClass, String objStr) {
 
 		try {
 			if (com.genexus.internet.IGxJSONSerializable.class.isAssignableFrom(toClass)) {

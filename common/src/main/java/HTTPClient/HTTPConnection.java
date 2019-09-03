@@ -248,9 +248,9 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 
     /** The list of hosts for which no proxy is to be used */
     private static CIHashtable   non_proxy_host_list = new CIHashtable();
-    private static Vector        non_proxy_dom_list  = new Vector();
-    private static Vector        non_proxy_addr_list = new Vector();
-    private static Vector        non_proxy_mask_list = new Vector();
+    private static Vector<String>        non_proxy_dom_list  = new Vector<>();
+    private static Vector<byte[]>        non_proxy_addr_list = new Vector<>();
+    private static Vector<byte[]>        non_proxy_mask_list = new Vector<>();
 
     /** The socks server to use */
     private SocksClient          Socks_client = null;
@@ -308,10 +308,10 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
     private NVPair[]             DefaultHeaders = new NVPair[0];
 
     /** The default list of modules (as a Vector of Class objects) */
-    private static Vector        DefaultModuleList;
+    private static Vector<Class<?>>        DefaultModuleList;
 
     /** The list of modules (as a Vector of Class objects) */
-    private Vector               ModuleList;
+    private Vector<Class<?>>               ModuleList;
 
     /** controls whether modules are allowed to interact with user */
     private static boolean       defaultAllowUI = true;
@@ -421,7 +421,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 	catch (SecurityException se)
 	    { in_applet = true; }
 
-	DefaultModuleList = new Vector();
+	DefaultModuleList = new Vector<>();
 	String[] list     = Util.splitProperty(modules);
 	for (int idx=0; idx<list.length; idx++)
 	{
@@ -774,6 +774,7 @@ static
      * @param localAddr the local address to bind to; if null, it's ignored
      * @param localPort the local port to bind to
      */
+	@SuppressWarnings("unchecked")
     private void Setup(int prot, String host, int port, InetAddress localAddr,
 		       int localPort)
     {
@@ -793,7 +794,7 @@ static
 
 	Socks_client = Default_Socks_client;
 	Timeout      = DefaultTimeout;
-	ModuleList   = (Vector) DefaultModuleList.clone();
+	ModuleList   = (Vector<Class<?>>) DefaultModuleList.clone();
 	allowUI      = defaultAllowUI;
 	if (noKeepAlives)
 	    setDefaultHeaders(new NVPair[] { new NVPair("Connection", "close") });
@@ -818,7 +819,7 @@ static
 	// Check domain name list
 
 	for (int idx=0; idx<non_proxy_dom_list.size(); idx++)
-	    if (host.endsWith((String) non_proxy_dom_list.elementAt(idx)))
+	    if (host.endsWith(non_proxy_dom_list.elementAt(idx)))
 		return true;
 
 
@@ -835,8 +836,8 @@ static
 
 	for (int idx=0; idx<non_proxy_addr_list.size(); idx++)
 	{
-	    byte[] addr = (byte[]) non_proxy_addr_list.elementAt(idx);
-	    byte[] mask = (byte[]) non_proxy_mask_list.elementAt(idx);
+	    byte[] addr = non_proxy_addr_list.elementAt(idx);
+	    byte[] mask = non_proxy_mask_list.elementAt(idx);
 
 	    ip_loop: for (int idx2=0; idx2<host_addr.length; idx2++)
 	    {
@@ -1939,7 +1940,7 @@ static
      *
      * @return an array of classes
      */
-    public static Class[] getDefaultModules()
+    public static Class<?>[] getDefaultModules()
     {
 	return getModules(DefaultModuleList);
     }
@@ -1983,7 +1984,7 @@ static
      * @exception    RuntimeException if <var>module</var> cannot be
      *               instantiated.
      */
-    public static boolean addDefaultModule(Class module, int pos)
+    public static boolean addDefaultModule(Class<?> module, int pos)
     {
 	return addModule(DefaultModuleList, module, pos);
     }
@@ -1998,7 +1999,7 @@ static
      * @param module the module's Class object
      * @return true if module was successfully removed; false otherwise
      */
-    public static boolean removeDefaultModule(Class module)
+    public static boolean removeDefaultModule(Class<?> module)
     {
 	return removeModule(DefaultModuleList, module);
     }
@@ -2009,7 +2010,7 @@ static
      *
      * @return an array of classes
      */
-    public Class[] getModules()
+    public Class<?>[] getModules()
     {
 	return getModules(ModuleList);
     }
@@ -2054,17 +2055,17 @@ static
 	return removeModule(ModuleList, module);
     }
 
-    private static final Class[] getModules(Vector list)
+    private static final Class<?>[] getModules(Vector<Class<?>> list)
     {
 	synchronized(list)
 	{
-	    Class[] modules = new Class[list.size()];
+	    Class<?>[] modules = new Class<?>[list.size()];
 	    list.copyInto(modules);
 	    return modules;
 	}
     }
 
-    private static final boolean addModule(Vector list, Class module, int pos)
+    private static final boolean addModule(Vector<Class<?>> list, Class<?> module, int pos)
     {
 	if (module == null)  return false;
 
@@ -2097,7 +2098,7 @@ static
 	return true;
     }
 
-    private static final boolean removeModule(Vector list, Class module)
+    private static final boolean removeModule(Vector<Class<?>> list, Class<?> module)
     {
 	if (module == null)  return false;
 
@@ -2446,8 +2447,8 @@ static
 
 	ip_loop: for (int idx=0; idx<non_proxy_addr_list.size(); idx++)
 	{
-	    byte[] addr = (byte[]) non_proxy_addr_list.elementAt(idx);
-	    byte[] mask = (byte[]) non_proxy_mask_list.elementAt(idx);
+	    byte[] addr = non_proxy_addr_list.elementAt(idx);
+	    byte[] mask = non_proxy_mask_list.elementAt(idx);
 	    if (addr.length != ip_addr.length)  continue;
 
 	    for (int idx2=0; idx2<addr.length; idx2++)
@@ -2549,8 +2550,8 @@ static
 
 	ip_loop: for (int idx=0; idx<non_proxy_addr_list.size(); idx++)
 	{
-	    byte[] addr = (byte[]) non_proxy_addr_list.elementAt(idx);
-	    byte[] mask = (byte[]) non_proxy_mask_list.elementAt(idx);
+	    byte[] addr = non_proxy_addr_list.elementAt(idx);
+	    byte[] mask = non_proxy_mask_list.elementAt(idx);
 	    if (addr.length != ip_addr.length)  continue;
 
 	    for (int idx2=0; idx2<addr.length; idx2++)
@@ -2900,7 +2901,7 @@ static
 
 	    for (int idx=0; idx<ModuleList.size(); idx++)
 	    {
-		Class mod = (Class) ModuleList.elementAt(idx);
+		Class<?> mod = ModuleList.elementAt(idx);
 		try
 		    { mod_insts[idx] = (HTTPClientModule) mod.newInstance(); }
 		catch (Exception e)
@@ -3515,7 +3516,7 @@ static
     {
 	// copy User-Agent and Proxy-Auth headers from request
 
-	Vector hdrs = new Vector();
+	Vector<NVPair> hdrs = new Vector<>();
 	for (int idx=0; idx<req.getHeaders().length; idx++)
 	{
 	    String name = req.getHeaders()[idx].getName();
@@ -3837,7 +3838,7 @@ static
 	}
 	else if (ex_idx != -1)
 	{
-	    Vector expect_tokens;
+	    Vector<HttpHeaderElement> expect_tokens;
 	    try
 		{ expect_tokens = Util.parseHeader(hdrs[ex_idx].getValue()); }
 	    catch (ParseException pe)

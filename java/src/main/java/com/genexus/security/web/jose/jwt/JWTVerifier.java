@@ -101,7 +101,7 @@ public class JWTVerifier {
      * @throws JWTAlgorithmException when the algorithm is missing or unsupported
      * @throws IllegalStateException when token's structure is invalid or secret / public key does not match algorithm of token
      */
-    @SuppressWarnings("WeakerAccess")
+    @SuppressWarnings({"WeakerAccess", "unchecked"})
     public Map<String, Object> verify(final String token) throws NoSuchAlgorithmException, InvalidKeyException, IllegalStateException,
             IOException, SignatureException, JWTVerifyException {
         if (token == null || "".equals(token)) {

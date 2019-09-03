@@ -27,7 +27,7 @@ public class WebUtils
 
 	public static String encodeCookie(String parm)
 	{
-		return PrivateUtilities.URLEncode(parm);
+		return PrivateUtilities.URLEncode(parm, "UTF8");
 	}
 
 	public static String decodeCookie(String parm)
@@ -356,7 +356,7 @@ public class WebUtils
                             name = name.substring(0, questIdx) + "_impl";
                         }
                         name = CommonUtil.lower(name);
-			Class webComponentClass = null;
+			Class<?> webComponentClass;
 
 			if	(caller.getClassLoader() != null)
 			{

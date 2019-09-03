@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -385,21 +386,27 @@ public class GXFile extends AbstractGXFile {
                 if ((FileSource == null) || !(FileSource.isFile() && FileSource.exists())) {
                     ErrCode = 2;
                     ErrDescription = "File does not exist";
-                    return new Date(0, 0, 0);
+					GregorianCalendar calendar = new GregorianCalendar();
+					calendar.set(0, 0, 0);
+					return calendar.getTime();
                 } else {
                     try {
                         return FileSource.lastModified();
                     } catch (SecurityException e) {
                         ErrCode = 100;
                         ErrDescription = e.getMessage();
-                        return new Date(0, 0, 0);
+						GregorianCalendar calendar = new GregorianCalendar();
+						calendar.set(0, 0, 0);
+						return calendar.getTime();
                     }
                 }
             } catch (Exception e) {
                 setUnknownError(e);
             }
         }
-        return new Date(0, 0, 0);
+		GregorianCalendar calendar = new GregorianCalendar();
+		calendar.set(0, 0, 0);
+		return calendar.getTime();
     }
     
     public InputStream getStream() {
@@ -566,12 +573,12 @@ public class GXFile extends AbstractGXFile {
         return "";
     }
 
-    public Vector readAllLines() {
+    public Vector<String> readAllLines() {
         return readAllLines("");
     }
 
-    public Vector readAllLines(String encoding) {
-        Vector strColl = new Vector();
+    public Vector<String> readAllLines(String encoding) {
+        Vector<String> strColl = new Vector<>();
         if (sourceSeted()) {
             resetErrors();
             if ((FileSource == null) || !(FileSource.isFile() && FileSource.exists())) {
@@ -588,7 +595,7 @@ public class GXFile extends AbstractGXFile {
                     }
                     if (result != null) {
                         for (Iterator j = result.iterator(); j.hasNext();) {
-                            strColl.add((String) j.next());
+                            strColl.add((String)j.next());
                         }
                     }
                 } catch (IOException e) {

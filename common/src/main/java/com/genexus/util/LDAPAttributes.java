@@ -3,7 +3,7 @@ package com.genexus.util;
 import java.util.Vector;
 
 public class LDAPAttributes {
-  private Vector vector = new Vector();
+  private Vector<LDAPAttribute> vector = new Vector<>();
 
   public LDAPAttributes() {
   }
@@ -18,7 +18,7 @@ public class LDAPAttributes {
 
   public LDAPAttribute item(int i)
   {
-    return (LDAPAttribute) vector.elementAt(i);
+    return vector.elementAt(i);
   }
 
   public int count()

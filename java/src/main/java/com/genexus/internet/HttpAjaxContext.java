@@ -24,7 +24,7 @@ public abstract class HttpAjaxContext
         protected JSONObject HiddenValues = new JSONObject();
         protected JSONObject Messages = new JSONObject();
         private JSONObject WebComponents = new JSONObject();
-        private Hashtable LoadCommands = new Hashtable();
+        private Hashtable<Integer, JSONObject> LoadCommands = new Hashtable<>();
         private JSONArray Grids = new JSONArray();
         private JSONObject ComponentObjects = new JSONObject();
         protected GXAjaxCommandCollection commands = new GXAjaxCommandCollection();
@@ -38,7 +38,7 @@ public abstract class HttpAjaxContext
         private Object[] returnParms = new Object[] {};
         private Object[] returnParmsMetadata = new Object[] {};
 
-        private Stack cmpContents = new Stack();
+        private Stack<GXCmpContent> cmpContents = new Stack<>();
 
         public abstract boolean isMultipartContent();
 		public abstract void ajax_rsp_assign_prop_as_hidden(String Control, String Property, String Value);
@@ -234,7 +234,7 @@ public abstract class HttpAjaxContext
         protected void ajax_addCmpContent( String content)
         {
             if (nCmpDrawLvl > 0)
-                ((GXCmpContent)cmpContents.peek()).addContent(content);
+                (cmpContents.peek()).addContent(content);
         }
 
         public void ajax_rspStartCmp( String CmpId)
@@ -256,12 +256,12 @@ public abstract class HttpAjaxContext
           nCmpDrawLvl--;
           try
           {
-              GXCmpContent cmp = (GXCmpContent)cmpContents.pop();
+              GXCmpContent cmp = cmpContents.pop();
               WebComponents.put(cmp.getId(), cmp.getContent());
               if (isSpaRequest())
               {
                   if (nCmpDrawLvl > 0)
-                      ((GXCmpContent)cmpContents.peek()).addContent(cmp.getContent());
+                      (cmpContents.peek()).addContent(cmp.getContent());
               }
           }
           catch (JSONException ex)
@@ -581,7 +581,7 @@ public abstract class HttpAjaxContext
                         }
                         for(Enumeration loadCmds = LoadCommands.keys(); loadCmds.hasMoreElements();)
                         {
-                            appendAjaxCommand("load", (JSONObject)LoadCommands.get(loadCmds.nextElement()));
+                            appendAjaxCommand("load", LoadCommands.get(loadCmds.nextElement()));
                         }
                         if (commands.getCount() > 0)
                         {
@@ -825,12 +825,12 @@ public abstract class HttpAjaxContext
 
         class GXAjaxCommandCollection
         {
-                private ArrayList commands;
+                private ArrayList<GXAjaxCommand> commands;
                 private boolean allowUIRefresh;
 
                 public GXAjaxCommandCollection()
                 {
-                        commands = new ArrayList();
+                        commands = new ArrayList<>();
                         allowUIRefresh = true;
                 }
 
@@ -866,7 +866,7 @@ public abstract class HttpAjaxContext
                         int cIdx = commands.indexOf(cmd);
                         if (cIdx > 0)
                         {
-                                return (GXAjaxCommand)commands.get(cIdx);
+                                return commands.get(cIdx);
                         }
                         return null;
                 }
@@ -876,7 +876,7 @@ public abstract class HttpAjaxContext
                         JSONArray jArr = new JSONArray();
                         for(int i=0; i<commands.size(); i++)
                         {
-                                GXAjaxCommand cmd = (GXAjaxCommand)commands.get(i);
+                                GXAjaxCommand cmd = commands.get(i);
                                 jArr.put(cmd.getJSONObject());
                         }
                         return jArr;

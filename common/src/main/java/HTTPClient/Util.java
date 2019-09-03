@@ -229,6 +229,7 @@ public class Util
      * @param cntxt_list the list of lists indexed by context
      * @param cntxt the context
      */
+	@SuppressWarnings("unchecked")
     final static Hashtable getList(Hashtable cntxt_list, Object cntxt)
     {
 	synchronized (cntxt_list)
@@ -452,7 +453,7 @@ public class Util
      *         instance of <var>HttpHeaderElement</var>.
      * @exception ParseException if the syntax rules are violated.
      */
-    public final static Vector parseHeader(String header)  throws ParseException
+    public final static Vector<HttpHeaderElement> parseHeader(String header)  throws ParseException
     {
 	return parseHeader(header, true);
     }
@@ -489,12 +490,12 @@ public class Util
      * @exception ParseException if the above syntax rules are violated.
      * @see HTTPClient.HttpHeaderElement
      */
-    public final static Vector parseHeader(String header, boolean dequote)
+    public final static Vector<HttpHeaderElement> parseHeader(String header, boolean dequote)
 	    throws ParseException
     {
 	if (header == null)  return null;
 	char[]  buf    = header.toCharArray();
-	Vector  elems  = new Vector();
+	Vector<HttpHeaderElement>  elems  = new Vector<>();
 	boolean first  = true;
 	int     beg = -1, end = 0, len = buf.length, abeg[] = new int[1];
 	String  elem_name, elem_value;
@@ -701,13 +702,13 @@ public class Util
      * @return the request element, or null if none found.
      * @see #parseHeader(java.lang.String)
      */
-    public final static HttpHeaderElement getElement(Vector header, String name)
+    public final static HttpHeaderElement getElement(Vector<HttpHeaderElement> header, String name)
     {
 	int idx = header.indexOf(new HttpHeaderElement(name));
 	if (idx == -1)
 	    return null;
 	else
-	    return (HttpHeaderElement) header.elementAt(idx);
+	    return header.elementAt(idx);
     }
 
 
@@ -749,14 +750,14 @@ public class Util
      * @param the parsed header
      * @return a string containing the assembled header
      */
-    public final static String assembleHeader(Vector pheader)
+    public final static String assembleHeader(Vector<HttpHeaderElement> pheader)
     {
 	StringBuffer hdr = new StringBuffer(200);
 	int len = pheader.size();
 
 	for (int idx=0; idx<len; idx++)
 	{
-	    ((HttpHeaderElement) pheader.elementAt(idx)).appendTo(hdr);
+	    pheader.elementAt(idx).appendTo(hdr);
 	    hdr.append(", ");
 	}
 	hdr.setLength(hdr.length()-2);

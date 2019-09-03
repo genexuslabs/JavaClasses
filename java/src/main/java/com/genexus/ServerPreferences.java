@@ -9,7 +9,7 @@ public final class ServerPreferences extends Preferences
 	public static String fileName = "server.cfg";
 
 	private static ServerPreferences instance;
-	private static Hashtable preferences = new Hashtable();
+	private static Hashtable<String, ServerPreferences> preferences = new Hashtable<>();
 
     public static void setFileName(String iFileName)
     {
@@ -35,7 +35,7 @@ public final class ServerPreferences extends Preferences
 	{
 		String packageName = CommonUtil.getPackageName(resourceClass);
 
-		ServerPreferences ret = (ServerPreferences) preferences.get(packageName);
+		ServerPreferences ret = preferences.get(packageName);
 
 		if	(ret == null)
 		{

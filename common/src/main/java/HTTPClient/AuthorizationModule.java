@@ -57,7 +57,7 @@ class AuthorizationModule implements HTTPClientModule
 
     /** a list of deferred authorization retries (used with
 	Response.retryRequest()) */
-    private static Hashtable deferred_auth_list = new Hashtable();
+    private static Hashtable<HttpOutputStream, AuthorizationModule> deferred_auth_list = new Hashtable<>();
 
     /** counters for challenge and auth-info lists */
     private int	auth_lst_idx,
@@ -127,7 +127,7 @@ class AuthorizationModule implements HTTPClientModule
 	HttpOutputStream out = req.getStream();
 	if (out != null  &&  deferred_auth_list.get(out) != null)
 	{
-	    copyFrom((AuthorizationModule) deferred_auth_list.remove(out));
+	    copyFrom(deferred_auth_list.remove(out));
 	    req.copyFrom(saved_req);
 
 	    Log.write(Log.AUTH, "AuthM: Handling deferred auth challenge");
@@ -435,6 +435,7 @@ class AuthorizationModule implements HTTPClientModule
     /**
      *
      */
+	@SuppressWarnings("unchecked")
     private void handle_auth_challenge(Request req, Response resp)
 	    throws AuthSchemeNotImplException, IOException
     {
@@ -715,7 +716,7 @@ class AuthorizationModule implements HTTPClientModule
 
 	if (idx >= hdrs.length)  return false;
 
-	Vector pcon;
+	Vector<HttpHeaderElement> pcon;
 	try
 	    { pcon = Util.parseHeader(hdrs[idx].getValue()); }
 	catch (ParseException pe)
@@ -761,7 +762,7 @@ class AuthorizationModule implements HTTPClientModule
 	}
 	else
 	{
-	    Vector pcon;
+	    Vector<HttpHeaderElement> pcon;
 	    try
 		{ pcon = Util.parseHeader(hdrs[idx].getValue()); }
 	    catch (ParseException pe)
