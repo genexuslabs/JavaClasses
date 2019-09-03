@@ -176,6 +176,10 @@ public final class GXutil
 	{
         return CommonUtil.rtrim(text);
 	}
+	public static String rtrim(String[] text)
+	{
+		return CommonUtil.rtrim(text[0]);
+	}
 	public static boolean endsWith(String s1, String s2)
 	{
 		return CommonUtil.endsWith(s1, s2);
@@ -584,6 +588,19 @@ public final class GXutil
 	public static String ltrim(String text)
 	{
 		return CommonUtil.ltrim(text);
+	}
+	public static String ltrimstr(long val, int digits, int decimals)
+	{
+		return CommonUtil.ltrimstr(val, digits, decimals);
+	}
+
+	public static String ltrimstr(java.math.BigDecimal value, int length, int decimals)
+	{
+		return CommonUtil.ltrimstr(value, length, decimals);
+	}
+	public static String ltrimstr(double value, int length, int decimals)
+	{
+		return CommonUtil.ltrimstr(value, length, decimals);
 	}
 
 	public static String time()

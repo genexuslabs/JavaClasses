@@ -564,6 +564,19 @@ public final class GXutil
 	{
 		return CommonUtil.ltrim(text);
 	}
+	public static String ltrimstr(long val, int digits, int decimals)
+	{
+		return CommonUtil.ltrimstr(val, digits, decimals);
+	}
+
+	public static String ltrimstr(java.math.BigDecimal value, int length, int decimals)
+	{
+		return CommonUtil.ltrimstr(value, length, decimals);
+	}
+	public static String ltrimstr(double value, int length, int decimals)
+	{
+		return CommonUtil.ltrimstr(value, length, decimals);
+	}
 
 	public static String time()
 	{
