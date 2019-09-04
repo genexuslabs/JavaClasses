@@ -944,7 +944,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
     	else
     	{
 			String fileUri = "";
-			if (fileName.trim().length() != 0)
+			if (fileName.trim().length() != 0 && !(blobPath.startsWith(com.genexus.Preferences.getDefaultPreferences().getMultimediaPath()) && ((fileName.toLowerCase().startsWith("http://") || fileName.toLowerCase().startsWith("https://")))))
 				fileUri = GXDbFile.generateUri(fileName, !GXDbFile.hasToken(fileName), true);
 			else
 			{
