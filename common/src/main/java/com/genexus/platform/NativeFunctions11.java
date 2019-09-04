@@ -99,6 +99,8 @@ public class NativeFunctions11 implements INativeFunctions
         try
         {
             proc.waitFor();
+			inReader.stop();
+			errReader.stop();
             return true;
         }catch(InterruptedException wait){ ; }
     }
