@@ -428,8 +428,10 @@ public final class GXutil
 		// Aca el numero tiene el valor redondeado y tiene los decimales correctos. Ahora
 		// hay que empezar a achicarlo si no entra en el espacio indicado.
 
-
-
+	public static String str(int[] value, int length, int decimals)
+	{
+		return str(value[0], length, decimals);
+	}
 
 	public static String str(double value, int length, int decimals)
 	{
