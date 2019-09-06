@@ -1555,7 +1555,14 @@ private void commit_impl() throws SQLException
 	{
 		if (dbmsId == null)
 		{
-			dbmsId = dataSource.dbms.connectionPhysicalId(this);
+			if(context.getPreferences().getProperty("DontGetConId", "0").equals("1"))
+			{
+				dbmsId = "";
+			}
+			else
+			{
+				dbmsId = dataSource.dbms.connectionPhysicalId(this);
+			}
 		}
 		
 		return dbmsId;
