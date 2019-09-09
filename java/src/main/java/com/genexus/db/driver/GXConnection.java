@@ -1562,7 +1562,6 @@ private void commit_impl() throws SQLException
 		{
 			dbmsId = dataSource.dbms.connectionPhysicalId(this);
 		}
-		
 		return dbmsId;
 	}
 
