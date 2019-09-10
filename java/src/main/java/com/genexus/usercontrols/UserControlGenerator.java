@@ -1,6 +1,5 @@
 package com.genexus.usercontrols;
-import java.io.File;
-import java.io.StringWriter;
+import java.io.*;
 import java.util.Date;
 
 import com.genexus.ModelContext;
@@ -29,7 +28,15 @@ public class UserControlGenerator
 		if (getTemplateDateTime() > lastRenderTime)
 		{
 			MustacheFactory mf = new DefaultMustacheFactory();
-			mustache = mf.compile(getTemplateFile(this.controlType));
+			try
+			{
+				Reader reader = new InputStreamReader(new FileInputStream(getTemplateFile(this.controlType)), "utf-8");
+				mustache = mf.compile(reader, getTemplateFile(this.controlType));
+			}
+			catch (Exception e)
+			{
+				mustache = mf.compile(getTemplateFile(this.controlType));
+			}
 			lastRenderTime = new Date().getTime();
 		}
 		
