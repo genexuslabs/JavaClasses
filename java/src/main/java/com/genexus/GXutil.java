@@ -148,7 +148,7 @@ public final class GXutil
 
     public static String formatDateTimeParm(Date date)
     {
-        return CommonUtil.formatDateParm(date);
+        return CommonUtil.formatDateTimeParm(date);
     }
 
     public static String formatDateParm(Date date)
@@ -175,6 +175,10 @@ public final class GXutil
 	public static String rtrim(String text)
 	{
         return CommonUtil.rtrim(text);
+	}
+	public static String rtrim(String[] text)
+	{
+		return CommonUtil.rtrim(text[0]);
 	}
 	public static boolean endsWith(String s1, String s2)
 	{
@@ -424,8 +428,10 @@ public final class GXutil
 		// Aca el numero tiene el valor redondeado y tiene los decimales correctos. Ahora
 		// hay que empezar a achicarlo si no entra en el espacio indicado.
 
-
-
+	public static String str(int[] value, int length, int decimals)
+	{
+		return str(value[0], length, decimals);
+	}
 
 	public static String str(double value, int length, int decimals)
 	{
@@ -584,6 +590,19 @@ public final class GXutil
 	public static String ltrim(String text)
 	{
 		return CommonUtil.ltrim(text);
+	}
+	public static String ltrimstr(long val, int digits, int decimals)
+	{
+		return CommonUtil.ltrimstr(val, digits, decimals);
+	}
+
+	public static String ltrimstr(java.math.BigDecimal value, int length, int decimals)
+	{
+		return CommonUtil.ltrimstr(value, length, decimals);
+	}
+	public static String ltrimstr(double value, int length, int decimals)
+	{
+		return CommonUtil.ltrimstr(value, length, decimals);
 	}
 
 	public static String time()
@@ -1127,7 +1146,7 @@ public final class GXutil
 		}
 		catch(  UnsupportedEncodingException e)
 		{
-			return Codecs.encode(s);
+			return s;
 		}
 	}
 

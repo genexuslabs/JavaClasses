@@ -1,4 +1,6 @@
 package com.genexus.webpanels;
+import org.apache.commons.io.IOUtils;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
@@ -11,9 +13,9 @@ import javax.servlet.http.HttpServletRequest;
 public class HttpUtils
 {
 
-  public static Hashtable parseMultipartPostData(FileItemCollection fileItemCollection)
+  public static Hashtable<String, String[]> parseMultipartPostData(FileItemCollection fileItemCollection)
   {
-    Hashtable ht = new Hashtable();
+    Hashtable<String, String[]> ht = new Hashtable<>();
     for (int i=0; i<fileItemCollection.getCount(); i++)
     {
       FileItem item = fileItemCollection.item(i);
@@ -45,11 +47,11 @@ public class HttpUtils
     return ht;
   }
 
-  public static Hashtable parseQueryString(String s)
+  public static Hashtable<String, String[]> parseQueryString(String s)
     {
 	if(s == null)
 	    throw new IllegalArgumentException();
-	Hashtable ht = new Hashtable();
+	Hashtable<String, String[]> ht = new Hashtable<>();
 	StringBuffer sb = new StringBuffer();
 	String key;
 	for(StringTokenizer st = new StringTokenizer(s, "&"); st.hasMoreTokens();)
@@ -66,7 +68,7 @@ public class HttpUtils
 	return ht;
     }
 
-    public static void pushValue( Hashtable ht, String key, String val)
+    public static void pushValue( Hashtable<String, String[]> ht, String key, String val)
     {
       String valArray[] = null;
       if(ht.containsKey(key))
@@ -85,11 +87,11 @@ public class HttpUtils
       ht.put(key, valArray);
     }
 
-    public static Hashtable parsePostData(HttpServletRequest request)
+    public static Hashtable<String, String[]> parsePostData(HttpServletRequest request)
     {
     	String paramName = null;
     	String paramValues[] = null;
-    	Hashtable ht = new Hashtable();
+    	Hashtable<String, String[]> ht = new Hashtable<>();
     	String value;
     	for(Enumeration params = request.getParameterNames(); params.hasMoreElements();)
     	{
@@ -103,42 +105,19 @@ public class HttpUtils
     	return ht;
     }
 
-    public static Hashtable parsePostData(int len, ServletInputStream in)
+    public static Hashtable<String, String[]> parsePostData(ServletInputStream in)
     {
-	if(len <= 0)
-	    return new Hashtable();
-	if(in == null)
-	    throw new IllegalArgumentException();
-	byte postedBytes[] = new byte[len];
-	try
-	{
-	    int offset = 0;
-	    do
-	    {
-		int inputLen = in.read(postedBytes, offset, len - offset);
-		if(inputLen <= 0)
+		if(in == null)
+			throw new IllegalArgumentException();
+		try
 		{
-		    throw new IllegalArgumentException ("err.io.short_read : length " + len + " read : " + offset + " Content: \n" + new String(postedBytes));
+			return parseQueryString(IOUtils.toString(in, "8859_1"));
 		}
-		offset += inputLen;
-	    } while(len - offset > 0);
-	}
-	catch(IOException e)
-	{
-	    throw new IllegalArgumentException(e.getMessage());
-	}
-	try
-	{
-	    String postedBody = new String(postedBytes, 0, len, "8859_1");
-	    return parseQueryString(postedBody);
-	}
-	catch(UnsupportedEncodingException e)
-	{
-	    throw new IllegalArgumentException(e.getMessage());
-	}
+		catch(IOException e)
+		{
+			throw new IllegalArgumentException(e.getMessage());
+		}
     }
-
-	private static String encoding = "UTF8";
 
     private static String parseName(String s, StringBuffer sb)
     {

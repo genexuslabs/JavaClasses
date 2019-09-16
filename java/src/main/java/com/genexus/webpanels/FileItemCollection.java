@@ -32,7 +32,7 @@ public class FileItemCollection
                     name = GXDbFile.getFileName(completeFileName) + (type.trim().length() == 0 ? "" : ".") + type;
                     if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) == null)
                     {
-                        name = rootPath + name;
+                        name = rootPath + GXDbFile.generateUri(name, true, false);
                     }
                     else
                     {

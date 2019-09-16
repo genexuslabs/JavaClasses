@@ -58,7 +58,7 @@ import java.util.NoSuchElementException;
 public final class Response implements RoResponse, GlobalConstants, Cloneable
 {
     /** This contains a list of headers which may only have a single value */
-    private static final Hashtable singleValueHeaders;
+    private static final Hashtable<String, String> singleValueHeaders;
 
     /** our http connection */
     private HTTPConnection connection;
@@ -151,9 +151,13 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
 	    "age", "location", "content-base", "content-length",
 	    "content-location", "content-md5", "content-range", "content-type",
 	    "date", "etag", "expires", /*"proxy-authenticate",*/ "retry-after",
-	};	// @Gusbro:	// @HACK: Por alguna razon esta puesto que el proxy-authenticate solo banque	// uno solo tipo. Lo saco para que se banque varios esquemas de autenticacion	// a la vez
+	};
+	// @Gusbro:
+	// @HACK: Por alguna razon esta puesto que el proxy-authenticate solo banque
+	// uno solo tipo. Lo saco para que se banque varios esquemas de autenticacion
+	// a la vez
 
-	singleValueHeaders = new Hashtable(singleValueHeaderNames.length);
+	singleValueHeaders = new Hashtable<>(singleValueHeaderNames.length);
 	for (int idx=0; idx<singleValueHeaderNames.length; idx++)
 	  singleValueHeaders.put(singleValueHeaderNames[idx],
 				 singleValueHeaderNames[idx]);
@@ -735,17 +739,17 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
 	// parse the Transfer-Encoding header
 
 	boolean te_chunked = false, te_is_identity = true, ct_mpbr = false;
-	Vector  te_hdr = null;
+	Vector<HttpHeaderElement>  te_hdr = null;
 	try
 	    { te_hdr = Util.parseHeader((String) Headers.get("Transfer-Encoding")); }
 	catch (ParseException pe)
 	    { }
 	if (te_hdr != null)
 	{
-	    te_chunked = ((HttpHeaderElement) te_hdr.lastElement()).getName().
+	    te_chunked = te_hdr.lastElement().getName().
 			 equalsIgnoreCase("chunked");
 	    for (int idx=0; idx<te_hdr.size(); idx++)
-		if (((HttpHeaderElement) te_hdr.elementAt(idx)).getName().
+		if (te_hdr.elementAt(idx).getName().
 		    equalsIgnoreCase("identity"))
 		    te_hdr.removeElementAt(idx--);
 		else
@@ -843,7 +847,7 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
 	    else
 		deleteHeader("Proxy-Connection");
 
-	    Vector pco;
+	    Vector<HttpHeaderElement> pco;
 	    try
 		{ pco = Util.parseHeader((String) Headers.get("Connection")); }
 	    catch (ParseException pe)
@@ -854,7 +858,7 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
 		for (int idx=0; idx<pco.size(); idx++)
 		{
 		    String name =
-			    ((HttpHeaderElement) pco.elementAt(idx)).getName();
+			    pco.elementAt(idx).getName();
 		    if (!name.equalsIgnoreCase("keep-alive"))
 		    {
 			pco.removeElementAt(idx);
@@ -879,7 +883,7 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
 		for (int idx=0; idx<pco.size(); idx++)
 		{
 		    String name =
-			    ((HttpHeaderElement) pco.elementAt(idx)).getName();
+			    pco.elementAt(idx).getName();
 		    if (!name.equalsIgnoreCase("keep-alive"))
 		    {
 			pco.removeElementAt(idx);
@@ -1179,31 +1183,73 @@ public final class Response implements RoResponse, GlobalConstants, Cloneable
 
 	// get the rest of the headers
 
-	parseHeaderFields(lines, Headers);		//@gusbro: HACK	// El siguiente Hack es para que el Basic quede primero	// Se activa si la SystemProperty 'HTTPClient.useBasicFirst'=true	try	{
+	parseHeaderFields(lines, Headers);
+	
+	//@gusbro: HACK
+	// El siguiente Hack es para que el Basic quede primero
+	// Se activa si la SystemProperty 'HTTPClient.useBasicFirst'=true
+	try
+	{
 		if(System.getProperty("HTTPClient.useBasicFirst", "false").equalsIgnoreCase("true"))
-		{			String old_value  = (String) Headers.get("Proxy-Authenticate");
-			if (old_value != null)			{
+		{
+			String old_value  = (String) Headers.get("Proxy-Authenticate");
+			if (old_value != null)
+			{
 				StringTokenizer tok = new StringTokenizer(old_value, ",");
 				String[] list = new String[tok.countTokens()];
-				for (int idx=0; idx<list.length; idx++)				{					String token = tok.nextToken().trim();					if(token.toLowerCase().startsWith("basic"))					{
-						list[idx] = list[0];						list[0] = token;
-							 					}					else					{						list[idx] = token;					}									}				String result = "";
-				for (int idx=0; idx<list.length - 1; idx++)				{					result += list[idx] + ", ";
+				for (int idx=0; idx<list.length; idx++)
+				{
+					String token = tok.nextToken().trim();
+					if(token.toLowerCase().startsWith("basic"))
+					{
+						list[idx] = list[0];
+						list[0] = token;
+							 
+					}
+					else
+					{
+						list[idx] = token;
+					}					
+				}
+				String result = "";
+				for (int idx=0; idx<list.length - 1; idx++)
+				{
+					result += list[idx] + ", ";
 				}							
 				result += list[list.length - 1];
-				Headers.put("Proxy-Authenticate", result);			}						old_value  = (String) Headers.get("WWW-Authenticate");
-			if (old_value != null)			{
+				Headers.put("Proxy-Authenticate", result);
+			}
+			
+			old_value  = (String) Headers.get("WWW-Authenticate");
+			if (old_value != null)
+			{
 				StringTokenizer tok = new StringTokenizer(old_value, ", ");
 				String[] list = new String[tok.countTokens()];
-				for (int idx=0; idx<list.length; idx++)				{					String token = tok.nextToken().trim();					if(token.toLowerCase().startsWith("basic"))					{
-						list[idx] = list[0];						list[0] = token;
-							 					}					else					{						list[idx] = token;					}									}				String result = "";
-				for (int idx=0; idx<list.length - 1; idx++)				{					result += list[idx] + ", ";
+				for (int idx=0; idx<list.length; idx++)
+				{
+					String token = tok.nextToken().trim();
+					if(token.toLowerCase().startsWith("basic"))
+					{
+						list[idx] = list[0];
+						list[0] = token;
+							 
+					}
+					else
+					{
+						list[idx] = token;
+					}					
+				}
+				String result = "";
+				for (int idx=0; idx<list.length - 1; idx++)
+				{
+					result += list[idx] + ", ";
 				}							
 				result += list[list.length - 1];
-				Headers.put("WWW-Authenticate", result);			}
+				Headers.put("WWW-Authenticate", result);
+			}
 			
-		}	}catch(Exception e){ ; }
+		}
+	}catch(Exception e){ ; }
 
 
 	/* make sure the connection isn't closed prematurely if we have

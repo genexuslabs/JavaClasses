@@ -64,12 +64,12 @@ class TransferEncodingModule implements HTTPClientModule
 	    if (hdrs[idx].getName().equalsIgnoreCase("TE"))
 		break;
 
-	Vector pte;
+	Vector<HttpHeaderElement> pte;
 	if (idx == hdrs.length)
 	{
 	    hdrs = Util.resizeArray(hdrs, idx+1);
 	    req.setHeaders(hdrs);
-	    pte = new Vector();
+	    pte = new Vector<>();
 	}
 	else
 	{
@@ -152,7 +152,7 @@ class TransferEncodingModule implements HTTPClientModule
 	if (te == null  ||  req.getMethod().equals("HEAD"))
 	    return;
 
-	Vector pte;
+	Vector<HttpHeaderElement> pte;
 	try
 	    { pte = Util.parseHeader(te); }
 	catch (ParseException pe)
@@ -160,7 +160,7 @@ class TransferEncodingModule implements HTTPClientModule
 
 	while (pte.size() > 0)
 	{
-	    String encoding = ((HttpHeaderElement) pte.lastElement()).getName();
+	    String encoding = pte.lastElement().getName();
 	    if (encoding.equalsIgnoreCase("gzip"))
 	    {
 		Log.write(Log.MODS, "TEM:   pushing gzip-input-stream");

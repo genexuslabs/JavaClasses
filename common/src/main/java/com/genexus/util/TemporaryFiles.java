@@ -9,7 +9,7 @@ import java.io.File;
 
 public class TemporaryFiles implements ICleanedup 
 {
-    private static final Vector files = new Vector();
+    private static final Vector<String> files = new Vector<>();
     private static final INativeFunctions nativeCode = SpecificImplementation.NativeFunctions.getInstance();
     private static final TemporaryFiles temporaryFiles = new TemporaryFiles();
     
@@ -92,9 +92,10 @@ public class TemporaryFiles implements ICleanedup
     /** Obtiene una copia del vector de archivos temporales
      * @return una copia del Vector de archivos temporales
      */
-    public Vector getFiles()
+	@SuppressWarnings("unchecked")
+    public Vector<String> getFiles()
     {
-        return (Vector)files.clone();
+        return (Vector<String>)files.clone();
     }
     
 }

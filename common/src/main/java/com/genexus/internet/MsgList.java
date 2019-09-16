@@ -8,7 +8,7 @@ import json.org.json.*;
 
 import com.genexus.GXBaseCollection;
 
-public class MsgList extends java.util.Vector implements IGxJSONAble
+public class MsgList extends java.util.Vector<Msg> implements IGxJSONAble
 {
     JSONArray jsonArr = new JSONArray();
 	final byte MESSAGE_TYPE_ERROR = 1;

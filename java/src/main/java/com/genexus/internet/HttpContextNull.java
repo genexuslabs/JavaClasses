@@ -22,6 +22,7 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
        private HttpGXServletRequest request;
 	   private WebSession webSession;
 	   private String defaultPath = "";
+	   private String contextPath = "";
 	   private Hashtable<String, String> cookies;	   
 
 	public HttpContext copy()
@@ -53,8 +54,10 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 
 	public String getContextPath()
 	{
-		return "";
+		return contextPath;
 	}
+
+	public void setContextPath(String path) {this.contextPath = path;}
 
 	public String getDefaultPath()
 	{
@@ -412,7 +415,4 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 	public void getMultimediaValue(String internalName, String[] blobVar, String[] uriVar) { blobVar[0] = ""; uriVar[0] = ""; }
 	public void cleanup() {}
 	public boolean isMultipartContent() { return false; }
-	
-	public String getRepositoryPath() {return "";}
-	public void  setRepositoryPath(String path) {}	
 }

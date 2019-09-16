@@ -37,7 +37,7 @@ public class PDF implements Serializable
     /**
      * This vector contains each indirect object within the document.
      */
-    protected Vector objects;
+    protected Vector<Object> objects;
 
     /**
      * This is the Catalog object, which is required by each PDF Document
@@ -111,9 +111,9 @@ public class PDF implements Serializable
     /**
      * This holds the current fonts
      */
-    private Vector fonts;
+    private Vector<PDFFont> fonts;
 
-    private Vector images;
+    private Vector<PDFImage> images;
 
     /**
      * This holds the platform dependent package name
@@ -160,9 +160,9 @@ public class PDF implements Serializable
      */
     public PDF(int pagemode) {
 	objser = 1;
-	objects = new Vector();
-	fonts = new Vector();
-        images = new Vector();
+	objects = new Vector<>();
+	fonts = new Vector<>();
+        images = new Vector<>();
 
 	// Now create some standard objects
 	add(pages = new pages());
@@ -231,37 +231,25 @@ public class PDF implements Serializable
      * @param style java.awt.Font style (NORMAL, BOLD etc)
      * @return PDFFont defining this font
      */
-    public PDFFont getFont(String type, Font f)
-    {
-      String fontName = f.getName();
-      int style = f.getStyle();
-	for(Enumeration en = fonts.elements(); en.hasMoreElements(); ) {
-	    PDFFont ft = (PDFFont) en.nextElement();
-	    if(ft.equals(type,fontName,style))
-		return ft;
-	}
+    public PDFFont getFont(String type, Font f) {
+        String fontName = f.getName();
+        int style = f.getStyle();
+        for (Enumeration en = fonts.elements(); en.hasMoreElements(); ) {
+            PDFFont ft = (PDFFont) en.nextElement();
+            if (ft.equals(type, fontName, style))
+                return ft;
+        }
 
-	// the font wasn't found, so create it
-	fontid++;
-	PDFFont ft = new PDFFont("/F"+fontid,type, f);
-	add(ft);
-	if(ft.getType().equalsIgnoreCase("/TrueType"))
-	{ // Si el Font es un TrueTypeFont, debo agregar al diccionario un FontDescriptor
-		PDFFontDescriptor fontDescriptor = PDFFontDescriptor.getPDFFontDescriptor();
-		props.setupProperty(Const.EMBEED_SECTION, ft.getRealFontName(), props.getGeneralProperty(Const.EMBEED_SECTION, "false"));
+        // the font wasn't found, so create it
+        fontid++;
+        PDFFont ft = new PDFFont("/F" + fontid, type, f);
+        add(ft);
 
-		fontDescriptor.init(ft, props.getBooleanGeneralProperty(Const.EMBEED_SECTION, false) && props.getBooleanProperty(Const.EMBEED_SECTION, ft.getRealFontName(), false));
-		add((PDFFontDescriptor)fontDescriptor); // Agrego el fontDescriptor y obtengo el SerialID
-		ft.setFontDescriptor(fontDescriptor);
-		if(fontDescriptor.getEmbeededFontStream() != null) // Si tengo un Stream del EmbeededFont, lo agrego al diccionario
-			add(fontDescriptor.getEmbeededFontStream());
-	}
-
-	fonts.addElement(ft);
-	return ft;
+        fonts.addElement(ft);
+        return ft;
     }
 
-    public PDFImage getImage(String filename, Image image, int x, int y, int width, int height, ImageObserver obs)
+	public PDFImage getImage(String filename, Image image, int x, int y, int width, int height, ImageObserver obs)
     {
         for(Enumeration en = images.elements(); en.hasMoreElements(); ) {
             PDFImage im = (PDFImage) en.nextElement();
@@ -461,7 +449,7 @@ public class PDF implements Serializable
 	/**
 	 * This vector contains offsets of each object
 	 */
-	protected Vector offsets;
+	protected Vector<xref> offsets;
 
 	/**
 	 * This is used to track the /Root object (catalog)
@@ -482,7 +470,7 @@ public class PDF implements Serializable
 	{
 	    this.os = os;
 	    offset = 0;
-	    offsets = new Vector();
+	    offsets = new Vector<>();
 	    baos = new ByteArrayOutputStream();
 
 	    // Now write the PDF header
@@ -540,7 +528,7 @@ public class PDF implements Serializable
 	    // but just in case:
 	    int firstid = 0;			// First id in block
 	    int lastid = -1;			// The last id used
-	    Vector block = new Vector();	// xrefs in this block
+	    Vector<xref> block = new Vector<>();	// xrefs in this block
 
 	    // We need block 0 to exist
 	    block.addElement(new xref(0,0,65535));
@@ -606,7 +594,7 @@ public class PDF implements Serializable
 	 * @param block Vector containing the references in this block
 	 * @exception IOException on write error
 	 */
-	protected void writeblock(int firstid,Vector block) throws IOException
+	protected void writeblock(int firstid,Vector<xref> block) throws IOException
 	{
 	    baos.write(Integer.toString(firstid).getBytes());
 	    baos.write(" ".getBytes());
@@ -729,14 +717,14 @@ public class PDF implements Serializable
 	/**
 	 * This holds the pages
 	 */
-	private Vector pages;
+	private Vector<PDFPage> pages;
 
 	/**
 	 * This constructs a PDF Pages object.
 	 */
 	public pages() {
 	    super("/Pages");
-	    pages = new Vector();
+	    pages = new Vector<>();
 	}
 
 	/**

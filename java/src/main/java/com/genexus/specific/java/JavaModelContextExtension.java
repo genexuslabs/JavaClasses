@@ -67,10 +67,10 @@ public class JavaModelContextExtension implements IExtensionModelContext {
                 {
                     proc = CommonUtil.getClassName(proc);
                 }
-                Class c = Class.forName(proc);
-                Class[] parTypes = new Class[] {int.class, ModelContext.class};
+                Class<?> c = Class.forName(proc);
+                Class<?>[] parTypes = new Class[] {int.class, ModelContext.class};
                 Constructor ct = c.getConstructor(parTypes);
-                Object[] arglist = new Object[] { new Integer(remoteHandle), this };
+                Object[] arglist = new Object[] { new Integer(remoteHandle), context };
                 Object obj = ct.newInstance(arglist);
                 Class[] parameterTypes = new Class[] {com.genexus.db.DBConnection[].class};
                 com.genexus.db.DBConnection[] aP1 = new com.genexus.db.DBConnection[1];
@@ -137,10 +137,10 @@ public class JavaModelContextExtension implements IExtensionModelContext {
                 {
                     proc = CommonUtil.getClassName(proc);
                 }
-                Class c = Class.forName(proc);
+                Class<?> c = Class.forName(proc);
                 Class[] parTypes = new Class[] {int.class, ModelContext.class};
                 Constructor ct = c.getConstructor(parTypes);
-                Object[] arglist = new Object[] { new Integer(handle), this};
+                Object[] arglist = new Object[] { new Integer(handle), modelContext};
                 Object obj = ct.newInstance(arglist);
                 Class[] parameterTypes = new Class[] {String.class};
                 String aP0 = dataSource.name;
@@ -172,6 +172,7 @@ public class JavaModelContextExtension implements IExtensionModelContext {
         {
             HttpContext newHttpContext = (HttpContext) newContext.getHttpContext();
             newHttpContext.setDefaultPath(ctx.getDefaultPath());
+            newHttpContext.setContextPath(ctx.getContextPath());
             newHttpContext.setStaticContentBase(ctx.getStaticContentBase());
             newHttpContext.setClientId(ctx.getClientId());
             newHttpContext.setLanguage(ctx.getLanguage());

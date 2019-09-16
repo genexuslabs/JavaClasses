@@ -1,6 +1,11 @@
+| Branch | Status
+|---|---
+|master|[![Build Status](https://dev.azure.com/gxazure/Java-classes/_apis/build/status/Build%20JavaClasses%20(master)?branchName=master)](https://dev.azure.com/gxazure/Java-classes/_build/latest?definitionId=2&branchName=master)
+|beta|[![Build Status](https://dev.azure.com/gxazure/Java-classes/_apis/build/status/Build%20JavaClasses%20(beta)?branchName=beta)](https://dev.azure.com/gxazure/Java-classes/_build/latest?definitionId=6&branchName=beta)
+
 # GeneXus Standard Classes for Java
 
-Note that this is a **Work in Progress**. **These classes are not intended to be used as release library yet**.
+These are the source of the GeneXus Standard Classes for Java, valid since GeneXus 16 Upgrade 4.
 
 ## Modules
 
@@ -10,11 +15,14 @@ Note that this is a **Work in Progress**. **These classes are not intended to be
 | gxcryptocommon | Classes common to Android and Java related to Cryptography
 | apacheandroid | Android apache class dependence. These were separated by size issues. They are candidates to disappear in the near future
 | gxmail | Classes related to mail handling
-| java | Java standard classes
+| java | Java standard classes,  output is gxclassr.jar
 | gxoffice | Formerly Java classes are now separated to be included only when using office. 
 | gxsearch | Formerly in Java classes are now separated to be included only when using search.
 | gxandroidpublisher and javapns | They are necessary for when you have Push Notifications in your old implementation. These are projects that should disappear in the short term.
 | android | The standard Android classes. **Note that this is not the full runtime for Android, the full runtime can be created by using the Android Flexible Client project**.
+| gxexternalproviders | Implements service provider for IBM Cloud, Google, Azure, Amazon
+| gxgeospatial | Geography data type implementation
+| gxodata | OData access
 
 The dependencies between the projects are specified in each pom.xml within their directory.
 

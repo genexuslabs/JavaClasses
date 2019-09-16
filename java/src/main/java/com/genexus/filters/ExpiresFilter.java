@@ -734,6 +734,7 @@ public class ExpiresFilter implements Filter {
         }
 
         @Override
+		@Deprecated
         public void setStatus(int sc, String sm) {
             this.status = sc;
             super.setStatus(sc, sm);

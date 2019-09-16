@@ -10,7 +10,7 @@ import javax.management.ObjectName;
 public class MBeanUtils {
 	
 	private static MBeanServer mbs = null;
-	private static Vector registeredObjects = new Vector();
+	private static Vector<ObjectName> registeredObjects = new Vector<>();
 	
   public MBeanUtils() {
   }
@@ -172,7 +172,7 @@ public class MBeanUtils {
 	  {
 		for (int i = 0; i < registeredObjects.size(); i++)
 		{
-			mbs.unregisterMBean((ObjectName) registeredObjects.elementAt(i));
+			mbs.unregisterMBean(registeredObjects.elementAt(i));
 		}
 	  }
 	  catch(javax.management.InstanceNotFoundException e)

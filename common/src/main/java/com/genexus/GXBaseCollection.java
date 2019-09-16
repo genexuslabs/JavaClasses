@@ -54,6 +54,7 @@ public class GXBaseCollection<T extends GXXMLSerializable> extends GXSimpleColle
 	{
 		return false;
 	}
+	@SuppressWarnings("unchecked")
 	private short readCollectionFromXML(XMLReader reader)
 	{
 		removeAllItems();
@@ -142,7 +143,7 @@ public class GXBaseCollection<T extends GXXMLSerializable> extends GXSimpleColle
     public String toxml(boolean includeHeader, boolean includeState, String header, String namespace) {
 		if(SpecificImplementation.Application.getProperty("SIMPLE_XML_SUPPORT", "0").equals("1")){
 			try {
-				Class me = getClass();
+				Class<?> me = getClass();
 				Object struct = me.getMethod("getStruct", new Class[]{}).invoke(this, (Object[]) null);
 				return GXXMLSerializer.serializeSimpleXml(includeHeader, SpecificImplementation.Application.createCollectionWrapper(struct), header, this.elementsName, this.containedXmlNamespace); //simplexml
 			} catch (Exception e) {
@@ -155,6 +156,7 @@ public class GXBaseCollection<T extends GXXMLSerializable> extends GXSimpleColle
     }
 
     @Override
+	@SuppressWarnings("unchecked")
     public Vector getStruct() {
         Vector struct = new Vector();
         for (T Item : this) {
@@ -215,6 +217,7 @@ public class GXBaseCollection<T extends GXXMLSerializable> extends GXSimpleColle
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public void FromJSONObject(IJsonFormattable obj)
 	{
 		this.clear();
@@ -253,6 +256,7 @@ public class GXBaseCollection<T extends GXXMLSerializable> extends GXSimpleColle
 			}
 		}
 	}
+	@SuppressWarnings("unchecked")
 	public GXBaseCollection<T> Clone()
 	{
 		return (GXBaseCollection<T>)clone();
