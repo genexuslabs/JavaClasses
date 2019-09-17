@@ -18,7 +18,7 @@ public class PDFOutline extends PDFObject implements Serializable
     /**
      * This holds any outlines below us
      */
-    private Vector outlines;
+    private Vector<PDFOutline> outlines;
     
     /**
      * For subentries, this points to it's parent outline
@@ -61,7 +61,7 @@ public class PDFOutline extends PDFObject implements Serializable
     protected PDFOutline()
     {
 	super("/Outlines");
-	outlines = new Vector();
+	outlines = new Vector<>();
 	title = null;
 	dest = null;
 	destMode = FITPAGE;

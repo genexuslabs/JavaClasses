@@ -34,7 +34,7 @@ public class GXWebNotification {
         {        			
 			try {
 				setError((short)1);
-				Class c = Class.forName("com.genexus.internet.websocket.GXWebSocket");
+				Class<?> c = Class.forName("com.genexus.internet.websocket.GXWebSocket");
 				java.lang.reflect.Method method = c.getDeclaredMethod("getInstance", (Class[])null);
 				Object o = method.invoke(null, (Object[])null);	
 				ws = (IGXWebSocketAsync)o;		

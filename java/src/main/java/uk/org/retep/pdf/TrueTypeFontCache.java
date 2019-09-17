@@ -5,7 +5,7 @@ import java.util.HashMap;
 
 public class TrueTypeFontCache
 {
-    private static HashMap fontCache = new HashMap();
+    private static HashMap<String, String> fontCache = new HashMap<>();
     
     public static String getFontFamilyName(File fontFile, int fontFormat, boolean isCopy)
     {
@@ -51,7 +51,7 @@ public class TrueTypeFontCache
     {
         synchronized(fontCache)
         {
-            return (String)fontCache.get(cacheKey);
+            return fontCache.get(cacheKey);
         }
     }
 	

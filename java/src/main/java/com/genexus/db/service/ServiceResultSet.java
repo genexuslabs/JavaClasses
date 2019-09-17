@@ -101,6 +101,7 @@ public abstract class ServiceResultSet<ValueType> implements ResultSet
     }
 
     @Override
+	@Deprecated
     public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException
     {
         return getAs(BigDecimal.class, columnIndex, BigDecimal.ZERO);
@@ -137,6 +138,7 @@ public abstract class ServiceResultSet<ValueType> implements ResultSet
     }
 
     @Override
+	@Deprecated
     public InputStream getUnicodeStream(int columnIndex) throws SQLException
     {
         return getAs(InputStream.class, columnIndex, new ByteArrayInputStream(new byte[0]));
@@ -197,6 +199,7 @@ public abstract class ServiceResultSet<ValueType> implements ResultSet
     }
 
     @Override
+	@Deprecated
     public BigDecimal getBigDecimal(String columnLabel, int scale) throws SQLException
     {
         throw new UnsupportedOperationException("Not supported yet."); 
@@ -233,6 +236,7 @@ public abstract class ServiceResultSet<ValueType> implements ResultSet
     }
 
     @Override
+	@Deprecated
     public InputStream getUnicodeStream(String columnLabel) throws SQLException
     {
         throw new UnsupportedOperationException("Not supported yet."); 

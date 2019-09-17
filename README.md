@@ -1,3 +1,8 @@
+| Branch | Status
+|---|---
+|master|[![Build Status](https://dev.azure.com/gxazure/Java-classes/_apis/build/status/Build%20JavaClasses%20(master)?branchName=master)](https://dev.azure.com/gxazure/Java-classes/_build/latest?definitionId=2&branchName=master)
+|beta|[![Build Status](https://dev.azure.com/gxazure/Java-classes/_apis/build/status/Build%20JavaClasses%20(beta)?branchName=beta)](https://dev.azure.com/gxazure/Java-classes/_build/latest?definitionId=6&branchName=beta)
+
 # GeneXus Standard Classes for Java
 
 These are the source of the GeneXus Standard Classes for Java, valid since GeneXus 16 Upgrade 4.
@@ -57,3 +62,18 @@ Once you compiled or packaged everything you needed, you can stop the container 
  The site for each module can be found at <project dir>\target\site\index.html
 
   ![Site](site.png)
+  
+## License
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+

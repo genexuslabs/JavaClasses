@@ -27,15 +27,6 @@ public class HttpRequest implements IHttpRequest
 		resetErrors();
 	}
 
-	public String getRepositoryPath()
-	{
-		return "";
-	}
-
-	public void setRepositoryPath( String path)
-	{
-	}
-
 	public String getMethod()
 	{
 		return httpContext.getRequestMethod();

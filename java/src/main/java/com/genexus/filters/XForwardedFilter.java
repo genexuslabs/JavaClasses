@@ -499,12 +499,12 @@ public class XForwardedFilter implements Filter {
         }
         
         @Override
-        public Enumeration getHeaderNames() {
+        public Enumeration<String> getHeaderNames() {
             return Collections.enumeration(headers.keySet());
         }
         
         @Override
-        public Enumeration getHeaders(String name) {
+        public Enumeration<String> getHeaders(String name) {
             Map.Entry<String, List<String>> header = getHeaderEntry(name);
             if (header == null || header.getValue() == null) {
                 return Collections.enumeration(Collections.emptyList());

@@ -13,7 +13,7 @@ public class Messages
 {
 	Properties messages;
 	MessageFormat  formatter;
-	static Hashtable messageList = new Hashtable();
+	static Hashtable<String, Messages> messageList = new Hashtable<>();
 
 	private Messages(String resourceName, Locale formatterLocale)
 	{
@@ -26,7 +26,7 @@ public class Messages
 
 	public static Messages getMessages(String resourceName, Locale formatterLocale)
 	{
-		Messages msg = (Messages) (messageList.get(resourceName));
+		Messages msg = messageList.get(resourceName);
 		if	(msg == null)
 		{
 			msg = new Messages(resourceName, formatterLocale);

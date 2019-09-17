@@ -4,14 +4,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ThreadedCommandQueue implements ICommandQueue, Runnable //, ICleanedup
 {
-	private ConcurrentLinkedQueue queue;
+	private ConcurrentLinkedQueue<RunnableFlag> queue;
 	private Thread thread ;
 	private boolean isDispatching;
 
 	public void startDispatching()
 	{
 		isDispatching = true;
-		queue = new ConcurrentLinkedQueue();
+		queue = new ConcurrentLinkedQueue<>();
 		thread = new Thread(this, "Report viewer queue");
 		thread.start();
 	}
@@ -89,12 +89,12 @@ public class ThreadedCommandQueue implements ICommandQueue, Runnable //, ICleane
 	{
 			while (true)
 			{
-					RunnableFlag rf = (RunnableFlag) queue.peek();
+					RunnableFlag rf = queue.peek();
 					if (rf != null)
 					{
 						try
 						{
-							rf = (RunnableFlag) queue.poll();
+							rf = queue.poll();
 							if(!rf.getRunCleanup())
 							{
 								consume(rf);

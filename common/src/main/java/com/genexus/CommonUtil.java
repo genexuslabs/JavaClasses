@@ -836,7 +836,11 @@ public final class CommonUtil
 
 	public static boolean emptyDate( Date value)
 	{
-		return value.getYear() == nullDate.getYear() && value.getMonth() == nullDate.getMonth() && value.getDay() == nullDate.getDay();
+		Calendar calendar = GregorianCalendar.getInstance();
+		calendar.setTime(value);
+		Calendar nullCalendar = GregorianCalendar.getInstance();
+		nullCalendar.setTime(nullDate);
+		return calendar.get(Calendar.YEAR) == nullCalendar.get(Calendar.YEAR) && calendar.get(Calendar.MONTH) == nullCalendar.get(Calendar.MONTH) && calendar.get(Calendar.DAY_OF_MONTH) == nullCalendar.get(Calendar.DAY_OF_MONTH);
 	}
 
 
@@ -1029,6 +1033,17 @@ public final class CommonUtil
 
         return new String(buf);
     }
+	public static String ltrimstr(double value, int length, int decimals){
+		return ltrim(str(value, length, decimals));
+	}
+
+	public static String ltrimstr(BigDecimal value, int length, int decimals){
+		return ltrim(str(value, length, decimals, true));
+	}
+
+	public static String ltrimstr(long val, int digits, int decimals) {
+		return ltrim(str(val, digits, decimals));
+	}
 
 	public static String ltrim (String text)
 	{
@@ -1474,8 +1489,12 @@ public final class CommonUtil
 
 		if (!fn.equals(nullDate()) && !today.equals(nullDate()))
 		{
-			int fnTime 		= fn.getHours()    * 10000 + fn.getMinutes()    * 100 + fn.getSeconds();
-			int todayTime 	= today.getHours() * 10000 + today.getMinutes() * 100 + today.getSeconds();
+			Calendar calendar = GregorianCalendar.getInstance();
+			calendar.setTime(fn);
+			Calendar todayCalendar = GregorianCalendar.getInstance();
+			calendar.setTime(today);
+			int fnTime 		= calendar.get(Calendar.HOUR)    * 10000 + calendar.get(Calendar.MINUTE)    * 100 + calendar.get(Calendar.SECOND);
+			int todayTime 	= todayCalendar.get(Calendar.HOUR) * 10000 + todayCalendar.get(Calendar.MINUTE) * 100 + todayCalendar.get(Calendar.SECOND);
 
 			GregorianCalendar gage1, gage2;
 			gage1 = new GregorianCalendar(defaultLocale);
@@ -2369,7 +2388,7 @@ public final class CommonUtil
 	}
 
 
-
+				@SuppressWarnings("unchecked")
 				public static boolean compare(Comparable operand1, String op, Comparable operand2)
 				{
 						int compareValue;
@@ -3081,18 +3100,17 @@ public final class CommonUtil
 	
 	public final static String URLEncode(String parm, String encoding)
     {
-		try 
-		{
+		try {
 			if (encoding.equals(""))
-				return java.net.URLEncoder.encode(parm); //Should not be used. Deprecated
+				return java.net.URLEncoder.encode(parm, "UTF8");
 			else
-				return java.net.URLEncoder.encode(parm, encoding); 	
+				return java.net.URLEncoder.encode(parm, encoding);
 		}
 		catch (java.io.UnsupportedEncodingException e)
 		{
-			System.out.println("URLEncoder unsupported encoding: " + encoding);			
+			System.out.println("URLEncoder unsupported encoding: " + encoding);
+			return "";
 		}
-		return java.net.URLEncoder.encode(parm);
     }
 	
 	public static byte remoteFileExists(String URLName){

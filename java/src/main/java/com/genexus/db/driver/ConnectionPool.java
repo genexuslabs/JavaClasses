@@ -53,7 +53,7 @@ public abstract class ConnectionPool
 	java.util.Date timeLastRequest;
 	int numberUsersWaits = 0;
 	int numberUsersWaiting = 0;
-	Hashtable timeStartUserWait = new Hashtable();
+	Hashtable<Integer, Long> timeStartUserWait = new Hashtable<>();
 	long maxTimeUserWait;
 	float averageUserWaitingTime;
 	ConnectionPoolJMX connectionPoolJMX;
@@ -212,7 +212,7 @@ public abstract class ConnectionPool
 					else
 					{
 						if (Application.isJMXEnabled())
-							if ((UserMaxTimeWaitingBeforeNotif < (System.currentTimeMillis() - ((Long) timeStartUserWait.get(new Integer(handle))).longValue())) && enableNotifications)
+							if ((UserMaxTimeWaitingBeforeNotif < (System.currentTimeMillis() - (timeStartUserWait.get(new Integer(handle))).longValue())) && enableNotifications)
 								connectionPoolJMX.UserWaitingForLongTime();
 					}
 					notified = false;
@@ -251,7 +251,7 @@ public abstract class ConnectionPool
 		
 		if (!firstTimeWaiting)
 		{
-			long userWait = System.currentTimeMillis() - ((Long) timeStartUserWait.get(new Integer(handle))).longValue();			
+			long userWait = System.currentTimeMillis() - (timeStartUserWait.get(new Integer(handle))).longValue();
 			timeStartUserWait.remove(new Integer(handle));
 			averageUserWaitingTime = (averageUserWaitingTime + userWait) / numberUsersWaits; 
 			if (userWait > maxTimeUserWait)
@@ -447,7 +447,7 @@ public abstract class ConnectionPool
 			writer.writeElement("DroppedConnectionCount", getNumberConnectionsDeleted());			
 			writer.writeElement("RequestCount", getNumberRequest());
 			writer.writeElement("AverageRequestPerSec", getAverageNumberRequest());
-			writer.writeElement("LastRequestTime", getTimeLastRequest().toGMTString());
+			writer.writeElement("LastRequestTime", getTimeLastRequest().toString());
 			writer.writeElement("WaitingUserCount", getNumberUsersWaiting());
 			writer.writeElement("WaitedUserCount", getNumberUsersWaits());
 			writer.writeElement("MaxUserWaitTime", getMaxUserWaitingTime());
