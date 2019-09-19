@@ -12,7 +12,7 @@ import com.genexus.GXBaseCollection;
 import java.util.Iterator;
 
 public class GXProperties implements IGxJSONSerializable{
-  private Vector<GXProperty> vector = new Vector<>();
+  private Vector<GXProperty> vector = new Vector<GXProperty>();
   private boolean eof;
   private int lastElement;
 
