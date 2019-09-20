@@ -11,9 +11,9 @@ import org.apache.olingo.commons.api.edm.EdmEntityType;
 
 public class ODataQuery implements IQuery
 {
-    BiFunction<ODataClientHelper, Object [], ODataClientHelper> query;
+    final BiFunction<ODataClientHelper, Object [], ODataClientHelper> query;
     IODataMap[] selectList;
-    QueryType queryType;
+    final QueryType queryType;
     ODataQuery continuation;
     ODataClientHelper clientHelper;
     
@@ -55,8 +55,7 @@ public class ODataQuery implements IQuery
     public URI build(ODataConnection con, Object[] parms, ClientEntity[] oEntity, EdmEntityType[] oEntityType)
     {
         clientHelper = new ODataClientHelper(con, oEntity, oEntityType);
-        URI uri = clientHelper.build(this, parms);
-        return uri;
+		return clientHelper.build(this, parms);
     }
     
     public String getLinkEntity()

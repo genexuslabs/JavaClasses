@@ -6,9 +6,9 @@ import java.util.logging.Logger;
 
 public class ODataDriver implements Driver
 {
-    private static int MAJOR_VERSION = 1;
-    private static int MINOR_VERSION = 0;
-    private static String DRIVER_ID = "odata:";
+    private static final int MAJOR_VERSION = 1;
+    private static final int MINOR_VERSION = 0;
+    private static final String DRIVER_ID = "odata:";
     
     private static final ODataDriver ODATA_DRIVER;
     static
@@ -28,22 +28,22 @@ public class ODataDriver implements Driver
     }
 
     @Override
-    public Connection connect(String url, Properties info) throws SQLException
-    {
+    public Connection connect(String url, Properties info)
+	{
         if(!acceptsURL(url))
             return null;
         return new ODataConnection(url.substring(DRIVER_ID.length()), info);
     }
 
     @Override
-    public boolean acceptsURL(String url) throws SQLException
-    {
+    public boolean acceptsURL(String url)
+	{
         return url.startsWith(DRIVER_ID);
     }
 
     @Override
-    public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException
-    {
+    public DriverPropertyInfo[] getPropertyInfo(String url, Properties info)
+	{
         return new DriverPropertyInfo[0];
     }
 
@@ -66,8 +66,8 @@ public class ODataDriver implements Driver
     }
 
     @Override
-    public Logger getParentLogger() throws SQLFeatureNotSupportedException
-    {
+    public Logger getParentLogger()
+	{
         throw new UnsupportedOperationException("Not supported yet."); 
     }
 }
