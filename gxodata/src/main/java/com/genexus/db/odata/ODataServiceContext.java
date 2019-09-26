@@ -6,8 +6,8 @@ import org.apache.olingo.commons.api.edm.EdmEntityType;
 
 public class ODataServiceContext implements IOServiceContext
 {
-    EdmEntityType []currentType;
-    Connection con;
+    final EdmEntityType []currentType;
+    final Connection con;
     public ODataServiceContext(Connection con, EdmEntityType baseType)
     {
         this.con = con;

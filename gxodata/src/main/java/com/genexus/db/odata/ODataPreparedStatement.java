@@ -28,8 +28,8 @@ import org.apache.olingo.commons.api.format.ContentType;
 
 class ODataPreparedStatement extends ServicePreparedStatement
 {
-    ODataQuery query;
-    ServiceCursorBase cursor;
+    final ODataQuery query;
+    final ServiceCursorBase cursor;
 
     ODataPreparedStatement(Connection con, ODataQuery query, ServiceCursorBase cursor, Object[] parms, GXConnection gxCon)
     {
@@ -184,7 +184,7 @@ class ODataPreparedStatement extends ServicePreparedStatement
             try
             {
                 editLink = new URI(updURI.getScheme(), editLink.getUserInfo(), editLink.getHost(), editLink.getPort(), editLink.getPath(), editLink.getQuery(), editLink.getFragment());
-            }catch(URISyntaxException e){}
+            }catch(URISyntaxException ignored){}
         }
         return editLink;
     }
@@ -214,7 +214,7 @@ class ODataPreparedStatement extends ServicePreparedStatement
         }
     }
     
-    private int executeDelete(URI updURI) throws ODataClientErrorException, ODataRuntimeException, SQLException
+    private int executeDelete(URI updURI) throws ODataRuntimeException, SQLException
     {
         ODataDeleteRequest request = getClient().getCUDRequestFactory().getDeleteRequest(updURI);
         if(((ODataConnection)getConnection()).needsCheckOptimisticConcurrency(updURI))
@@ -240,14 +240,14 @@ class ODataPreparedStatement extends ServicePreparedStatement
     
 /// JDK8
     @Override
-    public void closeOnCompletion() throws SQLException
-    {
+    public void closeOnCompletion()
+	{
         throw new UnsupportedOperationException("Not supported yet."); 
     }
 
     @Override
-    public boolean isCloseOnCompletion() throws SQLException
-    {
+    public boolean isCloseOnCompletion()
+	{
         throw new UnsupportedOperationException("Not supported yet."); 
     }    
 }

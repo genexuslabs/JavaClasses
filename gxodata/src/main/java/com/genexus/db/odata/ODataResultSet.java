@@ -79,7 +79,7 @@ class ODataResultSet extends ServiceResultSet<ClientValue>
         EdmEntityType[] oEntityType = baseEntityType == null ? new EdmEntityType[1] : null;
         nextURI = query.build((ODataConnection)stmt.getConnection(), parms, oEntityType);
         constrainedProps = query.getConstrainedProps();
-        if(baseEntityType == null)
+        if(baseEntityType == null && oEntityType != null)
             baseEntityType = oEntityType[0];
     }
     
@@ -127,7 +127,7 @@ class ODataResultSet extends ServiceResultSet<ClientValue>
                     else if(reference.isAssignableFrom(Byte.class))
                         return reference.cast(retVal.byteValueExact());
                 }                
-            }catch(Exception ign){}
+            }catch(Exception ignored){}
             if(value.asPrimitive().getTypeKind() == EdmPrimitiveTypeKind.Guid)  // Caso particular de los Guid que en GX vienen como getString
                 return reference.cast(value.toString()); 
             Logger.getLogger(ODataResultSet.class.getName()).log(Level.SEVERE, null, ex);
@@ -150,8 +150,8 @@ class ODataResultSet extends ServiceResultSet<ClientValue>
     }
     
     @Override
-    public boolean wasNull() throws SQLException
-    {
+    public boolean wasNull()
+	{
         return value == null || 
                 (value.isPrimitive() && value.asPrimitive().toValue() == null);
     }    
@@ -168,9 +168,8 @@ class ODataResultSet extends ServiceResultSet<ClientValue>
         ArrayList<Iterator<HashMap<String, Object>>> iterators = new ArrayList<>();
         while(odataIterator.hasNext())
         {
-            ClientEntity entity = odataIterator.next();            
-            List<HashMap<String, Object>> records = new ArrayList<>();
-            records.addAll(flattenRecord(flattenRecordSkip(entity, skipBaseProperties), true));
+            ClientEntity entity = odataIterator.next();
+			List<HashMap<String, Object>> records = new ArrayList<>(flattenRecord(flattenRecordSkip(entity, skipBaseProperties), true));
             entities.add(entity);
             iterators.add(records.iterator());
         }
@@ -409,7 +408,7 @@ class ODataResultSet extends ServiceResultSet<ClientValue>
                     resStr = new BufferedReader(new InputStreamReader(rawResponse)).lines().collect(java.util.stream.Collectors.joining("\n"));
                     rawResponse.close();
                 }
-            }catch(Exception ign)
+            }catch(Exception ignored)
             {
             }
             throw new SQLException(String.format("%s%n%s", ex.getMessage(), resStr), ServiceError.INVALID_QUERY.getSqlState(), ServiceError.INVALID_QUERY.getCode(), ex);
@@ -431,7 +430,7 @@ class ODataResultSet extends ServiceResultSet<ClientValue>
             iterator = flattenRecords(odataIterator);
             nextURI = odataIterator.getNext();
         }
-        if(iterator.hasNext())
+        if(iterator != null && iterator.hasNext())
         {
             currentEntry = iterator.next();
             return true;
@@ -443,8 +442,8 @@ class ODataResultSet extends ServiceResultSet<ClientValue>
     
     class ODataRecordIterator implements Iterator<HashMap<String, Object>>
     {
-        private Iterator<ClientEntity> entities;
-        private Iterator<Iterator<HashMap<String, Object>>> iterators;
+        private final Iterator<ClientEntity> entities;
+        private final Iterator<Iterator<HashMap<String, Object>>> iterators;
         
         private ClientEntity currentEntity = null;
         private Iterator<HashMap<String, Object>> currentIterator = null;
@@ -465,7 +464,7 @@ class ODataResultSet extends ServiceResultSet<ClientValue>
                 currentIterator = iterators.next();
                 currentEntity = entities.next();
             }
-            return currentIterator.hasNext();
+            return true;
         }
 
         @Override
@@ -477,14 +476,14 @@ class ODataResultSet extends ServiceResultSet<ClientValue>
     
 // JDK8
     @Override
-    public <T> T getObject(int columnIndex, Class<T> type) throws SQLException
-    {
+    public <T> T getObject(int columnIndex, Class<T> type)
+	{
         throw new UnsupportedOperationException("Not supported yet."); 
     }
 
     @Override
-    public <T> T getObject(String columnLabel, Class<T> type) throws SQLException
-    {
+    public <T> T getObject(String columnLabel, Class<T> type)
+	{
         throw new UnsupportedOperationException("Not supported yet."); 
     } 
 }
