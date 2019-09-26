@@ -12,7 +12,7 @@ import com.genexus.GXBaseCollection;
 import java.util.Iterator;
 
 public class GXProperties implements IGxJSONSerializable{
-  private Vector<GXProperty> vector = new Vector<>();
+  private Vector<GXProperty> vector = new Vector<GXProperty>();
   private boolean eof;
   private int lastElement;
 
@@ -26,7 +26,7 @@ public class GXProperties implements IGxJSONSerializable{
   
   public void add(String name, String value)
   {
-	  put(name, value);
+	  addToTheEnd(name, value);
   }
   
   public void put(String name, String value)
@@ -38,13 +38,23 @@ public class GXProperties implements IGxJSONSerializable{
 	  }
 	  else
 	  {
-		GXProperty prop = new GXProperty();
-		prop.setKey(name);
-		prop.setValue(value);
-		vector.addElement(prop);
+		  addToTheEnd(name, value);
 	  }
   }
-  
+  public String toString() {
+	  StringBuilder builder = new StringBuilder();
+	  for (GXProperty property : vector) {
+		  builder.append(property.getValue());
+	  }
+	  return builder.toString();
+  }
+  private void addToTheEnd(String name, String value){
+
+	  GXProperty prop = new GXProperty();
+	  prop.setKey(name);
+	  prop.setValue(value);
+	  vector.addElement(prop);
+  }
   public String get(String name)
   {
 	  int index = findElement(name);

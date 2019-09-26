@@ -1186,8 +1186,8 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 					// add token if necesary?
 					//Boolean addToken = (fileName.compareTo(GXDbFile.removeTokenFromFileName(fileName)) == 0);
 										
-					if ( (fileName.toLowerCase().startsWith("http://")  || fileName.toLowerCase().startsWith("https://"))
-						&& isLocalFile || downloadContent)
+					if ( (fileName.toLowerCase().startsWith("http://") || fileName.toLowerCase().startsWith("https://"))
+						&& (isLocalFile || downloadContent))
 					{
 						URL fileURL = new URL(fileName);
 
