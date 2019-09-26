@@ -409,7 +409,7 @@ class ODataResultSet extends ServiceResultSet<ClientValue>
                     rawResponse.close();
                 }
             }catch(Exception ignored)
-            {
+            { // esta excepción (al intentar leer el errorStream) se ignora porque se tira la original
             }
             throw new SQLException(String.format("%s%n%s", ex.getMessage(), resStr), ServiceError.INVALID_QUERY.getSqlState(), ServiceError.INVALID_QUERY.getCode(), ex);
 
