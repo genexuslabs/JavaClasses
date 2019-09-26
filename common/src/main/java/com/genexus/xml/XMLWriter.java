@@ -15,6 +15,8 @@ import java.math.BigDecimal;
 
 public class XMLWriter implements IXMLWriter
 {
+	private static boolean useTagToCloseElement;
+
 	private static final byte GXSUCCESS = 0;
 	private static final byte GXFAIL    = 1;
 	private static final byte GXOUTPUT_ERROR = 2;
@@ -22,9 +24,9 @@ public class XMLWriter implements IXMLWriter
 	private String sCurrValue;
 	private String sCurrPrefix;
 
-	private Stack 		stack 		= new Stack();
-	private Vector 		attributes 	= new Vector();
-	private Hashtable 	namespaces 	= new Hashtable();
+	private Stack<NameValuePair> 		stack 		= new Stack<>();
+	private Vector<NameValuePair> 		attributes 	= new Vector<>();
+	private Hashtable<String, String> 	namespaces 	= new Hashtable<>();
 	private StringWriter	sWriter = null;
 
 	private int inValue = 0;
@@ -181,13 +183,13 @@ public class XMLWriter implements IXMLWriter
 		}
 		
 		
-		NameValuePair node = (NameValuePair) stack.pop();
+		NameValuePair node = stack.pop();
 
 		if (printingEndElement)
 		{
 			printIndentation();
 
-			String prefix = (String) namespaces.get(node.value);
+			String prefix = namespaces.get(node.value);
 			if (prefix == null)
 				prefix = "";
 
@@ -398,8 +400,8 @@ public class XMLWriter implements IXMLWriter
 		if (!bOpenElementHeader)
 			return false;
 
-		NameValuePair node = (NameValuePair) stack.peek();
-		String prefix = (String) namespaces.get(node.value);
+		NameValuePair node = stack.peek();
+		String prefix = namespaces.get(node.value);
 		
 		if	(node.value.length() != 0)
 		{					
@@ -460,7 +462,7 @@ public class XMLWriter implements IXMLWriter
 			}
 			else
 			{
-				if (printingEndElement && IsBlank(sCurrValue))
+				if (printingEndElement && IsBlank(sCurrValue) && !useTagToCloseElement)
 				{
 					out.write("/>\n");
 					printingEndElement = false;
@@ -945,6 +947,10 @@ public class XMLWriter implements IXMLWriter
 
 		return GXSUCCESS;
 	}
-	
+
+	public static void setUseTagToCloseElement(boolean useTagToCloseElementParm)
+	{
+		useTagToCloseElement = useTagToCloseElementParm;
+	}
 }
 

@@ -14,11 +14,11 @@ public class GXNavigationHelper implements Serializable
         public static String POPUP_LEVEL = "gxPopupLevel";
         public static String CALLED_AS_POPUP = "gxCalledAsPopup";
 
-        private Hashtable referers;
+        private Hashtable<String, Stack<String>> referers;
 
         public GXNavigationHelper()
         {
-            referers = new Hashtable();
+            referers = new Hashtable<>();
         }
         
         public String toJSonString(String lvl)
@@ -26,7 +26,7 @@ public class GXNavigationHelper implements Serializable
             JSONArray array = new JSONArray();
             if (referers.containsKey(lvl))
             {
-            	Stack levelStack = (Stack)referers.get(lvl);
+            	Stack levelStack = referers.get(lvl);
                 for (int i = 0 ; i< levelStack.size(); i++)
                 {
                     array.put(levelStack.get(i));
@@ -42,13 +42,13 @@ public class GXNavigationHelper implements Serializable
             String popupLevel = getUrlPopupLevel(url);
             if (!referers.containsKey(popupLevel))
             {
-                Stack stack = new Stack();
+                Stack<String> stack = new Stack<>();
                 stack.push(url);
                 referers.put(popupLevel, stack);
             }
             else
             {
-                Stack stack = (Stack)referers.get(popupLevel);
+                Stack<String> stack = referers.get(popupLevel);
                 stack.push(url);
             }
         }
@@ -60,7 +60,7 @@ public class GXNavigationHelper implements Serializable
             String popupLevel = getUrlPopupLevel(url);
             if (referers.containsKey(popupLevel))
             {
-                Stack stack = (Stack)referers.get(popupLevel);
+                Stack stack = referers.get(popupLevel);
                 if (stack.size() > 0)
                 {
                     stack.pop();
@@ -75,7 +75,7 @@ public class GXNavigationHelper implements Serializable
             String popupLevel = getUrlPopupLevel(url);
             if (referers.containsKey(popupLevel))
             {
-                Stack stack = (Stack)referers.get(popupLevel);
+                Stack stack = referers.get(popupLevel);
                 if (stack.size() > 0)
                 {
                     return (String)stack.peek();
@@ -91,11 +91,11 @@ public class GXNavigationHelper implements Serializable
             String popupLevel = getUrlPopupLevel(url);
             if (referers.containsKey(popupLevel))
             {
-                Stack stack = (Stack)referers.get(popupLevel);
+                Stack<String> stack = referers.get(popupLevel);
                 if (stack.size() > 1)
                 {
-		    String topUrl = (String)stack.pop();
-                    String referer = (String)stack.peek();
+		    String topUrl = stack.pop();
+                    String referer = stack.peek();
                     stack.push(topUrl);
                     return referer;
                 }

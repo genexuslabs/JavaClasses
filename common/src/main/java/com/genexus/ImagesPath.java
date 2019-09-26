@@ -9,7 +9,7 @@ import java.io.*;
 public class ImagesPath
 {
 	static Hashtable<String, String> imageId = new Hashtable<String, String>();
-	static Hashtable loadedTXT = new Hashtable();
+	static Hashtable<String, String> loadedTXT = new Hashtable<>();
 	static Hashtable<String, HashSet<String>> imagesDensity = new Hashtable<String, HashSet<String>>();
 	static Hashtable<String, String> imageList = null;
 	public static final String RESOURCENAME = "Images.txt";

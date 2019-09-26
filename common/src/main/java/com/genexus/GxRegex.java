@@ -59,9 +59,9 @@ public class  GxRegex
 		return m.replaceAll(replace);		
 	}
 	
-	public static Vector Split(String txt ,String rex)
+	public static Vector<String> Split(String txt ,String rex)
 	{
-		Vector result = new Vector();
+		Vector<String> result = new Vector<>();
 		Pattern p;
 		resetError();
 		try
@@ -85,7 +85,8 @@ public class  GxRegex
 		}
 		return result;
 	}
-	
+
+	@SuppressWarnings("unchecked")
 	public static GxUnknownObjectCollection Matches(String txt, String rex)
 	{
 		GxUnknownObjectCollection result = new GxUnknownObjectCollection();

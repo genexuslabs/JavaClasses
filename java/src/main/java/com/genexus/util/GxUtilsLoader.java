@@ -16,7 +16,7 @@ public class GxUtilsLoader extends ClassLoader
 	{
 		try
 		{
-			Class c = getClass("com.genexus.gx.deployment.developermenu");
+			Class<?> c = getClass("com.genexus.gx.deployment.developermenu");
 			c.getMethod("start", new Class[]{String[].class}).invoke(c.newInstance(), new Object[]{arg});
 		}catch(java.lang.reflect.InvocationTargetException e)
 		{
@@ -31,8 +31,8 @@ public class GxUtilsLoader extends ClassLoader
 	{
 		try
 		{
-			Class c = getClass("com.genexus.gx.deployment.usrvcfg");
-			c.getMethod("execute", new Class[]{String[].class}).invoke(c.getConstructor(new Class[]{int.class}).newInstance(new Object[]{new Integer(-1)}), new Object[]{fileName});
+			Class<?> c = getClass("com.genexus.gx.deployment.usrvcfg");
+			c.getMethod("execute", new Class[]{String[].class}).invoke(c.getConstructor(new Class<?>[]{int.class}).newInstance(new Object[]{new Integer(-1)}), new Object[]{fileName});
 		}catch(Exception e)
 		{
 			e.printStackTrace();
@@ -43,8 +43,8 @@ public class GxUtilsLoader extends ClassLoader
 	{
 		try
 		{
-			Class c = getClass("com.genexus.gx.deployment.uclicfg");
-			c.getMethod("execute", new Class[]{String[].class}).invoke(c.getConstructor(new Class[]{int.class}).newInstance(new Object[]{new Integer(-1)}), new Object[]{fileName});
+			Class<?> c = getClass("com.genexus.gx.deployment.uclicfg");
+			c.getMethod("execute", new Class[]{String[].class}).invoke(c.getConstructor(new Class<?>[]{int.class}).newInstance(new Object[]{new Integer(-1)}), new Object[]{fileName});
 		}catch(Exception e)
 		{
 			e.printStackTrace();
@@ -77,7 +77,7 @@ public class GxUtilsLoader extends ClassLoader
 
 	private String source;
 	private ZipFile zipFile = null;
-	private Hashtable classes = new Hashtable();
+	private Hashtable<String, Class> classes = new Hashtable<>();
 	private int loadDepth; // Esta variable mantiene un depth de intentos de lectura del Zip
 
 	/** El Nombre esta medio mal, porque el GXJarClassLoader obtiene las clases de un JAR o
@@ -151,7 +151,7 @@ public class GxUtilsLoader extends ClassLoader
 
 		// Ahora la busco en el cache
 
-		if ((result = (Class) classes.get(className)) != null)
+		if ((result = classes.get(className)) != null)
 			return result;
 
 		classBytes = loadBytes(className);
@@ -169,7 +169,7 @@ public class GxUtilsLoader extends ClassLoader
 			}catch(Throwable e) { ; }
 			throw new ClassNotFoundException(className);
 		}
-		result = defineClass(classBytes, 0, classBytes.length);
+		result = defineClass(className, classBytes, 0, classBytes.length);
 
 		if (result == null)
 		{

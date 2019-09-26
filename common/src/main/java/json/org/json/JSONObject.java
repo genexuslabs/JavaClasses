@@ -129,8 +129,8 @@ public class JSONObject implements IJsonFormattable, java.io.Serializable{
     /**
      * The hash map where the JSONObject's properties are kept.
      */
-    private HashMap myHashMap;
-    private ArrayList nameIndexList;
+    private HashMap<String, Object> myHashMap;
+    private ArrayList<String> nameIndexList;
 
 
 
@@ -147,8 +147,8 @@ public class JSONObject implements IJsonFormattable, java.io.Serializable{
      * Construct an empty JSONObject.
      */
     public JSONObject() {
-        this.myHashMap = new HashMap();
-        this.nameIndexList = new ArrayList();
+        this.myHashMap = new HashMap<>();
+        this.nameIndexList = new ArrayList<>();
     }
 
 
@@ -233,13 +233,14 @@ public class JSONObject implements IJsonFormattable, java.io.Serializable{
      * @param map A map object that can be used to initialize the contents of
      *  the JSONObject.
      */
+	@SuppressWarnings("unchecked")
     public JSONObject(Map map) {
         this.myHashMap = (map == null) ?
-        	new HashMap() :
-        	new HashMap(map);
+        	new HashMap<>() :
+        	new HashMap<>(map);
         this.nameIndexList = (map == null) ?
-                             new ArrayList():
-                             new ArrayList(map.keySet());
+                             new ArrayList<>():
+                             new ArrayList<>(map.keySet());
     }
 
 
@@ -531,7 +532,7 @@ public class JSONObject implements IJsonFormattable, java.io.Serializable{
      *
      * @return An iterator of the keys.
      */
-    public Iterator keys() {
+    public Iterator<String> keys() {
         return this.nameIndexList.iterator();
     }
 

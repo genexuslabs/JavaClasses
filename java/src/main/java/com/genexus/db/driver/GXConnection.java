@@ -123,7 +123,7 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 		{
 			try
 			{
-				DriverManager.setLogStream(new java.io.PrintStream(new java.io.FileOutputStream("_gx_jdbc_driver_log.log")));
+				DriverManager.setLogWriter(new java.io.PrintWriter(new java.io.FileOutputStream("_gx_jdbc_driver_log.log")));
 			} catch (java.io.IOException e){}
 		}
 
@@ -146,6 +146,11 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 			{
 				GXResultSet.longVarCharAsOracleLong = true;
 				GXPreparedStatement.longVarCharAsOracleLong = true;
+			}
+
+			if(context.getPreferences().getProperty("DontGetConId", "0").equals("1"))
+			{
+				dbmsId = "";
 			}
 
 			//En el caso de una aplicacion en dos capas hay que llamar al Before Connect aca
@@ -450,7 +455,7 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 							}			
 							try
 							{
-								Class c = Class.forName(externalConnectionManager);
+								Class<?> c = Class.forName(externalConnectionManager);
 								Method m = c.getMethod("getConnection", new Class[]{String.class, String.class, String.class, String.class, Properties.class});
 								con = (Connection) m.invoke(null, new Object[]{_jdbcDriver, _dbURL, _user, _password, prop});
 							}
@@ -571,7 +576,7 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 	{
 			if (dataSource.dbms instanceof GXDBMSoracle7) {
 				try {
-					Class oracleDataStourceClass = Class.forName("oracle.jdbc.pool.OracleDataSource");
+					Class<?> oracleDataStourceClass = Class.forName("oracle.jdbc.pool.OracleDataSource");
 					if (ds.isWrapperFor(oracleDataStourceClass)) {
 						Object oracle_datasource = ds.unwrap(oracleDataStourceClass);
 						Properties dataSourceProps = new Properties();
@@ -1372,7 +1377,7 @@ private void commit_impl() throws SQLException
 		return preparedStatementPool;
 	}
 
-	public java.util.Map getTypeMap()
+	public java.util.Map<String,Class<?>> getTypeMap()
 	{
 		return null;
 	}
@@ -1391,10 +1396,10 @@ private void commit_impl() throws SQLException
 		writer.writeStartElement("Connection_Information");
 			writer.writeAttribute("Id", getId());
 			writer.writeElement("PhysicalId", getDBMSId());
-			writer.writeElement("CreateTime", getTimeCreated().toGMTString());
-			writer.writeElement("LastAssignedTime", getTimeAssigned().toGMTString());
+			writer.writeElement("CreateTime", getTimeCreated().toString());
+			writer.writeElement("LastAssignedTime", getTimeAssigned().toString());
 			writer.writeElement("LastUserAssigned", getLastUserAssigned());
-			writer.writeElement("LastUserAssignedName", getContext().getUserId( "", getLastUserAssigned(), "DEFAULT"));
+			writer.writeElement("LastUserAssignedName", getUserId());
 			writer.writeElement("Error", new Boolean(getError()).toString());
 			writer.writeElement("Available", new Boolean(!getInAssigment() && getOpenCursorsJMX()==0 && !getUncommitedChanges()).toString());
 			writer.writeElement("OpenCursorCount", getOpenCursorsJMX());
@@ -1403,10 +1408,22 @@ private void commit_impl() throws SQLException
 			writer.writeStartElement("LastSQLStatement");
 				writer.writeCData(getSentenceLastRequest());
 			writer.writeEndElement();
-			writer.writeElement("LastSQLStatementTime", getTimeLastRequest().toGMTString());
+			writer.writeElement("LastSQLStatementTime", getTimeLastRequest().toString());
 			writer.writeElement("LastSQLStatementEnded", new Boolean(getFinishExecute()).toString());
 			writer.writeElement("LastObject", getLastObjectExecuted());
 		writer.writeEndElement();
+	}
+
+	private String getUserId()
+	{
+		try
+		{
+			return DBConnectionManager.getInstance().getUserName(context, getLastUserAssigned(), "DEFAULT");
+		}
+		catch (SQLException ex)
+		{
+			return "";
+		}
 	}
 
 	public GXDBDebug getLog()
@@ -1545,7 +1562,6 @@ private void commit_impl() throws SQLException
 		{
 			dbmsId = dataSource.dbms.connectionPhysicalId(this);
 		}
-		
 		return dbmsId;
 	}
 

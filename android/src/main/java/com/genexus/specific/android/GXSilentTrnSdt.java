@@ -5,7 +5,7 @@ import com.genexus.IGxSilentTrn;
 import com.genexus.common.interfaces.IExtensionGXSilentTrnSdt;
 import com.genexus.common.interfaces.IPendingEventHelper;
 
-public class GxSilentTrnSdt implements IExtensionGXSilentTrnSdt {
+public class GXSilentTrnSdt implements IExtensionGXSilentTrnSdt {
 
 	@Override
 	public IPendingEventHelper CreatePendingEventHelper() {

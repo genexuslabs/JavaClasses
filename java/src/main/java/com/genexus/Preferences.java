@@ -414,11 +414,11 @@ public class Preferences implements IPreferences {
 		return booleanPreference(SMART_CACHING, "SMART_CACHING", "1");
 	}
 
-	private Hashtable eventTable = new Hashtable();
+	private Hashtable<String, String> eventTable = new Hashtable<>();
 
 	public String getEvent(String eventName) {
 		eventName = eventName.toUpperCase();
-		String proc = (String) eventTable.get(eventName);
+		String proc = eventTable.get(eventName);
 		if (proc == null) {
 			proc = getProperty("EVENT_" + eventName, "").trim().toLowerCase();
 			proc = proc.replace('\\', '.');

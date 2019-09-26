@@ -630,7 +630,7 @@ public class Codecs
 	}
 	catch (java.io.UnsupportedEncodingException e)
 	{
-		return java.net.URLEncoder.encode(str); 
+		return "";
 	}		
     }
 
@@ -829,7 +829,7 @@ public class Codecs
 
 		if (!hdr.regionMatches(true, 0, "Content-Disposition", 0, 19))
 		    continue;
-		Vector pcd =
+		Vector<HttpHeaderElement> pcd =
 			Util.parseHeader(hdr.substring(hdr.indexOf(':')+1));
 		HttpHeaderElement elem = Util.getElement(pcd, "form-data");
 

@@ -38,6 +38,10 @@ public class SessionManager
 	private String language = "";
 	private String poolCapacity = "10";
 	private String peekLimit = "10";
+	private String registrationCount = "3";
+	private String programID = "";
+	private String serverName = "";
+
 	private ModelContext _context = null;
 	
 	DestinationProvider destinationProvider = null;
@@ -142,6 +146,22 @@ public class SessionManager
         }
 	}
 	
+	public void DocumentReceiverStart()
+	{
+	}
+
+	public void DocumentSenderStart()
+	{		
+	}
+
+	public void DocumentSenderStop()
+	{
+	}
+
+	public void DocumentReceiverStop()
+	{
+	}
+
 	public void TransactionBegin()
 	{	
 	
@@ -295,6 +315,22 @@ public class SessionManager
 	{
 		return errorMessage;
 	}
+
+	public String getRegistrationCount()
+	{
+		return registrationCount;
+	}
+
+	public String getProgramID()
+	{
+		return programID;
+	}
+
+	public String getServerName()
+	{
+		return serverName;
+	}
+	
 	
 	/* Setters */
 
@@ -400,6 +436,21 @@ public class SessionManager
 	public void setErrorMessage( String value )
     	{
 		errorMessage = value;
-    	}
+		}
+		
+	public void setRegistrationCount(String value)
+	{
+		registrationCount = value;
+	}
 
+	public void setProgramID(String value)
+	{
+		programID = value;
+	}
+
+	public void setServerName(String value)
+	{
+		serverName = value;
+	}
+	
 }

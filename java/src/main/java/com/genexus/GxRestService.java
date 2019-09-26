@@ -210,7 +210,7 @@ abstract public class GxRestService extends GXWebObjectBase
 				String packageName = Application.getClientContext().getClientPreferences().getPACKAGE();
 				if (!packageName.equals(""))
 					packageName += ".";
-				Class synchronizerClass = Class.forName(packageName + synchronizer);
+				Class<?> synchronizerClass = Class.forName(packageName + synchronizer);
 				GxRestService synchronizerRestService = (GxRestService) synchronizerClass.getConstructor().newInstance();
 				if (synchronizerRestService!=null && synchronizerRestService.IsSynchronizer()){
 					validSynchronizer = true;

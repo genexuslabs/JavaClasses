@@ -89,6 +89,7 @@ import java.util.Enumeration;
  * @author	Ronald Tschal�r
  * @since	V0.1
  */
+@SuppressWarnings("unchecked")
 public class AuthorizationInfo implements Cloneable
 {
     // class fields
@@ -429,6 +430,7 @@ public class AuthorizationInfo implements Cloneable
      * @param auth_info the AuthorizationInfo to add
      * @param context   the context to associate this info with
      */
+	@SuppressWarnings("unchecked")
     public static void addAuthorization(AuthorizationInfo auth_info,
 					Object context)
     {
@@ -520,7 +522,8 @@ public class AuthorizationInfo implements Cloneable
     public static void addBasicAuthorization(String host, int port,
 					     String realm, String user,
 					     String passwd)
-    {	addAuthorization(host, port, "Basic", realm,
+    {
+	addAuthorization(host, port, "Basic", realm,
 			 Codecs.base64Encode(user + ":" + passwd),
 			 (NVPair[]) null, null);
     }
@@ -892,10 +895,12 @@ public class AuthorizationInfo implements Cloneable
      *                  contain multiple authentication challenges.
      * @param req       the original request.
      * @exception ProtocolException if any error during the parsing occurs.
-     */    static AuthorizationInfo[] parseAuthString(String challenge, RoRequest req,
+     */
+    static AuthorizationInfo[] parseAuthString(String challenge, RoRequest req,
 					       RoResponse resp)
 	    throws ProtocolException
-    {	int    beg = 0,
+    {
+	int    beg = 0,
 	       end = 0;
 	char[] buf = challenge.toCharArray();
 	int    len = buf.length;
@@ -925,40 +930,80 @@ public class AuthorizationInfo implements Cloneable
 		curr = new AuthorizationInfo(req.getConnection().getProxyHost(),
 					     req.getConnection().getProxyPort());
 
-		if(Log.isEnabled(Log.EXTENDED_INFO))		{
+		if(Log.isEnabled(Log.EXTENDED_INFO))
+		{
 			Log.write(Log.EXTENDED_INFO, "ExtInfo: [Beg=" + beg + ", End=" + end + ", BufEnd=" + buf[end-1] + "]");
-		}	    /* Hack for schemes like NTLM which don't have any params or cookie.
+		}
+	    /* Hack for schemes like NTLM which don't have any params or cookie.
 	     * Mickeysoft, hello? What were you morons thinking here? I suppose
 	     * you weren't, as usual, huh?
 	     */
 	    if (buf[end-1] == ',')
-	    {			if(end > beg)curr.scheme = challenge.substring(beg, end-1);			else curr.scheme = challenge;
+	    {
+			if(end > beg)curr.scheme = challenge.substring(beg, end-1);
+			else curr.scheme = challenge;
 			// @gusbro
-			// Algunos servidores IIS (Win2000) fallan aqui porque ponen el scheme en Negotiate y los par�metros en NTLM			// asi que lo chequeamos aca			try			{
-				if(curr.scheme.equalsIgnoreCase("Negotiate"))				{					beg = end;					end = Util.findSpace(buf, beg + 1);
-					curr.scheme = challenge.substring(beg, end).trim();					if (buf[end-1] == ',')
-						curr.scheme = curr.scheme.substring(0, curr.scheme.length() - 1);				}			}catch(Exception e)			{				if(Log.isEnabled(Log.EXTENDED_INFO))				{
-					Log.write(Log.EXTENDED_INFO, "ExtInfo: Exception ignored[1]: ", e);					end = beg;
-				}			}
+			// Algunos servidores IIS (Win2000) fallan aqui porque ponen el scheme en Negotiate y los par�metros en NTLM
+			// asi que lo chequeamos aca
+			try
+			{
+				if(curr.scheme.equalsIgnoreCase("Negotiate"))
+				{
+					beg = end;
+					end = Util.findSpace(buf, beg + 1);
+					curr.scheme = challenge.substring(beg, end).trim();
+					if (buf[end-1] == ',')
+						curr.scheme = curr.scheme.substring(0, curr.scheme.length() - 1);
+				}
+			}catch(Exception e)
+			{
+				if(Log.isEnabled(Log.EXTENDED_INFO))
+				{
+					Log.write(Log.EXTENDED_INFO, "ExtInfo: Exception ignored[1]: ", e);
+					end = beg;
+				}
+			}
 			// @gusbro\
-			beg = end;		}
+			beg = end;
+		}
 	    else
 	    {
 			if(end >= beg)curr.scheme = challenge.substring(beg, end);
 			else curr.scheme = challenge;
 			// @gusbro
-			// Algunos servidores IIS (Win2000) fallan aqui porque ponen el scheme en Negotiate y los par�metros en NTLM			// asi que lo chequeamos aca
-			try			{
-				if(curr.scheme.equalsIgnoreCase("Negotiate"))				{					beg = end;					end = Util.findSpace(buf, beg + 1);					if(end > challenge.length())					{ // @Hack: Si caigo aca tipicamente es porque el AuthString tiene SOLO Negotiate, 					  // as� que asumo que es NTLM	
-						Log.write(Log.EXTENDED_INFO, "ExtInfo: No further challenge information. Assuming NTLM authentication");						curr.scheme = "NTLM";						end = beg; // Aparte en este caso dejo Begin = end
-					}					else					{
-						curr.scheme = challenge.substring(beg, end).trim();						if (buf[end-1] == ',')
+			// Algunos servidores IIS (Win2000) fallan aqui porque ponen el scheme en Negotiate y los par�metros en NTLM
+			// asi que lo chequeamos aca
+			try
+			{
+				if(curr.scheme.equalsIgnoreCase("Negotiate"))
+				{
+					beg = end;
+					end = Util.findSpace(buf, beg + 1);
+					if(end > challenge.length())
+					{ // @Hack: Si caigo aca tipicamente es porque el AuthString tiene SOLO Negotiate, 
+					  // as� que asumo que es NTLM	
+						Log.write(Log.EXTENDED_INFO, "ExtInfo: No further challenge information. Assuming NTLM authentication");
+						curr.scheme = "NTLM";
+						end = beg; // Aparte en este caso dejo Begin = end
+					}
+					else
+					{
+						curr.scheme = challenge.substring(beg, end).trim();
+						if (buf[end-1] == ',')
 							curr.scheme = curr.scheme.substring(0, end-1);
-					}				}			}catch(Exception e)			{ // @Hack: Si caigo aca tipicamente es porque el AuthString tiene SOLO Negotiate, 
-			  // as� que asumo que es NTLM					if(Log.isEnabled(Log.EXTENDED_INFO))				{
+					}
+				}
+			}catch(Exception e)
+			{ // @Hack: Si caigo aca tipicamente es porque el AuthString tiene SOLO Negotiate, 
+			  // as� que asumo que es NTLM	
+				if(Log.isEnabled(Log.EXTENDED_INFO))
+				{
 					Log.write(Log.EXTENDED_INFO, "ExtInfo: Exception ignored[2]: ", e);
-					Log.write(Log.EXTENDED_INFO, "ExtInfo: Assuming NTLM authentication ");					curr.scheme = "NTLM";					end = beg; // Aparte en este caso dejo Begin = end
-				}			}
+					Log.write(Log.EXTENDED_INFO, "ExtInfo: Assuming NTLM authentication ");
+					curr.scheme = "NTLM";
+					end = beg; // Aparte en este caso dejo Begin = end
+				}
+			}
 			// @gusbro\
 
 			pos_ref[0] = beg; pos_ref[1] = end;
@@ -984,9 +1029,11 @@ public class AuthorizationInfo implements Cloneable
 	    auth_arr = Util.resizeArray(auth_arr, auth_arr.length+1);
 	    auth_arr[auth_arr.length-1] = curr;
 
-		if(Log.isEnabled(Log.EXTENDED_INFO))		{
+		if(Log.isEnabled(Log.EXTENDED_INFO))
+		{
 			Log.write(Log.EXTENDED_INFO, "ExtInfo: Scheme Processed: " + curr.scheme  + " [Realm:" + curr.realm + "]");
-		}	}
+		}
+	}
 
 	return auth_arr;
     }
@@ -1001,7 +1048,7 @@ public class AuthorizationInfo implements Cloneable
 
 	// get auth-parameters
 	boolean first = true;
-	Vector params = new Vector();
+	Vector<NVPair> params = new Vector<>();
 	while (true)
 	{
 	    beg = Util.skipSpace(buf, end);
@@ -1252,7 +1299,8 @@ public class AuthorizationInfo implements Cloneable
 
 	    for (int idx=0; idx<auth_params.length; idx++)
 	    {
-		field.append(',');
+			if (idx>0 || realm.length() > 0)
+				field.append(',');
 		field.append(auth_params[idx].getName());
 		if (auth_params[idx].getValue() != null)
 		{

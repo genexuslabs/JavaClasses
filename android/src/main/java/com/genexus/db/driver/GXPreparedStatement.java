@@ -727,10 +727,15 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 
 	public void setGXDbFileURI(int index, String fileName, String blobPath, int length) throws SQLException
 	{
-		setGXDbFileURI(index, fileName, blobPath, length, null, null);
+		setGXDbFileURI(index, fileName, blobPath, length, null, null, false);
 	}
 
-    public void setGXDbFileURI(int index, String fileName, String blobPath, int length, String tableName, String fieldName) throws SQLException
+	public void setGXDbFileURI(int index, String fileName, String blobPath, int length, String tableName, String fieldName) throws SQLException
+	{
+		setGXDbFileURI(index, fileName, blobPath, length, null, null, false);
+	}
+
+	public void setGXDbFileURI(int index, String fileName, String blobPath, int length, String tableName, String fieldName, boolean downloadContent) throws SQLException
     {
     	if (blobPath.trim().length() == 0)
     		setVarchar(index, fileName, length, false);
@@ -799,7 +804,9 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 						}
 					}
 					
-					if (isLocalFile)
+					if (isLocalFile
+						|| (downloadContent && (blobPath.toLowerCase().startsWith("http://") || blobPath.toLowerCase().startsWith("https://")) )
+					)
 					{
 						// Local path in sdcard.
 						//fileNameNew = blobBasePath + "/" + GXutil.getFileName(fileName)+ "." + GXutil.getFileType(fileName);
@@ -1113,10 +1120,15 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 
 	public void setBLOBFile(int index, String fileName) throws SQLException
 	{
-		setBLOBFile(index, fileName, false);
+		setBLOBFile(index, fileName, false, false);
 	}
 
-    public void setBLOBFile(int index, String fileName, boolean isMultiMedia) throws SQLException
+	public void setBLOBFile(int index, String fileName, boolean isMultiMedia) throws SQLException
+	{
+		setBLOBFile(index, fileName, isMultiMedia, false);
+	}
+
+	public void setBLOBFile(int index, String fileName, boolean isMultiMedia, boolean downloadContent) throws SQLException
 	{
 		if(skipSetBlobs)
 		{
@@ -1174,10 +1186,11 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 					// add token if necesary?
 					//Boolean addToken = (fileName.compareTo(GXDbFile.removeTokenFromFileName(fileName)) == 0);
 										
-					if (fileName.toLowerCase().startsWith("http") && isLocalFile)
+					if ( (fileName.toLowerCase().startsWith("http://") || fileName.toLowerCase().startsWith("https://"))
+						&& (isLocalFile || downloadContent))
 					{
 						URL fileURL = new URL(fileName);
-						
+
 						//fileNameNew = GXDbFile.generateUri(fileName, addToken);
 						fileNameNew = blobBasePath + "/" + CommonUtil.getFileName(fileName)+ "." + CommonUtil.getFileType(fileName);
 						//fileName = com.genexus.PrivateUtilities.getTempFileName(blobPath, GXutil.getFileName(fileName), GXutil.getFileType(fileName));

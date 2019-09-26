@@ -54,7 +54,7 @@ public class DataSource extends AbstractDataSource
 	private JDBCLogConfig jdbcLogCfg;
 
 	private IConnectionPool connectionPool;
-	private Hashtable connectionPools; 
+	private Hashtable<String, IConnectionPool> connectionPools;
 
 	private String as400Package = "";
 	private String as400DateType = "";
@@ -209,7 +209,7 @@ public class DataSource extends AbstractDataSource
 			throw new InternalError("The preference Maximum open cursors per connection has an invalid value (0)");
 		}
 		
-		connectionPools = new Hashtable();
+		connectionPools = new Hashtable<>();
 	}
 
 	public void initialize()
@@ -363,19 +363,19 @@ public class DataSource extends AbstractDataSource
 		this.connectionPool = connectionPool;
 	}
 
-	public synchronized Hashtable getConnectionPools()
+	public synchronized Hashtable<String, IConnectionPool> getConnectionPools()
 	{
 		return connectionPools;
 	}
 	
-	public void setConnectionPools(Hashtable connectionPools)
+	public void setConnectionPools(Hashtable<String, IConnectionPool> connectionPools)
 	{
 		this.connectionPools = connectionPools;
 	}	
 
 	public synchronized IConnectionPool getConnectionPool(String connectionString)
 	{
-		IConnectionPool connPool = (IConnectionPool)connectionPools.get(connectionString);
+		IConnectionPool connPool = connectionPools.get(connectionString);
 		
 		if (connPool == null)
 		{

@@ -313,7 +313,8 @@ public class ForEachCursor extends Cursor implements IForEachCursor
 	    public void setString(int index, String value) throws SQLException {}
 	    public void setGXDbFileURI(int index, String fileName, String blobPath, int length, String tableName, String fieldName) throws SQLException {}
 	    public void setGXDbFileURI(int index, String fileName, String blobPath, int length) throws SQLException {}
-	    public void setBytes(int index, byte value[]) throws SQLException {}
+		public void setGXDbFileURI(int index, String fileName, String blobPath, int length, String tableName, String fieldName, boolean downloadContent) throws SQLException {}
+		public void setBytes(int index, byte value[]) throws SQLException {}
 
 		public void setDateTime(int index, java.util.Date value, boolean onlyTime) throws SQLException {}
 		public void setDateTime(int index, java.util.Date value, boolean onlyTime, boolean hasmilliseconds) throws SQLException{}
@@ -325,8 +326,9 @@ public class ForEachCursor extends Cursor implements IForEachCursor
 	    public void setTimestamp(int index, java.sql.Timestamp value) throws SQLException {}
 	    public void setBLOBFile(int index, String fileName) throws SQLException {}
 	    public void setBLOBFile(int index, String fileName, boolean isMultiMedia) throws SQLException {}
-	
-	    public void setVarchar(int index, String value, int length, boolean allowsNull) throws SQLException {}
+		public void setBLOBFile(int index, String fileName, boolean isMultiMedia, boolean downloadContet) throws SQLException {}
+
+		public void setVarchar(int index, String value, int length, boolean allowsNull) throws SQLException {}
 	    public void setLongVarchar(int index, String value, boolean allowsNull) throws SQLException {}
 	    public void setNLongVarchar(int index, String value, boolean allowsNull) throws SQLException {}
 	    public void setLongVarchar(int index, String value, int maxLength, boolean allowsNull) throws SQLException {}

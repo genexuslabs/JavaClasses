@@ -37,8 +37,8 @@ public class GXQueue implements MessageListener{
   private int errCode;
   private String errDescription = "";
 
-  private static Hashtable qsessions = new Hashtable();
-  private static Hashtable tsessions = new Hashtable();
+  private static Hashtable<QueueSession, QueueSession> qsessions = new Hashtable<>();
+  private static Hashtable<TopicSession, TopicSession> tsessions = new Hashtable<>();
   private static final String QUEUE  = "Queue";
   private static final String TOPIC = "Topic";
 
@@ -68,7 +68,7 @@ public class GXQueue implements MessageListener{
   private TopicSession tsession;
   private TopicConnection tconnection;
   private TopicSubscriber suscriber;
-  private Vector topicMessages = new Vector();
+  private Vector<GXQueueMessage> topicMessages = new Vector<>();
 
   public GXQueue() {
 	Application.usingQueue = true;
@@ -283,7 +283,7 @@ public class GXQueue implements MessageListener{
     qsession = null;
     tsession = null;
 
-    Hashtable env = new Hashtable();
+    Hashtable<String, String> env = new Hashtable<>();
     env.put(Context.SECURITY_PRINCIPAL, user);
     env.put(Context.SECURITY_CREDENTIALS, password);
     env.put(Context.PROVIDER_URL, url);
@@ -449,7 +449,7 @@ public class GXQueue implements MessageListener{
       {
           if (topicMessages.size() > 0)
           {
-            result = (GXQueueMessage) topicMessages.elementAt(0);
+            result = topicMessages.elementAt(0);
             topicMessages.removeElementAt(0);
           }
           else

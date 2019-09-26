@@ -1,7 +1,9 @@
 package com.genexus.management;
 
+import java.sql.SQLException;
 import java.util.Date;
 
+import com.genexus.db.DBConnectionManager;
 import com.genexus.db.ServerUserInformation;
 
 public class ServerUserInformationJMX implements ServerUserInformationJMXMBean{
@@ -91,7 +93,14 @@ public class ServerUserInformationJMX implements ServerUserInformationJMXMBean{
   
   public String getUserId()
   {
-  	return context.getUserId( "", serverUserInfo.getHandle(), "DEFAULT");
+  	try
+	{
+		return DBConnectionManager.getInstance().getUserName(context, serverUserInfo.getHandle(), "DEFAULT");
+	}
+	catch (SQLException ex)
+	{
+		return "";
+	}
   }
   
   public void disconnect()
