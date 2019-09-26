@@ -3,7 +3,11 @@ package com.genexus.db.odata;
 import com.genexus.ModelContext;
 import com.genexus.db.driver.GXDBMSservice;
 import com.genexus.db.service.ServiceConnection;
-import org.apache.http.*;
+import com.genexus.diagnostics.core.LogManager;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.HttpEntityWrapper;
 import org.apache.http.entity.StringEntity;
@@ -91,7 +95,7 @@ public class ODataConnection extends ServiceConnection
 		{
 			if(metadataDocName == null)
 				metadataDocName = new java.net.URI(url).getHost();
-			String metadataDocLoc = String.format("%s%s.xml",  metadataLocation, metadataDocName);
+			String metadataDocLoc = String.format("%s%s.xml", metadataLocation, metadataDocName);
 			File metadataDocFile = new File(metadataDocLoc);
 			if(!metadataDocFile.canRead())
 				metadataDocFile = new File(new URI(ModelContext.getModelContext().packageClass.getResource("/../../").toURI()+metadataDocLoc.replace('\\', '/')));
@@ -102,7 +106,10 @@ public class ODataConnection extends ServiceConnection
 					model = ODataClientFactory.getClient().getReader().readMetadata(fis);
 				}
 			}
-		}catch(URISyntaxException | IOException ignored){}
+		}catch(URISyntaxException | IOException ex)
+		{
+			LogManager.getLogger(ODataConnection.class).warn(String.format("Could not load metadata file: %s%s", metadataLocation, metadataDocName), ex);
+		}
 
 		if(sapLoginBO != null)
 		{ // SAP BusinessOne requiere autenticarse previamente para obtener la sesion
@@ -130,7 +137,10 @@ public class ODataConnection extends ServiceConnection
 						b1SessionId = cookie.substring(cookieStart + 10, cookieEnd - cookieStart);
 					}
 				}
-			}catch (URISyntaxException | IOException ignored){}
+			}catch (URISyntaxException | IOException ex)
+			{
+				LogManager.getLogger(ODataConnection.class).warn(String.format("Could not login to %s", loginBase), ex);
+			}
 		}
 
 		HttpClientFactory handlerFactory = null;

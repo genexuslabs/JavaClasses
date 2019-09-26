@@ -7,16 +7,10 @@ import com.genexus.db.driver.GXDBDebug;
 import com.genexus.db.service.ServiceConnection;
 import com.genexus.db.service.ServiceError;
 import com.genexus.db.service.ServicePreparedStatement;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.sql.*;
+import com.genexus.diagnostics.core.LogManager;
 import org.apache.olingo.client.api.ODataClient;
 import org.apache.olingo.client.api.communication.ODataClientErrorException;
-import org.apache.olingo.client.api.communication.request.cud.ODataDeleteRequest;
-import org.apache.olingo.client.api.communication.request.cud.ODataEntityCreateRequest;
-import org.apache.olingo.client.api.communication.request.cud.ODataEntityUpdateRequest;
-import org.apache.olingo.client.api.communication.request.cud.ODataReferenceAddingRequest;
-import org.apache.olingo.client.api.communication.request.cud.UpdateType;
+import org.apache.olingo.client.api.communication.request.cud.*;
 import org.apache.olingo.client.api.communication.response.ODataDeleteResponse;
 import org.apache.olingo.client.api.communication.response.ODataEntityCreateResponse;
 import org.apache.olingo.client.api.communication.response.ODataEntityUpdateResponse;
@@ -25,6 +19,12 @@ import org.apache.olingo.client.api.domain.ClientEntity;
 import org.apache.olingo.commons.api.edm.EdmEntityType;
 import org.apache.olingo.commons.api.ex.ODataRuntimeException;
 import org.apache.olingo.commons.api.format.ContentType;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 class ODataPreparedStatement extends ServicePreparedStatement
 {
@@ -184,7 +184,10 @@ class ODataPreparedStatement extends ServicePreparedStatement
             try
             {
                 editLink = new URI(updURI.getScheme(), editLink.getUserInfo(), editLink.getHost(), editLink.getPort(), editLink.getPath(), editLink.getQuery(), editLink.getFragment());
-            }catch(URISyntaxException ignored){}
+            }catch(URISyntaxException ex)
+			{
+				LogManager.getLogger(ODataPreparedStatement.class).warn(String.format("Could not update editLink: %s", updURI ), ex);
+			}
         }
         return editLink;
     }
