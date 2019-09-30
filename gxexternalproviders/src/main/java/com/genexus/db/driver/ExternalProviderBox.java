@@ -56,8 +56,7 @@ public class ExternalProviderBox implements ExternalProvider {
 		debugTrace("configFile = \"%s\"", file.getAbsolutePath());
 
 		BoxConfig config;
-		try {
-			Reader reader = new FileReader(file);
+		try (Reader reader = new FileReader(file)) {
 			config = BoxConfig.readFrom(reader);
 		} catch (IOException ex) {
 			throw handleException("read config", ex);
@@ -72,9 +71,9 @@ public class ExternalProviderBox implements ExternalProvider {
 
 		try {
 			BoxFile.Info file = getBoxFileFromPath(externalFileName, isPrivate);
-			OutputStream out = new FileOutputStream(localFile);
-			file.getResource().download(out);
-			out.close();
+			try (OutputStream out = new FileOutputStream(localFile)) {
+				file.getResource().download(out);
+			}
 		} catch (IOException ex) {
 			throw handleException("download", ex);
 		}
@@ -83,13 +82,14 @@ public class ExternalProviderBox implements ExternalProvider {
 	@Override
 	public String upload(String localFile, String externalFileName, boolean isPrivate) {
 		try {
-			File file = new File(localFile);
-			FileInputStream fileStream = new FileInputStream(file);
 			BoxFolder folder = getOrCreateBoxFolderFromPath(externalFileName, true);
 			String fileName = getFileNameFromPath(externalFileName);
 
-			BoxFile.Info fileInfo = folder.uploadFile(fileStream, fileName, file.length(), null);
-			fileStream.close();
+			BoxFile.Info fileInfo = null;
+			File file = new File(localFile);
+			try (FileInputStream fileStream = new FileInputStream(file)) {
+				fileInfo = folder.uploadFile(fileStream, fileName, file.length(), null);
+			}
 			String link = getBoxFileLink(fileInfo.getResource(), isPrivate);
 			debugTrace("upload(\"%s\", \"%s\", %s) = %s", localFile, externalFileName, isPrivate, link);
 			return link;
