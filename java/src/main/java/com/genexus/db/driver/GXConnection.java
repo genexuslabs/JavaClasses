@@ -148,6 +148,11 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 				GXPreparedStatement.longVarCharAsOracleLong = true;
 			}
 
+			if(context.getPreferences().getProperty("DontGetConId", "0").equals("1"))
+			{
+				dbmsId = "";
+			}
+
 			//En el caso de una aplicacion en dos capas hay que llamar al Before Connect aca
 			if(!ApplicationContext.getInstance().getPoolConnections())
 			{
@@ -1557,7 +1562,6 @@ private void commit_impl() throws SQLException
 		{
 			dbmsId = dataSource.dbms.connectionPhysicalId(this);
 		}
-		
 		return dbmsId;
 	}
 
