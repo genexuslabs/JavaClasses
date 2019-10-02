@@ -221,6 +221,11 @@ public final class CommonUtil
 		logger.trace(message);
 	}
 
+	public static void writeTLogln( String message)
+	{
+		logger.trace(message);
+	}
+
 	public static void writeLogRaw( String message, Object obj)
 	{
 		logger.debug(message);
