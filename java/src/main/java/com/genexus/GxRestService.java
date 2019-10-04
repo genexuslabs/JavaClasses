@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.genexus.diagnostics.core.ILogger;
-import com.genexus.diagnostics.core.LogManager;
 import com.genexus.internet.HttpContext;
 import com.genexus.internet.MsgList;
 import com.genexus.security.GXResult;
@@ -49,7 +48,8 @@ abstract public class GxRestService extends GXWebObjectBase
 
 	
 	protected static final int SECURITY_HIGH = 2;
-	protected static final int SECURITY_LOW  = 1;	
+	protected static final int SECURITY_LOW  = 1;
+	protected static final String POST  = "POST";
 
 	public GxRestService()
 	{
@@ -244,7 +244,7 @@ abstract public class GxRestService extends GXWebObjectBase
 		{
 			setLanguage(language);
 		}
-		String etag = myServletRequest.getHeader("If-Modified-Since");
+		String etag = myServletRequest.getMethod().equalsIgnoreCase(POST) ? null : myServletRequest.getHeader("If-Modified-Since");
 		Date dt = Application.getStartDateTime();
 		Date newDt = new Date();
 		GXSmartCacheProvider.DataUpdateStatus status;
