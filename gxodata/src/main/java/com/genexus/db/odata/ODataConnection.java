@@ -4,10 +4,10 @@ import com.genexus.ModelContext;
 import com.genexus.db.driver.GXDBMSservice;
 import com.genexus.db.service.ServiceConnection;
 import com.genexus.diagnostics.core.LogManager;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpResponseInterceptor;
+import org.apache.http.*;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.HttpEntityWrapper;
 import org.apache.http.entity.StringEntity;
@@ -32,14 +32,16 @@ import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.util.Base64;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
 public class ODataConnection extends ServiceConnection
 {
+	private static final String GXODATA_VERSION = "1.0";
+
     ODataClient client;
     private ModelInfo modelInfo;
-	private ContentType defaultContentType = ContentType.JSON_FULL_METADATA;
 
 	public ODataConnection(String connUrl, Properties initialConnProps)
     {
@@ -53,7 +55,7 @@ public class ODataConnection extends ServiceConnection
 
         if(client == null)
         {
-            client = model == null ? ODataClientFactory.getClient() : ODataClientFactory.getEdmEnabledClient(url, model, null, defaultContentType);
+            client = model == null ? ODataClientFactory.getClient() : ODataClientFactory.getEdmEnabledClient(url, model, null, modelInfo != null ? modelInfo.defaultContentType : ContentType.JSON_FULL_METADATA);
         }
         if(modelInfo.handlerFactory != null)
             client.getConfiguration().setHttpClientFactory(modelInfo.handlerFactory);
@@ -70,7 +72,8 @@ public class ODataConnection extends ServiceConnection
 		String user = null, password = null;
 		boolean force_auth = false;
 		boolean use_chunked = false;
-		String sapLoginBO = null, b1SessionId = null;
+		String sapLoginBO = null, initialB1SessionId = null;
+		ContentType defaultContentType = ContentType.JSON_FULL_METADATA;
 		for(Enumeration keys = props.keys(); keys.hasMoreElements(); )
 		{
 			String key = ((String)keys.nextElement());
@@ -86,7 +89,7 @@ public class ODataConnection extends ServiceConnection
 				case "force_auth": force_auth = getBoolean(value); break;
 				case "use_chunked": use_chunked = getBoolean(value); break;
 				case "saplogin": sapLoginBO = value; break;
-				case "b1session": b1SessionId = value; break;
+				case "b1session": initialB1SessionId = value; break;
 				default: break;
 			}
 
@@ -111,63 +114,46 @@ public class ODataConnection extends ServiceConnection
 			LogManager.getLogger(ODataConnection.class).warn(String.format("Could not load metadata file: %s%s", metadataLocation, metadataDocName), ex);
 		}
 
+		String loginBase = null;
 		if(sapLoginBO != null)
 		{ // SAP BusinessOne requiere autenticarse previamente para obtener la sesion
 			// Ademas no esta aceptando ContentType.JSON_FULL_METADATA
 			defaultContentType = ContentType.JSON;
-			String loginBase = url.trim();
+			loginBase = url.trim();
 			while(loginBase.endsWith("/"))
 				loginBase = loginBase.substring(0, loginBase.length() - 1);
-
-			try
-			{
-				HttpPost login = new HttpPost(new URI(String.format("%s/Login", loginBase)));
-				StringEntity sloginInfo = new StringEntity(String.format("{\"UserName\":\"%s\", \"Password\":\"%s\", \"CompanyDB\":\"%s\"}", user, password, sapLoginBO));
-				login.setEntity(sloginInfo);
-				DefaultHttpClient webClient = new DefaultHttpClient();
-				HttpResponse loginResponse = webClient.execute(login);
-				Header cookieHdr = loginResponse.getFirstHeader("Set-Cookie");
-				if(cookieHdr != null)
-				{
-					String cookie = cookieHdr.getValue();
-					int cookieStart = cookie.indexOf("B1SESSION=");
-					if (cookieStart >= 0)
-					{
-						int cookieEnd = cookie.indexOf(';', cookieStart);
-						b1SessionId = cookie.substring(cookieStart + 10, cookieEnd - cookieStart);
-					}
-				}
-			}catch (URISyntaxException | IOException ex)
-			{
-				LogManager.getLogger(ODataConnection.class).warn(String.format("Could not login to %s", loginBase), ex);
-			}
+			if(initialB1SessionId != null)
+				B1_sessionIds.put(loginBase, String.format("B1SESSION=%s", initialB1SessionId));
 		}
 
 		HttpClientFactory handlerFactory = null;
 		if(user != null && password != null &&
 			!(user.equals("") && password.equals("")))
 		{
-			if(!force_auth && b1SessionId == null)
+			if(!force_auth && sapLoginBO == null)
 				handlerFactory = new BasicAuthHttpClientFactory(user, password);
 			else
 			{
 				final String authHeaderValue = force_auth ? "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", user, password).getBytes(StandardCharsets.UTF_8)) : null;
-				final String b1SessionCookie = b1SessionId != null ? String.format("B1SESSION=%s", b1SessionId) : null;
-				final boolean fixResponse = b1SessionCookie != null;
+				final boolean fixResponse = sapLoginBO != null;
+				final String m_user = user, m_password = password, m_sapLoginBO = sapLoginBO, m_loginBase = loginBase;
 				handlerFactory = new BasicAuthHttpClientFactory(user, password)
 				{
 					@Override
 					public DefaultHttpClient create(HttpMethod method, URI uri)
 					{
 						final DefaultHttpClient httpClient = super.create(method, uri);
+						final SapB1CredentialsProvider sapB1CredentialsProvider = m_sapLoginBO != null ? new SapB1CredentialsProvider(httpClient.getCredentialsProvider(), m_user, m_password, m_sapLoginBO, m_loginBase) : null;
+						if(sapB1CredentialsProvider != null)
+							httpClient.setCredentialsProvider(sapB1CredentialsProvider);
 						httpClient.addRequestInterceptor((request, context) ->
 						{ // Caso en que el servicio va con autenticación Basic pero no esta enviando el Challenge al dar el response 401.Unauthorized
 							// Si se pone la property force_auth=y se manda el header de autorización de antemano
 							if(authHeaderValue != null)
 								request.addHeader("Authorization", authHeaderValue);
 							// Caso SAP BusinessOne se manda la B1SESSION
-							if(b1SessionCookie != null)
-								request.addHeader("Cookie", b1SessionCookie);
+							if(sapB1CredentialsProvider != null)
+								sapB1CredentialsProvider.addRequestHeaders(request);
 						});
 						if(fixResponse)
 						{
@@ -211,8 +197,6 @@ public class ODataConnection extends ServiceConnection
 												};
 											}
 										});
-
-
 									}else
 									{
 										Header contentTypeHeader = entity.getContentType();
@@ -243,6 +227,7 @@ public class ODataConnection extends ServiceConnection
 		modelInfo = new ModelInfo(url, model, checkOptimisticConcurrency);
 		modelInfo.handlerFactory = handlerFactory;
 		modelInfo.useChunked = use_chunked;
+		modelInfo.defaultContentType = defaultContentType;
 		ModelInfo.addModel(connUrl, modelInfo);
 		return model;
 	}
@@ -339,7 +324,7 @@ public class ODataConnection extends ServiceConnection
     @Override
     public String getDriverVersion()
 	{
-        return client.getServiceVersion().toString();
+        return String.format("%s/%s", client.getServiceVersion().toString(), GXODATA_VERSION);
     }
 
 // JDK8:
@@ -383,6 +368,86 @@ public class ODataConnection extends ServiceConnection
     public boolean generatedKeyAlwaysReturned()
 	{
         throw new UnsupportedOperationException("Not supported yet."); 
-    }            
-    
+    }
+
+	private static final HashMap<String, String> B1_sessionIds = new HashMap<>();
+	private class SapB1CredentialsProvider implements CredentialsProvider
+	{
+		private final CredentialsProvider parent;
+		private final String user;
+		private final String password;
+		private final String sapLoginBO;
+		private final String loginBase;
+		private boolean doLogin = true;
+		SapB1CredentialsProvider(CredentialsProvider parent, String user, String password, String sapLoginBO, String loginBase)
+		{
+			this.parent = parent;
+			this.user = user;
+			this.password = password;
+			this.sapLoginBO = sapLoginBO;
+			this.loginBase = loginBase;
+			if(B1_sessionIds.get(loginBase) == null)
+				loginBO();
+		}
+
+		@Override
+		public void setCredentials(AuthScope authScope, Credentials credentials)
+		{
+			parent.setCredentials(authScope, credentials);
+		}
+
+		@Override
+		public Credentials getCredentials(AuthScope authScope)
+		{
+			if(doLogin)
+				loginBO();
+			return parent.getCredentials(authScope);
+		}
+
+		@Override
+		public void clear()
+		{
+			doLogin = true;
+			B1_sessionIds.remove(loginBase);
+			parent.clear();
+		}
+
+		private void loginBO()
+		{
+			try
+			{
+				doLogin = false;
+				B1_sessionIds.remove(loginBase);
+				URI loginURI = new URI(String.format("%s/Login", loginBase));
+				HttpPost login = new HttpPost(loginURI);
+				StringEntity sloginInfo = new StringEntity(String.format("{\"UserName\":\"%s\", \"Password\":\"%s\", \"CompanyDB\":\"%s\"}", user, password, sapLoginBO));
+				login.setEntity(sloginInfo);
+				DefaultHttpClient webClient = new DefaultHttpClient();
+				HttpResponse loginResponse = webClient.execute(login);
+				Header cookieHdr = loginResponse.getFirstHeader("Set-Cookie");
+				if(cookieHdr != null)
+				{
+					String cookie = cookieHdr.getValue();
+					int cookieStart = cookie.indexOf("B1SESSION=");
+					if (cookieStart >= 0)
+					{
+						int cookieEnd = cookie.indexOf(';', cookieStart);
+						String b1SessionCookie = cookie.substring(cookieStart, cookieEnd - cookieStart);
+						B1_sessionIds.put(loginBase, b1SessionCookie);
+						doLogin = true;
+					}
+				}
+			}catch (URISyntaxException | IOException ex)
+			{
+				LogManager.getLogger(ODataConnection.class).warn(String.format("Could not login to %s", loginBase), ex);
+			}
+		}
+
+		void addRequestHeaders(HttpRequest request)
+		{
+			String b1SessionCookie = B1_sessionIds.get(loginBase);
+			if(b1SessionCookie != null)
+				request.addHeader("Cookie", b1SessionCookie);
+		}
+	}
 }

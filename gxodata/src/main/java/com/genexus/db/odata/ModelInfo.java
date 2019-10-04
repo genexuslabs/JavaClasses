@@ -14,6 +14,7 @@ import org.apache.olingo.commons.api.edm.EdmEntityContainer;
 import org.apache.olingo.commons.api.edm.EdmEntitySet;
 import org.apache.olingo.commons.api.edm.EdmEntityType;
 import org.apache.olingo.commons.api.edm.EdmNavigationProperty;
+import org.apache.olingo.commons.api.format.ContentType;
 
 public class ModelInfo
 {
@@ -32,6 +33,8 @@ public class ModelInfo
     final String url;
     final Edm model;
     boolean useChunked;
+	ContentType defaultContentType = ContentType.JSON_FULL_METADATA;
+
     HttpClientFactory handlerFactory = null;
     ModelInfo(String url, Edm model, String checkOptimisticConcurrency)
     {
