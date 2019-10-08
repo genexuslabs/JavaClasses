@@ -70,7 +70,7 @@ public class GXServices {
 		}
 	}
 
-	private String configBaseDirectory() {
+	public String configBaseDirectory() {
 		String baseDir = "";
 		String envVariable = System.getenv("LAMBDA_TASK_ROOT");
 		if (envVariable != null && envVariable.length() > 0)
