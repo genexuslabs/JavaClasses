@@ -28,7 +28,7 @@ public class ODataDriver implements Driver
     }
 
     @Override
-    public Connection connect(String url, Properties info)
+    public Connection connect(String url, Properties info) throws SQLException
 	{
         if(!acceptsURL(url))
             return null;
