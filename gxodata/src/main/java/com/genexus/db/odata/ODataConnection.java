@@ -15,6 +15,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.apache.olingo.client.api.ODataClient;
+import org.apache.olingo.client.api.communication.ODataClientErrorException;
 import org.apache.olingo.client.api.domain.ClientEnumValue;
 import org.apache.olingo.client.api.http.HttpClientFactory;
 import org.apache.olingo.client.core.ODataClientFactory;
@@ -28,8 +29,10 @@ import org.apache.olingo.commons.api.http.HttpMethod;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Base64;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -43,26 +46,30 @@ public class ODataConnection extends ServiceConnection
     ODataClient client;
     private ModelInfo modelInfo;
 
-	public ODataConnection(String connUrl, Properties initialConnProps)
-    {
-        super(connUrl, initialConnProps); /// Luego de la inicializacion usar props de la clase base para obtener las propiedades
+	public ODataConnection(String connUrl, Properties initialConnProps) throws SQLException
+	{
+        super(connUrl, initialConnProps); /// Luego de la inicialización usar props de la clase base para obtener las propiedades
         modelInfo = ModelInfo.getModel(connUrl);
-        Edm model  = modelInfo != null ? modelInfo.model : null;
 		if(modelInfo == null)
         {
-        	model = initializeModel(connUrl);
-        }
-
-        if(client == null)
-        {
-            client = model == null ? ODataClientFactory.getClient() : ODataClientFactory.getEdmEnabledClient(url, model, null, modelInfo != null ? modelInfo.defaultContentType : ContentType.JSON_FULL_METADATA);
-        }
-        if(modelInfo.handlerFactory != null)
-            client.getConfiguration().setHttpClientFactory(modelInfo.handlerFactory);
-        client.getConfiguration().setUseChuncked(modelInfo.useChunked);  
+        	try
+			{
+				initializeModel(connUrl);
+			}catch(ODataClientErrorException e)
+			{
+				throw new SQLException(e);
+			}
+        }else
+		{
+			Edm model  = modelInfo.model;
+			client = model == null ? ODataClientFactory.getClient() : ODataClientFactory.getEdmEnabledClient(url, model, null, modelInfo.defaultContentType);
+			if(modelInfo.handlerFactory != null)
+				client.getConfiguration().setHttpClientFactory(modelInfo.handlerFactory);
+		}
+        client.getConfiguration().setUseChuncked(modelInfo.useChunked);
     }
 
-    private Edm initializeModel(String connUrl)
+    private void initializeModel(String connUrl)
 	{
 		Edm model = null;
 		String metadataLocation = String.format("Metadata%sServices%s", File.separatorChar, File.separatorChar);
@@ -101,12 +108,18 @@ public class ODataConnection extends ServiceConnection
 			String metadataDocLoc = String.format("%s%s.xml", metadataLocation, metadataDocName);
 			File metadataDocFile = new File(metadataDocLoc);
 			if(!metadataDocFile.canRead())
-				metadataDocFile = new File(new URI(ModelContext.getModelContext().packageClass.getResource("/../../").toURI()+metadataDocLoc.replace('\\', '/')));
-			if(metadataDocFile.canRead())
 			{
-				try (FileInputStream fis = new FileInputStream(metadataDocFile))
+				URL alternativeLocationURL = ModelContext.getModelContext().packageClass.getResource("./../../");
+				if(alternativeLocationURL != null)
 				{
-					model = ODataClientFactory.getClient().getReader().readMetadata(fis);
+					metadataDocFile = new File(new URI(alternativeLocationURL.toURI() + metadataDocLoc.replace('\\', '/')));
+					if (metadataDocFile.canRead())
+					{
+						try (FileInputStream fis = new FileInputStream(metadataDocFile))
+						{
+							model = ODataClientFactory.getClient().getReader().readMetadata(fis);
+						}
+					}
 				}
 			}
 		}catch(URISyntaxException | IOException ex)
@@ -218,18 +231,17 @@ public class ODataConnection extends ServiceConnection
 			handlerFactory = (handlerFactory != null ? new ProxyWrappingHttpClientFactory(URI.create(proxyURI), (DefaultHttpClientFactory) handlerFactory) : new ProxyWrappingHttpClientFactory(URI.create(proxyURI)));
 		}
 
+		client = ODataClientFactory.getClient();
+		client.getConfiguration().setDefaultPubFormat(defaultContentType);
+		if(handlerFactory != null)
+			client.getConfiguration().setHttpClientFactory(handlerFactory);
 		if(model == null)
-		{
-			client = ODataClientFactory.getClient();
-			client.getConfiguration().setDefaultPubFormat(defaultContentType);
 			model = client.getRetrieveRequestFactory().getMetadataRequest(url).execute().getBody();
-		}
 		modelInfo = new ModelInfo(url, model, checkOptimisticConcurrency);
 		modelInfo.handlerFactory = handlerFactory;
 		modelInfo.useChunked = use_chunked;
 		modelInfo.defaultContentType = defaultContentType;
 		ModelInfo.addModel(connUrl, modelInfo);
-		return model;
 	}
         
     private boolean getBoolean(String value)
