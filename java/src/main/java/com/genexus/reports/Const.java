@@ -52,6 +52,7 @@ public class Const
 
     // Secciones
     public static final String EMBEED_SECTION = "Embeed Fonts";
+	public static final String EMBEED_NOT_SPECIFIED_SECTION= "EmbeedNotSpecifiedFonts";
     public static final String MS_FONT_LOCATION = "Fonts Location (MS)"; // Seccion donde estan los mappings font <--> FileName de la VM Microsoft
     public static final String SUN_FONT_LOCATION = "Fonts Location (Sun)"; // Seccion donde estan los mappings font <--> FileName de la VM de Sun
     public static final String FONT_SUBSTITUTES_SECTION = "Fonts Substitutions"; // Seccion donde estan los mappings extra de Font --> Font.
