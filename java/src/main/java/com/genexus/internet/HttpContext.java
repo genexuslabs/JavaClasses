@@ -494,7 +494,7 @@ public abstract class HttpContext
 
 	private String getURLBuildNumber(String styleSheet, String urlBuildNumber)
 	{
-		if(urlBuildNumber.isEmpty() && !((styleSheet.startsWith("http:")) || (styleSheet.startsWith("https:"))))
+		if(urlBuildNumber.isEmpty() && !GXutil.isAbsoluteURL(styleSheet))
 		{
 			return "?" + getCacheInvalidationToken();
 		}
