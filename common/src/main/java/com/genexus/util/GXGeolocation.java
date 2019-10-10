@@ -133,7 +133,7 @@ public class GXGeolocation
 		return ClientContext.getModelContext().getClientPreferences().getGOOGLE_API_KEY();	
 	}
 
-	public static java.util.Vector getAddress(String location)
+	public static java.util.Vector<String> getAddress(String location)
 	{
 		String urlString = "https://maps.google.com/maps/api/geocode/json?latlng=" + location.trim() + "&sensor=false";
 		// replace space to avoid File not found exception
@@ -146,7 +146,7 @@ public class GXGeolocation
 		urlString = urlString.replace(" ", "+");
 
 		String response = GXGeolocation.getContentFromURL(urlString);		
-		java.util.Vector result = new java.util.Vector();
+		java.util.Vector<String> result = new java.util.Vector<>();
 		
 		if (response!=null)
 		{
@@ -167,9 +167,9 @@ public class GXGeolocation
 		return result;
 	}
 	
-	public static java.util.Vector getLocation(String address)
+	public static java.util.Vector<String> getLocation(String address)
 	{
-		java.util.Vector result = new java.util.Vector();
+		java.util.Vector<String> result = new java.util.Vector<>();
 		try {
 			
 			String urlString = "https://maps.google.com/maps/api/geocode/json?address=" + URLEncoder.encode(address, "utf-8") + "&sensor=false";

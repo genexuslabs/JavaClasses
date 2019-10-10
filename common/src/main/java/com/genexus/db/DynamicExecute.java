@@ -112,7 +112,7 @@ public class DynamicExecute
             for (int i = parms.length - 1; i >= 0; i--)
                 parmTypes[i] = parms[i].getClass();
         }
-        Class myClass = instance.getClass();
+        Class<?> myClass = instance.getClass();
         String pgmName = myClass.getName();
 
         try {
@@ -143,7 +143,7 @@ public class DynamicExecute
 		for (int i = parms.length - 1; i >= 0; i--)
 			parmTypes[i] = parms[i].getClass();
 
-		Class myClass;
+		Class<?> myClass;
 
 		try
 		{
@@ -192,18 +192,18 @@ public class DynamicExecute
 		boolean [] needToUpdateParams = new boolean[params.length]; // Indica si hay que actualizar el array de parametros(params) al terminar la invocaci�n del m�todo. Solo se deben actualizar los parametros que en destino son 'arrays', que son los que pueden sufrir modificaci�n
 
 		// Primero obtengo la clase a ejecutar
-		Class myClass = tryLoadClass(caller.getClassLoader(), className, true);
+		Class<?> myClass = tryLoadClass(caller.getClassLoader(), className, true);
 
 		// Ahora matcheo los parametros
 		Method [] methods = myClass.getMethods();
 		Method methodToExecute = null; // method va a contener el m�todo a ejecutar
-		Class sourceClass = null, destClass = null;
+		Class<?> sourceClass = null, destClass = null;
 nextMethod:
 		for(int i = 0; i < methods.length; i++)
 		{
 			Method method = methods[i];
 			if(!method.getName().equalsIgnoreCase(METHOD_EXECUTE))continue;
-			Class [] parameters = method.getParameterTypes();
+			Class<?> [] parameters = method.getParameterTypes();
 
 			// Primero verificamos que la cantidad de parametros sea la misma
 			if(parameters.length != params.length)continue;
@@ -447,7 +447,7 @@ nextMethod:
 			if(needToUpdateParams[j])
 			{
 				Class paramClass = params[j].getClass();
-				Class calledClass = callingParams[j].getClass().getComponentType(); // pues ya se que el destIsArray
+				Class<?> calledClass = callingParams[j].getClass().getComponentType(); // pues ya se que el destIsArray
 				boolean sourceIsArray = paramClass.isArray();
 				int sourceArraySize = 1;
 				if(sourceIsArray)
@@ -535,7 +535,7 @@ nextMethod:
 
 	// El getPrimitiveType devuelve un codigo para cada tipo de dato primitivo Y para el BigDecimal
 	// pues para el tambi�n realizamos casts
-	protected static int getPrimitiveType(Class clase)
+	protected static int getPrimitiveType(Class<?> clase)
 	{
 		if(clase.isAssignableFrom(Byte.class) ||
 		   clase.isAssignableFrom(byte.class))

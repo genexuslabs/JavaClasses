@@ -103,7 +103,7 @@ public final class MemoLines
 
 	public static boolean GX_is_word_delimiter( char cChar)
 	{
-		return Character.isSpace(cChar);
+		return Character.isWhitespace(cChar);
 	}
 	
 	public static String removeTrailingLineDelimiter(String sInput)

@@ -137,6 +137,7 @@ public abstract class ServicePreparedStatement implements IServicePreparedStatem
     }
 
     @Override
+	@Deprecated
     public void setUnicodeStream(int parameterIndex, InputStream x, int length) throws SQLException
     {
         throw new UnsupportedOperationException("Not supported yet."); 

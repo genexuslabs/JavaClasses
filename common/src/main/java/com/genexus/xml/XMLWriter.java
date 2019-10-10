@@ -15,6 +15,8 @@ import java.math.BigDecimal;
 
 public class XMLWriter implements IXMLWriter
 {
+	private static boolean useTagToCloseElement;
+
 	private static final byte GXSUCCESS = 0;
 	private static final byte GXFAIL    = 1;
 	private static final byte GXOUTPUT_ERROR = 2;
@@ -22,9 +24,9 @@ public class XMLWriter implements IXMLWriter
 	private String sCurrValue;
 	private String sCurrPrefix;
 
-	private Stack 		stack 		= new Stack();
-	private Vector 		attributes 	= new Vector();
-	private Hashtable 	namespaces 	= new Hashtable();
+	private Stack<NameValuePair> 		stack 		= new Stack<>();
+	private Vector<NameValuePair> 		attributes 	= new Vector<>();
+	private Hashtable<String, String> 	namespaces 	= new Hashtable<>();
 	private StringWriter	sWriter = null;
 
 	private int inValue = 0;
@@ -37,6 +39,7 @@ public class XMLWriter implements IXMLWriter
 	private boolean openedWriter = true;
 	private boolean simpleElement = false;
 	private boolean textFlag = false;
+	private boolean printingEndElement = false;
 	
 	private String encoding = "";
 	private Writer out = null;
@@ -168,38 +171,39 @@ public class XMLWriter implements IXMLWriter
 	public byte xmlEndElement()
 	{
 		checkWriter();
+		printingEndElement = true;
 		CloseElementHeaderAndValue();
 
 		if (stack.empty())
 		{
 			errCode = GXFAIL;
 			errDescription = "Stack underflow";
+			printingEndElement = false;
 			return GXFAIL;
 		}
 		
 		
-		NameValuePair node = (NameValuePair) stack.pop();
-		
-		printIndentation();
+		NameValuePair node = stack.pop();
 
-		String prefix = (String) namespaces.get(node.value);
-		if	(prefix == null)
-			prefix = "";
-		
-		try
+		if (printingEndElement)
 		{
-			if (StringUtils.isNotEmpty(prefix))
-				out.write("</" + prefix + ":" + node.name + ">\n"); 
-			else
-				out.write("</" + node.name + ">\n"); 
-		}
-		catch (NullPointerException e)
-		{
-			errCode = GXOUTPUT_ERROR;
-		}
-		catch (IOException e)
-		{
-			errCode = GXOUTPUT_ERROR;
+			printIndentation();
+
+			String prefix = namespaces.get(node.value);
+			if (prefix == null)
+				prefix = "";
+
+			try {
+				if (StringUtils.isNotEmpty(prefix))
+					out.write("</" + prefix + ":" + node.name + ">\n");
+				else
+					out.write("</" + node.name + ">\n");
+			} catch (NullPointerException e) {
+				errCode = GXOUTPUT_ERROR;
+			} catch (IOException e) {
+				errCode = GXOUTPUT_ERROR;
+			}
+			printingEndElement = false;
 		}
 		inValue = 0;
 		return (byte)errCode;
@@ -396,8 +400,8 @@ public class XMLWriter implements IXMLWriter
 		if (!bOpenElementHeader)
 			return false;
 
-		NameValuePair node = (NameValuePair) stack.peek();
-		String prefix = (String) namespaces.get(node.value);
+		NameValuePair node = stack.peek();
+		String prefix = namespaces.get(node.value);
 		
 		if	(node.value.length() != 0)
 		{					
@@ -458,10 +462,18 @@ public class XMLWriter implements IXMLWriter
 			}
 			else
 			{
-				if (inValue == 0)
-					out.write(">\n");
+				if (printingEndElement && IsBlank(sCurrValue) && !useTagToCloseElement)
+				{
+					out.write("/>\n");
+					printingEndElement = false;
+				}
 				else
-					out.write(">");
+				{
+					if (inValue == 0)
+						out.write(">\n");
+					else
+						out.write(">");
+				}
 			}
 
 			bOpenElementHeader = false;
@@ -935,6 +947,10 @@ public class XMLWriter implements IXMLWriter
 
 		return GXSUCCESS;
 	}
-	
+
+	public static void setUseTagToCloseElement(boolean useTagToCloseElementParm)
+	{
+		useTagToCloseElement = useTagToCloseElementParm;
+	}
 }
 

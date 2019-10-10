@@ -158,12 +158,13 @@ class IdempotentSequence
 	if (!analysis_done)
 	    do_analysis();
 
-	return ((Boolean) threads.get(req.getRequestURI())).booleanValue();
+	return ((Boolean)threads.get(req.getRequestURI())).booleanValue();
     }
 
 
     private static final Object INDET = new Object();
 
+	@SuppressWarnings("unchecked")
     private void do_analysis()
     {
 	for (int idx=0; idx<r_len; idx++)

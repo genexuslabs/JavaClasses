@@ -81,6 +81,7 @@ public class ExpressionEvaluator
 			return throwException(UNKNOWN_ERROR, e.getMessage()).getDecimal();
 		}
 	}
+	@SuppressWarnings("unchecked")
 	public GxUnknownObjectCollection getUsedVariables()
 	{
 		FastTokenizer ft = new FastTokenizer(getTokenizerExpression(expr));
@@ -542,6 +543,7 @@ public class ExpressionEvaluator
 		return evalExternalFunctionCall(funcName, expr);		 
 	}
 
+	@SuppressWarnings("unchecked")
 	private double evalExternalFunctionCall(String funcName, String expr)
 	{
 		Tokenizer paramTokenizer = new Tokenizer(expr.trim(), ",", true);

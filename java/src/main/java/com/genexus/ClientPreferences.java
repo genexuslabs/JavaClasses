@@ -54,7 +54,7 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 	private HTMLDocType docType = HTMLDocType.UNDEFINED;
 	private static Integer HTTP_BUFFER_SIZE = -1;
 	private static ClientPreferences instance;
-	private static Hashtable preferences = new Hashtable();
+	private static Hashtable<String, ClientPreferences> preferences = new Hashtable<>();
 
 	public ClientPreferences(IniFile iniFile)
 	{
@@ -73,14 +73,14 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 */
 	public static void resetPreferences()
 	{
-		preferences = new Hashtable();
+		preferences = new Hashtable<>();
 	}
 
 	public static ClientPreferences getInstance(Class resourceClass)
 	{
 		String packageName = PrivateUtilities.getPackageName(resourceClass);
 
-		ClientPreferences ret = (ClientPreferences) preferences.get(packageName);
+		ClientPreferences ret = preferences.get(packageName);
 
 		if	(ret == null)
 		{

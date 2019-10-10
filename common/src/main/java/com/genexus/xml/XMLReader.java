@@ -58,7 +58,7 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	private Pool endtagsPool = new Pool();
 	private Pool valuedNodesPool = new Pool();
 	private Pool pinstructionsPool = new Pool();
-	Hashtable entities = new Hashtable();
+	Hashtable<String, EntityDeclaration> entities = new Hashtable<>();
 	private StringBuffer normalizationBuffer = new StringBuffer();
 	
 	
@@ -715,7 +715,7 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	{
 		if (node == null) return "";
 		String attvalue = getAttributeByName(name);
-		EntityDeclaration declaration = (EntityDeclaration)entities.get(attvalue);
+		EntityDeclaration declaration = entities.get(attvalue);
 		if (declaration == null) return "";
 		String value = declaration.getSystemID();
 		return (value.length() > 0)? value : declaration.getPublicID();
@@ -725,7 +725,7 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	{
 		if (node == null) return "";
 		String attvalue = getAttributeByName(name);
-		EntityDeclaration declaration = (EntityDeclaration)entities.get(attvalue);
+		EntityDeclaration declaration = entities.get(attvalue);
 		if (declaration == null) return "";
 		return declaration.getNotation();
 	}
@@ -734,7 +734,7 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
    	{
 		if (node == null) return "";
 		String attvalue = getAttributeByIndex(Index);
-		EntityDeclaration declaration = (EntityDeclaration)entities.get(attvalue);
+		EntityDeclaration declaration = entities.get(attvalue);
 		if (declaration == null) return "";
 		String value = declaration.getSystemID();
 		return (value.length() > 0)? value : declaration.getPublicID();
@@ -744,7 +744,7 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
    	{	
 		if (node == null) return "";
 		String attvalue = getAttributeByIndex(Index);
-		EntityDeclaration declaration = (EntityDeclaration)entities.get(attvalue);
+		EntityDeclaration declaration = entities.get(attvalue);
 		if (declaration == null) return "";
 		return declaration.getNotation();
    	}

@@ -42,6 +42,7 @@ public class GXBCCollection<T extends GxSilentTrnSdt> extends GXBaseCollection<T
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public Vector getStruct()
 	{
 		Vector struct = new Vector();
@@ -57,6 +58,7 @@ public class GXBCCollection<T extends GxSilentTrnSdt> extends GXBaseCollection<T
 		return struct;
 	}
 		//-- Add de una collection de BC
+		@SuppressWarnings("unchecked")
 	public boolean addElementTrn(Object item)
 	{
 		try

@@ -1,8 +1,8 @@
 package com.genexus.reports;
 
+import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
-import com.genexus.specific.java.FileUtils;
 
 import java.io.EOFException;
 import java.io.File;
@@ -36,11 +36,11 @@ public class ParseINI
 
 	private String entryName;
 	private InputStreamReader inputStream;
-	private Hashtable sections=new Hashtable();
+	private Hashtable<String, Hashtable<String, String>> sections=new Hashtable<>();
 	private Hashtable sectionEntries;
-	private Hashtable general;
-	private Hashtable aliased=new Hashtable(); // Contiene las dulpas (original -> alias)
-	private Hashtable alias=new Hashtable();   // Contiene las dulpas (alias -> original)
+	private Hashtable<String, String> general;
+	private Hashtable<String, String> aliased=new Hashtable<>(); // Contiene las dulpas (original -> alias)
+	private Hashtable<String, String> alias=new Hashtable<>();   // Contiene las dulpas (alias -> original)
 	private boolean need2Save = false, autoSave = true;
 	private String filename = null;
 
@@ -48,7 +48,7 @@ public class ParseINI
 
 	public ParseINI()
 	{
-		general=new Hashtable();
+		general=new Hashtable<>();
 		filename = null;
 	}
 
@@ -64,7 +64,7 @@ public class ParseINI
 			if (!file.exists()){
 				File templateFile = new File(configurationTemplateFile);
 				if (templateFile.exists())
-					new FileUtils().copyFile(templateFile, file);
+					SpecificImplementation.FileUtils.copyFile(templateFile, file);
 			}
 		}
 		catch(IOException ex){
@@ -84,7 +84,7 @@ public class ParseINI
 		catch(FileNotFoundException fnfe)
 		{ // Si debo crear el archivo
 			(new FileWriter(filename)).close(); // Creo el archivo
-			general=new Hashtable();
+			general=new Hashtable<>();
 		}
 	}
 
@@ -140,7 +140,7 @@ public class ParseINI
 	public Hashtable getSection(String section)
 	{
 		if(sections.containsKey(section))
-			return (Hashtable) ((Hashtable)sections.get(section)).clone();
+			return (Hashtable) sections.get(section).clone();
 		else return null;
 
 	}
@@ -194,7 +194,7 @@ public class ParseINI
 	public void removeProperty(String section, String prop)
 	{
 		if(sections.containsKey(section))
-			need2Save |= ((Hashtable)sections.get(section)).remove(prop) != null;
+			need2Save |= sections.get(section).remove(prop) != null;
 	}
 
 	/** Elimina una property General
@@ -271,8 +271,8 @@ public class ParseINI
 	public void setProperty(String section, String prop, String value)
 	{
 		if(!sections.containsKey(section))
-			sections.put(section, new Hashtable()); //When Value.length == 0, then property will not be included in gxprn.ini save(), so there's not need to save file.
-		need2Save |=  !value.equals(((Hashtable)sections.get(section)).put(prop, value)) && value.length() != 0;
+			sections.put(section, new Hashtable<>()); //When Value.length == 0, then property will not be included in gxprn.ini save(), so there's not need to save file.
+		need2Save |=  !value.equals(sections.get(section).put(prop, value)) && value.length() != 0;
 	}
 
 	/** Devuelve la property asociada de la secci�n especificada
@@ -282,7 +282,7 @@ public class ParseINI
 	 */
 	public String getProperty(String section, String prop)
 	{
-		return getProperty((Hashtable)sections.get(section), prop, null);
+		return getProperty(sections.get(section), prop, null);
 	}
 
 	/** Devuelve la property asociada de la seeci�n especificada
@@ -293,15 +293,15 @@ public class ParseINI
 	 */
 	public String getProperty(String section, String prop, String defecto)
 	{
-		return getProperty((Hashtable)sections.get(section), prop, defecto);
+		return getProperty(sections.get(section), prop, defecto);
 	}
 
-	private String getProperty(Hashtable section, String prop, String defecto)
+	private String getProperty(Hashtable<String, String> section, String prop, String defecto)
 	{
 		if(section != null && section.containsKey(prop))
-			return (String)section.get(prop);
+			return section.get(prop);
 		if(section != null && alias.containsKey(prop)) // veo si es un alias
-			return getProperty(section, (String)alias.get(prop), defecto);
+			return getProperty(section, alias.get(prop), defecto);
 		return defecto;
 	}
 
@@ -314,7 +314,7 @@ public class ParseINI
      */
     public boolean addItemToProperty(String section, String prop, String item, String separator)
     {
-        Vector tempVector = parseLine(getProperty(section, prop), separator);
+        Vector<String> tempVector = parseLine(getProperty(section, prop), separator);
         if(tempVector.contains(item))return false;
         tempVector.addElement(item);
         String temp = "";
@@ -333,12 +333,12 @@ public class ParseINI
      */
     public boolean addItemToGeneralProperty(String prop, String item, String separator)
     {
-        Vector tempVector = parseLine(getGeneralProperty(prop), separator);
+        Vector<String> tempVector = parseLine(getGeneralProperty(prop), separator);
         if(tempVector.contains(item))return false;
         tempVector.addElement(item);
         String temp = "";
         for(Enumeration enumera = tempVector.elements(); enumera.hasMoreElements();)
-            temp += (String)enumera.nextElement() + separator;
+            temp += enumera.nextElement() + separator;
         setGeneralProperty(prop, temp);
         return true;
     }
@@ -414,7 +414,7 @@ public class ParseINI
 		else
 			if(!original.equals(nuevo))
 			{
-				sections.put(nuevo, (Hashtable) sections.get(original));
+				sections.put(nuevo, sections.get(original));
 				sections.remove(original);
 				need2Save = true;
 			}
@@ -436,7 +436,7 @@ public class ParseINI
 	 */
 	public String getAlias(String original)
 	{
-		if(isAliased(original)) return (String)aliased.get(original);
+		if(isAliased(original)) return aliased.get(original);
 		else return original;
 	}
 
@@ -447,6 +447,7 @@ public class ParseINI
 	 * Si no se especifica ninguna seccion se toma una por defecto
 	 * @param inputStream el DataInputStream
 	 */
+	@SuppressWarnings("unchecked")
 	public void load(InputStream iStream) throws IOException
 	{
 		inputStream = new InputStreamReader(iStream, "UTF8");
@@ -459,7 +460,7 @@ public class ParseINI
 				sectionEntries.put(entryName,readEntry());
 			inputStream.close();
 		}catch(EOFException e){}
-		general = (Hashtable) sections.get(GENERAL);
+		general = sections.get(GENERAL);
 		sections.remove(GENERAL);
 	}
 
@@ -506,12 +507,13 @@ public class ParseINI
 	 * @param in InputStream de donde obtener la secci�n
 	 * @return section Nombre de la seccion recibida
 	 */
+	@SuppressWarnings("unchecked")
 	public String unserializeSection(InputStream in) throws IOException, ClassNotFoundException
 	{
 		ObjectInputStream serialIn = new ObjectInputStream(in);
 		String section = (String) serialIn.readObject();
 		Hashtable loadedSection = (Hashtable) serialIn.readObject();
-		if(!sections.containsKey(section) || !((Hashtable)sections.get(section)).equals(loadedSection))
+		if(!sections.containsKey(section) || !sections.get(section).equals(loadedSection))
 		{ // Si la seccion no existia o si la seccion le�da es diferente a la que ya existia
 			sections.put(section, loadedSection);
 			need2Save = true;
@@ -553,7 +555,7 @@ public class ParseINI
 		{
 			String section=(String)secs.nextElement();
 			outputStream.write("\r\n["+section+"]\r\n");
-			props = ((Hashtable)sections.get(section)).keys();
+			props = sections.get(section).keys();
 			while(props.hasMoreElements())
 			{
 				prop=(String)props.nextElement();
@@ -575,6 +577,7 @@ public class ParseINI
 	 * @param inputStream el InputStreamReader
 	 * @return el nombre del entry
 	 */
+	@SuppressWarnings("unchecked")
 	private String readEntryName()throws IOException
 	{
 		int offset=0;
@@ -691,9 +694,9 @@ public class ParseINI
 	 * @param separator String conteniendo el separador de partes
 	 * @return Vector de Strings conteniendo las partes separadas
 	 */
-	public static Vector parseLine(String line, String separator)
+	public static Vector<String> parseLine(String line, String separator)
 	{
-        Vector partes = new Vector();
+        Vector<String> partes = new Vector<>();
         if(line == null) return partes;
         StringTokenizer tokens = new StringTokenizer(line, separator, false);
         if(!tokens.hasMoreTokens())

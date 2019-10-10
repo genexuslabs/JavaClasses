@@ -28,7 +28,7 @@ final class CursorFactory implements IPreparedStatementCache
 	int				maxSize;
 	GXConnection    jdbcConnection;
 
-	Hashtable	    preparedStatements;
+	Hashtable<PreparedStatement, SQLCursorData>	    preparedStatements;
     private int usedCursors;
 
 	//Hashtable	    statementsPerHandle;
@@ -51,7 +51,7 @@ final class CursorFactory implements IPreparedStatementCache
 
 		this.maxSize = maxSize;
 
-		preparedStatements = new Hashtable();
+		preparedStatements = new Hashtable<>();
 		//statementsPerHandle = new Hashtable();
 
 		this.jdbcConnection = jdbcConnection;
@@ -388,7 +388,7 @@ final class CursorFactory implements IPreparedStatementCache
 			return;
 		}
 
-		SQLCursorData data = (SQLCursorData) preparedStatements.get(stmt);
+		SQLCursorData data = preparedStatements.get(stmt);
 		if	(data != null)
 		{
 			data.setNotInUse();

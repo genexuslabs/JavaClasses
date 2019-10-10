@@ -25,7 +25,8 @@ public class NativeFunctions implements IExtensionNativeFunctions {
 		{
 			this.initializer = initializer;
 		}
-		
+
+		@SuppressWarnings("unchecked")
 		public Object get()
 		{
 			Object obj = super.get();

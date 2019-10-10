@@ -69,9 +69,7 @@ public class BASE64Encoder extends CharacterEncoder {
   }
 
   private static final byte[] getBytes(String s) {
-    int n = s.length();
-    byte[] buf = new byte[n];
-    s.getBytes(0, n, buf, 0);
+    byte[] buf = s.getBytes();
     return buf;
   }
 

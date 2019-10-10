@@ -40,21 +40,21 @@ public class HttpClient
 	private HTTPConnection con = null;
 	private HTTPResponse res;
 
-	private Hashtable headersToSend = new Hashtable();
+	private Hashtable<String, String> headersToSend = new Hashtable<>();
 	private Hashtable variablesToSend = new Hashtable();
 
-	private Vector basicAuthorization = new Vector();
-	private Vector digestAuthorization = new Vector();
-	private Vector NTLMAuthorization = new Vector();
+	private Vector<HttpClientPrincipal> basicAuthorization = new Vector<>();
+	private Vector<HttpClientPrincipal> digestAuthorization = new Vector<>();
+	private Vector<HttpClientPrincipal> NTLMAuthorization = new Vector<>();
 	
-	private Vector basicProxyAuthorization = new Vector();
-	private Vector digestProxyAuthorization = new Vector();
-	private Vector NTLMProxyAuthorization = new Vector();	
+	private Vector<HttpClientPrincipal> basicProxyAuthorization = new Vector<>();
+	private Vector<HttpClientPrincipal> digestProxyAuthorization = new Vector<>();
+	private Vector<HttpClientPrincipal> NTLMProxyAuthorization = new Vector<>();
 
 	private MultipartTemplate multipartTemplate =new MultipartTemplate();
 	private boolean isMultipart = false;
 
-	private Vector contentToSend = new Vector();
+	private Vector contentToSend = new Vector<>();
     private boolean hostChanged = true; // Indica si el próximo request debe ser realizado en una nueva HTTPConnection (si cambio el host)
     private boolean authorizationChanged = false; // Indica si se agregó alguna autorización
 	
@@ -303,34 +303,40 @@ public class HttpClient
 		}
 		headersToSend.put(name, value);
 	}
-	
+
+	@SuppressWarnings("unchecked")
 	public void addVariable(String name, String value)
 	{
 		variablesToSend.put(name, value);
 	}
-	
+
+	@SuppressWarnings("unchecked")
 	public void addBytes(byte[] value)
 	{
 		contentToSend.addElement(value);
 	}
 
+	@SuppressWarnings("unchecked")
 	public void addString(String value)
 	{
 		contentToSend.addElement(value);
 	}
-	
+
+	@SuppressWarnings("unchecked")
 	public void addFile(String fileName)
 	{
 		fileName = SpecificImplementation.HttpClient.beforeAddFile(fileName);
 		contentToSend.addElement(new File(fileName));
 	}
 
+	@SuppressWarnings("unchecked")
 	public void addFile(String fileName, String varName)
 	{
 		fileName = SpecificImplementation.HttpClient.beforeAddFile(fileName);
 		contentToSend.addElement(new FormFile(fileName, varName));
 	}
 
+	@SuppressWarnings("unchecked")
 	public void addStringWriter(StringWriter writer, StringBuffer encoding)
 	{
 		contentToSend.addElement(new Object[]{writer, encoding});
@@ -428,7 +434,10 @@ public class HttpClient
 
 			if	(method.equalsIgnoreCase("GET"))
 			{
-				res = con.Get(url, "", hashtableToNVPair(headersToSend));
+				if (contentToSend.size() > 0)
+					res = con.Get(url, "", hashtableToNVPair(headersToSend), getData());
+				else
+					res = con.Get(url, "", hashtableToNVPair(headersToSend));
 			}
 			else if (method.equalsIgnoreCase("POST"))
 			{
@@ -759,6 +768,7 @@ public class HttpClient
 		return ret;
 	}
 
+	@SuppressWarnings("unchecked")
 	private byte[] getData()
 	{
 		byte[] out = new byte[0];
@@ -827,11 +837,7 @@ public class HttpClient
 				}
 				try
 				{
-					if (SpecificImplementation.AddToArrayCurrent)
-						out = addToArray(out, CommonUtil.readToByteArray(new java.io.BufferedInputStream(new FileInputStream((File) curr))));
-					else
-						out = addToArray(out, CommonUtil.readToByteArray(new java.io.BufferedInputStream(new FileInputStream(file))));
-					
+					out = addToArray(out, CommonUtil.readToByteArray(new java.io.BufferedInputStream(new FileInputStream(file))));
 				}
 				catch (FileNotFoundException e)
 				{
@@ -887,7 +893,7 @@ public class HttpClient
 		byte[] out = new byte[in.length + val.length()];
 
 	    System.arraycopy(in, 0, out, 0, in.length);
-	    val.getBytes(0, val.length(), out, in.length);
+	    out = val.getBytes();
 
 		return out;
 	}

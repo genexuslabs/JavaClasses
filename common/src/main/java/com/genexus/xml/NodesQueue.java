@@ -5,12 +5,12 @@ import java.util.Vector;
 
 public class NodesQueue
 {
-	Vector data;
+	Vector<Node> data;
 	int start;
 	
 	NodesQueue()
 	{
-		data = new Vector();
+		data = new Vector<>();
 		start = 0;
 	}
 	
@@ -21,7 +21,7 @@ public class NodesQueue
 	
 	public Node elementAt(int index)
 	{
-		return (Node)data.elementAt(start + index);
+		return data.elementAt(start + index);
 	}
 	
 	public int size()

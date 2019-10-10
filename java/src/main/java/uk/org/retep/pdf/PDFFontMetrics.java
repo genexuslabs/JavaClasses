@@ -11,7 +11,7 @@ import java.util.Hashtable;
  */
 public class PDFFontMetrics
 {
-    private static Hashtable container = new Hashtable();
+    private static Hashtable<FontName, PDFFontMetrics> container = new Hashtable<>();
     
     static
     { // Antes que nada vamos a insertar las m�tricas de los fonts Type1
@@ -83,7 +83,7 @@ public class PDFFontMetrics
      */
     public static PDFFontMetrics getFontMetrics(String fontName, boolean bold, boolean italic)
     {
-        PDFFontMetrics fontMetrics = (PDFFontMetrics)container.get(new FontName(fontName, bold, italic));
+        PDFFontMetrics fontMetrics = container.get(new FontName(fontName, bold, italic));
         if(fontMetrics == null)
             fontMetrics = getAWTFontMetrics(fontName, bold, italic);
         return fontMetrics;

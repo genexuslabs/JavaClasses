@@ -23,6 +23,7 @@ public class GXCollectionWrapper<T> {
         list = listItems;
     }
 
+	@SuppressWarnings("unchecked")
     public GXCollectionWrapper(Object obj) {
         list = (List) obj;
     }

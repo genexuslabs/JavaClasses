@@ -1,11 +1,6 @@
 package com.genexus.webpanels;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.Date;
@@ -32,7 +27,7 @@ public class WebUtils
 
 	public static String encodeCookie(String parm)
 	{
-		return PrivateUtilities.URLEncode(parm);
+		return PrivateUtilities.URLEncode(parm, "UTF8");
 	}
 
 	public static String decodeCookie(String parm)
@@ -361,7 +356,7 @@ public class WebUtils
                             name = name.substring(0, questIdx) + "_impl";
                         }
                         name = CommonUtil.lower(name);
-			Class webComponentClass = null;
+			Class<?> webComponentClass;
 
 			if	(caller.getClassLoader() != null)
 			{
@@ -476,13 +471,21 @@ public class WebUtils
 	private static final String gxApplicationClassesFileName = "GXApplicationClasses.txt";
 	private static final String gxApplicationServicesClassesFileName = "GeneXus.services";
 	private static final String gxApplicationAIServicesClassesFileName = "GeneXusAI.services";
-	private static final String gxApplicationChatbotServicesClassesFileName = "Chatbot.services"; 
-	
+	private static final String gxApplicationChatbotServicesClassesFileName = "Chatbot.services";
+
+	private static InputStream getInputStreamFile(Class<?> gxAppClass, String fileName) throws FileNotFoundException {
+		InputStream is = gxAppClass.getResourceAsStream(fileName);
+		if (is == null){
+			is = new FileInputStream(new File(fileName));
+		}
+		return is;
+	}
+
 	public static void getGXApplicationClasses(Class<?> gxAppClass, Set<Class<?>> rrcs) 
 	{
 		try 
 		{
-			InputStream is = gxAppClass.getResourceAsStream(gxApplicationClassesFileName);			
+			InputStream is = getInputStreamFile(gxAppClass, gxApplicationClassesFileName);
 			BufferedReader input = new BufferedReader(new InputStreamReader(is, "UTF8"));
 			String restClass = input.readLine();
 			while (restClass != null) 
@@ -517,7 +520,7 @@ public class WebUtils
 	{
 		try 
 		{
-			InputStream is = gxAppClass.getResourceAsStream(servicesClassesFileName);
+			InputStream is = getInputStreamFile(gxAppClass, servicesClassesFileName);
 			if (is != null)
 			{
 				BOMInputStream bomInputStream = new BOMInputStream(is);

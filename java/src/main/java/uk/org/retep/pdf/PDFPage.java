@@ -204,7 +204,7 @@ public class PDFPage extends PDFObject implements Serializable
     /**
      * This holds the contents of the page.
      */
-    protected Vector contents;
+    protected Vector<PDFObject> contents;
 
     /**
      * Specifies the number of degrees the page should be rotated clockwise
@@ -226,22 +226,22 @@ public class PDFPage extends PDFObject implements Serializable
     /**
      * This holds any Annotations contained within this page.
      */
-    protected Vector annotations;
+    protected Vector<PDFObject> annotations;
 
     /**
      * This holds any resources for this page
      */
-    protected Vector resources;
+    protected Vector<String> resources;
 
     /**
      * The fonts associated with this page
      */
-    protected Vector fonts;
+    protected Vector<PDFFont> fonts;
 
     /**
      * Los bitmaps de esta p�gina
      */
-    protected Vector images;
+    protected Vector<PDFImage> images;
 
     /**
      * These handle the procset for this page.
@@ -271,13 +271,13 @@ public class PDFPage extends PDFObject implements Serializable
     {
 	super("/Page");
 	mediabox	= MEDIA_a4;
-	contents	= new Vector();
+	contents	= new Vector<>();
 	rotate		= 0;
 	thumbnail	= null;
-	annotations	= new Vector();
-	resources	= new Vector();
-	fonts		= new Vector();
-        images          = new Vector();
+	annotations	= new Vector<>();
+	resources	= new Vector<>();
+	fonts		= new Vector<>();
+        images          = new Vector<>();
 	procset		= null;
     }
 
@@ -688,7 +688,7 @@ public class PDFPage extends PDFObject implements Serializable
 	// the /Contents pages object
 	if(contents.size()>0) {
 	    if(contents.size()==1) {
-		PDFObject ob = (PDFObject)contents.elementAt(0);
+		PDFObject ob = contents.elementAt(0);
 		os.write("/Contents ".getBytes());
 		os.write(ob.toString().getBytes());
 		os.write("\r\n".getBytes());
@@ -724,11 +724,11 @@ public class PDFPage extends PDFObject implements Serializable
      * This defines a procset
      */
     public class procset extends PDFObject {
-	private Vector set;
+	private Vector<String> set;
 
 	public procset() {
 	    super(null);
-	    set = new Vector();
+	    set = new Vector<>();
 
 	    // Our default procset (use addElement not add, as we dont want a
 	    // leading space)

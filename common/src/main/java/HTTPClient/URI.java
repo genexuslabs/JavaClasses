@@ -87,9 +87,9 @@ public class URI
      */
     public static final boolean ENABLE_BACKWARDS_COMPATIBILITY = true;
 
-    protected static final Hashtable defaultPorts          = new Hashtable();
-    protected static final Hashtable usesGenericSyntax     = new Hashtable();
-    protected static final Hashtable usesSemiGenericSyntax = new Hashtable();
+    protected static final Hashtable<String, Integer> defaultPorts          = new Hashtable<>();
+    protected static final Hashtable<String, Boolean> usesGenericSyntax     = new Hashtable<>();
+    protected static final Hashtable<String, Boolean> usesSemiGenericSyntax = new Hashtable<>();
 
     /* various character classes as defined in the draft */
     protected static final BitSet alphanumChar;
@@ -823,7 +823,7 @@ public class URI
      */
     public final static int defaultPort(String protocol)
     {
-	Integer port = (Integer) defaultPorts.get(protocol.trim().toLowerCase());
+	Integer port = defaultPorts.get(protocol.trim().toLowerCase());
 	return (port != null) ? port.intValue() : 0;
     }
 
