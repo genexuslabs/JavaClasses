@@ -356,6 +356,7 @@ public abstract class HttpContext
 	{
 		if(!javascriptSources.contains(jsSrc))
 		{
+			urlBuildNumber = getURLBuildNumber(jsSrc, urlBuildNumber);
 			javascriptSources.add(jsSrc);
 			String queryString = urlBuildNumber;
 			String attributes = "";
@@ -486,7 +487,20 @@ public abstract class HttpContext
 	}
 	public void AddStyleSheetFile(String styleSheet, String urlBuildNumber)
 	{
+		urlBuildNumber = getURLBuildNumber(styleSheet, urlBuildNumber);
 		AddStyleSheetFile(styleSheet, urlBuildNumber, false);
+	}
+
+	private String getURLBuildNumber(String styleSheet, String urlBuildNumber)
+	{
+		if(urlBuildNumber.isEmpty() && !((styleSheet.startsWith("http:")) || (styleSheet.startsWith("https:"))))
+		{
+			return "?" + getCacheInvalidationToken();
+		}
+		else
+		{
+			return urlBuildNumber;
+		}
 	}
 
 	private void AddStyleSheetFile(String styleSheet, String urlBuildNumber, boolean isGxThemeHidden)
