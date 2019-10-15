@@ -327,6 +327,22 @@ public final class CommonUtil
 		return (new File(fileName).delete()?(byte) 1: 0);
 	}
 
+	public static boolean deleteSecureFile(File fileToDelete)
+	{
+		// from Reference URL:https://stackoverflow.com/a/22372329  , security recommendation
+		if(fileToDelete.exists()){
+			try {
+				FileWriter fileWriter = new FileWriter(fileToDelete);
+				fileWriter.write("");
+				fileWriter.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return fileToDelete.delete();
+	}
+
+
 	public static double mod(double value, double div)
 	{
 		return value % div;
