@@ -356,6 +356,7 @@ public class HttpClient
 				prevURLsecure = this.getSecure();	
 				isURL = true;		    
 		    setURL(url);
+		    url = uri.getPath();
 		}
 		catch (ParseException e)
 		{
@@ -429,7 +430,7 @@ public class HttpClient
             
             proxyInfoChanged = authorizationProxyChanged = false; // Desmarco las flags			
 
-			if  (!url.startsWith("/") && uri == null)
+			if  (!url.startsWith("/"))
 				url = baseURL + url;
 
 			if	(method.equalsIgnoreCase("GET"))
