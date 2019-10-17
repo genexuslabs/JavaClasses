@@ -32,7 +32,7 @@ public class CurrentOf extends ComplexHashMap
         @SuppressWarnings("unchecked")
         HashMap<String, Object> map = (HashMap<String, Object>)currentOfManager.getQuery(cursorName).currentEntry.get(getEntity());
         putAll(map);
-        currentOfEntry = cloneHashMaps(new HashMap<String, Object>(map));
+        currentOfEntry = cloneHashMaps(new HashMap<>(map));
 //        putAll(new HashMap<String, Object>(currentOfEntry));
     }
 
