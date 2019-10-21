@@ -89,6 +89,7 @@ import java.util.Enumeration;
  * @author	Ronald Tschal�r
  * @since	V0.1
  */
+@SuppressWarnings("unchecked")
 public class AuthorizationInfo implements Cloneable
 {
     // class fields
@@ -429,6 +430,7 @@ public class AuthorizationInfo implements Cloneable
      * @param auth_info the AuthorizationInfo to add
      * @param context   the context to associate this info with
      */
+	@SuppressWarnings("unchecked")
     public static void addAuthorization(AuthorizationInfo auth_info,
 					Object context)
     {
@@ -1046,7 +1048,7 @@ public class AuthorizationInfo implements Cloneable
 
 	// get auth-parameters
 	boolean first = true;
-	Vector params = new Vector();
+	Vector<NVPair> params = new Vector<>();
 	while (true)
 	{
 	    beg = Util.skipSpace(buf, end);

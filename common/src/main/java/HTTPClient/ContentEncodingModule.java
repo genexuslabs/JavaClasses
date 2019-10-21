@@ -63,12 +63,12 @@ class ContentEncodingModule implements HTTPClientModule
 	    if (hdrs[idx].getName().equalsIgnoreCase("Accept-Encoding"))
 		break;
 
-	Vector pae;
+	Vector<HttpHeaderElement> pae;
 	if (idx == hdrs.length)
 	{
 	    hdrs = Util.resizeArray(hdrs, idx+1);
 	    req.setHeaders(hdrs);
-	    pae = new Vector();
+	    pae = new Vector<>();
 	}
 	else
 	{
@@ -156,7 +156,7 @@ class ContentEncodingModule implements HTTPClientModule
 	    resp.getStatusCode() == 206)
 		return;
 
-	Vector pce;
+	Vector<HttpHeaderElement> pce;
 	try
 	    { pce = Util.parseHeader(ce); }
 	catch (ParseException pe)
@@ -165,7 +165,7 @@ class ContentEncodingModule implements HTTPClientModule
 	if (pce.size() == 0)
 	    return;
 
-	String encoding = ((HttpHeaderElement) pce.firstElement()).getName();
+	String encoding = pce.firstElement().getName();
 	if (encoding.equalsIgnoreCase("gzip")  ||
 	    encoding.equalsIgnoreCase("x-gzip"))
 	{

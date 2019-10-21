@@ -250,7 +250,7 @@ public class GXDBMSas400 implements GXDBMS
 	{
 		try
 		{
-			Class c = Class.forName("com.ibm.as400.access.AS400JDBCConnection");
+			Class<?> c = Class.forName("com.ibm.as400.access.AS400JDBCConnection");
 			Method m = c.getMethod("getServerJobIdentifier", (Class[])null);
 			return (String)m.invoke(con.getJDBCConnection(), (Object[])null);
 		}

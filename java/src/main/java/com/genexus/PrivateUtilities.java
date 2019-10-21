@@ -180,7 +180,7 @@ public final class PrivateUtilities
 	
 	public static String encodeStaticParm(String parm)
 	{
-		return URLEncode(parm);		
+		return URLEncode(parm, "UTF8");
 	}
 
 	public static String getJDBC_DRIVER(IniFile iniFile, String section)

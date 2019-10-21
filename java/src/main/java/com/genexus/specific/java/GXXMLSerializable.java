@@ -19,7 +19,7 @@ public class GXXMLSerializable implements IExtensionGXXMLSerializable {
 			{			
 				try
 				{
-					Class c = Class.forName(externalHandlerManager);
+					Class<?> c = Class.forName(externalHandlerManager);
 					Method m = c.getMethod("setHandlers", new Class[]{Integer.class, ModelContext.class, String.class, javax.xml.ws.BindingProvider.class});
 					m.invoke(null, new Object[]{remoteHandle, context, serviceName, bProvider});
 				}

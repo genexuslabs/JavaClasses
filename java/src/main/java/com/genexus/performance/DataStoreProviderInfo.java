@@ -15,7 +15,7 @@ public class DataStoreProviderInfo
 	private long sentenceInsertCount;
 	private long sentenceCallCount;	
 	private long sentenceDirectSQLCount;
-	private Hashtable sentenceInfo = new Hashtable();		
+	private Hashtable<String, SentenceInfo> sentenceInfo = new Hashtable<>();
 	
 	private String name;
 	
@@ -150,11 +150,11 @@ public class DataStoreProviderInfo
 				  SentenceJMX.CreateSentenceJMX(this, key);
 		  }
 	  }
-	  return (SentenceInfo) sentenceInfo.get(key);
+	  return sentenceInfo.get(key);
   }	
 	
   public SentenceInfo getSentenceInfo(String key)
   {
-	  return (SentenceInfo) sentenceInfo.get(key);
+	  return sentenceInfo.get(key);
   }  
 }

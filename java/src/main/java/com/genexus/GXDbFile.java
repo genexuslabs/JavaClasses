@@ -118,7 +118,10 @@ public class GXDbFile
 	{
 		String name = getFileName(file);
 		String type = getFileType(file);
-		name = PrivateUtilities.encodeFileName(name);
+		if (file.toLowerCase().startsWith("http://") || file.toLowerCase().startsWith("https://"))
+		{
+			name = PrivateUtilities.encodeFileName(name);
+		}
 		name = PrivateUtilities.checkFileNameLength(file.replace(name, ""), name, type);
 				
 		if (!addScheme)
@@ -190,7 +193,7 @@ public class GXDbFile
 			try
 			{
 				File file = new File(path);
-				return file.toURL().toString();
+				return file.toURI().toURL().toString();
 			}
 			catch (Exception e)
 			{

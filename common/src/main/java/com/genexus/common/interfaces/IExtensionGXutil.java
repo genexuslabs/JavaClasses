@@ -47,7 +47,7 @@ public interface IExtensionGXutil {
 
 	String getDatabaseName(Object context, int handle, String dataSource);
 
-	Object convertObjectTo(Class toClass, String objStr);
+	Object convertObjectTo(Class<?> toClass, String objStr);
 
 	String URLDecode(String url);
 

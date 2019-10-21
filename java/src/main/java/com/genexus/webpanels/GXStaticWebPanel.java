@@ -4,10 +4,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.*;
 
 import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
@@ -17,8 +14,8 @@ import com.genexus.internet.HttpContextNull;
 
 public abstract class GXStaticWebPanel extends GXWebPanel
 {
-	private static Hashtable visitedLinks = new Hashtable();
-	private static Vector copyList = new Vector();
+	private static Hashtable<String, String> visitedLinks = new Hashtable<>();
+	private static Vector<String> copyList = new Vector<>();
 
 	protected static String extension = "html";
 	private String fileName ;
@@ -79,7 +76,7 @@ public abstract class GXStaticWebPanel extends GXWebPanel
 			}	
 		}
 
-		visitedLinks = new Hashtable();
+		visitedLinks = new Hashtable<>();
 
 		copyList.removeAllElements();
 		return 0;
@@ -125,14 +122,16 @@ public abstract class GXStaticWebPanel extends GXWebPanel
 	protected static String getTime()
 	{
 		Date d = new Date();
-		return 	   CommonUtil.padl(""+ d.getHours(), 2, "0") + ":" +
-				   CommonUtil.padl(""+ d.getMinutes(), 2, "0") + ":" + 
-				   CommonUtil.padl(""+ d.getSeconds(), 2, "0");
+		Calendar calendar = GregorianCalendar.getInstance();
+		calendar.setTime(d);
+		return 	   CommonUtil.padl(""+ calendar.get(Calendar.HOUR_OF_DAY), 2, "0") + ":" +
+				   CommonUtil.padl(""+ calendar.get(Calendar.MINUTE), 2, "0") + ":" +
+				   CommonUtil.padl(""+ calendar.get(Calendar.SECOND), 2, "0");
 	}
 
 	protected String encodeStaticParm(String parm)
 	{
-		return java.net.URLEncoder.encode(parm);
+		return CommonUtil.URLEncode(parm, "UTF8");
 	}
 
 	public static String getStaticDir()

@@ -33,6 +33,7 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 		return value;
 	}
 
+	@SuppressWarnings("unchecked")
 	public <T> T getValue(int index)
 	{
 		if (value[index] instanceof ArrayList)

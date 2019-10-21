@@ -59,6 +59,6 @@ public class DataStoreHelperOData extends ServiceDataStoreHelper
     public Object GetParmDateTime(Object parm)
     {
         java.util.Date date = GetParmDate(parm);
-        return date != null ? new java.sql.Timestamp(date.getTime()) : date;
+        return date != null ? new java.sql.Timestamp(date.getTime()) : null;
     }
 }

@@ -3,7 +3,7 @@ package com.genexus.util;
 import java.util.Vector;
 
 public class GXDirectoryCollection {
-  private Vector vector = new Vector();
+  private Vector<GXDirectory> vector = new Vector<>();
 
   public GXDirectoryCollection() {
   }
@@ -15,8 +15,7 @@ public class GXDirectoryCollection {
 
   public GXDirectory item(int idx)
   {
-          Object o = vector.elementAt(idx - 1);
-          return (GXDirectory) o;
+          return vector.elementAt(idx - 1);
   }
 
   public int getItemCount()

@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class CurrentOfManager
 {
-    private HashMap<String, ODataResultSet> currentOfManager = new HashMap<>();
+    private final HashMap<String, ODataResultSet> currentOfManager = new HashMap<>();
     public void addQuery(String cursorId, ODataResultSet resultSet)
     {
         currentOfManager.put(cursorId, resultSet);

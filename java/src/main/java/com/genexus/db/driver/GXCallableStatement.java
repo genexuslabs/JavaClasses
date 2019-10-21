@@ -645,6 +645,7 @@ public final class GXCallableStatement extends GXPreparedStatement implements Ca
 		return stmt.getBoolean(columnIndex);
 	}
 
+	@Deprecated
 	public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException
 	{
 		if	(DEBUG) log(GXDBDebug.LOG_MAX, "Warning: getBigDecimal");
@@ -715,7 +716,7 @@ public final class GXCallableStatement extends GXPreparedStatement implements Ca
 		return stmt.getBigDecimal(parameterIndex);
 	}
 
-	public Object  getObject (int i, java.util.Map map) throws SQLException
+	public Object  getObject (int i, java.util.Map<java.lang.String,java.lang.Class<?>> map) throws SQLException
 	{
 		return stmt.getObject(i, map);
 	}
@@ -919,7 +920,7 @@ public final class GXCallableStatement extends GXPreparedStatement implements Ca
 	{
 		return stmt.getObject(parameterName);
 	}
-	public Object getObject(String parameterName, Map map) throws SQLException
+	public Object getObject(String parameterName, Map<java.lang.String,java.lang.Class<?>> map) throws SQLException
 	{
 		return stmt.getObject(parameterName, map);
 	}

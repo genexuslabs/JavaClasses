@@ -345,10 +345,9 @@ public final class GXutil
 		return CommonUtil.DateTimeToUTC(value, TimeZone.getDefault());
 	}
 
-
 	public static Date DateTimeToUTC(Date value, TimeZone tz)
 	{
-		return CommonUtil.DateTimeToUTC(value, TimeZone.getDefault());
+		return CommonUtil.DateTimeToUTC(value, tz);
 	}
 
 	public static Date DateTimeFromUTC(Date value)

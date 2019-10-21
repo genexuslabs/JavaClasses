@@ -176,6 +176,10 @@ public final class GXutil
 	{
         return CommonUtil.rtrim(text);
 	}
+	public static String rtrim(String[] text)
+	{
+		return CommonUtil.rtrim(text[0]);
+	}
 	public static boolean endsWith(String s1, String s2)
 	{
 		return CommonUtil.endsWith(s1, s2);
@@ -424,8 +428,10 @@ public final class GXutil
 		// Aca el numero tiene el valor redondeado y tiene los decimales correctos. Ahora
 		// hay que empezar a achicarlo si no entra en el espacio indicado.
 
-
-
+	public static String str(int[] value, int length, int decimals)
+	{
+		return str(value[0], length, decimals);
+	}
 
 	public static String str(double value, int length, int decimals)
 	{
@@ -1140,7 +1146,7 @@ public final class GXutil
 		}
 		catch(  UnsupportedEncodingException e)
 		{
-			return Codecs.encode(s);
+			return s;
 		}
 	}
 
@@ -1622,6 +1628,18 @@ public final class GXutil
 	public static boolean checkEncryptedSignature( String value, String hash, String key)
 	{
 		return CommonUtil.getHash( com.genexus.security.web.WebSecurityHelper.StripInvalidChars(value), com.genexus.cryptography.Constants.SECURITY_HASH_ALGORITHM).equals(Encryption.decrypt64(hash, key));
+	}
+
+	public static String buildWSDLFromHttpClient(com.genexus.internet.HttpClient GXSoapHTTPClient, String wsdlURL)
+	{
+		if (GXSoapHTTPClient.getWSDLURL() != null && !GXSoapHTTPClient.getWSDLURL().isEmpty())
+		{
+			return GXSoapHTTPClient.getWSDLURL();
+		}
+		else
+		{
+			return wsdlURL;
+		}
 	}
 
 	public static String buildURLFromHttpClient(com.genexus.internet.HttpClient GXSoapHTTPClient, String serviceName, javax.xml.ws.BindingProvider bProvider)

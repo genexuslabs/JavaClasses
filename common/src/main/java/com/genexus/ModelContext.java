@@ -331,7 +331,7 @@ public final class ModelContext extends AbstractModelContext
         this.ctx = ctx;
     }
 
-    private java.util.Hashtable properties = new java.util.Hashtable();
+    private java.util.Hashtable<String, Object> properties = new java.util.Hashtable<>();
 
     public void setContextProperty(String key, Object value)
     {
