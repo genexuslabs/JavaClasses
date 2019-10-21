@@ -226,7 +226,7 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 
 	public String getMultimediaUri(int columnIndex) throws SQLException
 	{
-		return getString(columnIndex);
+		return getMultimediaUri(columnIndex, true);
 	}
 
 	public String getMultimediaUri(int columnIndex, boolean absPath) throws SQLException
