@@ -1,6 +1,8 @@
 package com.genexus;
 
 import com.genexus.internet.HttpContext;
+import com.genexus.util.GXFile;
+import com.genexus.util.GXServices;
 
 import java.io.File;
 import java.util.regex.Matcher;
@@ -107,8 +109,18 @@ public class GXDbFile
 		if (matcher.matches())
 		{
 			String fileName = matcher.group(2);
-			File file = new File(Preferences.getDefaultPreferences().getMultimediaPath(), fileName);
-			return pathToUrl(file.getPath(), absPath);
+			String filePath = "";
+			if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) == null)
+			{
+				String multimediaDir = Preferences.getDefaultPreferences().getMultimediaPath();
+				filePath = multimediaDir + File.separator + fileName;
+			}
+			else
+			{
+				filePath = Preferences.getDefaultPreferences().getProperty("CS_BLOB_PATH", "").trim() + "/" + GXDbFile.getMultimediaDirectory() + "/" + fileName;
+			}
+			GXFile file = new GXFile(filePath);
+			return pathToUrl(file.getAbsolutePath(), absPath);
 		}
 
 		return uriString;
