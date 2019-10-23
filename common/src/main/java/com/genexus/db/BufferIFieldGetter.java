@@ -116,7 +116,11 @@ public class BufferIFieldGetter implements IFieldGetter {
         return ((String) value[columnIndex - 1]);
     }
 
-    public String getMultimediaUri(int columnIndex) throws SQLException {
+    public String getMultimediaUri(int columnIndex) throws SQLException {        
+        return getMultimediaUri(columnIndex, true);
+    }
+
+    public String getMultimediaUri(int columnIndex, boolean absPath) throws SQLException {
         return ((String) value[columnIndex - 1]);
     }
 

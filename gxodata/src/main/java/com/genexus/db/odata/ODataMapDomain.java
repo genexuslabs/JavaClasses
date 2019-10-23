@@ -3,6 +3,8 @@ package com.genexus.db.odata;
 import com.genexus.db.service.IODataMapName;
 import com.genexus.db.service.IOServiceContext;
 import java.util.HashMap;
+
+import org.apache.olingo.client.api.domain.ClientEnumValue;
 import org.apache.olingo.client.api.domain.ClientValue;
 import org.apache.olingo.client.core.domain.ClientPrimitiveValueImpl;
 
@@ -18,7 +20,8 @@ public class ODataMapDomain extends IODataMapName
     {
         ClientValue value = (ClientValue)currentEntry.get(name);
         if(value == null)
-            return null;        
-        return new ClientPrimitiveValueImpl.BuilderImpl().buildInt32(((ODataConnection)context.getConnection()).getEnumValue(value.asEnum()));
+            return null;
+		ClientEnumValue enumValue = value.asEnum();
+        return enumValue != null ? new ClientPrimitiveValueImpl.BuilderImpl().buildInt32(((ODataConnection)context.getConnection()).getEnumValue(enumValue)) : null;
     }    
 }

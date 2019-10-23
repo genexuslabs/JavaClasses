@@ -92,8 +92,13 @@ public class GXDbFile
 		
 		return uriString;
 	}
-
+	
 	public static String resolveUri(String uriString)
+	{
+		return resolveUri(uriString, true);
+	}
+
+	public static String resolveUri(String uriString, boolean absPath)
 	{
 		if (uriString.trim().length() == 0)
 			return "";
@@ -103,7 +108,7 @@ public class GXDbFile
 		{
 			String fileName = matcher.group(2);
 			File file = new File(Preferences.getDefaultPreferences().getMultimediaPath(), fileName);
-			return pathToUrl(file.getPath());
+			return pathToUrl(file.getPath(), absPath);
 		}
 
 		return uriString;
@@ -175,6 +180,11 @@ public class GXDbFile
 	
 	public static String pathToUrl(String path, IHttpContext webContext)
 	{
+		return pathToUrl(path, webContext, true);
+	}
+
+	public static String pathToUrl(String path, IHttpContext webContext, boolean forceAbsPath)
+	{
 		if (path.startsWith("http:") || path.startsWith("https:") || path.startsWith("data:"))
 			return path;
 
@@ -191,15 +201,22 @@ public class GXDbFile
 			
 			return path;
 		}
-
-		return ((HttpContext)webContext).getResource(webContext.convertURL(path));
+		if (forceAbsPath)
+			return ((HttpContext)webContext).getResource(webContext.convertURL(path));
+		else
+			return ((HttpContext)webContext).getResourceRelative(webContext.convertURL(path), false);
 	}
 	
 	public static String pathToUrl(String path)
 	{
+		return pathToUrl(path, true);
+	}
+
+	public static String pathToUrl(String path, boolean forceAbsPath)
+	{
 		ModelContext context = ModelContext.getModelContext();
 		com.genexus.internet.HttpContext webContext = (HttpContext) context.getHttpContext();
-		return pathToUrl(path, webContext);
+		return pathToUrl(path, webContext, forceAbsPath);
 	}
 
 }

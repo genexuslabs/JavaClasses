@@ -256,6 +256,7 @@ public abstract class HttpContext
 
 	public abstract void cleanup();
 	public abstract String getResourceRelative(String path);
+	public abstract String getResourceRelative(String path, boolean includeBasePath);
 	public abstract String getResource(String path);
 	public abstract String GetNextPar();
 	public abstract HttpContext copy();
@@ -356,6 +357,7 @@ public abstract class HttpContext
 	{
 		if(!javascriptSources.contains(jsSrc))
 		{
+			urlBuildNumber = getURLBuildNumber(jsSrc, urlBuildNumber);
 			javascriptSources.add(jsSrc);
 			String queryString = urlBuildNumber;
 			String attributes = "";
@@ -486,7 +488,20 @@ public abstract class HttpContext
 	}
 	public void AddStyleSheetFile(String styleSheet, String urlBuildNumber)
 	{
+		urlBuildNumber = getURLBuildNumber(styleSheet, urlBuildNumber);
 		AddStyleSheetFile(styleSheet, urlBuildNumber, false);
+	}
+
+	private String getURLBuildNumber(String styleSheet, String urlBuildNumber)
+	{
+		if(urlBuildNumber.isEmpty() && !GXutil.isAbsoluteURL(styleSheet))
+		{
+			return "?" + getCacheInvalidationToken();
+		}
+		else
+		{
+			return urlBuildNumber;
+		}
 	}
 
 	private void AddStyleSheetFile(String styleSheet, String urlBuildNumber, boolean isGxThemeHidden)
