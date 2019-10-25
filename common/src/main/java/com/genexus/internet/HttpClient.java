@@ -22,6 +22,7 @@ public class HttpClient
 	public final int ERROR_IO = 1;
 
 	private String host;
+	private String WSDLURL;
 	private String baseURL;
 	private int port = 80;
 	private int secure = 0;
@@ -180,11 +181,21 @@ public class HttpClient
 		return host;
 	}
 
+	public void setWSDLURL(String WSDLURL)
+	{
+		this.WSDLURL = WSDLURL;
+	}
+
 	public void setBaseURL(String baseURL)
 	{
 		this.baseURL = baseURL;
         if (SpecificImplementation.HttpClient != null)
         	SpecificImplementation.HttpClient.addSDHeaders(this.host, this.baseURL, this.headersToSend);
+	}
+
+	public String getWSDLURL()
+	{
+		return WSDLURL;
 	}
 
 	public String getBaseURL()
