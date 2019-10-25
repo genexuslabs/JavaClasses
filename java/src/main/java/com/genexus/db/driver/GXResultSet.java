@@ -1040,7 +1040,12 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 
 	public String getMultimediaUri(int columnIndex) throws SQLException
 	{
-		return GXDbFile.resolveUri(getVarchar(columnIndex));
+		return getMultimediaUri(columnIndex, true);
+	}
+	
+	public String getMultimediaUri(int columnIndex, boolean absPath) throws SQLException
+	{
+		return GXDbFile.resolveUri(getVarchar(columnIndex), absPath);
 	}
 
 	private static String lastBlobsDir = "";

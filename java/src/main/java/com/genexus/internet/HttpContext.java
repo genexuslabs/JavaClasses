@@ -256,6 +256,7 @@ public abstract class HttpContext
 
 	public abstract void cleanup();
 	public abstract String getResourceRelative(String path);
+	public abstract String getResourceRelative(String path, boolean includeBasePath);
 	public abstract String getResource(String path);
 	public abstract String GetNextPar();
 	public abstract HttpContext copy();
