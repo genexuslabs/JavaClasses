@@ -852,7 +852,7 @@ public abstract class HttpContext
 	
 	private void sendReferer()
 	{
-		ajax_rsp_assign_hidden("sCallerURL", getReferer());
+		ajax_rsp_assign_hidden("sCallerURL", PrivateUtilities.encodeURL(getReferer()));
 	}
 	
 	private static String CLIENT_ID_HEADER = "GX_CLIENT_ID";
