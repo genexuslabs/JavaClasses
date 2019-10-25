@@ -97,7 +97,7 @@ public class SQLAndroidBlobFileHelper
     	    			&& !mInsertedBLOBsNames.contains(getBlobsName(blobToDelete)) )
     	    	{
     	    		File blobToDeleteFile = new File(blobToDelete);
-    	    		blobToDeleteFile.delete();
+					CommonUtil.deleteSecureFile(blobToDeleteFile);
     	    	}
     	    	
     	    }
@@ -120,7 +120,7 @@ public class SQLAndroidBlobFileHelper
     	    			&& !mDeletedBLOBs.contains(getBlobsName(blobInsertedToDelete)) )
     	    	{
     	    		File blobInsertedToDeleteFile = new File(blobInsertedToDelete);
-    	    		blobInsertedToDeleteFile.delete();
+    	    		CommonUtil.deleteSecureFile(blobInsertedToDeleteFile);
     	    	}
     	    	
     	    }
