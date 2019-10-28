@@ -265,6 +265,7 @@ public abstract class HttpContext
 	public abstract void setRequestMethod(String method);
 	public abstract String getRequestMethod();
 	public abstract String getReferer();
+	public abstract String getReferer(boolean encodeQueryString);
 	public abstract short setWrkSt(int handle, String wrkst) ;
 	public abstract String getWorkstationId(int handle) ;
 	public abstract String getApplicationId(int handle) ;
@@ -852,7 +853,7 @@ public abstract class HttpContext
 	
 	private void sendReferer()
 	{
-		ajax_rsp_assign_hidden("sCallerURL", PrivateUtilities.encodeURL(getReferer()));
+		ajax_rsp_assign_hidden("sCallerURL", getReferer(true));
 	}
 	
 	private static String CLIENT_ID_HEADER = "GX_CLIENT_ID";
