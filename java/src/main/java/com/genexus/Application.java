@@ -49,6 +49,7 @@ public class Application
 	static Class ClassName = null;
 
 	private static volatile ExternalProvider externalProvider = null;
+	private static volatile ExternalProvider externalProviderAPI = null;
 	private static Object objectLock = new Object();
 	private static volatile boolean initialized = false;
 
@@ -148,25 +149,45 @@ public class Application
 		return GXServices.getInstance();
 	}
 
+	public static ExternalProvider getExternalProviderAPI()
+	{
+		if (externalProviderAPI == null)
+		{
+			externalProviderAPI = getExternalProviderImpl(GXServices.STORAGE_APISERVICE);
+			if (externalProviderAPI == null)
+			{
+				externalProviderAPI = getExternalProvider();
+			}
+		}
+		return externalProviderAPI;
+	}
+
 	public static ExternalProvider getExternalProvider()
 	{
 		if (externalProvider == null)
 		{
-			GXService providerService = getGXServices().get(GXServices.STORAGE_SERVICE);
-			if (providerService != null)
-			{
-				try
-				{
-					externalProvider = (ExternalProvider) Class.forName(providerService.getClassName()).newInstance();
-				}
-				catch (Exception e)
-				{
-					logger.error("Unrecognized External Provider class : " + providerService.getName() + " / " + providerService.getClassName(), e);
-					throw new InternalError("Unrecognized External Provider class : " + providerService.getName() + " / " + providerService.getClassName());
-				}
-			}
+			externalProvider = getExternalProviderImpl(GXServices.STORAGE_SERVICE);
 		}
 		return externalProvider;
+	}
+
+	private static ExternalProvider getExternalProviderImpl(String service)
+	{
+		ExternalProvider externalProviderImpl = null;
+		GXService providerService = getGXServices().get(service);
+		if (providerService != null)
+		{
+			try
+			{
+				externalProviderImpl = (ExternalProvider) Class.forName(providerService.getClassName()).newInstance();
+			}
+			catch (Exception e)
+			{
+				logger.error("Unrecognized External Provider class : " + providerService.getName() + " / " + providerService.getClassName(), e);
+				throw new InternalError("Unrecognized External Provider class : " + providerService.getName() + " / " + providerService.getClassName());
+			}
+		}
+		return externalProviderImpl;
 	}
 
 	static Date startDateTime;
