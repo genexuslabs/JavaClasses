@@ -796,7 +796,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 							//{
 							// path outside database, should be unique.
 							String fileResourceNameNew = "kbfile_" + blobPath.replace("/", "_");
-							fileResourceNameNew = blobBasePath + "/" + CommonUtil.getFileName(fileResourceNameNew)+ "." + CommonUtil.getFileType(fileResourceNameNew);
+							fileResourceNameNew = blobBasePath + CommonUtil.getFileName(fileResourceNameNew)+ "." + CommonUtil.getFileType(fileResourceNameNew);
 
 							fileNameNew = fileResourceNameNew;
 							file = new File(fileResourceNameNew);
@@ -809,7 +809,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 					)
 					{
 						// Local path in sdcard.
-						//fileNameNew = blobBasePath + "/" + GXutil.getFileName(fileName)+ "." + GXutil.getFileType(fileName);
+						//fileNameNew = blobBasePath + GXutil.getFileName(fileName)+ "." + GXutil.getFileType(fileName);
 						if (fileName !=null && fileName.length()>0)
 							fileNameNew = fileName;
 				
@@ -1192,7 +1192,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 						URL fileURL = new URL(fileName);
 
 						//fileNameNew = GXDbFile.generateUri(fileName, addToken);
-						fileNameNew = blobBasePath + "/" + CommonUtil.getFileName(fileName)+ "." + CommonUtil.getFileType(fileName);
+						fileNameNew = blobBasePath + CommonUtil.getFileName(fileName)+ "." + CommonUtil.getFileType(fileName);
 						//fileName = com.genexus.PrivateUtilities.getTempFileName(blobPath, GXutil.getFileName(fileName), GXutil.getFileType(fileName));
 						
 						AndroidLog.debug("setBLOBFile downloading : "+ fileName + " - " + fileNameNew);
@@ -1213,7 +1213,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 							{
 								// path outside database, should be unique.
 								String fileResourceNameNew = "kbfile_" + fileName.replace("/", "_");
-								fileResourceNameNew = blobBasePath + "/" + CommonUtil.getFileName(fileResourceNameNew)+ "." + CommonUtil.getFileType(fileResourceNameNew);
+								fileResourceNameNew = blobBasePath + CommonUtil.getFileName(fileResourceNameNew)+ "." + CommonUtil.getFileType(fileResourceNameNew);
 
 								// keep reference to new created file.
 								fileNameNew = fileResourceNameNew;
@@ -1267,7 +1267,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 						// path outside database, should be unique.
 						String fileNameNewDb = GXDbFile.addTokenToFileName("binary", fileExtension);
 						//Copy the blob to the database path and keep a reference
-						fileNameNewDb = blobBasePath + "/" + CommonUtil.getFileName(fileNameNewDb)+ "." + CommonUtil.getFileType(fileNameNewDb);
+						fileNameNewDb = blobBasePath + CommonUtil.getFileName(fileNameNewDb)+ "." + CommonUtil.getFileType(fileNameNewDb);
 
 						
 						AndroidLog.debug("setBLOBFile copying : "+ fileNameNew + " - " + fileNameNewDb);

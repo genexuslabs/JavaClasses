@@ -997,11 +997,11 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 			String gxdbFileUriFileName = gxdbFileUri;
 			if (gxdbFileUri.startsWith(blobDBFilePrefix))
 			{
-				gxdbFileUriFileName = gxdbFileUri.substring(12);
+				gxdbFileUriFileName = gxdbFileUri.substring(13);
 			}
 			else if (gxdbFileUri.startsWith("./"))
 			{
-				gxdbFileUriFileName = gxdbFileUri.substring(1);
+				gxdbFileUriFileName = gxdbFileUri.substring(2);
 			}
 			
 			// Local path in sdcard. Return path with schema , FC need this now.
