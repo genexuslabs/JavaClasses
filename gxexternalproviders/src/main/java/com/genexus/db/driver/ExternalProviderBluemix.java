@@ -4,7 +4,6 @@ import com.genexus.Application;
 import com.genexus.StructSdtMessages_Message;
 import com.genexus.util.Encryption;
 import com.genexus.util.GXService;
-import com.genexus.util.GXServices;
 import com.genexus.util.StorageUtils;
 import org.openstack4j.api.OSClient.OSClientV3;
 import org.openstack4j.api.exceptions.ResponseException;
@@ -60,8 +59,8 @@ public class ExternalProviderBluemix implements ExternalProvider {
     private String authToken;
     private String tempUrlKey;
 
-    public ExternalProviderBluemix() {
-        GXService providerService = Application.getGXServices().get(GXServices.STORAGE_SERVICE);
+    public ExternalProviderBluemix(String service) {
+        GXService providerService = Application.getGXServices().get(service);
 
         String endpoint = providerService.getProperties().get(SERVER_URL) + "/v3";
         String username = Encryption.decrypt64(providerService.getProperties().get(USER));
