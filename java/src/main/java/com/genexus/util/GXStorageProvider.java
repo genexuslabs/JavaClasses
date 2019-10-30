@@ -14,7 +14,7 @@ public class GXStorageProvider {
     ExternalProvider provider;
 
     public GXStorageProvider() {
-        provider = Application.getExternalProvider();
+        provider = Application.getExternalProviderAPI();
     }
 
     void validProvider() throws Exception {
