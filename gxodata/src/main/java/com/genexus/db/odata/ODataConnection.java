@@ -177,46 +177,50 @@ public class ODataConnection extends ServiceConnection
 								public void process(HttpResponse response, HttpContext context) throws IOException
 								{
 									HttpEntity entity = response.getEntity();
-									if(entity.isStreaming())
-									{
-										response.setEntity(new HttpEntityWrapper(entity)
+									if(entity != null)
+									{ // Solo interceptamos cuando efectivamente hay content
+										if (entity.isStreaming())
 										{
-											@Override
-											public InputStream getContent() throws IOException
+											response.setEntity(new HttpEntityWrapper(entity)
 											{
-												return new FilterInputStream(super.getContent())
+												@Override
+												public InputStream getContent() throws IOException
 												{
-													final int [] PREFIX_LOWER = new int[]{'\"','v','a','l','u','e','\"'};
-													final int [] PREFIX_UPPER = new int[]{'\"','V','A','L','U','E','\"'};
-													private int index = 0;
-													public int read() throws IOException
+													return new FilterInputStream(super.getContent())
 													{
-														int b = super.read();
-														if(b < 0)
+														final int[] PREFIX_LOWER = new int[]{'\"', 'v', 'a', 'l', 'u', 'e', '\"'};
+														final int[] PREFIX_UPPER = new int[]{'\"', 'V', 'A', 'L', 'U', 'E', '\"'};
+														private int index = 0;
+
+														public int read() throws IOException
+														{
+															int b = super.read();
+															if (b < 0)
+																return b;
+															if (index < PREFIX_LOWER.length)
+															{
+																if (b == PREFIX_LOWER[index] || b == PREFIX_UPPER[index])
+																	index++;
+																else index = 0;
+															} else
+															{
+																while (b == ' ')
+																	b = super.read();
+																index = 0;
+															}
 															return b;
-														if(index < PREFIX_LOWER.length)
-														{
-															if(b == PREFIX_LOWER[index] || b == PREFIX_UPPER[index])
-																index++;
-															else index = 0;
-														}else
-														{
-															while(b == ' ')
-																b = super.read();
-															index = 0;
 														}
-														return b;
-													}
-												};
-											}
-										});
-									}else
-									{
-										Header contentTypeHeader = entity.getContentType();
-										org.apache.http.entity.ContentType contentType = contentTypeHeader != null ? org.apache.http.entity.ContentType.parse(contentTypeHeader.getValue()) : org.apache.http.entity.ContentType.DEFAULT_TEXT;
-										String content = EntityUtils.toString(entity, contentType.getCharset());
-										String fixedContent = content.replace("\"value\" : ", "\"value\":");
-										response.setEntity(new StringEntity(fixedContent, contentType));
+													};
+												}
+											});
+										} else
+										{
+											Header contentTypeHeader = entity.getContentType();
+											org.apache.http.entity.ContentType contentType = contentTypeHeader != null ? org.apache.http.entity.ContentType.parse(contentTypeHeader.getValue()) : org.apache.http.entity.ContentType.DEFAULT_TEXT;
+											String content = EntityUtils.toString(entity, contentType.getCharset());
+											String fixedContent = content.replace("\"value\" : ", "\"value\":");
+											response.setEntity(new StringEntity(fixedContent, contentType));
+										}
 									}
 								}
 							});
