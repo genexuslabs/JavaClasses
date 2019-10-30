@@ -83,6 +83,8 @@ public class ExternalProviderS3 implements ExternalProvider {
             client.setS3ClientOptions(S3ClientOptions.builder().enableDualstack().setAccelerateModeEnabled(true).build());
             endpointUrl = ".s3-accelerate.dualstack.amazonaws.com/";
         }
+
+		endpointUrl = endpoint + "/";
     }
 
     private void bucketExists() {

@@ -25,6 +25,11 @@ public class ServletEventListener implements ServletContextListener
 	{
 		BlobsCleaner.getInstance().contextDestroyed();
 
+		if (Application.isJMXEnabled())
+		{
+			com.genexus.management.MBeanUtils.unregisterObjects();
+			com.genexus.performance.MBeanUtils.unregisterObjects();
+		}
 
 		//Singletons
 		Application.gxCfg = null;
@@ -45,12 +50,6 @@ public class ServletEventListener implements ServletContextListener
 		ClientContext.setLocalUtil(null);
 		ClientContext.setModelContext(null);
 		SubmitThreadPool.waitForEnd();
-
-		if (Application.isJMXEnabled())
-		{
-			com.genexus.management.MBeanUtils.unregisterObjects();
-			com.genexus.performance.MBeanUtils.unregisterObjects();
-		}
 
 		//Desregistro los JDBC drivers para que no tire Tomcat el mensaje que los va a desregistrar para evitar un memory leak
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();

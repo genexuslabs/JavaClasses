@@ -124,19 +124,19 @@ public final  class SdtMessages_Message extends GXXMLSerializable implements Clo
 			sNameSpace = CommonUtil.right( sNameSpace, CommonUtil.len( sNameSpace)-10) ;
 		}
 		oWriter.writeElement("Id", CommonUtil.rtrim( gxTv_SdtMessages_Message_Id));
-		if ( CommonUtil.strcmp(sNameSpace, "Genexus") != 0 )
+		if ( CommonUtil.strcmp(sNameSpace, "GeneXus") != 0 )
 		{
-			oWriter.writeAttribute("xmlns", "Genexus");
+			oWriter.writeAttribute("xmlns", "GeneXus");
 		}
 		oWriter.writeElement("Type", CommonUtil.trim( CommonUtil.str( gxTv_SdtMessages_Message_Type, 2, 0)));
-		if ( CommonUtil.strcmp(sNameSpace, "Genexus") != 0 )
+		if ( CommonUtil.strcmp(sNameSpace, "GeneXus") != 0 )
 		{
-			oWriter.writeAttribute("xmlns", "Genexus");
+			oWriter.writeAttribute("xmlns", "GeneXus");
 		}
 		oWriter.writeElement("Description", CommonUtil.rtrim( gxTv_SdtMessages_Message_Description));
-		if ( CommonUtil.strcmp(sNameSpace, "Genexus") != 0 )
+		if ( CommonUtil.strcmp(sNameSpace, "GeneXus") != 0 )
 		{
-			oWriter.writeAttribute("xmlns", "Genexus");
+			oWriter.writeAttribute("xmlns", "GeneXus");
 		}
 		oWriter.writeEndElement();
 	}

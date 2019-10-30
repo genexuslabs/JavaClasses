@@ -217,6 +217,11 @@ public final class GXCallableStatement extends GXPreparedStatement implements Ca
 
 	public String getMultimediaUri(int columnIndex) throws SQLException
 	{
+		return getMultimediaUri(columnIndex, true);
+	}
+	
+	public String getMultimediaUri(int columnIndex, boolean absPath) throws SQLException
+	{
 		return GXDbFile.resolveUri(getVarchar(columnIndex));
 	}
 
