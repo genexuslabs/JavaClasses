@@ -48,6 +48,10 @@ public class DefaultExceptionErrorHandler
 			if	(context.globals.Gx_eop == ERROPT_CANCEL)
 			{
 				com.genexus.Application.rollback(context, remoteHandle, helper.getDataStoreName(), null);
+				try {
+					helper.getConnectionProvider().getConnection(context, remoteHandle, helper.getDataStoreName(), true, true).setError();
+				}
+				catch (SQLException exc) {}
 				throw new GXRuntimeException(e);
 			}
 		}

@@ -179,7 +179,9 @@ class ODataPreparedStatement extends ServicePreparedStatement
     private URI getEditLink(ClientEntity entity, URI updURI)
     { // @hack: si la editLink retorna un schema distinto lo compatibilizo con el de la updURI porque sino luego Olingo da error en la checkRequest de AbstractRequest.java 
         URI editLink = entity.getEditLink();
-        if(!editLink.getScheme().equals(updURI.getScheme()))
+        if(editLink == null)
+        	editLink = updURI;
+        else if(!editLink.getScheme().equals(updURI.getScheme()))
         {
             try
             {
