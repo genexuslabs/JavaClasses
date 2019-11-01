@@ -73,7 +73,7 @@ public class GXFile extends AbstractGXFile {
 				String gxdbFileUriFileName = FileName.substring(blobDBFilePrefix.length());
 
 				// Local path in sdcard.
-				FileName = blobBasePath + File.separator + gxdbFileUriFileName;
+				FileName = blobBasePath + gxdbFileUriFileName;
 			} else if (!FileName.contains(File.separator)) // check if its a relative path.
 			{
 				// is a relative path, add app root
