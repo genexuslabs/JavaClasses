@@ -2,7 +2,6 @@ package com.genexus.db.driver;
 
 import com.genexus.Application;
 import com.genexus.util.GXService;
-import com.genexus.util.GXServices;
 import com.genexus.util.Encryption;
 import com.genexus.util.StorageUtils;
 import com.genexus.StructSdtMessages_Message;
@@ -61,8 +60,8 @@ public class ExternalProviderGoogle implements ExternalProvider {
     private String projectId;
     private String url;
 
-    public ExternalProviderGoogle() {
-        GXService providerService = Application.getGXServices().get(GXServices.STORAGE_SERVICE);
+    public ExternalProviderGoogle(String service) {
+        GXService providerService = Application.getGXServices().get(service);
         try {
             HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
