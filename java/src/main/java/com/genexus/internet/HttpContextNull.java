@@ -101,11 +101,6 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 		return "";
 	}
 
-	public String getReferer(boolean encodeQueryString)
-	{
-		return getReferer();
-	}
-
 	public String getReferer()
 	{
 		return "";

@@ -33,6 +33,7 @@ import json.org.json.IJsonFormattable;
 import json.org.json.JSONArray;
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
+import org.apache.commons.lang.StringEscapeUtils;
 
 public abstract class HttpContext 
 		extends HttpAjaxContext implements IHttpContext
@@ -265,7 +266,6 @@ public abstract class HttpContext
 	public abstract void setRequestMethod(String method);
 	public abstract String getRequestMethod();
 	public abstract String getReferer();
-	public abstract String getReferer(boolean encodeQueryString);
 	public abstract short setWrkSt(int handle, String wrkst) ;
 	public abstract String getWorkstationId(int handle) ;
 	public abstract String getApplicationId(int handle) ;
@@ -853,7 +853,7 @@ public abstract class HttpContext
 	
 	private void sendReferer()
 	{
-		ajax_rsp_assign_hidden("sCallerURL", getReferer(true));
+		ajax_rsp_assign_hidden("sCallerURL", StringEscapeUtils.escapeHtml(getReferer()));
 	}
 	
 	private static String CLIENT_ID_HEADER = "GX_CLIENT_ID";

@@ -473,12 +473,7 @@ public class HttpContextWeb extends HttpContext {
 		return response;
 	}
 
-	public String getReferer()
-	{
-		return getReferer(false);
-	}
-
-	public String getReferer(boolean encodeQueryString) {
+	public String getReferer() {
 		if (!isLocalStorageSupported()) {
 			String referer = getNavigationHelper(false).getRefererUrl(getRequestNavUrl());
 			return referer == null ? "" : referer;
@@ -498,7 +493,7 @@ public class HttpContextWeb extends HttpContext {
 			}
 			try {
 				URL url = new URL(referer);
-				String query = (StringUtils.isNotEmpty(url.getQuery())) ? "?" + (encodeQueryString ? PrivateUtilities.encodeURL(url.getQuery()) : url.getQuery()) : "";
+				String query = (StringUtils.isNotEmpty(url.getQuery())) ? "?" + url.getQuery() : "";
 				referer = url.getPath() + query;
 			} catch (Exception e) {
 
