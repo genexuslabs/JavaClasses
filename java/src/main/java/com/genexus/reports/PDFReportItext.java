@@ -975,14 +975,20 @@ public class PDFReportItext implements IReportHandler
     {
 		boolean isCJK = false;
 		boolean embeedFont = isEmbeddedFont(fontName);
+		String originalFontName = fontName;
 		if (!embeedFont)
 		{
 			fontName = getSubstitute(fontName); // Veo si hay substitutos solo si el font no va a ir embebido
 		}
         if(DEBUG)
 		{
+			String fontSubstitute = "";
+			if (!originalFontName.equals(fontName))
+			{
+				fontSubstitute = "Original Font: " + originalFontName + " Substitute";
+			}
 			DEBUG_STREAM.println("GxAttris: ");
-			DEBUG_STREAM.println("\\-> Font: " + fontName + " (" + fontSize + ")" + (fontBold ? " BOLD" : "") + (fontItalic ? " ITALIC" : "") + (fontStrikethru ? " Strike" : ""));
+			DEBUG_STREAM.println("\\-> " + fontSubstitute + "Font: " + fontName + " (" + fontSize + ")" + (fontBold ? " BOLD" : "") + (fontItalic ? " ITALIC" : "") + (fontStrikethru ? " Strike" : ""));
 			DEBUG_STREAM.println("\\-> Fore (" + foreRed + ", " + foreGreen + ", " + foreBlue + ")");
 			DEBUG_STREAM.println("\\-> Back (" + backRed + ", " + backGreen + ", " + backBlue + ")");
 		}

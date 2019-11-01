@@ -177,7 +177,8 @@ public class Application
 		{
 			try
 			{
-				externalProviderImpl = (ExternalProvider) Class.forName(providerService.getClassName()).newInstance();
+				Class providerClass = Class.forName(providerService.getClassName());
+				externalProviderImpl = (ExternalProvider) providerClass.getConstructor(String.class).newInstance(service);
 			}
 			catch (Exception e)
 			{
