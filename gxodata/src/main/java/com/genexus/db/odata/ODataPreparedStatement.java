@@ -164,6 +164,11 @@ class ODataPreparedStatement extends ServicePreparedStatement
         {
             switch(ex.getStatusLine().getStatusCode())
             {
+				case 400:
+				{
+					ServiceError serviceError = ((ODataConnection)getConnection()).getServiceError(ex.getODataError().getCode());
+					throw new SQLException(ex.getMessage(), serviceError.getSqlState(), serviceError.getCode(), ex);
+				}
                 case 404: resCode = 404; break;
                 default:  throw new SQLException(ex.getMessage(), ServiceError.INVALID_QUERY.getSqlState(), ServiceError.INVALID_QUERY.getCode(), ex);
             }
