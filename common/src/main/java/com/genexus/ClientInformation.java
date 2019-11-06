@@ -19,6 +19,13 @@ public class ClientInformation
 			id = SpecificImplementation.Application.getModelContext().getHttpContext().getHeader("GXAppVersionName");
 		return id;
 	}
+	static public String getApplicationId()
+	{
+		String id = "";
+		if (SpecificImplementation.Application.getModelContext().getHttpContext() != null)
+			id = SpecificImplementation.Application.getModelContext().getHttpContext().getHeader("GXApplicationId");
+		return id;
+	}
 	static public String getId()
 	{
 		String id = "";
