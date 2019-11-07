@@ -20,7 +20,7 @@ public class ModelInfo
 {
     private static final HashMap<String, ModelInfo> serviceModels = new HashMap<>();
 
-    static ModelInfo getModel(String connUrl)
+	static ModelInfo getModel(String connUrl)
     {
         return serviceModels.get(connUrl);
     }
@@ -34,6 +34,8 @@ public class ModelInfo
     final Edm model;
     boolean useChunked;
 	ContentType defaultContentType = ContentType.JSON_FULL_METADATA;
+	HashSet<String> recordNotFoundServiceCodes;
+	HashSet<String> recordAlreadyExistsServiceCodes;
 
     HttpClientFactory handlerFactory = null;
     ModelInfo(String url, Edm model, String checkOptimisticConcurrency)

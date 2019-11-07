@@ -3,6 +3,7 @@ package com.genexus.db.odata;
 import com.genexus.ModelContext;
 import com.genexus.db.driver.GXDBMSservice;
 import com.genexus.db.service.ServiceConnection;
+import com.genexus.db.service.ServiceError;
 import com.genexus.diagnostics.core.LogManager;
 import org.apache.http.*;
 import org.apache.http.auth.AuthScope;
@@ -33,11 +34,9 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Base64;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.Executor;
+import java.util.function.Function;
 
 public class ODataConnection extends ServiceConnection
 {
@@ -77,6 +76,8 @@ public class ODataConnection extends ServiceConnection
 		String proxyURI = null;
 		String checkOptimisticConcurrency = null;
 		String user = null, password = null;
+		HashSet<String> recordNotFoundServiceCodes = null;
+		HashSet<String> recordAlreadyExistsServiceCodes = null;
 		boolean force_auth = false;
 		boolean use_chunked = false;
 		String sapLoginBO = null, initialB1SessionId = null;
@@ -97,9 +98,22 @@ public class ODataConnection extends ServiceConnection
 				case "use_chunked": use_chunked = getBoolean(value); break;
 				case "saplogin": sapLoginBO = value; break;
 				case "b1session": initialB1SessionId = value; break;
+				case "recordnotfoundservicecodes":
+				{
+					if(recordNotFoundServiceCodes == null)
+						recordNotFoundServiceCodes = new HashSet<>();
+					recordNotFoundServiceCodes.addAll(Arrays.asList(value.split(",")));
+					break;
+				}
+				case "recordalreadyexistsservicecodes":
+				{
+					if(recordAlreadyExistsServiceCodes == null)
+						recordAlreadyExistsServiceCodes = new HashSet<>();
+					recordAlreadyExistsServiceCodes.addAll(Arrays.asList(value.split(",")));
+					break;
+				}
 				default: break;
 			}
-
 		}
 		try
 		{
@@ -137,6 +151,10 @@ public class ODataConnection extends ServiceConnection
 				loginBase = loginBase.substring(0, loginBase.length() - 1);
 			if(initialB1SessionId != null)
 				B1_sessionIds.put(loginBase, String.format("B1SESSION=%s", initialB1SessionId));
+			if(recordNotFoundServiceCodes == null)
+				recordNotFoundServiceCodes = new HashSet<>(Arrays.asList("-2028"));
+			if(recordAlreadyExistsServiceCodes == null)
+				recordAlreadyExistsServiceCodes = new HashSet<>(Arrays.asList("-2035"));
 		}
 
 		HttpClientFactory handlerFactory = null;
@@ -179,47 +197,78 @@ public class ODataConnection extends ServiceConnection
 									HttpEntity entity = response.getEntity();
 									if(entity != null)
 									{ // Solo interceptamos cuando efectivamente hay content
-										if (entity.isStreaming())
-										{
-											response.setEntity(new HttpEntityWrapper(entity)
+										StatusLine statusLine = response.getStatusLine();
+										boolean inBadRequest = false;
+										if(statusLine != null && statusLine.getStatusCode() == 400)
+										{ // Sap B1 manda codigos de error numericos en vez de texto como dice el estándar
+											response.setEntity(fixEntity(entity, (String content)->
 											{
-												@Override
-												public InputStream getContent() throws IOException
+												int index = content.indexOf("\"code\"");
+												if(index >= 0)
 												{
-													return new FilterInputStream(super.getContent())
+													String head = content.substring(0, index+6);
+													String tail = content.substring(index+7).trim();
+													if(tail.startsWith(":"))
 													{
-														final int[] PREFIX_LOWER = new int[]{'\"', 'v', 'a', 'l', 'u', 'e', '\"'};
-														final int[] PREFIX_UPPER = new int[]{'\"', 'V', 'A', 'L', 'U', 'E', '\"'};
-														private int index = 0;
-
-														public int read() throws IOException
+														tail = tail.substring(1).trim();
+														if(!tail.startsWith("'\""))
 														{
-															int b = super.read();
-															if (b < 0)
-																return b;
-															if (index < PREFIX_LOWER.length)
+															int index2 = tail.indexOf(',');
+															int index3 = tail.indexOf('}');
+															if(index2 == -1)
+																index2 = index3;
+															else if(index3 != -1 && index3 < index2)
+																index2 = index3;
+															if(index2 != -1)
 															{
-																if (b == PREFIX_LOWER[index] || b == PREFIX_UPPER[index])
-																	index++;
-																else index = 0;
-															} else
-															{
-																while (b == ' ')
-																	b = super.read();
-																index = 0;
+																return String.format("%s : \"%s\"%s", head, tail.substring(0, index2), tail.substring(index2));
 															}
-															return b;
 														}
-													};
+													}
 												}
-											});
-										} else
+												return content;
+											}));
+										}
+										else
 										{
-											Header contentTypeHeader = entity.getContentType();
-											org.apache.http.entity.ContentType contentType = contentTypeHeader != null ? org.apache.http.entity.ContentType.parse(contentTypeHeader.getValue()) : org.apache.http.entity.ContentType.DEFAULT_TEXT;
-											String content = EntityUtils.toString(entity, contentType.getCharset());
-											String fixedContent = content.replace("\"value\" : ", "\"value\":");
-											response.setEntity(new StringEntity(fixedContent, contentType));
+											if (entity.isStreaming())
+											{
+												response.setEntity(new HttpEntityWrapper(entity)
+												{
+													@Override
+													public InputStream getContent() throws IOException
+													{
+														return new FilterInputStream(super.getContent())
+														{
+															final int[] PREFIX_LOWER = new int[]{'\"', 'v', 'a', 'l', 'u', 'e', '\"'};
+															final int[] PREFIX_UPPER = new int[]{'\"', 'V', 'A', 'L', 'U', 'E', '\"'};
+															private int index = 0;
+
+															public int read() throws IOException
+															{
+																int b = super.read();
+																if (b < 0)
+																	return b;
+																if (index < PREFIX_LOWER.length)
+																{
+																	if (b == PREFIX_LOWER[index] || b == PREFIX_UPPER[index])
+																		index++;
+																	else index = 0;
+																} else
+																{
+																	while (b == ' ')
+																		b = super.read();
+																	index = 0;
+																}
+																return b;
+															}
+														};
+													}
+												});
+											} else
+											{
+												response.setEntity(fixEntity(entity, (String content)->content.replace("\"value\" : ", "\"value\":")));
+											}
 										}
 									}
 								}
@@ -245,7 +294,29 @@ public class ODataConnection extends ServiceConnection
 		modelInfo.handlerFactory = handlerFactory;
 		modelInfo.useChunked = use_chunked;
 		modelInfo.defaultContentType = defaultContentType;
+		modelInfo.recordNotFoundServiceCodes = recordNotFoundServiceCodes;
+		modelInfo.recordAlreadyExistsServiceCodes = recordAlreadyExistsServiceCodes;
 		ModelInfo.addModel(connUrl, modelInfo);
+	}
+
+	ServiceError getServiceError(String errorCode)
+	{
+		if(errorCode != null)
+		{
+			if (modelInfo.recordNotFoundServiceCodes != null && modelInfo.recordNotFoundServiceCodes.contains(errorCode))
+				return ServiceError.OBJECT_NOT_FOUND;
+			if (modelInfo.recordAlreadyExistsServiceCodes != null && modelInfo.recordAlreadyExistsServiceCodes.contains(errorCode))
+				return ServiceError.DUPLICATE_KEY;
+		}
+		return ServiceError.INVALID_QUERY;
+	}
+
+	private static HttpEntity fixEntity(HttpEntity entity, Function<String, String> fixer) throws IOException
+	{
+		Header contentTypeHeader = entity.getContentType();
+		org.apache.http.entity.ContentType contentType = contentTypeHeader != null ? org.apache.http.entity.ContentType.parse(contentTypeHeader.getValue()) : org.apache.http.entity.ContentType.DEFAULT_TEXT;
+		String content = EntityUtils.toString(entity, contentType.getCharset());
+		return new StringEntity(fixer.apply(content), contentType);
 	}
         
     private boolean getBoolean(String value)
