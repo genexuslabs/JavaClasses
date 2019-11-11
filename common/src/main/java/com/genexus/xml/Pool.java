@@ -5,13 +5,13 @@ import java.util.Stack;
 
 public class Pool
 {
-	Vector usedObjects;
-	Stack  freeObjects;
+	Vector<Object> usedObjects;
+	Stack<Object>  freeObjects;
 	
 	Pool()
 	{
-		usedObjects = new Vector();
-		freeObjects = new Stack();
+		usedObjects = new Vector<>();
+		freeObjects = new Stack<>();
 	}
 	
 	Object getFree()

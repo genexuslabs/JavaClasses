@@ -33,6 +33,7 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 		return value;
 	}
 
+	@SuppressWarnings("unchecked")
 	public <T> T getValue(int index)
 	{
 		if (value[index] instanceof ArrayList)
@@ -224,6 +225,11 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 	}
 
 	public String getMultimediaUri(int columnIndex) throws SQLException
+	{
+		return getMultimediaUri(columnIndex, true);
+	}
+
+	public String getMultimediaUri(int columnIndex, boolean absPath) throws SQLException
 	{
 		return getString(columnIndex);
 	}

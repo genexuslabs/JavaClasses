@@ -32,7 +32,7 @@ public class FileItemCollection
                     name = GXDbFile.getFileName(completeFileName) + (type.trim().length() == 0 ? "" : ".") + type;
                     if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) == null)
                     {
-                        name = rootPath + name;
+                        name = rootPath + GXDbFile.generateUri(name, true, false);
                     }
                     else
                     {
@@ -40,7 +40,7 @@ public class FileItemCollection
                     }
                 }
                 InputStream stream = item.openStream();
-                FileItem fileItem = new FileItem(name, item.isFormField(), item.getFieldName(), stream);
+                FileItem fileItem = new FileItem(completeFileName, name, item.isFormField(), item.getFieldName(), stream);
                 vector.add(fileItem);
             }
         }

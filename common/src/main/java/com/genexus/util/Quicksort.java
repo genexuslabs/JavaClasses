@@ -105,6 +105,7 @@ public class Quicksort
         return left;
     }
 
+	@SuppressWarnings("unchecked")
     protected static void swap(Vector array, int i, int j)
     {
         Object temp;

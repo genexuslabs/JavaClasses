@@ -67,8 +67,8 @@ public class JavaModelContextExtension implements IExtensionModelContext {
                 {
                     proc = CommonUtil.getClassName(proc);
                 }
-                Class c = Class.forName(proc);
-                Class[] parTypes = new Class[] {int.class, ModelContext.class};
+                Class<?> c = Class.forName(proc);
+                Class<?>[] parTypes = new Class[] {int.class, ModelContext.class};
                 Constructor ct = c.getConstructor(parTypes);
                 Object[] arglist = new Object[] { new Integer(remoteHandle), context };
                 Object obj = ct.newInstance(arglist);
@@ -137,7 +137,7 @@ public class JavaModelContextExtension implements IExtensionModelContext {
                 {
                     proc = CommonUtil.getClassName(proc);
                 }
-                Class c = Class.forName(proc);
+                Class<?> c = Class.forName(proc);
                 Class[] parTypes = new Class[] {int.class, ModelContext.class};
                 Constructor ct = c.getConstructor(parTypes);
                 Object[] arglist = new Object[] { new Integer(handle), modelContext};
@@ -172,6 +172,7 @@ public class JavaModelContextExtension implements IExtensionModelContext {
         {
             HttpContext newHttpContext = (HttpContext) newContext.getHttpContext();
             newHttpContext.setDefaultPath(ctx.getDefaultPath());
+            newHttpContext.setContextPath(ctx.getContextPath());
             newHttpContext.setStaticContentBase(ctx.getStaticContentBase());
             newHttpContext.setClientId(ctx.getClientId());
             newHttpContext.setLanguage(ctx.getLanguage());

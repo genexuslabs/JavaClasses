@@ -8,7 +8,6 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import com.genexus.*;
-import org.apache.logging.log4j.util.Strings;
 
 import com.artech.base.services.AndroidContext;
 import com.genexus.util.Codecs;
@@ -146,6 +145,7 @@ public abstract class HttpContext extends HttpAjaxContext implements IHttpContex
 
 	public abstract void cleanup();
 	public abstract String getResourceRelative(String path);
+	public abstract String getResourceRelative(String path, boolean includeBasePath);
 	public abstract String getResource(String path);
 	public abstract String GetNextPar();
 	public abstract HttpContext copy();
@@ -1147,7 +1147,7 @@ public abstract class HttpContext extends HttpAjaxContext implements IHttpContex
 
         public int setLanguage(String language)
         {
-            if (Strings.isNotBlank(language) && Application.getClientPreferences().getProperty("language|"+ language, "code", null) != null)
+            if (!language.isEmpty() && Application.getClientPreferences().getProperty("language|"+ language, "code", null) != null)
             {
                 ajaxRefreshAsGET = true;
                 return 0;

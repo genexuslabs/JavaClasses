@@ -5,7 +5,6 @@ import org.apache.logging.log4j.LogManager;
 import com.amazonaws.HttpMethod;
 import com.genexus.Application;
 import com.genexus.util.GXService;
-import com.genexus.util.GXServices;
 import com.genexus.util.Encryption;
 import com.genexus.util.StorageUtils;
 import com.genexus.StructSdtMessages_Message;
@@ -60,8 +59,8 @@ public class ExternalProviderS3 implements ExternalProvider {
     private String folder;
     private String endpointUrl = ".s3.amazonaws.com/";
 
-    public ExternalProviderS3() {
-        GXService providerService = Application.getGXServices().get(GXServices.STORAGE_SERVICE);
+    public ExternalProviderS3(String service) {
+        GXService providerService = Application.getGXServices().get(service);
         AWSCredentials credentials = new BasicAWSCredentials(Encryption.decrypt64(providerService.getProperties().get(ACCESS_KEY_ID)), Encryption.decrypt64(providerService.getProperties().get(SECRET_ACCESS_KEY)));
         client = new AmazonS3Client(credentials);
 
@@ -83,6 +82,8 @@ public class ExternalProviderS3 implements ExternalProvider {
             client.setS3ClientOptions(S3ClientOptions.builder().enableDualstack().setAccelerateModeEnabled(true).build());
             endpointUrl = ".s3-accelerate.dualstack.amazonaws.com/";
         }
+
+		endpointUrl = endpoint + "/";
     }
 
     private void bucketExists() {

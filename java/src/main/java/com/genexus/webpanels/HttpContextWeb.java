@@ -26,9 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.genexus.*;
-import org.apache.commons.fileupload.DiskFileUpload;
 import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileUpload;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -54,8 +52,8 @@ public class HttpContextWeb extends HttpContext {
 	HttpRequest httpReq;
 	ServletContext servletContext;
 
-	protected Vector parms;
-	private Hashtable postData;
+	protected Vector<String> parms;
+	private Hashtable<String, String[]> postData;
 	private int currParameter;
 
 	private HttpServletRequest request;
@@ -63,12 +61,11 @@ public class HttpContextWeb extends HttpContext {
 	private String requestMethod;
 	protected String contentType = "";
 	private boolean SkipPushUrl = false;
-	private Hashtable cookies;
+	private Hashtable<String, Cookie> cookies;
 	private boolean streamSet = false;
 	private WebSession webSession;
 	private FileItemCollection fileItemCollection;
 	private FileItemIterator lstParts;
-	private DiskFileUpload fileupload = new DiskFileUpload();
 	private boolean ajaxCallAsPOST = false;
 	private boolean htmlHeaderClosed = false;
 	private String sTmpDir;
@@ -81,16 +78,8 @@ public class HttpContextWeb extends HttpContext {
 	private static final Pattern EDGE_BROWSER_VERSION_REGEX = Pattern.compile(" Edge\\/([0-9]+)\\.",
 			Pattern.CASE_INSENSITIVE);
 
-	public String getRepositoryPath() {
-		return fileupload.getRepositoryPath();
-	}
-
 	public boolean isMultipartContent() {
-		return FileUpload.isMultipartContent(request);
-	}
-
-	public void setRepositoryPath(String path) {
-		fileupload.setRepositoryPath(path);
+		return ServletFileUpload.isMultipartContent(request);
 	}
 
 	public String getResource(String path) {
@@ -107,6 +96,10 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getResourceRelative(String path) {
+		return getResourceRelative(path, true);
+	}
+
+	public String getResourceRelative(String path, boolean includeBasePath) {
 		if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) != null && !path.isEmpty()) {
 			GXFile gxFile = new GXFile(path);
 			String pathURL = gxFile.getAbsolutePath();
@@ -143,11 +136,19 @@ public class HttpContextWeb extends HttpContext {
 
 		Resource = Resource.replace('\\', '/');
 
-		if (Resource.startsWith("/"))
-			Resource = ContextPath + Resource;
+		if (includeBasePath)
+		{
+			if (Resource.startsWith("/"))
+				Resource = ContextPath + Resource;
+			else
+				Resource = ContextPath + "/" + Resource;
+		}
 		else
-			Resource = ContextPath + "/" + Resource;
-
+		{
+			if (Resource.startsWith("/"))
+				Resource = Resource.substring(1);
+		}
+		
 		String baseName = FilenameUtils.getBaseName(Resource);
 		Resource = CommonUtil.replaceLast(Resource, baseName, PrivateUtilities.encodeFileName(baseName));
 		return Resource;
@@ -218,7 +219,7 @@ public class HttpContextWeb extends HttpContext {
 
 		GX_msglist = new MsgList();
 		postData = null;
-		cookies = new Hashtable();
+		cookies = new Hashtable<>();
 
 		httpRes = new HttpResponse(this);
 		httpReq = new HttpRequestWeb(this);
@@ -226,7 +227,7 @@ public class HttpContextWeb extends HttpContext {
 		this.GX_webresponse = httpRes;
 
 		super.useUtf8 = true;
-		parms = new Vector();
+		parms = new Vector<>();
 		loadParameters(req.getQueryString());
 		isCrawlerRequest = isCrawlerRequest();
 	}
@@ -281,7 +282,7 @@ public class HttpContextWeb extends HttpContext {
 				if (gxEvent != null && !gxEvent.trim().equals("")) {
 					try {
 						Pattern pattern = Pattern.compile("GXParm([0-9]+)");
-						Vector indexedParms = new Vector();
+						Vector<String> indexedParms = new Vector<>();
 						Enumeration postParms = parsePostData.keys();
 						while (postParms.hasMoreElements()) {
 							String name = (String) postParms.nextElement();
@@ -331,22 +332,22 @@ public class HttpContextWeb extends HttpContext {
 		}
 	}
 
-	public Hashtable getPostData() {
+	public Hashtable<String, String[]> getPostData() {
 		if (postData == null) {
 			String contentType = request.getContentType();
 			if (ajaxCallAsPOST || isForward()) {
-				return new Hashtable();
+				return new Hashtable<>();
 			}
 
 			try {
 				if (contentType != null
 						&& (contentType.contains("application/json") || contentType.contains("text/xml"))) {
-					postData = new Hashtable();
+					postData = new Hashtable<>();
 				} else {
-					if (FileUpload.isMultipartContent(request))
+					if (ServletFileUpload.isMultipartContent(request))
 						postData = parseMultipartPostData(getPostedparts());
 					else
-						postData = parsePostData(request, request.getContentLength(), request.getInputStream());
+						postData = parsePostData(request, request.getInputStream());
 				}
 				Object value = postData.get("GXState");
 				if (value != null) {
@@ -371,7 +372,7 @@ public class HttpContextWeb extends HttpContext {
 					}
 				}
 			} catch (IOException e) {
-				postData = new Hashtable();
+				postData = new Hashtable<>();
 				log.debug("GetPostData", e);
 			}
 		}
@@ -447,6 +448,8 @@ public class HttpContextWeb extends HttpContext {
 
 		return contextPath;
 	}
+
+	public void setContextPath(String path) {}
 
 	public String getRealPath(String path) {
 		String realPath = path;
@@ -723,8 +726,15 @@ public class HttpContextWeb extends HttpContext {
 			if (request != null) {
 				Object obj = null;
 				HttpSession session = request.getSession(false);
-				if (session != null)
-					obj = session.getValue(CommonUtil.upper(name));
+				if (session != null) {
+					try {
+						obj = session.getAttribute(CommonUtil.upper(name));
+					}
+					catch (UnsupportedOperationException e)
+					{
+						//In some environments, websession is not supported
+					}
+				}
 				return obj;
 			}
 		} catch (Exception e) {
@@ -736,18 +746,40 @@ public class HttpContextWeb extends HttpContext {
 
 	// ---- Set values
 	public void webPutSessionValue(String name, Object value) {
-		if (request != null)
-			request.getSession(true).putValue(CommonUtil.upper(name), value);
+		if (request != null) {
+			try {
+				request.getSession(true).setAttribute(CommonUtil.upper(name), value);
+			}
+			catch (UnsupportedOperationException e)
+			{
+				//In some environments, websession is not supported
+			}
+		}
+
 	}
 
 	public void webPutSessionValue(String name, long value) {
-		if (request != null)
-			request.getSession(true).putValue(CommonUtil.upper(name), new Long(value));
+		if (request != null){
+			try {
+				request.getSession(true).setAttribute(CommonUtil.upper(name), new Long(value));
+			}
+			catch (UnsupportedOperationException e)
+			{
+				//In some environments, websession is not supported
+			}
+		}
 	}
 
 	public void webPutSessionValue(String name, double value) {
-		if (request != null)
-			request.getSession(true).putValue(CommonUtil.upper(name), new Double(value));
+		if (request != null){
+			try {
+				request.getSession(true).setAttribute(CommonUtil.upper(name), new Double(value));
+			}
+			catch (UnsupportedOperationException e)
+			{
+				//In some environments, websession is not supported
+			}
+		}
 	}
 
 	public void webSessionId(String[] id) {
@@ -995,7 +1027,7 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public boolean isFileParm(String parm) {
-		if (FileUpload.isMultipartContent(request)) {
+		if (ServletFileUpload.isMultipartContent(request)) {
 			return getPostedparts().hasitembyname(parm);
 		}
 		return false;
@@ -1060,9 +1092,9 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public void DeletePostValuePrefix(String sPrefix) {
-		Hashtable postData = getPostData();
+		Hashtable<String, String[]> postData = getPostData();
 		Set<String> keys = postData.keySet();
-		Vector<String> toDelete = new Vector();
+		Vector<String> toDelete = new Vector<>();
 		for (String key : keys) {
 			if (key != null && key.startsWith(sPrefix + "nRC_GXsfl_")) {
 				toDelete.addElement(key);
@@ -1094,14 +1126,14 @@ public class HttpContextWeb extends HttpContext {
 		this.request = request;
 	}
 
-	static private Hashtable parseMultipartPostData(FileItemCollection fileItemCollection) {
+	static private Hashtable<String, String[]> parseMultipartPostData(FileItemCollection fileItemCollection) {
 		return com.genexus.webpanels.HttpUtils.parseMultipartPostData(fileItemCollection);
 	}
 
-	static public Hashtable parsePostData(HttpServletRequest request, int len, ServletInputStream in) {
+	static public Hashtable<String, String[]> parsePostData(HttpServletRequest request, ServletInputStream in) {
 		try {
 			// Nuestra versión del parsePostData utiliza UTF-8
-			return com.genexus.webpanels.HttpUtils.parsePostData(len, in);
+			return com.genexus.webpanels.HttpUtils.parsePostData(in);
 		} catch (IllegalArgumentException e) {
 			return com.genexus.webpanels.HttpUtils.parsePostData(request);
 		}
@@ -1130,12 +1162,11 @@ public class HttpContextWeb extends HttpContext {
 			return ((java.io.File) servletContext.getAttribute(servletContext.TEMPDIR)).getAbsolutePath();
 		}
 
-		if (path == null) // AWS LAMBDA SERVERLESS
+		if (path == null) { // AWS LAMBDA SERVERLESS
 			path = System.getenv("LAMBDA_TASK_ROOT");
-
-		if (path == null) // AWS LAMBDA SERVERLESS
-			path = System.getProperty("LAMBDA_TASK_ROOT");
-
+			if (path == null)
+				path = System.getProperty("LAMBDA_TASK_ROOT");
+		}
 
 		if (path.endsWith(File.separator)) {
 			path = path.substring(0, path.length() - 1);

@@ -759,6 +759,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		return result.getBoolean(columnIndex);
 	}
 
+	@Deprecated
 	public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException
 	{
 		BigDecimal ret;
@@ -900,6 +901,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		return result.getAsciiStream(columnIndex);
 	}
 
+	@Deprecated
 	public java.io.InputStream getUnicodeStream(int columnIndex) throws SQLException
 	{
 		if	(DEBUG )
@@ -1038,7 +1040,12 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 
 	public String getMultimediaUri(int columnIndex) throws SQLException
 	{
-		return GXDbFile.resolveUri(getVarchar(columnIndex));
+		return getMultimediaUri(columnIndex, true);
+	}
+	
+	public String getMultimediaUri(int columnIndex, boolean absPath) throws SQLException
+	{
+		return GXDbFile.resolveUri(getVarchar(columnIndex), absPath);
 	}
 
 	private static String lastBlobsDir = "";
@@ -1169,6 +1176,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		return result.getDouble(columnName);
 	}
 
+	@Deprecated
 	public BigDecimal getBigDecimal(String columnName, int scale) throws SQLException
 	{
 		if	(DEBUG) log(GXDBDebug.LOG_MAX, "Warning: getBigDecimal/2");
@@ -1211,6 +1219,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		return result.getAsciiStream(columnName);
 	}
 
+	@Deprecated
 	public java.io.InputStream getUnicodeStream(String columnName) throws SQLException
 	{
 		if	(DEBUG) log(GXDBDebug.LOG_MAX, "Warning: getUnicodeStream/2");
@@ -1619,7 +1628,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 	}
 
 
-    public Object getObject(int i, java.util.Map map) throws SQLException
+    public Object getObject(int i, java.util.Map<java.lang.String,java.lang.Class<?>> map) throws SQLException
 	{
 		return result.getObject(i, map);
 	}
@@ -1641,7 +1650,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		return result.getArray(i);
 	}
 
-    public Object getObject(String colName, java.util.Map map) throws SQLException
+    public Object getObject(String colName, java.util.Map<java.lang.String,java.lang.Class<?>> map) throws SQLException
 	{
 		return result.getObject(colName, map);
 	}

@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class ComplexHashMap extends HashMap<String, Object>
 {
-    private String entity;
+    private final String entity;
     public ComplexHashMap(String entity)
     {
         this.entity = entity;

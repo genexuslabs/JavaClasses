@@ -727,10 +727,15 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 
 	public void setGXDbFileURI(int index, String fileName, String blobPath, int length) throws SQLException
 	{
-		setGXDbFileURI(index, fileName, blobPath, length, null, null);
+		setGXDbFileURI(index, fileName, blobPath, length, null, null, false);
 	}
 
-    public void setGXDbFileURI(int index, String fileName, String blobPath, int length, String tableName, String fieldName) throws SQLException
+	public void setGXDbFileURI(int index, String fileName, String blobPath, int length, String tableName, String fieldName) throws SQLException
+	{
+		setGXDbFileURI(index, fileName, blobPath, length, null, null, false);
+	}
+
+	public void setGXDbFileURI(int index, String fileName, String blobPath, int length, String tableName, String fieldName, boolean downloadContent) throws SQLException
     {
     	if (blobPath.trim().length() == 0)
     		setVarchar(index, fileName, length, false);
@@ -791,7 +796,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 							//{
 							// path outside database, should be unique.
 							String fileResourceNameNew = "kbfile_" + blobPath.replace("/", "_");
-							fileResourceNameNew = blobBasePath + "/" + CommonUtil.getFileName(fileResourceNameNew)+ "." + CommonUtil.getFileType(fileResourceNameNew);
+							fileResourceNameNew = blobBasePath + CommonUtil.getFileName(fileResourceNameNew)+ "." + CommonUtil.getFileType(fileResourceNameNew);
 
 							fileNameNew = fileResourceNameNew;
 							file = new File(fileResourceNameNew);
@@ -799,10 +804,12 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 						}
 					}
 					
-					if (isLocalFile)
+					if (isLocalFile
+						|| (downloadContent && (blobPath.toLowerCase().startsWith("http://") || blobPath.toLowerCase().startsWith("https://")) )
+					)
 					{
 						// Local path in sdcard.
-						//fileNameNew = blobBasePath + "/" + GXutil.getFileName(fileName)+ "." + GXutil.getFileType(fileName);
+						//fileNameNew = blobBasePath + GXutil.getFileName(fileName)+ "." + GXutil.getFileType(fileName);
 						if (fileName !=null && fileName.length()>0)
 							fileNameNew = fileName;
 				
@@ -865,10 +872,16 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 
 	public void setDateTime(int index, java.util.Date value, boolean onlyTime) throws SQLException
 	{
-		setDateTime(index, value, onlyTime, false);
+		setDateTime(index, value, onlyTime, false, false);
 	}
 
 	public void setDateTime(int index, java.util.Date value, boolean onlyTime, boolean hasmilliseconds) throws SQLException
+	{
+		setDateTime(index, value, onlyTime, false, hasmilliseconds);
+
+	}
+
+	public void setDateTime(int index, java.util.Date value, boolean onlyTime, boolean onlyDate, boolean hasmilliseconds) throws SQLException
 	{
 		if	(onlyTime && !value.equals(CommonUtil.nullDate()))
 		{
@@ -883,7 +896,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 				value = newValue;
 		}
 
-	//TODO: WHAT IS THIS FOR ANDROID?	if (!onlyonlyDate)
+		if (!onlyDate)
 			value = con.getContext().local2DBserver(value, hasmilliseconds);
 		
 		if	(DEBUG)
@@ -954,7 +967,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 
 		if	(con.getDBMS().useDateTimeInDate())
 		{
-			setDateTime(index, value, false);
+			setDateTime(index, value, false, true,false);
 		}
 		else if (con.getDBMS().useCharInDate())
 		{
@@ -980,7 +993,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			try
 			{
 				if	(con.getDBMS().useDateTimeInDate())
-					setDateTime(index, value, false, true);
+					setDateTime(index, value, false, true, false);
 				else
 				{
 					stmt.setDate(index, value);
@@ -995,7 +1008,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		else
 		{
 			if	(con.getDBMS().useDateTimeInDate())
-				setDateTime(index, value, false, true);
+				setDateTime(index, value, false, true, false);
 			else
 			{
 				stmt.setDate(index, value);
@@ -1107,10 +1120,15 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 
 	public void setBLOBFile(int index, String fileName) throws SQLException
 	{
-		setBLOBFile(index, fileName, false);
+		setBLOBFile(index, fileName, false, false);
 	}
 
-    public void setBLOBFile(int index, String fileName, boolean isMultiMedia) throws SQLException
+	public void setBLOBFile(int index, String fileName, boolean isMultiMedia) throws SQLException
+	{
+		setBLOBFile(index, fileName, isMultiMedia, false);
+	}
+
+	public void setBLOBFile(int index, String fileName, boolean isMultiMedia, boolean downloadContent) throws SQLException
 	{
 		if(skipSetBlobs)
 		{
@@ -1168,12 +1186,13 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 					// add token if necesary?
 					//Boolean addToken = (fileName.compareTo(GXDbFile.removeTokenFromFileName(fileName)) == 0);
 										
-					if (fileName.toLowerCase().startsWith("http") && isLocalFile)
+					if ( (fileName.toLowerCase().startsWith("http://") || fileName.toLowerCase().startsWith("https://"))
+						&& (isLocalFile || downloadContent))
 					{
 						URL fileURL = new URL(fileName);
-						
+
 						//fileNameNew = GXDbFile.generateUri(fileName, addToken);
-						fileNameNew = blobBasePath + "/" + CommonUtil.getFileName(fileName)+ "." + CommonUtil.getFileType(fileName);
+						fileNameNew = blobBasePath + CommonUtil.getFileName(fileName)+ "." + CommonUtil.getFileType(fileName);
 						//fileName = com.genexus.PrivateUtilities.getTempFileName(blobPath, GXutil.getFileName(fileName), GXutil.getFileType(fileName));
 						
 						AndroidLog.debug("setBLOBFile downloading : "+ fileName + " - " + fileNameNew);
@@ -1194,7 +1213,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 							{
 								// path outside database, should be unique.
 								String fileResourceNameNew = "kbfile_" + fileName.replace("/", "_");
-								fileResourceNameNew = blobBasePath + "/" + CommonUtil.getFileName(fileResourceNameNew)+ "." + CommonUtil.getFileType(fileResourceNameNew);
+								fileResourceNameNew = blobBasePath + CommonUtil.getFileName(fileResourceNameNew)+ "." + CommonUtil.getFileType(fileResourceNameNew);
 
 								// keep reference to new created file.
 								fileNameNew = fileResourceNameNew;
@@ -1248,7 +1267,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 						// path outside database, should be unique.
 						String fileNameNewDb = GXDbFile.addTokenToFileName("binary", fileExtension);
 						//Copy the blob to the database path and keep a reference
-						fileNameNewDb = blobBasePath + "/" + CommonUtil.getFileName(fileNameNewDb)+ "." + CommonUtil.getFileType(fileNameNewDb);
+						fileNameNewDb = blobBasePath + CommonUtil.getFileName(fileNameNewDb)+ "." + CommonUtil.getFileType(fileNameNewDb);
 
 						
 						AndroidLog.debug("setBLOBFile copying : "+ fileNameNew + " - " + fileNameNewDb);

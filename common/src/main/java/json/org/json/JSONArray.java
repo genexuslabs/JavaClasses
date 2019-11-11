@@ -87,14 +87,14 @@ public class JSONArray implements IJsonFormattable, java.io.Serializable {
     /**
      * The arrayList where the JSONArray's properties are kept.
      */
-    private ArrayList myArrayList;
+    private ArrayList<Object> myArrayList;
 
 
     /**
      * Construct an empty JSONArray.
      */
     public JSONArray() {
-        this.myArrayList = new ArrayList();
+        this.myArrayList = new ArrayList<>();
     }
 
     /**
@@ -152,10 +152,11 @@ public class JSONArray implements IJsonFormattable, java.io.Serializable {
      * Construct a JSONArray from a Collection.
      * @param collection     A Collection.
      */
+	@SuppressWarnings("unchecked")
     public JSONArray(Collection collection) {
         this.myArrayList = (collection == null) ?
-        	new ArrayList() :
-	        new ArrayList(collection);
+        	new ArrayList<>() :
+	        new ArrayList<>(collection);
     }
 
     /**

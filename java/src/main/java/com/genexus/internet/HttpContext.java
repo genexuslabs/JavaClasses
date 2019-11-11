@@ -148,10 +148,10 @@ public abstract class HttpContext
 	private boolean validEncryptedParm = true;        
 	private boolean encryptionKeySended = false;
 
-	private Vector javascriptSources = new Vector();
+	private Vector<String> javascriptSources = new Vector<>();
 	private Vector<String> deferredFragments = new Vector<String>();
 
-	private Vector styleSheets = new Vector();
+	private Vector<String> styleSheets = new Vector<>();
 	private HashSet<String> deferredJavascriptSources = new HashSet<String>();
 	private boolean responseCommited = false;
 	private boolean wrapped = false;
@@ -256,6 +256,7 @@ public abstract class HttpContext
 
 	public abstract void cleanup();
 	public abstract String getResourceRelative(String path);
+	public abstract String getResourceRelative(String path, boolean includeBasePath);
 	public abstract String getResource(String path);
 	public abstract String GetNextPar();
 	public abstract HttpContext copy();
@@ -288,6 +289,7 @@ public abstract class HttpContext
 	public abstract void webPutSessionValue(String name, double value);
 	public abstract void webSessionId(String[] id);
 	public abstract String getContextPath();
+	public abstract void setContextPath(String context);
 	public abstract String webSessionId();
 	public abstract String getCookie(String name);
 	public abstract Cookie[] getCookies();
@@ -337,8 +339,6 @@ public abstract class HttpContext
 	public abstract boolean getHtmlHeaderClosed();
 	public abstract void ajax_rsp_command_close();
 	public abstract void dispatchAjaxCommands();
-	public abstract String getRepositoryPath();
-	public abstract void  setRepositoryPath(String path);
 
 	public void AddDeferredFrags()
 	{
@@ -357,6 +357,7 @@ public abstract class HttpContext
 	{
 		if(!javascriptSources.contains(jsSrc))
 		{
+			urlBuildNumber = getURLBuildNumber(jsSrc, urlBuildNumber);
 			javascriptSources.add(jsSrc);
 			String queryString = urlBuildNumber;
 			String attributes = "";
@@ -487,7 +488,20 @@ public abstract class HttpContext
 	}
 	public void AddStyleSheetFile(String styleSheet, String urlBuildNumber)
 	{
+		urlBuildNumber = getURLBuildNumber(styleSheet, urlBuildNumber);
 		AddStyleSheetFile(styleSheet, urlBuildNumber, false);
+	}
+
+	private String getURLBuildNumber(String styleSheet, String urlBuildNumber)
+	{
+		if(urlBuildNumber.isEmpty() && !GXutil.isAbsoluteURL(styleSheet))
+		{
+			return "?" + getCacheInvalidationToken();
+		}
+		else
+		{
+			return urlBuildNumber;
+		}
 	}
 
 	private void AddStyleSheetFile(String styleSheet, String urlBuildNumber, boolean isGxThemeHidden)
@@ -1455,6 +1469,7 @@ public abstract class HttpContext
 	{
 		theme = t;
 	}
+	@SuppressWarnings("unchecked")
 	public int setTheme(String t)
 	{
 	    WebSession session = getWebSession();
@@ -1462,9 +1477,9 @@ public abstract class HttpContext
 			return 0;
 		else
 		{
-			HashMap cThemeMap = (HashMap)session.getObjectAttribute("GXTheme");
+			HashMap<String, String> cThemeMap = (HashMap<String, String>)session.getObjectAttribute("GXTheme");
 			if (cThemeMap == null)
-				cThemeMap = new HashMap();
+				cThemeMap = new HashMap<>();
 			cThemeMap.put(theme, t);
 			session.setObjectAttribute("GXTheme", cThemeMap);
 			return 1;

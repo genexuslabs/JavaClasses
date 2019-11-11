@@ -10,6 +10,7 @@ public interface SecurityProvider
 	void checksessionprm(int remoteHandle, ModelContext context, String reqUrl, String permissionPrefix, boolean[] flag, boolean[] isPermissionOK);
 	GXResult refreshtoken(int remoteHandle, ModelContext context, String clientId, String clientSecret, String refreshToken, OutData outData, boolean[] flag);
 	GXResult logindevice(int remoteHandle, ModelContext context, String clientId, String clientSecret, OutData outData, boolean[] flag);
+	GXResult externalauthenticationfromsdusingtoken(int remoteHandle, ModelContext context, String grantType, String nativeToken, String nativeVerifier, String clientId, String clientSecret, String[] scope, String additional_parameters, OutData outData, boolean[] flag);
 	GXResult externalauthenticationfromsdusingtoken(int remoteHandle, ModelContext context, String grantType, String nativeToken, String nativeVerifier, String clientId, String clientSecret, String[] scope, OutData outData, boolean[] flag);
 	GXResult oauthauthentication(int remoteHandle, ModelContext context, String grantType, String userName, String userPassword, String clientId, String clientSecret, String scope, OutData outData, String[] redirectURL, boolean[] flag);
 	GXResult oauthauthentication(int remoteHandle, ModelContext context, String grantType, String userName, String userPassword, String clientId, String clientSecret, String scope, String additional_parameters, OutData outData, String[] redirectURL, boolean[] flag);

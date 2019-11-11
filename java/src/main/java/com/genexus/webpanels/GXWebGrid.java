@@ -19,8 +19,8 @@ public class GXWebGrid implements IGxJSONAble
     JSONArray _ColsProps;
     JSONObject _Rows;
     int _Count;
-    ArrayList _rowObjs;
-	ArrayList _ColsPropsCommon;
+    ArrayList<GXWebRow> _rowObjs;
+	ArrayList<JSONArray> _ColsPropsCommon;
     int _PageSize;
     boolean writingTableContent;
 
@@ -28,8 +28,8 @@ public class GXWebGrid implements IGxJSONAble
     {
         _Rows = new JSONObject();
         _ColsProps = new JSONArray();
-        _rowObjs = new ArrayList();
-		_ColsPropsCommon = new ArrayList();
+        _rowObjs = new ArrayList<>();
+		_ColsPropsCommon = new ArrayList<>();
         _Count = 0;
     }
 
@@ -83,7 +83,7 @@ public class GXWebGrid implements IGxJSONAble
         return 0;
     }
 
-	public ArrayList GetColsPropsCommon(){
+	public ArrayList<JSONArray> GetColsPropsCommon(){
 		return this._ColsPropsCommon;
 	}
 
@@ -171,7 +171,7 @@ public class GXWebGrid implements IGxJSONAble
         {
             for (int i=0; i<_rowObjs.size(); i++)
             {
-                values.put(((GXWebRow)_rowObjs.get(i)).GetValues());
+                values.put(_rowObjs.get(i).GetValues());
             }
         }
         return values;

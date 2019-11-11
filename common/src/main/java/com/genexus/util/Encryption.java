@@ -4,8 +4,8 @@ import java.security.InvalidKeyException;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
 
-import java.util.Random;
 import java.io.UnsupportedEncodingException;
+import java.security.SecureRandom;
 
 public class Encryption
 {
@@ -173,8 +173,7 @@ public class Encryption
       '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'
    	};
 
-	//static RandomGenerator random = new RandomGenerator();
-	static java.util.Random random = new java.util.Random();
+	static SecureRandom random = new SecureRandom();
 
 	public static String getNewKey()
 	{
@@ -276,7 +275,7 @@ public class Encryption
         
         public static String getRijndaelKey()
         {
-            Random rdm = new Random();
+			SecureRandom rdm = new SecureRandom();
             byte[] bytes = new byte[16];
             rdm.nextBytes(bytes);
             StringBuffer buffer = new StringBuffer(32);

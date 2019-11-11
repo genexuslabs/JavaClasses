@@ -13,6 +13,7 @@ import com.genexus.util.GXServices;
 public class FileItem
 { 
 	private GXFile gxFile;
+	private String sourceFileName;
 	private String fieldName;
 	private byte[] fieldByteString;
 	private boolean formField;
@@ -23,8 +24,13 @@ public class FileItem
 
   public FileItem(String name, boolean formField, String fieldName, InputStream stream)
   {
+	  this(null, name, formField, fieldName, stream);
+  }
+
+  public FileItem(String sourceFileName, String name, boolean formField, String fieldName, InputStream stream)
+  {
 	  this.fieldName = fieldName;
-	  this.formField = formField;  	
+	  this.formField = formField;
   	if (formField)
   	{
   		try
@@ -38,6 +44,7 @@ public class FileItem
   	}
   	else
   	{
+  		this.sourceFileName = sourceFileName;
 	  	gxFile = new GXFile(name, true);
 	  	gxFile.create(stream);
 	  }
@@ -50,13 +57,26 @@ public class FileItem
   
   public String getName()
   {
-  	if (gxFile != null)
+  	if (sourceFileName != null)
   	{
-	  	return gxFile.getName();
-	  }
+		return sourceFileName;
+	}
+  	else if (gxFile != null)
+	{
+		return gxFile.getName();
+  	}
 	  return "";
   }
-  
+
+	public String getAbsolutePath()
+	{
+		if (gxFile != null)
+		{
+			return gxFile.getAbsolutePath();
+		}
+		return "";
+	}
+
   public String getPath()
 	{
   	if (gxFile != null)

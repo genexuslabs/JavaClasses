@@ -35,7 +35,7 @@ public class LocalUtil
 	private static final String JLANG_TW   = "tw";
 	private static final String JLANG_JP   = "ja";
 
-	private static Hashtable listLocalUtil = new Hashtable();
+	private static Hashtable<String, LocalUtil> listLocalUtil = new Hashtable<>();
 
 	private GXSimpleDateFormat ttoc_2_df10;
 	private GXSimpleDateFormat ttoc_2_df8 ;
@@ -80,7 +80,7 @@ public class LocalUtil
 	{
 		String key = getKey(decimalPoint, dateFormat, timeFormat, firstYear2K, language);
 
-		LocalUtil ret = (LocalUtil) listLocalUtil.get(key);
+		LocalUtil ret = listLocalUtil.get(key);
 
 		if	(ret == null)
 		{
@@ -1201,11 +1201,13 @@ public class LocalUtil
 			if(date.length() >= 8) year = date.substring(6, 8);
 		}
 
-		if	(dateSet.getYear() % 100 == (int) CommonUtil.val(year))
+		Calendar calendar = GregorianCalendar.getInstance();
+		calendar.setTime(dateSet);
+		if	(calendar.get(Calendar.YEAR) % 100 == (int) CommonUtil.val(year))
 		{
 			// Si la fecha no cambi?los 2 digitos del año, entonces dejo el siglo que
 			// estaba antes
-			year = CommonUtil.str(1900 + dateSet.getYear(), 4, 0);
+			year = CommonUtil.str(1900 + calendar.get(Calendar.YEAR), 4, 0);
 		}
 		else
 		{
@@ -2026,14 +2028,16 @@ public class LocalUtil
 			return 	dateTime;
 		}
 
-		if	(dateTime.getYear() % 100 < firstYear2K)
+		Calendar calendar = GregorianCalendar.getInstance();
+		calendar.setTime(dateTime);
+		if	(calendar.get(Calendar.YEAR) % 100 < firstYear2K)
 		{
-			if (dateTime.getYear() < 100)
-				dateTime.setYear(dateTime.getYear() + 100);
+			if (calendar.get(Calendar.YEAR) < 100)
+				calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR) + 100);
 		}
-		else if (dateTime.getYear() > 100)
+		else if (calendar.get(Calendar.YEAR) > 100)
 		{
-			dateTime.setYear(dateTime.getYear() - 100);
+			calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR) - 100);
 		}
 
 		return dateTime;

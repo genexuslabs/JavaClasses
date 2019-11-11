@@ -52,11 +52,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.StringTokenizer;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.genexus.CommonUtil;
@@ -119,8 +115,9 @@ public class PDFReportItext implements IReportHandler
     private boolean modal = false; // Indica si el diálogo debe ser modal o no modal en
     private String docName = "PDFReport.pdf"; // Nombre del documento a generar (se cambia con GxSetDocName)
     private static INativeFunctions nativeCode = NativeFunctions.getInstance();
-    private static Hashtable fontSubstitutes = new Hashtable(); // Contiene la tabla de substitutos de fonts (String <--> String)
+    private static Hashtable<String, String> fontSubstitutes = new Hashtable<>(); // Contiene la tabla de substitutos de fonts (String <--> String)
 	private static String configurationFile = null;
+	private static String configurationTemplateFile = null;
 	private static String defaultRelativePrepend = null; // En aplicaciones web, contiene la ruta al root de la aplicación para ser agregado al inicio de las imagenes con path relativo
 	private static String defaultRelativePrependINI = null;
 	private static String webAppDir = null;
@@ -301,10 +298,12 @@ public class PDFReportItext implements IReportHandler
 			if(new File(defaultRelativePrepend + Const.WEB_INF).isDirectory())
 			{
 				configurationFile = defaultRelativePrepend + Const.WEB_INF + File.separatorChar + Const.INI_FILE; // Esto es para que en aplicaciones web el PDFReport.INI no quede visible en el server
+				configurationTemplateFile = defaultRelativePrepend + Const.WEB_INF + File.separatorChar + Const.INI_TEMPLATE_FILE;
 			}
 			else
 			{
 				configurationFile = defaultRelativePrepend + Const.INI_FILE;
+				configurationTemplateFile = defaultRelativePrepend + Const.INI_TEMPLATE_FILE;
 			}
 			webAppDir = defaultRelativePrepend;
 
@@ -357,7 +356,6 @@ public class PDFReportItext implements IReportHandler
 	
 	private void loadPrinterSettingsProps(String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex) 
 	{
-		
 		if(new File(defaultRelativePrependINI + Const.WEB_INF).isDirectory())
 		{
 			iniFile = defaultRelativePrependINI + Const.WEB_INF + File.separatorChar + iniFile;
@@ -365,7 +363,7 @@ public class PDFReportItext implements IReportHandler
 		else
 		{
 			iniFile = defaultRelativePrependINI + iniFile;
-		}		
+		}
 		
 		try
 		{
@@ -393,11 +391,12 @@ public class PDFReportItext implements IReportHandler
 	private void loadProps()
 	{
         try{
-            props = new ParseINI(configurationFile);
+            props = new ParseINI(configurationFile, configurationTemplateFile);
         }catch(IOException e){ props = new ParseINI(); }
 		
         props.setupGeneralProperty(Const.PDF_REPORT_INI_VERSION_ENTRY, Const.PDF_REPORT_INI_VERSION);
         props.setupGeneralProperty(Const.EMBEED_SECTION, Const.EMBEED_DEFAULT);
+		props.setupGeneralProperty(Const.EMBEED_NOT_SPECIFIED_SECTION, Const.EMBEED_DEFAULT);
         props.setupGeneralProperty(Const.SEARCH_FONTS_ALWAYS, "false");
         props.setupGeneralProperty(Const.SEARCH_FONTS_ONCE, "true");
 		props.setupGeneralProperty(Const.SERVER_PRINTING, "false");
@@ -444,12 +443,12 @@ public class PDFReportItext implements IReportHandler
 		predefinedSearchPath = predefinedPath + predefinedSearchPath; // SearchPath= los viejos más los nuevos
 	}
 
-    public static final String getPredefinedSearchPaths()
-    {
+	public static final String getPredefinedSearchPaths()
+	{
 		return predefinedSearchPath;
-    }
+	}
 
-    private void init()
+	private void init()
     {
       Document.compress = true;
 	  try {
@@ -955,18 +954,18 @@ public class PDFReportItext implements IReportHandler
     
     public String getSubstitute(String fontName)
     {
-		Vector fontSubstitutesProcessed = new Vector();
+		Vector<String> fontSubstitutesProcessed = new Vector<>();
     	String newFontName = fontName;
     	while( fontSubstitutes.containsKey(newFontName))
     	{
 			if (!fontSubstitutesProcessed.contains(newFontName))
 			{
 				fontSubstitutesProcessed.addElement(newFontName);
-    			newFontName = (String)fontSubstitutes.get(newFontName);
+    			newFontName = fontSubstitutes.get(newFontName);
 			}
 			else
 			{
-				return (String)fontSubstitutes.get(newFontName);
+				return fontSubstitutes.get(newFontName);
 			}
     	}
     	return newFontName;
@@ -975,15 +974,21 @@ public class PDFReportItext implements IReportHandler
     public void GxAttris(String fontName, int fontSize, boolean fontBold, boolean fontItalic, boolean fontUnderline, boolean fontStrikethru, int Pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue)
     {
 		boolean isCJK = false;
-		boolean embeedFont = props.getBooleanGeneralProperty(Const.EMBEED_SECTION, false) && props.getBooleanProperty(Const.EMBEED_SECTION, fontName, false);
+		boolean embeedFont = isEmbeddedFont(fontName);
+		String originalFontName = fontName;
 		if (!embeedFont)
 		{
 			fontName = getSubstitute(fontName); // Veo si hay substitutos solo si el font no va a ir embebido
 		}
         if(DEBUG)
 		{
+			String fontSubstitute = "";
+			if (!originalFontName.equals(fontName))
+			{
+				fontSubstitute = "Original Font: " + originalFontName + " Substitute";
+			}
 			DEBUG_STREAM.println("GxAttris: ");
-			DEBUG_STREAM.println("\\-> Font: " + fontName + " (" + fontSize + ")" + (fontBold ? " BOLD" : "") + (fontItalic ? " ITALIC" : "") + (fontStrikethru ? " Strike" : ""));
+			DEBUG_STREAM.println("\\-> " + fontSubstitute + "Font: " + fontName + " (" + fontSize + ")" + (fontBold ? " BOLD" : "") + (fontItalic ? " ITALIC" : "") + (fontStrikethru ? " Strike" : ""));
 			DEBUG_STREAM.println("\\-> Fore (" + foreRed + ", " + foreGreen + ", " + foreBlue + ")");
 			DEBUG_STREAM.println("\\-> Back (" + backRed + ", " + backGreen + ", " + backBlue + ")");
 		}
@@ -1107,6 +1112,7 @@ public class PDFReportItext implements IReportHandler
 		}
 		return fontPath;
 	}
+	@SuppressWarnings("unchecked")
 	private Hashtable getFontLocations()
 	{
 		Hashtable msLocations = props.getSection(Const.MS_FONT_LOCATION);
@@ -1131,9 +1137,10 @@ public class PDFReportItext implements IReportHandler
 		return locations;
 	}
 
-	private boolean isEmbeddedFont(String fontName)
-	{
-		return props.getBooleanGeneralProperty(Const.EMBEED_SECTION, false) && props.getBooleanProperty(Const.EMBEED_SECTION, fontName, false);
+	private boolean isEmbeddedFont(String realFontName) {
+		boolean generalEmbeedFont = props.getBooleanGeneralProperty(Const.EMBEED_SECTION, false);
+		boolean generalEmbeedNotSpecified = props.getBooleanGeneralProperty(Const.EMBEED_NOT_SPECIFIED_SECTION, false);
+		return generalEmbeedFont && props.getBooleanProperty(Const.EMBEED_SECTION, realFontName, generalEmbeedNotSpecified);
 	}
 
 	public void setAsianFont(String fontName, String style)
@@ -2031,7 +2038,7 @@ public class PDFReportItext implements IReportHandler
     private void loadSubstituteTable()
     {
         // Primero leemos la tabla de substitutos del Registry
-        Hashtable tempInverseMappings = new Hashtable();
+        Hashtable<String, Vector<String>> tempInverseMappings = new Hashtable<>();
         
         // Seteo algunos Mappings que Acrobat toma como Type1
         for(int i = 0; i < Const.FONT_SUBSTITUTES_TTF_TYPE1.length; i++)
@@ -2045,11 +2052,11 @@ public class PDFReportItext implements IReportHandler
             for(Enumeration enumera = otherMappings.keys(); enumera.hasMoreElements();)
             {
                 String fontName = (String)enumera.nextElement();
-                fontSubstitutes.put(fontName, otherMappings.get(fontName));
+                fontSubstitutes.put(fontName, (String)otherMappings.get(fontName));
                 if(tempInverseMappings.containsKey(fontName)) // Con esto solucionamos el tema de la recursión de Fonts -> Fonts
                 {                                             // x ej: Si tenú} Font1-> Font2, y ahora tengo Font2->Font3, pongo cambio el 1º por Font1->Font3
                     String fontSubstitute = (String)otherMappings.get(fontName);
-                    for(Enumeration enum2 = ((Vector)tempInverseMappings.get(fontName)).elements(); enum2.hasMoreElements();)
+                    for(Enumeration<String> enum2 = tempInverseMappings.get(fontName).elements(); enum2.hasMoreElements();)
                         fontSubstitutes.put(enum2.nextElement(), fontSubstitute);
                 }
             }

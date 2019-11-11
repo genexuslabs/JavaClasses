@@ -4,7 +4,7 @@ import java.util.Hashtable;
 
 public class GXImageList
 {
-	private static Hashtable images;
+	private static Hashtable<String, String> images;
 
 	private static void add(String imageName)
 	{
@@ -18,7 +18,7 @@ public class GXImageList
 
 	static 
 	{
-		images = new Hashtable();
+		images = new Hashtable<>();
 		add("copy.bmp");
 		add("cut.bmp");
 		add("first1.bmp");
