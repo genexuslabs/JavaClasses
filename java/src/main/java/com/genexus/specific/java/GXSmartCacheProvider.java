@@ -1,16 +1,11 @@
 package com.genexus.specific.java;
 
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.genexus.CacheFactory;
-import com.genexus.CommonUtil;
+import com.genexus.*;
 import com.genexus.GXSmartCacheProvider.DataUpdateStatus;
 import com.genexus.GXSmartCacheProvider.SmartCacheStatus;
-import com.genexus.ICacheService;
-import com.genexus.Preferences;
 import com.genexus.common.interfaces.IExtensionGXSmartCacheProvider;
 import com.genexus.common.interfaces.IGXSmartCacheProvider;
 import com.genexus.diagnostics.Log;
@@ -24,7 +19,6 @@ public class GXSmartCacheProvider implements IExtensionGXSmartCacheProvider {
 	
 	public class JavaSmartCacheProvider extends com.genexus.BaseProvider 
 	{
-		static final String FORCED_INVALIDATE = "SD";
 
 		ICacheService updatedTables; 
 		SmartCacheStatus status = SmartCacheStatus.Unknown;
@@ -57,18 +51,26 @@ public class GXSmartCacheProvider implements IExtensionGXSmartCacheProvider {
 		public void invalidate(String item)
 		{
 			if (isEnabled()) 
-				getUpdatedTables().clear(CacheFactory.CACHE_SD, item);
+				getUpdatedTables().clear(CacheFactory.CACHE_SD, normalizeKey(item));
 		}
 		public void recordUpdates()
 		{
 			if (isEnabled())
 			{
 				Date  dt = CommonUtil.now(false,false);
-				for(Enumeration enumera = tablesUpdatedInUTL.elements(); enumera.hasMoreElements();)
-				{
-					getUpdatedTables().<Date>set(CacheFactory.CACHE_SD, normalizeKey((String)enumera.nextElement()), dt);
+				if (!tablesUpdatedInUTL.isEmpty()) {
+					ICacheService updTables = getUpdatedTables();
+					normalizeKey(tablesUpdatedInUTL);
+					if (updTables instanceof ICacheService2) {
+						((ICacheService2)updTables).setAll(CacheFactory.CACHE_SD, tablesUpdatedInUTL.toArray(new String[tablesUpdatedInUTL.size()]), Collections.nCopies(tablesUpdatedInUTL.size(), dt).toArray(), 0);
+					}else {
+						for(String tbl:tablesUpdatedInUTL)
+						{
+							updTables.<Date>set(CacheFactory.CACHE_SD, tbl, dt);
+						}
+					}
+					tablesUpdatedInUTL.clear();
 				}
-				tablesUpdatedInUTL.clear();
 			}
 		}
 		public DataUpdateStatus CheckDataStatus(String queryId, Date dateLastModified, Date[] dateUpdated_arr)
@@ -78,26 +80,30 @@ public class GXSmartCacheProvider implements IExtensionGXSmartCacheProvider {
 					ICacheService updTables = getUpdatedTables();
 					ConcurrentHashMap<String, Vector<String>> qryTables = queryTables();
 					Date dateUpdated = startupDate; // por default los datos son tan viejos como el momento de startup de la app
-		
-					Date forcedInvalidate;
-					if (updTables.containtsKey(CacheFactory.CACHE_SD, FORCED_INVALIDATE))
-					{
-						forcedInvalidate = updTables.<Date>get(CacheFactory.CACHE_SD, FORCED_INVALIDATE, Date.class);
-						if (dateUpdated.before(forcedInvalidate))		// Caso en que se invalido el cache manualmente
-							dateUpdated = forcedInvalidate;
-					}
-		
+
 					dateUpdated_arr[0] = dateUpdated;
 					if (!qryTables.containsKey(queryId))      // No hay definicion de tablas para el query -> status desconocido
 						return DataUpdateStatus.Unknown;
-		
+
 					Vector<String> qTables = qryTables.get(queryId);
-					for(Enumeration enumera = qTables.elements(); enumera.hasMoreElements();)
-					{
-						String qTable = normalizeKey((String)enumera.nextElement());
-						if (updTables.containtsKey(CacheFactory.CACHE_SD, qTable) && updTables.<Date>get(CacheFactory.CACHE_SD, qTable, Date.class).after(dateUpdated))  // Tabla del query fue modificada -> registra timestamp
-							dateUpdated = updTables.<Date>get(CacheFactory.CACHE_SD, qTable, Date.class);
+					String[] qTablesArray = qTables.toArray(new String[qTables.size()]);
+					List<Date> dateUpdates;
+
+					if (updTables instanceof ICacheService2) {
+						dateUpdates = ((ICacheService2)updTables).getAll(CacheFactory.CACHE_SD, qTablesArray, Date.class); //Value is null date for non-existing key in cache
+					}else{
+						dateUpdates = new Vector<Date>();
+						for(String qTable:qTables)
+						{
+							if (updTables.containtsKey(CacheFactory.CACHE_SD, qTable)) {
+								dateUpdates.add(updTables.<Date>get(CacheFactory.CACHE_SD, qTable, Date.class));
+							}
+						}
 					}
+					Date maxDateUpdated = MaxDate(dateUpdates);//Obtiene la fecha de modificación mas nueva.
+					if (maxDateUpdated!=null && maxDateUpdated.after(dateUpdated))
+						dateUpdated = maxDateUpdated;
+
 					dateUpdated_arr[0] = dateUpdated;
 					if (dateUpdated.after(dateLastModified) || qTables.size() == 0)    // Si alguna de las tablas del query fueron modificadas o no hay tablas involucradas-> el status de la info es INVALIDO, hay que refrescar
 						return DataUpdateStatus.Invalid;
@@ -116,7 +122,15 @@ public class GXSmartCacheProvider implements IExtensionGXSmartCacheProvider {
 			return DataUpdateStatus.Unknown;		
 
 		}
-		
+
+		private Date MaxDate(List<Date> dates){
+			if (dates!=null) {
+				while (dates.remove(null)) ; //RemoveNulls
+				if (dates.size()>0)
+					return Collections.max(dates);
+			}
+			return null;
+		}
 		public void discardUpdates()
 		{
 			if (isEnabled())

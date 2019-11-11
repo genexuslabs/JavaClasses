@@ -1,5 +1,7 @@
 package com.genexus;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.Enumeration;
@@ -279,6 +281,17 @@ public class Application
 		for (int i = 0; i < toCleanup.size(); i++)
 			toCleanup.elementAt(i).cleanup();
 		toCleanup.removeAllElements();
+
+		if (Preferences.getDefaultPreferences().getCACHING()){
+			ICacheService cacheService = CacheFactory.getInstance();
+			if (cacheService instanceof Closeable){
+				try {
+					((Closeable) cacheService).close();
+				}catch (IOException ioex){
+					logger.error("Can´t close cache service", ioex);
+				}
+			}
+		}
 	}
 
 	public static void cleanupOnError()
