@@ -46,9 +46,6 @@ public class GXObjectUploadServices extends GXWebObjectStub
 							fileName = file.getName();
 
 						long fileSize = file.getSize(); 
-						if (fileSize == 0)
-							continue;
-
 						String ext = CommonUtil.getFileType(fileName);
 						String savedFileName = "";
 						String url = "";
