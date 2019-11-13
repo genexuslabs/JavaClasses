@@ -68,7 +68,7 @@ public class AndroidPublisherHelper {
 		File f = new File(certPath);
 		
 		if (!f.isAbsolute()){
-			f = new File(getPrivateDirectory() + certPath);
+			f = new File(getPrivateDirectory(), certPath);
 		}
     	
 		if (!f.exists()){

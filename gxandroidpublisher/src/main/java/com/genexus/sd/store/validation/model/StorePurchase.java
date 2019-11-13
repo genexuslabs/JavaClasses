@@ -13,7 +13,8 @@ public class StorePurchase {
 	private Date purchaseDate;
 	private int productType;
 	private int purchaseStatus = PurchaseStatus.INVALID;
-	
+	private int acknowledgementState;
+
 	private Date subscriptionExpiration;
 	private Date subscriptionFirstPurchased;
 	
@@ -38,7 +39,7 @@ public class StorePurchase {
 				jObj.put("purchaseDate", serializeDate(purchaseDate));
 			jObj.put("productType", productType);
 			jObj.put("status", purchaseStatus);
-			
+
 			if (productType == ProductType.Subscription){
 				JSONObject subscription = new JSONObject();
 				if (subscriptionExpiration != null)
@@ -53,6 +54,7 @@ public class StorePurchase {
 			custom.put("qty", customQuantity);
 			custom.put("willRenew", customWillRenew);
 			custom.put("cancelReason", customCancelReason);
+			custom.put("acknowledgementState", acknowledgementState);
 			if (purchaseResult != null){
 				JSONObject prObj = purchaseResult.ToJsonObject();
 				custom.put("originalPurchase", prObj);
@@ -95,6 +97,10 @@ public class StorePurchase {
 
 	public void setSubscriptionFirstPurchased(Date subscriptionFirstPurchased) {
 		this.subscriptionFirstPurchased = subscriptionFirstPurchased;
+	}
+
+	public void setAcknowledgementState(int ackState) {
+		this.acknowledgementState = ackState;
 	}
 
 	public void setCustomConsumed(boolean customConsumed) {

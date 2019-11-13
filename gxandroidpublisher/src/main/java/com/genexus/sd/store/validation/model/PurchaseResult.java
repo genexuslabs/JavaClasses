@@ -11,33 +11,16 @@ public class PurchaseResult {
 	private String productIdentifier;
 	private int platform;
 	private String transactionData;
-	
-	public String getPurchaseId() {
-		return purchaseId.trim();
-	}
-	public void setPurchaseId(String purchaseId) {
+
+	public PurchaseResult(String purchaseId, String productId, int platform, String trnData)
+	{
 		this.purchaseId = purchaseId;
-	}
-	public String getProductIdentifier() {
-		return productIdentifier.trim();
-	}
-	public void setProductIdentifier(String productIdentifier) {
-		this.productIdentifier = productIdentifier;
-	}
-	public int getPlatform() {
-		return platform;
-	}
-	public void setPlatform(int platform) {
+		this.productIdentifier = productId;
 		this.platform = platform;
+		this.transactionData = trnData;
 	}
-	public String getTransactionData() {
-		return transactionData;
-	}
-	
-	public void setTransactionData(String trnData) {
-		transactionData = trnData;
-	}
-	
+
+
 	public JSONObject ToJsonObject() {
 		JSONObject jObj = new JSONObject();
 		try {
@@ -91,5 +74,29 @@ public class PurchaseResult {
 			}
 		}
 	}
-	
+
+	public String getPurchaseId() {
+		return purchaseId.trim();
+	}
+	public String getProductIdentifier() {
+		return productIdentifier.trim();
+	}
+	public void setProductIdentifier(String productIdentifier) {
+		this.productIdentifier = productIdentifier;
+	}
+	public int getPlatform() {
+		return platform;
+	}
+	public void setPlatform(int platform) {
+		this.platform = platform;
+	}
+	public String getTransactionData() {
+		return transactionData;
+	}
+
+	public void setTransactionData(String trnData) {
+		transactionData = trnData;
+	}
+
+
 }
