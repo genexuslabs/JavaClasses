@@ -46,6 +46,11 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 	{
 		return path;
 	}
+
+	public String getResourceRelative( String path, boolean includeBasePath)
+	{
+		return path;
+	}
 	
 	public String getResource( String path)
 	{

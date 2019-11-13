@@ -1,5 +1,7 @@
 package com.genexus;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.Enumeration;
@@ -47,6 +49,7 @@ public class Application
 	static Class ClassName = null;
 
 	private static volatile ExternalProvider externalProvider = null;
+	private static volatile ExternalProvider externalProviderAPI = null;
 	private static Object objectLock = new Object();
 	private static volatile boolean initialized = false;
 
@@ -146,25 +149,46 @@ public class Application
 		return GXServices.getInstance();
 	}
 
+	public static ExternalProvider getExternalProviderAPI()
+	{
+		if (externalProviderAPI == null)
+		{
+			externalProviderAPI = getExternalProviderImpl(GXServices.STORAGE_APISERVICE);
+			if (externalProviderAPI == null)
+			{
+				externalProviderAPI = getExternalProvider();
+			}
+		}
+		return externalProviderAPI;
+	}
+
 	public static ExternalProvider getExternalProvider()
 	{
 		if (externalProvider == null)
 		{
-			GXService providerService = getGXServices().get(GXServices.STORAGE_SERVICE);
-			if (providerService != null)
-			{
-				try
-				{
-					externalProvider = (ExternalProvider) Class.forName(providerService.getClassName()).newInstance();
-				}
-				catch (Exception e)
-				{
-					logger.error("Unrecognized External Provider class : " + providerService.getName() + " / " + providerService.getClassName(), e);
-					throw new InternalError("Unrecognized External Provider class : " + providerService.getName() + " / " + providerService.getClassName());
-				}
-			}
+			externalProvider = getExternalProviderImpl(GXServices.STORAGE_SERVICE);
 		}
 		return externalProvider;
+	}
+
+	private static ExternalProvider getExternalProviderImpl(String service)
+	{
+		ExternalProvider externalProviderImpl = null;
+		GXService providerService = getGXServices().get(service);
+		if (providerService != null)
+		{
+			try
+			{
+				Class providerClass = Class.forName(providerService.getClassName());
+				externalProviderImpl = (ExternalProvider) providerClass.getConstructor(String.class).newInstance(service);
+			}
+			catch (Exception e)
+			{
+				logger.error("Unrecognized External Provider class : " + providerService.getName() + " / " + providerService.getClassName(), e);
+				throw new InternalError("Unrecognized External Provider class : " + providerService.getName() + " / " + providerService.getClassName());
+			}
+		}
+		return externalProviderImpl;
 	}
 
 	static Date startDateTime;
@@ -257,6 +281,17 @@ public class Application
 		for (int i = 0; i < toCleanup.size(); i++)
 			toCleanup.elementAt(i).cleanup();
 		toCleanup.removeAllElements();
+
+		if (Preferences.getDefaultPreferences().getCACHING()){
+			ICacheService cacheService = CacheFactory.getInstance();
+			if (cacheService instanceof Closeable){
+				try {
+					((Closeable) cacheService).close();
+				}catch (IOException ioex){
+					logger.error("Can´t close cache service", ioex);
+				}
+			}
+		}
 	}
 
 	public static void cleanupOnError()
