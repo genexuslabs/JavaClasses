@@ -396,6 +396,7 @@ public class PDFReportItext implements IReportHandler
 		
         props.setupGeneralProperty(Const.PDF_REPORT_INI_VERSION_ENTRY, Const.PDF_REPORT_INI_VERSION);
         props.setupGeneralProperty(Const.EMBEED_SECTION, Const.EMBEED_DEFAULT);
+		props.setupGeneralProperty(Const.EMBEED_NOT_SPECIFIED_SECTION, Const.EMBEED_DEFAULT);
         props.setupGeneralProperty(Const.SEARCH_FONTS_ALWAYS, "false");
         props.setupGeneralProperty(Const.SEARCH_FONTS_ONCE, "true");
 		props.setupGeneralProperty(Const.SERVER_PRINTING, "false");
@@ -974,14 +975,20 @@ public class PDFReportItext implements IReportHandler
     {
 		boolean isCJK = false;
 		boolean embeedFont = isEmbeddedFont(fontName);
+		String originalFontName = fontName;
 		if (!embeedFont)
 		{
 			fontName = getSubstitute(fontName); // Veo si hay substitutos solo si el font no va a ir embebido
 		}
         if(DEBUG)
 		{
+			String fontSubstitute = "";
+			if (!originalFontName.equals(fontName))
+			{
+				fontSubstitute = "Original Font: " + originalFontName + " Substitute";
+			}
 			DEBUG_STREAM.println("GxAttris: ");
-			DEBUG_STREAM.println("\\-> Font: " + fontName + " (" + fontSize + ")" + (fontBold ? " BOLD" : "") + (fontItalic ? " ITALIC" : "") + (fontStrikethru ? " Strike" : ""));
+			DEBUG_STREAM.println("\\-> " + fontSubstitute + "Font: " + fontName + " (" + fontSize + ")" + (fontBold ? " BOLD" : "") + (fontItalic ? " ITALIC" : "") + (fontStrikethru ? " Strike" : ""));
 			DEBUG_STREAM.println("\\-> Fore (" + foreRed + ", " + foreGreen + ", " + foreBlue + ")");
 			DEBUG_STREAM.println("\\-> Back (" + backRed + ", " + backGreen + ", " + backBlue + ")");
 		}
@@ -1132,7 +1139,8 @@ public class PDFReportItext implements IReportHandler
 
 	private boolean isEmbeddedFont(String realFontName) {
 		boolean generalEmbeedFont = props.getBooleanGeneralProperty(Const.EMBEED_SECTION, false);
-		return generalEmbeedFont && props.getBooleanProperty(Const.EMBEED_SECTION, realFontName, generalEmbeedFont);
+		boolean generalEmbeedNotSpecified = props.getBooleanGeneralProperty(Const.EMBEED_NOT_SPECIFIED_SECTION, false);
+		return generalEmbeedFont && props.getBooleanProperty(Const.EMBEED_SECTION, realFontName, generalEmbeedNotSpecified);
 	}
 
 	public void setAsianFont(String fontName, String style)

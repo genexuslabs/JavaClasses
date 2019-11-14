@@ -10,6 +10,7 @@ public class Location
 	private int port = 0;
 	private String proxyServerHost = "";
 	private int proxyServerPort = 0;
+	private String WSDLURL  = "";
 	private String baseURL  = "";
 	private String resourceName = "";
 	private byte secure = -1;
@@ -56,8 +57,12 @@ public class Location
 	public int getProxyServerPort()
 	{
 		return proxyServerPort;
-	}	
+	}
 
+	public String getWSDLURL()
+	{
+		return WSDLURL;
+	}
 	public String getBaseURL()
 	{
 		return baseURL;
@@ -149,7 +154,12 @@ public class Location
 	public void setProxyServerPort(int proxyServerPort)
 	{
 		this.proxyServerPort = proxyServerPort;
-	}	
+	}
+
+	public void setWSDLURL(String WSDLURL)
+	{
+		this.WSDLURL = WSDLURL;
+	}
 
 	public void setBaseURL(String baseURL)
 	{

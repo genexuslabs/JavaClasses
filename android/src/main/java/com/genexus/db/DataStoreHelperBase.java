@@ -16,6 +16,7 @@ import com.genexus.db.IFieldGetter;
 import java.sql.SQLException;
 public abstract class DataStoreHelperBase 
 {
+	public com.genexus.LocalUtil localUtil = com.genexus.Application.getClientLocalUtil();
 	
 	public String Gx_ope ;
 	public String Gx_etb ;	
@@ -27,7 +28,7 @@ public abstract class DataStoreHelperBase
 	public static final int GX_MASKOBJEXIST  =  8;
 	public static final int GX_MASKLOOPLOCK  = 16;
 	public static final int GX_MASKFOREIGNKEY = 32;
-        public static final int GX_ROLLBACKSAVEPOINT = 64;
+	public static final int GX_ROLLBACKSAVEPOINT = CommonDataStoreHelperBase.GX_ROLLBACKSAVEPOINT;
 	/**
      * Returns the default connection provider. This method will be overriden if the
      * object is going to run inside a container that provides another way to get the

@@ -2,7 +2,6 @@ package com.genexus.db.driver;
 
 import com.genexus.Application;
 import com.genexus.util.GXService;
-import com.genexus.util.GXServices;
 import com.genexus.util.Encryption;
 import com.genexus.util.StorageUtils;
 import com.genexus.StructSdtMessages_Message;
@@ -30,8 +29,8 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
     private CloudBlobContainer privateContainer;
     private CloudBlobClient client;
 
-    public ExternalProviderAzureStorage() {
-        GXService providerService = Application.getGXServices().get(GXServices.STORAGE_SERVICE);
+    public ExternalProviderAzureStorage(String service) {
+        GXService providerService = Application.getGXServices().get(service);
 
         account = Encryption.decrypt64(providerService.getProperties().get(ACCOUNT));
         key = Encryption.decrypt64(providerService.getProperties().get(KEY));

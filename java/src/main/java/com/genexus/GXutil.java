@@ -1634,6 +1634,18 @@ public final class GXutil
 		return CommonUtil.getHash( com.genexus.security.web.WebSecurityHelper.StripInvalidChars(value), com.genexus.cryptography.Constants.SECURITY_HASH_ALGORITHM).equals(Encryption.decrypt64(hash, key));
 	}
 
+	public static String buildWSDLFromHttpClient(com.genexus.internet.HttpClient GXSoapHTTPClient, String wsdlURL)
+	{
+		if (GXSoapHTTPClient.getWSDLURL() != null && !GXSoapHTTPClient.getWSDLURL().isEmpty())
+		{
+			return GXSoapHTTPClient.getWSDLURL();
+		}
+		else
+		{
+			return wsdlURL;
+		}
+	}
+
 	public static String buildURLFromHttpClient(com.genexus.internet.HttpClient GXSoapHTTPClient, String serviceName, javax.xml.ws.BindingProvider bProvider)
 	{
 		if (!GXSoapHTTPClient.getProxyServerHost().equals(""))

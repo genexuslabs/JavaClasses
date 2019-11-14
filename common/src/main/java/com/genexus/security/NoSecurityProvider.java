@@ -43,7 +43,12 @@ public class NoSecurityProvider implements SecurityProvider
 		flag[0] = true;
 		return new GXResult();
 	}
-	
+
+	public GXResult externalauthenticationfromsdusingtoken(int remoteHandle, ModelContext context, String grantType, String nativeToken, String nativeVerifier, String clientId, String clientSecret, String[] scope, String additional_parameters, OutData outData, boolean[] flag)
+	{
+		flag[0] = true;
+		return new GXResult();
+	}
 	public GXResult oauthauthentication(int remoteHandle, ModelContext context, String grantType, String userName, String userPassword, String clientId, String clientSecret, String scope, OutData outData, String[] redirectURL, boolean[] flag)
 	{
 		flag[0] = true;

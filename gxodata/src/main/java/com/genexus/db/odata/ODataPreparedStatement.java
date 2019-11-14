@@ -7,16 +7,10 @@ import com.genexus.db.driver.GXDBDebug;
 import com.genexus.db.service.ServiceConnection;
 import com.genexus.db.service.ServiceError;
 import com.genexus.db.service.ServicePreparedStatement;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.sql.*;
+import com.genexus.diagnostics.core.LogManager;
 import org.apache.olingo.client.api.ODataClient;
 import org.apache.olingo.client.api.communication.ODataClientErrorException;
-import org.apache.olingo.client.api.communication.request.cud.ODataDeleteRequest;
-import org.apache.olingo.client.api.communication.request.cud.ODataEntityCreateRequest;
-import org.apache.olingo.client.api.communication.request.cud.ODataEntityUpdateRequest;
-import org.apache.olingo.client.api.communication.request.cud.ODataReferenceAddingRequest;
-import org.apache.olingo.client.api.communication.request.cud.UpdateType;
+import org.apache.olingo.client.api.communication.request.cud.*;
 import org.apache.olingo.client.api.communication.response.ODataDeleteResponse;
 import org.apache.olingo.client.api.communication.response.ODataEntityCreateResponse;
 import org.apache.olingo.client.api.communication.response.ODataEntityUpdateResponse;
@@ -26,10 +20,16 @@ import org.apache.olingo.commons.api.edm.EdmEntityType;
 import org.apache.olingo.commons.api.ex.ODataRuntimeException;
 import org.apache.olingo.commons.api.format.ContentType;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 class ODataPreparedStatement extends ServicePreparedStatement
 {
-    ODataQuery query;
-    ServiceCursorBase cursor;
+    final ODataQuery query;
+    final ServiceCursorBase cursor;
 
     ODataPreparedStatement(Connection con, ODataQuery query, ServiceCursorBase cursor, Object[] parms, GXConnection gxCon)
     {
@@ -164,6 +164,11 @@ class ODataPreparedStatement extends ServicePreparedStatement
         {
             switch(ex.getStatusLine().getStatusCode())
             {
+				case 400:
+				{
+					ServiceError serviceError = ((ODataConnection)getConnection()).getServiceError(ex.getODataError().getCode());
+					throw new SQLException(ex.getMessage(), serviceError.getSqlState(), serviceError.getCode(), ex);
+				}
                 case 404: resCode = 404; break;
                 default:  throw new SQLException(ex.getMessage(), ServiceError.INVALID_QUERY.getSqlState(), ServiceError.INVALID_QUERY.getCode(), ex);
             }
@@ -179,12 +184,17 @@ class ODataPreparedStatement extends ServicePreparedStatement
     private URI getEditLink(ClientEntity entity, URI updURI)
     { // @hack: si la editLink retorna un schema distinto lo compatibilizo con el de la updURI porque sino luego Olingo da error en la checkRequest de AbstractRequest.java 
         URI editLink = entity.getEditLink();
-        if(!editLink.getScheme().equals(updURI.getScheme()))
+        if(editLink == null)
+        	editLink = updURI;
+        else if(!editLink.getScheme().equals(updURI.getScheme()))
         {
             try
             {
                 editLink = new URI(updURI.getScheme(), editLink.getUserInfo(), editLink.getHost(), editLink.getPort(), editLink.getPath(), editLink.getQuery(), editLink.getFragment());
-            }catch(URISyntaxException e){}
+            }catch(URISyntaxException ex)
+			{
+				LogManager.getLogger(ODataPreparedStatement.class).warn(String.format("Could not update editLink: %s", updURI ), ex);
+			}
         }
         return editLink;
     }
@@ -214,7 +224,7 @@ class ODataPreparedStatement extends ServicePreparedStatement
         }
     }
     
-    private int executeDelete(URI updURI) throws ODataClientErrorException, ODataRuntimeException, SQLException
+    private int executeDelete(URI updURI) throws ODataRuntimeException, SQLException
     {
         ODataDeleteRequest request = getClient().getCUDRequestFactory().getDeleteRequest(updURI);
         if(((ODataConnection)getConnection()).needsCheckOptimisticConcurrency(updURI))
@@ -240,14 +250,14 @@ class ODataPreparedStatement extends ServicePreparedStatement
     
 /// JDK8
     @Override
-    public void closeOnCompletion() throws SQLException
-    {
+    public void closeOnCompletion()
+	{
         throw new UnsupportedOperationException("Not supported yet."); 
     }
 
     @Override
-    public boolean isCloseOnCompletion() throws SQLException
-    {
+    public boolean isCloseOnCompletion()
+	{
         throw new UnsupportedOperationException("Not supported yet."); 
     }    
 }

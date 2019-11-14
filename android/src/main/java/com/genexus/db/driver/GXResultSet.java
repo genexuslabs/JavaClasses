@@ -997,11 +997,11 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 			String gxdbFileUriFileName = gxdbFileUri;
 			if (gxdbFileUri.startsWith(blobDBFilePrefix))
 			{
-				gxdbFileUriFileName = gxdbFileUri.substring(12);
+				gxdbFileUriFileName = gxdbFileUri.substring(13);
 			}
 			else if (gxdbFileUri.startsWith("./"))
 			{
-				gxdbFileUriFileName = gxdbFileUri.substring(1);
+				gxdbFileUriFileName = gxdbFileUri.substring(2);
 			}
 			
 			// Local path in sdcard. Return path with schema , FC need this now.
@@ -1019,9 +1019,13 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 
 	public String getMultimediaUri(int columnIndex) throws SQLException
 	{
+		return getMultimediaUri(columnIndex, true);
+	}
+	
+	public String getMultimediaUri(int columnIndex, boolean absPath) throws SQLException
+	{
 		return GXDbFile.resolveUri(getVarchar(columnIndex));
 	}
-
 
 	//private static String lastBlobsDir = "";
 	private String getBlobFileName(String name, String extension)
