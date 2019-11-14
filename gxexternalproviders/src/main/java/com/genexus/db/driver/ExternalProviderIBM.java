@@ -11,6 +11,7 @@ import com.ibm.cloud.objectstorage.SDKGlobalConfiguration;
 import com.ibm.cloud.objectstorage.auth.AWSCredentials;
 import com.ibm.cloud.objectstorage.auth.AWSStaticCredentialsProvider;
 import com.ibm.cloud.objectstorage.auth.BasicAWSCredentials;
+import com.ibm.cloud.objectstorage.client.builder.AwsClientBuilder;
 import com.ibm.cloud.objectstorage.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.ibm.cloud.objectstorage.services.s3.AmazonS3;
 import com.ibm.cloud.objectstorage.services.s3.AmazonS3Client;
@@ -45,7 +46,7 @@ public class ExternalProviderIBM implements ExternalProvider {
     private AmazonS3 client;
     private String bucket;
     private String folder;
-    private String endpointUrl = "s3.sao01.cloud-object-storage.appdomain.cloud/";
+    private String endpointUrl = ""; //"s3.sao01.cloud-object-storage.appdomain.cloud/";
 
     public ExternalProviderIBM(String service) {
 
@@ -55,27 +56,36 @@ public class ExternalProviderIBM implements ExternalProvider {
 		String service_instance_id = ExternalProviderHelper.getServicePropertyValue(providerService, SERVICE_COS_INSTANCE_ID, true);
 		String location = ExternalProviderHelper.getServicePropertyValue(providerService, "STORAGE_COS_LOCATION", false);
 		endpointUrl = ExternalProviderHelper.getServicePropertyValue(providerService, COS_ENDPOINT, false);
-		bucket = ExternalProviderHelper.getServicePropertyValue(providerService, BUCKET, false);
-		folder = ExternalProviderHelper.getServicePropertyValue(providerService, FOLDER, false);
+		String bucket = ExternalProviderHelper.getServicePropertyValue(providerService, BUCKET, false);
+		String folder = ExternalProviderHelper.getServicePropertyValue(providerService, FOLDER, false);
 
-
-		ClientConfiguration clientConfig = new ClientConfiguration().withRequestTimeout(5000);
-		clientConfig.setUseTcpKeepAlive(true);
-		SDKGlobalConfiguration.IAM_ENDPOINT = "https://iam.cloud.ibm.com/identity/token";
-        AWSCredentials credentials = new BasicIBMOAuthCredentials(api_key, service_instance_id);
-
-        client = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(credentials))
-			.withEndpointConfiguration(new EndpointConfiguration(endpointUrl, location)).withPathStyleAccessEnabled(true)
-			.withClientConfiguration(clientConfig).build();
-
-
-        bucketExists();
-        createFolder(folder);
+		init(api_key, service_instance_id, bucket, folder, location);
     }
 
 
+	public ExternalProviderIBM(String api_key, String service_instance_id,  String bucketName, String folderName, String location) {
+		init(api_key, service_instance_id, bucketName, folderName, location);
+	}
 
-    private void bucketExists() {
+	private void init(String api_key, String service_instance_id, String bucketName, String folderName, String location) {
+		ClientConfiguration clientConfig = new ClientConfiguration().withRequestTimeout(5000);
+		clientConfig.setUseTcpKeepAlive(true);
+		SDKGlobalConfiguration.IAM_ENDPOINT = "https://iam.cloud.ibm.com/identity/token";
+		AWSCredentials credentials = new BasicIBMOAuthCredentials(api_key, service_instance_id);
+
+		client = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(credentials))
+			.withEndpointConfiguration(new EndpointConfiguration(endpointUrl, location)).withPathStyleAccessEnabled(true)
+			.withClientConfiguration(clientConfig).build();
+
+		bucket = bucketName;
+		folder = folderName;
+
+		bucketExists();
+		createFolder(folder);
+	}
+
+
+	private void bucketExists() {
         if (!client.doesBucketExist(bucket)) {
         	logger.debug(String.format("Bucket %s doesn't exist, please create the bucket", bucket));
         }
