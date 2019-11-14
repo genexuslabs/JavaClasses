@@ -1,90 +1,86 @@
 package com.genexus.db.driver;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-import com.amazonaws.HttpMethod;
-import com.genexus.Application;
-import com.genexus.util.GXService;
-import com.genexus.util.Encryption;
-import com.genexus.util.StorageUtils;
-import com.genexus.StructSdtMessages_Message;
-import java.io.File;
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.S3ClientOptions;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectResult;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.CopyObjectRequest;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.amazonaws.util.IOUtils;
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.ibm.cloud.objectstorage.ClientConfiguration;
+import com.ibm.cloud.objectstorage.HttpMethod;
+import com.ibm.cloud.objectstorage.SDKGlobalConfiguration;
+import com.ibm.cloud.objectstorage.auth.AWSCredentials;
+import com.ibm.cloud.objectstorage.auth.AWSStaticCredentialsProvider;
+import com.ibm.cloud.objectstorage.client.builder.AwsClientBuilder.EndpointConfiguration;
+import com.ibm.cloud.objectstorage.services.s3.AmazonS3;
+import com.ibm.cloud.objectstorage.services.s3.AmazonS3Client;
+import com.ibm.cloud.objectstorage.services.s3.AmazonS3ClientBuilder;
+import com.ibm.cloud.objectstorage.services.s3.model.*;
+import com.ibm.cloud.objectstorage.oauth.BasicIBMOAuthCredentials;
 
-public class ExternalProviderS3 implements ExternalProvider {
+import com.genexus.Application;
+import com.genexus.StructSdtMessages_Message;
+import com.genexus.util.GXService;
+import com.genexus.util.StorageUtils;
+import com.ibm.cloud.objectstorage.util.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-	private static Logger logger = LogManager.getLogger(ExternalProviderS3.class);
-	
-    static final String ACCESS_KEY_ID = "STORAGE_PROVIDER_ACCESSKEYID";
-    static final String SECRET_ACCESS_KEY = "STORAGE_PROVIDER_SECRETACCESSKEY";
-    static final String ENDPOINT = "ENDPOINT";
+import java.io.*;
+
+
+public class ExternalProviderIBM implements ExternalProvider {
+
+	private static Logger logger = LogManager.getLogger(ExternalProviderIBM.class);
+
+    static final String ACCESS_API_KEY = "STORAGE_PROVIDER_API_KEY";
+    static final String SERVICE_COS_INSTANCE_ID = "STORAGE_PROVIDER_SERVICE_INSTANCE_ID";
+    static final String COS_ENDPOINT = "STORAGE_COS_ENDPOINT";
     static final String BUCKET = "BUCKET_NAME";
     static final String FOLDER = "FOLDER_NAME";
-
-    static final String ACCELERATED = "s3-accelerate.amazonaws.com";
-    static final String DUALSTACK = "s3-accelerate.dualstack.amazonaws.com";
 
     private AmazonS3 client;
     private String bucket;
     private String folder;
-    private String endpointUrl = ".s3.amazonaws.com/";
+    private String endpointUrl;
 
-    public ExternalProviderS3(String service) {
+    public ExternalProviderIBM(String service) {
+
         GXService providerService = Application.getGXServices().get(service);
-        AWSCredentials credentials = new BasicAWSCredentials(Encryption.decrypt64(providerService.getProperties().get(ACCESS_KEY_ID)), Encryption.decrypt64(providerService.getProperties().get(SECRET_ACCESS_KEY)));
-        client = new AmazonS3Client(credentials);
 
-        setEndpoint(providerService.getProperties().get(ENDPOINT));
+        String api_key = ExternalProviderHelper.getServicePropertyValue(providerService, ACCESS_API_KEY, true);
+		String service_instance_id = ExternalProviderHelper.getServicePropertyValue(providerService, SERVICE_COS_INSTANCE_ID, true);
+		String location = ExternalProviderHelper.getServicePropertyValue(providerService, "STORAGE_COS_LOCATION", false);
+		String endpoint = ExternalProviderHelper.getServicePropertyValue(providerService, COS_ENDPOINT, false);
+		String bucket = ExternalProviderHelper.getServicePropertyValue(providerService, BUCKET, true);
+		String folder = ExternalProviderHelper.getServicePropertyValue(providerService, FOLDER, false);
 
-        bucket = Encryption.decrypt64(providerService.getProperties().get(BUCKET)).toLowerCase();
-        folder = providerService.getProperties().get(FOLDER);
-
-        bucketExists();
-        createFolder(folder);
+		init(api_key, service_instance_id, bucket, folder, location, endpoint);
     }
 
-    private void setEndpoint(String endpoint) {
-        if (endpoint.equals(ACCELERATED)) {
-            client.setS3ClientOptions(S3ClientOptions.builder().setAccelerateModeEnabled(true).build());
-            endpointUrl = ".s3-accelerate.amazonaws.com/";
-        }
-        if (endpoint.equals(DUALSTACK)) {
-            client.setS3ClientOptions(S3ClientOptions.builder().enableDualstack().setAccelerateModeEnabled(true).build());
-            endpointUrl = ".s3-accelerate.dualstack.amazonaws.com/";
-        }
 
-		endpointUrl = endpoint + "/";
-    }
+	public ExternalProviderIBM(String api_key, String service_instance_id,  String bucketName, String folderName, String location, String endpoint) {
+		init(api_key, service_instance_id, bucketName, folderName, location, endpoint);
+	}
 
-    private void bucketExists() {
+	private void init(String api_key, String service_instance_id, String bucketName, String folderName, String location, String endpoint) {
+    	endpointUrl = endpoint;
+		bucket = bucketName;
+		folder = folderName;
+
+		ClientConfiguration clientConfig = new ClientConfiguration().withRequestTimeout(5000);
+		clientConfig.setUseTcpKeepAlive(true);
+		SDKGlobalConfiguration.IAM_ENDPOINT = "https://iam.cloud.ibm.com/identity/token";
+		AWSCredentials credentials = new BasicIBMOAuthCredentials(api_key, service_instance_id);
+
+		client = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(credentials))
+			.withEndpointConfiguration(new EndpointConfiguration(endpointUrl, location)).withPathStyleAccessEnabled(true)
+			.withClientConfiguration(clientConfig).build();
+
+		bucketExists();
+		createFolder(folder);
+	}
+
+
+	private void bucketExists() {
         if (!client.doesBucketExist(bucket)) {
         	logger.debug(String.format("Bucket %s doesn't exist, please create the bucket", bucket));
         }
@@ -100,18 +96,17 @@ public class ExternalProviderS3 implements ExternalProvider {
     }
 
     public void download(String externalFileName, String localFile, boolean isPrivate) {
-        OutputStream outputStream = null;
         try {
             S3Object object = client.getObject(new GetObjectRequest(bucket, externalFileName));
-            InputStream objectData = object.getObjectContent();
-            outputStream = new FileOutputStream(new File(localFile));
-            int read = 0;
-            byte[] bytes = new byte[1024];
-            while ((read = objectData.read(bytes)) != -1) {
-                outputStream.write(bytes, 0, read);
-            }
-            objectData.close();
-            outputStream.close();
+            try (InputStream objectData = object.getObjectContent()) {
+				try (OutputStream outputStream = new FileOutputStream(new File(localFile))){
+					int read = 0;
+					byte[] bytes = new byte[1024];
+					while ((read = objectData.read(bytes)) != -1) {
+						outputStream.write(bytes, 0, read);
+					}
+				}
+			}
         } catch (FileNotFoundException ex) {
         	logger.error("Error while downloading file to the external provider", ex);
         } catch (IOException ex) {
@@ -119,7 +114,7 @@ public class ExternalProviderS3 implements ExternalProvider {
         }
     }
 
-    public String upload(String localFile, String externalFileName, boolean isPrivate) {        
+    public String upload(String localFile, String externalFileName, boolean isPrivate) {
         PutObjectResult result = client.putObject(new PutObjectRequest(bucket, externalFileName, new File(localFile)).withCannedAcl(getUploadACL(isPrivate)));
         return ((AmazonS3Client) client).getResourceUrl(bucket, externalFileName);
     }
@@ -141,9 +136,12 @@ public class ExternalProviderS3 implements ExternalProvider {
             if (externalFileName.endsWith(".tmp")) {
                 metadata.setContentType("image/jpeg");
             }
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
-            PutObjectResult result = client.putObject(new PutObjectRequest(bucket, externalFileName, byteArrayInputStream, metadata).withCannedAcl(getUploadACL(isPrivate)));
-            return ((AmazonS3Client) client).getResourceUrl(bucket, externalFileName);
+            String upload = "";
+            try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes)) {
+				PutObjectResult result = client.putObject(new PutObjectRequest(bucket, externalFileName, byteArrayInputStream, metadata).withCannedAcl(getUploadACL(isPrivate)));
+				upload = ((AmazonS3Client) client).getResourceUrl(bucket, externalFileName);
+			}
+			return upload;
         } catch (IOException ex) {
             logger.error("Error while uploading file to the external provider.", ex);
             return "";
@@ -153,7 +151,7 @@ public class ExternalProviderS3 implements ExternalProvider {
     public String get(String externalFileName, boolean isPrivate, int expirationMinutes) {
         client.getObjectMetadata(bucket, externalFileName);
         if (isPrivate) {
-            java.util.Date expiration = new java.util.Date();
+            Date expiration = new Date();
             long msec = expiration.getTime();
             msec += 60000 * expirationMinutes;
             expiration.setTime(msec);
@@ -324,7 +322,6 @@ public class ExternalProviderS3 implements ExternalProvider {
 
     public InputStream getStream(String objectName, boolean isPrivate) {
         OutputStream out = new ByteArrayOutputStream();
-
         S3Object object = client.getObject(new GetObjectRequest(bucket, objectName));
         return object.getObjectContent();
     }
