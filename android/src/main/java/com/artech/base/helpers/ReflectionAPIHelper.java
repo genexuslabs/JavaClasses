@@ -125,15 +125,14 @@ public class ReflectionAPIHelper {
 	}
 
 	public static Object executeMethod(Object instance, Method method, Object[] params) {
-		// instance can be null., params can be null.
 		try {
 			return method.invoke(instance, params);
-		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | ExceptionInInitializerError ex) {
-			System.err.println(String.format("Exception executing method '%s' by reflection.", method.getName())); //$NON-NLS-1$
-			System.err.println(ex.getMessage()); // $NON-NLS-1$
+		} catch (InvocationTargetException e) {
+			String reason = String.format("Exception was thrown by method '%s'", method.getName());
+			throw new RuntimeException(reason, e.getCause());
+		} catch (IllegalAccessException e) {
+			String reason = String.format("An illegal access when trying to access method '%s", method.getName());
+			throw new RuntimeException(reason, e.getCause());
 		}
-		return null;
-
 	}
-
 }
