@@ -29,10 +29,6 @@ public final class GXutil
 	{
 		CommonUtil.writeLogln(message);
 	}
-	public static void writeTLogln( String message)
-	{
-		CommonUtil.writeTLogln(message);
-	}
 
 	public static void writeLogRaw( String message, Object obj)
 	{
