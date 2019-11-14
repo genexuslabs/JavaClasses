@@ -853,7 +853,7 @@ public abstract class HttpContext
 	
 	private void sendReferer()
 	{
-		ajax_rsp_assign_hidden("sCallerURL", StringEscapeUtils.escapeHtml(getReferer()));
+		ajax_rsp_assign_hidden("sCallerURL", org.owasp.encoder.Encode.forUri(getReferer()));
 	}
 	
 	private static String CLIENT_ID_HEADER = "GX_CLIENT_ID";
