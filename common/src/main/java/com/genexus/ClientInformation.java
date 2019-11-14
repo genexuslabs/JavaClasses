@@ -62,11 +62,6 @@ public class ClientInformation
 		return SpecificImplementation.Application.getModelContext().getHttpContext().getHeader("DeviceOSVersion");
 	}
 
-	static public String getNetworkID()
-	{
-		return SpecificImplementation.Application.getModelContext().getHttpContext().getHeader("DeviceNetworkId");
-	}
-
 	static public String getLanguage()
 	{
 		return SpecificImplementation.Application.getModelContext().getHttpContext().getHeader("Accept-Language");
