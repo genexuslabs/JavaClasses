@@ -14,12 +14,13 @@ import org.apache.olingo.commons.api.edm.EdmEntityContainer;
 import org.apache.olingo.commons.api.edm.EdmEntitySet;
 import org.apache.olingo.commons.api.edm.EdmEntityType;
 import org.apache.olingo.commons.api.edm.EdmNavigationProperty;
+import org.apache.olingo.commons.api.format.ContentType;
 
 public class ModelInfo
 {
     private static final HashMap<String, ModelInfo> serviceModels = new HashMap<>();
 
-    static ModelInfo getModel(String connUrl)
+	static ModelInfo getModel(String connUrl)
     {
         return serviceModels.get(connUrl);
     }
@@ -29,9 +30,13 @@ public class ModelInfo
         serviceModels.put(connUrl, modelInfo);
     }
 
-    String url;
-    Edm model;
+    final String url;
+    final Edm model;
     boolean useChunked;
+	ContentType defaultContentType = ContentType.JSON_FULL_METADATA;
+	HashSet<String> recordNotFoundServiceCodes;
+	HashSet<String> recordAlreadyExistsServiceCodes;
+
     HttpClientFactory handlerFactory = null;
     ModelInfo(String url, Edm model, String checkOptimisticConcurrency)
     {
@@ -46,33 +51,18 @@ public class ModelInfo
         return model;
     }
 
-    static HashMap<String, HashMap<EdmEntityType, HashMap<String, String>>> entityMappers = new HashMap<>();
+    static final HashMap<String, HashMap<EdmEntityType, HashMap<String, String>>> entityMappers = new HashMap<>();
     private static final HashMap<String, String> NIL_MAPPER = new HashMap<>();
     private void initializeEntityMapper(Edm model)
     {
-        HashMap<EdmEntityType, HashMap<String, String>> entityMapper = entityMappers.get(url);
-        if(entityMapper == null)
-        {
-            entityMapper = new HashMap<>();
-            entityMappers.put(url, entityMapper);
-        }
-        HashMap<String, String> rootMapper = entityMapper.get(null);
-        if(rootMapper == null)
-        {
-            rootMapper = new HashMap<>();
-            entityMapper.put(null, rootMapper);
-        }
-        EdmEntityContainer container = model.getEntityContainer();
+		HashMap<EdmEntityType, HashMap<String, String>> entityMapper = entityMappers.computeIfAbsent(url, k -> new HashMap<>());
+		HashMap<String, String> rootMapper = entityMapper.computeIfAbsent(null, k -> new HashMap<>());
+		EdmEntityContainer container = model.getEntityContainer();
         HashMap<EdmEntityType, List<String>> entitySetTypes = new HashMap<>();
         for(EdmEntitySet entitySet:container.getEntitySets())
         {
-            List<String> entitySets = entitySetTypes.get(entitySet.getEntityType());
-            if(entitySets == null)
-            {
-                entitySets = new ArrayList<>();
-                entitySetTypes.put(entitySet.getEntityType(), entitySets);
-            }
-            entitySets.add(entitySet.getName());
+			List<String> entitySets = entitySetTypes.computeIfAbsent(entitySet.getEntityType(), k -> new ArrayList<>());
+			entitySets.add(entitySet.getName());
         }
         for(EdmEntitySet entitySet:container.getEntitySets())
         {
@@ -94,7 +84,7 @@ public class ModelInfo
                                 checkOptimisticConcurrencyEntities = new HashSet<>();
                             checkOptimisticConcurrencyEntities.add(entitySet.getName().toLowerCase());
                         }
-                    }catch(IllegalAccessException | IllegalArgumentException | NoSuchFieldException | SecurityException e)
+                    }catch(IllegalAccessException | IllegalArgumentException | NoSuchFieldException | SecurityException ignored)
                     {
 
                     }
@@ -105,13 +95,8 @@ public class ModelInfo
 
     public void initializeEntityMapper(HashMap<EdmEntityType, HashMap<String, String>> entityMapper, EdmEntityType type, HashMap<EdmEntityType, List<String>> entitySetTypesMap)
     {
-        HashMap<String, String> currentMapper = entityMapper.get(type);
-        if(currentMapper == null)
-        {
-            currentMapper = new HashMap<>();
-            entityMapper.put(type, currentMapper);
-        }
-        for(String navPropName : type.getNavigationPropertyNames())
+		HashMap<String, String> currentMapper = entityMapper.computeIfAbsent(type, k -> new HashMap<>());
+		for(String navPropName : type.getNavigationPropertyNames())
         {
             EdmNavigationProperty navProp = type.getNavigationProperty(navPropName);
             EdmEntityType navPropType = navProp.getType();
@@ -166,7 +151,7 @@ public class ModelInfo
                     path = path.substring(0, path.indexOf('('));
                 return checkOptimisticConcurrencyEntities.contains(path);
             }                
-        }catch(Exception e){}
+        }catch(Exception ignored){}
         return false;
     }    
     

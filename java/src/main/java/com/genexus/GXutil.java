@@ -29,6 +29,10 @@ public final class GXutil
 	{
 		CommonUtil.writeLogln(message);
 	}
+	public static void writeTLogln( String message)
+	{
+		CommonUtil.writeTLogln(message);
+	}
 
 	public static void writeLogRaw( String message, Object obj)
 	{
@@ -1628,6 +1632,18 @@ public final class GXutil
 	public static boolean checkEncryptedSignature( String value, String hash, String key)
 	{
 		return CommonUtil.getHash( com.genexus.security.web.WebSecurityHelper.StripInvalidChars(value), com.genexus.cryptography.Constants.SECURITY_HASH_ALGORITHM).equals(Encryption.decrypt64(hash, key));
+	}
+
+	public static String buildWSDLFromHttpClient(com.genexus.internet.HttpClient GXSoapHTTPClient, String wsdlURL)
+	{
+		if (GXSoapHTTPClient.getWSDLURL() != null && !GXSoapHTTPClient.getWSDLURL().isEmpty())
+		{
+			return GXSoapHTTPClient.getWSDLURL();
+		}
+		else
+		{
+			return wsdlURL;
+		}
 	}
 
 	public static String buildURLFromHttpClient(com.genexus.internet.HttpClient GXSoapHTTPClient, String serviceName, javax.xml.ws.BindingProvider bProvider)

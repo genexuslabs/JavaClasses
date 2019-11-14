@@ -57,26 +57,25 @@ public class ODataClientHelper
         this.builder = newURIBuilder();        
     }
     
-    List<EdmEntityType> entities = new ArrayList<>();
-    HashMap<String,EdmNavigationProperty> usedNavProps = new HashMap<>();
-    HashMap<String, List<GxURIFilter>> filters = new HashMap<>();
+    final List<EdmEntityType> entities = new ArrayList<>();
+    final HashMap<String,EdmNavigationProperty> usedNavProps = new HashMap<>();
+    final HashMap<String, List<GxURIFilter>> filters = new HashMap<>();
     ClientEntity [] oEntity;
-    EdmEntityType[] oEntityType;
+    final EdmEntityType[] oEntityType;
     EdmEntityType baseType;
     String baseEntitySet;
-    List<ExpandItem> expands = new ArrayList<>();
-    List<String> constrainedProps = new ArrayList<>();
+    final List<ExpandItem> expands = new ArrayList<>();
+    final List<String> constrainedProps = new ArrayList<>();
     boolean replaceFilterWithKey;
     boolean isCurrentOfUpdate;
     
     public ODataClientHelper get(String entity, String... select)
     {
-        String entityName = entity;//con.entity(entity);
-        baseEntitySet = entityName;
-        builder = builder.appendEntitySetSegment(entityName);
+		baseEntitySet = entity;
+        builder = builder.appendEntitySetSegment(entity);
         if(select.length != 0)
             builder = builder.select(select);
-        EdmEntityType entityType = con.getModel().getEntityContainer().getEntitySet(entityName).getEntityType();
+        EdmEntityType entityType = con.getModel().getEntityContainer().getEntitySet(entity).getEntityType();
         entities.add(entityType);
         baseType = entityType; 
         if(oEntity != null)
@@ -566,13 +565,8 @@ public class ODataClientHelper
     
     private void addFilter(String currentFilterEntity, GxURIFilter filter)
     {
-        List<GxURIFilter> currentFilters = filters.get(currentFilterEntity);
-        if(currentFilters == null)
-        {
-            currentFilters = new ArrayList<>();
-            filters.put(currentFilterEntity, currentFilters);
-        }
-        currentFilters.add(filter);        
+		List<GxURIFilter> currentFilters = filters.computeIfAbsent(currentFilterEntity, k -> new ArrayList<>());
+		currentFilters.add(filter);
     }
     
     private boolean splitInvalidFilter(GxURIFilter filter)
@@ -1193,8 +1187,9 @@ public class ODataClientHelper
 
     private static class ExpandItem
     {
-        String entity, entityName;
-        String [] select;
+        final String entity;
+		final String entityName;
+        final String [] select;
         public ExpandItem(String entity, String entityName, String [] select)
         {
             this.entity = entity;
@@ -1211,8 +1206,9 @@ public class ODataClientHelper
     private static class FilterOpImpl implements FilterArg
     {
 
-        String op;
-        FilterArg left, right;
+        final String op;
+        final FilterArg left;
+		final FilterArg right;
         public FilterOpImpl(String op, FilterArg left, FilterArg right)
         {
             this.op = op;
@@ -1223,11 +1219,9 @@ public class ODataClientHelper
         @Override
         public String build()
         {
-            return new StringBuilder().
-                append('(').append(left.build()).
-                append(' ').append(op).append(' ').
-                append(right.build()).append(')').
-                toString();
+            return '(' + left.build() +
+				' ' + op + ' ' +
+				right.build() + ')';
         }        
     }
     
@@ -1242,9 +1236,9 @@ public class ODataClientHelper
         Object right;
         if(obj instanceof String)
             right = "";
-        else if(Number.class.isInstance(obj))
-            right = Double.valueOf(0);
-        else if(java.util.Date.class.isInstance(obj))
+        else if(obj instanceof Number)
+            right = (double) 0;
+        else if(obj instanceof java.util.Date)
             right = getNullDate();
         else if(obj instanceof UUID)
             right = UUID.fromString("00000000-0000-0000-0000-000000000000");
@@ -1257,7 +1251,7 @@ public class ODataClientHelper
 
     public static class GxFilterArg implements FilterArg
     {
-        FilterArg arg;
+        final FilterArg arg;
         public GxFilterArg(FilterArg arg)
         {
             this.arg = arg;
@@ -1277,7 +1271,8 @@ public class ODataClientHelper
 
     public static class GxFilterArgOp extends GxFilterArg
     {
-        GxFilterArg left, right;
+        final GxFilterArg left;
+		final GxFilterArg right;
 
         private GxFilterArgOp(FilterArg arg, GxFilterArg left, GxFilterArg right)
         {
@@ -1301,7 +1296,7 @@ public class ODataClientHelper
 
     public static class GxFilterArgEntity extends GxFilterArg
     {
-        String entity;
+        final String entity;
         
         private GxFilterArgEntity(FilterArg arg, String entity)
         {
@@ -1340,8 +1335,8 @@ public class ODataClientHelper
 
     private static class GxURIFilterBooleanConst extends GxURIFilter
     {
-        protected static GxURIFilterBooleanConst TRUE = new GxURIFilterBooleanConst(true);
-        protected static GxURIFilterBooleanConst FALSE = new GxURIFilterBooleanConst(false);
+        protected static final GxURIFilterBooleanConst TRUE = new GxURIFilterBooleanConst(true);
+        protected static final GxURIFilterBooleanConst FALSE = new GxURIFilterBooleanConst(false);
         
         public static GxURIFilterBooleanConst get(boolean boolConst)
         {
@@ -1391,7 +1386,7 @@ public class ODataClientHelper
     
     public static abstract class GxURIFilter implements URIFilter
     {
-        GxURIOp op;
+        final GxURIOp op;
         public GxURIFilter(GxURIOp op)
         {
             this.op = op;
@@ -1420,8 +1415,9 @@ public class ODataClientHelper
     
     public static class GxURIFilterRel extends GxURIFilter
     {
-        URIFilter filter;
-        GxFilterArg left, right;
+        final URIFilter filter;
+        final GxFilterArg left;
+		final GxFilterArg right;
         public GxURIFilterRel(GxURIOp op, URIFilter filter, GxFilterArg left, GxFilterArg right)
         {
             super(op);
@@ -1461,7 +1457,8 @@ public class ODataClientHelper
     
     public static class GxURIFilterRelEq extends GxURIFilterRel
     {
-        Object leftObj, rightObj;
+        final Object leftObj;
+		Object rightObj;
         public GxURIFilterRelEq(GxURIOp eqOrNEq, URIFilter filter, GxFilterArg left, GxFilterArg right, Object leftObj, Object rightObj)
         {
             super(eqOrNEq, filter, left, right);
@@ -1489,7 +1486,7 @@ public class ODataClientHelper
 
     public static class GxURIFilterLogical extends GxURIFilter
     {
-        URIFilter filter;
+        final URIFilter filter;
         GxURIFilter left, right;
 
         public GxURIFilterLogical(GxURIOp op, URIFilter filter, GxURIFilter left, GxURIFilter right)
@@ -1516,36 +1513,40 @@ public class ODataClientHelper
         protected GxURIFilter simplify()
         {
             if(left != null)
-                left = left.simplify();
-            if(right != null)
-                right = right.simplify();
-            switch (op)
-            {
-                case AND:
-                    if(left.isAlwaysFalse() || right.isAlwaysFalse())
-                        return GxURIFilterBooleanConst.FALSE;
-                    if(left.isAlwaysTrue())
-                        return right.isAlwaysTrue() ? GxURIFilterBooleanConst.TRUE : right;
-                    else if(right.isAlwaysTrue())
-                        return left;
-                    break;
-                case OR:
-                    if(left.isAlwaysTrue() || right.isAlwaysTrue())
-                        return GxURIFilterBooleanConst.TRUE;
-                    if(left.isAlwaysFalse())
-                        return right.isAlwaysFalse() ? GxURIFilterBooleanConst.FALSE : right;
-                    else if(right.isAlwaysFalse())
-                        return left;
-                    break;
-                case NOT:
-                    if(left.isAlwaysFalse())
-                        return GxURIFilterBooleanConst.TRUE;
-                    else if(left.isAlwaysTrue())                            
-                        return GxURIFilterBooleanConst.FALSE;
-                    break;
-                default:
-                    break;
-            }
+			{
+				left = left.simplify();
+				if (right != null)
+					right = right.simplify();
+				else if(op != GxURIOp.NOT)
+					return this;
+				switch (op)
+				{
+					case AND:
+						if (left.isAlwaysFalse() || right.isAlwaysFalse())
+							return GxURIFilterBooleanConst.FALSE;
+						if (left.isAlwaysTrue())
+							return right.isAlwaysTrue() ? GxURIFilterBooleanConst.TRUE : right;
+						else if (right.isAlwaysTrue())
+							return left;
+						break;
+					case OR:
+						if (left.isAlwaysTrue() || right.isAlwaysTrue())
+							return GxURIFilterBooleanConst.TRUE;
+						if (left.isAlwaysFalse())
+							return right.isAlwaysFalse() ? GxURIFilterBooleanConst.FALSE : right;
+						else if (right.isAlwaysFalse())
+							return left;
+						break;
+					case NOT:
+						if (left.isAlwaysFalse())
+							return GxURIFilterBooleanConst.TRUE;
+						else if (left.isAlwaysTrue())
+							return GxURIFilterBooleanConst.FALSE;
+						break;
+					default:
+						break;
+				}
+			}
             return this;
         }
     }
@@ -1566,8 +1567,8 @@ public class ODataClientHelper
     
     private static class GxMember implements FilterArg
     {
-        String memberName;
-        FilterArgFactory argFactory;
+        final String memberName;
+        final FilterArgFactory argFactory;
 
         public GxMember(FilterArgFactory argFactory, String memberName)
         {
