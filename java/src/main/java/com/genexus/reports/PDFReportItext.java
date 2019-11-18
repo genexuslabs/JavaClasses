@@ -935,7 +935,8 @@ public class PDFReportItext implements IReportHandler
 					image.scaleAbsolute(rightAux - leftAux , bottomAux - topAux);
 				else
 					image.scaleToFit(rightAux - leftAux , bottomAux - topAux);
-				document.add(image);
+				PdfContentByte cb = writer.getDirectContent();
+				cb.addImage(image);
 			}
 		}
 		catch(DocumentException de) 
