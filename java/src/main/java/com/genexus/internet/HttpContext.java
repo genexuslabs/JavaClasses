@@ -33,6 +33,7 @@ import json.org.json.IJsonFormattable;
 import json.org.json.JSONArray;
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
+import org.apache.commons.lang.StringEscapeUtils;
 
 public abstract class HttpContext 
 		extends HttpAjaxContext implements IHttpContext
@@ -852,7 +853,7 @@ public abstract class HttpContext
 	
 	private void sendReferer()
 	{
-		ajax_rsp_assign_hidden("sCallerURL", getReferer());
+		ajax_rsp_assign_hidden("sCallerURL", org.owasp.encoder.Encode.forUri(getReferer()));
 	}
 	
 	private static String CLIENT_ID_HEADER = "GX_CLIENT_ID";
