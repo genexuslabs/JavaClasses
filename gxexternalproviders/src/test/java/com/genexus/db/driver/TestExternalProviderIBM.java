@@ -29,7 +29,63 @@ public class TestExternalProviderIBM {
 
 	@Test
 	@Ignore
+	public void testCopy(){
+		ExternalProviderIBM p = getExternalProviderIBM();
+		String copyFileName = "copy-text.txt";
+		Boolean isPrivate = false;
+		copy(p, copyFileName, isPrivate);
+	}
+
+
+	@Test
+	@Ignore
+	public void testCopyPrivate(){
+		ExternalProviderIBM p = getExternalProviderIBM();
+		String copyFileName = "copy-text-private.txt";
+		Boolean isPrivate = true;
+		copy(p, copyFileName, isPrivate);
+	}
+
+	private void copy(ExternalProviderIBM p, String copyFileName, Boolean isPrivate) {
+		String fileName = "text.txt";
+		Path path = Paths.get("resources", fileName);
+		String relativePath = path.toString();
+		p.upload(relativePath, fileName, isPrivate);
+		String upload = p.get(fileName, isPrivate, 100);
+		assertTrue(urlExists(upload));
+
+		p.delete(copyFileName, isPrivate);
+		assertFalse(urlExists(String.format("https://%s/%s/%s", endpoint, bucketName, copyFileName)));
+		p.copy("text.txt", copyFileName, isPrivate);
+		upload = p.get(copyFileName, isPrivate, 100);
+		assertTrue(urlExists(upload));
+	}
+
+	@Test
+	@Ignore
+	public void multimediaUpload() {
+		ExternalProviderIBM p = getExternalProviderIBM();
+		String copyFileName = "copy-text-private.txt";
+		Boolean isPrivate = true;
+
+		String fileName = "text.txt";
+		Path path = Paths.get("resources", fileName);
+		String relativePath = path.toString();
+		p.upload(relativePath, fileName, isPrivate);
+		String upload = p.get(fileName, isPrivate, 100);
+		assertTrue(urlExists(upload));
+
+		p.delete(copyFileName, isPrivate);
+		assertFalse(urlExists(String.format("https://%s/%s/%s", endpoint, bucketName, copyFileName)));
+		p.copy("text.txt", copyFileName, false);
+		upload = p.get(copyFileName, false, 100);
+		assertTrue(urlExists(upload));
+	}
+
+	@Test
+	@Ignore
 	public void testGetFile(){
+		testUpload();
 		ExternalProviderIBM p = getExternalProviderIBM();
 		String url = p.get("text.txt", false, 10);
 		assertTrue(urlExists(url));
@@ -78,18 +134,14 @@ public class TestExternalProviderIBM {
 	}
 
 
-
-
-
-
 	private ExternalProviderIBM getExternalProviderIBM() {
-		String apikey = "Mq4aI_Tx-ogBXDb1v10CmjuX2_j6odJJVejsqMyFDthd";
-		String service_instance_id = "crn:v1:bluemix:public:cloud-object-storage:global:a/47b84451ab70b94737518f7640a9ee42:43fac307-dbff-4b09-8aef-9c788d4a16f8::";
+		String accessKey = "1c297a240f6b40c587caa9e923dc9d32";
+		String secretKey = "6ade8a159ebef7a6413fdb1224e32e092f4d13f3aade1119";
 		String bucket = bucketName;
 		String folderName = "";
 		String location = "sao01";
 
-		return new ExternalProviderIBM(apikey, service_instance_id, bucket, folderName, location, endpoint);
+		return new ExternalProviderIBM(accessKey, secretKey, bucket, folderName, location, endpoint);
 	}
 
 
