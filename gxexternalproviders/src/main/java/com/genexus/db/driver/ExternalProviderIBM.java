@@ -10,11 +10,12 @@ import com.ibm.cloud.objectstorage.SDKGlobalConfiguration;
 import com.ibm.cloud.objectstorage.auth.AWSCredentials;
 import com.ibm.cloud.objectstorage.auth.AWSStaticCredentialsProvider;
 import com.ibm.cloud.objectstorage.client.builder.AwsClientBuilder.EndpointConfiguration;
+import com.ibm.cloud.objectstorage.oauth.BasicIBMOAuthCredentials;
 import com.ibm.cloud.objectstorage.services.s3.AmazonS3;
 import com.ibm.cloud.objectstorage.services.s3.AmazonS3Client;
 import com.ibm.cloud.objectstorage.services.s3.AmazonS3ClientBuilder;
 import com.ibm.cloud.objectstorage.services.s3.model.*;
-import com.ibm.cloud.objectstorage.oauth.BasicIBMOAuthCredentials;
+import com.ibm.cloud.objectstorage.auth.BasicAWSCredentials;
 
 import com.genexus.Application;
 import com.genexus.StructSdtMessages_Message;
@@ -31,8 +32,8 @@ public class ExternalProviderIBM implements ExternalProvider {
 
 	private static Logger logger = LogManager.getLogger(ExternalProviderIBM.class);
 
-    static final String ACCESS_API_KEY = "STORAGE_PROVIDER_API_KEY";
-    static final String SERVICE_COS_INSTANCE_ID = "STORAGE_PROVIDER_SERVICE_INSTANCE_ID";
+    static final String ACCESS_KEY = "STORAGE_PROVIDER_ACCESS_KEY";
+    static final String SECRET_KEY = "STORAGE_PROVIDER_SECRET_KEY";
     static final String COS_ENDPOINT = "STORAGE_COS_ENDPOINT";
     static final String BUCKET = "BUCKET_NAME";
     static final String FOLDER = "FOLDER_NAME";
@@ -46,30 +47,30 @@ public class ExternalProviderIBM implements ExternalProvider {
 
         GXService providerService = Application.getGXServices().get(service);
 
-        String api_key = ExternalProviderHelper.getServicePropertyValue(providerService, ACCESS_API_KEY, true);
-		String service_instance_id = ExternalProviderHelper.getServicePropertyValue(providerService, SERVICE_COS_INSTANCE_ID, true);
+        String accessKey = ExternalProviderHelper.getServicePropertyValue(providerService, ACCESS_KEY, true);
+		String secret = ExternalProviderHelper.getServicePropertyValue(providerService, SECRET_KEY, true);
 		String location = ExternalProviderHelper.getServicePropertyValue(providerService, "STORAGE_COS_LOCATION", false);
 		String endpoint = ExternalProviderHelper.getServicePropertyValue(providerService, COS_ENDPOINT, false);
 		String bucket = ExternalProviderHelper.getServicePropertyValue(providerService, BUCKET, true);
 		String folder = ExternalProviderHelper.getServicePropertyValue(providerService, FOLDER, false);
 
-		init(api_key, service_instance_id, bucket, folder, location, endpoint);
+		init(accessKey, secret, bucket, folder, location, endpoint);
     }
 
 
-	public ExternalProviderIBM(String api_key, String service_instance_id,  String bucketName, String folderName, String location, String endpoint) {
-		init(api_key, service_instance_id, bucketName, folderName, location, endpoint);
+	public ExternalProviderIBM(String accessKey, String secretKey,  String bucketName, String folderName, String location, String endpoint) {
+		init(accessKey, secretKey, bucketName, folderName, location, endpoint);
 	}
 
-	private void init(String api_key, String service_instance_id, String bucketName, String folderName, String location, String endpoint) {
+	private void init(String accessKey, String secretKey, String bucketName, String folderName, String location, String endpoint) {
     	endpointUrl = endpoint;
 		bucket = bucketName;
 		folder = folderName;
 
-		ClientConfiguration clientConfig = new ClientConfiguration().withRequestTimeout(5000);
+		ClientConfiguration clientConfig = new ClientConfiguration().withRequestTimeout(10000);
 		clientConfig.setUseTcpKeepAlive(true);
 		SDKGlobalConfiguration.IAM_ENDPOINT = "https://iam.cloud.ibm.com/identity/token";
-		AWSCredentials credentials = new BasicIBMOAuthCredentials(api_key, service_instance_id);
+		AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
 
 		client = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(credentials))
 			.withEndpointConfiguration(new EndpointConfiguration(endpointUrl, location)).withPathStyleAccessEnabled(true)
@@ -177,7 +178,7 @@ public class ExternalProviderIBM implements ExternalProvider {
 
     public String copy(String objectName, String newName, boolean isPrivate) {
         CopyObjectRequest request = new CopyObjectRequest(bucket, objectName, bucket, newName);
-        request.setCannedAccessControlList(CannedAccessControlList.PublicReadWrite);
+		request.setCannedAccessControlList(getUploadACL(isPrivate));
         client.copyObject(request);
         return ((AmazonS3Client) client).getResourceUrl(bucket, newName);
     }
@@ -196,9 +197,8 @@ public class ExternalProviderIBM implements ExternalProvider {
 
         CopyObjectRequest request = new CopyObjectRequest(bucket, objectUrl, bucket, resourceKey);
         request.setNewObjectMetadata(metadata);
-        request.setCannedAccessControlList(CannedAccessControlList.PublicReadWrite);
+        request.setCannedAccessControlList(getUploadACL(isPrivate));
         client.copyObject(request);
-
         return ((AmazonS3Client) client).getResourceUrl(bucket, resourceKey);
     }
 
