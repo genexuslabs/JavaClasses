@@ -1212,6 +1212,8 @@ public class PDFReportItext implements IReportHandler
 		sTxt = CommonUtil.rtrim(sTxt);
 		
 		Font font = new Font(baseFont, fontSize);
+		cb.setFontAndSize(baseFont, fontSize);
+		cb.setColorFill(foreColor);
 		int arabicOptions = 0;
 		float captionHeight = 	baseFont.getFontDescriptor(baseFont.CAPHEIGHT, fontSize);
 		float rectangleWidth = baseFont.getWidthPoint(sTxt, fontSize); 
@@ -1493,9 +1495,6 @@ public class PDFReportItext implements IReportHandler
 			float TxtWidth = baseFont.getWidthPoint(sTxt, fontSize);
 			boolean justified = (alignment == 3) && textBlockWidth < TxtWidth;
 			boolean wrap = ((align & 16) == 16);
-
-			cb.setFontAndSize(baseFont, fontSize);
-			cb.setColorFill(foreColor);
 
 			//Justified
             if (wrap || justified)
