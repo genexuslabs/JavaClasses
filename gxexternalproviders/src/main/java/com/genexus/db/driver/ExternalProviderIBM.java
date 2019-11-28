@@ -43,6 +43,11 @@ public class ExternalProviderIBM implements ExternalProvider {
     private String folder;
     private String endpointUrl;
 
+    /* For compatibility reasons with GX16 U6 or lower*/
+	public ExternalProviderIBM(){
+		this("Storage");
+	}
+
     public ExternalProviderIBM(String service) {
 
         GXService providerService = Application.getGXServices().get(service);
