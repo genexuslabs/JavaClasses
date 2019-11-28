@@ -8,6 +8,8 @@ interface IForEachCursor
     public void setStatus(int status);    
     public Object[] getBuffers();
 
+	public boolean hasResult();
+
     public IGXResultSet getResultSet();
 
     public boolean next(AbstractDataSource dataSource) throws SQLException;
