@@ -485,7 +485,11 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 		{
 			context.globals.Gx_eop = DefaultExceptionErrorHandler.ERROPT_DEFAULT;
 			try {
-				GXResultSet result = (GXResultSet) cursor.getResultSet();
+				GXResultSet result = null;
+				if (cursor.hasResult())
+				{
+					result = (GXResultSet) cursor.getResultSet();
+				}
 				if ((result != null) && (cursor.next(dataSource))) {
 					if (cursor.getStatus() == 0) {
 						synchronized (lock) {
