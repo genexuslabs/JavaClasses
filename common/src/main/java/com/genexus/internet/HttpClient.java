@@ -377,6 +377,10 @@ public class HttpClient
 		{
             if(hostChanged) // Si el host cambio, creo una nueva instancia de HTTPConnection
             {
+				if (con != null)
+				{
+					con.stop();
+				}
             		if (secure == 1 && port == 80)
             		{
             			port = 443;
