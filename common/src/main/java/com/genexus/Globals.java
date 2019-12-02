@@ -14,6 +14,7 @@ public class Globals
 	public String 	Gx_srv = "";
 	public short	Gx_err = 0;
 	public String 	Gx_emsg = "";
+	public String   Gx_dbsqlstate = "";
 
 	public byte nLocRead = 0;
 	public com.genexus.internet.LocationCollection colLocations;

@@ -34,6 +34,7 @@ public class DefaultExceptionErrorHandler
 					context.globals.Gx_err = (short) cursor.status;
 					context.globals.Gx_dbe = e.getErrorCode();
 					context.globals.Gx_dbt = e.getMessage();
+					context.globals.Gx_dbsqlstate = e.getSQLState();
 
 					context.inErrorHandler = true;
 					errorHandler.handleError();
