@@ -5,6 +5,7 @@ public class GXService
 	private String name;
 	private String type;
 	private String className;
+	private Boolean allowMultiple;
 	private GXProperties properties;
 	
 	public String getName()
@@ -35,6 +36,16 @@ public class GXService
 	public void setClassName(String className)
 	{
 		this.className = className;
+	}
+
+	public Boolean getAllowMultiple()
+	{
+		return allowMultiple;
+	}
+	
+	public void setAllowMultiple(Boolean allowMultiple)
+	{
+		this.allowMultiple = allowMultiple;
 	}
 	
 	public GXProperties getProperties()

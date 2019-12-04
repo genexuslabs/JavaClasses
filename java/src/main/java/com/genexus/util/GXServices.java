@@ -118,17 +118,23 @@ public class GXServices {
 		result = reader.readType(1, "ClassName");
 		String className = new String(reader.getValue());
 
+		Boolean allowMultiple = false;
+		result = reader.readType(1, "AllowMultiple");
+		if (result != 0)
+		{
+			String allowMultipleStr = new String(reader.getValue());
+			allowMultiple = Boolean.parseBoolean(allowMultipleStr);
+		}
+
 		GXProperties properties = processProperties(reader);
  
 		GXService service = new GXService();
 		service.setName(name);
 		service.setType(type);
 		service.setClassName(className);
+		service.setAllowMultiple(allowMultiple);
 		service.setProperties(properties);
-		if (services.containsKey(type)){
-			GXService prev = services.get(type);
-			services.remove(type);
-			services.put(prev.getType() + ":" + prev.getName(), prev);
+		if (service.getAllowMultiple()){
 			services.put(service.getType() + ":" + service.getName(), service);
 		}
 		else{
