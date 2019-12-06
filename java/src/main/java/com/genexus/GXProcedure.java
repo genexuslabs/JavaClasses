@@ -5,6 +5,8 @@ import java.sql.SQLException;
 import java.util.Date;
 import com.genexus.db.Namespace;
 import com.genexus.db.UserInformation;
+import com.genexus.diagnostics.GXDebugInfo;
+import com.genexus.diagnostics.GXDebugManager;
 import com.genexus.internet.HttpContext;
 import com.genexus.performance.ProcedureInfo;
 import com.genexus.performance.ProceduresInfo;
@@ -104,7 +106,10 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 
 		localUtil    	  = ui.getLocalUtil();
 		if (context != null)
+		{
 			httpContext = (HttpContext) context.getHttpContext();
+			httpContext.initClientId();
+		}
 	}
 
 	public Object me()
@@ -133,6 +138,8 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 
 	protected void exitApplication()
 	{
+		if(dbgInfo != null && Application.realMainProgram == this)
+			dbgInfo.onExit();
 		if(disconnectUserAtCleanup)
 		{
 			try
@@ -210,5 +217,44 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 	protected void callWebObject(String url)
 	{
 		httpContext.wjLoc = url;
+	}
+
+	protected void cleanup()
+	{
+	}
+
+	private GXDebugInfo dbgInfo = null;
+	protected void trkCleanup()
+	{
+		if(dbgInfo != null)
+			dbgInfo.onCleanup();
+	}
+
+	protected void initialize(int objClass, int objId, int dbgLines, long hash)
+	{
+		dbgInfo = GXDebugManager.getInstance().getDbgInfo(context, objClass, objId, dbgLines, hash);
+	}
+
+	protected void trk(int lineNro)
+	{
+		if(dbgInfo != null)
+			dbgInfo.trk(lineNro);
+	}
+
+	protected void trk(int lineNro, int lineNro2)
+	{
+		if(dbgInfo != null)
+			dbgInfo.trk(lineNro, lineNro2);
+	}
+
+	protected void trkrng(int lineNro, int lineNro2)
+	{
+		trkrng(lineNro, 0, lineNro2, 0);
+	}
+
+	protected void trkrng(int lineNro, int colNro, int lineNro2, int colNro2)
+	{
+		if(dbgInfo != null)
+			dbgInfo.trkRng(lineNro, colNro, lineNro2, colNro2);
 	}
 }

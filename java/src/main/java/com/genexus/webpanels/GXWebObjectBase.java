@@ -6,6 +6,8 @@ import java.util.TimeZone;
 
 import com.genexus.*;
 import com.genexus.configuration.ConfigurationManager;
+import com.genexus.diagnostics.GXDebugInfo;
+import com.genexus.diagnostics.GXDebugManager;
 import org.apache.commons.lang.StringUtils;
 
 import com.genexus.ModelContext;
@@ -644,5 +646,38 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 		return true;
 	}
 
+	private GXDebugInfo dbgInfo = null;
+	protected void trkCleanup()
+	{
+		if(dbgInfo != null)
+			dbgInfo.onCleanup();
+	}
 
+	protected void initialize(int objClass, int objId, int dbgLines, long hash)
+	{
+		dbgInfo = GXDebugManager.getInstance().getDbgInfo(context, objClass, objId, dbgLines, hash);
+	}
+
+	protected void trk(int lineNro)
+	{
+		if(dbgInfo != null)
+			dbgInfo.trk(lineNro);
+	}
+
+	protected void trk(int lineNro, int lineNro2)
+	{
+		if(dbgInfo != null)
+			dbgInfo.trk(lineNro, lineNro2);
+	}
+
+	protected void trkrng(int lineNro, int lineNro2)
+	{
+		trkrng(lineNro, 0, lineNro2, 0);
+	}
+
+	protected void trkrng(int lineNro, int colNro, int lineNro2, int colNro2)
+	{
+		if(dbgInfo != null)
+			dbgInfo.trkRng(lineNro, colNro, lineNro2, colNro2);
+	}
 }
