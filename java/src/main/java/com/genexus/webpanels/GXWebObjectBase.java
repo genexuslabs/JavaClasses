@@ -564,7 +564,7 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 	    		}
 	        }
 	        else{
-	        	strValue = (Value instanceof IGxJSONSerializable) ? ((IGxJSONSerializable)Value).toJSonString() : Value.toString();
+	        	strValue = (Value instanceof com.genexus.xml.GXXMLSerializable) ? ((com.genexus.xml.GXXMLSerializable)Value).toJSonString(false) : Value.toString();
 	        }
 		}
 		return strValue;
