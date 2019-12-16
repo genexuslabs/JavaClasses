@@ -9,6 +9,8 @@ target/
 # Mac OS
 .DS_Store
 
+.vscode/
+
 .project
 .factorypath
 .classpath
