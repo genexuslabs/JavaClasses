@@ -125,12 +125,7 @@ public class GXServices {
 		service.setType(type);
 		service.setClassName(className);
 		service.setProperties(properties);
-		if (service.getAllowMultiple()){
-			services.put(service.getType() + ":" + service.getName(), service);
-		}
-		else{
-			services.put(type, service);
-		}
+		services.put(type, service);
 	}
 
 	private GXProperties processProperties(XMLReader reader) {
