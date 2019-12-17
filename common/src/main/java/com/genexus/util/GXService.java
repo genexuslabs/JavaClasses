@@ -5,7 +5,7 @@ public class GXService
 	private String name;
 	private String type;
 	private String className;
-	private Boolean allowMultiple;
+	private boolean allowMultiple;
 	private GXProperties properties;
 	
 	public String getName()
@@ -38,12 +38,12 @@ public class GXService
 		this.className = className;
 	}
 
-	public Boolean getAllowMultiple()
+	public boolean getAllowMultiple()
 	{
 		return allowMultiple;
 	}
 	
-	public void setAllowMultiple(Boolean allowMultiple)
+	public void setAllowMultiple(boolean allowMultiple)
 	{
 		this.allowMultiple = allowMultiple;
 	}

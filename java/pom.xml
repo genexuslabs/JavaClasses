@@ -116,6 +116,11 @@
 			<version>2.9.10.1</version>
 		</dependency>
 		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-xml</artifactId>
+			<version>2.9.9</version>
+		</dependency>
+		<dependency>
 			<groupId>com.google.apis</groupId>
 			<artifactId>google-api-services-androidpublisher</artifactId>
 			<version>v2-rev105-1.23.0</version>
