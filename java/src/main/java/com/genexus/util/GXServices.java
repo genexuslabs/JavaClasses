@@ -1,26 +1,15 @@
 package com.genexus.util;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Hashtable;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
+import com.genexus.ApplicationContext;
 import com.genexus.ModelContext;
 import com.genexus.internet.HttpContext;
-import com.genexus.util.cloudservice.Property;
-import com.genexus.util.cloudservice.Service;
-import com.genexus.util.cloudservice.Services;
 import com.genexus.webpanels.HttpContextWeb;
-import com.genexus.diagnostics.core.ILogger;
-import com.genexus.diagnostics.core.LogManager;
+import com.genexus.xml.XMLReader;
 
 public class GXServices {
-
-	public static final ILogger logger = LogManager.getLogger(GXServices.class);
-
 	private static final boolean DEBUG = com.genexus.DebugFlag.DEBUG;
 	public static final String WEBNOTIFICATIONS_SERVICE = "WebNotifications";
 	public static final String STORAGE_SERVICE = "Storage";
@@ -55,46 +44,29 @@ public class GXServices {
 		instance = null;
 	}
 
-	public static void loadFromFile(String basePath, String fileName, GXServices services) {
+	public static void loadFromFile(String basePath, String fileName, GXServices services){
 		if (basePath.equals("")) {
 			basePath = services.configBaseDirectory();
 		}
 		String fullPath = basePath + fileName;
-		XmlMapper xmlMapper = new XmlMapper();
-		xmlMapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
-		Services xmlServices = null;
-		try {
-			xmlServices = xmlMapper.readValue(new File(fullPath), Services.class);
-		} catch (JsonParseException e) {
-			logger.error(e.getMessage(), e);
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			logger.error(e.getMessage(), e);
-			e.printStackTrace();
-		} catch (IOException e) {
-			logger.error(e.getMessage(), e);
-			e.printStackTrace();
-		}
-
-		if (services == null)
-			services = new GXServices();
-
-		for (Service xmlService : xmlServices.getService()) {
-			GXService service = new GXService();
-			service.setName(xmlService.getName());
-			service.setType(xmlService.getType());
-			service.setClassName(xmlService.getClassName());
-			service.setAllowMultiple(xmlService.getAllowMultiple());
-			GXProperties ptys = new GXProperties();
-			for (Property xmlPty : xmlService.getProperties().getProperty()) {
-				ptys.add(xmlPty.getName(), xmlPty.getValue());
+		XMLReader reader = new XMLReader();
+		reader.open(fullPath);
+		reader.readType(1, "Services");
+		reader.read();
+		if (reader.getErrCode() == 0) {
+			while (!reader.getName().equals("Services")) {
+				services.processService(reader);
+				reader.read();
+				if (reader.getName().equals("Service") && reader.getNodeType() == 2) //</Service>
+					reader.read();
 			}
-			service.setProperties(ptys);
-
-			if (service.getAllowMultiple()) {
-				services.services.put(service.getType() + ":" + service.getName(), service);
-			} else {
-				services.services.put(service.getType(), service);
+			reader.close();
+		}
+		else
+		{
+			if (!ApplicationContext.getInstance().getReorganization() && DEBUG)
+			{
+				System.out.println("GXServices - Could not load Services Config: " + fullPath + " - " + reader.getErrDescription());
 			}
 		}
 	}
@@ -108,13 +80,15 @@ public class GXServices {
 		if (ModelContext.getModelContext() != null) {
 			HttpContext webContext = (HttpContext) ModelContext.getModelContext().getHttpContext();
 			if ((webContext != null) && (webContext instanceof HttpContextWeb)) {
-				baseDir = com.genexus.ModelContext.getModelContext().getHttpContext().getDefaultPath() + File.separator
-						+ "WEB-INF" + File.separatorChar;
+				baseDir = com.genexus.ModelContext.getModelContext()
+					.getHttpContext().getDefaultPath()
+					+ File.separator + "WEB-INF" + File.separatorChar;
 			}
 		}
 		if (baseDir.equals("")) {
 			String servletPath = com.genexus.ApplicationContext.getInstance().getServletEngineDefaultPath();
-			if (servletPath != null && !servletPath.equals("")) {
+			if (servletPath != null && !servletPath.equals(""))
+			{
 				baseDir = servletPath + File.separator + "WEB-INF" + File.separatorChar;
 			}
 		}
@@ -125,15 +99,66 @@ public class GXServices {
 
 		if (basePath.equals(""))
 			basePath = configBaseDirectory();
-		if (new File(basePath + SERVICES_DEV_FILE).exists()) {
+		if (new File(basePath + SERVICES_DEV_FILE).exists()){
 			loadFromFile(basePath, SERVICES_DEV_FILE, this);
 		}
-		if (new File(basePath + SERVICES_FILE).exists()) {
+		if (new File(basePath + SERVICES_FILE).exists()){
 			loadFromFile(basePath, SERVICES_FILE, this);
 		}
+	}
+
+	private void processService(XMLReader reader) {
+		short result;
+		result = reader.readType(1, "Name");
+		String name = new String(reader.getValue());
+
+		result = reader.readType(1, "Type");
+		String type = new String(reader.getValue());
+
+		result = reader.readType(1, "ClassName");
+		String className = new String(reader.getValue());
+
+		boolean allowMultiple = false;
+		reader.read();
+		if (reader.getName() == "AllowMultiple")
+		{
+			allowMultiple = Boolean.parseBoolean(reader.getValue());
+			reader.read();
+		}
+		GXProperties properties = processProperties(reader);
+
+		GXService service = new GXService();
+		service.setName(name);
+		service.setType(type);
+		service.setClassName(className);
+		service.setAllowMultiple(allowMultiple);
+		service.setProperties(properties);
+		if (service.getAllowMultiple()){
+			services.put(service.getType() + ":" + service.getName(), service);
+		}
+		else{
+			services.put(type, service);
+		}
+	}
+
+	private GXProperties processProperties(XMLReader reader) {
+		short result;
+		GXProperties properties = new GXProperties();
+		reader.read();
+		while (reader.getName().equals("Property")) {
+			result = reader.readType(1, "Name");
+			String name = new String(reader.getValue());
+			result = reader.readType(1, "Value");
+			String value = new String(reader.getValue());
+			properties.add(name, value);
+			reader.read();
+			reader.read();
+		}
+		return properties;
 	}
 
 	public GXService get(String name) {
 		return services.get(name);
 	}
+
 }
