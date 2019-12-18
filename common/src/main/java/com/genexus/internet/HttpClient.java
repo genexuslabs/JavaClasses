@@ -346,19 +346,30 @@ public class HttpClient
 	{
 		resetErrors();
 		
-		URI uri = null;
+		java.net.URI uri;
 		try
 		{
-		    uri = new URI(url);
-				prevURLhost = this.getHost();
-				prevURLbaseURL = this.getBaseURL();
-				prevURLport = this.getPort();
-				prevURLsecure = this.getSecure();	
-				isURL = true;		    
+		    uri = new java.net.URI(url);
+		    prevURLhost = this.getHost();
+			prevURLbaseURL = this.getBaseURL();
+			prevURLport = this.getPort();
+			prevURLsecure = this.getSecure();
+			isURL = true;
 		    setURL(url);
-		    url = uri.getPath();
+
+		    StringBuilder relativeUri = new StringBuilder();
+			if (uri.getRawPath() != null) {
+				relativeUri.append(uri.getRawPath());
+			}
+			if (uri.getRawQuery() != null) {
+				relativeUri.append('?').append(uri.getRawQuery());
+			}
+			if (uri.getRawFragment() != null) {
+				relativeUri.append('#').append(uri.getRawFragment());
+			}
+		    url = relativeUri.toString();
 		}
-		catch (ParseException e)
+		catch (java.net.URISyntaxException e)
 		{
 			//No es una URL
 		}		
