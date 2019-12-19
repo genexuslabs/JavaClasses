@@ -12,10 +12,14 @@ public class ConfigFileFinder
 {
 	private static final String cryptoCfg = "crypto.cfg";
 
-	public static IniFile getConfigFile(Class resourceClass, String fileName, Class defaultResourceClass) 
+	public static IniFile getConfigFile(Class resourceClassParm, String fileName, Class defaultResourceClass)
 	{
 		InputStream is 	   = null;
 		InputStream crypto = null;
+
+		Class resourceClass = resourceClassParm;
+		if (ClientContext.getModelContext() != null)
+			resourceClass = ClientContext.getModelContext().getPackageClass();
 		
 		if	(is == null && resourceClass != null)
 		{
