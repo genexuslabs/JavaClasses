@@ -3,20 +3,30 @@ package com.genexus.db.driver;
 import com.genexus.Application;
 import com.genexus.util.GXService;
 import com.genexus.util.Encryption;
+import com.genexus.util.GXServices;
 import com.genexus.util.StorageUtils;
 import com.genexus.StructSdtMessages_Message;
-import java.io.InputStream;
+
 import com.microsoft.azure.storage.*;
 import com.microsoft.azure.storage.blob.*;
+
+import java.io.InputStream;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class ExternalProviderAzureStorage implements ExternalProvider {
+
+    private static Logger logger = LogManager.getLogger(ExternalProviderAzureStorage.class);
 
     static final String ACCOUNT = "ACCOUNT_NAME";
     static final String KEY = "ACCESS_KEY";
@@ -30,15 +40,18 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
     private CloudBlobClient client;
 
     public ExternalProviderAzureStorage(String service) {
-        GXService providerService = Application.getGXServices().get(service);
+        this(Application.getGXServices().get(service));
+    }
 
-        account = Encryption.decrypt64(providerService.getProperties().get(ACCOUNT));
-        key = Encryption.decrypt64(providerService.getProperties().get(KEY));
-
-        String storageConnStr = String.format("DefaultEndpointsProtocol=http;AccountName=%1s;AccountKey=%2s", account, key);
+    public ExternalProviderAzureStorage(GXService providerService) {
         try {
-            CloudStorageAccount account = CloudStorageAccount.parse(storageConnStr);
-            client = account.createCloudBlobClient();
+
+            account = Encryption.decrypt64(providerService.getProperties().get(ACCOUNT));
+            key = Encryption.decrypt64(providerService.getProperties().get(KEY));
+
+            CloudStorageAccount storageAccount = CloudStorageAccount.parse(
+                String.format("DefaultEndpointsProtocol=%1s;AccountName=%2s;AccountKey=%3s", "https", account, key));
+            client = storageAccount.createCloudBlobClient();
 
             privateContainer = client.getContainerReference(Encryption.decrypt64(providerService.getProperties().get(PRIVATE_CONTAINER)).toLowerCase());
             privateContainer.createIfNotExists();
@@ -47,14 +60,13 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
 
             BlobContainerPermissions permissions = new BlobContainerPermissions();
             permissions.setPublicAccess(BlobContainerPublicAccessType.BLOB);
-
             publicContainer.uploadPermissions(permissions);
-        } catch (java.net.URISyntaxException ex) {
-            System.err.println("Invalid URI " + ex.getMessage());
-        } catch (com.microsoft.azure.storage.StorageException sex) {
-            System.err.println("Storage Exception " + sex.getMessage());
-        } catch (java.security.InvalidKeyException ikex) {
-            System.err.println("Invalid keys " + ikex.getMessage());
+        } catch (URISyntaxException ex) {
+            logger.error("Invalid URI", ex);
+        } catch (StorageException sex) {
+            logger.error(sex.getMessage());
+        } catch (InvalidKeyException ikex) {
+            logger.error("Invalid keys", ikex);
         }
     }
 
@@ -62,46 +74,46 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
         try {
             CloudBlockBlob blob = getCloudBlockBlob(externalFileName, isPrivate);
             blob.downloadToFile(localFile);
-        } catch (java.net.URISyntaxException ex) {
-            System.err.println("Invalid URI " + ex.getMessage());
-        } catch (com.microsoft.azure.storage.StorageException ex) {
+        } catch (URISyntaxException ex) {
+            logger.error("Invalid URI ", ex.getMessage());
+        } catch (StorageException ex) {
             throw new RuntimeException(ex.getMessage(), ex);
         } catch (java.io.IOException ioex) {
-            System.err.println("Error downloading file " + ioex.getMessage());
+            logger.error("Error downloading file", ioex);
         }
     }
 
     private CloudBlockBlob getCloudBlockBlob(String fileName, boolean isPrivate) throws URISyntaxException, StorageException {
-    	CloudBlockBlob blob = null;
-    	if (isPrivate) {
-    		blob = privateContainer.getBlockBlobReference(fileName);
-    	}
-    	else
-    	{
-    		blob = publicContainer.getBlockBlobReference(fileName);
-    	}
-    	return blob;
+        CloudBlockBlob blob = null;
+        if (isPrivate) {
+            blob = privateContainer.getBlockBlobReference(fileName);
+        }
+        else
+        {
+            blob = publicContainer.getBlockBlobReference(fileName);
+        }
+        return blob;
     }
-    
+
     public String upload(String localFile, String externalFileName, boolean isPrivate) {
         try {
-        	CloudBlockBlob blob = getCloudBlockBlob(externalFileName, isPrivate);
-        		blob.uploadFromFile(localFile);
+            CloudBlockBlob blob = getCloudBlockBlob(externalFileName, isPrivate);
+            blob.uploadFromFile(localFile);
             return blob.getUri().toString();
-        } catch (java.net.URISyntaxException ex) {
-            System.err.println("Invalid URI " + ex.getMessage());
+        } catch (URISyntaxException ex) {
+            logger.error("Invalid URI ", ex.getMessage());
             return "";
-        } catch (com.microsoft.azure.storage.StorageException ex) {
+        } catch (StorageException ex) {
             throw new RuntimeException(ex.getMessage(), ex);
-    		} catch (java.io.IOException ioex) {
-    			System.err.println("Error uploading file " + ioex.getMessage());
-    			return "";            
+        } catch (IOException ioex) {
+            logger.error("Error uploading file", ioex);
+            return "";
         }
     }
 
     public String upload(String externalFileName, InputStream input, boolean isPrivate) {
         try {
-        	CloudBlockBlob blob = getCloudBlockBlob(externalFileName, isPrivate);
+            CloudBlockBlob blob = getCloudBlockBlob(externalFileName, isPrivate);
             if (externalFileName.endsWith(".tmp")) {
                 blob.getProperties().setContentType("image/jpeg");
             }
@@ -115,14 +127,13 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
 
             return blob.getUri().toString();
 
-        } catch (java.net.URISyntaxException ex) {
-            System.err.println("Invalid URI " + ex.getMessage());
+        } catch (URISyntaxException ex) {
+            logger.error("Invalid URI", ex);
             return "";
-        } catch (com.microsoft.azure.storage.StorageException sex) {
-            System.err.println("Storage Exception " + sex.getMessage());
-            return "";
+        } catch (StorageException sex) {
+            throw new RuntimeException(sex.getMessage(), sex);
         } catch (java.io.IOException ioex) {
-            System.err.println("Error uploading file " + ioex.getMessage());
+            logger.error("Error uploading file", ioex);
             return "";
         }
     }
@@ -137,10 +148,10 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
                     return blob.getUri().toString();
                 }
             }
-        } catch (com.microsoft.azure.storage.StorageException ex) {
+        } catch (StorageException ex) {
             throw new RuntimeException(ex.getMessage(), ex);
         } catch (Exception ex) {
-            System.err.println(ex.getMessage());
+            logger.error("Error getting file", ex);
             return "";
         }
         return "";
@@ -160,7 +171,7 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
         } catch (StorageException ex) {
             throw new RuntimeException(ex.getMessage(), ex);
         } catch (Exception ex) {
-            System.err.println(ex.getMessage());
+            logger.error("Error getting private file", ex);
             return "";
         }
         return "";
@@ -170,9 +181,9 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
         try {
             CloudBlockBlob blob = getCloudBlockBlob(objectName, isPrivate);
             blob.deleteIfExists();
-        } catch (java.net.URISyntaxException ex) {
-            System.err.println("Invalid URI " + ex.getMessage());
-        } catch (com.microsoft.azure.storage.StorageException ex) {
+        } catch (URISyntaxException ex) {
+            logger.error("Invalid URI ", ex.getMessage());
+        } catch (StorageException ex) {
             throw new RuntimeException(ex.getMessage(), ex);
         }
     }
@@ -185,13 +196,13 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
 
     public String copy(String objectName, String newName, boolean isPrivate) {
         if (objectName.startsWith(getUrl())) {
-        		if (isPrivate)
-        		{
-        			objectName = objectName.replace(getUrl() + privateContainer.getName() + "/", "");
-        		}
-        		else
-        		{
-            	objectName = objectName.replace(getUrl() + publicContainer.getName() + "/", "");
+            if (isPrivate)
+            {
+                objectName = objectName.replace(getUrl() + privateContainer.getName() + "/", "");
+            }
+            else
+            {
+                objectName = objectName.replace(getUrl() + publicContainer.getName() + "/", "");
             }
         }
         //objectName = StorageUtils.decodeName(objectName);
@@ -201,7 +212,7 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
             targetBlob.startCopy(sourceBlob);
             return targetBlob.getUri().toString();
         } catch (URISyntaxException ex) {
-            System.err.println("Invalid URI " + ex.getMessage());
+            logger.error("Invalid URI ", ex.getMessage());
         } catch (StorageException ex) {
             throw new RuntimeException(ex.getMessage(), ex);
         }
@@ -219,7 +230,7 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
             targetBlob.startCopy(sourceBlob);
             return targetBlob.getUri().toString();
         } catch (URISyntaxException ex) {
-            System.err.println("Invalid URI " + ex.getMessage());
+            logger.error("Invalid URI ", ex.getMessage());
         } catch (StorageException ex) {
             throw new RuntimeException(ex.getMessage(), ex);
         }
@@ -239,10 +250,10 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
             CloudBlockBlob blob = getCloudBlockBlob(objectName, isPrivate);
             blob.downloadAttributes();
             return blob.getProperties().getLength();
-        } catch (java.net.URISyntaxException ex) {
-            System.err.println("Invalid URI " + ex.getMessage());
+        } catch (URISyntaxException ex) {
+            logger.error("Invalid URI ", ex.getMessage());
             return 0;
-        } catch (com.microsoft.azure.storage.StorageException ex) {
+        } catch (StorageException ex) {
             throw new RuntimeException(ex.getMessage(), ex);
         }
     }
@@ -252,10 +263,10 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
             CloudBlockBlob blob = getCloudBlockBlob(objectName, isPrivate);
             blob.downloadAttributes();
             return blob.getProperties().getLastModified();
-        } catch (java.net.URISyntaxException ex) {
-            System.err.println("Invalid URI " + ex.getMessage());
+        } catch (URISyntaxException ex) {
+            logger.error("Invalid URI ", ex.getMessage());
             return new Date();
-        } catch (com.microsoft.azure.storage.StorageException ex) {
+        } catch (StorageException ex) {
             throw new RuntimeException(ex.getMessage(), ex);
         }
     }
@@ -264,10 +275,10 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
         try {
             CloudBlockBlob blob = getCloudBlockBlob(objectName, isPrivate);
             return blob.exists();
-        } catch (java.net.URISyntaxException ex) {
-            System.err.println("Invalid URI " + ex.getMessage());
+        } catch (URISyntaxException ex) {
+            logger.error("Invalid URI ", ex.getMessage());
             return false;
-        } catch (com.microsoft.azure.storage.StorageException ex) {
+        } catch (StorageException ex) {
             throw new RuntimeException(ex.getMessage(), ex);
         }
     }
@@ -286,24 +297,24 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
         try {
             CloudBlobDirectory directory = publicContainer.getDirectoryReference(directoryName);
             for (ListBlobItem item : directory.listBlobs()) {
-            		String itemName = "";
-                if (isFile(item)) {                	
-                	return true;
+                String itemName = "";
+                if (isFile(item)) {
+                    return true;
                 }
                 if (item instanceof CloudBlobDirectory) {
-                        itemName = ((CloudBlobDirectory) item).getPrefix();							
-                    itemName = itemName.substring(0, itemName.length() - 1);                    
+                    itemName = ((CloudBlobDirectory) item).getPrefix();
+                    itemName = itemName.substring(0, itemName.length() - 1);
                     if (!itemName.equals(directoryName))
                     {
-                    	return true;
+                        return true;
                     }
-								}
+                }
             }
-            return false;						
-        } catch (java.net.URISyntaxException ex) {
-            System.err.println("Invalid URI " + ex.getMessage());
             return false;
-        } catch (com.microsoft.azure.storage.StorageException ex) {
+        } catch (URISyntaxException ex) {
+            logger.error("Invalid URI ", ex.getMessage());
+            return false;
+        } catch (StorageException ex) {
             throw new RuntimeException(ex.getMessage(), ex);
         }
     }
@@ -313,12 +324,12 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
         try {
             CloudBlockBlob blob = publicContainer.getBlockBlobReference(directoryName);
             blob.uploadFromByteArray(new byte[0], 0, 0);
-        } catch (java.net.URISyntaxException ex) {
-            System.err.println("Invalid URI " + ex.getMessage());
-        } catch (com.microsoft.azure.storage.StorageException ex) {
+        } catch (URISyntaxException ex) {
+            logger.error("Invalid URI ", ex.getMessage());
+        } catch (StorageException ex) {
             throw new RuntimeException(ex.getMessage(), ex);
         } catch (java.io.IOException ioex) {
-            System.err.println("Error uploading file " + ioex.getMessage());
+            logger.error("Error uploading file", ioex);
         }
     }
 
@@ -344,22 +355,22 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
                     }
                     if (!itemName.equals(directoryName))
                     {
-                    	deleteDirectory(itemName);
+                        deleteDirectory(itemName);
                     }
                 }
             }
-        } catch (java.net.URISyntaxException ex) {
-            System.err.println("Invalid URI " + ex.getMessage());
-        } catch (com.microsoft.azure.storage.StorageException ex) {
+        } catch (URISyntaxException ex) {
+            logger.error("Invalid URI ", ex.getMessage());
+        } catch (StorageException ex) {
             throw new RuntimeException(ex.getMessage(), ex);
         }
     }
 
     public void renameDirectory(String directoryName, String newDirectoryName) {
-    		if (!existsDirectory(newDirectoryName))
-    		{
-	    		createDirectory(newDirectoryName);
-  	  	}    	
+        if (!existsDirectory(newDirectoryName))
+        {
+            createDirectory(newDirectoryName);
+        }
         directoryName = StorageUtils.normalizeDirectoryName(directoryName);
         newDirectoryName = StorageUtils.normalizeDirectoryName(newDirectoryName);
         try {
@@ -384,9 +395,9 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
                 }
             }
             deleteDirectory(directoryName);
-        } catch (java.net.URISyntaxException ex) {
-            System.err.println("Invalid URI " + ex.getMessage());
-        } catch (com.microsoft.azure.storage.StorageException ex) {
+        } catch (URISyntaxException ex) {
+            logger.error("Invalid URI ", ex.getMessage());
+        } catch (StorageException ex) {
             throw new RuntimeException(ex.getMessage(), ex);
         }
     }
@@ -405,9 +416,9 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
                     }
                 }
             }
-        } catch (java.net.URISyntaxException ex) {
-            System.err.println("Invalid URI " + ex.getMessage());
-        } catch (com.microsoft.azure.storage.StorageException ex) {
+        } catch (URISyntaxException ex) {
+            logger.error("Invalid URI ", ex.getMessage());
+        } catch (StorageException ex) {
             throw new RuntimeException(ex.getMessage(), ex);
         }
         return files;
@@ -432,34 +443,34 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
                 }
             }
             directories.remove(directoryName);
-        } catch (java.net.URISyntaxException ex) {
-            System.err.println("Invalid URI " + ex.getMessage());
-        } catch (com.microsoft.azure.storage.StorageException ex) {
+        } catch (URISyntaxException ex) {
+            logger.error("Invalid URI ", ex.getMessage());
+        } catch (StorageException ex) {
             throw new RuntimeException(ex.getMessage(), ex);
         }
         return directories;
     }
-    
+
     public InputStream getStream(String objectName, boolean isPrivate){
-        try {            
+        try {
             CloudBlockBlob blob = getCloudBlockBlob(objectName, isPrivate);
             blob.downloadAttributes();
-            byte[] bytes= new byte[(int)blob.getProperties().getLength()];   
-            blob.downloadToByteArray(bytes, 0); 
-            
+            byte[] bytes= new byte[(int)blob.getProperties().getLength()];
+            blob.downloadToByteArray(bytes, 0);
+
             InputStream stream = new ByteArrayInputStream(bytes);
             return stream;
         } catch (URISyntaxException ex) {
-            System.err.println("Invalid URI " + ex.getMessage());
+            logger.error("Invalid URI ", ex.getMessage());
         } catch (StorageException ex) {
             throw new RuntimeException(ex.getMessage(), ex);
         }
         return null;
     }
-    
+
     public boolean getMessageFromException(Exception ex, StructSdtMessages_Message msg){
         try {
-            StorageException aex = (StorageException)ex.getCause();
+            StorageException aex = (StorageException) ex.getCause();
             msg.setId(aex.getErrorCode());
             return true;
         } catch (Exception e) {
