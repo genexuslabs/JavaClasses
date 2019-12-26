@@ -14,7 +14,7 @@ public class GXDirectory {
 	}
 
 	public GXDirectory(String DirName) {
-		DirSource = new GXFileInfo(new File(DirName));
+		DirSource = new GXFileInfo(new File(DirName), true);
 	}
 
 	public GXDirectory(IGXFileInfo Dir) {
@@ -25,7 +25,7 @@ public class GXDirectory {
 	}
 	public void setSource(String DirName)
 	{
-		DirSource = new GXFileInfo(new File(DirName));
+		DirSource = new GXFileInfo(new File(DirName), true);
 	}
 
 	public String getSource()

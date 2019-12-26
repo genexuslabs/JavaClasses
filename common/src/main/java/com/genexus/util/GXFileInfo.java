@@ -9,9 +9,14 @@ import java.util.Date;
 public class GXFileInfo implements IGXFileInfo {
 
 	private File fileSource;
+	private boolean isDirectory;
 
 	public GXFileInfo(File file){
+		this(file, false);
+	}
+	public GXFileInfo(File file, boolean isDirectory){
 		fileSource = file;
+		this.isDirectory = isDirectory;
 	}
 	public String getPath(){
 		if (fileSource.isFile()){
@@ -25,7 +30,10 @@ public class GXFileInfo implements IGXFileInfo {
 		}
 	}
 	public boolean exists(){
-		return fileSource.exists();
+		if ((isDirectory && fileSource.isDirectory()) || (!isDirectory && fileSource.isFile())) {
+			return fileSource.exists();
+		}
+		return false;
 	}
 	public boolean isFile(){
 		return fileSource.isFile();
