@@ -4,7 +4,11 @@ import com.genexus.Application;
 import com.genexus.StructSdtMessages_Message;
 import com.genexus.util.Encryption;
 import com.genexus.util.GXService;
+import com.genexus.util.GXServices;
 import com.genexus.util.StorageUtils;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openstack4j.api.OSClient.OSClientV3;
 import org.openstack4j.api.exceptions.ResponseException;
 import org.openstack4j.api.exceptions.StatusCode;
@@ -37,10 +41,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.util.*;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 public class ExternalProviderBluemix implements ExternalProvider {
+
+    private static Logger logger = LogManager.getLogger(ExternalProviderAzureStorage.class);
 
     static final String SERVER_URL = "SERVER_URL";
     static final String USER = "STORAGE_PROVIDER_USER";
@@ -60,8 +64,10 @@ public class ExternalProviderBluemix implements ExternalProvider {
     private String tempUrlKey;
 
     public ExternalProviderBluemix(String service) {
-        GXService providerService = Application.getGXServices().get(service);
+        this(Application.getGXServices().get(service));
+    }
 
+    public ExternalProviderBluemix(GXService providerService) {
         String endpoint = providerService.getProperties().get(SERVER_URL) + "/v3";
         String username = Encryption.decrypt64(providerService.getProperties().get(USER));
         String password = Encryption.decrypt64(providerService.getProperties().get(PASSWORD));
@@ -69,10 +75,10 @@ public class ExternalProviderBluemix implements ExternalProvider {
         Identifier domainId = Identifier.byName("default");
         Identifier projectId = Identifier.byId(project);
         client = OSFactory.builderV3()
-                .endpoint(endpoint)
-                .credentials(username, password)
-                .scopeToProject(projectId, domainId)
-                .authenticate();
+            .endpoint(endpoint)
+            .credentials(username, password)
+            .scopeToProject(projectId, domainId)
+            .authenticate();
         publicBucket = Encryption.decrypt64(providerService.getProperties().get(PUBLIC_BUCKET));
         privateBucket = Encryption.decrypt64(providerService.getProperties().get(PRIVATE_BUCKET));
         folder = providerService.getProperties().get(FOLDER);
@@ -96,36 +102,33 @@ public class ExternalProviderBluemix implements ExternalProvider {
             conn.setRequestProperty("X-Auth-Token", client.getToken().getId());
 
             if (conn.getResponseCode() != HttpURLConnection.HTTP_NO_CONTENT) {
-                System.err.println("Error" + conn.getResponseCode() + conn.getResponseMessage());
+                logger.error("Error" + conn.getResponseCode() + conn.getResponseMessage());
             }
 
             conn.disconnect();
         } catch (MalformedURLException ex) {
-            System.err.println("Error updating temporary container url " + ex.getMessage());
+            logger.error("Error updating temporary container url", ex.getMessage());
         } catch (ProtocolException ex) {
-            System.err.println("Error updating temporary container url " + ex.getMessage());
+            logger.error("Error updating temporary container url", ex.getMessage());
         } catch (IOException ex) {
-            System.err.println("Error updating temporary container url " + ex.getMessage());
+            logger.error("Error updating temporary container url", ex.getMessage());
         }
 
     }
 
     private void createBuckets() {
-        LogManager.getLogManager().reset();
-
         ActionResponse r = client.objectStorage().containers().create(publicBucket, CreateUpdateContainerOptions.create().accessAnybodyRead());
         if (!r.isSuccess()) {
-            System.err.println("Error creating bucket " + publicBucket + " " + r.getFault());
+            logger.error("Error creating bucket " + publicBucket + " " + r.getFault());
         }
 
         r = client.objectStorage().containers().create(privateBucket);
         if (!r.isSuccess()) {
-            System.err.println("Error creating bucket " + privateBucket + " " + r.getFault());
+            logger.error("Error creating bucket " + privateBucket + " " + r.getFault());
         }
     }
 
     private void createFolder(String folderName) {
-        LogManager.getLogManager().reset();
         InputStream emptyContent = new ByteArrayInputStream(new byte[0]);
         client.objectStorage().objects().put(publicBucket, folderName, Payloads.create(emptyContent), ObjectPutOptions.create().contentType("application/directory"));
     }
@@ -140,7 +143,7 @@ public class ExternalProviderBluemix implements ExternalProvider {
                 }
             }
         }
-        System.err.println("Error getting the storage endpoint");
+        logger.error("Error getting the storage endpoint");
         return null;
     }
 
@@ -156,18 +159,18 @@ public class ExternalProviderBluemix implements ExternalProvider {
                 throw new ResponseException(dp.getHttpResponse().getStatusMessage(), dp.getHttpResponse().getStatus());
             }
         } catch (IOException ex) {
-            Logger.getLogger(ExternalProviderBluemix.class.getName()).log(Level.SEVERE, null, ex);
+            logger.fatal("Error downloading file", ex);
         }
     }
 
     public String upload(String localFile, String externalFileName, boolean isPrivate) {
-    	String bucket = (isPrivate)? privateBucket: publicBucket;
-    	client.objectStorage().objects().put(bucket, externalFileName, Payloads.create(new File(localFile)));
-    	return storageUrl + StorageUtils.DELIMITER + bucket + StorageUtils.DELIMITER + StorageUtils.encodeName(externalFileName);        
+        String bucket = (isPrivate)? privateBucket: publicBucket;
+        client.objectStorage().objects().put(bucket, externalFileName, Payloads.create(new File(localFile)));
+        return storageUrl + StorageUtils.DELIMITER + bucket + StorageUtils.DELIMITER + StorageUtils.encodeName(externalFileName);
     }
 
     public String upload(String externalFileName, InputStream input, boolean isPrivate) {
-    	String bucket = (isPrivate)? privateBucket: publicBucket;
+        String bucket = (isPrivate)? privateBucket: publicBucket;
         ObjectPutOptions objOptions = ObjectPutOptions.create();
         if (externalFileName.endsWith(".tmp")) {
             objOptions.contentType("image/jpeg");
@@ -214,7 +217,7 @@ public class ExternalProviderBluemix implements ExternalProvider {
             return toHexString(mac.doFinal(body.getBytes()));
 
         } catch (Exception ex) {
-            System.err.println("Error generating key " + ex.getMessage());
+            logger.error("Error generating key", ex.getMessage());
         }
         return "";
     }
@@ -224,7 +227,6 @@ public class ExternalProviderBluemix implements ExternalProvider {
     }
 
     public String rename(String objectName, String newName, boolean isPrivate) {
-        LogManager.getLogManager().reset();
         copy(objectName, newName, isPrivate);
         delete(objectName, isPrivate);
         return storageUrl + StorageUtils.DELIMITER + publicBucket + StorageUtils.DELIMITER + StorageUtils.encodeName(newName);
