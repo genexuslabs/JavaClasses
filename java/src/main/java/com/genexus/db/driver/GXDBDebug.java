@@ -68,7 +68,7 @@ public final class GXDBDebug implements ICleanedup
 					
 					log.println("Java vendor       : " + System.getProperty("java.vendor"));
 					log.println("Java version      : " + System.getProperty("java.version"));
-					log.println("Generator version : " + com.genexus.Version.version);
+					log.println("Generator version : " + com.genexus.Version.getFullVersion());
 					log.println("Java classpath    : " + System.getProperty("java.class.path"));
 					log.println("Operating System  : " + System.getProperty("os.name") + " " + System.getProperty("os.version") + "/" + System.getProperty("os.arch"));
 					log.println("Current DateTime  : " + new java.util.Date());
