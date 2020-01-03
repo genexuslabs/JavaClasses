@@ -115,7 +115,8 @@ public final class GXutil
 	public static byte fileExists(String fileName)
 	{
 		if (!fileName.startsWith("http")){
-			return new File(fileName).exists()? (byte)1:0;
+			File file = new File(fileName);
+			return (file.isFile() && file.exists())? (byte)1:0;
 		}
 		else
 		{
