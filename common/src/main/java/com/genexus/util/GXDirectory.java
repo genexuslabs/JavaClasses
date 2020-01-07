@@ -270,6 +270,11 @@ public class GXDirectory {
 		return SpecificImplementation.GXDirectory.getExternalFilesPath();
 	}
 
+	public static String cachefilespath()
+	{
+		return SpecificImplementation.GXDirectory.getCacheFilesPath();
+	}
+
 }
 
 
