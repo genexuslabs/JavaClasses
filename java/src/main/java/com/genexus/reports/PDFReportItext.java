@@ -1061,6 +1061,18 @@ public class PDFReportItext implements IReportHandler
 			}
 			else
 			{//Si el Font es true type
+				String style = "";
+				if (fontBold && fontItalic)
+					style = ",BoldItalic";
+				else
+				{
+					if (fontItalic)
+						style = ",Italic";
+					if (fontBold)
+						style = ",Bold";
+				}
+
+				fontName = fontName + style;
 				String fontPath = getFontLocation(fontName);
 				boolean foundFont = true;
 				if (fontPath.equals(""))
@@ -1081,17 +1093,7 @@ public class PDFReportItext implements IReportHandler
 					}
 					else
 					{//No se embebe el font
-						String style = "";
-						if (fontBold && fontItalic)
-							style = ",BoldItalic";
-						else
-						{
-							if (fontItalic)
-								style = ",Italic";
-							if (fontBold)
-								style = ",Bold";
-						}
-							baseFont = BaseFont.createFont(fontPath + style, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
+						baseFont = BaseFont.createFont(fontPath + style, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
 					}
 				}
 			}
