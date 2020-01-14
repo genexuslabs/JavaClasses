@@ -276,20 +276,3 @@ public class GXDirectory {
 	}
 
 }
-
-
-class Filter implements FilenameFilter {
-	protected String pattern;
-	public Filter (String str) {
-		if (str!=null && str.length() >=1 && str.charAt(0)=='*')
-		{
-			pattern = str.substring(1);
-		}else
-		{
-			pattern = str;
-		}
-	}
-	public boolean accept (File dir, String name) {
-		return name.toLowerCase().endsWith(pattern.toLowerCase());
-	}
-}

@@ -3,6 +3,7 @@ import java.io.*;
 import java.util.Vector;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 
 import java.util.Date;
 
@@ -85,14 +86,15 @@ public class GXFileInfo implements IGXFileInfo {
            SpecificImplementation.FileUtils.copyFile(new java.io.File(origin), new java.io.File(destination));
         }
 	public GXFileCollection listFiles(String strFilter){
-		Filter filter = new Filter(strFilter);
 		GXFileCollection gxfiles = null;
 
 		File[] files;
-		if (filter==null || strFilter.isEmpty())
+		if (strFilter.isEmpty())
 			files = fileSource.listFiles();
-		else
-			files = fileSource.listFiles(filter);
+		else {
+			FileFilter fileFilter = new WildcardFileFilter(strFilter);
+			files = fileSource.listFiles(fileFilter);
+		}
 		if (files != null) 
 		{
 			gxfiles = new GXFileCollection();
