@@ -1447,4 +1447,6 @@ public class HttpContextWeb extends HttpContext {
 		}
 	}
 
+	public boolean isHttpContextNull() {return false;}
+	public boolean isHttpContextWeb() {return true;}
 }

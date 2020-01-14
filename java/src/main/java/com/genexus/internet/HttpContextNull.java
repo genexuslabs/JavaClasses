@@ -420,4 +420,7 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 	public void getMultimediaValue(String internalName, String[] blobVar, String[] uriVar) { blobVar[0] = ""; uriVar[0] = ""; }
 	public void cleanup() {}
 	public boolean isMultipartContent() { return false; }
+
+	public boolean isHttpContextNull() {return true;}
+	public boolean isHttpContextWeb() {return false;}
 }
