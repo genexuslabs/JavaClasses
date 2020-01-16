@@ -157,11 +157,11 @@ public class ExcelCells implements IExcelCells{
                 	  dformat = dformat.substring(0, dformat.indexOf(' '));
                   }
 
-				  CellStyle newStyle = pWorkbook.createCellStyle();
+                  DataFormat df = pWorkbook.createDataFormat();
+                  CellStyle newStyle = stylesCache.getCellStyle(df.getFormat(dformat));
 
 					for (int i=1;i <= cntCells; i++)
 					{
-						DataFormat df = pWorkbook.createDataFormat();
 						CellStyle cellStyle = pCells[i].getCellStyle();
 						copyPropertiesStyle(newStyle, cellStyle);
 						newStyle.setDataFormat(df.getFormat(dformat));						
