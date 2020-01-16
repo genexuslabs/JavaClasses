@@ -4,6 +4,7 @@ import java.util.Vector;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
+import org.apache.commons.io.IOCase;
 
 import java.util.Date;
 
@@ -92,7 +93,7 @@ public class GXFileInfo implements IGXFileInfo {
 		if (strFilter.isEmpty())
 			files = fileSource.listFiles();
 		else {
-			FileFilter fileFilter = new WildcardFileFilter(strFilter);
+			FileFilter fileFilter = new WildcardFileFilter(strFilter, IOCase.INSENSITIVE);
 			files = fileSource.listFiles(fileFilter);
 		}
 		if (files != null) 
