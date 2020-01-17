@@ -93,6 +93,7 @@ public class GXFileInfo implements IGXFileInfo {
 		if (strFilter.isEmpty())
 			files = fileSource.listFiles();
 		else {
+			strFilter = "*" + strFilter;
 			FileFilter fileFilter = new WildcardFileFilter(strFilter, IOCase.INSENSITIVE);
 			files = fileSource.listFiles(fileFilter);
 		}
