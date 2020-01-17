@@ -20,8 +20,11 @@ import org.apache.commons.io.output.FileWriterWithEncoding;
 import com.genexus.Application;
 import com.genexus.CommonUtil;
 import com.genexus.common.classes.AbstractGXFile;
+import org.apache.logging.log4j.Logger;
 
 public class GXFile extends AbstractGXFile {
+
+	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(HttpContextWeb.class);
 
     private IGXFileInfo FileSource;
     private int ErrCode;
@@ -253,7 +256,7 @@ public class GXFile extends AbstractGXFile {
                     try {
                         FileSource.copy(FileSource.getFilePath(), FileName);
                     } catch (java.io.IOException e) {
-                        setUnknownError();
+                        setUnknownError(e);
                     }
                 }
             } catch (Exception e) {
@@ -506,6 +509,7 @@ public class GXFile extends AbstractGXFile {
     private void setUnknownError(Exception e) {
         ErrCode = -1;
         ErrDescription = e.getMessage();
+		log.error("Unknown error", e);
     }
 
     public byte[] toBytes() {
@@ -565,8 +569,7 @@ public class GXFile extends AbstractGXFile {
                         return FileSource.readAllText(CommonUtil.normalizeEncodingName(encoding));
                     }
                 } catch (IOException e) {
-                    setUnknownError();
-                    e.printStackTrace();
+                    setUnknownError(e);
                 }
             }
         }
@@ -599,8 +602,7 @@ public class GXFile extends AbstractGXFile {
                         }
                     }
                 } catch (IOException e) {
-                    setUnknownError();
-                    e.printStackTrace();
+                    setUnknownError(e);
                 }
             }
         }
@@ -621,8 +623,7 @@ public class GXFile extends AbstractGXFile {
                     FileSource.writeStringToFile(value, CommonUtil.normalizeEncodingName(encoding), append);
                 }
             } catch (Exception e) {
-                setUnknownError();
-                e.printStackTrace();
+                setUnknownError(e);
             }
         }
     }
@@ -641,8 +642,7 @@ public class GXFile extends AbstractGXFile {
                     FileSource.writeLines(CommonUtil.normalizeEncodingName(encoding), value, append);
                 }
             } catch (Exception e) {
-                setUnknownError();
-                e.printStackTrace();
+                setUnknownError(e);
             }
         }
     }
@@ -672,8 +672,7 @@ public class GXFile extends AbstractGXFile {
                     fileWriter = new FileWriterWithEncoding(FileSource.getFileInstance(), CommonUtil.normalizeEncodingName(encoding), true);
                 }
             } catch (Exception e) {
-                setUnknownError();
-                e.printStackTrace();
+                setUnknownError(e);
             }
         }
     }
@@ -690,8 +689,7 @@ public class GXFile extends AbstractGXFile {
                     lineIterator = FileUtils.lineIterator(FileSource.getFileInstance(), CommonUtil.normalizeEncodingName(encoding));
                 }
             } catch (Exception e) {
-                setUnknownError();
-                e.printStackTrace();
+                setUnknownError(e);
             }
         }
     }
@@ -701,8 +699,7 @@ public class GXFile extends AbstractGXFile {
             try {
                 fileWriter.append(value + com.genexus.CommonUtil.newLine());
             } catch (Exception e) {
-                setUnknownError();
-                e.printStackTrace();
+                setUnknownError(e);
             }
         } else {
             ErrCode = 1;
@@ -715,8 +712,7 @@ public class GXFile extends AbstractGXFile {
             try {
                 return lineIterator.nextLine();
             } catch (Exception e) {
-                setUnknownError();
-                e.printStackTrace();
+                setUnknownError(e);
             }
         } else {
             ErrCode = 1;
@@ -738,8 +734,7 @@ public class GXFile extends AbstractGXFile {
                 fileWriter.close();
                 fileWriter = null;
             } catch (Exception e) {
-                setUnknownError();
-                e.printStackTrace();
+                setUnknownError(e);
             }
         }
         if (lineIterator != null) {
