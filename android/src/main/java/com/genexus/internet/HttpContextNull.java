@@ -360,4 +360,7 @@ public class HttpContextNull extends HttpContext
 	{
 		return dt;
 	}
+
+	public boolean isHttpContextNull() {return true;}
+	public boolean isHttpContextWeb() {return false;}
 }

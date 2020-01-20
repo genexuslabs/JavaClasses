@@ -154,6 +154,11 @@ public final class ModelContext extends AbstractModelContext
         this.httpContext = httpContext;
         if (this.httpContext!=null)
             this.httpContext.setStaticContentBase(staticContentBase);
+
+		if (((ModelContext)threadModelContext.get()).getHttpContext().isHttpContextNull() && httpContext.isHttpContextWeb())
+		{
+			threadModelContext.set(this);
+		}
     }
 
     public boolean getPoolConnections()

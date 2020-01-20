@@ -58,6 +58,8 @@ public interface IHttpContext {
 	void webPutSessionValue(String name, long value);
 	void webPutSessionValue(String name, double value);
 
+	boolean isHttpContextNull();
+	boolean isHttpContextWeb();
 
 
 }

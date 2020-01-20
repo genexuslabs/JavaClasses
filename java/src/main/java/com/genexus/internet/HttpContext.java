@@ -341,6 +341,9 @@ public abstract class HttpContext
 	public abstract void ajax_rsp_command_close();
 	public abstract void dispatchAjaxCommands();
 
+	public abstract boolean isHttpContextNull();
+	public abstract boolean isHttpContextWeb();
+
 	public void AddDeferredFrags()
 	{
 		Enumeration<String> vEnum = deferredFragments.elements();
