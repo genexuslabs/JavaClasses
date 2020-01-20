@@ -291,6 +291,11 @@ public class ExcelDocument implements IGxError,IExcelDocument{
       return template;
     }
 
+    public Workbook getWorkBook()
+	{
+		return workBook;
+	}
+
     protected String template="";
     protected Workbook workBook;		
     protected String currentSheet;
