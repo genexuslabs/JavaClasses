@@ -51,6 +51,12 @@ public class ExcelDoc
 
 	
 	IExcelDocument document;
+
+	public IExcelDocument getDocument()
+	{
+		return document;
+	}
+
 	public void checkExcelDocument()
 	{
 		if(document == null)
