@@ -5,11 +5,14 @@ import java.io.*;
 import java.util.zip.*;
 
 import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 
-import java.util.*;
 
 public final class GXParameterUnpacker
 {
+	public static final ILogger logger = LogManager.getLogger(GXParameterUnpacker.class);
+
 	private int count = 0;
 	private byte[] buf;
 	private int originalSize;
@@ -788,10 +791,13 @@ public final class GXParameterUnpacker
 			return ret;
 		}catch(IOException e)
 		{
-			throw new RuntimeException("Error reading object --> " + e.getMessage());
+			logger.error("Could not read object", e);
+			throw new RuntimeException("Error reading " +
+				"object --> " + e.getMessage());
 		}catch(ClassNotFoundException e2)
 		{
-			throw new RuntimeException("Error reading object --> " + e2.getMessage());
+			logger.error("Could not read object (ClassNotFoundException)", e2);
+			throw new RuntimeException("Error reading object (ClassNotFoundException) --> " + e2.getMessage());
 		}
 	}
 	
