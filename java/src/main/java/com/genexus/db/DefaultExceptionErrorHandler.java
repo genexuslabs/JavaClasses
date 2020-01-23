@@ -37,8 +37,17 @@ public class DefaultExceptionErrorHandler
 					context.globals.Gx_dbsqlstate = e.getSQLState();
 
 					context.inErrorHandler = true;
-					errorHandler.handleError();
-					context.inErrorHandler = false;
+
+					try {
+						errorHandler.handleError();
+					}
+					catch (ReturnInErrorHandlerException e1) {
+						context.inErrorHandler = false;
+						throw e1;
+					}
+					finally {
+						context.inErrorHandler = false;
+					}
 			}
 
 			if	(context.globals.Gx_eop == ERROPT_DEFAULT)
