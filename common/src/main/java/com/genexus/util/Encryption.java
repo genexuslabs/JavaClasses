@@ -3,6 +3,19 @@ package com.genexus.util;
 import java.security.InvalidKeyException;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
+import java.nio.charset.StandardCharsets;
+
+import org.bouncycastle.crypto.BlockCipher;
+import org.bouncycastle.crypto.BufferedBlockCipher;
+import org.bouncycastle.crypto.DataLengthException;
+import org.bouncycastle.crypto.InvalidCipherTextException;
+import org.bouncycastle.crypto.engines.RijndaelEngine;
+import org.bouncycastle.crypto.modes.CBCBlockCipher;
+import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
+import org.bouncycastle.crypto.paddings.ZeroBytePadding;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.ParametersWithIV;
+import org.bouncycastle.util.encoders.Hex;
 
 import java.io.UnsupportedEncodingException;
 import java.security.SecureRandom;
@@ -10,8 +23,10 @@ import java.security.SecureRandom;
 public class Encryption
 {
     public static String AJAX_ENCRYPTION_KEY = "GX_AJAX_KEY";
+	public static String AJAX_ENCRYPTION_IV = "GX_AJAX_IV";
 	public static String AJAX_SECURITY_TOKEN = "AJAX_SECURITY_TOKEN";
 	public static String GX_AJAX_PRIVATE_KEY = "595D54FF4A612E69FF4F3FFFFF0B01FF";
+	public static String GX_AJAX_PRIVATE_IV = "8722E2EA52FD44F599D35D1534485D8E";
 
 	static public class InvalidGXKeyException extends RuntimeException
 	{
@@ -285,68 +300,58 @@ public class Encryption
             }
             return buffer.toString().toUpperCase();
         }
-        public static String decryptRijndael(String encrypted, String key, boolean[] candecrypt)
-        {
-        	try{
-        		candecrypt[0]=false;
-	            byte[] encryBytes = HexUtil.hexToBytes(encrypted);
-	            String decrypted = "";
-	            if (encryBytes.length>0){
-		            byte[] keyBytes = HexUtil.hexToBytes(key);
-		            Object objKey =  SpecificImplementation.Algorithms.rijndael_makeKey(keyBytes);
-		            int blocks = encryBytes.length / SpecificImplementation.Algorithms.getRijndael_AlgorithmBLOCK_SIZE();
-		            if((encryBytes.length % SpecificImplementation.Algorithms.getRijndael_AlgorithmBLOCK_SIZE()) > 0)
-		            {
-		             blocks++;
-		            }
-		            for(int i=0; i<blocks; i++)
-		            {
-		                int blockStart = SpecificImplementation.Algorithms.getRijndael_AlgorithmBLOCK_SIZE()*i;
-		                byte[] decryBytes = new byte[SpecificImplementation.Algorithms.getRijndael_AlgorithmBLOCK_SIZE()];
-		                SpecificImplementation.Algorithms.rijndael_BlockDecrypt(encryBytes, decryBytes, blockStart, objKey);
-		                decrypted += new String(decryBytes);
-		            }
-		            int endIdx = decrypted.indexOf('\u0000');
-		            if(endIdx != -1)
-		            {
-		                decrypted = decrypted.substring(0, endIdx);
-		            }
-		            candecrypt[0]=true;
-	            }
-	            return decrypted;
-        	}catch(Exception ex)
-        	{
-        		return encrypted;
-        	}
-        }
-        
-        public static String encryptRijndael(String decrypted, String key) throws Exception
-        {
-            byte[] textBytes = decrypted.getBytes();
-            byte[] keyBytes = HexUtil.hexToBytes(key);
-            Object objKey = SpecificImplementation.Algorithms.rijndael_makeKey(keyBytes);
-            String encrypted = "";
-            int blockSize = SpecificImplementation.Algorithms.getRijndael_AlgorithmBLOCK_SIZE();
-            int blocks = textBytes.length/blockSize;
-            if((textBytes.length%blockSize) > 0)
-            {
-                blocks++;
-            }
-            byte[] decryBytes = new byte[blocks*blockSize];
-            for (int i=0; i<blocks*blockSize; i++)
-            {
-                if (i < textBytes.length)
-                    decryBytes[i] = textBytes[i];
-                else
-                    decryBytes[i] = 0;
-            }
-            for(int i=0; i<blocks; i++)
-            {
-                int blockStart = blockSize*i;
-                byte[] encryBytes = new byte[blockSize];
-                SpecificImplementation.Algorithms.rijndael_BlockEncrypt(decryBytes, encryBytes, blockStart, objKey);
-                encrypted += HexUtil.bytesToHex(encryBytes);
-            }
-            return encrypted.trim();
-        }
+
+	public static String decryptRijndael(String encrypted, String key, boolean[] candecrypt) {
+
+		byte[] inputBytes = Hex.decode(encrypted.trim().getBytes());
+		byte[] outputBytes;
+		candecrypt[0] = false;
+		if (inputBytes != null) {
+			try {
+				outputBytes = aesCipher(inputBytes, false, key, GX_AJAX_PRIVATE_IV);
+			} catch (DataLengthException | IllegalStateException | InvalidCipherTextException e) {
+				return encrypted;
+			}
+
+			String result = new String(outputBytes, StandardCharsets.US_ASCII).replaceAll("[\ufffd]", "");
+			if (result != null) {
+				candecrypt[0] = true;
+				return result.trim();
+			}
+		}
+		return encrypted;
+	}
+
+	public static String encryptRijndael(String plainText, String key) {
+		byte[] inputBytes = plainText.trim().getBytes(StandardCharsets.US_ASCII);
+		byte[] outputBytes;
+		try {
+			outputBytes = aesCipher(inputBytes, true, key, GX_AJAX_PRIVATE_IV);
+		} catch (DataLengthException | IllegalStateException | InvalidCipherTextException e) {
+			e.printStackTrace();
+			return "";
+		}
+		return Hex.toHexString(outputBytes);
+	}
+
+
+	private static byte[] aesCipher(byte[] inputBytes, boolean init, String key, String iv)
+		throws DataLengthException, IllegalStateException, InvalidCipherTextException {
+		byte[] byteKey = Hex.decode(key);
+		byte[] byteIV = Hex.decode(iv);
+		KeyParameter keyParam = new KeyParameter(byteKey);
+		ParametersWithIV keyParamWithIV = new ParametersWithIV(keyParam, byteIV);
+
+		BlockCipher engineWithMode = new CBCBlockCipher(new RijndaelEngine());
+
+		BufferedBlockCipher bbc = new PaddedBufferedBlockCipher(engineWithMode, new ZeroBytePadding());
+		bbc.init(init, keyParamWithIV);
+		byte[] outputBytes = new byte[bbc.getOutputSize(inputBytes.length)];
+		if (inputBytes != null) {
+			int length = bbc.processBytes(inputBytes, 0, inputBytes.length, outputBytes, 0);
+			bbc.doFinal(outputBytes, length);
+
+		}
+		return outputBytes;
+	}
 }
