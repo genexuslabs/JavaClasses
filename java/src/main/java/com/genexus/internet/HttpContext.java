@@ -997,6 +997,7 @@ public abstract class HttpContext
 		 {
 			 String key = getAjaxEncryptionKey();
 			 ajax_rsp_assign_hidden(Encryption.AJAX_ENCRYPTION_KEY, key);
+			 ajax_rsp_assign_hidden(Encryption.AJAX_ENCRYPTION_IV, Encryption.GX_AJAX_PRIVATE_IV);
 			 try
 			 {
 				ajax_rsp_assign_hidden(Encryption.AJAX_SECURITY_TOKEN, Encryption.encryptRijndael(key, Encryption.GX_AJAX_PRIVATE_KEY));
