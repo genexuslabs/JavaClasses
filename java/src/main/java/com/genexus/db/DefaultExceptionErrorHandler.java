@@ -41,10 +41,6 @@ public class DefaultExceptionErrorHandler
 					try {
 						errorHandler.handleError();
 					}
-					catch (ReturnInErrorHandlerException e1) {
-						context.inErrorHandler = false;
-						throw e1;
-					}
 					finally {
 						context.inErrorHandler = false;
 					}
