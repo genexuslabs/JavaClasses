@@ -301,8 +301,9 @@ public class Encryption
             return buffer.toString().toUpperCase();
         }
 
-	public static String decryptRijndael(String encrypted, String key, boolean[] candecrypt) {
+	public static String decryptRijndael(String ivEncrypted, String key, boolean[] candecrypt) {
 
+		String encrypted = ivEncrypted.length()>=GX_AJAX_PRIVATE_IV.length() ?  ivEncrypted.substring(GX_AJAX_PRIVATE_IV.length()) : ivEncrypted;
 		byte[] inputBytes = Hex.decode(encrypted.trim().getBytes());
 		byte[] outputBytes;
 		candecrypt[0] = false;
