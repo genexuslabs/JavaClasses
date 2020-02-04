@@ -245,16 +245,7 @@ public class GXDebugManager
     protected void onExit(GXDebugInfo dbgInfo)
     {
         pushSystem(GXDebugMsgCode.EXIT.toByteInt());
-        synchronized(saveLock)
-        {
-            if (toSave != null)
-            {
-                save(toSave);
-                toSave = null;
-            }
-            save(current, dbgIndex, false);
-            dbgIndex = 0;
-        }
+        save();
     }
 
     protected void onCleanup(GXDebugInfo dbgInfo)
@@ -264,9 +255,28 @@ public class GXDebugManager
         {
             if (dbgInfo.parent != null)
                 parentTable.put(dbgInfo.context.getHttpContext().getClientId(), dbgInfo.parent);
-            else parentTable.remove(dbgInfo.context.getHttpContext().getClientId());
+            else
+			{
+				parentTable.remove(dbgInfo.context.getHttpContext().getClientId());
+				if(!dbgInfo.context.isNullHttpContext())
+					save();
+			}
         }
     }
+
+    private void save()
+	{
+		synchronized(saveLock)
+		{
+			if (toSave != null)
+			{
+				save(toSave);
+				toSave = null;
+			}
+			save(current, dbgIndex, false);
+			dbgIndex = 0;
+		}
+	}
 
     private void clearDebugItem(GXDebugItem dbgItem)
     {
