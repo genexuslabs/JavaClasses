@@ -630,9 +630,9 @@ public final class GXutil
        return CommonUtil.val(text);
     }
 
-	public static double val(String text, String sDSep)
+	public static BigDecimal val(String text, String sDSep)
 	{
-		return CommonUtil.val(text, sDSep);
+		return CommonUtil.decimalVal(text, sDSep);
 	}
 
 	public static boolean notNumeric(String value)

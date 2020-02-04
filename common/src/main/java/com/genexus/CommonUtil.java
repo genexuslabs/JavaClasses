@@ -1175,6 +1175,61 @@ public final class CommonUtil
             return val(text, ".");
         }
 
+	public static BigDecimal decimalVal(String text, String sDSep)
+	{
+		if (text == null)
+			return BigDecimal.ZERO;
+
+		text = text.trim();
+
+		try
+		{
+			return new BigDecimal(text);
+		}
+		catch (Exception e)
+		{
+			StringBuffer out = new StringBuffer();
+
+			char dSep = (sDSep.length() > 0)?sDSep.charAt(0):'.';
+			boolean point = false;
+			boolean first = true;
+			int len = text.length();
+
+			for (int i = 0; i < len; i++)
+			{
+				char c = text.charAt(i);
+
+				if	(c >= '0' && c <= '9')
+				{
+					out.append(c);
+				}
+				else if	(c == dSep && !point)
+				{
+					out.append('.');
+					point = true;
+				}
+				else if	(c == '-' && first)
+				{
+					out.append('-');
+					first = false;
+				}
+				else
+				{
+					break;
+				}
+			}
+
+			try
+			{
+				return new BigDecimal(out.toString());
+			}
+			catch (Exception ex)
+			{
+				return BigDecimal.ZERO;
+			}
+		}
+	}
+
 	public static double val(String text, String sDSep)
 	{
 		if (text == null)
