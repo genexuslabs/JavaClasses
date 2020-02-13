@@ -120,7 +120,7 @@ public class Application implements IExtensionApplication {
 
 	@Override
 	public Class getConfigurationClass() {
-		return com.genexus.Application.gxCfg.getClass();
+		return com.genexus.Application.gxCfg;
 	}
 
 	@Override
