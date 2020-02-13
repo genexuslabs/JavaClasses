@@ -1175,6 +1175,56 @@ public final class CommonUtil
             return val(text, ".");
         }
 
+	public static BigDecimal decimalVal(String text, String sDSep)
+	{
+		if (text == null)
+			return BigDecimal.ZERO;
+
+		text = text.trim();
+
+		try
+		{
+			return new BigDecimal(text);
+		}
+		catch (Exception e)
+		{
+			try
+			{
+				return new BigDecimal(extractNumericStringValue(text, sDSep).toString());
+			}
+			catch (Exception ex)
+			{
+			}
+		}
+		return BigDecimal.ZERO;
+	}
+
+	private static StringBuffer extractNumericStringValue(String text, String sDSep) {
+		StringBuffer out = new StringBuffer();
+
+		char dSep = (sDSep.length() > 0) ? sDSep.charAt(0) : '.';
+		boolean point = false;
+		boolean first = true;
+		int len = text.length();
+
+		for (int i = 0; i < len; i++) {
+			char c = text.charAt(i);
+
+			if (c >= '0' && c <= '9') {
+				out.append(c);
+			} else if (c == dSep && !point) {
+				out.append('.');
+				point = true;
+			} else if (c == '-' && first) {
+				out.append('-');
+				first = false;
+			} else {
+				break;
+			}
+		}
+		return out;
+	}
+
 	public static double val(String text, String sDSep)
 	{
 		if (text == null)
@@ -1189,47 +1239,16 @@ public final class CommonUtil
 		}
 		catch (Exception e)
 		{
-			StringBuffer out = new StringBuffer();
-
-                        char dSep = (sDSep.length() > 0)?sDSep.charAt(0):'.';
-			boolean point = false;
-			boolean first = true;
-			int len = text.length();
-
-			for (int i = 0; i < len; i++)
-			{
-				char c = text.charAt(i);
-
-				if	(c >= '0' && c <= '9')
-				{
-					out.append(c);
-				}
-				else if	(c == dSep && !point)
-				{
-					out.append('.');
-					point = true;
-				}
-				else if	(c == '-' && first)
-				{
-					out.append('-');
-					first = false;
-				}
-				else
-				{
-					break;
-				}
-			}
-
 			try
 			{
-				java.lang.Double d = new java.lang.Double(out.toString());
+				java.lang.Double d = new java.lang.Double(extractNumericStringValue(text, sDSep).toString());
 				return d.doubleValue();
 			}
 			catch (Exception ex)
 			{
-				return 0;
 			}
 		}
+		return 0;
 	}
 
 	public static boolean notNumeric(String value)
