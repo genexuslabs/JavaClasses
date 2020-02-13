@@ -273,10 +273,10 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 			try
 			{
 				value = result.getString(columnIndex);
-				if	(result.wasNull())
+				if (result.wasNull() || value == null)
 					value = CommonUtil.replicate(" ", length);
 				else
-				 	value = CommonUtil.padr(value, length, " ");
+					value = String.format(String.format("%%-%ds", length), value);
 
 				log(GXDBDebug.LOG_MAX, "getString - value : " + value);
 			}
@@ -289,10 +289,10 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		else
 		{
 			value = result.getString(columnIndex);
-			if	(result.wasNull())
+			if (result.wasNull() || value == null)
 				value = CommonUtil.replicate(" ", length);
 			else
-		   	 	value = CommonUtil.padr(value, length, " ");
+				value = String.format(String.format("%%-%ds", length), value);
 		}
 
 		resultRegBytes += value.length();
@@ -1040,7 +1040,12 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 
 	public String getMultimediaUri(int columnIndex) throws SQLException
 	{
-		return GXDbFile.resolveUri(getVarchar(columnIndex));
+		return getMultimediaUri(columnIndex, true);
+	}
+	
+	public String getMultimediaUri(int columnIndex, boolean absPath) throws SQLException
+	{
+		return GXDbFile.resolveUri(getVarchar(columnIndex), absPath);
 	}
 
 	private static String lastBlobsDir = "";
