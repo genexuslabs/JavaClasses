@@ -2540,7 +2540,7 @@ public final class CommonUtil
 
 	public static String encodeJSON(String in)
 	{
-		String encoded = JSONObject.quote(in).replaceAll("'", "\u0027");
+		String encoded = JSONObject.quote(in).replaceAll("'", "\\\\u0027");
 		return encoded.substring(1, encoded.length() - 1);
 	}
 
@@ -3075,18 +3075,17 @@ public final class CommonUtil
 	
 	public final static String URLEncode(String parm, String encoding)
     {
-		try 
-		{
+		try {
 			if (encoding.equals(""))
-				return java.net.URLEncoder.encode(parm); //Should not be used. Deprecated
+				return java.net.URLEncoder.encode(parm, "UTF8");
 			else
-				return java.net.URLEncoder.encode(parm, encoding); 	
+				return java.net.URLEncoder.encode(parm, encoding);
 		}
 		catch (java.io.UnsupportedEncodingException e)
 		{
-			System.out.println("URLEncoder unsupported encoding: " + encoding);			
+			System.out.println("URLEncoder unsupported encoding: " + encoding);
+			return "";
 		}
-		return java.net.URLEncoder.encode(parm);
     }
 	
 	public static byte remoteFileExists(String URLName){

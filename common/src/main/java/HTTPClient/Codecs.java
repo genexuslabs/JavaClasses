@@ -630,7 +630,7 @@ public class Codecs
 	}
 	catch (java.io.UnsupportedEncodingException e)
 	{
-		return java.net.URLEncoder.encode(str); 
+		return "";
 	}		
     }
 
