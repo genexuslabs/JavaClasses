@@ -445,8 +445,9 @@ public abstract class GXWebPanel extends GXWebObjectBase
 				httpContext.flushStream();
 			}
 		}
-		catch (Exception e)
+		catch (Throwable e)
 		{
+			handleException(e.getClass().getName(), e.getMessage(), CommonUtil.getStackTraceAsString(e));
 			cleanup(); // Antes de hacer el rethrow, hago un cleanup del objeto
 			throw e;
 		}
