@@ -51,6 +51,11 @@ public class DecimalUtil
 		return decToString(d[0]);
 	}
 
+	public static String decToString(java.math.BigDecimal[][] d)
+	{
+		return decToString(d[0][0]);
+	}
+
 	public static java.math.BigDecimal doubleToDec(double d, int len, int dec)
 	{
 		return new java.math.BigDecimal(CommonUtil.ltrim(CommonUtil.str(d, len, dec)));
