@@ -690,6 +690,10 @@ public final class GXutil
 	{
 		return CommonUtil.dtadd(date, seconds);
 	}
+	public static Date dtadd(Date date, double seconds)
+	{
+		return dtadd(date, (int)seconds);
+	}
 
 	public static Date dtaddms(Date date, double seconds)
 	{
@@ -700,6 +704,10 @@ public final class GXutil
 	public static Date dadd(Date date, int cnt)
 	{
 		return CommonUtil.dadd(date, cnt);
+	}
+	public static Date dadd(Date date, double cnt)
+	{
+		return dadd(date, (int)cnt);
 	}
 
 	public static long dtdiff(Date dateStart, Date dateEnd)
