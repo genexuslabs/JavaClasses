@@ -639,6 +639,10 @@ public final class GXutil
 	{
 		return ltrimstr(value[0], length, decimals);
 	}
+	public static String ltrimstr(byte[] value, int length, int decimals)
+	{
+		return ltrimstr(value[0], length, decimals);
+	}
 
 	public static String time()
 	{
