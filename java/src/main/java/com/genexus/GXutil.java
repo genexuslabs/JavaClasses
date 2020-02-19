@@ -160,6 +160,10 @@ public final class GXutil
     {
         return CommonUtil.formatDateParm(date);
     }
+	public static String formatDateParm(Date[] date)
+	{
+		return formatDateParm(date[0]);
+	}
 	
 	public static String delete(String text,char del)
 	{
@@ -184,6 +188,10 @@ public final class GXutil
 	public static String rtrim(String[] text)
 	{
 		return CommonUtil.rtrim(text[0]);
+	}
+	public static String rtrim(String[][] text)
+	{
+		return CommonUtil.rtrim(text[0][0]);
 	}
 	public static boolean endsWith(String s1, String s2)
 	{
@@ -601,13 +609,39 @@ public final class GXutil
 		return CommonUtil.ltrimstr(val, digits, decimals);
 	}
 
+	public static String ltrimstr(long[] val, int digits, int decimals)
+	{
+		return ltrimstr(val[0], digits, decimals);
+	}
+
 	public static String ltrimstr(java.math.BigDecimal value, int length, int decimals)
 	{
 		return CommonUtil.ltrimstr(value, length, decimals);
 	}
+	public static String ltrimstr(java.math.BigDecimal[] value, int length, int decimals)
+	{
+		return ltrimstr(value[0], length, decimals);
+	}
 	public static String ltrimstr(double value, int length, int decimals)
 	{
 		return CommonUtil.ltrimstr(value, length, decimals);
+	}
+	public static String ltrimstr(double[] value, int length, int decimals)
+	{
+		return ltrimstr(value[0], length, decimals);
+	}
+
+	public static String ltrimstr(int[] value, int length, int decimals)
+	{
+		return ltrimstr(value[0], length, decimals);
+	}
+	public static String ltrimstr(short[] value, int length, int decimals)
+	{
+		return ltrimstr(value[0], length, decimals);
+	}
+	public static String ltrimstr(byte[] value, int length, int decimals)
+	{
+		return ltrimstr(value[0], length, decimals);
 	}
 
 	public static String time()
