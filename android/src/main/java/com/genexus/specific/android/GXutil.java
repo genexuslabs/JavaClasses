@@ -109,7 +109,11 @@ public class GXutil implements IExtensionGXutil {
 
 	@Override
 	public String getRelativeURL(String path) {
-		return com.genexus.CommonUtil.getRelativeBlobFile(path);
+		String servletEnginePath = com.genexus.ApplicationContext.getInstance().getServletEngineDefaultPath();
+		if (servletEnginePath!=null && servletEnginePath.length()>0)
+			return com.genexus.CommonUtil.getRelativeBlobFile(path);
+		else
+			return path;
 	}
 
 	@Override
