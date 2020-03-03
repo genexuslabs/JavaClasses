@@ -880,7 +880,7 @@ public class PDFReportItext implements IReportHandler
 						bitmap = bitmap.replace(httpContext.getStaticContentBase(), "");
 					}				
 				
-					if(!new File(bitmap).isAbsolute() && !bitmap.toLowerCase().startsWith("http:"))
+					if(!new File(bitmap).isAbsolute() && !bitmap.toLowerCase().startsWith("http"))
 					{ 
 						if (bitmap.startsWith(httpContext.getStaticContentBase()))
 						{
