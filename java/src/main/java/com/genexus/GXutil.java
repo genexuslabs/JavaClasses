@@ -25,6 +25,15 @@ public final class GXutil
 {
 	public static boolean Confirmed = false;
 
+	public static void writeLogInfo(String message)
+	{
+		CommonUtil.writeLogInfo(message);
+	}
+	public static void writeLogError(String message)
+	{
+		CommonUtil.writeLogError(message);
+	}
+
 	public static void writeLogln( String message)
 	{
 		CommonUtil.writeLogln(message);
