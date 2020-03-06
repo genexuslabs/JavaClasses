@@ -991,7 +991,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 							{
 								fileName = fileName.substring(dDelimIdx + 1);
 							}										
-							fileUri = Application.getExternalProvider().copy(sourceName, fileName, tableName, fieldName, false);
+							fileUri = Application.getExternalProvider().copy(sourceName, fileName, tableName, fieldName, true);
 						}
 						else
 						{
