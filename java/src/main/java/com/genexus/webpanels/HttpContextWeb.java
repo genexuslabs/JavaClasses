@@ -952,6 +952,7 @@ public class HttpContextWeb extends HttpContext {
 
 	public void sendError(int error) {
 		try {
+			setHeader("Content-Encoding", "text/html");
 			response.sendError(error);
 		} catch (Exception e) {
 			log.error("Error " + error, e);
