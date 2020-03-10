@@ -3,6 +3,7 @@ package com.genexus.db.driver;
 import com.genexus.Application;
 import com.genexus.util.GXService;
 import com.genexus.util.Encryption;
+import com.genexus.util.GXServices;
 import com.genexus.util.StorageUtils;
 import com.genexus.StructSdtMessages_Message;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
@@ -42,7 +43,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class ExternalProviderGoogle implements ExternalProvider {
+
+    private static Logger logger = LogManager.getLogger(ExternalProviderGoogle.class);
 
     static final String KEY = "KEY";
     static final String APPLICATION_NAME = "APPLICATION_NAME";
@@ -61,31 +67,34 @@ public class ExternalProviderGoogle implements ExternalProvider {
     private String url;
 
     public ExternalProviderGoogle(String service) {
-        GXService providerService = Application.getGXServices().get(service);
+        this(Application.getGXServices().get(service));
+    }
+
+    public ExternalProviderGoogle(GXService providerService) {
         try {
             HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
 
             GoogleCredential credential = GoogleCredential.fromStream(new ByteArrayInputStream(Encryption.decrypt64(providerService.getProperties().get(KEY)).getBytes("UTF-8")))
-                    .createScoped(Collections.singleton(StorageScopes.CLOUD_PLATFORM));
+                .createScoped(Collections.singleton(StorageScopes.CLOUD_PLATFORM));
 
             client = new Storage.Builder(httpTransport, jsonFactory, credential).setApplicationName(providerService.getProperties().get(APPLICATION_NAME)).build();
 
             projectId = providerService.getProperties().get(PROJECT_ID);
             betaClient = StorageOptions.newBuilder()
-                    .setCredentials(ServiceAccountCredentials.fromStream(new ByteArrayInputStream(Encryption.decrypt64(providerService.getProperties().get(KEY)).getBytes("UTF-8"))))
-                    .setProjectId(projectId)
-                    .build()
-                    .getService();
+                .setCredentials(ServiceAccountCredentials.fromStream(new ByteArrayInputStream(Encryption.decrypt64(providerService.getProperties().get(KEY)).getBytes("UTF-8"))))
+                .setProjectId(projectId)
+                .build()
+                .getService();
         } catch (GeneralSecurityException ex) {
-            System.err.println("Error authenticating " + ex.getMessage());
+            logger.error("Error authenticating", ex.getMessage());
         } catch (IOException ex) {
             handleIOException(ex);
         }
 
         bucket = Encryption.decrypt64(providerService.getProperties().get(BUCKET));
         folder = providerService.getProperties().get(FOLDER);
-       
+
         url = String.format("https://%s.storage.googleapis.com/", bucket);
         createBucket();
         createFolder(folder);
@@ -106,10 +115,10 @@ public class ExternalProviderGoogle implements ExternalProvider {
             client.buckets().insert(projectId, bket).execute();
         } catch (GoogleJsonResponseException ex) {
             if (ex.getStatusCode() != BUCKET_EXISTS) {
-                System.err.println("Error creating bucket " + ex.getMessage());
+                logger.error("Error creating bucket", ex.getMessage());
             }
         } catch (IOException ex) {
-            System.err.println("Error creating bucket " + ex.getMessage());
+            logger.error("Error creating bucket", ex.getMessage());
         }
     }
 
@@ -154,9 +163,9 @@ public class ExternalProviderGoogle implements ExternalProvider {
             InputStreamContent contentStream = new InputStreamContent("application/octet-stream", new FileInputStream(file));
             contentStream.setLength(file.length());
             StorageObject objectMetadata = new StorageObject().setName(externalFileName);
-                        
+
             objectMetadata.setAcl(getACLOptions(isPrivate));
-            
+
             Storage.Objects.Insert insertRequest = client.objects().insert(bucket, objectMetadata, contentStream);
             insertRequest.execute();
             return url + StorageUtils.encodeName(externalFileName);
@@ -166,12 +175,12 @@ public class ExternalProviderGoogle implements ExternalProvider {
         }
     }
 
-	private List<ObjectAccessControl> getACLOptions(boolean isPrivate) {
-		if (isPrivate)
-			return Arrays.asList(new ObjectAccessControl().setEntity("allUsers").setRole("READER"));
-		else
-			return new ArrayList<ObjectAccessControl>();
-	}
+    private List<ObjectAccessControl> getACLOptions(boolean isPrivate) {
+        if (isPrivate)
+            return Arrays.asList(new ObjectAccessControl().setEntity("allUsers").setRole("READER"));
+        else
+            return new ArrayList<ObjectAccessControl>();
+    }
 
     public String upload(String externalFileName, InputStream input, boolean isPrivate) {
         try {
@@ -184,7 +193,7 @@ public class ExternalProviderGoogle implements ExternalProvider {
             StorageObject objectMetadata = new StorageObject().setName(externalFileName);
 
             objectMetadata.setAcl(getACLOptions(isPrivate));
-            
+
             Storage.Objects.Insert insertRequest = client.objects().insert(bucket, objectMetadata, contentStream);
 
             insertRequest.execute();
@@ -199,7 +208,7 @@ public class ExternalProviderGoogle implements ExternalProvider {
         try {
             client.objects().get(bucket, objectName).execute();
             if(isPrivate)
-               return betaClient.signUrl(BlobInfo.newBuilder(bucket, objectName).build(), expirationMinutes, TimeUnit.MINUTES).toString(); 
+                return betaClient.signUrl(BlobInfo.newBuilder(bucket, objectName).build(), expirationMinutes, TimeUnit.MINUTES).toString();
             else
                 return url + StorageUtils.encodeName(objectName);
         } catch (IOException ex) {
@@ -254,11 +263,11 @@ public class ExternalProviderGoogle implements ExternalProvider {
 
                 return url + StorageUtils.encodeName(resourceKey);
             } catch (Exception ex) {
-                System.err.println("Error saving file to external provider " + ex.getMessage());
+                logger.error("Error saving file to external provider", ex.getMessage());
                 return "";
             }
         } catch (UnsupportedEncodingException ex) {
-            System.err.println("Storage exception" + ex.getMessage());
+            logger.error("Storage exception", ex.getMessage());
         }
         return "";
     }
@@ -287,7 +296,7 @@ public class ExternalProviderGoogle implements ExternalProvider {
             return true;
         } catch (GoogleJsonResponseException ex) {
             if (ex.getStatusCode() != OBJECT_NOT_FOUND) {
-                System.err.println("Error while checking if file exists: " + ex.getMessage());
+                logger.error("Error while checking if file exists", ex.getMessage());
             }
             return false;
         } catch (IOException ex) {
@@ -444,7 +453,7 @@ public class ExternalProviderGoogle implements ExternalProvider {
         }
         return directories;
     }
-    
+
     public InputStream getStream(String objectName, boolean isPrivate){
         try {
             Storage.Objects.Get request = client.objects().get(bucket, objectName);
@@ -473,7 +482,7 @@ public class ExternalProviderGoogle implements ExternalProvider {
         if (canBuildException(ex)) {
             throw buildException(ex);
         }
-        System.err.println("Error " + ex.getClass() + ": " + ex.getMessage());
+        logger.error("Error " + ex.getClass(), ex);
     }
 
     boolean canBuildException(IOException ex) {
