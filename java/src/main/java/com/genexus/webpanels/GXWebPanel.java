@@ -685,6 +685,19 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			}
 		}
 
+		private void SetNullableScalarOrCollectionValue(JSONObject parm, Object value, JSONArray columnValues) throws JSONException, Exception
+		{
+			String nullableAttribute = parm.optString("nullAv", null);
+			if (nullableAttribute != null && value.toString().length() == 0)
+			{
+				SetScalarOrCollectionValue(nullableAttribute, null, true, null);
+			}
+			else
+			{
+				SetScalarOrCollectionValue(parm.has("av") ? parm.getString("av") : null, parm.has("prop") ? parm.getString("prop") : null, value, columnValues);
+			}
+		}
+
         private void SetScalarOrCollectionValue(String fieldName, String propName, Object value, JSONArray values) throws JSONException, Exception
         {
 			Field field = fieldName == null ? null : PrivateUtilities.getField(targetObj, fieldName);
@@ -1005,7 +1018,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 								}
 								if (value != null)
 								{
-									SetScalarOrCollectionValue(parm.has("av") ? parm.getString("av") : null, parm.has("prop") ? parm.getString("prop") : null, value, columnValues);
+									SetNullableScalarOrCollectionValue(parm, value, columnValues);
 								}
 							}
 						}
