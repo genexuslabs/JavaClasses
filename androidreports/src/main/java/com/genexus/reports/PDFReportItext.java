@@ -456,8 +456,6 @@ public class PDFReportItext implements IReportHandler
 	  catch(DocumentException de) {
             System.err.println(de.getMessage());
       }
-      document.addAuthor(Const.AUTHOR);
-      document.addCreator(Const.CREATOR);
       document.open();
     }
 
