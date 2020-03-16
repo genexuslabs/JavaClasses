@@ -223,7 +223,7 @@ public final class CommonUtil
 
 	public static void writeLogln( String message)
 	{
-		logger.error( message);
+		logger.debug( message);
 	}
 
 	public static void writeTLogln( String message)
@@ -233,13 +233,13 @@ public final class CommonUtil
 
 	public static void writeLogRaw( String message, Object obj)
 	{
-		logger.error(message);
-		logger.error(obj.toString());
+		logger.debug(message);
+		logger.debug(obj.toString());
 	}
 
 	public static void writeLog( String message)
 	{
-		logger.error(message, new Throwable());
+		logger.debug(message, new Throwable());
 	}
 
 	public static String accessKey(String OCaption)
