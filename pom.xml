@@ -4,7 +4,7 @@
 				 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.genexus</groupId>
+	<groupId>com.genexus.corona</groupId>
 	<artifactId>parent</artifactId>
 	<version>1.3-SNAPSHOT</version>
 	<packaging>pom</packaging>
@@ -98,13 +98,13 @@
 				<configuration>
 					<artifactItems>
 						<artifactItem>
-							<groupId>com.genexus</groupId>
+							<groupId>com.genexus.corona</groupId>
 							<artifactId>gxclassR</artifactId>
 							<version>${project.version}</version>
 							<destFileName>gxclassR</destFileName>
 						</artifactItem>
 						<artifactItem>
-							<groupId>com.genexus</groupId>
+							<groupId>com.genexus.corona</groupId>
 							<artifactId>gxcommon</artifactId>
 							<version>${project.version}</version>
 							<destFileName>gxcommon</destFileName>
