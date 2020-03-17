@@ -83,8 +83,13 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 	public byte getByte(int columnIndex) throws SQLException
 	{
 		int index = getColumnIndex(columnIndex);
-		if (value[index] instanceof ArrayList)
-			return (Byte)CommonUtil.convertObjectTo(((ArrayList)value[index]).get(0), TypeConstants.BYTE);
+		if (value[index] instanceof ArrayList) {
+			return (Byte) CommonUtil.convertObjectTo(((ArrayList) value[index]).get(0), TypeConstants.BYTE);
+		}
+		else if (value[index] instanceof String){ //Some Cache providers encode64 bytes[]
+			byte[] decodedBytes = Base64.getDecoder().decode((String)value[index]);
+			return decodedBytes[0];
+		}
 		else 
 			return ((byte[])value[index])[0];
 	}
@@ -156,9 +161,19 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 		return val;
 	}
 		
-	public java.util.Date getGXDate(int columnIndex) throws SQLException
-	{
-		return this.<java.util.Date>getValue(getColumnIndex(columnIndex)); 
+	public java.util.Date getGXDate(int columnIndex) throws SQLException {
+
+		int index = getColumnIndex(columnIndex);
+		if (value[index] instanceof Long[])
+			return new java.util.Date(((Long[]) value[index])[0]);
+		if (value[index] instanceof ArrayList) {
+			ArrayList valueArray = (ArrayList) value[index];
+			if (valueArray.get(0) instanceof Long)
+				return new java.util.Date((Long) valueArray.get(0));
+			else
+				return (java.util.Date) CommonUtil.convertObjectTo(valueArray.get(0), TypeConstants.DATE);
+		} else
+			return ((java.util.Date[]) value[index])[0];
 	}
 		
 	public String getString(int columnIndex) throws SQLException
