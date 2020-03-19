@@ -4,6 +4,7 @@ import java.util.StringTokenizer;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -102,7 +103,7 @@ public class GXGeolocation
 			connection.connect();
 			
 			//read the result from the server
-			rd  = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+			rd  = new BufferedReader(new InputStreamReader(connection.getInputStream(), Charset.forName("UTF-8")));
 			sb = new StringBuffer();
 			while ((line = rd.readLine()) != null)
 			{
