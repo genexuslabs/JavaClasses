@@ -738,12 +738,8 @@ public class GXFile extends AbstractGXFile {
             }
         }
         if (lineIterator != null) {
-        	try {
-				lineIterator.close();
-				lineIterator = null;
-			} catch (Exception e) {
-				setUnknownError(e);
-			}
+            lineIterator.close();
+            lineIterator = null;
         }
     }
 }
