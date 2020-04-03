@@ -187,6 +187,17 @@ public class ExternalProviderS3 implements ExternalProvider {
         client.copyObject(request);
         return ((AmazonS3Client) client).getResourceUrl(bucket, newName);
     }
+	String encodeNonAsciiCharacters(String value)
+	{
+		StringBuilder b = new StringBuilder();
+		for (char c : value.toCharArray()) {
+			if (c >= 128)
+				b.append("\\u").append(String.format("%04X", (int) c));
+			else
+				b.append(c);
+		}
+		return b.toString();
+	}
 
     public String copy(String objectUrl, String newName, String tableName, String fieldName, boolean isPrivate) {
         String resourceFolderName = folder + StorageUtils.DELIMITER + tableName + StorageUtils.DELIMITER + fieldName;
@@ -198,7 +209,7 @@ public class ExternalProviderS3 implements ExternalProvider {
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.addUserMetadata("Table", tableName);
         metadata.addUserMetadata("Field", fieldName);
-        metadata.addUserMetadata("KeyValue", resourceKey);
+        metadata.addUserMetadata("KeyValue", encodeNonAsciiCharacters(resourceKey));
 
         CopyObjectRequest request = new CopyObjectRequest(bucket, objectUrl, bucket, resourceKey);
         request.setNewObjectMetadata(metadata);
