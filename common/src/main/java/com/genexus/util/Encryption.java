@@ -303,24 +303,29 @@ public class Encryption
 
 	public static String decryptRijndael(String ivEncrypted, String key, boolean[] candecrypt) {
 
-		String encrypted = ivEncrypted.length()>=GX_AJAX_PRIVATE_IV.length() ?  ivEncrypted.substring(GX_AJAX_PRIVATE_IV.length()) : ivEncrypted;
-		byte[] inputBytes = Hex.decode(encrypted.trim().getBytes());
-		byte[] outputBytes;
-		candecrypt[0] = false;
-		if (inputBytes != null) {
-			try {
-				outputBytes = aesCipher(inputBytes, false, key, GX_AJAX_PRIVATE_IV);
-			} catch (DataLengthException | IllegalStateException | InvalidCipherTextException e) {
-				return encrypted;
-			}
+		try {
+			candecrypt[0] = false;
+			String encrypted = ivEncrypted.length() >= GX_AJAX_PRIVATE_IV.length() ? ivEncrypted.substring(GX_AJAX_PRIVATE_IV.length()) : ivEncrypted;
+			byte[] inputBytes = Hex.decode(encrypted.trim().getBytes());
+			byte[] outputBytes;
+			String decrypted = "";
+			if (inputBytes != null) {
+				try {
+					outputBytes = aesCipher(inputBytes, false, key, GX_AJAX_PRIVATE_IV);
+				} catch (DataLengthException | IllegalStateException | InvalidCipherTextException e) {
+					return ivEncrypted;
+				}
 
-			String result = new String(outputBytes, StandardCharsets.US_ASCII).replaceAll("[\ufffd]", "");
-			if (result != null) {
-				candecrypt[0] = true;
-				return result.trim();
+				String result = new String(outputBytes, StandardCharsets.US_ASCII).replaceAll("[\ufffd]", "");
+				if (result != null) {
+					candecrypt[0] = true;
+					decrypted = result.trim();
+				}
 			}
+			return decrypted;
+		}catch(Exception ex){
+			return ivEncrypted;
 		}
-		return encrypted;
 	}
 
 	public static String encryptRijndael(String plainText, String key) {
