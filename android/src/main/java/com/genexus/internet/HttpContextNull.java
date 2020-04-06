@@ -155,6 +155,10 @@ public class HttpContextNull extends HttpContext
 		return false;
 	}
 
+	@Override
+	public boolean exposeMetadata() {
+		return false;
+	}
 	public boolean isSmartDevice()
         {
             return false;

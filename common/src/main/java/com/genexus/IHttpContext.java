@@ -38,6 +38,8 @@ public interface IHttpContext {
 
     boolean isLocalStorageSupported();
 
+	boolean exposeMetadata();
+
 	void pushCurrentUrl();
 
 	void webGetSessionValue(String name, byte[] value);
