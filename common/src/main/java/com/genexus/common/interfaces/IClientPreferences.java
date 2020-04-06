@@ -6,13 +6,13 @@ public interface IClientPreferences {
 
 	public byte getYEAR_LIMIT();
 
-	public char getDECIMAL_POINT() ;
+	public char getDECIMAL_POINT();
 
-	public String getDATE_FMT() ;
+	public String getDATE_FMT();
 
-	public String getTIME_FMT() ;
+	public String getTIME_FMT();
 
-	public String getLANGUAGE() ;
+	public String getLANGUAGE();
 
 	public String getWEB_IMAGE_DIR();
 
@@ -38,11 +38,11 @@ public interface IClientPreferences {
 
 	public boolean getJDBC_LOGEnabled();
 
-  String getTMPMEDIA_DIR();
+	String getTMPMEDIA_DIR();
 
-  boolean getCOMPRESS_HTML();
+	boolean getCOMPRESS_HTML();
 
-  String getIE_COMPATIBILITY();
+	String getIE_COMPATIBILITY();
 
 	String getProperty(String integratedSecurityLoginWeb, String s);
 
@@ -50,5 +50,7 @@ public interface IClientPreferences {
 
 	String getWEB_STATIC_DIR();
 
-  String getPRINT_LAYOUT_METADATA_DIR();
+	String getPRINT_LAYOUT_METADATA_DIR();
+
+	boolean getEXPOSE_METADATA();
 }
