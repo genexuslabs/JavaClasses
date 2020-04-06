@@ -608,7 +608,7 @@ public class HttpContextWeb extends HttpContext {
 		return supported;
 	}
 
-	public boolean isLocalStorageSupported() {
+	public boolean exposeMetadata() {
 		return context.getClientPreferences().getEXPOSE_METADATA();
 	}
 	public int getBrowserType() {
