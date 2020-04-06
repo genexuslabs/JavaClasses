@@ -181,7 +181,11 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 	{
 		return false;
 	}
-    
+	public boolean exposeMetadata()
+	{
+		return false;
+	}
+
 	public boolean isSmartDevice()
 	{
 		return false;
