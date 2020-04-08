@@ -43,4 +43,15 @@ public class StorageUtils {
             return name;
         }
     }
+	public static String encodeNonAsciiCharacters(String value)
+	{
+		StringBuilder b = new StringBuilder();
+		for (char c : value.toCharArray()) {
+			if (c >= 128)
+				b.append("\\u").append(String.format("%04X", (int) c));
+			else
+				b.append(c);
+		}
+		return b.toString();
+	}
 }

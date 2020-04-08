@@ -195,7 +195,7 @@ public class ExternalProviderS3 implements ExternalProvider {
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.addUserMetadata("Table", tableName);
         metadata.addUserMetadata("Field", fieldName);
-        metadata.addUserMetadata("KeyValue", resourceKey);
+        metadata.addUserMetadata("KeyValue", StorageUtils.encodeNonAsciiCharacters(resourceKey));
 
         CopyObjectRequest request = new CopyObjectRequest(bucket, objectUrl, bucket, resourceKey);
         request.setNewObjectMetadata(metadata);
