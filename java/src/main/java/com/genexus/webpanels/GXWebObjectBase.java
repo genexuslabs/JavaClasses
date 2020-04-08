@@ -311,7 +311,11 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
             this.localUtil = ui.getLocalUtil();
             return res;
         }
-
+		public int setTheme(String theme)
+		{
+			int res = GXutil.setTheme(theme, context);
+			return res;
+		}
         public void executeUsercontrolMethod(String CmpContext, boolean IsMasterPage, String containerName, String methodName, String input, Object[] parms)
         {
             httpContext.executeUsercontrolMethod(CmpContext, IsMasterPage, containerName, methodName, input, parms);

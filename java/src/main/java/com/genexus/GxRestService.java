@@ -244,6 +244,11 @@ abstract public class GxRestService extends GXWebObjectBase
 		{
 			setLanguage(language);
 		}
+		String theme = myServletRequest.getHeader("GeneXus-Theme");
+		if (theme != null)
+		{
+			setTheme(theme);
+		}
 		String etag = myServletRequest.getMethod().equalsIgnoreCase(POST) ? null : myServletRequest.getHeader("If-Modified-Since");
 		Date dt = Application.getStartDateTime();
 		Date newDt = new Date();
