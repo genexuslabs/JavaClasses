@@ -1565,7 +1565,10 @@ public final class GXutil
         return res;
 	}
 
-	
+	public static int setTheme(String theme, ModelContext context) {
+		HttpContext httpContext = (HttpContext) context.getHttpContext();
+		return httpContext.setTheme(theme);
+	}
 	public static GxJsonArray stringCollectionsToJsonObj(StringCollection gxdynajaxctrlcodr, StringCollection gxdynajaxctrldescr)
 	{
 		return new GxJsonArray(stringCollectionsToJson(gxdynajaxctrlcodr, gxdynajaxctrldescr));
