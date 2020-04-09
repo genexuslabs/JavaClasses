@@ -170,6 +170,10 @@ public class GXGeolocation
 	public static java.util.Vector<String> getLocation(String address)
 	{
 		java.util.Vector<String> result = new java.util.Vector<>();
+		if(address == null || address.isEmpty())
+		{
+			return result;
+		}
 		try {
 			
 			String urlString = "https://maps.google.com/maps/api/geocode/json?address=" + URLEncoder.encode(address, "utf-8") + "&sensor=false";
