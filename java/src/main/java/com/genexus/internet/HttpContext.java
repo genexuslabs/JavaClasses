@@ -777,7 +777,7 @@ public abstract class HttpContext
 			if (clientKey != null && clientKey.trim().length() > 0)
 			{
 				boolean candecrypt[]=new boolean[1];
-				clientKey = Encryption.decryptRijndael(clientKey, Encryption.GX_AJAX_PRIVATE_KEY, candecrypt);
+				clientKey = Encryption.decryptRijndael(Encryption.AJAX_ENCRYPTION_IV + clientKey, Encryption.GX_AJAX_PRIVATE_KEY, candecrypt);
 				if (candecrypt[0])
 				{
 					webPutSessionValue(Encryption.AJAX_ENCRYPTION_KEY, clientKey);
