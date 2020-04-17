@@ -1190,6 +1190,9 @@ public final class GXutil
 		{
 			return s;
 		}
+  		catch (IllegalArgumentException ie){
+  			return s;
+		}
 	}
 
 	public static String URLEncode(String s)
