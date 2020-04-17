@@ -1186,12 +1186,9 @@ public final class GXutil
   		{
 			return Codecs.decode(s, "UTF8");
 		}
-		catch(  UnsupportedEncodingException e)
+		catch(  UnsupportedEncodingException | IllegalArgumentException e)
 		{
 			return s;
-		}
-  		catch (IllegalArgumentException ie){
-  			return s;
 		}
 	}
 
