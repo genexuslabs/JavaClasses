@@ -68,6 +68,9 @@ public class ClientInformation
 	}
 	static public String getPlatformName()
 	{
-		return SpecificImplementation.Application.getModelContext().getHttpContext().getHeader("PlatformName");
+		String platformName =  SpecificImplementation.Application.getModelContext().getHttpContext().getHeader("PlatformName");
+		if (platformName==null || platformName == "")
+			platformName =  SpecificImplementation.Application.getModelContext().getHttpContext().getHeader("DevicePlatform");
+		return platformName;
 	}
 }
