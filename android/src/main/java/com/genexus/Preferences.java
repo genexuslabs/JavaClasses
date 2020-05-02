@@ -237,6 +237,15 @@ public class Preferences implements IPreferences {
 			return false;
 		}
 	}
+	private Boolean EXPOSE_METADATA;
+
+	public boolean getEXPOSE_METADATA() {
+		try {
+			return booleanPreference(EXPOSE_METADATA, "EXPOSE_METADATA");
+		} catch (Throwable e) {
+			return false;
+		}
+	}
 
 	/**
 	 * Devuelve el valor de una preference como un valor booleano. Los que tienen

@@ -608,6 +608,9 @@ public class HttpContextWeb extends HttpContext {
 		return supported;
 	}
 
+	public boolean exposeMetadata() {
+		return context.getClientPreferences().getEXPOSE_METADATA();
+	}
 	public int getBrowserType() {
 		String userAgent = request.getHeader("USER-AGENT");
 

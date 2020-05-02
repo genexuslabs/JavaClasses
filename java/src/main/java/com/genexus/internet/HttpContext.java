@@ -279,6 +279,7 @@ public abstract class HttpContext
 	public abstract String getUserId(String key, ModelContext context, int handle, com.genexus.db.IDataStoreProvider dataStore);
 	public abstract String getRemoteAddr();
 	public abstract boolean isLocalStorageSupported();
+	public abstract boolean exposeMetadata();
 	public abstract boolean isSmartDevice();
 	public abstract int getBrowserType();
 	public abstract boolean isIE55();
