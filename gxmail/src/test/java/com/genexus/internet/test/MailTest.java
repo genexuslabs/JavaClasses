@@ -21,7 +21,7 @@ public class MailTest {
 	private String MAIL_TO_ADDRESS = MAIL_FROM_ADDRESS;
 	private String MAIL_TO_NAME = "Receiver Name";
 	private String MAIL_SMTP_HOST = "smtp.gmail.com";
-	private String MAIL_PASSWORD = "ya29.a0Ae4lvC1gveWVHcBWKQZb-8DMsb6G4A1nvV_kc6dcf6EXGxC6Y3R3x0jcTx61B8-MB3vymnBw8YCmzbE_6OC6ww0JBxHBjt8BvTw0VL0T2FYXsb5P2pFMXKkd49mZFDoH1-flN3z0Lx4ZmXwNyCBI6HhCkOsOzAjqOiQ";
+	private String MAIL_PASSWORD = "ya29.a0Ae4lvC3p8Lyj4iYSsRRMWpBTzQtshpqEgi57Qrz9SI9LWi81SOKM9BavzkeN9xtIHUX_F3XQqcoj3cqlQNyYFtk_oQLZ5pZedoh13BT3eUfL5tkaqw6OWpZnYrmE8npK7xq5ulqusHlJcsuf-zvc1_6DJMQ0aLjbfa8";
 
 	@Test
 	@Ignore
@@ -30,7 +30,7 @@ public class MailTest {
 		GXSMTPSession session = new GXSMTPSession();
 		session.setHost(MAIL_SMTP_HOST);
 		session.setAuthentication(1);
-		session.setAuthenticationProtocol("XOAUTH2");
+		session.setAuthenticationMethod("XOAUTH2");
 		session.setSecure(0);
 		session.getSender().setAddress(MAIL_FROM_ADDRESS);
 		session.setUserName(MAIL_FROM_ADDRESS);

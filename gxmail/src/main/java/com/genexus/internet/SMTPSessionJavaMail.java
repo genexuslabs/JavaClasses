@@ -79,8 +79,8 @@ public final class SMTPSessionJavaMail implements GXInternetConstants,ISMTPSessi
 		props.setProperty("mail.smtp.timeout", String.valueOf(timeout));
 		props.setProperty("mail.smtp.ssl.enable", String.valueOf(secureConnection));
 
-		if (sessionInfo.getAuthenticationProtocol().length() > 0) {
-			props.setProperty("mail.smtp.auth.mechanisms", sessionInfo.getAuthenticationProtocol().toUpperCase());
+		if (sessionInfo.getAuthenticationMethod().length() > 0) {
+			props.setProperty("mail.smtp.auth.mechanisms", sessionInfo.getAuthenticationMethod().toUpperCase());
 		}
 
 		if (useTLS)

@@ -36,7 +36,7 @@ public class GXSMTPSession
 		setUserName("");
 		setPassword("");
 		setTimeout(30);
-		setAuthenticationProtocol("");
+		setAuthenticationMethod("");
 		sender = new MailRecipient();
 		
 		resetError();
@@ -132,12 +132,12 @@ public class GXSMTPSession
 		return password;
 	}
 
-	public void setAuthenticationProtocol(String authenticationProtocol)
+	public void setAuthenticationMethod(String authenticationProtocol)
 	{
 		this.authenticationProtocol = authenticationProtocol;
 	}
 
-	public String getAuthenticationProtocol()
+	public String getAuthenticationMethod()
 	{
 		return this.authenticationProtocol;
 	}
