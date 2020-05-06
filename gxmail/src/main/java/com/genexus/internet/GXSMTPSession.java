@@ -16,6 +16,7 @@ public class GXSMTPSession
 	private int errCode;
 	private String errDescription;
 	private MailRecipient sender;
+	private String authenticationProtocol;
 
 	public GXSMTPSession()
 	{
@@ -35,6 +36,7 @@ public class GXSMTPSession
 		setUserName("");
 		setPassword("");
 		setTimeout(30);
+		setAuthenticationProtocol("");
 		sender = new MailRecipient();
 		
 		resetError();
@@ -128,6 +130,16 @@ public class GXSMTPSession
 	public String getPassword()
 	{
 		return password;
+	}
+
+	public void setAuthenticationProtocol(String authenticationProtocol)
+	{
+		this.authenticationProtocol = authenticationProtocol;
+	}
+
+	public String getAuthenticationProtocol()
+	{
+		return this.authenticationProtocol;
 	}
 		
 	public void setTimeout(int timeout)
