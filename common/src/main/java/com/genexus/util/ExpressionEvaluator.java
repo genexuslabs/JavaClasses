@@ -604,7 +604,7 @@ public class ExpressionEvaluator
 			token += tokenizer.nextToken();
 		}
 		while (!matchParentesis(token) || (token.trim().equals("") && tokenizer.hasMoreTokens()));
-		if (tokenizer.useParentheses() && !token.startsWith("("))
+		if (tokenizer.useParentheses() && !token.startsWith("(") && !token.startsWith("IIF"))
 		{
 			return "(" + token.trim() + ")";
 		}
