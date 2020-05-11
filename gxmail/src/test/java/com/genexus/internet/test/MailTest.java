@@ -16,12 +16,12 @@ public class MailTest {
 ////		Connect.init();
 ////	}
 
-	private String MAIL_FROM_ADDRESS = "gonzalogallotti@gmail.com";
+	private String MAIL_FROM_ADDRESS = "mail@gmail.com";
 	private String MAIL_FROM_NAME = "Sender";
 	private String MAIL_TO_ADDRESS = MAIL_FROM_ADDRESS;
 	private String MAIL_TO_NAME = "Receiver Name";
 	private String MAIL_SMTP_HOST = "smtp.gmail.com";
-	private String MAIL_PASSWORD = "ya29.a0Ae4lvC3p8Lyj4iYSsRRMWpBTzQtshpqEgi57Qrz9SI9LWi81SOKM9BavzkeN9xtIHUX_F3XQqcoj3cqlQNyYFtk_oQLZ5pZedoh13BT3eUfL5tkaqw6OWpZnYrmE8npK7xq5ulqusHlJcsuf-zvc1_6DJMQ0aLjbfa8";
+	private String MAIL_PASSWORD = "ya29.asddasasd";
 
 	@Test
 	@Ignore
