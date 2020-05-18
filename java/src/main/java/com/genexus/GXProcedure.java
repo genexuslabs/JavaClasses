@@ -223,6 +223,10 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 	{
 	}
 
+	public void handleException(String gxExceptionType, String gxExceptionDetails, String gxExceptionStack)
+	{
+	}
+
 	private GXDebugInfo dbgInfo = null;
 	protected void trkCleanup()
 	{
