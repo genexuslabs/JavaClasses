@@ -184,7 +184,7 @@ public class GXDBMSinformix implements GXDBMS
 
 	public java.util.Date serverDateTime(GXConnection con) throws SQLException
 	{
-		ResultSet rslt = con.getStatement("_ServerDT_", "SELECT CURRENT YEAR TO SECOND FROM informix.SYSTABLES WHERE tabname = 'systables'", false).executeQuery();
+		ResultSet rslt = con.getStatement("_ServerDT_", "SELECT CURRENT YEAR TO FRACTION(3) FROM informix.SYSTABLES WHERE tabname = 'systables'", false).executeQuery();
 
 		rslt.next();
 		Date value = rslt.getTimestamp(1);
