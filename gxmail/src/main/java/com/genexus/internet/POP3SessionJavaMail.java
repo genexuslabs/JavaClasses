@@ -280,7 +280,7 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
     {
     	handleMultipart((Multipart)part.getContent(), gxmessage);
     }
-    if (disposition==null && part.isMimeType("application/octet-stream"))
+    if (disposition==null && part.isMimeType("application/*"))
     {
     	disposition = "UNKNOWN";
     }    
