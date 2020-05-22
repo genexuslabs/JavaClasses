@@ -78,7 +78,8 @@ public class SearchResultItem implements ISearchResultItem, Serializable, IGxJSO
 
 	public StringCollection getKey()
 	{
-		List fields = m_document.getFields();
+		@SuppressWarnings("unchecked")
+		List<Field> fields = m_document.getFields();
 		int size = fields.size();
 		StringCollection keys = new StringCollection();
 		for (int i = 0; i < size; i++)
