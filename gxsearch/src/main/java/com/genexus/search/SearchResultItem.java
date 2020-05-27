@@ -2,6 +2,7 @@ package com.genexus.search;
 
 import java.util.Date;
 import java.util.List;
+import java.text.ParseException;
 import com.genexus.internet.StringCollection;
 
 import json.org.json.IJsonFormattable;
@@ -9,6 +10,7 @@ import json.org.json.JSONException;
 import json.org.json.JSONObject;
 
 import org.apache.lucene.document.DateField;
+import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import com.genexus.internet.IGxJSONAble;
@@ -67,8 +69,16 @@ public class SearchResultItem implements ISearchResultItem, Serializable, IGxJSO
 
 	public Date getTimestamp()
 	{
-		// We need to still using this for all indexes already created with this kind of fields.
-		return DateField.stringToDate(m_document.getField(IndexRecord.TIMESTAMPFIELD).stringValue());
+		Date aux_date = null;
+		try {
+			aux_date = DateTools.stringToDate(m_document.getField(IndexRecord.TIMESTAMPFIELD).stringValue());
+		}catch(ParseException e)
+		{
+			// We need to still using this for all indexes already created with this kind of fields.
+			aux_date =  DateField.stringToDate(m_document.getField(IndexRecord.TIMESTAMPFIELD).stringValue());
+		}
+		return aux_date;
+		
 	}
 
 	public float getScore()
