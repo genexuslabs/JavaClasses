@@ -240,7 +240,7 @@ public class Indexer
 				doc.add(new Field(IndexRecord.URIFIELD,record.getUri(),Field.Store.YES, Field.Index.UN_TOKENIZED));
 				doc.add(new Field(IndexRecord.ENTITYFIELD,record.getEntity(),Field.Store.YES, Field.Index.UN_TOKENIZED));
 				doc.add(new Field(IndexRecord.CONTENTFIELD,new StringReader(record.getContent())));
-				doc.add(new Field(IndexRecord.TIMESTAMPFIELD, DateTools.dateToString(new Date(), DateTools.Resolution.MILLISECOND),Field.Store.YES,Field.Index.NO));
+				doc.add(new Field(IndexRecord.TIMESTAMPFIELD, DateTools.dateToString(new Date(), DateTools.Resolution.SECOND),Field.Store.YES,Field.Index.NO));
 				doc.add(new Field(IndexRecord.VIEWERFIELD, record.getViewer(), Field.Store.YES, Field.Index.UN_TOKENIZED));
 				doc.add(new Field(IndexRecord.TITLEFIELD, record.getTitle(), Field.Store.YES, Field.Index.UN_TOKENIZED));
 
