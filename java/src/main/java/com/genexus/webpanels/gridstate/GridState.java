@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GridState {
-	public GridState(int currentPage, int orderedBy, List<GridStateInputValuesItem> inputValues){
+	public GridState(int currentPage, short orderedBy, List<GridStateInputValuesItem> inputValues){
 		this();
 		CurrentPage =currentPage;
 		OrderedBy = orderedBy;
@@ -15,7 +15,7 @@ public class GridState {
 		InputValues = new ArrayList<GridStateInputValuesItem>();
 	}
 	protected int CurrentPage;
-	protected int OrderedBy;
+	protected short OrderedBy;
 	protected List<GridStateInputValuesItem> InputValues;
 }
 

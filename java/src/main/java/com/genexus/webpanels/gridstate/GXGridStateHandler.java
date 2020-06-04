@@ -102,6 +102,14 @@ public final class GXGridStateHandler {
 		state.CurrentPage = value;
 	}
 
+	public short getOrderedby() {
+		return state.OrderedBy;
+	}
+
+	public void setOrderedby(short value) {
+		state.OrderedBy = value;
+	}
+
 	public GXXMLSerializable getState() {
 		try {
 			if (dirty || exposedSdtGridState == null) {
