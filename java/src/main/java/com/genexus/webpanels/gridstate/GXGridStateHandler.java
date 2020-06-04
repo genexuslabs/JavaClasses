@@ -28,7 +28,7 @@ public final class GXGridStateHandler {
 	private boolean dirty;
 	private ObjectMapper objectMapper;
 
-	static final String SDTGridStateClass = "com.genexuscore.genexus.common.SdtGridState";
+	static final String sdtGridStateClass = "com.genexuscore.genexus.common.SdtGridState";
 
 	private GXGridStateHandler(ModelContext context, String gridName, String programName) {
 		this.context = context;
@@ -91,29 +91,29 @@ public final class GXGridStateHandler {
 	}
 
 	public String filterValues(int idx) {
-		return state.InputValues.get(idx - 1).Value;
+		return state.inputValues.get(idx - 1).value;
 	}
 
 	public int getCurrentpage() {
-		return state.CurrentPage;
+		return state.currentPage;
 	}
 
 	public void setCurrentpage(int value) {
-		state.CurrentPage = value;
+		state.currentPage = value;
 	}
 
 	public short getOrderedby() {
-		return state.OrderedBy;
+		return state.orderedBy;
 	}
 
 	public void setOrderedby(short value) {
-		state.OrderedBy = value;
+		state.orderedBy = value;
 	}
 
 	public GXXMLSerializable getState() {
 		try {
 			if (dirty || exposedSdtGridState == null) {
-				Class<?> sdtGridStateClass = Class.forName(SDTGridStateClass);
+				Class<?> sdtGridStateClass = Class.forName(GXGridStateHandler.sdtGridStateClass);
 				Class[] parTypes = new Class[]{ModelContext.class};
 				Constructor ctr = sdtGridStateClass.getConstructor(parTypes);
 				Object[] argList = new Object[]{context};
@@ -125,7 +125,7 @@ public final class GXGridStateHandler {
 			}
 			return exposedSdtGridState;
 		} catch (Exception ex) {
-			logger.error("Can't create " + SDTGridStateClass, ex);
+			logger.error("Can't create " + sdtGridStateClass, ex);
 			return null;
 		}
 	}
@@ -140,18 +140,18 @@ public final class GXGridStateHandler {
 	}
 
 	public void clearFilterValues() {
-		state.InputValues.clear();
+		state.inputValues.clear();
 	}
 
 	public void addFilterValue(String name, String value) {
 		GridStateInputValuesItem item = new GridStateInputValuesItem();
-		item.Value = value;
-		item.Name = name;
-		state.InputValues.add(item);
+		item.value = value;
+		item.name = name;
+		state.inputValues.add(item);
 	}
 
 	public int getFiltercount() {
-		return state.InputValues.size();
+		return state.inputValues.size();
 	}
 
 	private void runVarsToState() {

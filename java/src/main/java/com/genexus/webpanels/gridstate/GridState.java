@@ -1,22 +1,27 @@
 package com.genexus.webpanels.gridstate ;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class GridState {
 	public GridState(int currentPage, short orderedBy, List<GridStateInputValuesItem> inputValues){
 		this();
-		CurrentPage =currentPage;
-		OrderedBy = orderedBy;
+		this.currentPage =currentPage;
+		this.orderedBy = orderedBy;
 		if( inputValues!=null)
-			InputValues = inputValues;
+			this.inputValues = inputValues;
 	}
 	public GridState(){
-		InputValues = new ArrayList<GridStateInputValuesItem>();
+		inputValues = new ArrayList<GridStateInputValuesItem>();
 	}
-	protected int CurrentPage;
-	protected short OrderedBy;
-	protected List<GridStateInputValuesItem> InputValues;
+	@JsonProperty("CurrentPage")
+	protected int currentPage;
+	@JsonProperty("OrderedBy")
+	protected short orderedBy;
+	@JsonProperty("InputValues")
+	protected List<GridStateInputValuesItem> inputValues;
 }
 
 
