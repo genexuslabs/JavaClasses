@@ -5,7 +5,7 @@ import com.genexus.ICacheService;
 
 public class CacheAPI 
 {
-	static final String defaultCacheId = "DefaultCache";
+	static final String DEFAULT_CACHE_ID = "DefaultCache";
 
     public static CacheAPI database()
     {
@@ -26,7 +26,7 @@ public class CacheAPI
     
     private String cacheId;
     
-    public CacheAPI() {cacheId = defaultCacheId;}
+    public CacheAPI() {cacheId = DEFAULT_CACHE_ID;}
     
     public CacheAPI(String name)
     {
