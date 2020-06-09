@@ -1552,7 +1552,7 @@ public abstract class HttpContext
 	{
 		String out = file.trim();
 
-		if	((file.startsWith("http:")) || (file.startsWith("https:")) || (file.startsWith("data:")) || (file.startsWith("//")) || (file.length() > 2 && file.charAt(1) == ':'))
+		if	((file.startsWith("http:")) || (file.startsWith("https:")) || (file.startsWith("data:")) || (file.startsWith("about:")) || (file.startsWith("//")) || (file.length() > 2 && file.charAt(1) == ':'))
 		{
 			return out;
 		}
