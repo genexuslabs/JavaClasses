@@ -821,6 +821,8 @@ public abstract class HttpContext
 		return IsValidAjaxCall(true);
 	}
 
+	public String ajaxOnSessionTimeout(){ return "Ignore";};
+
 	public boolean IsValidAjaxCall(boolean insideAjaxCall)
 	{         
 		if (insideAjaxCall && !validEncryptedParm)
@@ -829,7 +831,7 @@ public abstract class HttpContext
 			sendResponseStatus(403, "Forbidden action");
 			return false;
 		}
-		else if (!insideAjaxCall && isGxAjaxRequest() && !isFullAjaxMode())
+		else if (!insideAjaxCall && isGxAjaxRequest() && !isFullAjaxMode() && ajaxOnSessionTimeout().equalsIgnoreCase("Warn"))
 		{
 			sendResponseStatus(440, "Session timeout");
 			return false;
