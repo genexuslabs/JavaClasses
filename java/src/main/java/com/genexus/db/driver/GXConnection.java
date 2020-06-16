@@ -181,10 +181,20 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 
 			DatabaseMetaData dma = con.getMetaData ();
 
+			String version;
+			try
+			{
+				version = dma.getDatabaseProductVersion();
+			}
+			catch (SQLException e)
+			{
+				version = "";
+			}
+
 			log(GXDBDebug.LOG_MIN, "Connected to     : " + dma.getURL());
 			log(GXDBDebug.LOG_MIN, "                   " + dataSource.jdbcUrl);
 			log(GXDBDebug.LOG_MIN, "Connection class : " + con.getClass().getName());
-			log(GXDBDebug.LOG_MIN, "Database         : " + dma.getDatabaseProductName() + " version " + dma.getDatabaseProductVersion() );
+			log(GXDBDebug.LOG_MIN, "Database         : " + dma.getDatabaseProductName() + " version " + version);
 			log(GXDBDebug.LOG_MIN, "Driver           : " + dma.getDriverName());
 			log(GXDBDebug.LOG_MIN, "Version          : " + dma.getDriverVersion());
 			log(GXDBDebug.LOG_MIN, "GX DBMS          : " + dataSource.dbms);
