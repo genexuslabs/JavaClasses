@@ -40,7 +40,12 @@ public abstract class HttpAjaxContext
 
         private Stack<GXCmpContent> cmpContents = new Stack<>();
 
-        public abstract boolean isMultipartContent();
+		private String _ajaxOnSessionTimeout = "Ignore";
+		public void setAjaxOnSessionTimeout( String ajaxOnSessionTimeout){ this._ajaxOnSessionTimeout = ajaxOnSessionTimeout;}
+		public String ajaxOnSessionTimeout(){ return _ajaxOnSessionTimeout;}
+
+
+	public abstract boolean isMultipartContent();
 		public abstract void ajax_rsp_assign_prop_as_hidden(String Control, String Property, String Value);
 
 		public abstract boolean isSpaRequest();
