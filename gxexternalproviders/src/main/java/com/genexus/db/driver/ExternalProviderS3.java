@@ -76,7 +76,7 @@ public class ExternalProviderS3 implements ExternalProvider {
 		region = providerService.getProperties().get(REGION);
 
     	AWSCredentials credentials = new BasicAWSCredentials(Encryption.decrypt64(providerService.getProperties().get(ACCESS_KEY_ID)), Encryption.decrypt64(providerService.getProperties().get(SECRET_ACCESS_KEY)));
-        AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(credentials)).withRegion(region);
+		client = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(credentials)).withRegion(region).build();
 
 		setEndpoint(providerService.getProperties().get(ENDPOINT));
         bucketExists();
