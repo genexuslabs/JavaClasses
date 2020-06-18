@@ -1,6 +1,7 @@
 package com.genexus.db.driver;
 
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.S3ClientOptions;
 import com.genexus.util.GXServices;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -77,10 +78,20 @@ public class ExternalProviderS3 implements ExternalProvider {
     	AWSCredentials credentials = new BasicAWSCredentials(Encryption.decrypt64(providerService.getProperties().get(ACCESS_KEY_ID)), Encryption.decrypt64(providerService.getProperties().get(SECRET_ACCESS_KEY)));
         AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(credentials)).withRegion(region);
 
+		setEndpoint(providerService.getProperties().get(ENDPOINT));
         bucketExists();
         createFolder(folder);
     }
 
+
+	private void setEndpoint(String endpoint) {
+		if (endpoint.equals(ACCELERATED)) {
+			client.setS3ClientOptions(S3ClientOptions.builder().setAccelerateModeEnabled(true).build());
+		}
+		if (endpoint.equals(DUALSTACK)) {
+			client.setS3ClientOptions(S3ClientOptions.builder().enableDualstack().setAccelerateModeEnabled(true).build());
+		}
+	}
 
     private void bucketExists() {
         if (!client.doesBucketExistV2(bucket)) {
