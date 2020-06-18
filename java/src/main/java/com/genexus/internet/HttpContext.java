@@ -821,6 +821,8 @@ public abstract class HttpContext
 		return IsValidAjaxCall(true);
 	}
 
+	public String ajaxOnSessionTimeout(){ return "Ignore";};
+
 	public boolean IsValidAjaxCall(boolean insideAjaxCall)
 	{         
 		if (insideAjaxCall && !validEncryptedParm)
