@@ -35,6 +35,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -49,14 +50,17 @@ public class ExternalProviderS3 implements ExternalProvider {
     static final String ENDPOINT = "ENDPOINT";
     static final String BUCKET = "BUCKET_NAME";
     static final String FOLDER = "FOLDER_NAME";
+	static final String REGION = "STORAGE_PROVIDER_REGION";
+
 
     static final String ACCELERATED = "s3-accelerate.amazonaws.com";
     static final String DUALSTACK = "s3-accelerate.dualstack.amazonaws.com";
+	static final String DEFAULT_REGION = "us-east-1";
 
     private AmazonS3 client;
     private String bucket;
     private String folder;
-    private String endpointUrl = ".s3.amazonaws.com/";
+	private String region = DEFAULT_REGION;
 
     public ExternalProviderS3(String service) {
         this(Application.getGXServices().get(service));
@@ -66,27 +70,16 @@ public class ExternalProviderS3 implements ExternalProvider {
         AWSCredentials credentials = new BasicAWSCredentials(Encryption.decrypt64(providerService.getProperties().get(ACCESS_KEY_ID)), Encryption.decrypt64(providerService.getProperties().get(SECRET_ACCESS_KEY)));
         client = new AmazonS3Client(credentials);
 
-        setEndpoint(providerService.getProperties().get(ENDPOINT));
-
         bucket = Encryption.decrypt64(providerService.getProperties().get(BUCKET)).toLowerCase();
         folder = providerService.getProperties().get(FOLDER);
-
+        String propRegion = providerService.getProperties().get(REGION);
+        if (propRegion != null && propRegion.length() > 0) {
+			region = propRegion;
+		}
         bucketExists();
         createFolder(folder);
     }
 
-    private void setEndpoint(String endpoint) {
-        if (endpoint.equals(ACCELERATED)) {
-            client.setS3ClientOptions(S3ClientOptions.builder().setAccelerateModeEnabled(true).build());
-            endpointUrl = ".s3-accelerate.amazonaws.com/";
-        }
-        if (endpoint.equals(DUALSTACK)) {
-            client.setS3ClientOptions(S3ClientOptions.builder().enableDualstack().setAccelerateModeEnabled(true).build());
-            endpointUrl = ".s3-accelerate.dualstack.amazonaws.com/";
-        }
-
-        endpointUrl = endpoint + "/";
-    }
 
     private void bucketExists() {
         if (!client.doesBucketExist(bucket)) {
@@ -192,7 +185,13 @@ public class ExternalProviderS3 implements ExternalProvider {
         createFolder(resourceFolderName);
 
         String resourceKey = resourceFolderName + StorageUtils.DELIMITER + newName;
-        objectUrl = objectUrl.replace("https://" + bucket + endpointUrl, "");
+
+        try {
+			objectUrl = new URI(objectUrl).getPath();
+		}
+        catch (Exception e){
+			logger.error("Failed to Parse Storage Object URI for Copy operation", e);
+		}
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.addUserMetadata("Table", tableName);
@@ -203,6 +202,7 @@ public class ExternalProviderS3 implements ExternalProvider {
         request.setNewObjectMetadata(metadata);
         request.setCannedAccessControlList(CannedAccessControlList.PublicReadWrite);
         client.copyObject(request);
+
 
         return ((AmazonS3Client) client).getResourceUrl(bucket, resourceKey);
     }
