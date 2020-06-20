@@ -557,6 +557,11 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 			CommonUtil.ErrorToMessages("fromxml error", ex.getMessage(), messages);
 			return false;
 		}
+		catch (Exception ex)
+		{
+			CommonUtil.ErrorToMessages("fromxml error", ex.getMessage(), messages);
+			return false;
+		}
 	}
 	public String ToJavascriptSource(boolean includeState)
 	{
