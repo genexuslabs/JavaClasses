@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.genexus.util.GXServices;
 import com.ibm.cloud.objectstorage.ClientConfiguration;
 import com.ibm.cloud.objectstorage.HttpMethod;
 import com.ibm.cloud.objectstorage.SDKGlobalConfiguration;
@@ -35,6 +36,7 @@ public class ExternalProviderIBM implements ExternalProvider {
     static final String ACCESS_KEY = "STORAGE_PROVIDER_ACCESS_KEY";
     static final String SECRET_KEY = "STORAGE_PROVIDER_SECRET_KEY";
     static final String COS_ENDPOINT = "STORAGE_COS_ENDPOINT";
+    static final String COS_LOCATION = "STORAGE_COS_LOCATION";
     static final String BUCKET = "BUCKET_NAME";
     static final String FOLDER = "FOLDER_NAME";
 
@@ -44,20 +46,21 @@ public class ExternalProviderIBM implements ExternalProvider {
     private String endpointUrl;
 
     /* For compatibility reasons with GX16 U6 or lower*/
-	public ExternalProviderIBM(){
-		this("Storage");
-	}
+    public ExternalProviderIBM(){
+        this(GXServices.STORAGE_SERVICE);
+    }
 
     public ExternalProviderIBM(String service) {
+        this(Application.getGXServices().get(service));
+    }
 
-        GXService providerService = Application.getGXServices().get(service);
-
+    public ExternalProviderIBM(GXService providerService) {
         String accessKey = ExternalProviderHelper.getServicePropertyValue(providerService, ACCESS_KEY, true);
-		String secret = ExternalProviderHelper.getServicePropertyValue(providerService, SECRET_KEY, true);
-		String location = ExternalProviderHelper.getServicePropertyValue(providerService, "STORAGE_COS_LOCATION", false);
-		String endpoint = ExternalProviderHelper.getServicePropertyValue(providerService, COS_ENDPOINT, false);
-		String bucket = ExternalProviderHelper.getServicePropertyValue(providerService, BUCKET, true);
-		String folder = ExternalProviderHelper.getServicePropertyValue(providerService, FOLDER, false);
+        String secret = ExternalProviderHelper.getServicePropertyValue(providerService, SECRET_KEY, true);
+        String location = ExternalProviderHelper.getServicePropertyValue(providerService, COS_LOCATION, false);
+        String endpoint = ExternalProviderHelper.getServicePropertyValue(providerService, COS_ENDPOINT, false);
+        String bucket = ExternalProviderHelper.getServicePropertyValue(providerService, BUCKET, true);
+        String folder = ExternalProviderHelper.getServicePropertyValue(providerService, FOLDER, false);
 
 		init(accessKey, secret, bucket, folder, location, endpoint);
     }
