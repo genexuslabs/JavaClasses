@@ -95,6 +95,11 @@ public class GXProperties implements IGxJSONSerializable{
     return vector.elementAt(i);
   }
 
+  public int getCount()
+	{
+		return count();
+	}
+
   public int count()
   {
     return vector.size();

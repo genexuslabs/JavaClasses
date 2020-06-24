@@ -56,9 +56,6 @@ public class Const
     public static final String SUN_FONT_LOCATION = "Fonts Location (Sun)"; // Seccion donde estan los mappings font <--> FileName de la VM de Sun
     public static final String FONT_SUBSTITUTES_SECTION = "Fonts Substitutions"; // Seccion donde estan los mappings extra de Font --> Font.
 	public static final String FONT_METRICS_SECTION = "Font Metrics"; // Seccion donde se pueden colocar metricas para un font
-
-    public static final String CREATOR = "GeneXus PDF Report Generator";
-    public static final String AUTHOR = "GeneXus";
     
     public static final String DEBUG_SECTION = "Debug";
     public static final String DRAW_IMAGE = "DrawImage"; 

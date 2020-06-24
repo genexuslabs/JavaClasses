@@ -19,4 +19,9 @@ public class GXDirectory implements IExtensionGXDirectory {
 		return getApplicationDataPath();
 	}
 
+	@Override
+	public String getCacheFilesPath() {
+		return System.getProperty("java.io.tmpdir");
+	}
+
 }

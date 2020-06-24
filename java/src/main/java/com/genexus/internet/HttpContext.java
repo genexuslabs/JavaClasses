@@ -164,7 +164,9 @@ public abstract class HttpContext
 
 	private String webAppManifestFileName = "manifest.json";
 	private Boolean isWebAppManifestDefinedFlag = null;
-	
+
+	private static HashMap<String, Messages> cachedMessages = new HashMap<String, Messages>();
+	private String currentLanguage = null;
 
 	private boolean isServiceWorkerDefined()
 	{
@@ -277,6 +279,7 @@ public abstract class HttpContext
 	public abstract String getUserId(String key, ModelContext context, int handle, com.genexus.db.IDataStoreProvider dataStore);
 	public abstract String getRemoteAddr();
 	public abstract boolean isLocalStorageSupported();
+	public abstract boolean exposeMetadata();
 	public abstract boolean isSmartDevice();
 	public abstract int getBrowserType();
 	public abstract boolean isIE55();
@@ -340,6 +343,9 @@ public abstract class HttpContext
 	public abstract boolean getHtmlHeaderClosed();
 	public abstract void ajax_rsp_command_close();
 	public abstract void dispatchAjaxCommands();
+
+	public abstract boolean isHttpContextNull();
+	public abstract boolean isHttpContextWeb();
 
 	public void AddDeferredFrags()
 	{
@@ -771,7 +777,7 @@ public abstract class HttpContext
 			if (clientKey != null && clientKey.trim().length() > 0)
 			{
 				boolean candecrypt[]=new boolean[1];
-				clientKey = Encryption.decryptRijndael(clientKey, Encryption.GX_AJAX_PRIVATE_KEY, candecrypt);
+				clientKey = Encryption.decryptRijndael(Encryption.GX_AJAX_PRIVATE_IV + clientKey, Encryption.GX_AJAX_PRIVATE_KEY, candecrypt);
 				if (candecrypt[0])
 				{
 					webPutSessionValue(Encryption.AJAX_ENCRYPTION_KEY, clientKey);
@@ -823,7 +829,7 @@ public abstract class HttpContext
 			sendResponseStatus(403, "Forbidden action");
 			return false;
 		}
-		else if (!insideAjaxCall && isGxAjaxRequest() && !isFullAjaxMode())
+		else if (!insideAjaxCall && isGxAjaxRequest() && !isFullAjaxMode() && ajaxOnSessionTimeout().equalsIgnoreCase("Warn"))
 		{
 			sendResponseStatus(440, "Session timeout");
 			return false;
@@ -994,6 +1000,7 @@ public abstract class HttpContext
 		 {
 			 String key = getAjaxEncryptionKey();
 			 ajax_rsp_assign_hidden(Encryption.AJAX_ENCRYPTION_KEY, key);
+			 ajax_rsp_assign_hidden(Encryption.AJAX_ENCRYPTION_IV, Encryption.GX_AJAX_PRIVATE_IV);
 			 try
 			 {
 				ajax_rsp_assign_hidden(Encryption.AJAX_SECURITY_TOKEN, Encryption.encryptRijndael(key, Encryption.GX_AJAX_PRIVATE_KEY));
@@ -1545,7 +1552,7 @@ public abstract class HttpContext
 	{
 		String out = file.trim();
 
-		if	((file.startsWith("http:")) || (file.startsWith("https:")) || (file.startsWith("data:")) || (file.startsWith("//")) || (file.length() > 2 && file.charAt(1) == ':'))
+		if	((file.startsWith("http:")) || (file.startsWith("https:")) || (file.startsWith("data:")) || (file.startsWith("about:")) || (file.startsWith("//")) || (file.length() > 2 && file.charAt(1) == ':'))
 		{
 			return out;
 		}
@@ -1588,14 +1595,23 @@ public abstract class HttpContext
 				return msgs.getMessage(code);
 			}
 		}
+
 		public String getMessage(String code)
 		{
-			String _language = getLanguage();
-			_language = Application.getClientPreferences().getProperty("language|" + _language, "code", Application.getClientPreferences().getProperty("LANGUAGE", "eng"));
-			String resourceName = "messages." + _language + ".txt";
-			Messages msgs = com.genexus.Messages.getMessages(resourceName, Application.getClientLocalUtil().getLocale());
-			return msgs.getMessage(code);
+			String language = getLanguage();
+			Messages messages = cachedMessages.get(language);
+			if (messages == null) {
+				String languageCode = Application.getClientPreferences().getProperty("language|" + language, "code", Application.getClientPreferences().getProperty("LANGUAGE", "eng"));
+				messages = com.genexus.Messages.getMessages("messages." + languageCode + ".txt", Application.getClientLocalUtil().getLocale());
+				addCachedLanguageMessage(language, messages);
+			}
+			return messages.getMessage(code);
 		}
+
+		private synchronized void addCachedLanguageMessage(String language, Messages msg) {
+			cachedMessages.putIfAbsent(language, msg);
+		}
+
 		public String getLanguageProperty(String property)
 		{
 			String _language = getLanguage();
@@ -1603,13 +1619,17 @@ public abstract class HttpContext
 		}
 		public String getLanguage()
 		{
-			WebSession session = getWebSession();
-			String language = session!=null ? session.getAttribute("GXLanguage") : null;
-			if (language!=null && !language.equals(""))
-				return language;
-			else
-				//Por ahora obtengo el del modelo, mas adelante puede haber uno por cada session
-				return Application.getClientPreferences().getProperty("LANG_NAME", "English");
+			if (currentLanguage == null) {
+				WebSession session = getWebSession();
+				String language = session != null ? session.getAttribute("GXLanguage") : null;
+				if (language != null && !language.equals("")) {
+					currentLanguage = language;
+				} else {
+					//Por ahora obtengo el del modelo, mas adelante puede haber uno por cada session
+					currentLanguage = Application.getClientPreferences().getProperty("LANG_NAME", "English");
+				}
+			}
+			return currentLanguage;
 		}
 		public String htmlEndTag(HTMLElement element)
 		{
@@ -1657,6 +1677,7 @@ public abstract class HttpContext
 		{
 			if (!language.isEmpty() && Application.getClientPreferences().getProperty("language|"+ language, "code", null)!=null)
 			{
+				this.currentLanguage = language;
 				getWebSession().setAttribute("GXLanguage", language);
 				ajaxRefreshAsGET = true;
 				return 0;

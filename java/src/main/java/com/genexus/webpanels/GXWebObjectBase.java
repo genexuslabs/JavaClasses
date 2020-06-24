@@ -220,8 +220,9 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 				httpContext.flushStream();
 			}
 		}
-		catch (Exception e)
+		catch (Throwable e)
 		{
+			handleException(e.getClass().getName(), e.getMessage(), CommonUtil.getStackTraceAsString(e));
 			cleanup(); // Antes de hacer el rethrow, hago un cleanup del objeto
 			throw e;
 		}
@@ -311,7 +312,11 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
             this.localUtil = ui.getLocalUtil();
             return res;
         }
-
+		public int setTheme(String theme)
+		{
+			int res = GXutil.setTheme(theme, context);
+			return res;
+		}
         public void executeUsercontrolMethod(String CmpContext, boolean IsMasterPage, String containerName, String methodName, String input, Object[] parms)
         {
             httpContext.executeUsercontrolMethod(CmpContext, IsMasterPage, containerName, methodName, input, parms);
@@ -652,6 +657,10 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 			}
 		}
 		return true;
+	}
+
+	public void handleException(String gxExceptionType, String gxExceptionDetails, String gxExceptionStack)
+	{
 	}
 
 	private GXDebugInfo dbgInfo = null;

@@ -17,7 +17,7 @@ import org.apache.poi.hssf.usermodel.*;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class ColorManager {
-	private static Hashtable colors=new Hashtable();
+	private static Hashtable<HSSFWorkbook, Integer> colors=new Hashtable<HSSFWorkbook, Integer>();
 	public static int getColor(HSSFWorkbook wb)
 	{
 		if(!colors.containsKey(wb))

@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.genexus</groupId>
 		<artifactId>parent</artifactId>
-		<version>1.4-SNAPSHOT</version>
+		<version>1.7-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>javapns</artifactId>
@@ -25,14 +25,14 @@
 			<version>20180813</version>
 		</dependency>
 		<dependency>
-			<groupId>org.bouncycastle.bcpkix-jdk15on.1.57.org.bouncycastle</groupId>
+			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpkix-jdk15on</artifactId>
-			<version>1.57</version>
+			<version>1.64</version>
 		</dependency>
 		<dependency>
-			<groupId>org.bouncycastle.bcprov-jdk15on.1.57.org.bouncycastle</groupId>
+			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.57</version>
+			<version>1.64</version>
 		</dependency>
 	</dependencies>
 

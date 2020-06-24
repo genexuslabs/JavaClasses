@@ -18,6 +18,42 @@ public class DynamicExecute
 
 	public static String dynamicWebExecute(ModelContext context, int handle, Class servlet, String wjLoc, String wjAuxLoc, String sPackage, String sPgmName, Object[] parms)
 	{
+		String pgmName = getDynamicPgmName(servlet, sPackage, sPgmName);
+		ClassLoader cLoader = servlet.getClassLoader();
+		Class c = tryLoadClass(cLoader, pgmName, false);
+
+		boolean isWebContext = false;
+		if (SpecificImplementation.DynamicExecute != null)
+			isWebContext = SpecificImplementation.DynamicExecute.getIsWebContext(context);
+
+		if (isWebContext && c.getSuperclass().equals(SpecificImplementation.Application.getGXWebObjectStubClass()))
+		{
+			// Es un call a un webpanel
+			String objetName;
+			if (wjAuxLoc.startsWith(sPackage))
+			{
+				sPackage = "";
+			}
+			int idx = wjAuxLoc.indexOf('?');
+			if (idx >= 0)
+			{
+				objetName = (sPackage + wjAuxLoc.substring(0, idx)).toLowerCase();
+				return objetName + wjAuxLoc.substring(idx);
+			}
+			else
+			{
+				return (sPackage + wjAuxLoc).toLowerCase();
+			}
+		}
+		else
+		{
+			dynamicExecute(context, handle, servlet, pgmName, parms);
+		}
+		return wjLoc;
+	}
+
+	private static String getDynamicPgmName(Class servlet, String sPackage, String sPgmName)
+	{
 		String classPackage = SpecificImplementation.Application.getPACKAGE();
 		if	(!classPackage.equals(""))
 			classPackage += ".";
@@ -49,35 +85,7 @@ public class DynamicExecute
 			throw new RuntimeException("ClassNotFoundException Can't execute dynamic call " + pgmName);
 		}
 
-
-		boolean isWebContext = false;
-		if (SpecificImplementation.DynamicExecute != null)
-			isWebContext = SpecificImplementation.DynamicExecute.getIsWebContext(context);
-
-		if (isWebContext && c.getSuperclass().equals(SpecificImplementation.Application.getGXWebObjectStubClass()))
-		{
-			// Es un call a un webpanel
-			String objetName;
-			if (wjAuxLoc.startsWith(sPackage))
-			{
-				sPackage = "";
-			}
-			int idx = wjAuxLoc.indexOf('?');
-			if (idx >= 0)
-			{
-				objetName = (sPackage + wjAuxLoc.substring(0, idx)).toLowerCase();
-				return objetName + wjAuxLoc.substring(idx);
-			}
-			else
-			{
-				return (sPackage + wjAuxLoc).toLowerCase();
-			}
-		}
-		else
-		{
-			dynamicExecute(context, handle, servlet, pgmName, parms);
-		}
-		return wjLoc;
+		return pgmName;
 	}
 
 	public static Class tryLoadClass(ClassLoader cLoader, String className, Boolean throwException)
@@ -186,6 +194,12 @@ public class DynamicExecute
 	}
 
 	private final static String METHOD_EXECUTE = "execute"; // El m�todo a ejecutar en la clase
+	public static boolean dynamicExecute(ModelContext context, int handle, Class caller, String sPackage, String sPgmName, Object[] params)
+	{
+		String pgmName = getDynamicPgmName(caller, sPackage, sPgmName);
+		return dynamicExecute(context, handle, caller, pgmName, params);
+	}
+
 	public static boolean dynamicExecute(ModelContext context, int handle, Class caller, String className, Object[] params)
 	{
 		Object [] callingParams = new Object[params.length]; // Contiene el verdadero array a pasarle a la clase

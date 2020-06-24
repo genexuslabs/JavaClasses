@@ -35,8 +35,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -189,7 +187,6 @@ public class ExternalProviderS3 implements ExternalProvider {
         client.copyObject(request);
         return ((AmazonS3Client) client).getResourceUrl(bucket, newName);
     }
-
     public String copy(String objectUrl, String newName, String tableName, String fieldName, boolean isPrivate) {
         String resourceFolderName = folder + StorageUtils.DELIMITER + tableName + StorageUtils.DELIMITER + fieldName;
         createFolder(resourceFolderName);
@@ -200,7 +197,7 @@ public class ExternalProviderS3 implements ExternalProvider {
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.addUserMetadata("Table", tableName);
         metadata.addUserMetadata("Field", fieldName);
-        metadata.addUserMetadata("KeyValue", resourceKey);
+        metadata.addUserMetadata("KeyValue", StorageUtils.encodeNonAsciiCharacters(resourceKey));
 
         CopyObjectRequest request = new CopyObjectRequest(bucket, objectUrl, bucket, resourceKey);
         request.setNewObjectMetadata(metadata);

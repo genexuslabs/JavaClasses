@@ -457,8 +457,6 @@ public class PDFReportItext implements IReportHandler
 	  catch(DocumentException de) {
             System.err.println(de.getMessage());
       }
-      document.addAuthor(Const.AUTHOR);
-      document.addCreator(Const.CREATOR);
       document.open();
     }
 
@@ -880,7 +878,7 @@ public class PDFReportItext implements IReportHandler
 						bitmap = bitmap.replace(httpContext.getStaticContentBase(), "");
 					}				
 				
-					if(!new File(bitmap).isAbsolute() && !bitmap.toLowerCase().startsWith("http:"))
+					if(!new File(bitmap).isAbsolute() && !bitmap.toLowerCase().startsWith("http"))
 					{ 
 						if (bitmap.startsWith(httpContext.getStaticContentBase()))
 						{

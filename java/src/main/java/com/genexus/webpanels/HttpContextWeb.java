@@ -608,6 +608,9 @@ public class HttpContextWeb extends HttpContext {
 		return supported;
 	}
 
+	public boolean exposeMetadata() {
+		return context.getClientPreferences().getEXPOSE_METADATA();
+	}
 	public int getBrowserType() {
 		String userAgent = request.getHeader("USER-AGENT");
 
@@ -952,6 +955,7 @@ public class HttpContextWeb extends HttpContext {
 
 	public void sendError(int error) {
 		try {
+			setHeader("Content-Encoding", "text/html");
 			response.sendError(error);
 		} catch (Exception e) {
 			log.error("Error " + error, e);
@@ -1447,4 +1451,6 @@ public class HttpContextWeb extends HttpContext {
 		}
 	}
 
+	public boolean isHttpContextNull() {return false;}
+	public boolean isHttpContextWeb() {return true;}
 }

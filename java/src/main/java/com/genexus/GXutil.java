@@ -25,6 +25,15 @@ public final class GXutil
 {
 	public static boolean Confirmed = false;
 
+	public static void writeLogInfo(String message)
+	{
+		CommonUtil.writeLogInfo(message);
+	}
+	public static void writeLogError(String message)
+	{
+		CommonUtil.writeLogError(message);
+	}
+
 	public static void writeLogln( String message)
 	{
 		CommonUtil.writeLogln(message);
@@ -160,6 +169,10 @@ public final class GXutil
     {
         return CommonUtil.formatDateParm(date);
     }
+	public static String formatDateParm(Date[] date)
+	{
+		return formatDateParm(date[0]);
+	}
 	
 	public static String delete(String text,char del)
 	{
@@ -184,6 +197,10 @@ public final class GXutil
 	public static String rtrim(String[] text)
 	{
 		return CommonUtil.rtrim(text[0]);
+	}
+	public static String rtrim(String[][] text)
+	{
+		return CommonUtil.rtrim(text[0][0]);
 	}
 	public static boolean endsWith(String s1, String s2)
 	{
@@ -601,13 +618,39 @@ public final class GXutil
 		return CommonUtil.ltrimstr(val, digits, decimals);
 	}
 
+	public static String ltrimstr(long[] val, int digits, int decimals)
+	{
+		return ltrimstr(val[0], digits, decimals);
+	}
+
 	public static String ltrimstr(java.math.BigDecimal value, int length, int decimals)
 	{
 		return CommonUtil.ltrimstr(value, length, decimals);
 	}
+	public static String ltrimstr(java.math.BigDecimal[] value, int length, int decimals)
+	{
+		return ltrimstr(value[0], length, decimals);
+	}
 	public static String ltrimstr(double value, int length, int decimals)
 	{
 		return CommonUtil.ltrimstr(value, length, decimals);
+	}
+	public static String ltrimstr(double[] value, int length, int decimals)
+	{
+		return ltrimstr(value[0], length, decimals);
+	}
+
+	public static String ltrimstr(int[] value, int length, int decimals)
+	{
+		return ltrimstr(value[0], length, decimals);
+	}
+	public static String ltrimstr(short[] value, int length, int decimals)
+	{
+		return ltrimstr(value[0], length, decimals);
+	}
+	public static String ltrimstr(byte[] value, int length, int decimals)
+	{
+		return ltrimstr(value[0], length, decimals);
 	}
 
 	public static String time()
@@ -660,6 +703,10 @@ public final class GXutil
 	{
 		return CommonUtil.dtadd(date, seconds);
 	}
+	public static Date dtadd(Date date, double seconds)
+	{
+		return dtadd(date, (int)seconds);
+	}
 
 	public static Date dtaddms(Date date, double seconds)
 	{
@@ -670,6 +717,10 @@ public final class GXutil
 	public static Date dadd(Date date, int cnt)
 	{
 		return CommonUtil.dadd(date, cnt);
+	}
+	public static Date dadd(Date date, double cnt)
+	{
+		return dadd(date, (int)cnt);
 	}
 
 	public static long dtdiff(Date dateStart, Date dateEnd)
@@ -1135,7 +1186,7 @@ public final class GXutil
   		{
 			return Codecs.decode(s, "UTF8");
 		}
-		catch(  UnsupportedEncodingException e)
+		catch(  UnsupportedEncodingException | IllegalArgumentException e)
 		{
 			return s;
 		}
@@ -1514,7 +1565,10 @@ public final class GXutil
         return res;
 	}
 
-	
+	public static int setTheme(String theme, ModelContext context) {
+		HttpContext httpContext = (HttpContext) context.getHttpContext();
+		return httpContext.setTheme(theme);
+	}
 	public static GxJsonArray stringCollectionsToJsonObj(StringCollection gxdynajaxctrlcodr, StringCollection gxdynajaxctrldescr)
 	{
 		return new GxJsonArray(stringCollectionsToJson(gxdynajaxctrlcodr, gxdynajaxctrldescr));

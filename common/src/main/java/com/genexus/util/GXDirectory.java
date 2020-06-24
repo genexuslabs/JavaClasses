@@ -270,21 +270,9 @@ public class GXDirectory {
 		return SpecificImplementation.GXDirectory.getExternalFilesPath();
 	}
 
-}
-
-
-class Filter implements FilenameFilter {
-	protected String pattern;
-	public Filter (String str) {
-		if (str!=null && str.length() >=1 && str.charAt(0)=='*')
-		{
-			pattern = str.substring(1);
-		}else
-		{
-			pattern = str;
-		}
+	public static String cachefilespath()
+	{
+		return SpecificImplementation.GXDirectory.getCacheFilesPath();
 	}
-	public boolean accept (File dir, String name) {
-		return name.toLowerCase().endsWith(pattern.toLowerCase());
-	}
+
 }

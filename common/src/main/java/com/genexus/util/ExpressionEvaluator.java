@@ -187,7 +187,14 @@ public class ExpressionEvaluator
 		{
 			return throwException(EXPRESSION_ERROR, "The expression '" + expression + "' has unbalanced parenthesis");
 		}
-		Tokenizer tokenizer = new Tokenizer(getTokenizerExpression(expression), "'!+-/*><=" + GE + LE + AND + OR + NE, true);
+		String delim = "'!+-/*><=" + GE + LE + AND + OR + NE;
+		boolean useParentheses = false;
+		if (expression.contains(""+AND) || expression.contains(""+OR))
+		{
+			delim = "" + AND + OR;
+			useParentheses = true;
+		}
+		Tokenizer tokenizer = new Tokenizer(getTokenizerExpression(expression), delim, true, useParentheses);
 		return evaluate(expression, tokenizer);
 	}
 
@@ -597,6 +604,10 @@ public class ExpressionEvaluator
 			token += tokenizer.nextToken();
 		}
 		while (!matchParentesis(token) || (token.trim().equals("") && tokenizer.hasMoreTokens()));
+		if (tokenizer.useParentheses() && !token.startsWith("(") && !token.startsWith("IIF"))
+		{
+			return "(" + token.trim() + ")";
+		}
 		return token.trim();
 	}
 
@@ -808,7 +819,15 @@ class Tokenizer
 {
 	private StringTokenizer m_Tokenizer;
 	private String m_PeekedToken;
-	
+	private boolean useParentheses;
+
+
+	public Tokenizer(String str, String delim, boolean returnDelims, boolean useParentheses)
+	{
+		this(str, delim, returnDelims);
+		this.useParentheses = useParentheses;
+	}
+
 	public Tokenizer(String str, String delim, boolean returnDelims)
 	{
 		m_Tokenizer = new StringTokenizer(str, delim, returnDelims);
@@ -851,6 +870,11 @@ class Tokenizer
 		}
 		
 		return m_Tokenizer.nextToken();
+	}
+
+	public boolean useParentheses()
+	{
+		return useParentheses;
 	}
 }
 
