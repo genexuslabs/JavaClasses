@@ -551,7 +551,11 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getRemoteAddr() {
-		String address = request.getRemoteAddr();
+		String address = getHeader("X-Forwarded-For");
+		if (address.length() > 0){
+			return address;
+		}
+		address = request.getRemoteAddr();
 		return address == null ? "" : address;
 	}
 
