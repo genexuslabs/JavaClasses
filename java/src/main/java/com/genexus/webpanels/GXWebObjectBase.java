@@ -220,8 +220,9 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 				httpContext.flushStream();
 			}
 		}
-		catch (Exception e)
+		catch (Throwable e)
 		{
+			handleException(e.getClass().getName(), e.getMessage(), CommonUtil.getStackTraceAsString(e));
 			cleanup(); // Antes de hacer el rethrow, hago un cleanup del objeto
 			throw e;
 		}
@@ -644,6 +645,10 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 			}
 		}
 		return true;
+	}
+
+	public void handleException(String gxExceptionType, String gxExceptionDetails, String gxExceptionStack)
+	{
 	}
 
 	private GXDebugInfo dbgInfo = null;
