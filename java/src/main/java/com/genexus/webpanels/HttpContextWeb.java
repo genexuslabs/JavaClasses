@@ -238,17 +238,25 @@ public class HttpContextWeb extends HttpContext {
 		parms.clear();
 		boolean oneParm = false;
 		if (value != null && value.length() > 0) {
+			boolean useOldQueryStringFormat = !value.contains("&");
+			String[] elements;
 			if (value.charAt(0) == '?')
 				value1 = value.substring(1);
 			else
 				value1 = value;
-			String[] elements = value1.split(",");
+				if (useOldQueryStringFormat)
+					elements = value1.split(",");
+				else
+					elements = value1.split("&");
 			oneParm = (elements.length > 0);
 			for (int i = 0; i < elements.length; i++) {
 				String parm = elements[i];
 				if (parm.indexOf("gx-no-cache=") != -1)
 					break;
-				parms.addElement(parm);
+				if (useOldQueryStringFormat)
+					parms.addElement(parm);
+				else
+					parms.addElement(parm.split("=")[1]);
 			}
 		}
 		if (requestMethod.equalsIgnoreCase("POST") && oneParm && parms.size() == 0) {
