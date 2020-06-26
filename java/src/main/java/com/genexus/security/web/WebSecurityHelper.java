@@ -18,7 +18,7 @@ public class WebSecurityHelper {
 		if (input == null)
 			return input;			 
         String output = input.replaceAll("[\u0000-\u001f]", "");
-        return output.trim();
+        return StringUtils.strip(output);
      }
 	
 	 public static String sign(String pgmName, String issuer, String value, SecurityMode mode)
