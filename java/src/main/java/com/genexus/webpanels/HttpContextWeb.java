@@ -877,6 +877,10 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getServerName() {
+		String host = getHeader("X-Forwarded-Host");
+		if (host.length() > 0){
+			return host;
+		}
 		String serverNameProperty = ModelContext.getModelContext().getPreferences().getProperty("SERVER_NAME", "");
 		if (!serverNameProperty.equals("")) {
 			return serverNameProperty;
@@ -888,13 +892,17 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public int getServerPort() {
+		String port = getHeader("X-Forwarded-Port");
+		if (port.length() > 0){
+			return Integer.parseInt(port);
+		}
 		String serverNameProperty = ModelContext.getModelContext().getPreferences().getProperty("SERVER_NAME", "");
 		if (serverNameProperty.indexOf(':') != -1) {
 			return 80;
 		}
-		if (request != null)
+		if (request != null) {
 			return request.getServerPort();
-
+		}
 		return 80;
 	}
 
