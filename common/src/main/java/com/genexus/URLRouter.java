@@ -18,6 +18,10 @@ public class URLRouter
 
 	public static String getURLRoute(String key, String[] parms, String contextPath)
 	{
+		if (com.genexus.CommonUtil.isAbsoluteURL(key)) {
+			return key;
+		}
+
 		if	(routerList == null)
 		{
 			routerList = new Hashtable<>();
