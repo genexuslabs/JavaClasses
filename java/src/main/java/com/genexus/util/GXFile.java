@@ -11,6 +11,7 @@ import java.util.Vector;
 
 import com.genexus.IHttpContext;
 import com.genexus.ModelContext;
+import com.genexus.db.driver.ResourceAccessControlList;
 import com.genexus.internet.HttpContext;
 import com.genexus.webpanels.HttpContextWeb;
 import org.apache.commons.io.FileUtils;
@@ -38,16 +39,16 @@ public class GXFile extends AbstractGXFile {
     }
 
     public GXFile(String FileName) {
-        this(FileName, false);
+        this(FileName, ResourceAccessControlList.Default);
     }
     
-    public GXFile(String FileName, boolean isPrivate) {
-    		this(FileName, isPrivate, false);
+    public GXFile(String FileName, ResourceAccessControlList fileAcl) {
+    		this(FileName, fileAcl, false);
     }
     
-    public GXFile(String FileName, boolean isPrivate, boolean isLocal) {
+    public GXFile(String FileName,  ResourceAccessControlList fileAcl, boolean isLocal) {
         if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) != null && !isLocal) {
-            FileSource = new GXExternalFileInfo(FileName, Application.getExternalProvider(), true, isPrivate);            
+            FileSource = new GXExternalFileInfo(FileName, Application.getExternalProvider(), true, fileAcl);
         } else {
             FileSource = new GXFileInfo(new File(FileName));
         }
@@ -58,7 +59,7 @@ public class GXFile extends AbstractGXFile {
     }
 
     public static String getgxFilename(String fileName) {
-        return new GXFile(fileName, false, true).getNameNoExt();
+        return new GXFile(fileName, ResourceAccessControlList.Default, true).getNameNoExt();
     }
 
     public static String getgxFileext(String fileName) {
@@ -104,7 +105,7 @@ public class GXFile extends AbstractGXFile {
         			URI uriFile = URI.create(absoluteFileName);
         			FileSource = new GXFileInfo(new File(uriFile));
         		} catch(Exception e) {
-        				FileSource = new GXFileInfo(new File(absoluteFileName));
+        			FileSource = new GXFileInfo(new File(absoluteFileName));
         		}
         }
     }

@@ -55,6 +55,7 @@ public class ExternalProviderGoogle implements ExternalProvider {
     static final String BUCKET = "BUCKET_NAME";
     static final String FOLDER = "FOLDER_NAME";
     static final String PROJECT_ID = "PROJECT_ID";
+	static final String DEFAULT_ACL = "STORAGE_PROVIDER_DEFAULT_ACL";
 
     private static final int BUCKET_EXISTS = 409;
     private static final int OBJECT_NOT_FOUND = 404;
@@ -65,6 +66,8 @@ public class ExternalProviderGoogle implements ExternalProvider {
     private String folder;
     private String projectId;
     private String url;
+	private ResourceAccessControlList defaultACL = ResourceAccessControlList.PublicRead;
+
 
     public ExternalProviderGoogle(String service) {
         this(Application.getGXServices().get(service));
@@ -126,7 +129,7 @@ public class ExternalProviderGoogle implements ExternalProvider {
         try {
             folderName = StorageUtils.normalizeDirectoryName(folderName);
 
-            StorageObject object = new StorageObject().setName(folderName).setAcl(getACLOptions(false));
+            StorageObject object = new StorageObject().setName(folderName).setAcl(getACLOptions(null));
             InputStreamContent emptyContent = new InputStreamContent("application/directory", new ByteArrayInputStream(new byte[0]));
             emptyContent.setLength(0);
             Storage.Objects.Insert insertRequest = client.objects().insert(bucket, object, emptyContent);
@@ -145,7 +148,7 @@ public class ExternalProviderGoogle implements ExternalProvider {
         return metadata;
     }
 
-    public void download(String externalFileName, String localFile, boolean isPrivate) {
+    public void download(String externalFileName, String localFile, ResourceAccessControlList acl) {
         try {
             OutputStream out = new FileOutputStream(localFile);
             Storage.Objects.Get request = client.objects().get(bucket, externalFileName);
@@ -157,14 +160,14 @@ public class ExternalProviderGoogle implements ExternalProvider {
         }
     }
 
-    public String upload(String localFile, String externalFileName, boolean isPrivate) {
+    public String upload(String localFile, String externalFileName, ResourceAccessControlList acl) {
         try {
             File file = new File(localFile);
             InputStreamContent contentStream = new InputStreamContent("application/octet-stream", new FileInputStream(file));
             contentStream.setLength(file.length());
             StorageObject objectMetadata = new StorageObject().setName(externalFileName);
 
-            objectMetadata.setAcl(getACLOptions(isPrivate));
+            objectMetadata.setAcl(getACLOptions(acl));
 
             Storage.Objects.Insert insertRequest = client.objects().insert(bucket, objectMetadata, contentStream);
             insertRequest.execute();
@@ -175,14 +178,15 @@ public class ExternalProviderGoogle implements ExternalProvider {
         }
     }
 
-    private List<ObjectAccessControl> getACLOptions(boolean isPrivate) {
+    private List<ObjectAccessControl> getACLOptions(ResourceAccessControlList acl) {
+    	boolean isPrivate = isPrivateResource(acl);
         if (isPrivate)
             return Arrays.asList(new ObjectAccessControl().setEntity("allUsers").setRole("READER"));
         else
             return new ArrayList<ObjectAccessControl>();
     }
 
-    public String upload(String externalFileName, InputStream input, boolean isPrivate) {
+    public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
         try {
             String contentType = "application/octet-stream";
             if (externalFileName.endsWith(".tmp")) {
@@ -192,7 +196,7 @@ public class ExternalProviderGoogle implements ExternalProvider {
 
             StorageObject objectMetadata = new StorageObject().setName(externalFileName);
 
-            objectMetadata.setAcl(getACLOptions(isPrivate));
+            objectMetadata.setAcl(getACLOptions(acl));
 
             Storage.Objects.Insert insertRequest = client.objects().insert(bucket, objectMetadata, contentStream);
 
@@ -204,10 +208,10 @@ public class ExternalProviderGoogle implements ExternalProvider {
         }
     }
 
-    public String get(String objectName, boolean isPrivate, int expirationMinutes) {
+    public String get(String objectName, ResourceAccessControlList acl, int expirationMinutes) {
         try {
             client.objects().get(bucket, objectName).execute();
-            if(isPrivate)
+            if(isPrivateResource(acl))
                 return betaClient.signUrl(BlobInfo.newBuilder(bucket, objectName).build(), expirationMinutes, TimeUnit.MINUTES).toString();
             else
                 return url + StorageUtils.encodeName(objectName);
@@ -217,7 +221,11 @@ public class ExternalProviderGoogle implements ExternalProvider {
         }
     }
 
-    public void delete(String objectName, boolean isPrivate) {
+	private boolean isPrivateResource(ResourceAccessControlList acl) {
+		return acl == ResourceAccessControlList.Private || (acl == ResourceAccessControlList.Default && this.defaultACL == ResourceAccessControlList.Private);
+	}
+
+	public void delete(String objectName, ResourceAccessControlList acl) {
         try {
             client.objects().delete(bucket, objectName).execute();
         } catch (IOException ex) {
@@ -225,13 +233,13 @@ public class ExternalProviderGoogle implements ExternalProvider {
         }
     }
 
-    public String rename(String objectName, String newName, boolean isPrivate) {
-        String newUrl = copy(objectName, newName, isPrivate);
-        delete(objectName, isPrivate);
+    public String rename(String objectName, String newName, ResourceAccessControlList acl) {
+        String newUrl = copy(objectName, newName, acl);
+        delete(objectName, acl);
         return newUrl;
     }
 
-    public String copy(String objectName, String newName, boolean isPrivate) {
+    public String copy(String objectName, String newName, ResourceAccessControlList acl) {
         if (objectName.contains(url)) {
             objectName = objectName.replace(url, "");
         }
@@ -248,7 +256,7 @@ public class ExternalProviderGoogle implements ExternalProvider {
         }
     }
 
-    public String copy(String objectUrl, String newName, String tableName, String fieldName, boolean isPrivate) {
+    public String copy(String objectUrl, String newName, String tableName, String fieldName, ResourceAccessControlList acl) {
         try {
             String resourceFolderName = folder + "/" + tableName + "/" + fieldName;
             String resourceKey = resourceFolderName + "/" + newName;
@@ -257,7 +265,7 @@ public class ExternalProviderGoogle implements ExternalProvider {
             try {
                 StorageObject newObject = new StorageObject();
                 newObject.setMetadata(createObjectMetadata(tableName, fieldName, resourceKey));
-                newObject.setAcl(getACLOptions(false));
+                newObject.setAcl(getACLOptions(acl));
                 Storage.Objects.Copy request = client.objects().copy(bucket, objectUrl, bucket, resourceKey, newObject);
                 request.execute();
 
@@ -272,7 +280,7 @@ public class ExternalProviderGoogle implements ExternalProvider {
         return "";
     }
 
-    public long getLength(String objectName, boolean isPrivate) {
+    public long getLength(String objectName, ResourceAccessControlList acl) {
         try {
             return client.objects().get(bucket, objectName).execute().getSize().longValue();
         } catch (IOException ex) {
@@ -281,7 +289,7 @@ public class ExternalProviderGoogle implements ExternalProvider {
         }
     }
 
-    public Date getLastModified(String objectName, boolean isPrivate) {
+    public Date getLastModified(String objectName, ResourceAccessControlList acl) {
         try {
             return new Date(client.objects().get(bucket, objectName).execute().getUpdated().getValue());
         } catch (IOException ex) {
@@ -290,7 +298,7 @@ public class ExternalProviderGoogle implements ExternalProvider {
         }
     }
 
-    public boolean exists(String objectName, boolean isPrivate) {
+    public boolean exists(String objectName, ResourceAccessControlList acl) {
         try {
             client.objects().get(bucket, objectName).execute();
             return true;
@@ -353,7 +361,7 @@ public class ExternalProviderGoogle implements ExternalProvider {
                 if (objects.getItems() != null) {
                     for (StorageObject object : objects.getItems()) {
                         if (isFile(object.getName(), "")) {
-                            delete(object.getName(), false);
+                            delete(object.getName(), null);
                         }
                     }
                 }
@@ -362,8 +370,8 @@ public class ExternalProviderGoogle implements ExternalProvider {
             for (String subdir : getSubDirectories(directoryName)) {
                 deleteDirectory(subdir);
             }
-            if (exists(directoryName, false)) {
-                delete(directoryName, false);
+            if (exists(directoryName, null)) {
+                delete(directoryName, null);
             }
         } catch (IOException ex) {
             handleIOException(ex);
@@ -371,6 +379,7 @@ public class ExternalProviderGoogle implements ExternalProvider {
     }
 
     public void renameDirectory(String directoryName, String newDirectoryName) {
+		ResourceAccessControlList acl = null;
         directoryName = StorageUtils.normalizeDirectoryName(directoryName);
         newDirectoryName = StorageUtils.normalizeDirectoryName(newDirectoryName);
         try {
@@ -380,13 +389,13 @@ public class ExternalProviderGoogle implements ExternalProvider {
             do {
                 objects = listObjects.execute();
                 if (objects.isEmpty()) {
-                    copy(directoryName, newDirectoryName, false);
-                    delete(directoryName, false);
+                    copy(directoryName, newDirectoryName, acl);
+                    delete(directoryName, acl);
                 }
                 if (objects.getItems() != null) {
                     for (StorageObject object : objects.getItems()) {
-                        copy(object.getName(), object.getName().replace(directoryName, newDirectoryName), false);
-                        delete(object.getName(), false);
+                        copy(object.getName(), object.getName().replace(directoryName, newDirectoryName), acl);
+                        delete(object.getName(), acl);
                     }
                 }
                 listObjects.setPageToken(objects.getNextPageToken());
@@ -395,8 +404,8 @@ public class ExternalProviderGoogle implements ExternalProvider {
                 renameDirectory(subdir, subdir.replace(directoryName, newDirectoryName));
                 deleteDirectory(subdir);
             }
-            if (exists(directoryName, false)) {
-                delete(directoryName, false);
+            if (exists(directoryName, acl)) {
+                delete(directoryName, acl);
             }
         } catch (IOException ex) {
             handleIOException(ex);
@@ -454,7 +463,7 @@ public class ExternalProviderGoogle implements ExternalProvider {
         return directories;
     }
 
-    public InputStream getStream(String objectName, boolean isPrivate){
+    public InputStream getStream(String objectName, ResourceAccessControlList acl){
         try {
             Storage.Objects.Get request = client.objects().get(bucket, objectName);
             return request.executeMediaAsInputStream();

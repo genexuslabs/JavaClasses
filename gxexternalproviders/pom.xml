@@ -14,6 +14,11 @@
 	<name>GeneXus External Providers</name>
 
 	<dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>gxcommon</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>gxclassR</artifactId>

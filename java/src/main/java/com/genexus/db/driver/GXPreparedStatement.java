@@ -40,6 +40,8 @@ import com.genexus.internet.HttpContext;
 import com.genexus.util.GXFile;
 import com.genexus.util.GXServices;
 
+import javax.annotation.Resource;
+
 /**
 * Esta clase es un wrapper de un PreparedStatement real. Le agrega debugging y algunos procesamientos en
 * las funciones set<Type> para ajustarlas a las necesidades de los programas generados.
@@ -973,7 +975,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 							}							
 							sourceName = com.genexus.PrivateUtilities.getTempFileName("", CommonUtil.getFileName(sourceName), CommonUtil.getFileType(sourceName), true);
 							sourceName = folder + "/" + tableName + "/" + fieldName + "/" + sourceName;
-							fileUri = Application.getExternalProvider().upload(sourceName, is, false);
+							fileUri = Application.getExternalProvider().upload(sourceName, is, ResourceAccessControlList.Default);
 						}
 						catch(IOException e)
 						{
@@ -982,7 +984,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 					}
 					else
 					{
-						GXFile gxFile = new GXFile(sourceName, true);
+						GXFile gxFile = new GXFile(sourceName, ResourceAccessControlList.Private);
 						if (gxFile.exists())
 						{
 							fileName = gxFile.getName();
@@ -991,7 +993,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 							{
 								fileName = fileName.substring(dDelimIdx + 1);
 							}										
-							fileUri = Application.getExternalProvider().copy(sourceName, fileName, tableName, fieldName, true);
+							fileUri = Application.getExternalProvider().copy(sourceName, fileName, tableName, fieldName, ResourceAccessControlList.Private);
 						}
 						else
 						{
@@ -1011,7 +1013,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 									blobPath = ((com.genexus.webpanels.HttpContextWeb)webContext).getRealPath(blobPath);
 								}
 							}							
-							fileUri = Application.getExternalProvider().upload(blobPath, fileName, false);
+							fileUri = Application.getExternalProvider().upload(blobPath, fileName, ResourceAccessControlList.Default);
 						}
 					}
 			}
@@ -1461,7 +1463,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 					}
 					else
 					{
-							GXFile gxFile = new GXFile(fileName, true);
+							GXFile gxFile = new GXFile(fileName, ResourceAccessControlList.Private);
 							if (gxFile.exists())
 							{							
 								InputStream is= gxFile.getStream();							

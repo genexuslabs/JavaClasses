@@ -5,29 +5,31 @@ import java.util.Date;
 import java.util.List;
 import com.genexus.StructSdtMessages_Message;
 
+
+
 public interface ExternalProvider {
    
-    void download(String externalFileName, String localFile, boolean isPrivate);
+    void download(String externalFileName, String localFile, ResourceAccessControlList acl);
 
-    String upload(String localFile, String externalFileName, boolean isPrivate);
+    String upload(String localFile, String externalFileName, ResourceAccessControlList acl);
     
-    String upload(String externalFileName, InputStream input, boolean isPrivate);
+    String upload(String externalFileName, InputStream input, ResourceAccessControlList acl);
 
-    String get(String externalFileName, boolean isPrivate, int expirationMinutes);
+    String get(String externalFileName, ResourceAccessControlList acl, int expirationMinutes);
 
-    void delete(String objectName, boolean isPrivate);
+    void delete(String objectName, ResourceAccessControlList acl);
 
-    String rename(String objectName, String newName, boolean isPrivate);
+    String rename(String objectName, String newName, ResourceAccessControlList acl);
 
-    String copy(String objectName, String newName, boolean isPrivate);
+    String copy(String objectName, String newName, ResourceAccessControlList acl);
     
-    String copy(String objectUrl, String newName, String tableName, String fieldName, boolean isPrivate);
+    String copy(String objectUrl, String newName, String tableName, String fieldName, ResourceAccessControlList acl);
 
-    long getLength(String objectName, boolean isPrivate);
+    long getLength(String objectName, ResourceAccessControlList acl);
 
-    Date getLastModified(String objectName, boolean isPrivate);
+    Date getLastModified(String objectName, ResourceAccessControlList acl);
     
-    boolean exists(String objectName, boolean isPrivate);
+    boolean exists(String objectName, ResourceAccessControlList acl);
 
     String getDirectory(String directoryName);
 
@@ -45,7 +47,7 @@ public interface ExternalProvider {
 
     List<String> getSubDirectories(String directoryName);
     
-    InputStream getStream(String objectName, boolean isPrivate);
+    InputStream getStream(String objectName, ResourceAccessControlList acl);
     
     boolean getMessageFromException(Exception ex, StructSdtMessages_Message msg);
 }

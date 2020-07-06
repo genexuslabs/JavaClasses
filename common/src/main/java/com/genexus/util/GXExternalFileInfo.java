@@ -14,7 +14,7 @@ public class GXExternalFileInfo implements IGXFileInfo {
     ExternalProvider provider;
     String url;
     boolean isFile;
-    boolean isPrivate;
+    ResourceAccessControlList fileAcl;
 
     public GXExternalFileInfo(String storageObjectFullName, String url, ExternalProvider provider) {
         name = storageObjectFullName;
@@ -23,11 +23,12 @@ public class GXExternalFileInfo implements IGXFileInfo {
         this.isFile = true;
     }
 
-    public GXExternalFileInfo(String storageObjectFullName, String url, ExternalProvider provider, boolean isFile) {
+    public GXExternalFileInfo(String storageObjectFullName, String url, ExternalProvider provider, ResourceAccessControlList acl) {
         name = storageObjectFullName;
         this.url = url;
         this.provider = provider;
         this.isFile = isFile;
+        this.fileAcl = acl;
     }
 
      public GXExternalFileInfo(String storageObjectFullName, ExternalProvider provider, boolean isFile) {
@@ -37,12 +38,12 @@ public class GXExternalFileInfo implements IGXFileInfo {
         this.isFile = isFile;
     }
 
-    public GXExternalFileInfo(String storageObjectFullName, ExternalProvider provider, boolean isFile, boolean isPrivate) {
+    public GXExternalFileInfo(String storageObjectFullName, ExternalProvider provider, boolean isFile, ResourceAccessControlList acl) {
         name = storageObjectFullName;
         this.url = "";
         this.provider = provider;
         this.isFile = isFile;
-        this.isPrivate = isPrivate;
+        this.fileAcl = acl;
     }
 
      public GXExternalFileInfo(String storageObjectFullName, ExternalProvider provider) {
@@ -61,7 +62,7 @@ public class GXExternalFileInfo implements IGXFileInfo {
 
     public boolean exists() {
         if (isFile) {
-            return (provider != null && provider.exists(name, isPrivate));
+            return (provider != null && provider.exists(name, fileAcl));
         } else {
             return (provider != null && provider.existsDirectory(name));
         }
@@ -93,7 +94,7 @@ public class GXExternalFileInfo implements IGXFileInfo {
 
     public boolean createNewFile(InputStream input) throws IOException{
         if (isFile()) {
-            provider.upload(name, input, isPrivate);
+            provider.upload(name, input, fileAcl);
             return true;
         }
         return false;
@@ -101,7 +102,7 @@ public class GXExternalFileInfo implements IGXFileInfo {
 
     public boolean delete() {
         if(isFile){
-            provider.delete(name, isPrivate);
+            provider.delete(name, fileAcl);
         }else{
             provider.deleteDirectory(name);
         }
@@ -118,7 +119,7 @@ public class GXExternalFileInfo implements IGXFileInfo {
 
     public boolean renameTo(String fileName) {
         if(isFile){
-            provider.rename(name, fileName, isPrivate);
+            provider.rename(name, fileName, fileAcl);
             name=fileName;
         }else{
             provider.renameDirectory(name, fileName);
@@ -144,17 +145,17 @@ public class GXExternalFileInfo implements IGXFileInfo {
             if(isDirectory())
                 return provider.getDirectory(name);
             else
-                return provider.get(name, isPrivate, DEFAULT_OBJECT_EXPIRATION_MINUTES);
+                return provider.get(name, fileAcl, DEFAULT_OBJECT_EXPIRATION_MINUTES);
         else
             return url;
     }
 
     public long length() {
-        return provider.getLength(name, isPrivate);
+        return provider.getLength(name, fileAcl);
     }
 
     public Date lastModified() {
-        return provider.getLastModified(name, isPrivate);
+        return provider.getLastModified(name, fileAcl);
     }
 
     public GXFileCollection listFiles(String filter) {
@@ -174,7 +175,7 @@ public class GXExternalFileInfo implements IGXFileInfo {
     }
 
     public InputStream getStream(){
-        return provider.getStream(name, isPrivate);
+        return provider.getStream(name, fileAcl);
     }
 
 	public String getSeparator(){
@@ -211,6 +212,6 @@ public class GXExternalFileInfo implements IGXFileInfo {
     }
 
     public void copy(String origin, String destination){
-        provider.copy(origin, destination, isPrivate);
+        provider.copy(origin, destination, fileAcl);
     }
 }
