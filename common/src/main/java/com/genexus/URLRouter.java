@@ -65,7 +65,8 @@ public class URLRouter
 		String queryString = "?";
 		for (int i = 0; i < parms.length; i++)
 		{
-			queryString = queryString + parmsName[i] + "=" + parms[i] + ((i < parms.length -1)? "&" : "");
+			queryString = queryString + parms[i] + ((i < parms.length -1)? "," : "");
+			//queryString = queryString + parmsName[i] + "=" + parms[i] + ((i < parms.length -1)? "&" : "");
 		}
 		return queryString;
 	}
