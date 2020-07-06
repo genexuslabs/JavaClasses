@@ -361,7 +361,12 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 
 	protected String formatLink(String jumpURL, String[] parms)
 	{
-		return URLRouter.getURLRoute(formatLink1(jumpURL), parms, httpContext.getRequest().getContextPath());
+		return formatLink(jumpURL, parms, new String[]{});
+	}
+
+	protected String formatLink(String jumpURL, String[] parms, String[] parmsName)
+	{
+		return URLRouter.getURLRoute(formatLink1(jumpURL), parms, parmsName, httpContext.getRequest().getContextPath());
 	}
 
 	private String formatLink1(String jumpURL)

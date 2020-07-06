@@ -16,7 +16,7 @@ public class URLRouter
 	static Hashtable<String, String> routerList;
 	static final String RESOURCE_NAME = "urlrouter.txt";
 
-	public static String getURLRoute(String key, String[] parms, String contextPath)
+	public static String getURLRoute(String key, String[] parms, String[] parmsName, String contextPath)
 	{
 		if (com.genexus.CommonUtil.isAbsoluteURL(key)) {
 			return key;
@@ -39,7 +39,11 @@ public class URLRouter
 		}
 
 		String url = routerList.containsKey(urlQueryString[0])? String.format(routerList.get(urlQueryString[0]), urlarray): urlQueryString[0];
-		return contextPath + "/" + url + ((urlQueryString.length > 1)? "?" + urlQueryString[1]: convertParmsToQueryString(parms, routerList.get(urlQueryString[0])));
+		if (contextPath.length() > 0)
+		{
+			contextPath += "/";
+		}
+		return contextPath + url + ((urlQueryString.length > 1)? "?" + urlQueryString[1]: convertParmsToQueryString(parms, parmsName, routerList.get(urlQueryString[0])));
 	}
 
 	private static Object[] getParameters(String[] url)
@@ -52,16 +56,16 @@ public class URLRouter
 		return urlParameters;
 	}
 
-	private static String convertParmsToQueryString(String[] parms, String routerRule)
+	private static String convertParmsToQueryString(String[] parms, String[] parmsName, String routerRule)
 	{
-		if ((routerRule != null && routerRule.contains("/%1")) || (parms.length == 0))
+		if ((routerRule != null && routerRule.contains("%1")) || (parms.length == 0))
 		{
 			return "";
 		}
 		String queryString = "?";
 		for (int i = 0; i < parms.length; i++)
 		{
-			queryString = queryString + parms[i] + ((i < parms.length -1)? "," : "");
+			queryString = queryString + parmsName[i] + "=" + parms[i] + ((i < parms.length -1)? "&" : "");
 		}
 		return queryString;
 	}
