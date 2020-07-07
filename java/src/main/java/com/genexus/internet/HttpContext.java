@@ -34,10 +34,13 @@ import json.org.json.IJsonFormattable;
 import json.org.json.JSONArray;
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
+import org.apache.logging.log4j.Logger;
 
 public abstract class HttpContext 
 		extends HttpAjaxContext implements IHttpContext
 {
+	private static Logger logger = org.apache.logging.log4j.LogManager.getLogger(HttpContext.class);
+
     private static String GX_AJAX_REQUEST_HEADER = "GxAjaxRequest";
     private static String GX_SPA_REQUEST_HEADER = "X-SPA-REQUEST";
     protected static String GX_SPA_REDIRECT_URL = "X-SPA-REDIRECT-URL";
@@ -843,10 +846,13 @@ public abstract class HttpContext
 			}
 		}        	
 		getResponse().setStatus(statusCode);
-		try { getResponse().sendError(statusCode, statusDescription); }
+		try {
+			getResponse().sendError(statusCode, statusDescription);
+		}
 		catch(Exception e) {
-					System.err.println("E " + e);
-					e.printStackTrace();
+			if (logger.isErrorEnabled()) {
+				logger.error("Could not send Response Error Code", e);
+			}
 		}
 		setAjaxCallMode();
 		disableOutput();
@@ -1404,8 +1410,9 @@ public abstract class HttpContext
 		}
 		catch(IOException e) 
 		{
-			System.err.println("E " + e);
-			e.printStackTrace();
+			if (logger.isDebugEnabled()) {
+				logger.debug("ERROR: When Closing Output Stream.", e);
+			}
 		}
 	}
 
