@@ -17,7 +17,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.genexus.*;
-import com.genexus.webpanels.HttpContextWeb;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BOMInputStream;
 
@@ -39,7 +38,7 @@ import org.apache.logging.log4j.Logger;
 public abstract class HttpContext 
 		extends HttpAjaxContext implements IHttpContext
 {
-	private static Logger logger = org.apache.logging.log4j.LogManager.getLogger(HttpContextWeb.class);
+	private static Logger logger = org.apache.logging.log4j.LogManager.getLogger(HttpContext.class);
 
     private static String GX_AJAX_REQUEST_HEADER = "GxAjaxRequest";
     private static String GX_SPA_REQUEST_HEADER = "X-SPA-REQUEST";
