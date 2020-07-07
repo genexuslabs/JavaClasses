@@ -30,19 +30,15 @@ public class DynamicExecute
 		{
 			// Es un call a un webpanel
 			String objetName;
-			if (wjAuxLoc.startsWith(sPackage))
-			{
-				sPackage = "";
-			}
 			int idx = wjAuxLoc.indexOf('?');
 			if (idx >= 0)
 			{
-				objetName = (sPackage + wjAuxLoc.substring(0, idx)).toLowerCase();
+				objetName = wjAuxLoc.substring(0, idx);
 				return objetName + wjAuxLoc.substring(idx);
 			}
 			else
 			{
-				return (sPackage + wjAuxLoc).toLowerCase();
+				return wjAuxLoc;
 			}
 		}
 		else
