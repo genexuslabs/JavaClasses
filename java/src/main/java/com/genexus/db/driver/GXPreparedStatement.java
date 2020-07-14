@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.Field;
@@ -39,8 +38,6 @@ import com.genexus.common.classes.IGXPreparedStatement;
 import com.genexus.internet.HttpContext;
 import com.genexus.util.GXFile;
 import com.genexus.util.GXServices;
-
-import javax.annotation.Resource;
 
 /**
 * Esta clase es un wrapper de un PreparedStatement real. Le agrega debugging y algunos procesamientos en
@@ -975,7 +972,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		// - 3. Transaction Update Mode (nothing changed): An Storage URL that is already in External Storage (except in private), should not be uploaded nor copied.
 		// - 4. Upload Resource from local drive to External Storage: Ex: Image.FromImage(ActionDelete)
 
-		String storageObjectName = storageProvider.getObjectNameFromURL(blobPath);
+		String storageObjectName = ExternalProviderCommon.getProviderObjectName(storageProvider, blobPath);
 		boolean resourceAlreadyOnStorage = storageObjectName != null;
 		ResourceAccessControlList defaultAcl = ResourceAccessControlList.Default;
 
@@ -999,7 +996,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		} else {
 			if (resourceAlreadyOnStorage && !isPrivateTempUpload) {
 				// - 3. Transaction Update Mode (nothing changed): An Storage URL that is already in External Storage (except in private), should not be uploaded nor copied.
-				fileUri = fileName;
+				fileUri = storageObjectName;
 			} else {
 				GXFile gxFile = new GXFile(storageTargetObjectName, defaultAcl);
 				if (gxFile.exists()) {
