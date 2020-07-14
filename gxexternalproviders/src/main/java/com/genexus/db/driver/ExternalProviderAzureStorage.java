@@ -497,7 +497,7 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
     }
 
     private String getUrl() {
-        return "http://" + account + ".blob.core.windows.net/";
+        return "https://" + account + ".blob.core.windows.net/";
     }
 
 	public String getObjectNameFromURL(String url) {
