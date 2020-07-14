@@ -1010,12 +1010,6 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 	{
 		ExternalProvider provider = Application.getExternalProvider();
 		boolean storageSupport = provider != null;
-		if (provider != null && gxdbFileUri.length() > 0) {
-			String externalObjectName = provider.getObjectNameFromURL(gxdbFileUri);
-			if (externalObjectName != null) {
-				return new GXFile(externalObjectName).getAbsolutePath();
-			}
-		}
 
 		if (!GXDbFile.isFileExternal(gxdbFileUri))
 		{
@@ -1040,6 +1034,14 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 				else
 				{
 					return getBLOBFile(columnIndex, CommonUtil.getFileType(gxdbFileUri), CommonUtil.getFileName(gxdbFileUri), filePath, false);
+				}
+			}
+		}
+		else {
+			if (provider != null && gxdbFileUri.length() > 0) {
+				String externalObjectName = provider.getObjectNameFromURL(gxdbFileUri);
+				if (externalObjectName != null) {
+					return new GXFile(externalObjectName).getAbsolutePath();
 				}
 			}
 		}
