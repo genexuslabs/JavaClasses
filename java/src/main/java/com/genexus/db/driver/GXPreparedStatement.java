@@ -979,7 +979,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		String storageTargetObjectName = blobPath;
 		boolean isPrivateTempUpload = storageTargetObjectName.startsWith(Application.getClientPreferences().getTMPMEDIA_DIR());
 		String folder = Application.getGXServices().get(GXServices.STORAGE_SERVICE).getProperties().get("FOLDER_NAME");
-		if (!resourceAlreadyOnStorage && (fileName == blobPath || GXutil.isAbsoluteURL(fileName))) {
+		if (!resourceAlreadyOnStorage && (fileName.equals(blobPath) || GXutil.isAbsoluteURL(fileName))) {
 			// - 2. External URL: An absolute URL (outside External Storage).
 			try (InputStream is = new URL(fileName).openStream()){
 				int idx = storageTargetObjectName.lastIndexOf("/");
