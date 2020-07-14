@@ -158,7 +158,7 @@ public class HttpContextWeb extends HttpContext {
 		if (lstParts == null) {
 			try {
 				sTmpDir = context.getClientPreferences().getTMPMEDIA_DIR();
-				if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) == null) {
+				if (Application.getExternalProvider() == null) {
 					if (!new File(sTmpDir).isAbsolute()) {
 						sTmpDir = com.genexus.ModelContext.getModelContext().getHttpContext().getDefaultPath()
 								+ File.separator + "WEB-INF" + File.separatorChar + sTmpDir;

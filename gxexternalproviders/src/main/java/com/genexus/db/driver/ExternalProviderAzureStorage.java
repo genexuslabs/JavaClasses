@@ -38,6 +38,9 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
     private CloudBlobContainer publicContainer;
     private CloudBlobContainer privateContainer;
     private CloudBlobClient client;
+	private ResourceAccessControlList defaultAcl = ResourceAccessControlList.PublicRead;
+
+	private int defaultExpirationMinutes = 24 * 60;
 
     public ExternalProviderAzureStorage(String service) {
         this(Application.getGXServices().get(service));
@@ -70,9 +73,9 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
         }
     }
 
-    public void download(String externalFileName, String localFile, boolean isPrivate) {
+    public void download(String externalFileName, String localFile, ResourceAccessControlList acl) {
         try {
-            CloudBlockBlob blob = getCloudBlockBlob(externalFileName, isPrivate);
+            CloudBlockBlob blob = getCloudBlockBlob(externalFileName, acl);
             blob.downloadToFile(localFile);
         } catch (URISyntaxException ex) {
             logger.error("Invalid URI ", ex.getMessage());
@@ -83,9 +86,9 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
         }
     }
 
-    private CloudBlockBlob getCloudBlockBlob(String fileName, boolean isPrivate) throws URISyntaxException, StorageException {
+    private CloudBlockBlob getCloudBlockBlob(String fileName, ResourceAccessControlList acl) throws URISyntaxException, StorageException {
         CloudBlockBlob blob = null;
-        if (isPrivate) {
+        if (isPrivateAcl(acl)) {
             blob = privateContainer.getBlockBlobReference(fileName);
         }
         else
@@ -95,9 +98,13 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
         return blob;
     }
 
-    public String upload(String localFile, String externalFileName, boolean isPrivate) {
+    private boolean isPrivateAcl(ResourceAccessControlList acl) {
+    	return acl == ResourceAccessControlList.Private || (acl == ResourceAccessControlList.Default && this.defaultAcl == ResourceAccessControlList.Private);
+	}
+
+    public String upload(String localFile, String externalFileName, ResourceAccessControlList acl) {
         try {
-            CloudBlockBlob blob = getCloudBlockBlob(externalFileName, isPrivate);
+            CloudBlockBlob blob = getCloudBlockBlob(externalFileName, acl);
             blob.uploadFromFile(localFile);
             return blob.getUri().toString();
         } catch (URISyntaxException ex) {
@@ -111,9 +118,9 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
         }
     }
 
-    public String upload(String externalFileName, InputStream input, boolean isPrivate) {
+    public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
         try {
-            CloudBlockBlob blob = getCloudBlockBlob(externalFileName, isPrivate);
+            CloudBlockBlob blob = getCloudBlockBlob(externalFileName, acl);
             if (externalFileName.endsWith(".tmp")) {
                 blob.getProperties().setContentType("image/jpeg");
             }
@@ -138,13 +145,13 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
         }
     }
 
-    public String get(String externalFileName, boolean isPrivate, int expirationMinutes) {
+    public String get(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
         try {
-            if (isPrivate) {
+            if (isPrivateAcl(acl)) {
                 return getPrivate(externalFileName, expirationMinutes);
             } else {
                 CloudBlockBlob blob = publicContainer.getBlockBlobReference(externalFileName);
-                if (exists(externalFileName, isPrivate)) {
+                if (exists(externalFileName, acl)) {
                     return blob.getUri().toString();
                 }
             }
@@ -164,6 +171,7 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
                 SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
                 policy.setPermissionsFromString("r");
                 Calendar date = Calendar.getInstance();
+				expirationMinutes = expirationMinutes > 0 ? expirationMinutes: defaultExpirationMinutes;
                 Date expire = new Date(date.getTimeInMillis() + (expirationMinutes * 60000));
                 policy.setSharedAccessExpiryTime(expire);
                 return blob.getUri().toString() + "?" + blob.generateSharedAccessSignature(policy, null);
@@ -177,9 +185,9 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
         return "";
     }
 
-    public void delete(String objectName, boolean isPrivate) {
+    public void delete(String objectName, ResourceAccessControlList acl) {
         try {
-            CloudBlockBlob blob = getCloudBlockBlob(objectName, isPrivate);
+            CloudBlockBlob blob = getCloudBlockBlob(objectName, acl);
             blob.deleteIfExists();
         } catch (URISyntaxException ex) {
             logger.error("Invalid URI ", ex.getMessage());
@@ -188,15 +196,15 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
         }
     }
 
-    public String rename(String objectName, String newName, boolean isPrivate) {
-        String ret = copy(objectName, newName, isPrivate);
-        delete(objectName, isPrivate);
+    public String rename(String objectName, String newName, ResourceAccessControlList acl) {
+        String ret = copy(objectName, newName, acl);
+        delete(objectName, acl);
         return ret;
     }
 
-    public String copy(String objectName, String newName, boolean isPrivate) {
+    public String copy(String objectName, String newName, ResourceAccessControlList acl) {
         if (objectName.startsWith(getUrl())) {
-            if (isPrivate)
+            if (isPrivateAcl(acl))
             {
                 objectName = objectName.replace(getUrl() + privateContainer.getName() + "/", "");
             }
@@ -207,8 +215,8 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
         }
         //objectName = StorageUtils.decodeName(objectName);
         try {
-            CloudBlockBlob sourceBlob = getCloudBlockBlob(objectName, isPrivate);
-            CloudBlockBlob targetBlob = getCloudBlockBlob(newName, false);
+            CloudBlockBlob sourceBlob = getCloudBlockBlob(objectName, acl);
+            CloudBlockBlob targetBlob = getCloudBlockBlob(newName, acl);
             targetBlob.startCopy(sourceBlob);
             return targetBlob.getUri().toString();
         } catch (URISyntaxException ex) {
@@ -219,12 +227,12 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
         return "";
     }
 
-    public String copy(String objectUrl, String newName, String tableName, String fieldName, boolean isPrivate) {
+    public String copy(String objectUrl, String newName, String tableName, String fieldName, ResourceAccessControlList acl) {
         //objectUrl = StorageUtils.decodeName(objectUrl.replace(getUrl(), ""));
         objectUrl = objectUrl.replace(getUrl(), "");
         newName = tableName + "/" + fieldName + "/" + newName;
         try {
-            CloudBlockBlob sourceBlob = getCloudBlockBlob(objectUrl, isPrivate);
+            CloudBlockBlob sourceBlob = getCloudBlockBlob(objectUrl, acl);
             CloudBlockBlob targetBlob = publicContainer.getBlockBlobReference(newName);
             targetBlob.setMetadata(createObjectMetadata(tableName, fieldName, StorageUtils.encodeName(newName)));
             targetBlob.startCopy(sourceBlob);
@@ -245,9 +253,9 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
         return metadata;
     }
 
-    public long getLength(String objectName, boolean isPrivate) {
+    public long getLength(String objectName, ResourceAccessControlList acl) {
         try {
-            CloudBlockBlob blob = getCloudBlockBlob(objectName, isPrivate);
+            CloudBlockBlob blob = getCloudBlockBlob(objectName, acl);
             blob.downloadAttributes();
             return blob.getProperties().getLength();
         } catch (URISyntaxException ex) {
@@ -258,9 +266,9 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
         }
     }
 
-    public Date getLastModified(String objectName, boolean isPrivate) {
+    public Date getLastModified(String objectName, ResourceAccessControlList acl) {
         try {
-            CloudBlockBlob blob = getCloudBlockBlob(objectName, isPrivate);
+            CloudBlockBlob blob = getCloudBlockBlob(objectName, acl);
             blob.downloadAttributes();
             return blob.getProperties().getLastModified();
         } catch (URISyntaxException ex) {
@@ -271,9 +279,9 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
         }
     }
 
-    public boolean exists(String objectName, boolean isPrivate) {
+    public boolean exists(String objectName, ResourceAccessControlList acl) {
         try {
-            CloudBlockBlob blob = getCloudBlockBlob(objectName, isPrivate);
+            CloudBlockBlob blob = getCloudBlockBlob(objectName, acl);
             return blob.exists();
         } catch (URISyntaxException ex) {
             logger.error("Invalid URI ", ex.getMessage());
@@ -334,6 +342,7 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
     }
 
     public void deleteDirectory(String directoryName) {
+		ResourceAccessControlList acl = null;
         directoryName = StorageUtils.normalizeDirectoryName(directoryName);
         try {
             CloudBlobDirectory directory = publicContainer.getDirectoryReference(directoryName);
@@ -345,7 +354,7 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
                     } else if (item instanceof CloudBlockBlob) {
                         itemName = ((CloudBlockBlob) item).getName();
                     }
-                    delete(itemName, false);
+                    delete(itemName, acl);
                 }
                 if (isDirectory(item)) {
                     if (item instanceof CloudBlobDirectory) {
@@ -367,6 +376,7 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
     }
 
     public void renameDirectory(String directoryName, String newDirectoryName) {
+		ResourceAccessControlList acl = null;
         if (!existsDirectory(newDirectoryName))
         {
             createDirectory(newDirectoryName);
@@ -383,7 +393,7 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
                     } else if (item instanceof CloudBlockBlob) {
                         itemName = ((CloudBlockBlob) item).getName();
                     }
-                    rename(itemName, itemName.replace(directoryName, newDirectoryName), false);
+                    rename(itemName, itemName.replace(directoryName, newDirectoryName), acl);
                 }
                 if (isDirectory(item)) {
                     if (item instanceof CloudBlobDirectory) {
@@ -451,9 +461,9 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
         return directories;
     }
 
-    public InputStream getStream(String objectName, boolean isPrivate){
+    public InputStream getStream(String objectName, ResourceAccessControlList acl){
         try {
-            CloudBlockBlob blob = getCloudBlockBlob(objectName, isPrivate);
+            CloudBlockBlob blob = getCloudBlockBlob(objectName, acl);
             blob.downloadAttributes();
             byte[] bytes= new byte[(int)blob.getProperties().getLength()];
             blob.downloadToByteArray(bytes, 0);
@@ -489,4 +499,13 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
     private String getUrl() {
         return "https://" + account + ".blob.core.windows.net/";
     }
+
+	public String getObjectNameFromURL(String url) {
+		String objectName = null;
+		if (url.startsWith(this.getUrl()))
+		{
+			objectName = url.replace(this.getUrl(), "");
+		}
+		return objectName;
+	}
 }

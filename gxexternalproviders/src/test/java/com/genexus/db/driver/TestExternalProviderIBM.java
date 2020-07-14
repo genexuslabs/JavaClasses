@@ -2,6 +2,8 @@ package com.genexus.db.driver;
 
 import org.junit.Ignore;
 import org.junit.Test;
+
+import static com.genexus.db.driver.ResourceAccessControlList.Default;
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -21,7 +23,7 @@ public class TestExternalProviderIBM {
 
 		Path path = Paths.get("resources", "text.txt");
 		String relativePath = path.toString();
-		String upload = p.upload(relativePath, "text.txt", false);
+		String upload = p.upload(relativePath, "text.txt", Default);
 
 		assertTrue(urlExists(upload));
 		assertFalse(urlExists(String.format("https://%s/%s/text123.txt", endpoint, bucketName)));
@@ -32,8 +34,7 @@ public class TestExternalProviderIBM {
 	public void testCopy(){
 		ExternalProviderIBM p = getExternalProviderIBM();
 		String copyFileName = "copy-text.txt";
-		Boolean isPrivate = false;
-		copy(p, copyFileName, isPrivate);
+		copy(p, copyFileName, ResourceAccessControlList.PublicRead);
 	}
 
 
@@ -42,22 +43,21 @@ public class TestExternalProviderIBM {
 	public void testCopyPrivate(){
 		ExternalProviderIBM p = getExternalProviderIBM();
 		String copyFileName = "copy-text-private.txt";
-		Boolean isPrivate = true;
-		copy(p, copyFileName, isPrivate);
+		copy(p, copyFileName, ResourceAccessControlList.Private);
 	}
 
-	private void copy(ExternalProviderIBM p, String copyFileName, Boolean isPrivate) {
+	private void copy(ExternalProviderIBM p, String copyFileName, ResourceAccessControlList acl) {
 		String fileName = "text.txt";
 		Path path = Paths.get("resources", fileName);
 		String relativePath = path.toString();
-		p.upload(relativePath, fileName, isPrivate);
-		String upload = p.get(fileName, isPrivate, 100);
+		p.upload(relativePath, fileName, acl);
+		String upload = p.get(fileName, acl, 100);
 		assertTrue(urlExists(upload));
 
-		p.delete(copyFileName, isPrivate);
+		p.delete(copyFileName, acl);
 		assertFalse(urlExists(String.format("https://%s/%s/%s", endpoint, bucketName, copyFileName)));
-		p.copy("text.txt", copyFileName, isPrivate);
-		upload = p.get(copyFileName, isPrivate, 100);
+		p.copy("text.txt", copyFileName, acl);
+		upload = p.get(copyFileName, acl, 100);
 		assertTrue(urlExists(upload));
 	}
 
@@ -66,19 +66,19 @@ public class TestExternalProviderIBM {
 	public void multimediaUpload() {
 		ExternalProviderIBM p = getExternalProviderIBM();
 		String copyFileName = "copy-text-private.txt";
-		Boolean isPrivate = true;
+		ResourceAccessControlList acl = ResourceAccessControlList.Private;
 
 		String fileName = "text.txt";
 		Path path = Paths.get("resources", fileName);
 		String relativePath = path.toString();
-		p.upload(relativePath, fileName, isPrivate);
-		String upload = p.get(fileName, isPrivate, 100);
+		p.upload(relativePath, fileName, acl);
+		String upload = p.get(fileName, acl, 100);
 		assertTrue(urlExists(upload));
 
-		p.delete(copyFileName, isPrivate);
+		p.delete(copyFileName, acl);
 		assertFalse(urlExists(String.format("https://%s/%s/%s", endpoint, bucketName, copyFileName)));
-		p.copy("text.txt", copyFileName, false);
-		upload = p.get(copyFileName, false, 100);
+		p.copy("text.txt", copyFileName, acl);
+		upload = p.get(copyFileName, acl, 100);
 		assertTrue(urlExists(upload));
 	}
 
@@ -87,7 +87,7 @@ public class TestExternalProviderIBM {
 	public void testGetFile(){
 		testUpload();
 		ExternalProviderIBM p = getExternalProviderIBM();
-		String url = p.get("text.txt", false, 10);
+		String url = p.get("text.txt", ResourceAccessControlList.Private, 10);
 		assertTrue(urlExists(url));
 	}
 
@@ -101,7 +101,7 @@ public class TestExternalProviderIBM {
 		File f = new File(filePath);
 		f.delete();
 		assertFalse(f.exists());
-		p.download("text.txt", filePath, false);
+		p.download("text.txt", filePath, ResourceAccessControlList.PublicRead);
 		assertTrue(f.exists());
 	}
 
@@ -111,7 +111,7 @@ public class TestExternalProviderIBM {
 		ExternalProviderIBM p = getExternalProviderIBM();
 
 		testUpload();
-		p.delete("text.txt", false);
+		p.delete("text.txt", ResourceAccessControlList.PublicRead);
 		assertFalse(urlExists(String.format("https://%s/%s/text.txt", endpoint, bucketName)));
 	}
 
@@ -124,9 +124,9 @@ public class TestExternalProviderIBM {
 		String relativePath = path.toString();
 		String externalFileName = "text-private.txt";
 
-		p.upload(relativePath, externalFileName, true);
+		p.upload(relativePath, externalFileName, ResourceAccessControlList.Private);
 
-		String upload = p.get(externalFileName, true, 10);
+		String upload = p.get(externalFileName, ResourceAccessControlList.Private, 10);
 		System.out.println(upload);
 		assertTrue(urlExists(upload));
 
@@ -141,7 +141,7 @@ public class TestExternalProviderIBM {
 		String folderName = "";
 		String location = "sao01";
 
-		return new ExternalProviderIBM(accessKey, secretKey, bucket, folderName, location, endpoint);
+		return new ExternalProviderIBM(accessKey, secretKey, bucket, folderName, location, endpoint, "");
 	}
 
 
