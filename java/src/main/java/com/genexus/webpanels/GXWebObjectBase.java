@@ -354,10 +354,6 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 	public void submitReorg(int id, Object [] submitParms) throws SQLException{
 	}
 
-	protected String formatLink(String jumpURL, String[] parm1, String[] parm2) {
-		return formatLink(jumpURL);
-	}
-
 	protected String formatLink(String jumpURL)
 	{
 		return formatLink(formatLink1(jumpURL), new String[]{});
