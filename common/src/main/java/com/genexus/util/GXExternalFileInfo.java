@@ -3,13 +3,12 @@ package com.genexus.util;
 import java.io.*;
 import java.util.Vector;
 import com.genexus.db.driver.*;
-import com.genexus.*;
 import com.genexus.common.interfaces.SpecificImplementation;
 
 import java.util.Date;
 
 public class GXExternalFileInfo implements IGXFileInfo {
-    private static int DEFAULT_OBJECT_EXPIRATION_MINUTES = 24 * 60;
+    private static int DEFAULT_OBJECT_EXPIRATION_MINUTES = -1; //Specified by Provider
     String name;
     ExternalProvider provider;
     String url;

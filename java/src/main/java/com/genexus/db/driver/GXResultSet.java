@@ -1008,13 +1008,22 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 	
 	public String getMultimediaFile(int columnIndex, String gxdbFileUri) throws SQLException
 	{
+		ExternalProvider provider = Application.getExternalProvider();
+		boolean storageSupport = provider != null;
+		if (provider != null && gxdbFileUri.length() > 0) {
+			String externalObjectName = provider.getObjectNameFromURL(gxdbFileUri);
+			if (externalObjectName != null) {
+				return new GXFile(externalObjectName).getAbsolutePath();
+			}
+		}
+
 		if (!GXDbFile.isFileExternal(gxdbFileUri))
 		{
 			String fileName = GXDbFile.getFileNameFromUri(gxdbFileUri);
 			if (fileName.trim().length() != 0)
 			{
 				String filePath = "";
-				if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) == null)
+				if (storageSupport)
 				{ 
 					String multimediaDir = com.genexus.Preferences.getDefaultPreferences().getMultimediaPath();
 					filePath = multimediaDir + File.separator + fileName;
@@ -1034,7 +1043,6 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 				}
 			}
 		}
-
 		return "";
 	}
 

@@ -49,4 +49,6 @@ public interface ExternalProvider {
 	InputStream getStream(String objectName, ResourceAccessControlList acl);
 
 	boolean getMessageFromException(Exception ex, StructSdtMessages_Message msg);
+
+	String getObjectNameFromURL(String url);
 }

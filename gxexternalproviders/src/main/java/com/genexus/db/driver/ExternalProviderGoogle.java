@@ -67,7 +67,7 @@ public class ExternalProviderGoogle implements ExternalProvider {
     private String projectId;
     private String url;
 	private ResourceAccessControlList defaultACL = ResourceAccessControlList.PublicRead;
-
+	private int defaultExpirationMinutes = 24 * 60;
 
     public ExternalProviderGoogle(String service) {
         this(Application.getGXServices().get(service));
@@ -211,8 +211,10 @@ public class ExternalProviderGoogle implements ExternalProvider {
     public String get(String objectName, ResourceAccessControlList acl, int expirationMinutes) {
         try {
             client.objects().get(bucket, objectName).execute();
-            if(isPrivateResource(acl))
-                return betaClient.signUrl(BlobInfo.newBuilder(bucket, objectName).build(), expirationMinutes, TimeUnit.MINUTES).toString();
+            if(isPrivateResource(acl)) {
+				expirationMinutes = expirationMinutes > 0 ? expirationMinutes: defaultExpirationMinutes;
+				return betaClient.signUrl(BlobInfo.newBuilder(bucket, objectName).build(), expirationMinutes, TimeUnit.MINUTES).toString();
+			}
             else
                 return url + StorageUtils.encodeName(objectName);
         } catch (IOException ex) {
@@ -505,6 +507,20 @@ public class ExternalProviderGoogle implements ExternalProvider {
         }
         return new GoogleStorageException(msg, ex);
     }
+
+	public String getObjectNameFromURL(String url) {
+		String objectName = null;
+		if (url.startsWith(this.getStorageUri()))
+		{
+			objectName = url.replace(this.getStorageUri(), "");
+		}
+		return objectName;
+	}
+
+	private String getStorageUri()
+	{
+		return url;
+	}
 
     class GoogleStorageException extends RuntimeException {
 

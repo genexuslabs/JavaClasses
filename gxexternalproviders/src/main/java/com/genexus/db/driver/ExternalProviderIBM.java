@@ -47,7 +47,8 @@ public class ExternalProviderIBM implements ExternalProvider {
     private String folder;
     private String endpointUrl;
 	private CannedAccessControlList defaultACL;
-	
+	private int defaultExpirationMinutes = 24 * 60;
+
     /* For compatibility reasons with GX16 U6 or lower*/
     public ExternalProviderIBM(){
         this(GXServices.STORAGE_SERVICE);
@@ -171,6 +172,7 @@ public class ExternalProviderIBM implements ExternalProvider {
     }
 
     public String get(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
+		expirationMinutes = expirationMinutes > 0 ? expirationMinutes: defaultExpirationMinutes;
         client.getObjectMetadata(bucket, externalFileName);
         if (internalToAWSACL(acl) == CannedAccessControlList.Private) {
             java.util.Date expiration = new java.util.Date();
@@ -356,4 +358,19 @@ public class ExternalProviderIBM implements ExternalProvider {
             return false;
         }
     }
+
+	public String getObjectNameFromURL(String url) {
+		String objectName = null;
+		if (url.startsWith(this.getStorageUri()))
+		{
+			objectName = url.replace(this.getStorageUri(), "");
+		}
+		return objectName;
+	}
+
+	private String getStorageUri()
+	{
+		return String.format("https://%s%s/", this.bucket, this.endpointUrl);
+	}
+
 }

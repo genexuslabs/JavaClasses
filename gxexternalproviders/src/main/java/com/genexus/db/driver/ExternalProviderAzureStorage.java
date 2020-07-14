@@ -40,6 +40,8 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
     private CloudBlobClient client;
 	private ResourceAccessControlList defaultAcl = ResourceAccessControlList.PublicRead;
 
+	private int defaultExpirationMinutes = 24 * 60;
+
     public ExternalProviderAzureStorage(String service) {
         this(Application.getGXServices().get(service));
     }
@@ -169,6 +171,7 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
                 SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
                 policy.setPermissionsFromString("r");
                 Calendar date = Calendar.getInstance();
+				expirationMinutes = expirationMinutes > 0 ? expirationMinutes: defaultExpirationMinutes;
                 Date expire = new Date(date.getTimeInMillis() + (expirationMinutes * 60000));
                 policy.setSharedAccessExpiryTime(expire);
                 return blob.getUri().toString() + "?" + blob.generateSharedAccessSignature(policy, null);
@@ -496,4 +499,13 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
     private String getUrl() {
         return "http://" + account + ".blob.core.windows.net/";
     }
+
+	public String getObjectNameFromURL(String url) {
+		String objectName = null;
+		if (url.startsWith(this.getUrl()))
+		{
+			objectName = url.replace(this.getUrl(), "");
+		}
+		return objectName;
+	}
 }

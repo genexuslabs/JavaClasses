@@ -12,7 +12,7 @@ import java.util.Vector;
 import com.genexus.IHttpContext;
 import com.genexus.ModelContext;
 import com.genexus.db.driver.ResourceAccessControlList;
-import com.genexus.internet.HttpContext;
+import com.genexus.db.driver.ExternalProvider;
 import com.genexus.webpanels.HttpContextWeb;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
@@ -38,19 +38,20 @@ public class GXFile extends AbstractGXFile {
     public GXFile() {
     }
 
-    public GXFile(String FileName) {
-        this(FileName, ResourceAccessControlList.Default);
+    public GXFile(String fileName) {
+        this(fileName, ResourceAccessControlList.Default);
     }
     
-    public GXFile(String FileName, ResourceAccessControlList fileAcl) {
-    		this(FileName, fileAcl, false);
+    public GXFile(String fileName, ResourceAccessControlList fileAcl) {
+    		this(fileName, fileAcl, false);
     }
     
-    public GXFile(String FileName,  ResourceAccessControlList fileAcl, boolean isLocal) {
-        if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) != null && !isLocal) {
-            FileSource = new GXExternalFileInfo(FileName, Application.getExternalProvider(), true, fileAcl);
+    public GXFile(String fileName,  ResourceAccessControlList fileAcl, boolean isLocal) {
+    	ExternalProvider storageProvider = Application.getExternalProvider();
+        if (storageProvider != null && !isLocal) {
+            FileSource = new GXExternalFileInfo(fileName, storageProvider, true, fileAcl);
         } else {
-            FileSource = new GXFileInfo(new File(FileName));
+            FileSource = new GXFileInfo(new File(fileName));
         }
     }
 

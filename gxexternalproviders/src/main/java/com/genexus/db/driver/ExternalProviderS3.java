@@ -34,6 +34,7 @@ public class ExternalProviderS3 implements ExternalProvider {
     static final String ACCESS_KEY_ID = "STORAGE_PROVIDER_ACCESSKEYID";
     static final String SECRET_ACCESS_KEY = "STORAGE_PROVIDER_SECRETACCESSKEY";
 	static final String DEFAULT_ACL = "STORAGE_PROVIDER_DEFAULT_ACL";
+	static final String DEFAULT_EXPIRATION = "STORAGE_PROVIDER_DEFAULT_EXPIRATION";
     static final String ENDPOINT = "ENDPOINT";
     static final String BUCKET = "BUCKET_NAME";
     static final String FOLDER = "FOLDER_NAME";
@@ -46,7 +47,7 @@ public class ExternalProviderS3 implements ExternalProvider {
     private String folder;
     private String endpointUrl = ".s3.amazonaws.com/";
 	private CannedAccessControlList defaultACL;
-
+	private int defaultExpirationMinutes = 24 * 60;
 
     public ExternalProviderS3(String service) {
         this(Application.getGXServices().get(service));
@@ -56,11 +57,16 @@ public class ExternalProviderS3 implements ExternalProvider {
         AWSCredentials credentials = new BasicAWSCredentials(Encryption.decrypt64(providerService.getProperties().get(ACCESS_KEY_ID)), Encryption.decrypt64(providerService.getProperties().get(SECRET_ACCESS_KEY)));
         client = new AmazonS3Client(credentials);
 
-        setEndpoint(providerService.getProperties().get(ENDPOINT));
+        //setEndpoint(providerService.getProperties().get(ENDPOINT));
 		setDefaultACL(providerService.getProperties().get(DEFAULT_ACL));
 
         bucket = Encryption.decrypt64(providerService.getProperties().get(BUCKET)).toLowerCase();
         folder = providerService.getProperties().get(FOLDER);
+
+        try {
+			defaultExpirationMinutes = Integer.parseInt(providerService.getProperties().get(DEFAULT_EXPIRATION));
+		}
+        catch (Exception e) {}
 
         bucketExists();
         createFolder(folder);
@@ -72,8 +78,7 @@ public class ExternalProviderS3 implements ExternalProvider {
         if (endpoint.equals(ACCELERATED)) {
             client.setS3ClientOptions(S3ClientOptions.builder().setAccelerateModeEnabled(true).build());
             endpointUrl = ".s3-accelerate.amazonaws.com/";
-        }
-        if (endpoint.equals(DUALSTACK)) {
+        } else if (endpoint.equals(DUALSTACK)) {
             client.setS3ClientOptions(S3ClientOptions.builder().enableDualstack().setAccelerateModeEnabled(true).build());
             endpointUrl = ".s3-accelerate.dualstack.amazonaws.com/";
         }
@@ -159,6 +164,7 @@ public class ExternalProviderS3 implements ExternalProvider {
     }
 
     public String get(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
+		expirationMinutes = expirationMinutes > 0 ? expirationMinutes: defaultExpirationMinutes;
         client.getObjectMetadata(bucket, externalFileName);
         if (internalToAWSACL(acl) == CannedAccessControlList.Private) {
             java.util.Date expiration = new java.util.Date();
@@ -344,4 +350,18 @@ public class ExternalProviderS3 implements ExternalProvider {
             return false;
         }
     }
+
+    public String getObjectNameFromURL(String url) {
+    	String objectName = null;
+		if (url.startsWith(this.getStorageUri()))
+		{
+			objectName = url.replace(this.getStorageUri(), "");
+		}
+		return objectName;
+	}
+
+	private String getStorageUri()
+	{
+		return String.format("https://%s%s", this.bucket, this.endpointUrl);
+	}
 }
