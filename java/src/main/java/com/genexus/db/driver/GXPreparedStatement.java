@@ -981,8 +981,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		String folder = Application.getGXServices().get(GXServices.STORAGE_SERVICE).getProperties().get("FOLDER_NAME");
 		if (!resourceAlreadyOnStorage && (fileName == blobPath || GXutil.isAbsoluteURL(fileName))) {
 			// - 2. External URL: An absolute URL (outside External Storage).
-			try {
-				InputStream is = new URL(fileName).openStream();
+			try (InputStream is = new URL(fileName).openStream()){
 				int idx = storageTargetObjectName.lastIndexOf("/");
 				if ((idx != -1) && (idx < storageTargetObjectName.length() - 1)) {
 					storageTargetObjectName = storageTargetObjectName.substring(idx + 1);
