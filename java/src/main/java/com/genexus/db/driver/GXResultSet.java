@@ -1008,16 +1008,13 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 	
 	public String getMultimediaFile(int columnIndex, String gxdbFileUri) throws SQLException
 	{
-		ExternalProvider provider = Application.getExternalProvider();
-		boolean storageSupport = provider != null;
-
 		if (!GXDbFile.isFileExternal(gxdbFileUri))
 		{
 			String fileName = GXDbFile.getFileNameFromUri(gxdbFileUri);
 			if (fileName.trim().length() != 0)
 			{
 				String filePath = "";
-				if (storageSupport)
+				if (Application.getExternalProvider() != null)
 				{ 
 					String multimediaDir = com.genexus.Preferences.getDefaultPreferences().getMultimediaPath();
 					filePath = multimediaDir + File.separator + fileName;
@@ -1037,14 +1034,6 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 				}
 			}
 		}
-		else {
-			if (provider != null && gxdbFileUri.length() > 0) {
-				String externalObjectName = provider.getObjectNameFromURL(gxdbFileUri);
-				if (externalObjectName != null) {
-					return new GXFile(externalObjectName).getAbsolutePath();
-				}
-			}
-		}
 		return "";
 	}
 
@@ -1055,7 +1044,15 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 	
 	public String getMultimediaUri(int columnIndex, boolean absPath) throws SQLException
 	{
-		return GXDbFile.resolveUri(getVarchar(columnIndex), absPath);
+		ExternalProvider provider = Application.getExternalProvider();
+		String colValue = getVarchar(columnIndex);
+		if (colValue.length() > 0 && provider != null && GXutil.isAbsoluteURL(colValue)) {
+			String externalObjectName = provider.getObjectNameFromURL(colValue);
+			if (externalObjectName != null) {
+				return new GXFile(externalObjectName).getAbsolutePath();
+			}
+		}
+		return GXDbFile.resolveUri(colValue, absPath);
 	}
 
 	private static String lastBlobsDir = "";
@@ -1063,7 +1060,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 	{
 		String blobPath = com.genexus.Preferences.getDefaultPreferences().getBLOB_PATH();
 		String fileName = com.genexus.PrivateUtilities.getTempFileName(blobPath, name, extension, true);
-		if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) == null)
+		if (Application.getExternalProvider() == null)
 		{
 			File file = new File(fileName);
 			
