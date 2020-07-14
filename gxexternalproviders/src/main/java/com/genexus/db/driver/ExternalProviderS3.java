@@ -57,7 +57,7 @@ public class ExternalProviderS3 implements ExternalProvider {
         AWSCredentials credentials = new BasicAWSCredentials(Encryption.decrypt64(providerService.getProperties().get(ACCESS_KEY_ID)), Encryption.decrypt64(providerService.getProperties().get(SECRET_ACCESS_KEY)));
         client = new AmazonS3Client(credentials);
 
-        //setEndpoint(providerService.getProperties().get(ENDPOINT));
+        setEndpoint(providerService.getProperties().get(ENDPOINT));
 		setDefaultACL(providerService.getProperties().get(DEFAULT_ACL));
 
         bucket = Encryption.decrypt64(providerService.getProperties().get(BUCKET)).toLowerCase();
