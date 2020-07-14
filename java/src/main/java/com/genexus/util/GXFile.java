@@ -11,7 +11,8 @@ import java.util.Vector;
 
 import com.genexus.IHttpContext;
 import com.genexus.ModelContext;
-import com.genexus.internet.HttpContext;
+import com.genexus.db.driver.ResourceAccessControlList;
+import com.genexus.db.driver.ExternalProvider;
 import com.genexus.webpanels.HttpContextWeb;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
@@ -37,19 +38,20 @@ public class GXFile extends AbstractGXFile {
     public GXFile() {
     }
 
-    public GXFile(String FileName) {
-        this(FileName, false);
+    public GXFile(String fileName) {
+        this(fileName, ResourceAccessControlList.Default);
     }
     
-    public GXFile(String FileName, boolean isPrivate) {
-    		this(FileName, isPrivate, false);
+    public GXFile(String fileName, ResourceAccessControlList fileAcl) {
+    		this(fileName, fileAcl, false);
     }
     
-    public GXFile(String FileName, boolean isPrivate, boolean isLocal) {
-        if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) != null && !isLocal) {
-            FileSource = new GXExternalFileInfo(FileName, Application.getExternalProvider(), true, isPrivate);            
+    public GXFile(String fileName,  ResourceAccessControlList fileAcl, boolean isLocal) {
+    	ExternalProvider storageProvider = Application.getExternalProvider();
+        if (storageProvider != null && !isLocal) {
+            FileSource = new GXExternalFileInfo(fileName, storageProvider, true, fileAcl);
         } else {
-            FileSource = new GXFileInfo(new File(FileName));
+            FileSource = new GXFileInfo(new File(fileName));
         }
     }
 
@@ -58,7 +60,7 @@ public class GXFile extends AbstractGXFile {
     }
 
     public static String getgxFilename(String fileName) {
-        return new GXFile(fileName, false, true).getNameNoExt();
+        return new GXFile(fileName, ResourceAccessControlList.Default, true).getNameNoExt();
     }
 
     public static String getgxFileext(String fileName) {
@@ -104,7 +106,7 @@ public class GXFile extends AbstractGXFile {
         			URI uriFile = URI.create(absoluteFileName);
         			FileSource = new GXFileInfo(new File(uriFile));
         		} catch(Exception e) {
-        				FileSource = new GXFileInfo(new File(absoluteFileName));
+        			FileSource = new GXFileInfo(new File(absoluteFileName));
         		}
         }
     }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
+import com.genexus.db.driver.ResourceAccessControlList;
 import org.apache.commons.io.IOUtils;
 
 import com.genexus.Application;
@@ -45,7 +46,7 @@ public class FileItem
   	else
   	{
   		this.sourceFileName = sourceFileName;
-	  	gxFile = new GXFile(name, true);
+	  	gxFile = new GXFile(name, ResourceAccessControlList.Private);
 	  	gxFile.create(stream);
 	  }
   }

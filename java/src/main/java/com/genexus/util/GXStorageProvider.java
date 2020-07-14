@@ -8,6 +8,7 @@ import com.genexus.GXutil;
 import com.genexus.SdtMessages_Message;
 import com.genexus.StructSdtMessages_Message;
 import com.genexus.db.driver.ExternalProvider;
+import com.genexus.db.driver.ResourceAccessControlList;
 
 public class GXStorageProvider {
 
@@ -33,7 +34,7 @@ public class GXStorageProvider {
             if (storageobjectfullname.isEmpty()) {
                 storageobjectfullname = new File(filefullpath).getName();
             }
-            String url = provider.upload(filefullpath, storageobjectfullname, false);
+            String url = provider.upload(filefullpath, storageobjectfullname, ResourceAccessControlList.PublicRead);
             if (uploadedFile != null) {
                 uploadedFile.setFileInfo(new GXExternalFileInfo(storageobjectfullname, url, provider));
             }
@@ -50,7 +51,7 @@ public class GXStorageProvider {
             if (storageobjectfullname.isEmpty()) {
                 storageobjectfullname = new File(filefullpath).getName();
             }
-            String url = provider.upload(filefullpath, storageobjectfullname, true);
+            String url = provider.upload(filefullpath, storageobjectfullname, ResourceAccessControlList.Private);
             if (uploadedFile != null) {
                 uploadedFile.setFileInfo(new GXExternalFileInfo(storageobjectfullname, url, provider));
             }
@@ -66,7 +67,7 @@ public class GXStorageProvider {
             validProvider();
             String destFileName;
             destFileName = localFile.getAbsolutePath();
-            provider.download(storageobjectfullname, destFileName, false);
+            provider.download(storageobjectfullname, destFileName, ResourceAccessControlList.PublicRead);
             return true;
         } catch (Exception ex) {
             storageMessages(ex, messages);
@@ -79,7 +80,7 @@ public class GXStorageProvider {
             validProvider();
             String destFileName;
             destFileName = localFile.getAbsolutePath();
-            provider.download(storageobjectfullname, destFileName, true);
+            provider.download(storageobjectfullname, destFileName, ResourceAccessControlList.Private);
             return true;
         } catch (Exception ex) {
             storageMessages(ex, messages);
@@ -90,7 +91,7 @@ public class GXStorageProvider {
     public boolean get(String storageobjectfullname, GXFile externalFile, GXBaseCollection<SdtMessages_Message> messages) {
         try {
             validProvider();
-            String url = provider.get(storageobjectfullname, false, 0);
+            String url = provider.get(storageobjectfullname, ResourceAccessControlList.PublicRead, 0);
             if (url.isEmpty()) {
                 GXutil.ErrorToMessages("Get Error", "File doesn't exist", messages);
                 return false;
@@ -107,7 +108,7 @@ public class GXStorageProvider {
     public boolean getPrivate(String storageobjectfullname, GXFile externalFile, int expirationMinutes, GXBaseCollection<SdtMessages_Message> messages) {
         try {
             validProvider();
-            String url = provider.get(storageobjectfullname, true, expirationMinutes);
+            String url = provider.get(storageobjectfullname, ResourceAccessControlList.Private, expirationMinutes);
             if (url.isEmpty()) {
                 GXutil.ErrorToMessages("Get Error", "File doesn't exist", messages);
                 return false;
@@ -129,7 +130,7 @@ public class GXStorageProvider {
                 GXutil.ErrorToMessages("Get Error", "Directory doesn't exist", messages);
                 return false;
             }
-            externalDirectory.setDirectoryInfo(new GXExternalFileInfo(directoryFullName, url, provider, false));
+            externalDirectory.setDirectoryInfo(new GXExternalFileInfo(directoryFullName, url, provider, ResourceAccessControlList.Default));
             return true;
         } catch (Exception ex) {
             storageMessages(ex, messages);

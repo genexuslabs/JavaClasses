@@ -90,7 +90,7 @@ public class ExcelDocument implements IGxError,IExcelDocument{
 			workBook.write(fs);
             ByteArrayInputStream in = new ByteArrayInputStream(fs.toByteArray());
             fs.close();
-            GXFile file = new GXFile(xlsFileName, Constants.EXTERNAL_PRIVATE_UPLOAD);
+            GXFile file = new GXFile(xlsFileName, Constants.EXTERNAL_UPLOAD_ACL);
             file.create(in, true);
 		}
 		catch(Exception e)
