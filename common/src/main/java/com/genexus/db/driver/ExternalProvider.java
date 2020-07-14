@@ -1,52 +1,54 @@
 package com.genexus.db.driver;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import com.genexus.StructSdtMessages_Message;
 
+
 public interface ExternalProvider {
-   
-    void download(String externalFileName, String localFile, boolean isPrivate);
 
-    String upload(String localFile, String externalFileName, boolean isPrivate);
-    
-    String upload(String externalFileName, InputStream input, boolean isPrivate);
+	void download(String externalFileName, String localFile, ResourceAccessControlList acl);
 
-    String get(String externalFileName, boolean isPrivate, int expirationMinutes);
+	String upload(String localFile, String externalFileName, ResourceAccessControlList acl);
 
-    void delete(String objectName, boolean isPrivate);
+	String upload(String externalFileName, InputStream input, ResourceAccessControlList acl);
 
-    String rename(String objectName, String newName, boolean isPrivate);
+	String get(String externalFileName, ResourceAccessControlList acl, int expirationMinutes);
 
-    String copy(String objectName, String newName, boolean isPrivate);
-    
-    String copy(String objectUrl, String newName, String tableName, String fieldName, boolean isPrivate);
+	void delete(String objectName, ResourceAccessControlList acl);
 
-    long getLength(String objectName, boolean isPrivate);
+	String rename(String objectName, String newName, ResourceAccessControlList acl);
 
-    Date getLastModified(String objectName, boolean isPrivate);
-    
-    boolean exists(String objectName, boolean isPrivate);
+	String copy(String objectName, String newName, ResourceAccessControlList acl);
 
-    String getDirectory(String directoryName);
+	String copy(String objectUrl, String newName, String tableName, String fieldName, ResourceAccessControlList acl);
 
-    boolean existsDirectory(String directoryName);
+	long getLength(String objectName, ResourceAccessControlList acl);
 
-    void createDirectory(String directoryName);
+	Date getLastModified(String objectName, ResourceAccessControlList acl);
 
-    void deleteDirectory(String directoryName);
+	boolean exists(String objectName, ResourceAccessControlList acl);
 
-    void renameDirectory(String directoryName, String newDirectoryName);
+	String getDirectory(String directoryName);
 
-    List<String> getFiles(String directoryName, String filter);
-    
-    List<String> getFiles(String directoryName);
+	boolean existsDirectory(String directoryName);
 
-    List<String> getSubDirectories(String directoryName);
-    
-    InputStream getStream(String objectName, boolean isPrivate);
-    
-    boolean getMessageFromException(Exception ex, StructSdtMessages_Message msg);
+	void createDirectory(String directoryName);
+
+	void deleteDirectory(String directoryName);
+
+	void renameDirectory(String directoryName, String newDirectoryName);
+
+	List<String> getFiles(String directoryName, String filter);
+
+	List<String> getFiles(String directoryName);
+
+	List<String> getSubDirectories(String directoryName);
+
+	InputStream getStream(String objectName, ResourceAccessControlList acl);
+
+	boolean getMessageFromException(Exception ex, StructSdtMessages_Message msg);
+
+	String getObjectNameFromURL(String url);
 }

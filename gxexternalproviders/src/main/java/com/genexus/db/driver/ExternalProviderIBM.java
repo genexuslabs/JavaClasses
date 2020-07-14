@@ -33,10 +33,12 @@ public class ExternalProviderIBM implements ExternalProvider {
 
 	private static Logger logger = LogManager.getLogger(ExternalProviderIBM.class);
 
-    static final String ACCESS_KEY = "STORAGE_PROVIDER_ACCESS_KEY";
-    static final String SECRET_KEY = "STORAGE_PROVIDER_SECRET_KEY";
+    static final String ACCESS_KEY_ID = "STORAGE_PROVIDER_ACCESS_KEY";
+    static final String SECRET_ACCESS_KEY = "STORAGE_PROVIDER_SECRET_KEY";
+	static final String DEFAULT_ACL = "STORAGE_PROVIDER_DEFAULT_ACL";
     static final String COS_ENDPOINT = "STORAGE_COS_ENDPOINT";
     static final String COS_LOCATION = "STORAGE_COS_LOCATION";
+
     static final String BUCKET = "BUCKET_NAME";
     static final String FOLDER = "FOLDER_NAME";
 
@@ -44,6 +46,8 @@ public class ExternalProviderIBM implements ExternalProvider {
     private String bucket;
     private String folder;
     private String endpointUrl;
+	private CannedAccessControlList defaultACL;
+	private int defaultExpirationMinutes = 24 * 60;
 
     /* For compatibility reasons with GX16 U6 or lower*/
     public ExternalProviderIBM(){
@@ -55,26 +59,28 @@ public class ExternalProviderIBM implements ExternalProvider {
     }
 
     public ExternalProviderIBM(GXService providerService) {
-        String accessKey = ExternalProviderHelper.getServicePropertyValue(providerService, ACCESS_KEY, true);
-        String secret = ExternalProviderHelper.getServicePropertyValue(providerService, SECRET_KEY, true);
+        String accessKey = ExternalProviderHelper.getServicePropertyValue(providerService, ACCESS_KEY_ID, true);
+        String secret = ExternalProviderHelper.getServicePropertyValue(providerService, SECRET_ACCESS_KEY, true);
         String location = ExternalProviderHelper.getServicePropertyValue(providerService, COS_LOCATION, false);
         String endpoint = ExternalProviderHelper.getServicePropertyValue(providerService, COS_ENDPOINT, false);
         String bucket = ExternalProviderHelper.getServicePropertyValue(providerService, BUCKET, true);
         String folder = ExternalProviderHelper.getServicePropertyValue(providerService, FOLDER, false);
-
-		init(accessKey, secret, bucket, folder, location, endpoint);
+		String defaultAcl = providerService.getProperties().get(DEFAULT_ACL);
+		init(accessKey, secret, bucket, folder, location, endpoint, defaultAcl);
     }
 
 
-	public ExternalProviderIBM(String accessKey, String secretKey,  String bucketName, String folderName, String location, String endpoint) {
-		init(accessKey, secretKey, bucketName, folderName, location, endpoint);
+	public ExternalProviderIBM(String accessKey, String secretKey,  String bucketName, String folderName, String location, String endpoint, String defaultAcl) {
+		init(accessKey, secretKey, bucketName, folderName, location, endpoint, defaultAcl);
 	}
 
-	private void init(String accessKey, String secretKey, String bucketName, String folderName, String location, String endpoint) {
+	private void init(String accessKey, String secretKey, String bucketName, String folderName, String location, String endpoint, String defaultAcl) {
     	endpointUrl = endpoint;
 		bucket = bucketName;
 		folder = folderName;
 
+		setDefaultACL(defaultAcl);
+		
 		ClientConfiguration clientConfig = new ClientConfiguration().withRequestTimeout(10000);
 		clientConfig.setUseTcpKeepAlive(true);
 		SDKGlobalConfiguration.IAM_ENDPOINT = "https://iam.cloud.ibm.com/identity/token";
@@ -88,10 +94,12 @@ public class ExternalProviderIBM implements ExternalProvider {
 		createFolder(folder);
 	}
 
-
-	private void bucketExists() {
+	public void setDefaultACL(String acl) {
+		this.defaultACL = internalToAWSACL(ResourceAccessControlList.parse(acl));
+	}
+    private void bucketExists() {
         if (!client.doesBucketExist(bucket)) {
-        	logger.debug(String.format("Bucket %s doesn't exist, please create the bucket", bucket));
+            logger.debug(String.format("Bucket %s doesn't exist, please create the bucket", bucket));
         }
     }
 
@@ -104,7 +112,7 @@ public class ExternalProviderIBM implements ExternalProvider {
         client.putObject(putObjectRequest);
     }
 
-    public void download(String externalFileName, String localFile, boolean isPrivate) {
+    public void download(String externalFileName, String localFile, ResourceAccessControlList acl) {
         try {
             S3Object object = client.getObject(new GetObjectRequest(bucket, externalFileName));
             try (InputStream objectData = object.getObjectContent()) {
@@ -117,26 +125,32 @@ public class ExternalProviderIBM implements ExternalProvider {
 				}
 			}
         } catch (FileNotFoundException ex) {
-        	logger.error("Error while downloading file to the external provider", ex);
+            logger.error("Error while downloading file to the external provider", ex);
         } catch (IOException ex) {
-        	logger.error("Error while downloading file to the external provider", ex);
+            logger.error("Error while downloading file to the external provider", ex);
         }
     }
 
-    public String upload(String localFile, String externalFileName, boolean isPrivate) {
-        PutObjectResult result = client.putObject(new PutObjectRequest(bucket, externalFileName, new File(localFile)).withCannedAcl(getUploadACL(isPrivate)));
+    public String upload(String localFile, String externalFileName, ResourceAccessControlList acl) {
+        client.putObject(new PutObjectRequest(bucket, externalFileName, new File(localFile)).withCannedAcl(internalToAWSACL(acl)));
         return ((AmazonS3Client) client).getResourceUrl(bucket, externalFileName);
     }
 
-	private CannedAccessControlList getUploadACL(boolean isPrivate) {
-		CannedAccessControlList accessControl = CannedAccessControlList.PublicRead;
-        if (isPrivate) {
+    private CannedAccessControlList internalToAWSACL(ResourceAccessControlList acl) {
+        CannedAccessControlList accessControl = this.defaultACL;
+        if (acl == ResourceAccessControlList.Private) {
             accessControl = CannedAccessControlList.Private;
         }
-		return accessControl;
-	}
+		else if (acl == ResourceAccessControlList.PublicRead) {
+			accessControl = CannedAccessControlList.PublicRead;
+		}
+		else if (acl == ResourceAccessControlList.PublicReadWrite) {
+			accessControl = CannedAccessControlList.PublicReadWrite;
+		}
+        return accessControl;
+    }
 
-    public String upload(String externalFileName, InputStream input, boolean isPrivate) {
+    public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
         byte[] bytes;
         try {
             bytes = IOUtils.toByteArray(input);
@@ -147,7 +161,7 @@ public class ExternalProviderIBM implements ExternalProvider {
             }
             String upload = "";
             try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes)) {
-				PutObjectResult result = client.putObject(new PutObjectRequest(bucket, externalFileName, byteArrayInputStream, metadata).withCannedAcl(getUploadACL(isPrivate)));
+				client.putObject(new PutObjectRequest(bucket, externalFileName, byteArrayInputStream, metadata).withCannedAcl(internalToAWSACL(acl)));
 				upload = ((AmazonS3Client) client).getResourceUrl(bucket, externalFileName);
 			}
 			return upload;
@@ -157,10 +171,11 @@ public class ExternalProviderIBM implements ExternalProvider {
         }
     }
 
-    public String get(String externalFileName, boolean isPrivate, int expirationMinutes) {
+    public String get(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
+		expirationMinutes = expirationMinutes > 0 ? expirationMinutes: defaultExpirationMinutes;
         client.getObjectMetadata(bucket, externalFileName);
-        if (isPrivate) {
-            Date expiration = new Date();
+        if (internalToAWSACL(acl) == CannedAccessControlList.Private) {
+            java.util.Date expiration = new java.util.Date();
             long msec = expiration.getTime();
             msec += 60000 * expirationMinutes;
             expiration.setTime(msec);
@@ -174,24 +189,24 @@ public class ExternalProviderIBM implements ExternalProvider {
         }
     }
 
-    public void delete(String objectName, boolean isPrivate) {
+    public void delete(String objectName, ResourceAccessControlList acl) {
         client.deleteObject(bucket, objectName);
     }
 
-    public String rename(String objectName, String newName, boolean isPrivate) {
-        String url = copy(objectName, newName, isPrivate);
-        delete(objectName, isPrivate);
+    public String rename(String objectName, String newName, ResourceAccessControlList acl) {
+        String url = copy(objectName, newName, acl);
+        delete(objectName, acl);
         return url;
     }
 
-    public String copy(String objectName, String newName, boolean isPrivate) {
+    public String copy(String objectName, String newName, ResourceAccessControlList acl) {
         CopyObjectRequest request = new CopyObjectRequest(bucket, objectName, bucket, newName);
-		request.setCannedAccessControlList(getUploadACL(isPrivate));
+        request.setCannedAccessControlList(internalToAWSACL(acl));
         client.copyObject(request);
         return ((AmazonS3Client) client).getResourceUrl(bucket, newName);
     }
 
-    public String copy(String objectUrl, String newName, String tableName, String fieldName, boolean isPrivate) {
+    public String copy(String objectUrl, String newName, String tableName, String fieldName, ResourceAccessControlList acl) {
         String resourceFolderName = folder + StorageUtils.DELIMITER + tableName + StorageUtils.DELIMITER + fieldName;
         createFolder(resourceFolderName);
 
@@ -201,26 +216,27 @@ public class ExternalProviderIBM implements ExternalProvider {
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.addUserMetadata("Table", tableName);
         metadata.addUserMetadata("Field", fieldName);
-        metadata.addUserMetadata("KeyValue", resourceKey);
+        metadata.addUserMetadata("KeyValue", StorageUtils.encodeNonAsciiCharacters(resourceKey));
 
         CopyObjectRequest request = new CopyObjectRequest(bucket, objectUrl, bucket, resourceKey);
         request.setNewObjectMetadata(metadata);
-        request.setCannedAccessControlList(getUploadACL(isPrivate));
+        request.setCannedAccessControlList(internalToAWSACL(acl));
         client.copyObject(request);
+
         return ((AmazonS3Client) client).getResourceUrl(bucket, resourceKey);
     }
 
-    public long getLength(String objectName, boolean isPrivate) {
+    public long getLength(String objectName, ResourceAccessControlList acl) {
         ObjectMetadata obj = client.getObjectMetadata(bucket, objectName);
         return obj.getInstanceLength();
     }
 
-    public Date getLastModified(String objectName, boolean isPrivate) {
+    public Date getLastModified(String objectName, ResourceAccessControlList acl) {
         ObjectMetadata obj = client.getObjectMetadata(bucket, objectName);
         return obj.getLastModified();
     }
 
-    public boolean exists(String objectName, boolean isPrivate) {
+    public boolean exists(String objectName, ResourceAccessControlList acl) {
         try {
             client.getObjectMetadata(bucket, objectName);
         } catch (AmazonS3Exception ex) {
@@ -242,7 +258,7 @@ public class ExternalProviderIBM implements ExternalProvider {
     public boolean existsDirectory(String directoryName) {
         directoryName = StorageUtils.normalizeDirectoryName(directoryName);
         ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
-                .withBucketName(bucket).withDelimiter(StorageUtils.DELIMITER);
+            .withBucketName(bucket).withDelimiter(StorageUtils.DELIMITER);
         List<String> directories = new ArrayList<String>();
         for (String prefix : client.listObjects(listObjectsRequest).getCommonPrefixes()) {
             directories.add(prefix);
@@ -254,7 +270,7 @@ public class ExternalProviderIBM implements ExternalProvider {
     public void getAllDirectories(String directoryName, List<String> directories) {
         directoryName = StorageUtils.normalizeDirectoryName(directoryName);
         ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
-                .withBucketName(bucket).withPrefix(directoryName).withDelimiter(StorageUtils.DELIMITER);
+            .withBucketName(bucket).withPrefix(directoryName).withDelimiter(StorageUtils.DELIMITER);
         for (String prefix : client.listObjects(listObjectsRequest).getCommonPrefixes()) {
             directories.add(prefix);
             getAllDirectories(prefix, directories);
@@ -270,7 +286,7 @@ public class ExternalProviderIBM implements ExternalProvider {
             client.deleteObject(bucket, file.getKey());
         }
         ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
-                .withBucketName(bucket).withDelimiter(StorageUtils.DELIMITER);
+            .withBucketName(bucket).withDelimiter(StorageUtils.DELIMITER);
         ObjectListing list = client.listObjects(listObjectsRequest);
         List<String> toRemove = new ArrayList<String>();
         List<String> prefixes = list.getCommonPrefixes();
@@ -288,22 +304,22 @@ public class ExternalProviderIBM implements ExternalProvider {
         newDirectoryName = StorageUtils.normalizeDirectoryName(newDirectoryName);
         createFolder(newDirectoryName);
         ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
-                .withBucketName(bucket).withPrefix(directoryName);
+            .withBucketName(bucket).withPrefix(directoryName);
         for (S3ObjectSummary file : client.listObjects(listObjectsRequest).getObjectSummaries()) {
             String newKey = file.getKey().replace(directoryName, newDirectoryName);
-            rename(file.getKey(), newKey, false);
+            rename(file.getKey(), newKey, null);
         }
         deleteDirectory(directoryName);
     }
 
     public List<String> getFiles(String directoryName, String filter) {
-    	filter = (filter == null || filter.isEmpty())? null: filter.replace("*", "");
+        filter = (filter == null || filter.isEmpty())? null: filter.replace("*", "");
         List<String> files = new ArrayList<String>();
         directoryName = StorageUtils.normalizeDirectoryName(directoryName);
         ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
-                .withBucketName(bucket).withPrefix(directoryName).withDelimiter(StorageUtils.DELIMITER);   
-        for (S3ObjectSummary file : client.listObjects(listObjectsRequest).getObjectSummaries()) {        	
-        	String key = file.getKey();        	
+            .withBucketName(bucket).withPrefix(directoryName).withDelimiter(StorageUtils.DELIMITER);
+        for (S3ObjectSummary file : client.listObjects(listObjectsRequest).getObjectSummaries()) {
+            String key = file.getKey();
             if (isFile(directoryName, key) && (filter == null || filter.isEmpty() || key.contains(filter))) {
                 files.add(key);
             }
@@ -311,8 +327,8 @@ public class ExternalProviderIBM implements ExternalProvider {
         return files;
     }
 
-    private boolean isFile(String directory, String name) {        
-        return !name.endsWith(StorageUtils.DELIMITER);        
+    private boolean isFile(String directory, String name) {
+        return !name.endsWith(StorageUtils.DELIMITER);
     }
 
     public List<String> getFiles(String directoryName) {
@@ -322,14 +338,13 @@ public class ExternalProviderIBM implements ExternalProvider {
     public List<String> getSubDirectories(String directoryName) {
         directoryName = StorageUtils.normalizeDirectoryName(directoryName);
         ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
-                .withBucketName(bucket).withPrefix(directoryName)
-                .withDelimiter(StorageUtils.DELIMITER);
+            .withBucketName(bucket).withPrefix(directoryName)
+            .withDelimiter(StorageUtils.DELIMITER);
         ObjectListing objects = client.listObjects(listObjectsRequest);
         return objects.getCommonPrefixes();
     }
 
-    public InputStream getStream(String objectName, boolean isPrivate) {
-        OutputStream out = new ByteArrayOutputStream();
+    public InputStream getStream(String objectName, ResourceAccessControlList acl) {
         S3Object object = client.getObject(new GetObjectRequest(bucket, objectName));
         return object.getObjectContent();
     }
@@ -343,4 +358,19 @@ public class ExternalProviderIBM implements ExternalProvider {
             return false;
         }
     }
+
+	public String getObjectNameFromURL(String url) {
+		String objectName = null;
+		if (url.startsWith(this.getStorageUri()))
+		{
+			objectName = url.replace(this.getStorageUri(), "");
+		}
+		return objectName;
+	}
+
+	private String getStorageUri()
+	{
+		return String.format("https://%s%s/", this.bucket, this.endpointUrl);
+	}
+
 }
