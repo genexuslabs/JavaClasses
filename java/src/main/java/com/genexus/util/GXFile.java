@@ -14,6 +14,7 @@ import com.genexus.ModelContext;
 import com.genexus.db.driver.ResourceAccessControlList;
 import com.genexus.db.driver.ExternalProvider;
 import com.genexus.webpanels.HttpContextWeb;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.io.output.FileWriterWithEncoding;
@@ -41,7 +42,12 @@ public class GXFile extends AbstractGXFile {
     public GXFile(String fileName) {
         this(fileName, ResourceAccessControlList.Default);
     }
-    
+
+    //For compatibility reasons
+	public GXFile(String fileName, boolean isPrivate) {
+		this(fileName, isPrivate ? ResourceAccessControlList.Private: ResourceAccessControlList.Default, false);
+	}
+
     public GXFile(String fileName, ResourceAccessControlList fileAcl) {
     		this(fileName, fileAcl, false);
     }
