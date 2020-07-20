@@ -14,7 +14,6 @@ import com.genexus.ModelContext;
 import com.genexus.db.driver.ResourceAccessControlList;
 import com.genexus.db.driver.ExternalProvider;
 import com.genexus.webpanels.HttpContextWeb;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.io.output.FileWriterWithEncoding;
