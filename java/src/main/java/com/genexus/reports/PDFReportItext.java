@@ -1277,40 +1277,45 @@ public class PDFReportItext implements IReportHandler
 				}
 			}
 
-
             //Bottom y top son los absolutos, sin considerar la altura real a la que se escriben las letras.
             bottomAux = (float)convertScale(bottom);
             topAux = (float)convertScale(top);
 
             ColumnText Col = new ColumnText(cb);
+			ColumnText simulationCol = new ColumnText(null);
+			float drawingPageHeight = (float)this.pageSize.getTop() - topMargin - bottomMargin;
             //Col.setSimpleColumn(llx, lly, urx, ury);
-			Col.setSimpleColumn(leftAux + leftMargin,
-                    0,//(float)this.pageSize.getTop() - bottomAux - topMargin - bottomMargin,
-                    rightAux + leftMargin,
-                    (float)this.pageSize.getTop() - topAux - topMargin - bottomMargin);
-                                        
-			Col.setYLine((float)this.pageSize.getTop() - topAux - topMargin - bottomMargin);
+			Col.setSimpleColumn(leftAux + leftMargin,drawingPageHeight - bottomAux,rightAux + leftMargin,drawingPageHeight - topAux);
+			simulationCol.setSimpleColumn(leftAux + leftMargin,drawingPageHeight - bottomAux,rightAux + leftMargin,drawingPageHeight - topAux);
+
             try
             {
                 ArrayList objects = HTMLWorker.parseToList(new StringReader(sTxt), styles);
                 for (int k = 0; k < objects.size(); ++k)
-                    Col.addElement((Element)objects.get(k));
-            }
-            catch (Exception ex1)
-            {
-                sTxt = ex1.getMessage();
-                try
-                {
-                    ArrayList objects = HTMLWorker.parseToList(new StringReader(sTxt), styles);
-                    for (int k = 0; k < objects.size(); ++k)
-                        Col.addElement((Element)objects.get(k));
-                }
-                catch(Exception de1) {  }
-            }
+				{
+						if (pageHeightExceeded(bottomAux, drawingPageHeight))
+						{
+							simulationCol.addElement((Element)objects.get(k));
+							simulationCol.go(true);
 
-			try{
-				Col.go();
-			}catch(DocumentException de){
+							if (simulationCol.getYLine() < bottomMargin)
+							{
+								GxEndPage();
+								GxStartPage();
+								simulationCol = new ColumnText(null);
+								simulationCol.setSimpleColumn(leftAux + leftMargin,drawingPageHeight - bottomAux,rightAux + leftMargin,drawingPageHeight - topAux);
+								simulationCol.addElement((Element)objects.get(k));
+
+								Col = new ColumnText(cb);
+								Col.setSimpleColumn(leftAux + leftMargin,drawingPageHeight - bottomAux,rightAux + leftMargin,drawingPageHeight - topAux);
+
+								bottomAux = bottomAux - drawingPageHeight;
+							}
+						}
+						Col.addElement((Element)objects.get(k));
+						Col.go();
+				}
+			}catch(Exception de){
 				System.out.println("ERROR printing HTML text " + de.getMessage());
 			}
 		}
@@ -1554,6 +1559,9 @@ public class PDFReportItext implements IReportHandler
 			}
 		}
     }
+    boolean pageHeightExceeded(float bottomAux, float drawingPageHeight){
+    	return bottomAux > drawingPageHeight;
+	}
 	ColumnText SimulateDrawColumnText(PdfContentByte cb, Rectangle rect, Paragraph p, float leading, int runDirection, int alignment) throws DocumentException
 	{
 		ColumnText Col = new ColumnText(cb);
