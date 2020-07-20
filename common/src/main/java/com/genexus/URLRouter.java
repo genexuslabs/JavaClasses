@@ -18,6 +18,11 @@ public class URLRouter
 
 	public static String getURLRoute(String key, String[] parms, String[] parmsName, String contextPath)
 	{
+		return getURLRoute(true, key, parms, parmsName, contextPath);
+	}
+
+	public static String getURLRoute(boolean useNamedParameters, String key, String[] parms, String[] parmsName, String contextPath)
+	{
 		if (com.genexus.CommonUtil.isAbsoluteURL(key) || key.startsWith("/")) {
 			return key;
 		}
@@ -32,7 +37,7 @@ public class URLRouter
 		Object[] urlarray = parms;
 		if (urlQueryString.length > 1)
 		{
-			if (urlQueryString[1].contains("&"))
+			if (urlQueryString[1].contains("="))
 				urlarray = getParameters(urlQueryString[1].split("&"));
 			else
 				urlarray = urlQueryString[1].replaceAll("%2C", ",").split(",");
@@ -43,7 +48,7 @@ public class URLRouter
 		{
 			contextPath += "/";
 		}
-		return contextPath + url + ((urlQueryString.length > 1)? "?" + urlQueryString[1]: convertParmsToQueryString(parms, parmsName, routerList.get(urlQueryString[0])));
+		return contextPath + url + ((urlQueryString.length > 1)? "?" + urlQueryString[1]: convertParmsToQueryString(useNamedParameters, parms, parmsName, routerList.get(urlQueryString[0])));
 	}
 
 	private static Object[] getParameters(String[] url)
@@ -51,12 +56,14 @@ public class URLRouter
 		Object[] urlParameters = new Object[url.length];
 		for (int i = 0; i < url.length; i++)
 		{
-			urlParameters[i] = url[i].split("=")[1];
+			urlParameters[i] = "";
+			if (url[i].split("=").length > 1)
+				urlParameters[i] = url[i].split("=")[1];
 		}
 		return urlParameters;
 	}
 
-	private static String convertParmsToQueryString(String[] parms, String[] parmsName, String routerRule)
+	private static String convertParmsToQueryString(boolean useNamedParameters, String[] parms, String[] parmsName, String routerRule)
 	{
 		if ((routerRule != null && routerRule.contains("%1")) || (parms.length == 0))
 		{
@@ -65,8 +72,10 @@ public class URLRouter
 		String queryString = "?";
 		for (int i = 0; i < parms.length; i++)
 		{
-			queryString = queryString + parms[i] + ((i < parms.length -1)? "," : "");
-			//queryString = queryString + parmsName[i] + "=" + parms[i] + ((i < parms.length -1)? "&" : "");
+			if (!useNamedParameters || parms.length != parmsName.length)
+				queryString = queryString + parms[i] + ((i < parms.length -1)? "," : "");
+			else
+				queryString = queryString + parmsName[i] + "=" + parms[i] + ((i < parms.length -1)? "&" : "");
 		}
 		return queryString;
 	}
@@ -117,16 +126,16 @@ public class URLRouter
     		{
       			char ch = line.charAt(i);
 
-				if (ch != 61 && ch!= 92) //caracter que no es signo de igual ni barra
+				if (ch != 61 && ch!= 92)
       				builder.append(ch);
-      			else if (ch==61 && escaped) //signo de igual escapeado
+      			else if (ch==61 && escaped)
       				builder.append(ch);
-      			else if (ch==92 && escaped) //barra escapeada
+      			else if (ch==92 && escaped)
       				builder.append(ch);
 
-      			if (ch == 61 && !escaped) //signo de igual no escapeado: separador de codigo=descripcion
+      			if (ch == 61 && !escaped)
       			{
-      				code = builder.toString(); //guarda codigo y resetea builder
+      				code = builder.toString();
       				hasEqual = true;
       				builder = new StringBuffer();
       			}

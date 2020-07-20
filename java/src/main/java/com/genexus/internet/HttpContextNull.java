@@ -79,6 +79,11 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 		throw new InternalError();
 	}
 
+	public String GetNextPar(String parameter)
+	{
+		throw new InternalError();
+	}
+
 	public byte setHeader(String header, String value)
 	{
 		return 0;
