@@ -1288,16 +1288,12 @@ public class PDFReportItext implements IReportHandler
 			Col.setSimpleColumn(leftAux + leftMargin,drawingPageHeight - bottomAux,rightAux + leftMargin,drawingPageHeight - topAux);
 			simulationCol.setSimpleColumn(leftAux + leftMargin,drawingPageHeight - bottomAux,rightAux + leftMargin,drawingPageHeight - topAux);
 
-			boolean pageHeightExceeded = bottomAux > drawingPageHeight;
-			if (pageHeightExceeded)
-				bottomAux = bottomAux - drawingPageHeight;
-                                        
             try
             {
                 ArrayList objects = HTMLWorker.parseToList(new StringReader(sTxt), styles);
                 for (int k = 0; k < objects.size(); ++k)
 				{
-						if (pageHeightExceeded)
+						if (pageHeightExceeded(bottomAux, drawingPageHeight))
 						{
 							simulationCol.addElement((Element)objects.get(k));
 							simulationCol.go(true);
@@ -1313,9 +1309,7 @@ public class PDFReportItext implements IReportHandler
 								Col = new ColumnText(cb);
 								Col.setSimpleColumn(leftAux + leftMargin,drawingPageHeight - bottomAux,rightAux + leftMargin,drawingPageHeight - topAux);
 
-								pageHeightExceeded = bottomAux > drawingPageHeight;
-								if (pageHeightExceeded)
-									bottomAux = bottomAux - drawingPageHeight;
+								bottomAux = bottomAux - drawingPageHeight;
 							}
 						}
 						Col.addElement((Element)objects.get(k));
@@ -1565,6 +1559,9 @@ public class PDFReportItext implements IReportHandler
 			}
 		}
     }
+    boolean pageHeightExceeded(float bottomAux, float drawingPageHeight){
+    	return bottomAux > drawingPageHeight;
+	}
 	ColumnText SimulateDrawColumnText(PdfContentByte cb, Rectangle rect, Paragraph p, float leading, int runDirection, int alignment) throws DocumentException
 	{
 		ColumnText Col = new ColumnText(cb);
