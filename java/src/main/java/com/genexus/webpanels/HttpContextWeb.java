@@ -56,7 +56,6 @@ public class HttpContextWeb extends HttpContext {
 	protected Vector<String> parms;
 	private Hashtable<String, String> namedParms;
 	private Hashtable<String, String[]> postData;
-	private boolean readFirstParm;
 	private boolean useNamedParameters;
 	private int currParameter;
 
@@ -406,18 +405,11 @@ public class HttpContextWeb extends HttpContext {
 		return postData;
 	}
 
-	public String GetNextPar(String parameter) {
+	public String GetPar(String parameter) {
 		if (useOldQueryStringFormat)
 			return GetNextPar();
 		else {
-			String parm = null;
-			if (!readFirstParm)
-			{
-				parm = namedParms.get("gxevent");
-				readFirstParm = true;
-			}
-			if (parm == null)
-				parm = namedParms.get(parameter);
+			String parm = namedParms.get(parameter);
 			if (!ajaxCallAsPOST && parm != null) {
 				parm = GXutil.URLDecode(parm);
 			}
