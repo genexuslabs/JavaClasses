@@ -405,7 +405,7 @@ public class HttpContextWeb extends HttpContext {
 		return postData;
 	}
 
-	public String GetPar(String parameter) {
+	public String GetNextPar(String parameter) {
 		if (useOldQueryStringFormat)
 			return GetNextPar();
 		else {
