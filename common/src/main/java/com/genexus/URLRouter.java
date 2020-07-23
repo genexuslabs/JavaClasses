@@ -2,9 +2,13 @@
 package com.genexus;
 
 import java.util.*;
+
+import com.genexus.common.classes.AbstractGXFile;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
+import com.genexus.util.GXDirectory;
+import com.genexus.util.GXFileCollection;
 
 import java.io.*;
 
@@ -14,7 +18,6 @@ public class URLRouter
 	public static final ILogger logger = LogManager.getLogger(URLRouter.class);
 
 	static Hashtable<String, String> routerList;
-	static final String RESOURCE_NAME = "urlrouter.txt";
 
 	public static String getURLRoute(String key, String[] parms, String[] parmsName, String contextPath)
 	{
@@ -30,7 +33,7 @@ public class URLRouter
 		if	(routerList == null)
 		{
 			routerList = new Hashtable<>();
-			load(RESOURCE_NAME);
+			load();
 		}
 
 		String [] urlQueryString = key.split("\\?");
@@ -80,39 +83,53 @@ public class URLRouter
 		return queryString;
 	}
 
-	private static void load(String resourceName)
+	private static void load()
 	{
 		String line;
 		InputStream is = null;
-		try
+		String defaultPath = SpecificImplementation.Application.getModelContext().getHttpContext().getDefaultPath();
+		String appPackage = SpecificImplementation.Application.getClientPreferences().getPACKAGE();
+		if	(!appPackage.equals(""))
+			appPackage = File.separatorChar + appPackage.replace('.', File.separatorChar);
+		String classesDirectoryPath = defaultPath + File.separator + "WEB-INF" + File.separatorChar + "classes" + appPackage;
+		GXDirectory classesDirectory = new GXDirectory(classesDirectoryPath);
+		GXFileCollection rewriteFiles = classesDirectory.getFiles(".rewrite");
+		if (rewriteFiles != null)
 		{
-			is = SpecificImplementation.Messages.getInputStream(resourceName);
+			for (int i = 1; i <= rewriteFiles.getItemCount(); i++)
+			{
+				AbstractGXFile rewriteFile = rewriteFiles.item(i);
+				try
+				{
+					is = SpecificImplementation.Messages.getInputStream(rewriteFile.getName());
 
-            if (is != null)
-            {
-              BufferedReader bufread = new BufferedReader(new InputStreamReader(is, "UTF8"));
-              line = bufread.readLine();
-              while (line != null)
-              {
-                parseLine(line);
-                line = bufread.readLine();
-              }
-              bufread.close();
-            }
-          }
-          catch(UnsupportedEncodingException e)
-          {
-            logger.error(e.toString(), e);
-          }
-          catch(FileNotFoundException e)
-          {
-			  logger.info("There is no URLRouter file");
-          }
-          catch (IOException e)
-          {
-			  logger.error(e.toString(), e);
-          }
-        }
+					if (is != null)
+					{
+						BufferedReader bufread = new BufferedReader(new InputStreamReader(is, "UTF8"));
+						line = bufread.readLine();
+						while (line != null)
+						{
+							parseLine(line);
+							line = bufread.readLine();
+						}
+						bufread.close();
+					}
+				}
+				catch (UnsupportedEncodingException e)
+				{
+					logger.error(e.toString(), e);
+				}
+				catch (FileNotFoundException e)
+				{
+					logger.info("There is no URLRouter file");
+				}
+				catch (IOException e)
+				{
+					logger.error(e.toString(), e);
+				}
+			}
+		}
+	}
 
         private static void parseLine(String line)
         {
