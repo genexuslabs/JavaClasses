@@ -274,7 +274,7 @@ public class HttpContextWeb extends HttpContext {
 					if (parm.split("=").length > 1)
 						parameterValue = parm.split("=")[1];
 					parms.addElement(parameterValue);
-					namedParms.put(parm.split("=")[0], parameterValue);
+					namedParms.put(parm.split("=")[0].toLowerCase(), parameterValue);
 				}
 			}
 		}
@@ -411,7 +411,7 @@ public class HttpContextWeb extends HttpContext {
 		if (useOldQueryStringFormat)
 			return GetNextPar();
 		else {
-			String parm = namedParms.get(parameter);
+			String parm = namedParms.get(parameter.toLowerCase());
 			if (!ajaxCallAsPOST && parm != null) {
 				parm = GXutil.URLDecode(parm);
 			}

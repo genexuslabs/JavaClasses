@@ -152,9 +152,15 @@ public class URLRouter
 
       			if (ch == 61 && !escaped)
       			{
-      				code = builder.toString();
-      				hasEqual = true;
-      				builder = new StringBuffer();
+      				if (hasEqual)
+					{
+						builder.append(ch);
+					}
+      				else {
+						code = builder.toString();
+						hasEqual = true;
+						builder = new StringBuffer();
+					}
       			}
 
       			if (escaped)
