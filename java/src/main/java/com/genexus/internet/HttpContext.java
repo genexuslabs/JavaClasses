@@ -265,7 +265,7 @@ public abstract class HttpContext
 	public abstract String getResource(String path);
 	public abstract String GetNextPar();
 	public abstract String GetPar(String parameter);
-	public abstract String GetEventPar(String parameter);
+	public abstract String GetFirstPar(String parameter);
 	public abstract HttpContext copy();
 	public abstract byte setHeader(String header, String value);
 	public abstract void setDateHeader(String header, int value);

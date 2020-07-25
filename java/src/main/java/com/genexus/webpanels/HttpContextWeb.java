@@ -420,7 +420,7 @@ public class HttpContextWeb extends HttpContext {
 		}
 	}
 
-	public String GetEventPar(String parameter) {
+	public String GetFirstPar(String parameter) {
 		if (useOldQueryStringFormat)
 			return GetNextPar();
 		else {
