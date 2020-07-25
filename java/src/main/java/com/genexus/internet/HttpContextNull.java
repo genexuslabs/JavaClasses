@@ -83,6 +83,10 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 	{
 		throw new InternalError();
 	}
+	public String GetEventPar(String parameter)
+	{
+		throw new InternalError();
+	}
 
 	public byte setHeader(String header, String value)
 	{

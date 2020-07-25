@@ -80,6 +80,7 @@ public class HttpContextWeb extends HttpContext {
 
 	private static final Pattern EDGE_BROWSER_VERSION_REGEX = Pattern.compile(" Edge\\/([0-9]+)\\.",
 			Pattern.CASE_INSENSITIVE);
+	private static final String GXEVENT_PARM = "gxevent";
 
 	public boolean isMultipartContent() {
 		return ServletFileUpload.isMultipartContent(request);
@@ -414,6 +415,17 @@ public class HttpContextWeb extends HttpContext {
 				parm = GXutil.URLDecode(parm);
 			}
 			return parm == null? "" : parm;
+		}
+	}
+
+	public String GetEventPar(String parameter) {
+		if (useOldQueryStringFormat)
+			return GetNextPar();
+		else {
+			if (namedParms.containsKey(GXEVENT_PARM))
+				return GetPar(GXEVENT_PARM);
+			else
+				return GetPar(parameter);
 		}
 	}
 
