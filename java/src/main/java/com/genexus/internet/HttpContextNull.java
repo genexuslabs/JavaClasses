@@ -83,7 +83,7 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 	{
 		throw new InternalError();
 	}
-	public String GetEventPar(String parameter)
+	public String GetFirstPar(String parameter)
 	{
 		throw new InternalError();
 	}
