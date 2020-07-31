@@ -91,7 +91,7 @@ public class ExternalProviderIBM implements ExternalProvider {
 			.withClientConfiguration(clientConfig).build();
 
 		bucketExists();
-		createFolder(folder);
+		ensureFolder(folder);
 	}
 
 	public void setDefaultACL(String acl) {
@@ -103,13 +103,14 @@ public class ExternalProviderIBM implements ExternalProvider {
         }
     }
 
-    private void createFolder(String folderName) {
+    private String ensureFolder(String... pathPart) {
+		String folderName = buildPath(pathPart);
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(0);
         InputStream emptyContent = new ByteArrayInputStream(new byte[0]);
-        folderName = StorageUtils.normalizeDirectoryName(folderName);
-        PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, folderName, emptyContent, metadata);
+        PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, StorageUtils.normalizeDirectoryName(folderName), emptyContent, metadata);
         client.putObject(putObjectRequest);
+        return folderName;
     }
 
     public void download(String externalFileName, String localFile, ResourceAccessControlList acl) {
@@ -207,9 +208,7 @@ public class ExternalProviderIBM implements ExternalProvider {
     }
 
     public String copy(String objectUrl, String newName, String tableName, String fieldName, ResourceAccessControlList acl) {
-        String resourceFolderName = folder + StorageUtils.DELIMITER + tableName + StorageUtils.DELIMITER + fieldName;
-        createFolder(resourceFolderName);
-
+        String resourceFolderName = ensureFolder(folder, tableName, fieldName);
         String resourceKey = resourceFolderName + StorageUtils.DELIMITER + newName;
         objectUrl = objectUrl.replace("https://" + bucket + endpointUrl, "");
 
@@ -226,6 +225,15 @@ public class ExternalProviderIBM implements ExternalProvider {
         return ((AmazonS3Client) client).getResourceUrl(bucket, resourceKey);
     }
 
+    private String buildPath(String... pathPart) {
+		ArrayList<String> pathParts = new ArrayList<>();
+		for(String part : pathPart){
+			if (part.length() > 0) {
+				pathParts.add(part);
+			}
+		}
+		return String.join(StorageUtils.DELIMITER, pathParts);
+	}
     public long getLength(String objectName, ResourceAccessControlList acl) {
         ObjectMetadata obj = client.getObjectMetadata(bucket, objectName);
         return obj.getInstanceLength();
@@ -278,7 +286,7 @@ public class ExternalProviderIBM implements ExternalProvider {
     }
 
     public void createDirectory(String directoryName) {
-        createFolder(directoryName);
+        ensureFolder(directoryName);
     }
 
     public void deleteDirectory(String directoryName) {
@@ -302,7 +310,7 @@ public class ExternalProviderIBM implements ExternalProvider {
     public void renameDirectory(String directoryName, String newDirectoryName) {
         directoryName = StorageUtils.normalizeDirectoryName(directoryName);
         newDirectoryName = StorageUtils.normalizeDirectoryName(newDirectoryName);
-        createFolder(newDirectoryName);
+        ensureFolder(newDirectoryName);
         ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
             .withBucketName(bucket).withPrefix(directoryName);
         for (S3ObjectSummary file : client.listObjects(listObjectsRequest).getObjectSummaries()) {
