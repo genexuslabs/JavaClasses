@@ -1508,12 +1508,8 @@ public class LocalUtil
 
 	private String takeSymbolsFromPicture(String picture)
 	{
-		StringBuffer pictureWithoutSymbols = new StringBuffer();
-		boolean dotRemove = false;
-
-        //Si la picture tiene mas de un . entonces es considerado un simbolo mas (p.ej pictures para C.I.)
-		if (picture.lastIndexOf('.') != picture.indexOf('.'))
-			dotRemove = true;
+		StringBuffer pictureWithoutSymbols = new StringBuffer();		
+		boolean dotRemove = dotAsLiteral(picture);
 		for (int i = 0; i < picture.length(); i++)
 		{
 			char a = picture.charAt(i);
@@ -1528,17 +1524,31 @@ public class LocalUtil
 		}
 		return pictureWithoutSymbols.toString();
 	}
+	
+	private boolean dotAsLiteral(String originalPicture)
+	{
+		// If it has non-numerical characters, then the separators are used as literals
+		// to honor the positioning based on the digits and ignoring
+		// special characters like - or /. Ex: pic = "999,999-99" if the separators
+		// are not literals it is "12,345,6-78", if they are literal it is 123,456-78
+		// Same behaviour as .NET standard classes GeneXus.Utils.GXUtilsCommon.useLiteralSeparators()
+		if (originalPicture.indexOf('-') != -1 || originalPicture.indexOf('/') != -1)
+			return true;
+		
+		// If the picture has more than one point then they are considered as
+		// normal symbols (ex: pictures for C.I.)
+		if (originalPicture.lastIndexOf('.') != originalPicture.indexOf('.'))
+			return true;
+		
+		return false;
+	}
 
 	private String addSymbolsToText(String text, String originalPicture)
 	{
 		StringBuffer formattedText = new StringBuffer();
 		int textIdx = text.length() - 1;
-
-		//Si la picture tiene mas de un . entonces es considerado un simbolo mas (p.ej pictures para C.I.)
-		boolean dotAsLiteral = false;
-		if (originalPicture.lastIndexOf('.') != originalPicture.indexOf('.'))
-			dotAsLiteral = true;
-
+		
+		boolean dotAsLiteral = dotAsLiteral(originalPicture);
 		for (int i = originalPicture.length() - 1; i >= 0;)
 		{
 			char a = originalPicture.charAt(i--);
