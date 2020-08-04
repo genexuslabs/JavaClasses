@@ -204,7 +204,7 @@ public class ExternalProviderIBM implements ExternalProvider {
 
         CopyObjectRequest request = new CopyObjectRequest(bucket, objectUrl, bucket, resourceKey);
         request.setNewObjectMetadata(metadata);
-        request.setCannedAccessControlList(getUploadACL(isPrivate));
+        request.setCannedAccessControlList(getUploadACL(false));
         client.copyObject(request);
         return ((AmazonS3Client) client).getResourceUrl(bucket, resourceKey);
     }
