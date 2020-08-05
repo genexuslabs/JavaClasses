@@ -346,6 +346,10 @@ public class WebUtils
 								name = name.substring(index);
 							}
 						}
+						else
+						{
+							name = name.substring(name.lastIndexOf("/") + 1);
+						}
                         Object[] parmsArray = null;
                         int questIdx = name.indexOf("?");
                         int endClass = name.indexOf("_impl");
