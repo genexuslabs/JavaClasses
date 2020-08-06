@@ -2945,10 +2945,10 @@ public final class CommonUtil
 				if (SpecificImplementation.KeepDecimals) {
 					int decimalsToKeep = Math.max(0, length-integerPart.length()-1);
 					decimalsToKeep = Math.min(decimals, decimalsToKeep);
-					return str(val(base), length, decimalsToKeep);
+					return str(decimalVal(base, "."), length, decimalsToKeep, round);
 				}
 				else
-					return str(val(base), length, 0);
+					return str(decimalVal(base, "."), length, 0, round);
 				}
 	 		}
 
