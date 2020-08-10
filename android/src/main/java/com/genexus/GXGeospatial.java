@@ -124,6 +124,12 @@ public final class GXGeospatial implements java.io.Serializable, IGxJSONSerializ
 		srid = value;
 	}
 
+	@Override
+	public String toString()
+	{
+		return this.toWKT();
+	}
+	
 	public String toWKT()
 	{
 		return this.toWKTSQL("");	
@@ -216,7 +222,7 @@ public final class GXGeospatial implements java.io.Serializable, IGxJSONSerializ
 			String[] coords = wktString.split(",", 2);
 			double dlat = Double.parseDouble(coords[0].trim());
 			double dlong = Double.parseDouble(coords[1].trim());
-			wkText = "POINT(" + String.format(Locale.ROOT, "%.4f", dlong) + " " + String.format(Locale.ROOT, "%.4f", dlat) + ")";
+			wkText = "POINT(" + String.format(Locale.ROOT, "%.8f", dlong) + " " + String.format(Locale.ROOT, "%.8f", dlat) + ")";
 			rdr =  ctx.getFormats().getWktReader();
 			readShape(rdr, wkText);
 		}
@@ -273,13 +279,20 @@ public final class GXGeospatial implements java.io.Serializable, IGxJSONSerializ
 	{
 		lastErrorCode = 0;
 		lastError = "";
-		if (geoJSONString.contains("Polygon"))
+		if (geoJSONString.contains("type"))
 		{
-			isJTS = true;
-			initJTSContext(); // set context to JTS
+			if (geoJSONString.contains("Polygon"))
+			{
+				isJTS = true;
+				initJTSContext(); // set context to JTS
+			}
+			ShapeReader rdr =  ctx.getFormats().getGeoJsonReader();
+			readShape(rdr, geoJSONString);
 		}
-		ShapeReader rdr =  ctx.getFormats().getGeoJsonReader();
-		readShape(rdr, geoJSONString);
+		else 
+		{
+			this.fromWKT(geoJSONString);
+		}
 	}
 
 	public static boolean isNullOrEmpty(GXGeospatial geo)
