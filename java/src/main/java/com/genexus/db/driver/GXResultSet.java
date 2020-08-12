@@ -288,7 +288,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		} else {
 			value = result.getString(columnIndex);
 			if (result.wasNull() || value == null)
-				value = CommonUtil.replicate(" ", length);
+				value = "";
 			else
 				value = String.format(String.format("%%-%ds", length), value);
 		}
