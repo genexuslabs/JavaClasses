@@ -52,8 +52,11 @@ public class HttpContextWeb extends HttpContext {
 	HttpRequest httpReq;
 	ServletContext servletContext;
 
+	boolean useOldQueryStringFormat;
 	protected Vector<String> parms;
+	private Hashtable<String, String> namedParms;
 	private Hashtable<String, String[]> postData;
+	private boolean useNamedParameters;
 	private int currParameter;
 
 	private HttpServletRequest request;
@@ -77,6 +80,7 @@ public class HttpContextWeb extends HttpContext {
 
 	private static final Pattern EDGE_BROWSER_VERSION_REGEX = Pattern.compile(" Edge\\/([0-9]+)\\.",
 			Pattern.CASE_INSENSITIVE);
+	private static final String GXEVENT_PARM = "gxevent";
 
 	public boolean isMultipartContent() {
 		return ServletFileUpload.isMultipartContent(request);
@@ -195,6 +199,7 @@ public class HttpContextWeb extends HttpContext {
 			o.httpReq = httpReq;
 			o.postData = postData;
 			o.parms = parms;
+			o.namedParms = namedParms;
 			o.streamSet = streamSet;
 			o.isCrawlerRequest = o.isCrawlerRequest();
 			copyCommon(o);
@@ -206,6 +211,11 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public HttpContextWeb(String requestMethod, HttpServletRequest req, HttpServletResponse res,
+						  ServletContext servletContext) throws IOException {
+		this(ClientContext.getModelContext().getClientPreferences().getProperty("DontUseNamedParameters", "0").equals("0"), requestMethod, req, res, servletContext);
+	}
+
+	public HttpContextWeb(boolean useNamedParameters, String requestMethod, HttpServletRequest req, HttpServletResponse res,
 			ServletContext servletContext) throws IOException {
 		this.request = req;
 		this.response = res;
@@ -228,6 +238,8 @@ public class HttpContextWeb extends HttpContext {
 
 		super.useUtf8 = true;
 		parms = new Vector<>();
+		namedParms = new Hashtable<>();
+		this.useNamedParameters = useNamedParameters;
 		loadParameters(req.getQueryString());
 		isCrawlerRequest = isCrawlerRequest();
 	}
@@ -236,19 +248,33 @@ public class HttpContextWeb extends HttpContext {
 		String value1;
 		initpars();
 		parms.clear();
+		namedParms.clear();
 		boolean oneParm = false;
 		if (value != null && value.length() > 0) {
+			useOldQueryStringFormat = !(useNamedParameters && removeInternalParms(value).contains("="));
+			String[] elements;
 			if (value.charAt(0) == '?')
 				value1 = value.substring(1);
 			else
 				value1 = value;
-			String[] elements = value1.split(",");
+			if (useOldQueryStringFormat)
+				elements = value1.split(",");
+			else
+				elements = value1.split("&");
 			oneParm = (elements.length > 0);
 			for (int i = 0; i < elements.length; i++) {
 				String parm = elements[i];
 				if (parm.indexOf("gx-no-cache=") != -1)
 					break;
-				parms.addElement(parm);
+				if (useOldQueryStringFormat)
+					parms.addElement(parm);
+				else {
+					String parameterValue = "";
+					if (parm.split("=").length > 1)
+						parameterValue = parm.split("=")[1];
+					parms.addElement(parameterValue);
+					namedParms.put(parm.split("=")[0].toLowerCase(), parameterValue);
+				}
 			}
 		}
 		if (requestMethod.equalsIgnoreCase("POST") && oneParm && parms.size() == 0) {
@@ -378,6 +404,29 @@ public class HttpContextWeb extends HttpContext {
 		}
 
 		return postData;
+	}
+
+	public String GetPar(String parameter) {
+		if (useOldQueryStringFormat)
+			return GetNextPar();
+		else {
+			String parm = namedParms.get(parameter.toLowerCase());
+			if (!ajaxCallAsPOST && parm != null) {
+				parm = GXutil.URLDecode(parm);
+			}
+			return parm == null? "" : parm;
+		}
+	}
+
+	public String GetFirstPar(String parameter) {
+		if (useOldQueryStringFormat)
+			return GetNextPar();
+		else {
+			if (namedParms.containsKey(GXEVENT_PARM))
+				return GetPar(GXEVENT_PARM);
+			else
+				return GetPar(parameter);
+		}
 	}
 
 	public String GetNextPar() {
@@ -849,6 +898,8 @@ public class HttpContextWeb extends HttpContext {
 
 			if (path.trim().length() > 0)
 				cookie.setPath(path.trim());
+			else
+				cookie.setPath("/");
 
 			if (!expiry.equals(CommonUtil.nullDate())) {
 				long expiryTime = ((expiry.getTime() - new Date().getTime()) / 1000);
@@ -1010,6 +1061,8 @@ public class HttpContextWeb extends HttpContext {
 	private String removeEventPrefix(String query) {
 		if (isAjaxEventMode()) {
 			int comIdx = query.indexOf(",");
+			if (comIdx == -1)
+				comIdx = query.indexOf("&");
 			if (comIdx != -1)
 				query = query.substring(comIdx + 1);
 		}
@@ -1284,7 +1337,7 @@ public class HttpContextWeb extends HttpContext {
 			String popupLvl = getNavigationHelper(false).getUrlPopupLevel(getRequestNavUrl());
 			String popLvlParm = "";
 			if (popupLvl != "-1") {
-				popLvlParm = (url.indexOf('?') != -1) ? "," : "?";
+				popLvlParm = (url.indexOf('?') != -1) ? (useOldQueryStringFormat? "," : "&") : "?";
 				popLvlParm += com.genexus.util.Encoder.encodeURL("gxPopupLevel=" + popupLvl + ";");
 			}
 

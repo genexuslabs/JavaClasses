@@ -346,6 +346,10 @@ public class WebUtils
 								name = name.substring(index);
 							}
 						}
+						else
+						{
+							name = name.substring(name.lastIndexOf("/") + 1);
+						}
                         Object[] parmsArray = null;
                         int questIdx = name.indexOf("?");
                         int endClass = name.indexOf("_impl");
@@ -395,15 +399,16 @@ public class WebUtils
 			}
 
 			boolean endsWithSeparator = false;
-			if (parms.endsWith(",")) //Agrego un caracter al final para que el split funcione bien
+			boolean useNamedParameters = ModelContext.getModelContext().getPreferences().getProperty("DontUseNamedParameters", "0").equals("0") && parms.contains("=");
+			if ((parms.endsWith(",") && !useNamedParameters) || (parms.endsWith("=") && useNamedParameters)) //Agrego un caracter al final para que el split funcione bien
 			{
 				parms = parms + "_";
 				endsWithSeparator = true;
 			}
-			Object[] split = parms.split(",");
+			Object[] split = useNamedParameters? parms.split("&") : parms.split(",");
 			if (endsWithSeparator)
 			{
-				split[split.length -1] = "";
+				split[split.length -1] = useNamedParameters? "_= " : "";
 			}
 			Object[] parmsArray;
 			if (parms.endsWith(","))//Empty parameter at the end
@@ -417,8 +422,8 @@ public class WebUtils
 			}
 
 			for (int i = 0; i < split.length; i++)
-				parmsArray[i] = GXutil.URLDecode((String)split[i]);
-			
+				parmsArray[i] = useNamedParameters? GXutil.URLDecode(((String)split[i]).split("=")[1]) :GXutil.URLDecode((String)split[i]);
+
             return parmsArray;
         }
 		
