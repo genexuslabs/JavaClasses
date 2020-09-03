@@ -47,7 +47,7 @@ public class URLRouter
 		}
 
 		String url = routerList.containsKey(urlQueryString[0])? String.format(routerList.get(urlQueryString[0]), urlarray): urlQueryString[0];
-		if (contextPath.length() > 0)
+		if (contextPath.length() > 0 || ModelContext.getModelContext().getHttpContext().isHttpContextWeb())
 		{
 			contextPath += "/";
 		}
