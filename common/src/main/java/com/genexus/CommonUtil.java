@@ -2123,7 +2123,7 @@ public final class CommonUtil
                         }
                         else
                         {
-                                if(!(item instanceof String))
+                                if(item instanceof Number)
                                 {
                                         ret += item.toString();
                                 }
