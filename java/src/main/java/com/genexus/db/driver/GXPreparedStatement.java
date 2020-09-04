@@ -1389,6 +1389,9 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			{
 				if (fileName.toLowerCase().startsWith("http://") || fileName.toLowerCase().startsWith("https://"))
 				{
+					int queryIndex = fileName.lastIndexOf('?');
+					if (queryIndex > -1)
+						fileName = fileName.substring(0, queryIndex + 1) + PrivateUtilities.encodeURL(fileName.substring(queryIndex + 1));
 					URL fileURL = new URL(fileName);
 					String blobPath = com.genexus.Preferences.getDefaultPreferences().getBLOB_PATH();
 					fileName = com.genexus.PrivateUtilities.getTempFileName(blobPath, CommonUtil.getFileName(fileName), CommonUtil.getFileType(fileName), true);
