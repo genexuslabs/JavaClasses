@@ -21,7 +21,7 @@ public class URLRouter
 
 	public static String getURLRoute(String key, String[] parms, String[] parmsName, String contextPath)
 	{
-		return getURLRoute(ModelContext.getModelContext().getPreferences().getProperty("DontUseNamedParameters", "0").equals("0"), key, parms, parmsName, contextPath);
+		return getURLRoute(ModelContext.getModelContext().getPreferences().getProperty("UseNamedParameters", "1").equals("1"), key, parms, parmsName, contextPath);
 	}
 
 	public static String getURLRoute(boolean useNamedParameters, String key, String[] parms, String[] parmsName, String contextPath)

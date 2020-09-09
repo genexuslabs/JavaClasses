@@ -399,7 +399,7 @@ public class WebUtils
 			}
 
 			boolean endsWithSeparator = false;
-			boolean useNamedParameters = ModelContext.getModelContext().getPreferences().getProperty("DontUseNamedParameters", "0").equals("0") && parms.contains("=");
+			boolean useNamedParameters = ModelContext.getModelContext().getPreferences().getProperty("UseNamedParameters", "1").equals("1") && parms.contains("=");
 			if ((parms.endsWith(",") && !useNamedParameters) || (parms.endsWith("=") && useNamedParameters)) //Agrego un caracter al final para que el split funcione bien
 			{
 				parms = parms + "_";
