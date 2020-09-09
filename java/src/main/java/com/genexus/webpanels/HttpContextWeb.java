@@ -212,7 +212,7 @@ public class HttpContextWeb extends HttpContext {
 
 	public HttpContextWeb(String requestMethod, HttpServletRequest req, HttpServletResponse res,
 						  ServletContext servletContext) throws IOException {
-		this(ClientContext.getModelContext().getClientPreferences().getProperty("DontUseNamedParameters", "0").equals("0"), requestMethod, req, res, servletContext);
+		this(ClientContext.getModelContext().getClientPreferences().getProperty("UseNamedParameters", "1").equals("1"), requestMethod, req, res, servletContext);
 	}
 
 	public HttpContextWeb(boolean useNamedParameters, String requestMethod, HttpServletRequest req, HttpServletResponse res,
