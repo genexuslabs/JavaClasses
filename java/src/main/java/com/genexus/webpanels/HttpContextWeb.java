@@ -937,7 +937,7 @@ public class HttpContextWeb extends HttpContext {
 			return host;
 		}
 		String serverNameProperty = ModelContext.getModelContext().getPreferences().getProperty("SERVER_NAME", "");
-		if (!serverNameProperty.equals("")) {
+		if (!StringUtils.isBlank(serverNameProperty)) {
 			return serverNameProperty;
 		}
 		if (request != null)
@@ -950,6 +950,10 @@ public class HttpContextWeb extends HttpContext {
 		String port = getHeader("X-Forwarded-Port");
 		if (port.length() > 0){
 			return Integer.parseInt(port);
+		}
+		String serverPortProperty = ModelContext.getModelContext().getPreferences().getProperty("SERVER_PORT", "");
+		if (!StringUtils.isBlank(serverPortProperty)) {
+			return Integer.parseInt(serverPortProperty);
 		}
 		String serverNameProperty = ModelContext.getModelContext().getPreferences().getProperty("SERVER_NAME", "");
 		if (serverNameProperty.indexOf(':') != -1) {
@@ -988,6 +992,11 @@ public class HttpContextWeb extends HttpContext {
 		if (protocol != null && !protocol.equals("")) {
 			return protocol.equalsIgnoreCase("https") ? 1 : 0;
 		}
+		String serverProtocolProperty = ModelContext.getModelContext().getPreferences().getProperty("SERVER_PROTOCOL", "");
+		if (!StringUtils.isBlank(serverProtocolProperty)) {
+			return serverProtocolProperty.equalsIgnoreCase("https") ? 1: 0;
+		}
+
 		if (request != null && request.getScheme() != null)
 			return request.getScheme().equalsIgnoreCase("http") ? 0 : 1;
 
