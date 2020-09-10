@@ -805,27 +805,27 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getCookie(String name) {
-		Object o = cookies.get(name);
-		if (o != null) {
-			return WebUtils.decodeCookie(((Cookie) o).getValue());
-		}
-
 		if (request != null) {
 			try {
 				Cookie[] cookies = request.getCookies();
 
 				if (cookies != null) {
 					for (int i = 0; i < cookies.length; i++) {
-						if (cookies[i].getName().equalsIgnoreCase(name)) {
-							return WebUtils.decodeCookie(cookies[i].getValue());
+						Cookie cookie = cookies[i];
+						if (cookie.getName().equalsIgnoreCase(name)) {
+							return WebUtils.decodeCookie(cookie.getValue());
 						}
 					}
 				}
 			} catch (Exception e) {
-				return "";
+				log.error("Failed getting cookie", e);
 			}
 		}
 
+		Cookie cookie = cookies.get(name);
+		if (cookie != null) {
+			return WebUtils.decodeCookie(cookie.getValue());
+		}
 		return "";
 	}
 
