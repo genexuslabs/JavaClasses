@@ -37,6 +37,7 @@ public class HttpClient
 	private String proxyHost = "";// = HTTPConnection.getDefaultProxyHost() == null ? "" : HTTPConnection.getDefaultProxyHost();
 	private int proxyPort = 80;// = HTTPConnection.getDefaultProxyPort() == 0 ? 80 : HTTPConnection.getDefaultProxyPort();
 	private boolean tcpNoDelay = false;
+	private boolean includeCookies = true;
 
 	private HTTPConnection con = null;
 	private HTTPResponse res;
@@ -140,6 +141,15 @@ public class HttpClient
 	public short getProxyServerPort()
 	{
 		return (short) proxyPort;
+	}
+	public void setIncludeCookies(boolean value)
+	{
+		this.includeCookies = value;
+	}
+
+	public boolean getIncludeCookies()
+	{
+		return includeCookies;
 	}
 
 	public void setUrl(String url)
