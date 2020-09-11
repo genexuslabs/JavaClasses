@@ -412,6 +412,7 @@ public class HttpClient
                     con.setSSLConnection(SSLManager.getSSLConnection());
 				
 				con.setTcpNoDelay(tcpNoDelay);
+				con.setIncludeCookies(includeCookies);
             }
 
 			con.setTimeout(timeout * 1000); // Este puede variar sin cambiar de instancia
