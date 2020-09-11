@@ -21,13 +21,16 @@ public class GXRestException extends Throwable implements ExceptionMapper<Throwa
 	public Response toResponse(Throwable ex)
 	{
 		int statusCode = 500;
+		String reasonPhrase = "Internal Server Error";
 		if (ex instanceof WebApplicationException)
 		{
 			statusCode = ((WebApplicationException)ex).getResponse().getStatus();
+			reasonPhrase = ((WebApplicationException)ex).getResponse().getStatusInfo().getReasonPhrase();
 		}
 		else if (ex instanceof com.fasterxml.jackson.core.JsonProcessingException)
 		{
 			statusCode = 400;
+			reasonPhrase = "Bad Request";
 		}
 		log.error("Error executing REST service", ex);
 		JSONObject errorJson = new JSONObject();
@@ -35,7 +38,7 @@ public class GXRestException extends Throwable implements ExceptionMapper<Throwa
 		{
 			JSONObject obj = new JSONObject();
 			obj.put("code", statusCode);
-			obj.put("message", "");
+			obj.put("message", reasonPhrase);
 			errorJson.put("error", obj);
 		}
 		catch(JSONException e)
