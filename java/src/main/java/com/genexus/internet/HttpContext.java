@@ -44,7 +44,9 @@ public abstract class HttpContext
     private static String GX_SPA_REQUEST_HEADER = "X-SPA-REQUEST";
     protected static String GX_SPA_REDIRECT_URL = "X-SPA-REDIRECT-URL";
 	private static String GX_SOAP_ACTION_HEADER = "SOAPAction";
-	
+	public static String GXTheme = "GXTheme";
+	public static String GXLanguage = "GXLanguage";
+
     private static String CACHE_INVALIDATION_TOKEN;
 
     protected boolean PortletMode = false;
@@ -1471,7 +1473,7 @@ public abstract class HttpContext
 	{
 	    WebSession session = getWebSession();
 	    if (session!=null){
-			HashMap cThemeMap = (HashMap)session.getObjectAttribute("GXTheme");
+			HashMap cThemeMap = (HashMap)session.getObjectAttribute(GXTheme);
 			if (cThemeMap != null && cThemeMap.containsKey(theme))
 				return (String)cThemeMap.get(theme);
 		}
@@ -1493,11 +1495,11 @@ public abstract class HttpContext
 			return 0;
 		else
 		{
-			HashMap<String, String> cThemeMap = (HashMap<String, String>)session.getObjectAttribute("GXTheme");
+			HashMap<String, String> cThemeMap = (HashMap<String, String>)session.getObjectAttribute(GXTheme);
 			if (cThemeMap == null)
 				cThemeMap = new HashMap<>();
 			cThemeMap.put(theme, t);
-			session.setObjectAttribute("GXTheme", cThemeMap);
+			session.setObjectAttribute(GXTheme, cThemeMap);
 			return 1;
 		}
 	}
@@ -1629,7 +1631,7 @@ public abstract class HttpContext
 		{
 			if (currentLanguage == null) {
 				WebSession session = getWebSession();
-				String language = session != null ? session.getAttribute("GXLanguage") : null;
+				String language = session != null ? session.getAttribute(GXLanguage) : null;
 				if (language != null && !language.equals("")) {
 					currentLanguage = language;
 				} else {
@@ -1686,7 +1688,7 @@ public abstract class HttpContext
 			if (!language.isEmpty() && Application.getClientPreferences().getProperty("language|"+ language, "code", null)!=null)
 			{
 				this.currentLanguage = language;
-				getWebSession().setAttribute("GXLanguage", language);
+				getWebSession().setAttribute(GXLanguage, language);
 				ajaxRefreshAsGET = true;
 				return 0;
 			}else
