@@ -1,4 +1,5 @@
 package com.genexus.db;
+import java.math.BigDecimal;
 import java.util.*;
 import java.io.Serializable;
 import java.sql.*;
@@ -192,6 +193,8 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 		
 	public java.math.BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException
 	{
+		if (this.getValue(getColumnIndex(columnIndex)) instanceof Double)
+			return new BigDecimal((Double)this.getValue(getColumnIndex(columnIndex)));
 		return this.<java.math.BigDecimal>getValue(getColumnIndex(columnIndex));
 	}
 		
