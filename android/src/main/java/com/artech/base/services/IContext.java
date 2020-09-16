@@ -26,9 +26,11 @@ public interface IContext {
 	IPropertiesObject getEmptyPropertiesObject();
 
 	IEntity createEntity(String module, String name, IEntity parent);
+	IEntity createEntity(String module, String name, IEntity parent, IEntityList collection);
+	IEntityList createEntityList();
 	
-        IPropertiesObject createPropertyObject();
-        IPropertiesObject runGxObjectFromProcedure(String objectToCall, IPropertiesObject parameters);
+    IPropertiesObject createPropertyObject();
+    IPropertiesObject runGxObjectFromProcedure(String objectToCall, IPropertiesObject parameters);
 
 	IAndroidSession getAndroidSession();
 	
