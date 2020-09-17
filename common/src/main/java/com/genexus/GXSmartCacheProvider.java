@@ -61,7 +61,7 @@ public class GXSmartCacheProvider
 	// <param name="dateLastModified"></param>
 	// <param name="dateUpdated"></param>
 	// <returns>Unknown/Invalid/UpToDate</returns>
-	static public DataUpdateStatus CheckDataStatus(String queryId, Date dateLastModified, Date[] dateUpdated_arr)
+	static public DataUpdateStatus checkDataStatus(String queryId, Date dateLastModified, Date[] dateUpdated_arr)
 	{
 		return (DataUpdateStatus) provider.CheckDataStatus(queryId, dateLastModified, dateUpdated_arr);
 	}
