@@ -812,13 +812,17 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getCookie(String name) {
+		Cookie cookie = cookies.get(name);
+		if (cookie != null) {
+			return WebUtils.decodeCookie(cookie.getValue());
+		}
+
 		if (request != null) {
 			try {
 				Cookie[] cookies = request.getCookies();
-
 				if (cookies != null) {
 					for (int i = 0; i < cookies.length; i++) {
-						Cookie cookie = cookies[i];
+						cookie = cookies[i];
 						if (cookie.getName().equalsIgnoreCase(name)) {
 							return WebUtils.decodeCookie(cookie.getValue());
 						}
@@ -829,10 +833,6 @@ public class HttpContextWeb extends HttpContext {
 			}
 		}
 
-		Cookie cookie = cookies.get(name);
-		if (cookie != null) {
-			return WebUtils.decodeCookie(cookie.getValue());
-		}
 		return "";
 	}
 
@@ -865,7 +865,8 @@ public class HttpContextWeb extends HttpContext {
 			if (servletContext.getMajorVersion() >= 3)
 				cookie.setHttpOnly(httpOnly); // Requiere servlet version 3.0
 			response.addCookie(cookie);
-			cookies.put(name, cookie);
+
+			cookies.put(name, (Cookie)cookie.clone());
 		}
 
 		return 0;
