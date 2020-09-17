@@ -64,7 +64,7 @@ public class HttpContextWeb extends HttpContext {
 	private String requestMethod;
 	protected String contentType = "";
 	private boolean SkipPushUrl = false;
-	private Hashtable<String, Cookie> cookies;
+	private Hashtable<String, String> cookies;
 	private boolean streamSet = false;
 	private WebSession webSession;
 	private FileItemCollection fileItemCollection;
@@ -229,7 +229,7 @@ public class HttpContextWeb extends HttpContext {
 
 		GX_msglist = new MsgList();
 		postData = null;
-		cookies = new Hashtable<>();
+		cookies = new Hashtable<String, String>();
 
 		httpRes = new HttpResponse(this);
 		httpReq = new HttpRequestWeb(this);
@@ -863,9 +863,8 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getCookie(String name) {
-		Cookie cookie = cookies.get(name);
-		if (cookie != null) {
-			return WebUtils.decodeCookie(cookie.getValue());
+		if (cookies.containsKey(name)) {
+			return WebUtils.decodeCookie(cookies.get(name));
 		}
 
 		if (request != null) {
@@ -873,7 +872,7 @@ public class HttpContextWeb extends HttpContext {
 				Cookie[] cookies = request.getCookies();
 				if (cookies != null) {
 					for (int i = 0; i < cookies.length; i++) {
-						cookie = cookies[i];
+						Cookie cookie = cookies[i];
 						if (cookie.getName().equalsIgnoreCase(name)) {
 							return WebUtils.decodeCookie(cookie.getValue());
 						}
@@ -919,7 +918,7 @@ public class HttpContextWeb extends HttpContext {
 				cookie.setHttpOnly(httpOnly); // Requiere servlet version 3.0
 			response.addCookie(cookie);
 
-			cookies.put(name, (Cookie)cookie.clone());
+			cookies.put(name, value);
 		}
 
 		return 0;
