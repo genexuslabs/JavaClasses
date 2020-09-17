@@ -77,6 +77,8 @@ public class ClientInformation
 	public final class DeviceTypeEnum {
 		public static final int iOS = 0;
 		public static final int Android = 1;
+		public static final int Blackberry = 2;
+		public static final int Windows = 3;
 		public static final int Web = 4;
 	}
 }
