@@ -85,24 +85,17 @@ public class FreeStatementList {
 		}
 	}
 
-	boolean removeOlder()
+	void removeOlder()
 	{
 		// First remove from the cache and after close the statements to reduce the lock time
 		StatementList statementList = null;
 		synchronized (objectLock) {
 			// Asume que el size de freeCache > 0.
 			statementList = freeCache.get(freeCache.firstKey());
-			if (statementList.firstElement().isBatch() && statementList.firstElement().getRecordCount() > 0)
-			{
-				if (freeCache.size() == 1)
-					return false;
-				statementList = freeCache.get(freeCache.get(1));
-			}
 			freeCache.remove(statementList.peek().getCacheId(jdbcConnection));
 			statementCount -= statementList.size();
 		}
 		statementList.popAndCloseStatements();
-		return true;
 	}
 	private GXPreparedStatement popSentence(StatementList sl)
 	{

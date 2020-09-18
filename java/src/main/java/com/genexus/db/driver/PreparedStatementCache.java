@@ -113,8 +113,7 @@ public class PreparedStatementCache implements IPreparedStatementCache {
 				}
 				else
 				{
-					if (!freeStatementList.removeOlder())
-						maxSize ++;
+					freeStatementList.removeOlder();
 				}
 			}
 
