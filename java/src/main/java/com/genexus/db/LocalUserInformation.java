@@ -113,6 +113,24 @@ public class LocalUserInformation extends UserInformation
 			}
 		}
 	}
+	public void flushBuffers() throws SQLException
+	{
+		for (Enumeration<ConnectionInformation> en = connections.elements(); en.hasMoreElements(); )
+		{
+			ConnectionInformation info = en.nextElement();
+			if	(info.rwConnection != null)
+			{
+				try
+				{
+					info.rwConnection.flushBatchCursors();
+				}
+				catch (SQLException e)
+				{
+					System.err.println("Error while flushing cursor  " + e.getMessage());
+				}
+			}
+		}
+	}
 
 	public void disconnectOnException() throws SQLException
 	{
