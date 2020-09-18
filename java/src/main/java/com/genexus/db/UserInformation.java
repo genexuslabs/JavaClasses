@@ -16,6 +16,7 @@ public abstract class UserInformation extends AbstractUserInformation
 {
 	public abstract void disconnectOnException() throws SQLException;
 	public abstract void disconnect() throws SQLException;
+	public abstract void flushBuffers() throws SQLException;
 
 	private   	ConcurrentHashMap<String, Integer>  orbHandles  = new ConcurrentHashMap<String, Integer>();
 	private   	ConcurrentHashMap<String, String>  properties  = new ConcurrentHashMap<String, String>();

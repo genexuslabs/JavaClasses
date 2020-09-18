@@ -652,22 +652,24 @@ public void rollback() throws SQLException
 		}
 	}
 
-private void commit_impl() throws SQLException
-{
-	  dataSource.dbms.commit(con);
-}
+	private void commit_impl() throws SQLException
+	{
+		  dataSource.dbms.commit(con);
+	}
+
+	public void flushBatchCursors() throws SQLException{
+		for (int i = 0; i < batchUpdateStmts.size(); i++) {
+			BatchUpdateCursor cursor = (BatchUpdateCursor) batchUpdateStmts.get(i);
+			if (cursor.pendingRecords()) {
+				cursor.beforeCommitEvent();
+			}
+		}
+		batchUpdateStmts.clear();
+	}
 
     public void commit() throws SQLException
 	{
-
-            for(int i=0; i<batchUpdateStmts.size(); i++)
-            {
-                BatchUpdateCursor cursor = (BatchUpdateCursor)batchUpdateStmts.get(i);
-                if (cursor.pendingRecords()){
-                    cursor.beforeCommitEvent();
-                }
-            }
-            batchUpdateStmts.clear();
+		flushBatchCursors();
 
 		if	(DEBUG)
 		{
