@@ -72,6 +72,7 @@ public class HttpContextWeb extends HttpContext {
 	private boolean ajaxCallAsPOST = false;
 	private boolean htmlHeaderClosed = false;
 	private String sTmpDir;
+	private boolean firstParConsumed = false;
 
 	private static final Pattern USERAGENT_SEARCH_BOT = Pattern.compile("Googlebot|AhrefsBot|bingbot|MJ12bot",
 			Pattern.CASE_INSENSITIVE);
@@ -424,8 +425,10 @@ public class HttpContextWeb extends HttpContext {
 		if (useOldQueryStringFormat)
 			return GetNextPar();
 		else {
-			if (namedParms.containsKey(GXEVENT_PARM))
+			if (!firstParConsumed && namedParms.containsKey(GXEVENT_PARM)) {
+				firstParConsumed = true;
 				return GetPar(GXEVENT_PARM);
+			}
 			else
 				return GetPar(parameter);
 		}
