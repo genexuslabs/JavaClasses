@@ -72,7 +72,7 @@ public final class ServerUserInformation extends UserInformation
 
 	public void flushBuffers() throws SQLException
 	{
-		//DBConnectionManager.getInstance().flushBuffers(getHandle());
+		DBConnectionManager.getInstance().flushBuffers(getHandle());
 	}
 
 	public boolean isConnected(String dataSourceName)
