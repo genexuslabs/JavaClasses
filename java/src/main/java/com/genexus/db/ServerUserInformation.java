@@ -63,16 +63,11 @@ public final class ServerUserInformation extends UserInformation
 				  catch (Throwable e)
 				  {
 				  }
-		}
+                }
 
 
-		if (disconnectException != null)
-			throw disconnectException;
-	}
-
-	public void flushBuffers() throws SQLException
-	{
-		DBConnectionManager.getInstance().flushBuffers(getHandle());
+                if (disconnectException != null)
+                   throw disconnectException;
 	}
 
 	public boolean isConnected(String dataSourceName)

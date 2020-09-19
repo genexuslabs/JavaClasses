@@ -1007,26 +1007,25 @@ public void rollback() throws SQLException
 		state.setInAssignment(false);
 	}
 
-	private void commit_impl() throws SQLException
-	{
-		if(dataSource.usesJdbcDataSource() && GXJTA.isJTATX(handle, context))
-		  GXJTA.commit();
-		else
-		  dataSource.dbms.commit(con);
-	}
-	public void flushBatchCursors() throws SQLException{
-		for (int i = 0; i < batchUpdateStmts.size(); i++) {
-			BatchUpdateCursor cursor = (BatchUpdateCursor) batchUpdateStmts.get(i);
-			if (cursor.pendingRecords()) {
-				cursor.beforeCommitEvent();
-			}
-		}
-		batchUpdateStmts.clear();
-	}
+private void commit_impl() throws SQLException
+{
+	if(dataSource.usesJdbcDataSource() && GXJTA.isJTATX(handle, context))
+	  GXJTA.commit();
+	else
+	  dataSource.dbms.commit(con);
+}
 
     public void commit() throws SQLException
 	{
-		flushBatchCursors();
+
+            for(int i=0; i<batchUpdateStmts.size(); i++)
+            {
+                BatchUpdateCursor cursor = (BatchUpdateCursor)batchUpdateStmts.get(i);
+                if (cursor.pendingRecords()){
+                    cursor.beforeCommitEvent();
+                }
+            }
+            batchUpdateStmts.clear();
 
 		if	(DEBUG)
 		{

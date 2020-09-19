@@ -52,8 +52,7 @@ public class UtilUserInformation extends UserInformation
 	public void disconnect() throws SQLException
 	{
 	}
-	public void flushBuffers() throws SQLException {
-	}
+	
 	public void disconnectOnException() throws SQLException
 	{
 	}

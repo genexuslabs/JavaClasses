@@ -28,8 +28,6 @@ public abstract class AbstractGXConnection {
 
 	public abstract void commit() throws SQLException ;
 
-	public abstract void flushBatchCursors() throws SQLException;
-
 	public abstract String getUserName() throws SQLException;
 
 	public abstract Date getDateTime() throws SQLException ;
