@@ -26,13 +26,13 @@ public final class GXGridStateHandler {
 		this.context = context;
 		this.gridName = programName + "_" + gridName + "_GridState";
 		dirty =true;
+		this.state = new SdtGridState(context);
 	}
 
 	public GXGridStateHandler(ModelContext context, String gridName, String programName, Runnable varsFromState, Runnable varsToState) {
 		this(context, gridName, programName);
 		this.varsFromState = varsFromState;
 		this.varsToState = varsToState;
-		this.state = new SdtGridState(context);
 	}
 
 	//Cosntructor por java <= 1.7
@@ -57,6 +57,7 @@ public final class GXGridStateHandler {
 		HttpRequest httpRequest = httpContext.getHttpRequest();
 		if (GXutil.strcmp(httpRequest.getMethod(), "GET") == 0) {
 			WebSession session = httpContext.getWebSession();
+			state = new SdtGridState(context);
 			state.fromJSonString(session.getValue(gridName));
 			runVarsFromState();
 			dirty = true;
@@ -65,7 +66,7 @@ public final class GXGridStateHandler {
 
 
 	public String filterValues(int idx) {
-		return state.getgxTv_SdtGridState_Inputvalues().get(idx).getgxTv_SdtGridState_InputValuesItem_Value();
+		return state.getgxTv_SdtGridState_Inputvalues().get(idx-1).getgxTv_SdtGridState_InputValuesItem_Value();
 	}
 
 	public int getCurrentpage() {
