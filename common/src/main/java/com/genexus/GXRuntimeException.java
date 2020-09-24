@@ -33,7 +33,7 @@ public class GXRuntimeException extends RuntimeException
 
 	public String getMessage()
 	{
-		return getStackTraceGX();
+		return e.getMessage();
 	}
 
 	public Throwable getTargetException()
