@@ -70,9 +70,11 @@ public final class ServerUserInformation extends UserInformation
 			throw disconnectException;
 	}
 
-	public void flushBuffers() throws SQLException
+	public void flushBuffers(java.lang.Object o) throws SQLException
 	{
-		///DBConnectionManager.getInstance().flushBuffers(getHandle());
+		for	(Enumeration<DataSource> en = namespace.getDataSources(); en.hasMoreElements(); ) {
+			en.nextElement().flushBuffers(handle, o);
+		}
 	}
 
 	public boolean isConnected(String dataSourceName)

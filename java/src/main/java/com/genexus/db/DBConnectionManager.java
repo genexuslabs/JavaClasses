@@ -284,14 +284,14 @@ public abstract class DBConnectionManager
 					LocalUserInformationJMX.DestroyLocalUserInformationJMX((LocalUserInformation)ui);
 		}
 	}
-	public void flushBuffers(int handle) throws SQLException, NullPointerException
+	public void flushBuffers(int handle, java.lang.Object o) throws SQLException, NullPointerException
 	{
 		UserInformation ui = getUserInformation(handle);
 
 		try
 		{
 			if	(ui != null) {
-				ui.flushBuffers();
+				ui.flushBuffers(o);
 			}
 		}
 		finally{
