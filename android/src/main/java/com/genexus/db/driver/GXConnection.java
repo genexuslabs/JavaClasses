@@ -657,19 +657,21 @@ public void rollback() throws SQLException
 		  dataSource.dbms.commit(con);
 	}
 
-	public void flushBatchCursors() throws SQLException{
+	public void flushBatchCursors(java.lang.Object o) throws SQLException{
+		boolean done = false;
 		for (int i = 0; i < batchUpdateStmts.size(); i++) {
 			BatchUpdateCursor cursor = (BatchUpdateCursor) batchUpdateStmts.get(i);
 			if (cursor.pendingRecords()) {
-				cursor.beforeCommitEvent();
+				done = cursor.beforeCommitEvent(o);
 			}
 		}
-		batchUpdateStmts.clear();
+		if (done)
+			batchUpdateStmts.clear();
 	}
 
     public void commit() throws SQLException
 	{
-		flushBatchCursors();
+		flushBatchCursors(null);
 
 		if	(DEBUG)
 		{

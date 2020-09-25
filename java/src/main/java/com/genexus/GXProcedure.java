@@ -142,7 +142,7 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 			dbgInfo.onExit();
 		try
 		{
-			Application.getConnectionManager().flushBuffers(remoteHandle);
+			Application.getConnectionManager().flushBuffers(remoteHandle, this);
 		}catch(Exception exception){ ; }
 		if(disconnectUserAtCleanup)
 		{

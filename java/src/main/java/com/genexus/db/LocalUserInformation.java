@@ -113,7 +113,7 @@ public class LocalUserInformation extends UserInformation
 			}
 		}
 	}
-	public void flushBuffers() throws SQLException
+	public void flushBuffers(java.lang.Object o) throws SQLException
 	{
 		for (Enumeration<ConnectionInformation> en = connections.elements(); en.hasMoreElements(); )
 		{
@@ -122,7 +122,7 @@ public class LocalUserInformation extends UserInformation
 			{
 				try
 				{
-					info.rwConnection.flushBatchCursors();
+					info.rwConnection.flushBatchCursors(o);
 				}
 				catch (SQLException e)
 				{
