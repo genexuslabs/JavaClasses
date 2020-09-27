@@ -534,7 +534,7 @@ public class Cookie implements Serializable
 		 domain.charAt(0) != '.'  &&  eff_host.equals(domain))  &&
 		Util.getPath(req.getRequestURI()).startsWith(path)  &&
 		(!secure || con.getProtocol().equals("https") ||
-		 con.getProtocol().equals("shttp")));
+		 con.getProtocol().equals("shttp")) && con.getIncludeCookies());
     }
 
 
