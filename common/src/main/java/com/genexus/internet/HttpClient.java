@@ -367,16 +367,28 @@ public class HttpClient
 	{
 		resetErrors();
 		
-		URI uri = null;
+		URI uri;
 		try
 		{
 		    uri = new URI(url);
-				prevURLhost = this.getHost();
-				prevURLbaseURL = this.getBaseURL();
-				prevURLport = this.getPort();
-				prevURLsecure = this.getSecure();	
-				isURL = true;		    
+		    prevURLhost = this.getHost();
+			prevURLbaseURL = this.getBaseURL();
+			prevURLport = this.getPort();
+			prevURLsecure = this.getSecure();
+			isURL = true;
 		    setURL(url);
+
+		    StringBuilder relativeUri = new StringBuilder();
+			if (uri.getPath() != null) {
+				relativeUri.append(uri.getPath());
+			}
+			if (uri.getQueryString() != null) {
+				relativeUri.append('?').append(uri.getQueryString());
+			}
+			if (uri.getFragment() != null) {
+				relativeUri.append('#').append(uri.getFragment());
+			}
+		    url = relativeUri.toString();
 		}
 		catch (ParseException e)
 		{
@@ -455,7 +467,7 @@ public class HttpClient
             
             proxyInfoChanged = authorizationProxyChanged = false; // Desmarco las flags			
 
-			if  (!url.startsWith("/") && uri == null)
+			if  (!url.startsWith("/"))
 				url = baseURL + url;
 
 			if	(method.equalsIgnoreCase("GET"))
