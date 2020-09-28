@@ -17,6 +17,7 @@ import java.sql.Statement;
 import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.Vector;
 import java.util.concurrent.Executor;
 
 import com.genexus.Application;
@@ -658,15 +659,16 @@ public void rollback() throws SQLException
 	}
 
 	public void flushBatchCursors(java.lang.Object o) throws SQLException{
-		boolean done = false;
+		Vector<Cursor> toRemove = new Vector();
 		for (int i = 0; i < batchUpdateStmts.size(); i++) {
 			BatchUpdateCursor cursor = (BatchUpdateCursor) batchUpdateStmts.get(i);
 			if (cursor.pendingRecords()) {
-				done = cursor.beforeCommitEvent(o);
+				if (cursor.beforeCommitEvent(o))
+					toRemove.add(cursor);
 			}
 		}
-		if (done)
-			batchUpdateStmts.clear();
+		if (toRemove.size()>0)
+			batchUpdateStmts.removeAll(toRemove);
 	}
 
     public void commit() throws SQLException
