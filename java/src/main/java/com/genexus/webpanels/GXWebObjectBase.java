@@ -479,8 +479,15 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 
 	private String getObjectAccessWebToken(String cmpCtx)
 	{
-		return WebSecurityHelper.sign(getPgmInstanceId(cmpCtx), "", "", SecureTokenHelper.SecurityMode.Sign);
+		return WebSecurityHelper.sign(getPgmInstanceId(cmpCtx), "", "", SecureTokenHelper.SecurityMode.Sign, getSecretKey());
 	}
+
+	private String getSecretKey()
+    {
+    	//Some random SALT that is different in every GX App installation. Better if changes over time
+       String hashSalt = com.genexus.Application.getClientContext().getClientPreferences().getREORG_TIME_STAMP();
+       return WebUtils.getEncryptionKey(this.context, "") + hashSalt;
+    }
 
 	private String serialize(double Value, String Pic)
     {
@@ -615,7 +622,7 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 
     protected String getSecureSignedToken(String cmpCtx, String Value)
     {
-    	return WebSecurityHelper.sign(getPgmInstanceId(cmpCtx), "", Value, SecureTokenHelper.SecurityMode.Sign);
+    	return WebSecurityHelper.sign(getPgmInstanceId(cmpCtx), "", Value, SecureTokenHelper.SecurityMode.Sign, getSecretKey());
     }
 
     protected boolean verifySecureSignedToken(String cmpCtx, int Value, String picture, String token){
@@ -651,7 +658,7 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
     }
 
     protected boolean verifySecureSignedToken(String cmpCtx, String value, String token){
-    	return WebSecurityHelper.verify(getPgmInstanceId(cmpCtx), "", value, token);
+    	return WebSecurityHelper.verify(getPgmInstanceId(cmpCtx), "", value, token, getSecretKey());
     }
 
 	protected boolean validateObjectAccess(String cmpCtx)
