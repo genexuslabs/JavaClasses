@@ -8,6 +8,8 @@ import com.genexus.webpanels.GXWebObjectBase;
 import com.genexus.webpanels.WebSession;
 import com.genexuscore.genexus.common.*;
 
+import java.util.Enumeration;
+
 public final class GXGridStateHandler {
 	public static final ILogger logger = LogManager.getLogger(GXGridStateHandler.class);
 	private String gridName;
@@ -67,6 +69,15 @@ public final class GXGridStateHandler {
 
 	public String filterValues(int idx) {
 		return state.getgxTv_SdtGridState_Inputvalues().get(idx-1).getgxTv_SdtGridState_InputValuesItem_Value();
+	}
+
+	public String filterValues(String filter) {
+		for (Enumeration<SdtGridState_InputValuesItem> values = state.getgxTv_SdtGridState_Inputvalues().elements(); values.hasMoreElements();) {
+			SdtGridState_InputValuesItem value = values.nextElement();
+			if (value.getgxTv_SdtGridState_InputValuesItem_Name().equalsIgnoreCase(filter))
+				return value.getgxTv_SdtGridState_InputValuesItem_Value();
+		}
+		return "";
 	}
 
 	public int getCurrentpage() {
