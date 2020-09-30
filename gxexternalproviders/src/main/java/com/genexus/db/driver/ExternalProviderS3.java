@@ -1,8 +1,8 @@
 package com.genexus.db.driver;
 
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.S3ClientOptions;
-import com.genexus.util.GXServices;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import com.amazonaws.HttpMethod;
@@ -17,8 +17,6 @@ import java.io.ByteArrayInputStream;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -51,7 +49,8 @@ public class ExternalProviderS3 implements ExternalProvider {
 
     static final String ACCESS_KEY_ID = "STORAGE_PROVIDER_ACCESSKEYID";
     static final String SECRET_ACCESS_KEY = "STORAGE_PROVIDER_SECRETACCESSKEY";
-    static final String ENDPOINT = "ENDPOINT";
+	static final String STORAGE_CUSTOM_ENDPOINT = "STORAGE_CUSTOM_ENDPOINT";
+    static final String STORAGE_ENDPOINT = "STORAGE_ENDPOINT";
     static final String BUCKET = "BUCKET_NAME";
     static final String FOLDER = "FOLDER_NAME";
 	static final String REGION = "STORAGE_PROVIDER_REGION";
@@ -61,37 +60,74 @@ public class ExternalProviderS3 implements ExternalProvider {
     static final String DUALSTACK = "s3-accelerate.dualstack.amazonaws.com";
 	static final String DEFAULT_REGION = "us-east-1";
 
-    private AmazonS3 client;
-    private String bucket;
-    private String folder;
-	private String region = DEFAULT_REGION;
+	private AmazonS3 client;
+	private String bucket;
+	private String folder;
+
 
     public ExternalProviderS3(String service) {
         this(Application.getGXServices().get(service));
     }
 
-    public ExternalProviderS3(GXService providerService) {
-		bucket = Encryption.decrypt64(providerService.getProperties().get(BUCKET)).toLowerCase();
-		folder = providerService.getProperties().get(FOLDER);
-		region = providerService.getProperties().get(REGION);
+	public ExternalProviderS3(String accessKey, String secretKey, String bucketName, String region, String folder, String endpoint) {
+		init(accessKey, secretKey, bucketName, region, folder, endpoint);
+	}
 
-    	AWSCredentials credentials = new BasicAWSCredentials(Encryption.decrypt64(providerService.getProperties().get(ACCESS_KEY_ID)), Encryption.decrypt64(providerService.getProperties().get(SECRET_ACCESS_KEY)));
-		client = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(credentials)).withRegion(region).build();
+	public ExternalProviderS3(GXService providerService) {
+		String accessKey = Encryption.decrypt64(providerService.getProperties().get(ACCESS_KEY_ID));
+		String secretKey = Encryption.decrypt64(providerService.getProperties().get(SECRET_ACCESS_KEY));
 
-		setEndpoint(providerService.getProperties().get(ENDPOINT));
-        bucketExists();
-        ensureFolder(folder);
-    }
+		String bucket = Encryption.decrypt64(providerService.getProperties().get(BUCKET)).toLowerCase();
+		String folder = providerService.getProperties().get(FOLDER);
+		String region = providerService.getProperties().get(REGION);
+		String endpointValue = providerService.getProperties().get(STORAGE_ENDPOINT);
 
-
-	private void setEndpoint(String endpoint) {
-		if (endpoint.equals(ACCELERATED)) {
-			client.setS3ClientOptions(S3ClientOptions.builder().setAccelerateModeEnabled(true).build());
+		if (endpointValue.equals("custom")) {
+			endpointValue = providerService.getProperties().get(STORAGE_CUSTOM_ENDPOINT);;
 		}
-		if (endpoint.equals(DUALSTACK)) {
-			client.setS3ClientOptions(S3ClientOptions.builder().enableDualstack().setAccelerateModeEnabled(true).build());
+		init(accessKey, secretKey, bucket, region, folder, endpointValue);
+	}
+
+	private void init(String accessKey, String secretKey, String bucketName, String region, String folder, String endpoint) {
+		if (this.client == null) {
+			if (region.length() == 0) {
+				region = DEFAULT_REGION;
+			}
+			this.bucket = bucketName;
+			this.folder = folder;
+			this.client = buildS3Client(accessKey, secretKey, endpoint, region);
+
+			bucketExists();
+			ensureFolder(folder);
 		}
 	}
+
+	private AmazonS3 buildS3Client(String accessKey, String secretKey, String endpoint, String region) {
+		AmazonS3 s3Client;
+		AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
+		AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(credentials));
+
+		if (endpoint.length() > 0 && !endpoint.contains(".amazonaws.com")) {
+			s3Client = builder
+				.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, region))
+				.disableChunkedEncoding()
+				.enablePathStyleAccess()
+				.build();
+		}
+		else {
+			s3Client = builder
+				.withRegion(region)
+				.build();
+			if (endpoint.equals(ACCELERATED)) {
+				s3Client.setS3ClientOptions(S3ClientOptions.builder().setAccelerateModeEnabled(true).build());
+			}
+			else if (endpoint.equals(DUALSTACK)) {
+				s3Client.setS3ClientOptions(S3ClientOptions.builder().enableDualstack().setAccelerateModeEnabled(true).build());
+			}
+		}
+		return s3Client;
+	}
+
 
     private void bucketExists() {
         if (!client.doesBucketExistV2(bucket)) {
