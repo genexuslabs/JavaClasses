@@ -8,6 +8,8 @@ import com.genexus.webpanels.GXWebObjectBase;
 import com.genexus.webpanels.WebSession;
 import com.genexuscore.genexus.common.*;
 
+import java.util.Enumeration;
+
 public final class GXGridStateHandler {
 	public static final ILogger logger = LogManager.getLogger(GXGridStateHandler.class);
 	private String gridName;
@@ -69,6 +71,24 @@ public final class GXGridStateHandler {
 		return state.getgxTv_SdtGridState_Inputvalues().get(idx-1).getgxTv_SdtGridState_InputValuesItem_Value();
 	}
 
+	public String filterValues(String filter) {
+		int idx = containsName(filter);
+		if (idx>0)
+			return filterValues(idx);
+		else
+			return "";
+	}
+
+	private int containsName(String filter) {
+		int idx=1;
+		for (Enumeration<SdtGridState_InputValuesItem> values = state.getgxTv_SdtGridState_Inputvalues().elements(); values.hasMoreElements();) {
+			SdtGridState_InputValuesItem value = values.nextElement();
+			if (value.getgxTv_SdtGridState_InputValuesItem_Name().equalsIgnoreCase(filter))
+				return idx;
+		}
+		return -1;
+	}
+
 	public int getCurrentpage() {
 		return state.getgxTv_SdtGridState_Currentpage();
 	}
@@ -114,10 +134,15 @@ public final class GXGridStateHandler {
 	}
 
 	public void addFilterValue(String name, String value) {
-		SdtGridState_InputValuesItem item = new SdtGridState_InputValuesItem(context);
-		item.setgxTv_SdtGridState_InputValuesItem_Value(value);
-		item.setgxTv_SdtGridState_InputValuesItem_Name(name);
-		state.getgxTv_SdtGridState_Inputvalues().add(item);
+		int idx = containsName(name);
+		if (idx > 0)
+			state.getgxTv_SdtGridState_Inputvalues().get(idx-1).setgxTv_SdtGridState_InputValuesItem_Value(value);
+		else {
+			SdtGridState_InputValuesItem item = new SdtGridState_InputValuesItem(context);
+			item.setgxTv_SdtGridState_InputValuesItem_Value(value);
+			item.setgxTv_SdtGridState_InputValuesItem_Name(name);
+			state.getgxTv_SdtGridState_Inputvalues().add(item);
+		}
 	}
 
 	public int getFiltercount() {
