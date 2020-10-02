@@ -18,6 +18,7 @@ public class URLRouter
 	public static final ILogger logger = LogManager.getLogger(URLRouter.class);
 
 	static Hashtable<String, String> routerList;
+	private static boolean serverRelative = false;
 
 	public static String getURLRoute(String key, String[] parms, String[] parmsName, String contextPath)
 	{
@@ -51,7 +52,7 @@ public class URLRouter
 		{
 			contextPath += "/";
 		}
-		return contextPath + url + ((urlQueryString.length > 1)? "?" + urlQueryString[1]: convertParmsToQueryString(useNamedParameters, parms, parmsName, routerList.get(urlQueryString[0])));
+		return (serverRelative? contextPath : "") + url + ((urlQueryString.length > 1)? "?" + urlQueryString[1]: convertParmsToQueryString(useNamedParameters, parms, parmsName, routerList.get(urlQueryString[0])));
 	}
 
 	private static Object[] getParameters(String[] url)
@@ -98,6 +99,7 @@ public class URLRouter
 		{
 			for (int i = 1; i <= rewriteFiles.getItemCount(); i++)
 			{
+				serverRelative = true;
 				AbstractGXFile rewriteFile = rewriteFiles.item(i);
 				try
 				{
