@@ -2594,7 +2594,7 @@ public final class CommonUtil
 
 	public static boolean isAbsoluteURL(String url)
 	{
-		return url.toLowerCase().startsWith("http://") || url.toLowerCase().startsWith("https://") || url.toLowerCase().startsWith("ftp://");
+		return url.toLowerCase().startsWith("http://") || url.toLowerCase().startsWith("https://") || url.toLowerCase().startsWith("ftp://") || url.toLowerCase().startsWith("sd:");
 	}
 
 	public static String encodeJSON(String in)
