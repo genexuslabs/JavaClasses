@@ -51,6 +51,7 @@ public class GXOAuthAccessToken extends GXWebObjectStub
 						if (!nativeToken.equals(""))
 						{
 							isExternalSDAuth = true;
+							additional_parameters = context.getHttpRequest().getVariable("additional_parameters");
 						}
 						else
 						{
