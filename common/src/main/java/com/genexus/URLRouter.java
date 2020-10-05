@@ -27,7 +27,7 @@ public class URLRouter
 
 	public static String getURLRoute(boolean useNamedParameters, String key, String[] parms, String[] parmsName, String contextPath)
 	{
-		if (com.genexus.CommonUtil.isAbsoluteURL(key) || key.startsWith("/") || key.contains("://")) {
+		if (com.genexus.CommonUtil.isAbsoluteURL(key) || key.startsWith("/") || key.contains("://") || key.isEmpty()) {
 			return ((parms.length > 0)? key + "?" + String.join(",", parms): key);
 		}
 
