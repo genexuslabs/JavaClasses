@@ -91,7 +91,16 @@ public final class DirectConnectionPool implements IConnectionPool
                 if (error!=null)
                   throw error;
 	}
-
+	@Override
+	public void flushBuffers(int handle, java.lang.Object o) throws SQLException
+	{
+		for (Enumeration<GXConnection> en = connections.elements(); en.hasMoreElements(); ) {
+			GXConnection conn = en.nextElement();
+			if (conn.getHandle() == handle) {
+				conn.flushBatchCursors(o);
+			}
+		}
+	}
 	@Override
 	public void runWithLock(Runnable runnable) {
 		runnable.run();

@@ -140,6 +140,10 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 	{
 		if(dbgInfo != null && Application.realMainProgram == this)
 			dbgInfo.onExit();
+		try
+		{
+			Application.getConnectionManager().flushBuffers(remoteHandle, this);
+		}catch(Exception exception){ ; }
 		if(disconnectUserAtCleanup)
 		{
 			try
