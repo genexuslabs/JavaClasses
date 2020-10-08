@@ -11,6 +11,7 @@ import com.genexus.util.GXDirectory;
 import com.genexus.util.GXFileCollection;
 
 import java.io.*;
+import java.util.regex.Pattern;
 
 
 public class URLRouter
@@ -19,6 +20,7 @@ public class URLRouter
 
 	static Hashtable<String, String> routerList;
 	private static boolean serverRelative = false;
+	private static Pattern schemeRegex = Pattern.compile("^([a-z][a-z0-9+\\-.]*):",Pattern.CASE_INSENSITIVE);
 
 	public static String getURLRoute(String key, String[] parms, String[] parmsName, String contextPath)
 	{
@@ -27,7 +29,7 @@ public class URLRouter
 
 	public static String getURLRoute(boolean useNamedParameters, String key, String[] parms, String[] parmsName, String contextPath)
 	{
-		if (com.genexus.CommonUtil.isAbsoluteURL(key) || key.startsWith("/") || key.contains("://") || key.isEmpty()) {
+		if (com.genexus.CommonUtil.isAbsoluteURL(key) || key.startsWith("/") || key.isEmpty() || schemeRegex.matcher(key).find()) {
 			return ((parms.length > 0)? key + "?" + String.join(",", parms): key);
 		}
 
