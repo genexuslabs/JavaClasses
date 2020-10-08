@@ -3,6 +3,7 @@ package com.genexus.webpanels;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.TimeZone;
+import java.util.regex.Pattern;
 
 import com.genexus.*;
 import com.genexus.configuration.ConfigurationManager;
@@ -50,6 +51,8 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 
 	protected UserInformation ui;
 	protected TimeZone timeZone;
+
+	private Pattern schemeRegex = Pattern.compile("^([a-z][a-z0-9+\\-.]*):",Pattern.CASE_INSENSITIVE);
 
 	public Object getParm( Object[] parms, int index)
 	{
@@ -396,7 +399,7 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 			}
 		}
 
-		if (lowURL.split("\\.").length == 2 && !(!packageName.equals("") && lowURL.startsWith(packageName)) && !lowURL.startsWith("file:") && !lowURL.startsWith("http:") && !lowURL.startsWith("https:") && !lowURL.startsWith("/"))
+		if (lowURL.split("\\.").length == 2 && !(!packageName.equals("") && lowURL.startsWith(packageName)) && !schemeRegex.matcher(lowURL).find() && !lowURL.startsWith("/"))
 		{
 			if (lowURL.indexOf("?") == -1 || lowURL.indexOf("?") > lowURL.indexOf("."))
 			{
