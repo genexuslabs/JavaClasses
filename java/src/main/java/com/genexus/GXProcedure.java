@@ -177,17 +177,8 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 
 	protected String formatLink(String jumpURL, String[] parms, String[] parmsName)
 	{
-		String lowURL = CommonUtil.lower(jumpURL);
-		String packageName = context.getPackageName();
-
-		// Convert 'call', adding package when needed
-		if	(com.genexus.webpanels.GXWebPanel.getStaticGeneration() && (lowURL.startsWith("http:" + packageName + "h") || lowURL.startsWith("https:" + packageName + "h")))
-		{
-			return  com.genexus.webpanels.WebUtils.getDynURL() + jumpURL.substring(lowURL.indexOf(':') + 1);
-		}
-
 		String contextPath = (httpContext.getRequest() == null)? "" : httpContext.getRequest().getContextPath();
-		return URLRouter.getURLRoute(jumpURL, parms, parmsName, contextPath);
+		return URLRouter.getURLRoute(jumpURL, parms, parmsName, contextPath, context.getPackageName());
 	}
 	
 	public void callSubmit(final int id, Object [] submitParms)

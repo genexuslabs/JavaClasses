@@ -369,56 +369,7 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 
 	protected String formatLink(String jumpURL, String[] parms, String[] parmsName)
 	{
-		return URLRouter.getURLRoute(formatLink1(jumpURL), parms, parmsName, httpContext.getRequest().getContextPath());
-	}
-
-	private String formatLink1(String jumpURL)
-	{
-		String lowURL = CommonUtil.lower(jumpURL);
-		if (jumpURL.indexOf("?") != -1)
-		{
-				lowURL = jumpURL.substring(0, jumpURL.indexOf("?")).toLowerCase() + jumpURL.substring(jumpURL.indexOf("?"));
-		}
-		String packageName = context.getPackageName();
-
-		if (!packageName.equals("") && lowURL.startsWith(packageName))
-		{
-			return lowURL;
-		}
-		else
-		{
-			try
-			{
-				if (!packageName.equals(""))
-					packageName += ".";
-				getClass().getClassLoader().loadClass(packageName + lowURL);
-				return packageName + lowURL;
-			}
-			catch(java.lang.ClassNotFoundException e)
-			{
-			}
-		}
-
-		if (lowURL.split("\\.").length == 2 && !(!packageName.equals("") && lowURL.startsWith(packageName)) && !schemeRegex.matcher(lowURL).find() && !lowURL.startsWith("/"))
-		{
-			if (lowURL.indexOf("?") == -1 || lowURL.indexOf("?") > lowURL.indexOf("."))
-			{
-				return httpContext.getRequest().getContextPath() + "/" + jumpURL;
-			}
-		}
-
-		if	(packageName.endsWith(".") && packageName.trim().equals(""))
-		{
-			packageName += ".";
-		}
-
-		// Convierte el 'call', agregandole el package.
-		if	(GXWebPanel.isStaticGeneration && (lowURL.startsWith("http:" + packageName + "h") || lowURL.startsWith("https:" + packageName + "h")))
-		{
-			return  WebUtils.getDynURL() + jumpURL.substring(lowURL.indexOf(':') + 1);
-		}
-
-		return jumpURL;
+		return URLRouter.getURLRoute(jumpURL, parms, parmsName, httpContext.getRequest().getContextPath(), context.getPackageName());
 	}
 
 	public String getPgmname()
