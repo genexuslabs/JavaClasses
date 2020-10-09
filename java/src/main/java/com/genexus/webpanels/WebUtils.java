@@ -64,21 +64,10 @@ public class WebUtils
 									 (int) CommonUtil.val(valueString.substring(12, 14)));
 	}
 
-	public static String appendBaseURL(String protocol, String url)
-	{
-		String dynURL = getDynURL();
-
-		if	(dynURL.length() > 0)
-			return dynURL + url;
-
-		return protocol + url;
-	}
-
 	public static String getDynURL()
 	{
 		return PrivateUtilities.addLastChar(getSystemProperty(STATIC_DYNURL), "/");
 	}
-
 
 	public static String getSystemProperty(String property)
 	{

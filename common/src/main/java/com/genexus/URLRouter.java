@@ -22,21 +22,49 @@ public class URLRouter
 	private static boolean serverRelative = false;
 	private static Pattern schemeRegex = Pattern.compile("^([a-z][a-z0-9+\\-.]*):",Pattern.CASE_INSENSITIVE);
 
-	public static String getURLRoute(String key, String[] parms, String[] parmsName, String contextPath)
+	public static String getURLRoute(String key, String[] parms, String[] parmsName, String contextPath, String packageName)
 	{
-		return getURLRoute(ModelContext.getModelContext().getPreferences().getProperty("UseNamedParameters", "1").equals("1"), key, parms, parmsName, contextPath);
+		return getURLRoute(ModelContext.getModelContext().getPreferences().getProperty("UseNamedParameters", "1").equals("1"), key, parms, parmsName, contextPath, packageName);
 	}
 
-	public static String getURLRoute(boolean useNamedParameters, String key, String[] parms, String[] parmsName, String contextPath)
+	public static String getURLRoute(boolean useNamedParameters, String key, String[] parms, String[] parmsName, String contextPath, String packageName)
 	{
 		if (com.genexus.CommonUtil.isAbsoluteURL(key) || key.startsWith("/") || key.isEmpty() || schemeRegex.matcher(key).find()) {
 			return ((parms.length > 0)? key + "?" + String.join(",", parms): key);
+		}
+
+		if (contextPath.length() > 0 || ModelContext.getModelContext().getHttpContext().isHttpContextWeb())
+		{
+			contextPath += "/";
+		}
+
+		String lowURL = CommonUtil.lower(key);
+		//If it is a File contextPath must be added
+		if (key.split("\\.").length == 2 && !(!packageName.equals("") && lowURL.startsWith(packageName)))
+		{
+			if (key.indexOf("?") == -1 || key.indexOf("?") > key.indexOf("."))
+			{
+				return contextPath + key;
+			}
 		}
 
 		if	(routerList == null)
 		{
 			routerList = new Hashtable<>();
 			load();
+		}
+
+		if (!packageName.equals("") && !lowURL.startsWith(packageName))
+		{
+			packageName += ".";
+			try
+			{
+				SpecificImplementation.Application.getConfigurationClass().getClassLoader().loadClass(packageName + lowURL);
+				key = packageName + lowURL;
+			}
+			catch(java.lang.ClassNotFoundException e)
+			{
+			}
 		}
 
 		String [] urlQueryString = key.split("\\?");
@@ -50,10 +78,6 @@ public class URLRouter
 		}
 
 		String url = routerList.containsKey(urlQueryString[0])? String.format(routerList.get(urlQueryString[0]), urlarray): urlQueryString[0];
-		if (contextPath.length() > 0 || ModelContext.getModelContext().getHttpContext().isHttpContextWeb())
-		{
-			contextPath += "/";
-		}
 		return (serverRelative? contextPath : "") + url + ((urlQueryString.length > 1)? "?" + urlQueryString[1]: convertParmsToQueryString(useNamedParameters, parms, parmsName, routerList.get(urlQueryString[0])));
 	}
 
