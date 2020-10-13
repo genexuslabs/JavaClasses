@@ -85,6 +85,7 @@ public final class GXGridStateHandler {
 			SdtGridState_InputValuesItem value = values.nextElement();
 			if (value.getgxTv_SdtGridState_InputValuesItem_Name().equalsIgnoreCase(filter))
 				return idx;
+			idx++;
 		}
 		return -1;
 	}
