@@ -106,28 +106,30 @@ public class GXObjectUploadServices extends GXWebObjectStub
 				jObj.put("object_id", CommonUtil.UPLOADPREFIX + keyId);
 				context.writeText(jObj.toString());
 				context.getResponse().flushBuffer();
-				return;
 			}
 		}
 		catch (Throwable e)
 		{
 			context.sendResponseStatus(404, e.getMessage());
 		}
+		finally {
+			ModelContext.deleteThreadContext();
+		}
     }
 	
 	protected boolean IntegratedSecurityEnabled( )
 	{
-	return com.genexus.Application.getClientPreferences().getProperty("EnableIntegratedSecurity", "0").equals("1");
+		return com.genexus.Application.getClientPreferences().getProperty("EnableIntegratedSecurity", "0").equals("1");
 	}
 
 	protected int IntegratedSecurityLevel( )
 	{
-	return SECURITY_GXOBJECT;
+		return SECURITY_GXOBJECT;
 	}
 
 	protected String IntegratedSecurityPermissionPrefix( )
 	{
-	return "";
+		return "";
 	}   
 
 	private String getExtension(String contentType)
