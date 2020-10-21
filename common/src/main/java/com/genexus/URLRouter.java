@@ -38,11 +38,13 @@ public class URLRouter
 			contextPath += "/";
 		}
 
+
 		String lowURL = CommonUtil.lower(key);
 
-		if (!packageName.equals("") && !lowURL.startsWith(packageName))
+		if ((!packageName.equals("") && !lowURL.startsWith(packageName)) || (packageName.equals("") && !lowURL.equals(key)))
 		{
-			packageName += ".";
+			if (!packageName.equals(""))
+				packageName += ".";
 			try
 			{
 				SpecificImplementation.Application.getConfigurationClass().getClassLoader().loadClass(packageName + lowURL);
