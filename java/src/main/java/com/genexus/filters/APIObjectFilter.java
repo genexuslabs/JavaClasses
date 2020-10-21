@@ -25,7 +25,9 @@ import javax.servlet.http.HttpServletResponse;
 public class APIObjectFilter implements Filter {
     
     private ArrayList<String> appPath = new ArrayList<String>();
-
+    
+    public static final ILogger logger = LogManager.getLogger(APIObjectFilter.class);
+    
     FilterConfig config; 
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -69,15 +71,13 @@ public class APIObjectFilter implements Filter {
                     }
                     catch(IOException e)
                     {
-                        System.err.println(e.toString());
-                        e.printStackTrace();
+                        logger.error("Exception in API Filter: ", e);            	        
                     }
                 }        
             }        
         } 
         catch (Exception e) {
-            System.err.println(e.toString());
-	        e.printStackTrace();
+            logger.error("Exception in API Filter: ", e);            	        
         }
     }
 
