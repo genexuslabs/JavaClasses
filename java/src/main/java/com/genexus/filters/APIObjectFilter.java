@@ -20,13 +20,14 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class APIObjectFilter implements Filter {
     
     private ArrayList<String> appPath = new ArrayList<String>();
     
-    public static final ILogger logger = LogManager.getLogger(APIObjectFilter.class);
+    public static final Logger logger = LogManager.getLogger(APIObjectFilter.class);
     
     FilterConfig config; 
 
