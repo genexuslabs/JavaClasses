@@ -29,6 +29,10 @@ public abstract class DataStoreHelperBase
 	public static final int GX_MASKLOOPLOCK  = 16;
 	public static final int GX_MASKFOREIGNKEY = 32;
 	public static final int GX_ROLLBACKSAVEPOINT = CommonDataStoreHelperBase.GX_ROLLBACKSAVEPOINT;
+
+	static final String AND = " and ";
+	static final String WHERE = " WHERE";
+
 	/**
      * Returns the default connection provider. This method will be overriden if the
      * object is going to run inside a container that provides another way to get the
@@ -70,5 +74,15 @@ public abstract class DataStoreHelperBase
 	public void setParametersRT(int cursor, IFieldSetter stmt, Object[] buffers)
 	{
 	}
+
+	public void addWhere(StringBuffer currentWhere, String condition)
+	{
+		if (currentWhere.length() > 0)
+			currentWhere.append(" and ");
+		else
+			currentWhere.append(" WHERE");
+		currentWhere.append(condition);
+	}
+
 
 }
