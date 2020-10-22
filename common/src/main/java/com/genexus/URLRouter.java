@@ -38,7 +38,23 @@ public class URLRouter
 			contextPath += "/";
 		}
 
+
 		String lowURL = CommonUtil.lower(key);
+
+		if ((!packageName.equals("") && !lowURL.startsWith(packageName)) || (packageName.equals("") && !lowURL.equals(key)))
+		{
+			if (!packageName.equals(""))
+				packageName += ".";
+			try
+			{
+				SpecificImplementation.Application.getConfigurationClass().getClassLoader().loadClass(packageName + lowURL);
+				key = packageName + lowURL;
+			}
+			catch(java.lang.ClassNotFoundException e)
+			{
+			}
+		}
+
 		//If it is a File contextPath must be added
 		if (key.split("\\.").length == 2 && !(!packageName.equals("") && lowURL.startsWith(packageName)))
 		{
@@ -52,19 +68,6 @@ public class URLRouter
 		{
 			routerList = new Hashtable<>();
 			load();
-		}
-
-		if (!packageName.equals("") && !lowURL.startsWith(packageName))
-		{
-			packageName += ".";
-			try
-			{
-				SpecificImplementation.Application.getConfigurationClass().getClassLoader().loadClass(packageName + lowURL);
-				key = packageName + lowURL;
-			}
-			catch(java.lang.ClassNotFoundException e)
-			{
-			}
 		}
 
 		String [] urlQueryString = key.split("\\?");
