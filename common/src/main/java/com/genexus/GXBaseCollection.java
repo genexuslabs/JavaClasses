@@ -169,6 +169,21 @@ public class GXBaseCollection<T extends GXXMLSerializable> extends GXSimpleColle
         return struct;
     }
 
+	public void setStruct(Vector data)
+	{
+		try {
+			for (Object item : data) {
+				GXXMLSerializable obj = elementsType.getConstructor(new Class[]{}).newInstance(new Object[]{});
+				obj.getClass().getMethod("setStruct", item.getClass()).invoke(obj, item);
+				super.add((T) obj);
+			}
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+	}
+
 	@Override
 	public boolean fromxml(String xml, GXBaseCollection<SdtMessages_Message> messages, String collName)
 	{
