@@ -75,13 +75,13 @@ public abstract class DataStoreHelperBase
 	{
 	}
 
-	public StringBuffer addWhere(StringBuffer currentWhere, String condition)
+	public void addWhere(StringBuffer currentWhere, String condition)
 	{
 		if (currentWhere.length() > 0)
 			currentWhere.append(AND);
 		else
 			currentWhere.append(WHERE);
-		return currentWhere.append(condition);
+		currentWhere.append(condition);
 	}
 
 
