@@ -31,7 +31,7 @@ public abstract class DataStoreHelperBase
 	public static final int GX_ROLLBACKSAVEPOINT = CommonDataStoreHelperBase.GX_ROLLBACKSAVEPOINT;
 
 	static final String AND = " and ";
-	static final String WHERE = " WHERE";
+	static final String WHERE = " WHERE ";
 
 	/**
      * Returns the default connection provider. This method will be overriden if the
@@ -75,13 +75,13 @@ public abstract class DataStoreHelperBase
 	{
 	}
 
-	public void addWhere(StringBuffer currentWhere, String condition)
+	public StringBuffer addWhere(StringBuffer currentWhere, String condition)
 	{
 		if (currentWhere.length() > 0)
-			currentWhere.append(" and ");
+			currentWhere.append(AND);
 		else
-			currentWhere.append(" WHERE");
-		currentWhere.append(condition);
+			currentWhere.append(WHERE);
+		return currentWhere.append(condition);
 	}
 
 
