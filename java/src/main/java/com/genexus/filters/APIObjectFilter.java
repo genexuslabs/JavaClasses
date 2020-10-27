@@ -63,7 +63,7 @@ public class APIObjectFilter implements Filter {
             if (paramValue != null && !paramValue.isEmpty())
             {
                 logger.info("API basepath parameter: " +  paramValue) ;
-                if (paramValue == "*")
+                if (paramValue.equals("*"))
                 {
                     String privPath = filterConfig.getServletContext().getRealPath("/");
                     if (privPath != null &&  !privPath.isEmpty())
