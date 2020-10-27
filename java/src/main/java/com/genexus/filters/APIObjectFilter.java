@@ -1,6 +1,7 @@
 package com.genexus.filters;
 
 import com.genexus.ApplicationContext;
+import com.genexus.diagnostics.Log;
 import json.org.json.*;
 import java.io.IOException;
 import java.io.File;
@@ -16,6 +17,7 @@ import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -60,6 +62,15 @@ public class APIObjectFilter implements Filter {
             String paramValue = config.getInitParameter("BasePath");
             if (paramValue != null && !paramValue.isEmpty())
             {
+                logger.info("API basepath parameter: " +  paramValue) ;
+                if (paramValue == "*")
+                {
+                    String privPath = filterConfig.getServletContext().getRealPath("/");
+                    if (privPath != null &&  !privPath.isEmpty())
+                        paramValue  = privPath + "private";
+                                            
+                }
+                logger.info("API metadata path: " +  paramValue) ;            
                 Stream<Path> walk = Files.walk(Paths.get(paramValue + File.separator)); 
                 List<String> result = walk.map(x -> x.toString()).filter(f -> f.endsWith(".grp.json")).collect(Collectors.toList());
                 for (String temp : result)
