@@ -136,11 +136,8 @@ public class DataStoreProvider extends DataStoreProviderBase implements
                                 }
                         }while (context.globals.Gx_eop == DefaultExceptionErrorHandler.ERROPT_RETRY);
 
-                        if (cursor.getBatchSize() == 0){
-
-                            cursor.setBatchSize(batchSize);
-                            cursor.onCommitEvent(instance, method);
-                        }
+						cursor.setBatchSize(batchSize);
+						cursor.onCommitEvent(instance, method);
                         cursor.notInUse();
                         try {
                             Application.getConnectionManager(context).getConnection(
