@@ -1,7 +1,5 @@
 package com.genexus.filters;
-
 import com.genexus.ApplicationContext;
-import com.genexus.diagnostics.Log;
 import json.org.json.*;
 import java.io.IOException;
 import java.io.File;
