@@ -492,9 +492,7 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 				}
 				if ((result != null) && (cursor.next(dataSource))) {
 					if (cursor.getStatus() == 0) {
-						synchronized (lock) {
 							helper.getResults(cursorIdx, result, cursor.getBuffers());
-						}
 						if (cacheValue != null && cacheValue[cursorIdx] != null) { // Si
 																					// estoy
 																					// cacheando
@@ -544,9 +542,7 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 				context.globals.Gx_eop = DefaultExceptionErrorHandler.ERROPT_DEFAULT;
 			}
 			try {
-				synchronized (lock) {
 					cursor.close();
-				}
 				if (cursor.isForFirst() && cursor.status != Cursor.EOF
 						&& cacheValue != null && cacheValue[cursorIdx] != null) { // Si
 																					// estoy
