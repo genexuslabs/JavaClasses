@@ -13,7 +13,7 @@ import com.genexus.CommonUtil;
 /**
 * Esta clase la usa un cliente que quiere hacer un get/post y recibir el resultado
 */
-public class HttpClient
+public class HttpClient implements IHttpClient
 {
 	private final int BASIC  = 0;
 	private final int DIGEST = 1;
