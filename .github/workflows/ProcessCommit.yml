@@ -1,0 +1,34 @@
+name: Process commit
+on: 
+  workflow_dispatch:
+  push:
+    branches:
+      - 'master'
+      - 'beta'
+      - 'release-*'
+    ignore-paths:
+      - '*.md'
+
+jobs:
+  dispatchWorkflow:
+    name: Dispatch build
+    runs-on: [ubuntu-latest]
+
+    steps:
+    - name: Dispatch Workflow
+      run: >
+        curl -X POST
+        -H 'Accept: application/vnd.github.v3+json' 
+        -H 'Authorization: token ${{ secrets.SECURE_TOKEN }}' 
+        --silent --show-error --fail 
+        ${{ secrets.BUILD_WORKFLOW_DISPATCH }} 
+        -d '{
+          "ref":"main",
+          "inputs": { 
+            "repository": "${{ github.repository }}",
+            "ref": "${{ github.ref }}",
+            "sha": "${{ github.sha }}",
+            "build-file": "pom.xml",
+            "version-script": ".github/updatePOMVersion.sh"
+          }
+        }'
