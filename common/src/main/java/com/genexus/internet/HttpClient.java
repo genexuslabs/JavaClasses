@@ -9,15 +9,16 @@ import java.util.Hashtable;
 import java.util.Enumeration;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.CommonUtil;
+import com.genexus.internet.IHttpClient;
 
 /**
 * Esta clase la usa un cliente que quiere hacer un get/post y recibir el resultado
 */
-public class HttpClient implements IHttpClient
+public class HttpClient
 {
-	private final int BASIC  = 0;
-	private final int DIGEST = 1;
-	private final int NTLM   = 2;
+	private final int BASIC  = 0;	// AGREGADO EN GXHttpClient
+	private final int DIGEST = 1;	// AGREGADO EN GXHttpClient
+	private final int NTLM   = 2;	// AGREGADO EN GXHttpClient
 
 	public final int ERROR_IO = 1;
 
@@ -32,12 +33,12 @@ public class HttpClient implements IHttpClient
 	private int prevURLsecure;	
 	private boolean isURL = false;
 	private int timeout;
-	private int errCode;
-	private String errDescription = "";
-	private String proxyHost = "";// = HTTPConnection.getDefaultProxyHost() == null ? "" : HTTPConnection.getDefaultProxyHost();
-	private int proxyPort = 80;// = HTTPConnection.getDefaultProxyPort() == 0 ? 80 : HTTPConnection.getDefaultProxyPort();
+	private int errCode;	// AGREGADO EN GXHttpClient
+	private String errDescription = "";		// AGREGADO EN GXHttpClient
+	private String proxyHost = "";// = HTTPConnection.getDefaultProxyHost() == null ? "" : HTTPConnection.getDefaultProxyHost();   // AGREGADO EN GXHttpClient
+	private int proxyPort = 80;// = HTTPConnection.getDefaultProxyPort() == 0 ? 80 : HTTPConnection.getDefaultProxyPort();		// AGREGADO EN GXHttpClient
 	private boolean tcpNoDelay = false;
-	private boolean includeCookies = true;
+	private boolean includeCookies = true;	// AGREGADO EN GXHttpClient
 
 	private HTTPConnection con = null;
 	private HTTPResponse res;
@@ -74,10 +75,14 @@ public class HttpClient implements IHttpClient
 	}
 	public static boolean issuedExternalHttpClientWarning = false;
 	public boolean usingExternalHttpClient = false;
+
+	private IHttpClient session;
 	
 	public HttpClient()
 	{
+		session = SpecificImplementation.HttpClient.initHttpClientImpl();	// Se crea la instancia dependiendo si existe o no la implementacion de las librerias de Java
 		SpecificImplementation.HttpClient.initializeHttpClient(this);
+
 	}
 
 	private void resetState()
@@ -87,6 +92,7 @@ public class HttpClient implements IHttpClient
 		contentToSend.removeAllElements();
 		multipartTemplate = new MultipartTemplate();
 		isMultipart = false;
+		System.out.println();
 	}
 
 	private void resetErrors()
@@ -97,59 +103,56 @@ public class HttpClient implements IHttpClient
 
 	public byte getBasic()
 	{
-		return BASIC;
+		return session.getBasic();
 	}
 
 	public byte getDigest()
 	{
-		return DIGEST;
+		return session.getDigest();
 	}
 
 	public byte getNtlm()
 	{
-		return NTLM;
+		return session.getNtlm();
 	}
 
 	public short getErrCode()
 	{
-		return (short) errCode;
+		return session.getErrCode();
 	}
 
 	public String getErrDescription()
 	{
-		return errDescription;
+		return session.getErrDescription();
 	}
 
-	boolean proxyInfoChanged = false;
 	public void setProxyServerHost(String host)	
 	{
-		this.proxyHost = host;
-		proxyInfoChanged = true;
+		session.setProxyServerHost(host);
 	}
 
 	public String getProxyServerHost()
 	{
-		return proxyHost;
+		return session.getProxyServerHost();
 	}
 
 	public void setProxyServerPort(long port)
 	{
-		this.proxyPort = (int) port;
-		proxyInfoChanged = true;
+		session.setProxyServerPort(port);
 	}
 
 	public short getProxyServerPort()
 	{
-		return (short) proxyPort;
+		return session.getProxyServerPort();
 	}
 	public void setIncludeCookies(boolean value)
 	{
-		this.includeCookies = value;
+		session.setIncludeCookies(value);
 	}
 
 	public boolean getIncludeCookies()
 	{
-		return includeCookies;
+		return session.getIncludeCookies();
 	}
 
 	public void setUrl(String url)
