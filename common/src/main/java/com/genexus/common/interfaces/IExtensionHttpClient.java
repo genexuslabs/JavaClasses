@@ -1,5 +1,8 @@
 package com.genexus.common.interfaces;
 
+import com.genexus.internet.HttpClient;
+import com.genexus.internet.IHttpClient;
+
 import javax.net.ssl.SSLSocket;
 import java.util.Hashtable;
 
@@ -16,5 +19,7 @@ public interface IExtensionHttpClient {
 	void initializeHttpClient(Object client);
 
 	void prepareSSLSocket(SSLSocket sock);
+
+	IHttpClient initHttpClientImpl();
 
 }

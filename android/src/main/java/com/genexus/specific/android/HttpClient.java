@@ -6,6 +6,7 @@ import java.util.Hashtable;
 
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.IExtensionHttpClient;
+import com.genexus.internet.HttpClientManual;
 import com.genexus.util.GXFile;
 
 import HTTPClient.HTTPConnection;
@@ -31,6 +32,11 @@ public class HttpClient implements IExtensionHttpClient {
 	@Override
 	public String beforeAddFile(String fileName) {
 		return GXFile.convertToLocalFullPath(fileName);
+	}
+
+	@Override
+	public com.genexus.internet.IHttpClient initHttpClientImpl() {
+		return new HttpClientManual();
 	}
 
 	@Override
