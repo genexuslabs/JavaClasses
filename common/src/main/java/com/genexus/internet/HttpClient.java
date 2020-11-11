@@ -22,46 +22,46 @@ public class HttpClient
 
 	public final int ERROR_IO = 1;
 
-	private String host;
-	private String WSDLURL;
-	private String baseURL;
-	private int port = 80;
-	private int secure = 0;
-	private String prevURLhost;
-	private String prevURLbaseURL;
-	private int prevURLport;
-	private int prevURLsecure;	
-	private boolean isURL = false;
-	private int timeout;
+	private String host;	// AGREGADO EN GXHttpClient
+	private String WSDLURL;		// AGREGADO EN GXHttpClient
+	private String baseURL;		// AGREGADO EN GXHttpClient
+	private int port = 80;		// AGREGADO EN GXHttpClient
+	private int secure = 0;		// AGREGADO EN GXHttpClient
+	private String prevURLhost;		// AGREGADO EN HttpClientManual
+	private String prevURLbaseURL;	// AGREGADO EN HttpClientManual
+	private int prevURLport;	// AGREGADO EN HttpClientManual
+	private int prevURLsecure;	// AGREGADO EN HttpClientManual
+	private boolean isURL = false;	// AGREGADO EN HttpClientManual
+	private int timeout;		// AGREGADO EN GXHttpClient
 	private int errCode;	// AGREGADO EN GXHttpClient
 	private String errDescription = "";		// AGREGADO EN GXHttpClient
 	private String proxyHost = "";// = HTTPConnection.getDefaultProxyHost() == null ? "" : HTTPConnection.getDefaultProxyHost();   // AGREGADO EN GXHttpClient
 	private int proxyPort = 80;// = HTTPConnection.getDefaultProxyPort() == 0 ? 80 : HTTPConnection.getDefaultProxyPort();		// AGREGADO EN GXHttpClient
-	private boolean tcpNoDelay = false;
+	private boolean tcpNoDelay = false;		// AGREGADO EN GXHttpClient
 	private boolean includeCookies = true;	// AGREGADO EN GXHttpClient
 
 	private HTTPConnection con = null;
-	private HTTPResponse res;
+	private HTTPResponse res;	// AGREGADO EN HttpClientManual
 
 	private Hashtable<String, String> headersToSend = new Hashtable<>();
-	private Hashtable variablesToSend = new Hashtable();
+	private Hashtable variablesToSend = new Hashtable();	//AGREGADO EN GXHttpClient
 
-	private Vector<HttpClientPrincipal> basicAuthorization = new Vector<>();
-	private Vector<HttpClientPrincipal> digestAuthorization = new Vector<>();
-	private Vector<HttpClientPrincipal> NTLMAuthorization = new Vector<>();
+	private Vector<HttpClientPrincipal> basicAuthorization = new Vector<>();	// AGREGADO EN HttpClientManual
+	private Vector<HttpClientPrincipal> digestAuthorization = new Vector<>();	// AGREGADO EN HttpClientManual
+	private Vector<HttpClientPrincipal> NTLMAuthorization = new Vector<>();	// AGREGADO EN HttpClientManual
 	
-	private Vector<HttpClientPrincipal> basicProxyAuthorization = new Vector<>();
-	private Vector<HttpClientPrincipal> digestProxyAuthorization = new Vector<>();
-	private Vector<HttpClientPrincipal> NTLMProxyAuthorization = new Vector<>();
+	private Vector<HttpClientPrincipal> basicProxyAuthorization = new Vector<>();	// AGREGADO EN HttpClientManual
+	private Vector<HttpClientPrincipal> digestProxyAuthorization = new Vector<>();	// AGREGADO EN HttpClientManual
+	private Vector<HttpClientPrincipal> NTLMProxyAuthorization = new Vector<>();	// AGREGADO EN HttpClientManual
 
-	private MultipartTemplate multipartTemplate =new MultipartTemplate();
-	private boolean isMultipart = false;
+	private MultipartTemplate multipartTemplate =new MultipartTemplate();	// AGREGADO EN HttpClientManual
+	private boolean isMultipart = false;	// AGREGADO EN HttpClientManual
 
-	private Vector contentToSend = new Vector<>();
-    private boolean hostChanged = true; // Indica si el próximo request debe ser realizado en una nueva HTTPConnection (si cambio el host)
-    private boolean authorizationChanged = false; // Indica si se agregó alguna autorización
+	private Vector contentToSend = new Vector<>();		// AGREGADO EN GXHttpClient
+    private boolean hostChanged = true; // Indica si el próximo request debe ser realizado en una nueva HTTPConnection (si cambio el host)  // AGREGADO EN GXHttpClient
+    private boolean authorizationChanged = false; // Indica si se agregó alguna autorización		// AGREGADO EN HttpClientManual
 	
-	private boolean authorizationProxyChanged = false; // Indica si se agregó alguna autorización
+	private boolean authorizationProxyChanged = false; // Indica si se agregó alguna autorización	// AGREGADO EN HttpClientManual
 
 	static
 	{
@@ -73,16 +73,14 @@ public class HttpClient
             if(os.endsWith("95") || os.endsWith("98") || os.endsWith("ME"))HTTPConnection.setPipelining(false);
         }             
 	}
-	public static boolean issuedExternalHttpClientWarning = false;
-	public boolean usingExternalHttpClient = false;
+	public static boolean issuedExternalHttpClientWarning = false;	// AGREGADO EN GXHttpClient
+	public boolean usingExternalHttpClient = false;		// AGREGADO EN GXHttpClient
 
 	private IHttpClient session;
 	
 	public HttpClient()
 	{
 		session = SpecificImplementation.HttpClient.initHttpClientImpl();	// Se crea la instancia dependiendo si existe o no la implementacion de las librerias de Java
-		SpecificImplementation.HttpClient.initializeHttpClient(this);
-
 	}
 
 	private void resetState()
@@ -162,623 +160,187 @@ public class HttpClient
 	
 	public void setURL(String stringURL)
 	{
-		try
-		{
-		    URI url = new URI(stringURL);
-            setHost(url.getHost());
-            setPort(url.getPort());
-            setBaseURL(url.getPath());
-			setSecure(url.getScheme().equalsIgnoreCase("https") ? 1 : 0);
-		}
-		catch (ParseException e)
-		{
-			System.err.println("E " + e + " " + stringURL);
-			e.printStackTrace();			
-		}
+		session.setURL(stringURL);
 	}
 	
 	public void setHost(String host)
 	{
-        if(this.host == null || !this.host.equalsIgnoreCase(host))
-        { // Si el host ha cambiado, dejo marcado para crear una nueva instancia de HTTPConnection
-            this.host = host;
-            hostChanged = true;
-            
-            if (SpecificImplementation.HttpClient != null)
-            	SpecificImplementation.HttpClient.addSDHeaders(this.host, this.baseURL, this.headersToSend);
-        }
+    	session.setHost(host);
 	}
 
 	public String getHost()
 	{
-		return host;
+		return session.getHost();
 	}
 
 	public void setWSDLURL(String WSDLURL)
 	{
-		this.WSDLURL = WSDLURL;
+		session.setWSDLURL(WSDLURL);
 	}
 
 	public void setBaseURL(String baseURL)
 	{
-		this.baseURL = baseURL;
-        if (SpecificImplementation.HttpClient != null)
-        	SpecificImplementation.HttpClient.addSDHeaders(this.host, this.baseURL, this.headersToSend);
+		session.setBaseURL(baseURL);
 	}
 
 	public String getWSDLURL()
 	{
-		return WSDLURL;
+		return session.getWSDLURL();
 	}
 
 	public String getBaseURL()
 	{
-		return baseURL;
+		return session.getBaseURL();
 	}
 
 
 	public void setPort(int port)
 	{
-        if(this.port != port)
-        {
-            hostChanged = true; // Indico que cambio el Host, pues cambió el puerto
-            this.port = port;
-        }
+        session.setPort(port);
 	}
 
 	public int getPort()
 	{
-		return port;
+		return session.getPort();
 	}
 
 	public byte getSecure()
 	{
-		return (byte) secure;
+		return session.getSecure();
 	}
 
 	public void setSecure(int secure)
 	{
-        if(this.secure != secure)
-        {
-            hostChanged = true; // Indico que cambio el Host, pues cambió el protocolo
-            this.secure = secure;
-        }
+        session.setSecure(secure);
 	}
 
 	public void setTimeout(int timeout)
 	{
-		this.timeout = timeout;
+		session.setTimeout(timeout);
 	}
 
 	public int getTimeout()
 	{
-		return timeout;
+		return session.getTimeout();
 	}
 	
 	public void setTcpNoDelay(boolean tcpNoDelay)
 	{
-		this.tcpNoDelay = tcpNoDelay;
+		session.setTcpNoDelay(tcpNoDelay);
 	}
 
 	public void addAuthentication(int type, String realm, String name, String value)
 	{
-        authorizationChanged = true;
-		switch (type)
-		{
-			case BASIC:
-				basicAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
-				break;
-			case DIGEST :
-				digestAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
-				break;
-			case NTLM :
-				NTLMAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
-				break;
-		}
+        session.addAuthentication(type,realm,name,value);
 	}
 	
 	public void addProxyAuthentication(int type, String realm, String name, String value)
 	{
-        authorizationProxyChanged = true;
-		switch (type)
-		{
-			case BASIC:
-				basicProxyAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
-				break;
-			case DIGEST :
-				digestProxyAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
-				break;
-			case NTLM :
-				NTLMProxyAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
-				break;
-		}
+       session.addProxyAuthentication(type,realm,name,value);
 	}
+
 	public void addCertificate(String fileName)
 	{
+		session.addCertificate(fileName);
 	}
 	
-	protected String contentEncoding = null;
+	protected String contentEncoding = null;	// AGREGADO EN GXHttpClient
 
 	public void addHeader(String name, String value)
 	{
-		if(name.equalsIgnoreCase("Content-Type"))
-		{
-			try
-			{
-				int index = value.toLowerCase().lastIndexOf("charset");
-				int equalsIndex = value.indexOf('=', index) + 1;
-				String charset = value.substring(equalsIndex).trim();
-				int lastIndex = charset.indexOf(' ');
-				if(lastIndex != -1)
-				{
-					charset = charset.substring(0, lastIndex);					
-				}
-				charset = charset.replace('\"', ' ').replace('\'', ' ').trim();
-				
-				contentEncoding = SpecificImplementation.HttpClient.normalizeEncodingName(charset, "UTF-8");
-			}catch(Exception e)
-			{
-			}
-
-			if (value.toLowerCase().startsWith("multipart/form-data")){
-				isMultipart = true;
-				value = multipartTemplate.contentType;
-			}
-		}
-		headersToSend.put(name, value);
+		session.addHeader(name,value);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void addVariable(String name, String value)
 	{
-		variablesToSend.put(name, value);
+		session.addVariable(name,value);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void addBytes(byte[] value)
 	{
-		contentToSend.addElement(value);
+		session.addBytes(value);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void addString(String value)
 	{
-		contentToSend.addElement(value);
+		session.addString(value);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void addFile(String fileName)
 	{
-		fileName = SpecificImplementation.HttpClient.beforeAddFile(fileName);
-		contentToSend.addElement(new File(fileName));
+		session.addFile(fileName);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void addFile(String fileName, String varName)
 	{
-		fileName = SpecificImplementation.HttpClient.beforeAddFile(fileName);
-		contentToSend.addElement(new FormFile(fileName, varName));
+		session.addFile(fileName,varName);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void addStringWriter(StringWriter writer, StringBuffer encoding)
 	{
-		contentToSend.addElement(new Object[]{writer, encoding});
+		session.addStringWriter(writer,encoding);
 	}
 
 	public void execute(String method, String url)
 	{
-		resetErrors();
-		
-		URI uri;
-		try
-		{
-		    uri = new URI(url);
-		    prevURLhost = this.getHost();
-			prevURLbaseURL = this.getBaseURL();
-			prevURLport = this.getPort();
-			prevURLsecure = this.getSecure();
-			isURL = true;
-		    setURL(url);
-
-		    StringBuilder relativeUri = new StringBuilder();
-			if (uri.getPath() != null) {
-				relativeUri.append(uri.getPath());
-			}
-			if (uri.getQueryString() != null) {
-				relativeUri.append('?').append(uri.getQueryString());
-			}
-			if (uri.getFragment() != null) {
-				relativeUri.append('#').append(uri.getFragment());
-			}
-		    url = relativeUri.toString();
-		}
-		catch (ParseException e)
-		{
-			//No es una URL
-		}		
-
-		try
-		{
-            if(hostChanged) // Si el host cambio, creo una nueva instancia de HTTPConnection
-            {
-				if (con != null)
-				{
-					con.stop();
-				}
-            		if (secure == 1 && port == 80)
-            		{
-            			port = 443;
-            		}
-                con = new HTTPConnection(secure == 0?"http":"https", host, port);
-                if (secure != 0)
-                    con.setSSLConnection(SSLManager.getSSLConnection());
-				
-				con.setTcpNoDelay(tcpNoDelay);
-				con.setIncludeCookies(includeCookies);
-            }
-
-			con.setTimeout(timeout * 1000); // Este puede variar sin cambiar de instancia
-			if(proxyInfoChanged)
-			{ 
-				con.setCurrentProxy(proxyHost, proxyPort); // Este puede variar sin cambiar de instancia
-			}
-
-            if(hostChanged || authorizationChanged)
-            { // Si el host cambio o si se agrego alguna credencial
-                for (Enumeration en = basicAuthorization.elements(); en.hasMoreElements(); )
-                {
-                    HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-                    con.addBasicAuthorization(p.realm, p.user, p.password);
-                }
-
-                for (Enumeration en = digestAuthorization.elements(); en.hasMoreElements(); )
-                {
-                    HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-                    con.addDigestAuthorization(p.realm, p.user, p.password);
-                }
-
-                for (Enumeration en = NTLMAuthorization.elements(); en.hasMoreElements(); )
-                {
-                    HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-                    //p.addBasicAuthorization(p.realm, p.user, p.password);
-                }
-            }
-            
-            hostChanged = authorizationChanged = false; // Desmarco las flags
-			
-            if(proxyInfoChanged || authorizationProxyChanged)
-            { // Si el poxyHost cambio o si se agrego alguna credencial para el proxy
-                for (Enumeration en = basicProxyAuthorization.elements(); en.hasMoreElements(); )
-                {
-                    HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-                    con.addBasicProxyAuthorization(p.realm, p.user, p.password);
-                }
-
-                for (Enumeration en = digestProxyAuthorization.elements(); en.hasMoreElements(); )
-                {
-                    HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-                    con.addDigestProxyAuthorization(p.realm, p.user, p.password);
-                }
-
-                for (Enumeration en = NTLMProxyAuthorization.elements(); en.hasMoreElements(); )
-                {
-                    HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-                    //p.addBasicAuthorization(p.realm, p.user, p.password);
-                }
-            }
-            
-            proxyInfoChanged = authorizationProxyChanged = false; // Desmarco las flags			
-
-			if  (!url.startsWith("/"))
-				url = baseURL + url;
-
-			if	(method.equalsIgnoreCase("GET"))
-			{
-				if (contentToSend.size() > 0)
-					res = con.Get(url, "", hashtableToNVPair(headersToSend), getData());
-				else
-					res = con.Get(url, "", hashtableToNVPair(headersToSend));
-			}
-			else if (method.equalsIgnoreCase("POST"))
-			{
-				if	(!isMultipart && variablesToSend.size() > 0)
-				{
-					res = con.Post(url, hashtableToNVPair(variablesToSend), hashtableToNVPair(headersToSend));
-				}
-				else
-				{
-					res = con.Post(url, getData(), hashtableToNVPair(headersToSend));
-				}
-			}
-			else if (method.equalsIgnoreCase("PUT"))
-			{
-				res = con.Put(url, getData(), hashtableToNVPair(headersToSend));
-			}
-			else if (method.equalsIgnoreCase("DELETE"))
-			{
-				if (variablesToSend.size() > 0 || contentToSend.size() > 0)
-				{
-					res = con.Delete(url, getData(), hashtableToNVPair(headersToSend));
-				}
-				else
-				{				
-					res = con.Delete(url, hashtableToNVPair(headersToSend));
-				}
-			}			
-			else 
-			{
-				res = con.ExtensionMethod(method, url, getData(), hashtableToNVPair(headersToSend));
-			}
-		}
-		catch (ProtocolNotSuppException e)
-		{
-			System.err.println(e);
-		}
-		catch (IOException e)
-		{
-			errCode = ERROR_IO;
-			errDescription = e.getMessage();
-		}
-		catch (ModuleException e)
-		{
-			errCode = ERROR_IO;
-			errDescription = e.getMessage();
-		}
-		finally
-		{
-			getStatusCode();
-			if (isURL)
-			{
-				this.setHost(prevURLhost);
-				this.setBaseURL(prevURLbaseURL);
-				this.setPort(prevURLport);
-		 		this.setSecure(prevURLsecure);
-		 		this.isURL = false;
-			}						
-		}
-
-		resetState();
+		session.execute(method,url);
 	}
 
 	public int getStatusCode()
 	{
-		if	(res == null)
-		{
-			return 0;
-		}
-
-		try
-		{
-			return res.getStatusCode();
-		}
-		catch (IOException e)
-		{
-			errCode = ERROR_IO;
-			errDescription = e.getMessage();
-			res = null;
-		}
-		catch (ModuleException e)
-		{
-			errCode = ERROR_IO;
-			errDescription = e.getMessage();
-		}
-		
-		return 0;
+		return session.getStatusCode();
 	}
 
 	public String getReasonLine()
 	{
-		if	(res == null)
-		{
-			return "";
-		}
-
-		try
-		{
-			return res.getReasonLine();
-		}
-		catch (IOException e)
-		{
-			errCode = ERROR_IO;
-			errDescription = e.getMessage();
-			return "";
-		}
-		catch (ModuleException e)
-		{
-			errCode = ERROR_IO;
-			errDescription = e.getMessage();
-			return "";
-		}
+		return session.getReasonLine();
 	}
 
 	public void getHeader(String name, long[] value) 
 	{
-		if	(res == null)
-		{
-			return;
-		}
-
-		try
-		{
-			value[0] = res.getHeaderAsInt(name);
-		}
-		catch (IOException e)
-		{
-			errCode = ERROR_IO;
-			errDescription = e.getMessage();
-		}
-		catch (ModuleException e)
-		{
-			errCode = ERROR_IO;
-			errDescription = e.getMessage();
-		}
+		session.getHeader(name,value);
 	}
 	
 	public String getHeader(String name)
 	{
-		if	(res == null)
-		{
-			return "";
-		}
-
-		try
-		{
-			return res.getHeader(name);
-		}
-		catch (IOException e)
-		{
-			errCode = ERROR_IO;
-			errDescription = e.getMessage();
-		}
-		catch (ModuleException e)
-		{
-			errCode = ERROR_IO;
-			errDescription = e.getMessage();
-		}
-
-		return "";
+		return session.getHeader(name);
 	}
 
 
 	public void getHeader(String name, String[] value)
 	{
-		if	(res == null)
-		{
-			return;
-		}
-
-		try
-		{
-			value[0] = res.getHeader(name);
-		}
-		catch (IOException e)
-		{
-			errCode = ERROR_IO;
-			errDescription = e.getMessage();
-		}
-		catch (ModuleException e)
-		{
-			errCode = ERROR_IO;
-			errDescription = e.getMessage();
-		}
+		session.getHeader(name,value);
 	}
 
 	public void getHeader(String name, java.util.Date[] value)
 	{
-		if	(res == null)
-		{
-			return;
-		}
-
-		try
-		{
-			value[0] = res.getHeaderAsDate(name);
-		}
-		catch (IOException e)
-		{
-			errCode = ERROR_IO;
-			errDescription = e.getMessage();
-		}
-		catch (ModuleException e)
-		{
-			errCode = ERROR_IO;
-			errDescription = e.getMessage();
-		}
+		session.getHeader(name,value);
 	}
 	
 	public void getHeader(String name, double[] value)
 	{
-		if	(res == null)
-		{
-			return;
-		}
-
-		try
-		{
-			value[0] = CommonUtil.val(res.getHeader(name));
-		}
-		catch (IOException e)
-		{
-			errCode = ERROR_IO;
-			errDescription = e.getMessage();
-		}
-		catch (ModuleException e)
-		{
-			errCode = ERROR_IO;
-			errDescription = e.getMessage();
-		}
+		session.getHeader(name,value);
 	}
 
 	public InputStream getInputStream() throws IOException
 	{
-		try
-		{
-			return res.getInputStream();
-		}
-		catch (ModuleException e)
-		{
-			throw new IOException("Module/ " + e.getMessage());
-		}
-		catch (Exception e)
-		{
-			throw new IOException("Module/ " + e.getMessage());
-		}
-
+		return session.getInputStream();
 	}
 
 	public String getString()
 	{	
-		if	(res == null)
-		{
-			return "";
-		}
-
-		try
-		{
-			return res.getText();
-			//return new String(PrivateUtilities.readToByteArray(res.getInputStream()));
-		}
-		catch (ModuleException e)
-		{
-			errCode = ERROR_IO;
-			errDescription = e.getMessage();
-		}
-		catch (IOException e)
-		{
-			errCode = ERROR_IO;
-			errDescription = e.getMessage();
-		}
-		catch (Exception e)
-		{
-			errCode = ERROR_IO;
-			errDescription = e.getMessage();
-		}		
-
-		return "";
+		return session.getString();
 	}
 
 	public void toFile(String fileName)
 	{
-		if	(res == null)
-		{
-			return;
-		}
-
-		try
-		{
-			CommonUtil.InputStreamToFile(res.getInputStream(), fileName);
-		}
-		catch (IOException e)
-		{
-			errCode = ERROR_IO;
-			errDescription = e.getMessage();
-		}
-		catch (ModuleException e)
-		{
-			errCode = ERROR_IO;
-			errDescription = e.getMessage();
-		}
+		session.toFile(fileName);
 	}
 
 	private NVPair[] getHeaders()
@@ -953,7 +515,7 @@ public class HttpClient
 	{ // for this request always create a new HTTPConnection
 		try
 		{
-		    URI url = new URI(stringURL);
+			URI url = new URI(stringURL);
 			return new HTTPConnection(url.getScheme(), url.getHost(), url.getPort()).Get(url.getPathAndQuery()).getInputStream();
 		}
 		catch (ParseException e)
@@ -968,13 +530,10 @@ public class HttpClient
 	
 	public void cleanup()
 	{
-		if (con != null)
-		{
-			con.stop();
-		}
+		session.cleanup();
 	}
 
-	class HttpClientPrincipal
+	class HttpClientPrincipal		// AGREGADO EN HttpClientManual
 	{
 		String realm;
 		String user;
@@ -987,7 +546,7 @@ public class HttpClient
 			this.password = password;
 		}
 	}
-	class FormFile{
+	class FormFile{		// AGREGADO EN GXHttpClient
 		String file;
 		String name;
 		FormFile(String file, String name){
@@ -995,7 +554,7 @@ public class HttpClient
 			this.name = name;
 		}
 	}
-	class MultipartTemplate
+	class MultipartTemplate		// AGREGADO EN HttpClientManual
 	{
 		public String boundary;
 		public String formdataTemplate;
@@ -1003,7 +562,7 @@ public class HttpClient
 		public byte[] endBoundaryBytes;
 		public String contentType;
 
-		public MultipartTemplate()
+		public MultipartTemplate()		// AGREGADO EN HttpClientManual
 		{
 			boundary = "----------------------------" + CommonUtil.now(false,false).getTime();
 			contentType = "multipart/form-data; boundary=" + boundary;
