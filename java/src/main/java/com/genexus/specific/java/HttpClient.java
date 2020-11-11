@@ -4,6 +4,7 @@ import java.util.Hashtable;
 
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.IExtensionHttpClient;
+import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.internet.HttpClientJavaLib;
 import com.genexus.internet.HttpClientManual;
 
@@ -41,12 +42,15 @@ public class HttpClient implements IExtensionHttpClient {
 	@Override
 	public com.genexus.internet.IHttpClient initHttpClientImpl() {
 		try {
-
-			return new HttpClientJavaLib();
+			com.genexus.internet.IHttpClient client = new HttpClientJavaLib();
+			SpecificImplementation.HttpClient.initializeHttpClient(client);
+			return client;
 
 		} catch (Throwable e) {
 
-			return new HttpClientManual();
+			com.genexus.internet.IHttpClient client = new HttpClientManual();
+			SpecificImplementation.HttpClient.initializeHttpClient(client);
+			return client;
 
 		}
 	}

@@ -14,7 +14,6 @@ public interface IHttpClient {
 	public short getProxyServerPort();
 	public void setIncludeCookies(boolean value);
 	public boolean getIncludeCookies();
-	public void setUrl(String url);
 	public void setURL(String stringURL);
 	public void setHost(String host);
 	public String getHost();
