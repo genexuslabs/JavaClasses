@@ -10,6 +10,7 @@ on:
       - 'master'
       - 'beta'
       - 'release-*'
+      - 'beta-corona'
 
 jobs:
   build:

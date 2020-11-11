@@ -5,6 +5,7 @@ on:
     branches:
       - 'master'
       - 'beta'
+      - 'beta-corona'
       - 'release-*'
     ignore-paths:
       - '*.md'
