@@ -39,17 +39,14 @@ jobs:
       run: |
         if ! [[ "$GIT_REF" =~ 'release-[0-9]?\.[0-9]?$' ]]; then
           CommitNumber=$(git rev-list --count HEAD)
-          NexusURL=${{ secrets.NEXUS_MAVEN_SNAPSHOTS }}
         else
           CommitNumber=$(git rev-list --count origin/master..)
-          NexusURL=${{ secrets.NEXUS_MAVEN_RELEASES }}
         fi
 
         LastCommitter=$(git log -1 --pretty=format:%an)
         CommitMessage=$(git log -1 --pretty=%B)
 
         echo "::set-output name=IsPrerelease::$IsPrerelease"
-        echo "::set-output name=NexusURL::$NexusURL"
         echo "::set-output name=CommitNumber::$CommitNumber"
         echo "::set-output name=LastCommitter::$LastCommitter"
         echo "::set-output name=CommitMessage::$CommitMessage"
