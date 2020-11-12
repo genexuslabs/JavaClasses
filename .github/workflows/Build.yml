@@ -1,0 +1,78 @@
+name: Build
+
+on: 
+  pull_request:
+    branches:
+      - 'master'
+      - 'release-*'
+  push:
+    branches: 
+      - 'master'
+      - 'beta'
+      - 'release-*'
+      - 'beta-corona'
+
+jobs:
+  build:
+    name: Build
+    env:
+      GIT_REF: ${{ github.ref }}
+      GIT_SHA: ${{ github.sha }}
+      POM_PATH: ./pom.xml
+      VERSION_SCRIPT: ./github/updatePOMVersion.sh
+    
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Setup Java JDK
+      uses: actions/setup-java@v1.4.3
+      with:
+        java-version: 1.9
+
+    - name: Calculate build variables
+      id: buildVariables
+      run: |
+        if ! [[ "$GIT_REF" =~ 'release-[0-9]?\.[0-9]?$' ]]; then
+          CommitNumber=$(git rev-list --count HEAD)
+        else
+          CommitNumber=$(git rev-list --count origin/master..)
+        fi
+
+        LastCommitter=$(git log -1 --pretty=format:%an)
+        CommitMessage=$(git log -1 --pretty=%B)
+
+        echo "::set-output name=CommitNumber::$CommitNumber"
+        echo "::set-output name=LastCommitter::$LastCommitter"
+        echo "::set-output name=CommitMessage::$CommitMessage"
+
+    - name: Update POM version
+      id: POMVersion
+      run: |
+        script="$VERSION_SCRIPT"
+        if [ -f "$script" ]; then
+          echo "Executing version script at: $script"
+          sh "$script"
+        else
+          echo 'No version script specified. Will generate packages with the version on the POM file'
+        fi
+
+        finalPOMVersion=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout --file $POM_PATH)
+        echo "Project version: $finalPOMVersion"
+        echo "::set-output name=finalPOMVersion::$finalPOMVersion"
+
+    - name: Validate build
+      run: mvn -B validate --file $POM_PATH
+
+    - name: Build
+      run: mvn -B compile --file $POM_PATH
+
+    - name: Test
+      run: mvn -B test --file $POM_PATH
+
+    - name: Package
+      run: mvn -B package --file $POM_PATH
