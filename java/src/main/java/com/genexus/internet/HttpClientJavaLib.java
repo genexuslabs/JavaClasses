@@ -3,6 +3,7 @@ package com.genexus.internet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import org.apache.http.client.*;
 
 public class HttpClientJavaLib extends GXHttpClient {
 

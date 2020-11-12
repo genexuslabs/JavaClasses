@@ -24,11 +24,11 @@ public class HttpClientManual extends GXHttpClient {
 	private boolean isMultipart = false;
 	private MultipartTemplate multipartTemplate =new MultipartTemplate();
 	private Hashtable<String, String> headersToSend = new Hashtable<>();
-	private String prevURLhost;		// AGREGADO EN HttpClientManual
-	private String prevURLbaseURL;	// AGREGADO EN HttpClientManual
-	private int prevURLport;	// AGREGADO EN HttpClientManual
-	private int prevURLsecure;	// AGREGADO EN HttpClientManual
-	private boolean isURL = false;	// AGREGADO EN HttpClientManual
+	private String prevURLhost;
+	private String prevURLbaseURL;
+	private int prevURLport;
+	private int prevURLsecure;
+	private boolean isURL = false;
 	private HTTPConnection con = null;
 	private HTTPResponse res;
 
@@ -158,7 +158,7 @@ public class HttpClientManual extends GXHttpClient {
 			else //File or FormFile
 			{
 				File file;
-				if (curr instanceof HttpClient.FormFile)
+				if (curr instanceof FormFile)
 				{
 					FormFile formFile = (FormFile)curr;
 					out = startMultipartFile(out, formFile.name, formFile.file);
@@ -330,19 +330,19 @@ public class HttpClientManual extends GXHttpClient {
 			{ // Si el host cambio o si se agrego alguna credencial
 				for (Enumeration en = basicAuthorization.elements(); en.hasMoreElements(); )
 				{
-					HttpClient.HttpClientPrincipal p = (HttpClient.HttpClientPrincipal) en.nextElement();
+					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
 					con.addBasicAuthorization(p.realm, p.user, p.password);
 				}
 
 				for (Enumeration en = digestAuthorization.elements(); en.hasMoreElements(); )
 				{
-					HttpClient.HttpClientPrincipal p = (HttpClient.HttpClientPrincipal) en.nextElement();
+					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
 					con.addDigestAuthorization(p.realm, p.user, p.password);
 				}
 
 				for (Enumeration en = NTLMAuthorization.elements(); en.hasMoreElements(); )
 				{
-					HttpClient.HttpClientPrincipal p = (HttpClient.HttpClientPrincipal) en.nextElement();
+					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
 					//p.addBasicAuthorization(p.realm, p.user, p.password);
 				}
 			}
@@ -354,19 +354,19 @@ public class HttpClientManual extends GXHttpClient {
 			{ // Si el poxyHost cambio o si se agrego alguna credencial para el proxy
 				for (Enumeration en = basicProxyAuthorization.elements(); en.hasMoreElements(); )
 				{
-					HttpClient.HttpClientPrincipal p = (HttpClient.HttpClientPrincipal) en.nextElement();
+					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
 					con.addBasicProxyAuthorization(p.realm, p.user, p.password);
 				}
 
 				for (Enumeration en = digestProxyAuthorization.elements(); en.hasMoreElements(); )
 				{
-					HttpClient.HttpClientPrincipal p = (HttpClient.HttpClientPrincipal) en.nextElement();
+					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
 					con.addDigestProxyAuthorization(p.realm, p.user, p.password);
 				}
 
 				for (Enumeration en = NTLMProxyAuthorization.elements(); en.hasMoreElements(); )
 				{
-					HttpClient.HttpClientPrincipal p = (HttpClient.HttpClientPrincipal) en.nextElement();
+					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
 					//p.addBasicAuthorization(p.realm, p.user, p.password);
 				}
 			}
