@@ -45,7 +45,7 @@ case "$branch" in
 esac
 
 if [[ -n "${newVersion}" ]]; then
-    echo "## Updaing pom.xml version to: $newVersion"
+    echo "## Updating pom.xml version to: $newVersion"
     mvn -B versions:set -DgenerateBackupPoms=false -DnewVersion="$newVersion"
 fi
 
