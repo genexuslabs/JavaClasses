@@ -1,7 +1,8 @@
 | Branch | Status
 |---|---
-|master |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Amaster)
-|beta   |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Abeta)
+|master      |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Amaster)
+|beta        |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Abeta)
+|beta-corona |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg?branch=beta-corona)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Abeta-corona)
 
 # GeneXus Standard Classes for Java
 

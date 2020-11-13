@@ -30,6 +30,7 @@ jobs:
             "ref": "${{ github.ref }}",
             "sha": "${{ github.sha }}",
             "build-file": "pom.xml",
-            "version-script": ".github/updatePOMVersion.sh"
+            "version-script": ".github/updatePOMVersion.sh",
+            "use-prerelease-versioning": "false"
           }
         }'
