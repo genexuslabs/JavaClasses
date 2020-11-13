@@ -21,14 +21,11 @@ public class HttpClientManual extends GXHttpClient {
 	private Vector<HttpClientPrincipal> NTLMProxyAuthorization = new Vector<>();
 	private boolean authorizationChanged = false; // Indica si se agregó alguna autorización
 	private boolean authorizationProxyChanged = false; // Indica si se agregó alguna autorización
-	private boolean isMultipart = false;
-	private MultipartTemplate multipartTemplate =new MultipartTemplate();
-	private Hashtable<String, String> headersToSend = new Hashtable<>();
-	private String prevURLhost;
-	private String prevURLbaseURL;
-	private int prevURLport;
-	private int prevURLsecure;
-	private boolean isURL = false;
+//	private String prevURLhost;
+//	private String prevURLbaseURL;
+//	private int prevURLport;
+//	private int prevURLsecure;
+//	private boolean isURL = false;
 	private HTTPConnection con = null;
 	private HTTPResponse res;
 
@@ -68,15 +65,15 @@ public class HttpClientManual extends GXHttpClient {
 
 	private byte[] startMultipartFile(byte[] in, String name, String fileName)
 	{
-		if (isMultipart && CommonUtil.fileExists(fileName)==1)
+		if (getIsMultipart() && CommonUtil.fileExists(fileName)==1)
 		{
 			if (name==null || name=="")
 			{
 				name = CommonUtil.getFileName(fileName);
 			}
-			byte[] out = addToArray(in, multipartTemplate.boundarybytes);
+			byte[] out = addToArray(in, getMultipartTemplate().boundarybytes);
 			String mimeType = SpecificImplementation.Application.getContentType(fileName);
-			String header = multipartTemplate.getHeaderTemplate(name, fileName, mimeType);
+			String header = getMultipartTemplate().getHeaderTemplate(name, fileName, mimeType);
 			try{
 				byte[] headerbytes = header.getBytes("UTF8");
 				out = addToArray(out,headerbytes);
@@ -94,8 +91,8 @@ public class HttpClientManual extends GXHttpClient {
 
 	private byte[] endMultipartBoundary(byte[] in)
 	{
-		if (isMultipart){
-			return addToArray(in, multipartTemplate.endBoundaryBytes);
+		if (getIsMultipart()){
+			return addToArray(in, getMultipartTemplate().endBoundaryBytes);
 		}else{
 			return in;
 		}
@@ -108,7 +105,7 @@ public class HttpClientManual extends GXHttpClient {
 
 		for (Object key: getVariablesToSend().keySet())
 		{
-			String value = multipartTemplate.getFormDataTemplate((String)key, (String)getVariablesToSend().get(key));
+			String value = getMultipartTemplate().getFormDataTemplate((String)key, (String)getVariablesToSend().get(key));
 			getContentToSend().add(0, value); //Variables al principio
 		}
 
@@ -225,80 +222,40 @@ public class HttpClientManual extends GXHttpClient {
 		}
 	}
 
-	protected String contentEncoding = null;
-
-	@Override
-	public void addHeader(String name, String value)
-	{
-		if(name.equalsIgnoreCase("Content-Type"))
-		{
-			try
-			{
-				int index = value.toLowerCase().lastIndexOf("charset");
-				int equalsIndex = value.indexOf('=', index) + 1;
-				String charset = value.substring(equalsIndex).trim();
-				int lastIndex = charset.indexOf(' ');
-				if(lastIndex != -1)
-				{
-					charset = charset.substring(0, lastIndex);
-				}
-				charset = charset.replace('\"', ' ').replace('\'', ' ').trim();
-
-				contentEncoding = SpecificImplementation.HttpClient.normalizeEncodingName(charset, "UTF-8");
-			}catch(Exception e)
-			{
-			}
-
-			if (value.toLowerCase().startsWith("multipart/form-data")){
-				isMultipart = true;
-				value = multipartTemplate.contentType;
-			}
-		}
-		headersToSend.put(name, value);
-	}
-
-	private void resetState()
-	{
-		headersToSend.clear();
-		getVariablesToSend().clear();
-		getContentToSend().removeAllElements();
-		multipartTemplate = new MultipartTemplate();
-		isMultipart = false;
-		System.out.println();
-	}
-
 	@Override
 	public void execute(String method, String url)
 	{
 		resetErrors();
 
-		URI uri;
-		try
-		{
-			uri = new URI(url);
-			prevURLhost = this.getHost();
-			prevURLbaseURL = this.getBaseURL();
-			prevURLport = this.getPort();
-			prevURLsecure = this.getSecure();
-			isURL = true;
-			setURL(url);
-
-			StringBuilder relativeUri = new StringBuilder();
-			if (uri.getPath() != null) {
-				relativeUri.append(uri.getPath());
-			}
-			if (uri.getQueryString() != null) {
-				relativeUri.append('?').append(uri.getQueryString());
-			}
-			if (uri.getFragment() != null) {
-				relativeUri.append('#').append(uri.getFragment());
-			}
-			url = relativeUri.toString();
-		}
-		catch (ParseException e)
-		{
-			//No es una URL
-		}
+		// ESTE BLOQUE COMENTADO FUE REEMPLAZADO POR LA FUNCION getURLValid
+//		URI uri;
+//		try
+//		{
+//			uri = new URI(url);		// En caso que la URL pasada por parametros no sea una URL valida, salta una excepcion en esta linea, y se continua haciendo todo el proceso con los datos ya guardado como atributos
+//			prevURLhost = this.getHost();
+//			prevURLbaseURL = this.getBaseURL();
+//			prevURLport = this.getPort();
+//			prevURLsecure = this.getSecure();
+//			isURL = true;
+//			setURL(url);
+//
+//			StringBuilder relativeUri = new StringBuilder();
+//			if (uri.getPath() != null) {
+//				relativeUri.append(uri.getPath());
+//			}
+//			if (uri.getQueryString() != null) {
+//				relativeUri.append('?').append(uri.getQueryString());
+//			}
+//			if (uri.getFragment() != null) {
+//				relativeUri.append('#').append(uri.getFragment());
+//			}
+//			url = relativeUri.toString();
+//		}
+//		catch (ParseException e)
+//		{
+//			//No es una URL
+//		}
+		url = getURLValid(url);
 
 		try
 		{
@@ -373,45 +330,46 @@ public class HttpClientManual extends GXHttpClient {
 
 			proxyInfoChanged = authorizationProxyChanged = false; // Desmarco las flags
 
-			if  (!url.startsWith("/"))
-				url = getBaseURL().trim() + url;
+			// COMENTADO LUEGO DE HACER FUNCION getURLValid
+//			if  (!url.startsWith("/"))		// Este caso sucede cuando salta la excepcion ParseException, determinando que la url pasada por parametro no es una URL valida
+//				url = getBaseURL().trim() + url;
 
 			if	(method.equalsIgnoreCase("GET"))
 			{
 				if (getContentToSend().size() > 0)
-					res = con.Get(url, "", hashtableToNVPair(headersToSend), getData());
+					res = con.Get(url, "", hashtableToNVPair(getheadersToSend()), getData());
 				else
-					res = con.Get(url, "", hashtableToNVPair(headersToSend));
+					res = con.Get(url, "", hashtableToNVPair(getheadersToSend()));
 			}
 			else if (method.equalsIgnoreCase("POST"))
 			{
-				if	(!isMultipart && getVariablesToSend().size() > 0)
+				if	(!getIsMultipart() && getVariablesToSend().size() > 0)
 				{
-					res = con.Post(url, hashtableToNVPair(getVariablesToSend()), hashtableToNVPair(headersToSend));
+					res = con.Post(url, hashtableToNVPair(getVariablesToSend()), hashtableToNVPair(getheadersToSend()));
 				}
 				else
 				{
-					res = con.Post(url, getData(), hashtableToNVPair(headersToSend));
+					res = con.Post(url, getData(), hashtableToNVPair(getheadersToSend()));
 				}
 			}
 			else if (method.equalsIgnoreCase("PUT"))
 			{
-				res = con.Put(url, getData(), hashtableToNVPair(headersToSend));
+				res = con.Put(url, getData(), hashtableToNVPair(getheadersToSend()));
 			}
 			else if (method.equalsIgnoreCase("DELETE"))
 			{
 				if (getVariablesToSend().size() > 0 || getContentToSend().size() > 0)
 				{
-					res = con.Delete(url, getData(), hashtableToNVPair(headersToSend));
+					res = con.Delete(url, getData(), hashtableToNVPair(getheadersToSend()));
 				}
 				else
 				{
-					res = con.Delete(url, hashtableToNVPair(headersToSend));
+					res = con.Delete(url, hashtableToNVPair(getheadersToSend()));
 				}
 			}
 			else
 			{
-				res = con.ExtensionMethod(method, url, getData(), hashtableToNVPair(headersToSend));
+				res = con.ExtensionMethod(method, url, getData(), hashtableToNVPair(getheadersToSend()));
 			}
 		}
 		catch (ProtocolNotSuppException e)
@@ -431,13 +389,13 @@ public class HttpClientManual extends GXHttpClient {
 		finally
 		{
 			getStatusCode();
-			if (isURL)
+			if (getIsURL())
 			{
-				this.setHost(prevURLhost);
-				this.setBaseURL(prevURLbaseURL);
-				this.setPort(prevURLport);
-				this.setSecure(prevURLsecure);
-				this.isURL = false;
+				this.setHost(getPrevURLhost());
+				this.setBaseURL(getPrevURLbaseURL());
+				this.setPort(getPrevURLport());
+				this.setSecure(getPrevURLsecure());
+				setIsURL(false);
 			}
 		}
 
@@ -718,34 +676,4 @@ public class HttpClientManual extends GXHttpClient {
 		}
 	}
 
-	class MultipartTemplate
-	{
-		public String boundary;
-		public String formdataTemplate;
-		public byte[] boundarybytes;
-		public byte[] endBoundaryBytes;
-		public String contentType;
-
-		public MultipartTemplate()
-		{
-			boundary = "----------------------------" + CommonUtil.now(false,false).getTime();
-			contentType = "multipart/form-data; boundary=" + boundary;
-			String boundaryStr = "\r\n--" + boundary + "\r\n";
-			String endBoundaryStr = "\r\n--" + boundary + "--";
-			try{
-				boundarybytes = boundaryStr.getBytes("ASCII");
-				endBoundaryBytes = endBoundaryStr.getBytes("ASCII");
-			} catch( java.io.UnsupportedEncodingException uee)
-			{
-				boundarybytes = boundaryStr.getBytes();
-				endBoundaryBytes = endBoundaryStr.getBytes();
-			}
-		}
-		String getHeaderTemplate(String name, String fileName, String mimeType){
-			return "Content-Disposition: form-data; name=\""+ name + "\"; filename=\""+ fileName + "\"\r\n" + "Content-Type: " + mimeType + "\r\n\r\n";
-		}
-		String getFormDataTemplate(String varName, String value){
-			return "\r\n--" + boundary + "\r\nContent-Disposition: form-data; name=\"" + varName + "\";\r\n\r\n" + value;
-		}
-	}
 }

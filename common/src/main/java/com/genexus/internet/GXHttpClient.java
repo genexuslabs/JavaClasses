@@ -2,6 +2,7 @@ package com.genexus.internet;
 
 import HTTPClient.ParseException;
 import HTTPClient.URI;
+import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
 
 import java.io.File;
@@ -34,6 +35,13 @@ public abstract class GXHttpClient implements IHttpClient{
 	private boolean tcpNoDelay = false;
 	private Hashtable variablesToSend = new Hashtable();
 	private Vector contentToSend = new Vector<>();
+	private boolean isMultipart = false;
+	private MultipartTemplate multipartTemplate =new MultipartTemplate();
+	private String prevURLhost;
+	private String prevURLbaseURL;
+	private int prevURLport;
+	private int prevURLsecure;
+	private boolean isURL = false;
 
 	public static boolean issuedExternalHttpClientWarning = false;
 	public boolean usingExternalHttpClient = false;
@@ -213,6 +221,26 @@ public abstract class GXHttpClient implements IHttpClient{
 		return this.tcpNoDelay;
 	}
 
+	public Hashtable<String, String> getheadersToSend() {
+		return this.headersToSend;
+	}
+
+	public MultipartTemplate getMultipartTemplate() {
+		return this.multipartTemplate;
+	}
+
+	public void setMultipartTemplate(MultipartTemplate multipartTemplate) {
+		this.multipartTemplate = multipartTemplate;
+	}
+
+	public boolean getIsMultipart() {
+		return this.isMultipart;
+	}
+
+	public void setIsMultipart(boolean isMultipart) {
+		this.isMultipart = isMultipart;
+	}
+
 	public abstract void addAuthentication(int type, String realm, String name, String value);
 
 	public abstract void addProxyAuthentication(int type, String realm, String name, String value);
@@ -221,7 +249,36 @@ public abstract class GXHttpClient implements IHttpClient{
 	{
 	}
 
-	public abstract void addHeader(String name, String value);
+	protected String contentEncoding = null;
+
+	public void addHeader(String name, String value)
+	{
+		if(name.equalsIgnoreCase("Content-Type"))
+		{
+			try
+			{
+				int index = value.toLowerCase().lastIndexOf("charset");
+				int equalsIndex = value.indexOf('=', index) + 1;
+				String charset = value.substring(equalsIndex).trim();
+				int lastIndex = charset.indexOf(' ');
+				if(lastIndex != -1)
+				{
+					charset = charset.substring(0, lastIndex);
+				}
+				charset = charset.replace('\"', ' ').replace('\'', ' ').trim();
+
+				contentEncoding = SpecificImplementation.HttpClient.normalizeEncodingName(charset, "UTF-8");
+			}catch(Exception e)
+			{
+			}
+
+			if (value.toLowerCase().startsWith("multipart/form-data")){
+				isMultipart = true;
+				value = multipartTemplate.contentType;
+			}
+		}
+		headersToSend.put(name, value);
+	}
 
 	@SuppressWarnings("unchecked")
 	public void addVariable(String name, String value)
@@ -309,6 +366,98 @@ public abstract class GXHttpClient implements IHttpClient{
 		return this.variablesToSend;
 	}
 
+	public boolean isMultipart() {
+		return isMultipart;
+	}
+
+	public void setMultipart(boolean multipart) {
+		isMultipart = multipart;
+	}
+
+	protected void resetState()
+	{
+		getContentToSend().clear();
+		getVariablesToSend().clear();
+		getContentToSend().removeAllElements();
+		setMultipartTemplate(new MultipartTemplate());
+		setIsMultipart(false);
+		System.out.println();
+	}
+
+	protected String getURLValid(String url) {
+		URI uri;
+		try
+		{
+			uri = new URI(url);		// En caso que la URL pasada por parametros no sea una URL valida, salta una excepcion en esta linea, y se continua haciendo todo el proceso con los datos ya guardado como atributos
+			prevURLhost = this.getHost();
+			prevURLbaseURL = this.getBaseURL();
+			prevURLport = this.getPort();
+			prevURLsecure = this.getSecure();
+			isURL = true;
+			setURL(url);
+
+			StringBuilder relativeUri = new StringBuilder();
+			if (uri.getPath() != null) {
+				relativeUri.append(uri.getPath());
+			}
+			if (uri.getQueryString() != null) {
+				relativeUri.append('?').append(uri.getQueryString());
+			}
+			if (uri.getFragment() != null) {
+				relativeUri.append('#').append(uri.getFragment());
+			}
+			return relativeUri.toString();
+		}
+		catch (ParseException e)
+		{
+			//No es una URL
+			System.out.println("The String url parameter passed is not a valid one.");
+			if  (!url.startsWith("/"))		// Este caso sucede cuando salta la excepcion ParseException, determinando que la url pasada por parametro no es una URL valida
+				return getBaseURL().trim() + url;
+			return url;
+		}
+	}
+
+	public String getPrevURLhost() {
+		return prevURLhost;
+	}
+
+	public void setPrevURLhost(String prevURLhost) {
+		this.prevURLhost = prevURLhost;
+	}
+
+	public String getPrevURLbaseURL() {
+		return prevURLbaseURL;
+	}
+
+	public void setPrevURLbaseURL(String prevURLbaseURL) {
+		this.prevURLbaseURL = prevURLbaseURL;
+	}
+
+	public int getPrevURLport() {
+		return prevURLport;
+	}
+
+	public void setPrevURLport(int prevURLport) {
+		this.prevURLport = prevURLport;
+	}
+
+	public int getPrevURLsecure() {
+		return prevURLsecure;
+	}
+
+	public void setPrevURLsecure(int prevURLsecure) {
+		this.prevURLsecure = prevURLsecure;
+	}
+
+	public boolean getIsURL() {
+		return isURL;
+	}
+
+	public void setIsURL(boolean isURL) {
+		this.isURL = isURL;
+	}
+
 
 	class FormFile{
 		String file;
@@ -316,6 +465,37 @@ public abstract class GXHttpClient implements IHttpClient{
 		FormFile(String file, String name){
 			this.file = file;
 			this.name = name;
+		}
+	}
+
+	class MultipartTemplate
+	{
+		public String boundary;
+		public String formdataTemplate;
+		public byte[] boundarybytes;
+		public byte[] endBoundaryBytes;
+		public String contentType;
+
+		public MultipartTemplate()
+		{
+			boundary = "----------------------------" + CommonUtil.now(false,false).getTime();
+			contentType = "multipart/form-data; boundary=" + boundary;
+			String boundaryStr = "\r\n--" + boundary + "\r\n";
+			String endBoundaryStr = "\r\n--" + boundary + "--";
+			try{
+				boundarybytes = boundaryStr.getBytes("ASCII");
+				endBoundaryBytes = endBoundaryStr.getBytes("ASCII");
+			} catch( java.io.UnsupportedEncodingException uee)
+			{
+				boundarybytes = boundaryStr.getBytes();
+				endBoundaryBytes = endBoundaryStr.getBytes();
+			}
+		}
+		String getHeaderTemplate(String name, String fileName, String mimeType){
+			return "Content-Disposition: form-data; name=\""+ name + "\"; filename=\""+ fileName + "\"\r\n" + "Content-Type: " + mimeType + "\r\n\r\n";
+		}
+		String getFormDataTemplate(String varName, String value){
+			return "\r\n--" + boundary + "\r\nContent-Disposition: form-data; name=\"" + varName + "\";\r\n\r\n" + value;
 		}
 	}
 
