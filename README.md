@@ -1,7 +1,7 @@
 | Branch | Status
 |---|---
-|master|[![Build Status](https://dev.azure.com/gxazure/Java-classes/_apis/build/status/Build%20JavaClasses%20(master)?branchName=master)](https://dev.azure.com/gxazure/Java-classes/_build/latest?definitionId=2&branchName=master)
-|beta|[![Build Status](https://dev.azure.com/gxazure/Java-classes/_apis/build/status/Build%20JavaClasses%20(beta)?branchName=beta)](https://dev.azure.com/gxazure/Java-classes/_build/latest?definitionId=6&branchName=beta)
+|master |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Amaster)
+|beta   |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Abeta)
 
 # GeneXus Standard Classes for Java
 
