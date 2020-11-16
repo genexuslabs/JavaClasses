@@ -37,7 +37,7 @@ jobs:
     - name: Calculate build variables
       id: buildVariables
       run: |
-        if ! [[ "$GIT_REF" =~ 'release-[0-9]?\.[0-9]?$' ]]; then
+        if ! [[ "$GIT_REF" =~ 'release-.+$' ]]; then
           CommitNumber=$(git rev-list --count HEAD)
         else
           CommitNumber=$(git rev-list --count origin/master..)
