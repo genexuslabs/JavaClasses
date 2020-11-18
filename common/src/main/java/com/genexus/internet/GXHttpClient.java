@@ -5,10 +5,7 @@ import HTTPClient.URI;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
+import java.io.*;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -42,6 +39,8 @@ public abstract class GXHttpClient implements IHttpClient{
 	private int prevURLport;
 	private int prevURLsecure;
 	private boolean isURL = false;
+	private boolean authorizationChanged = false; // Indica si se agregó alguna autorización
+	private boolean authorizationProxyChanged = false; // Indica si se agregó alguna autorización
 
 	public static boolean issuedExternalHttpClientWarning = false;
 	public boolean usingExternalHttpClient = false;
@@ -354,7 +353,7 @@ public abstract class GXHttpClient implements IHttpClient{
 		return  this.contentToSend;
 	}
 
-	public void setConentToSent(Vector contentToSend) {
+	public void setContentToSend(Vector contentToSend) {
 		this.contentToSend = contentToSend;
 	}
 
@@ -388,7 +387,7 @@ public abstract class GXHttpClient implements IHttpClient{
 		URI uri;
 		try
 		{
-			uri = new URI(url);		// En caso que la URL pasada por parametros no sea una URL valida, salta una excepcion en esta linea, y se continua haciendo todo el proceso con los datos ya guardado como atributos
+			uri = new URI(url);		// En caso que la URL pasada por parametro no sea una URL valida, salta una excepcion en esta linea, y se continua haciendo todo el proceso con los datos ya guardados como atributos
 			prevURLhost = this.getHost();
 			prevURLbaseURL = this.getBaseURL();
 			prevURLport = this.getPort();
@@ -456,6 +455,164 @@ public abstract class GXHttpClient implements IHttpClient{
 
 	public void setIsURL(boolean isURL) {
 		this.isURL = isURL;
+	}
+
+	@SuppressWarnings("unchecked")
+	protected byte[] getData()
+	{
+		byte[] out = new byte[0];
+
+		for (Object key: getVariablesToSend().keySet())
+		{
+			String value = getMultipartTemplate().getFormDataTemplate((String)key, (String)getVariablesToSend().get(key));
+			getContentToSend().add(0, value); //Variables al principio
+		}
+
+		for (int idx = 0; idx < getContentToSend().size(); idx++)
+		{
+			Object curr = getContentToSend().elementAt(idx);
+
+			if	(curr instanceof String)
+			{
+				try
+				{
+					if(contentEncoding != null)
+					{
+						out = addToArray(out, ((String)curr).getBytes(contentEncoding));
+					}else
+					{
+						out = addToArray(out, (String) curr);
+					}
+				}catch(UnsupportedEncodingException e)
+				{
+					System.err.println(e.toString());
+					out = addToArray(out, (String) curr);
+				}
+			}
+			else if	(curr instanceof Object[])
+			{
+				StringWriter writer = (StringWriter)((Object[])curr)[0];
+				StringBuffer encoding = (StringBuffer)((Object[])curr)[1];
+
+				if(encoding == null || encoding.length() == 0)
+				{
+					encoding = new StringBuffer("UTF-8");
+				}
+				try
+				{
+					out = addToArray(out, writer.toString().getBytes(encoding.toString()));
+				}
+				catch(UnsupportedEncodingException e)
+				{
+					out = addToArray(out, writer.toString());
+				}
+			}
+			else if	(curr instanceof byte[])
+			{
+				out = addToArray(out, (byte[]) curr);
+			}
+			else //File or FormFile
+			{
+				File file;
+				if (curr instanceof FormFile)
+				{
+					FormFile formFile = (FormFile)curr;
+					out = startMultipartFile(out, formFile.name, formFile.file);
+					file = new File(formFile.file);
+				}
+				else
+				{
+					file = (File) curr;
+				}
+				try
+				{
+					out = addToArray(out, CommonUtil.readToByteArray(new java.io.BufferedInputStream(new FileInputStream(file))));
+				}
+				catch (FileNotFoundException e)
+				{
+					setErrCode(ERROR_IO);
+					setErrDescription(e.getMessage());
+				}
+				catch (IOException e)
+				{
+					setErrCode(ERROR_IO);
+					setErrDescription(e.getMessage());
+				}
+			}
+		}
+		out = endMultipartBoundary(out);
+		return out;
+	}
+
+	private byte[] startMultipartFile(byte[] in, String name, String fileName)
+	{
+		if (getIsMultipart() && CommonUtil.fileExists(fileName)==1)
+		{
+			if (name==null || name=="")
+			{
+				name = CommonUtil.getFileName(fileName);
+			}
+			byte[] out = addToArray(in, getMultipartTemplate().boundarybytes);
+			String mimeType = SpecificImplementation.Application.getContentType(fileName);
+			String header = getMultipartTemplate().getHeaderTemplate(name, fileName, mimeType);
+			try{
+				byte[] headerbytes = header.getBytes("UTF8");
+				out = addToArray(out,headerbytes);
+			} catch( java.io.UnsupportedEncodingException uee)
+			{
+				byte[] headerbytes = header.getBytes();
+				out = addToArray(out,headerbytes);
+			}
+
+			return out;
+		}else{
+			return in;
+		}
+	}
+
+	private byte[] endMultipartBoundary(byte[] in)
+	{
+		if (getIsMultipart()){
+			return addToArray(in, getMultipartTemplate().endBoundaryBytes);
+		}else{
+			return in;
+		}
+	}
+
+	private byte[] addToArray(byte[] in, String val)
+	{
+		byte[] out = new byte[in.length + val.length()];
+
+		System.arraycopy(in, 0, out, 0, in.length);
+		out = val.getBytes();
+
+		return out;
+	}
+
+	private byte[] addToArray(byte[] in, byte[] val)
+	{
+		byte[] out = new byte[in.length + val.length];
+
+		System.arraycopy(in, 0, out, 0, in.length);
+		System.arraycopy(val, 0, out, in.length, val.length);
+
+		return out;
+	}
+
+	public boolean getAuthorizationChanged() {
+		return authorizationChanged;
+	}
+
+	public void setAuthorizationChanged(boolean authorizationChanged) {
+		this.authorizationChanged = authorizationChanged;
+	}
+
+	public boolean getAuthorizationProxyChanged() {
+		return authorizationProxyChanged;
+	}
+
+	public void setAuthorizationProxyChanged(boolean authorizationProxyChanged) {
+		this.authorizationProxyChanged = authorizationProxyChanged;
 	}
 
 

@@ -19,8 +19,6 @@ public class HttpClientManual extends GXHttpClient {
 	private Vector<HttpClientPrincipal> basicProxyAuthorization = new Vector<>();
 	private Vector<HttpClientPrincipal> digestProxyAuthorization = new Vector<>();
 	private Vector<HttpClientPrincipal> NTLMProxyAuthorization = new Vector<>();
-	private boolean authorizationChanged = false; // Indica si se agregó alguna autorización
-	private boolean authorizationProxyChanged = false; // Indica si se agregó alguna autorización
 //	private String prevURLhost;
 //	private String prevURLbaseURL;
 //	private int prevURLport;
@@ -43,153 +41,10 @@ public class HttpClientManual extends GXHttpClient {
 		return ret;
 	}
 
-	private byte[] addToArray(byte[] in, String val)
-	{
-		byte[] out = new byte[in.length + val.length()];
-
-		System.arraycopy(in, 0, out, 0, in.length);
-		out = val.getBytes();
-
-		return out;
-	}
-
-	private byte[] addToArray(byte[] in, byte[] val)
-	{
-		byte[] out = new byte[in.length + val.length];
-
-		System.arraycopy(in, 0, out, 0, in.length);
-		System.arraycopy(val, 0, out, in.length, val.length);
-
-		return out;
-	}
-
-	private byte[] startMultipartFile(byte[] in, String name, String fileName)
-	{
-		if (getIsMultipart() && CommonUtil.fileExists(fileName)==1)
-		{
-			if (name==null || name=="")
-			{
-				name = CommonUtil.getFileName(fileName);
-			}
-			byte[] out = addToArray(in, getMultipartTemplate().boundarybytes);
-			String mimeType = SpecificImplementation.Application.getContentType(fileName);
-			String header = getMultipartTemplate().getHeaderTemplate(name, fileName, mimeType);
-			try{
-				byte[] headerbytes = header.getBytes("UTF8");
-				out = addToArray(out,headerbytes);
-			} catch( java.io.UnsupportedEncodingException uee)
-			{
-				byte[] headerbytes = header.getBytes();
-				out = addToArray(out,headerbytes);
-			}
-
-			return out;
-		}else{
-			return in;
-		}
-	}
-
-	private byte[] endMultipartBoundary(byte[] in)
-	{
-		if (getIsMultipart()){
-			return addToArray(in, getMultipartTemplate().endBoundaryBytes);
-		}else{
-			return in;
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private byte[] getData()
-	{
-		byte[] out = new byte[0];
-
-		for (Object key: getVariablesToSend().keySet())
-		{
-			String value = getMultipartTemplate().getFormDataTemplate((String)key, (String)getVariablesToSend().get(key));
-			getContentToSend().add(0, value); //Variables al principio
-		}
-
-		for (int idx = 0; idx < getContentToSend().size(); idx++)
-		{
-			Object curr = getContentToSend().elementAt(idx);
-
-			if	(curr instanceof String)
-			{
-				try
-				{
-					if(contentEncoding != null)
-					{
-						out = addToArray(out, ((String)curr).getBytes(contentEncoding));
-					}else
-					{
-						out = addToArray(out, (String) curr);
-					}
-				}catch(UnsupportedEncodingException e)
-				{
-					System.err.println(e.toString());
-					out = addToArray(out, (String) curr);
-				}
-			}
-			else if	(curr instanceof Object[])
-			{
-				StringWriter writer = (StringWriter)((Object[])curr)[0];
-				StringBuffer encoding = (StringBuffer)((Object[])curr)[1];
-
-				if(encoding == null || encoding.length() == 0)
-				{
-					encoding = new StringBuffer("UTF-8");
-				}
-				try
-				{
-					out = addToArray(out, writer.toString().getBytes(encoding.toString()));
-				}
-				catch(UnsupportedEncodingException e)
-				{
-					out = addToArray(out, writer.toString());
-				}
-			}
-			else if	(curr instanceof byte[])
-			{
-				out = addToArray(out, (byte[]) curr);
-			}
-			else //File or FormFile
-			{
-				File file;
-				if (curr instanceof FormFile)
-				{
-					FormFile formFile = (FormFile)curr;
-					out = startMultipartFile(out, formFile.name, formFile.file);
-					file = new File(formFile.file);
-				}
-				else
-				{
-					file = (File) curr;
-				}
-				try
-				{
-					out = addToArray(out, CommonUtil.readToByteArray(new java.io.BufferedInputStream(new FileInputStream(file))));
-				}
-				catch (FileNotFoundException e)
-				{
-					setErrCode(ERROR_IO);
-					setErrDescription(e.getMessage());
-				}
-				catch (IOException e)
-				{
-					setErrCode(ERROR_IO);
-					setErrDescription(e.getMessage());
-				}
-			}
-		}
-		out = endMultipartBoundary(out);
-		return out;
-	}
-
-
 	@Override
 	public void addAuthentication(int type, String realm, String name, String value)
 	{
-		authorizationChanged = true;
+		setAuthorizationChanged(true);
 		switch (type)
 		{
 			case BASIC:
@@ -207,7 +62,7 @@ public class HttpClientManual extends GXHttpClient {
 	@Override
 	public void addProxyAuthentication(int type, String realm, String name, String value)
 	{
-		authorizationProxyChanged = true;
+		setAuthorizationProxyChanged(true);
 		switch (type)
 		{
 			case BASIC:
@@ -283,7 +138,7 @@ public class HttpClientManual extends GXHttpClient {
 				con.setCurrentProxy(getProxyServerHost(), getProxyServerPort()); // Este puede variar sin cambiar de instancia
 			}
 
-			if(getHostChanged() || authorizationChanged)
+			if(getHostChanged() || getAuthorizationChanged())
 			{ // Si el host cambio o si se agrego alguna credencial
 				for (Enumeration en = basicAuthorization.elements(); en.hasMoreElements(); )
 				{
@@ -305,9 +160,9 @@ public class HttpClientManual extends GXHttpClient {
 			}
 
 			setHostChanged(false);
-			authorizationChanged = false; // Desmarco las flags
+			setAuthorizationChanged(false); // Desmarco las flags
 
-			if(proxyInfoChanged || authorizationProxyChanged)
+			if(proxyInfoChanged || getAuthorizationProxyChanged())
 			{ // Si el poxyHost cambio o si se agrego alguna credencial para el proxy
 				for (Enumeration en = basicProxyAuthorization.elements(); en.hasMoreElements(); )
 				{
@@ -328,7 +183,8 @@ public class HttpClientManual extends GXHttpClient {
 				}
 			}
 
-			proxyInfoChanged = authorizationProxyChanged = false; // Desmarco las flags
+			proxyInfoChanged = false; // Desmarco las flags
+			setAuthorizationProxyChanged(false);
 
 			// COMENTADO LUEGO DE HACER FUNCION getURLValid
 //			if  (!url.startsWith("/"))		// Este caso sucede cuando salta la excepcion ParseException, determinando que la url pasada por parametro no es una URL valida
