@@ -3,18 +3,41 @@ package com.genexus.internet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+
+import org.apache.http.HttpHost;
 import org.apache.http.client.*;
 import HTTPClient.*;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.config.SocketConfig;
+import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.ssl.SSLContexts;
+
+import javax.net.ssl.SSLSocketFactory;
 
 public class HttpClientJavaLib extends GXHttpClient {
 	private int statusCode;
 	private String reasonLine;
+	private PoolingHttpClientConnectionManager connManager = null;
+	private RequestConfig reqConfig = null;		// Atributo usado en la ejecucion del metodo (por ejemplo, httpGet, httpPost)
 
 
 	private void resetExecParams() {
 		this.statusCode = 0;
 		this.reasonLine = "";
+		this.connManager = null;
+		this.reqConfig = null;
 		resetErrors();
+	}
+
+	private SSLConnectionSocketFactory getSSLSecureInstance() {
+		return new SSLConnectionSocketFactory(
+			SSLContexts.createDefault(),
+			new String[] { "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3" },
+			null,
+			SSLConnectionSocketFactory.getDefaultHostnameVerifier());
 	}
 
 
@@ -28,31 +51,79 @@ public class HttpClientJavaLib extends GXHttpClient {
 		resetExecParams();
 
 
-		url = getURLValid(url);
-		if (getSecure() == 1)
+		url = getURLValid(url);		// Funcion genera parte del path en adelante de la URL
+		if (getSecure() == 1)		// Se completa con esquema y host
 			url = "https://" + getHost();
 		else
 			url = "http://" + getHost();
 
+//		try {
+			if (getHostChanged()) {
+				if (getSecure() == 1 && getPort() == 80)
+				{
+					setPort(443);
+				}
+				if (getSecure() != 0) {
+					SSLConnectionSocketFactory sslsf = getSSLSecureInstance();
+				}
+				SocketConfig socketConfig = SocketConfig.custom().setTcpNoDelay(getTcpNoDelay()).build();
+				this.connManager = new PoolingHttpClientConnectionManager();
+				connManager.setDefaultSocketConfig(socketConfig);
+
+				CookieStore cookieStore = null;
+				if (getIncludeCookies())
+					cookieStore = new BasicCookieStore();
+			}
+
+			if (proxyInfoChanged)
+				this.reqConfig = RequestConfig.custom()
+					.setConnectionRequestTimeout(getTimeout()*1000)
+					.setProxy(new HttpHost(getProxyServerHost(),getProxyServerPort()))
+					.build();
+			else
+				this.reqConfig = RequestConfig.custom()
+					.setConnectionRequestTimeout(getTimeout()*1000)
+					.build();
+
+			if(getHostChanged() || getAuthorizationChanged()) { // Si el host cambio o si se agrego alguna credencial
+				// HACER ACA LA PARTE DEL AGREGADO DE LOS HEADERS DE AUTH
+			}
+
+			setHostChanged(false);
+			setAuthorizationChanged(false); // Desmarco las flags
+
+			if(proxyInfoChanged || getAuthorizationProxyChanged()) { // Si el poxyHost cambio o si se agrego alguna credencial para el proxy
+				// HACER ACA LA PARTE DEL AGREGADO DE LOS HEADERS DE AUTH
+			}
+
+			proxyInfoChanged = false; // Desmarco las flags
+			setAuthorizationProxyChanged(false);
 
 
-		// HACER ACA LA PARTE DEL AGREGADO DE LOS HEADERS DE AUTH
 
 
-		// Al final de cada ejecucion se setean los atributos
-
-		if (method.equalsIgnoreCase("GET")) {
 
 
-		} else if (method.equalsIgnoreCase("POST")) {
 
-		} else if (method.equalsIgnoreCase("PUT")) {
 
-		} else if (method.equalsIgnoreCase("DELETE")) {
+			// Al final de cada ejecucion se setean los atributos
 
-		} else {
-			// VER COMO TRATAR ACA LOS OTROS METODOS QUE PUEDEN VENIR
-		}
+			if (method.equalsIgnoreCase("GET")) {
+
+
+			} else if (method.equalsIgnoreCase("POST")) {
+
+			} else if (method.equalsIgnoreCase("PUT")) {
+
+			} else if (method.equalsIgnoreCase("DELETE")) {
+
+			} else {
+				// VER COMO TRATAR ACA LOS OTROS METODOS QUE PUEDEN VENIR
+			}
+
+//		} catch {
+//
+//		}
 
 
 
