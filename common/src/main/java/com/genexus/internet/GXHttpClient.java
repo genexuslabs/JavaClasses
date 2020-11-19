@@ -42,6 +42,14 @@ public abstract class GXHttpClient implements IHttpClient{
 	private boolean authorizationChanged = false; // Indica si se agregó alguna autorización
 	private boolean authorizationProxyChanged = false; // Indica si se agregó alguna autorización
 
+	private Vector<HttpClientPrincipal> basicAuthorization = new Vector<HttpClientPrincipal>();
+	private Vector<HttpClientPrincipal> digestAuthorization = new Vector<>();
+	private Vector<HttpClientPrincipal> NTLMAuthorization = new Vector<>();
+
+	private Vector<HttpClientPrincipal> basicProxyAuthorization = new Vector<>();
+	private Vector<HttpClientPrincipal> digestProxyAuthorization = new Vector<>();
+	private Vector<HttpClientPrincipal> NTLMProxyAuthorization = new Vector<>();
+
 	public static boolean issuedExternalHttpClientWarning = false;
 	public boolean usingExternalHttpClient = false;
 
@@ -240,12 +248,65 @@ public abstract class GXHttpClient implements IHttpClient{
 		this.isMultipart = isMultipart;
 	}
 
-	public abstract void addAuthentication(int type, String realm, String name, String value);
+	public Vector<HttpClientPrincipal> getBasicAuthorization() {
+		return this.basicAuthorization;
+	}
 
-	public abstract void addProxyAuthentication(int type, String realm, String name, String value);
+	public Vector<HttpClientPrincipal> getDigestAuthorization() {
+		return this.digestAuthorization;
+	}
+
+	public Vector<HttpClientPrincipal> getNTLMAuthorization() {
+		return this.NTLMAuthorization;
+	}
+
+	public Vector<HttpClientPrincipal> getBasicProxyAuthorization() {
+		return this.basicProxyAuthorization;
+	}
+
+	public Vector<HttpClientPrincipal> getDigestProxyAuthorization() {
+		return this.digestProxyAuthorization;
+	}
+	public Vector<HttpClientPrincipal> getNTLMProxyAuthorization() {
+		return this.NTLMProxyAuthorization;
+	}
 
 	public void addCertificate(String fileName)
 	{
+	}
+
+	public void addAuthentication(int type, String realm, String name, String value)
+	{
+		setAuthorizationChanged(true);
+		switch (type)
+		{
+			case BASIC:
+				basicAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
+				break;
+			case DIGEST:
+				digestAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
+				break;
+			case NTLM:
+				NTLMAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
+				break;
+		}
+	}
+
+	public void addProxyAuthentication(int type, String realm, String name, String value)
+	{
+		setAuthorizationProxyChanged(true);
+		switch (type)
+		{
+			case BASIC:
+				basicProxyAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
+				break;
+			case DIGEST :
+				digestProxyAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
+				break;
+			case NTLM :
+				NTLMProxyAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
+				break;
+		}
 	}
 
 	protected String contentEncoding = null;
@@ -375,9 +436,9 @@ public abstract class GXHttpClient implements IHttpClient{
 
 	protected void resetState()
 	{
-		getContentToSend().clear();
-		getVariablesToSend().clear();
-		getContentToSend().removeAllElements();
+		this.contentToSend.clear();
+		this.variablesToSend.clear();
+		this.contentToSend.removeAllElements();
 		setMultipartTemplate(new MultipartTemplate());
 		setIsMultipart(false);
 		System.out.println();
@@ -653,6 +714,20 @@ public abstract class GXHttpClient implements IHttpClient{
 		}
 		String getFormDataTemplate(String varName, String value){
 			return "\r\n--" + boundary + "\r\nContent-Disposition: form-data; name=\"" + varName + "\";\r\n\r\n" + value;
+		}
+	}
+
+	class HttpClientPrincipal
+	{
+		String realm;
+		String user;
+		String password;
+
+		HttpClientPrincipal(String realm, String user, String password)
+		{
+			this.realm = realm;
+			this.user = user;
+			this.password = password;
 		}
 	}
 

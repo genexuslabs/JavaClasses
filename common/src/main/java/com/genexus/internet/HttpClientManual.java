@@ -12,13 +12,13 @@ import java.util.Vector;
 
 public class HttpClientManual extends GXHttpClient {
 
-	private Vector<HttpClientPrincipal> basicAuthorization = new Vector<HttpClientPrincipal>();
-	private Vector<HttpClientPrincipal> digestAuthorization = new Vector<>();
-	private Vector<HttpClientPrincipal> NTLMAuthorization = new Vector<>();
-
-	private Vector<HttpClientPrincipal> basicProxyAuthorization = new Vector<>();
-	private Vector<HttpClientPrincipal> digestProxyAuthorization = new Vector<>();
-	private Vector<HttpClientPrincipal> NTLMProxyAuthorization = new Vector<>();
+//	private Vector<HttpClientPrincipal> basicAuthorization = new Vector<HttpClientPrincipal>();
+//	private Vector<HttpClientPrincipal> digestAuthorization = new Vector<>();
+//	private Vector<HttpClientPrincipal> NTLMAuthorization = new Vector<>();
+//
+//	private Vector<HttpClientPrincipal> basicProxyAuthorization = new Vector<>();
+//	private Vector<HttpClientPrincipal> digestProxyAuthorization = new Vector<>();
+//	private Vector<HttpClientPrincipal> NTLMProxyAuthorization = new Vector<>();
 //	private String prevURLhost;
 //	private String prevURLbaseURL;
 //	private int prevURLport;
@@ -39,42 +39,6 @@ public class HttpClientManual extends GXHttpClient {
 		}
 
 		return ret;
-	}
-
-	@Override
-	public void addAuthentication(int type, String realm, String name, String value)
-	{
-		setAuthorizationChanged(true);
-		switch (type)
-		{
-			case BASIC:
-				basicAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
-				break;
-			case DIGEST:
-				digestAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
-				break;
-			case NTLM:
-				NTLMAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
-				break;
-		}
-	}
-
-	@Override
-	public void addProxyAuthentication(int type, String realm, String name, String value)
-	{
-		setAuthorizationProxyChanged(true);
-		switch (type)
-		{
-			case BASIC:
-				basicProxyAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
-				break;
-			case DIGEST :
-				digestProxyAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
-				break;
-			case NTLM :
-				NTLMProxyAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
-				break;
-		}
 	}
 
 	@Override
@@ -140,19 +104,19 @@ public class HttpClientManual extends GXHttpClient {
 
 			if(getHostChanged() || getAuthorizationChanged())
 			{ // Si el host cambio o si se agrego alguna credencial
-				for (Enumeration en = basicAuthorization.elements(); en.hasMoreElements(); )
+				for (Enumeration en = getBasicAuthorization().elements(); en.hasMoreElements(); )
 				{
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
 					con.addBasicAuthorization(p.realm, p.user, p.password);
 				}
 
-				for (Enumeration en = digestAuthorization.elements(); en.hasMoreElements(); )
+				for (Enumeration en = getDigestAuthorization().elements(); en.hasMoreElements(); )
 				{
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
 					con.addDigestAuthorization(p.realm, p.user, p.password);
 				}
 
-				for (Enumeration en = NTLMAuthorization.elements(); en.hasMoreElements(); )
+				for (Enumeration en = getNTLMAuthorization().elements(); en.hasMoreElements(); )
 				{
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
 					//p.addBasicAuthorization(p.realm, p.user, p.password);
@@ -164,19 +128,19 @@ public class HttpClientManual extends GXHttpClient {
 
 			if(proxyInfoChanged || getAuthorizationProxyChanged())
 			{ // Si el poxyHost cambio o si se agrego alguna credencial para el proxy
-				for (Enumeration en = basicProxyAuthorization.elements(); en.hasMoreElements(); )
+				for (Enumeration en = getBasicProxyAuthorization().elements(); en.hasMoreElements(); )
 				{
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
 					con.addBasicProxyAuthorization(p.realm, p.user, p.password);
 				}
 
-				for (Enumeration en = digestProxyAuthorization.elements(); en.hasMoreElements(); )
+				for (Enumeration en = getDigestProxyAuthorization().elements(); en.hasMoreElements(); )
 				{
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
 					con.addDigestProxyAuthorization(p.realm, p.user, p.password);
 				}
 
-				for (Enumeration en = NTLMProxyAuthorization.elements(); en.hasMoreElements(); )
+				for (Enumeration en = getNTLMProxyAuthorization().elements(); en.hasMoreElements(); )
 				{
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
 					//p.addBasicAuthorization(p.realm, p.user, p.password);
@@ -514,21 +478,6 @@ public class HttpClientManual extends GXHttpClient {
 		if (con != null)
 		{
 			con.stop();
-		}
-	}
-
-
-	class HttpClientPrincipal
-	{
-		String realm;
-		String user;
-		String password;
-
-		HttpClientPrincipal(String realm, String user, String password)
-		{
-			this.realm = realm;
-			this.user = user;
-			this.password = password;
 		}
 	}
 

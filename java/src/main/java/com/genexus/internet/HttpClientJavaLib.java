@@ -3,24 +3,36 @@ package com.genexus.internet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.util.Enumeration;
 
 import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.*;
 import HTTPClient.*;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.SocketConfig;
 import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
 
 import javax.net.ssl.SSLSocketFactory;
 
 public class HttpClientJavaLib extends GXHttpClient {
+
+	private final String BASIC_SCHEME  = "basic";
+	private final String DIGEST_SCHEME = "digest";
+	private final String NTLM_SCHEME   = "NTLM";
+
 	private int statusCode;
 	private String reasonLine;
 	private PoolingHttpClientConnectionManager connManager = null;
+	private HttpClientContext httpClientContext = null;
+	private CredentialsProvider credentialsProvider = null;
 	private RequestConfig reqConfig = null;		// Atributo usado en la ejecucion del metodo (por ejemplo, httpGet, httpPost)
 
 
@@ -29,6 +41,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 		this.reasonLine = "";
 		this.connManager = null;
 		this.reqConfig = null;
+		this.httpClientContext = null;
+		this.credentialsProvider = null;
 		resetErrors();
 	}
 
@@ -38,13 +52,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 			new String[] { "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3" },
 			null,
 			SSLConnectionSocketFactory.getDefaultHostnameVerifier());
-	}
-
-
-	public void addAuthentication(int type, String realm, String name, String value) {
-	}
-
-	public void addProxyAuthentication(int type, String realm, String name, String value) {
 	}
 
 	public void execute(String method, String url) {
@@ -86,25 +93,46 @@ public class HttpClientJavaLib extends GXHttpClient {
 					.build();
 
 			if(getHostChanged() || getAuthorizationChanged()) { // Si el host cambio o si se agrego alguna credencial
-				// HACER ACA LA PARTE DEL AGREGADO DE LOS HEADERS DE AUTH
+				this.credentialsProvider = new BasicCredentialsProvider();
+
+				for (Enumeration en = getBasicAuthorization().elements(); en.hasMoreElements(); )
+				{
+					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
+					this.credentialsProvider.setCredentials(new AuthScope(getHost(),getPort(),p.realm,this.BASIC_SCHEME), new UsernamePasswordCredentials(p.user,p.password));
+				}
+
+				for (Enumeration en = getDigestAuthorization().elements(); en.hasMoreElements(); )
+				{
+					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
+					this.credentialsProvider.setCredentials(new AuthScope(getHost(),getPort(),p.realm,this.DIGEST_SCHEME), new UsernamePasswordCredentials(p.user,p.password));
+				}
+
+				// FALTA EL AUTH PARA NTLM
+
 			}
 
 			setHostChanged(false);
 			setAuthorizationChanged(false); // Desmarco las flags
 
-			if(proxyInfoChanged || getAuthorizationProxyChanged()) { // Si el poxyHost cambio o si se agrego alguna credencial para el proxy
-				// HACER ACA LA PARTE DEL AGREGADO DE LOS HEADERS DE AUTH
+			if(proxyInfoChanged || getAuthorizationProxyChanged()) { 	// Si el proxyHost cambio o si se agrego alguna credencial para el proxy
+				for (Enumeration en = getBasicProxyAuthorization().elements(); en.hasMoreElements(); )
+				{
+					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
+					this.credentialsProvider.setCredentials(new AuthScope(getProxyServerHost(),getProxyServerPort(),p.realm,this.BASIC_SCHEME), new UsernamePasswordCredentials(p.user,p.password));
+				}
+
+				for (Enumeration en = getDigestAuthorization().elements(); en.hasMoreElements(); )
+				{
+					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
+					this.credentialsProvider.setCredentials(new AuthScope(getProxyServerHost(),getProxyServerPort(),p.realm,this.DIGEST_SCHEME), new UsernamePasswordCredentials(p.user,p.password));
+				}
+
+				// FALTA EL AUTH PARA NTLM
+
 			}
 
 			proxyInfoChanged = false; // Desmarco las flags
 			setAuthorizationProxyChanged(false);
-
-
-
-
-
-
-
 
 			// Al final de cada ejecucion se setean los atributos
 
