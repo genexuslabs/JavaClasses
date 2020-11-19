@@ -3,13 +3,17 @@ package com.genexus.internet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.NTCredentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.*;
 import HTTPClient.*;
+import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.SocketConfig;
@@ -23,10 +27,6 @@ import org.apache.http.ssl.SSLContexts;
 import javax.net.ssl.SSLSocketFactory;
 
 public class HttpClientJavaLib extends GXHttpClient {
-
-	private final String BASIC_SCHEME  = "basic";
-	private final String DIGEST_SCHEME = "digest";
-	private final String NTLM_SCHEME   = "NTLM";
 
 	private int statusCode;
 	private String reasonLine;
@@ -98,16 +98,33 @@ public class HttpClientJavaLib extends GXHttpClient {
 				for (Enumeration en = getBasicAuthorization().elements(); en.hasMoreElements(); )
 				{
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-					this.credentialsProvider.setCredentials(new AuthScope(getHost(),getPort(),p.realm,this.BASIC_SCHEME), new UsernamePasswordCredentials(p.user,p.password));
+					this.credentialsProvider.setCredentials(
+						new AuthScope(getHost(),getPort(),p.realm, AuthSchemes.BASIC),
+						new UsernamePasswordCredentials(p.user,p.password));
 				}
 
 				for (Enumeration en = getDigestAuthorization().elements(); en.hasMoreElements(); )
 				{
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-					this.credentialsProvider.setCredentials(new AuthScope(getHost(),getPort(),p.realm,this.DIGEST_SCHEME), new UsernamePasswordCredentials(p.user,p.password));
+					this.credentialsProvider.setCredentials(
+						new AuthScope(getHost(),getPort(),p.realm,AuthSchemes.DIGEST),
+						new UsernamePasswordCredentials(p.user,p.password));
 				}
 
-				// FALTA EL AUTH PARA NTLM
+				for (Enumeration en = getDigestAuthorization().elements(); en.hasMoreElements(); )
+				{
+					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
+					try {
+						this.credentialsProvider.setCredentials(
+							new AuthScope(getHost(),getPort(),p.realm,AuthSchemes.NTLM),
+							new NTCredentials(p.user,p.password, InetAddress.getLocalHost().getHostName(),getHost()));
+					} catch (UnknownHostException e) {
+						this.credentialsProvider.setCredentials(
+							new AuthScope(getHost(),getPort(),p.realm,AuthSchemes.NTLM),
+							new NTCredentials(p.user,p.password, "localhost",getHost()));
+					}
+
+				}
 
 			}
 
@@ -118,16 +135,33 @@ public class HttpClientJavaLib extends GXHttpClient {
 				for (Enumeration en = getBasicProxyAuthorization().elements(); en.hasMoreElements(); )
 				{
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-					this.credentialsProvider.setCredentials(new AuthScope(getProxyServerHost(),getProxyServerPort(),p.realm,this.BASIC_SCHEME), new UsernamePasswordCredentials(p.user,p.password));
+					this.credentialsProvider.setCredentials(
+						new AuthScope(getProxyServerHost(),getProxyServerPort(),p.realm,AuthSchemes.BASIC),
+						new UsernamePasswordCredentials(p.user,p.password));
 				}
 
 				for (Enumeration en = getDigestAuthorization().elements(); en.hasMoreElements(); )
 				{
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-					this.credentialsProvider.setCredentials(new AuthScope(getProxyServerHost(),getProxyServerPort(),p.realm,this.DIGEST_SCHEME), new UsernamePasswordCredentials(p.user,p.password));
+					this.credentialsProvider.setCredentials(
+						new AuthScope(getProxyServerHost(),getProxyServerPort(),p.realm,AuthSchemes.DIGEST),
+						new UsernamePasswordCredentials(p.user,p.password));
 				}
 
-				// FALTA EL AUTH PARA NTLM
+				for (Enumeration en = getDigestAuthorization().elements(); en.hasMoreElements(); )
+				{
+					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
+					try {
+						this.credentialsProvider.setCredentials(
+							new AuthScope(getProxyServerHost(),getProxyServerPort(),p.realm,AuthSchemes.NTLM),
+							new NTCredentials(p.user,p.password, InetAddress.getLocalHost().getHostName(),getProxyServerHost()));
+					} catch (UnknownHostException e) {
+						this.credentialsProvider.setCredentials(
+							new AuthScope(getProxyServerHost(),getProxyServerPort(),p.realm,AuthSchemes.NTLM),
+							new NTCredentials(p.user,p.password, "localhost",getProxyServerHost()));
+					}
+
+				}
 
 			}
 
