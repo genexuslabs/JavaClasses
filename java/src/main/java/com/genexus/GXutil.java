@@ -1637,6 +1637,11 @@ public final class GXutil
 		return CommonUtil.isAbsoluteURL(url);
 	}
 
+	public static boolean hasUrlQueryString(String url)
+	{
+		return CommonUtil.hasUrlQueryString(url);
+	}
+
 	public static void ErrorToMessages(String errorId, String errorDescription, GXBaseCollection<SdtMessages_Message> messages)
 	{
 		if (messages != null)
