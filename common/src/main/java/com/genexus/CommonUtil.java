@@ -2602,6 +2602,11 @@ public final class CommonUtil
 		return url.indexOf("?") >= 0;
 	}
 
+	public static boolean hasUrlQueryString(String url)
+	{
+		return url.indexOf("?") >= 0;
+	}
+
 	public static String encodeJSON(String in)
 	{
 		String encoded = JSONObject.quote(in).replaceAll("'", "\\\\u0027");
