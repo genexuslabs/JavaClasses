@@ -876,7 +876,7 @@ public abstract class HttpContext
 	
 	public void initClientId()
 	{			
-		if (getWebSession() != null && this.getClientId().equals(""))
+		if (!isSoapRequest() && getWebSession() != null && this.getClientId().equals(""))
 		{                    
 			String _clientId = this.getCookie(CLIENT_ID_HEADER);
 			if (_clientId == null || _clientId.equals(""))
