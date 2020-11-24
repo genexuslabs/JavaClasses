@@ -44,7 +44,7 @@ public class ServletEventListener implements ServletContextListener
 		DBConnectionManager.endDBConnectionManager();
 		BlobsCleaner.endBlobCleaner();
 		NativeFunctions.endNativeFunctions();
-		uk.org.retep.pdf.TrueTypeFontCache.cleanup();
+		com.genexus.reports.fonts.TrueTypeFontCache.cleanup();
 		CommonUtil.threadCalendar = null;
 		GXutil.threadTimeZone = null;
 		ClientContext.setLocalUtil(null);
