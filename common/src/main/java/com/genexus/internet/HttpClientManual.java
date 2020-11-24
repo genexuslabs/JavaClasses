@@ -150,9 +150,9 @@ public class HttpClientManual extends GXHttpClient {
 			proxyInfoChanged = false; // Desmarco las flags
 			setAuthorizationProxyChanged(false);
 
-			// COMENTADO LUEGO DE HACER FUNCION getURLValid
-//			if  (!url.startsWith("/"))		// Este caso sucede cuando salta la excepcion ParseException, determinando que la url pasada por parametro no es una URL valida
-//				url = getBaseURL().trim() + url;
+
+			if  (!url.startsWith("/"))		// Este caso sucede cuando salta la excepcion ParseException, determinando que la url pasada por parametro no es una URL valida
+				url = getBaseURL().trim() + url;
 
 			if	(method.equalsIgnoreCase("GET"))
 			{

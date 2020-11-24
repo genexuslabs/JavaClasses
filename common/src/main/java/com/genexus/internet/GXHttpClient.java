@@ -470,10 +470,6 @@ public abstract class GXHttpClient implements IHttpClient{
 		}
 		catch (ParseException e)
 		{
-			//No es una URL
-			System.out.println("The String url parameter passed is not a valid one.");
-			if  (!url.startsWith("/"))		// Este caso sucede cuando salta la excepcion ParseException, determinando que la url pasada por parametro no es una URL valida
-				return getBaseURL().trim() + url;
 			return url;
 		}
 	}
