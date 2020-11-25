@@ -1,11 +1,13 @@
 package com.genexus.internet;
 
+import HTTPClient.NVPair;
 import HTTPClient.ParseException;
 import HTTPClient.URI;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
 
 import java.io.*;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -16,48 +18,48 @@ public abstract class GXHttpClient implements IHttpClient{
 
 	public final int ERROR_IO = 1;
 
-	private String host;
-	private String baseURL;
-	private int secure = 0;
-	private int timeout;
-	private int port = 80;
-	private boolean hostChanged = true; // Indica si el próximo request debe ser realizado en una nueva HTTPConnection (si cambio el host)
-	private Hashtable<String, String> headersToSend = new Hashtable<>();
-	private String WSDLURL;
-	private int errCode;
-	private String errDescription = "";
-	private String proxyHost = "";// = HTTPConnection.getDefaultProxyHost() == null ? "" : HTTPConnection.getDefaultProxyHost();
-	private int proxyPort = 80;// = HTTPConnection.getDefaultProxyPort() == 0 ? 80 : HTTPConnection.getDefaultProxyPort();
-	private boolean includeCookies = true;
-	private boolean tcpNoDelay = false;
-	private Hashtable variablesToSend = new Hashtable();
-	private Vector contentToSend = new Vector<>();
-	private boolean isMultipart = false;
-	private MultipartTemplate multipartTemplate =new MultipartTemplate();
-	private String prevURLhost;
-	private String prevURLbaseURL;
-	private int prevURLport;
-	private int prevURLsecure;
-	private boolean isURL = false;
-	private boolean authorizationChanged = false; // Indica si se agregó alguna autorización
-	private boolean authorizationProxyChanged = false; // Indica si se agregó alguna autorización
+//	private String host;
+//	private String baseURL;
+//	private int secure = 0;
+//	private int timeout;
+//	private int port = 80;
+//	private boolean hostChanged = true; // Indica si el próximo request debe ser realizado en una nueva HTTPConnection (si cambio el host)
+//	private Hashtable<String, String> headersToSend = new Hashtable<>();
+//	private String WSDLURL;
+//	private int errCode;
+//	private String errDescription = "";
+//	private String proxyHost = "";// = HTTPConnection.getDefaultProxyHost() == null ? "" : HTTPConnection.getDefaultProxyHost();
+//	private int proxyPort = 80;// = HTTPConnection.getDefaultProxyPort() == 0 ? 80 : HTTPConnection.getDefaultProxyPort();
+//	private boolean includeCookies = true;
+//	private boolean tcpNoDelay = false;
+//	private Hashtable variablesToSend = new Hashtable();
+//	private Vector contentToSend = new Vector<>();
+//	private boolean isMultipart = false;
+//	private MultipartTemplate multipartTemplate =new MultipartTemplate();
+//	private String prevURLhost;
+//	private String prevURLbaseURL;
+//	private int prevURLport;
+//	private int prevURLsecure;
+//	private boolean isURL = false;
+//	private boolean authorizationChanged = false; // Indica si se agregó alguna autorización
+//	private boolean authorizationProxyChanged = false; // Indica si se agregó alguna autorización
+//
+//	private Vector<HttpClientPrincipal> basicAuthorization = new Vector<HttpClientPrincipal>();
+//	private Vector<HttpClientPrincipal> digestAuthorization = new Vector<>();
+//	private Vector<HttpClientPrincipal> NTLMAuthorization = new Vector<>();
+//
+//	private Vector<HttpClientPrincipal> basicProxyAuthorization = new Vector<>();
+//	private Vector<HttpClientPrincipal> digestProxyAuthorization = new Vector<>();
+//	private Vector<HttpClientPrincipal> NTLMProxyAuthorization = new Vector<>();
+//
+//	public static boolean issuedExternalHttpClientWarning = false;
+//	public boolean usingExternalHttpClient = false;
 
-	private Vector<HttpClientPrincipal> basicAuthorization = new Vector<HttpClientPrincipal>();
-	private Vector<HttpClientPrincipal> digestAuthorization = new Vector<>();
-	private Vector<HttpClientPrincipal> NTLMAuthorization = new Vector<>();
-
-	private Vector<HttpClientPrincipal> basicProxyAuthorization = new Vector<>();
-	private Vector<HttpClientPrincipal> digestProxyAuthorization = new Vector<>();
-	private Vector<HttpClientPrincipal> NTLMProxyAuthorization = new Vector<>();
-
-	public static boolean issuedExternalHttpClientWarning = false;
-	public boolean usingExternalHttpClient = false;
-
-	protected void resetErrors()
-	{
-		errCode = 0;
-		errDescription = "";
-	}
+//	protected void resetErrors()
+//	{
+//		errCode = 0;
+//		errDescription = "";
+//	}
 
 	public byte getBasic()
 	{
@@ -74,309 +76,102 @@ public abstract class GXHttpClient implements IHttpClient{
 		return NTLM;
 	}
 
-	public short getErrCode()
-	{
-		return (short) errCode;
-	}
+	public abstract short getErrCode();
 
-	public void setErrCode(int errCode) {
-		this.errCode = errCode;
-	}
+	public abstract void setErrCode(int errCode);
 
-	public String getErrDescription()
-	{
-		return errDescription;
-	}
+	public abstract String getErrDescription();
 
-	public void setErrDescription(String errDescription) {
-		this.errDescription = errDescription;
-	}
+	public abstract void setErrDescription(String errDescription);
 
-	boolean proxyInfoChanged = false;
-	public void setProxyServerHost(String host)
-	{
-		this.proxyHost = host;
-		proxyInfoChanged = true;
-	}
+//	boolean proxyInfoChanged = false;
+	public abstract void setProxyServerHost(String host);
 
-	public String getProxyServerHost()
-	{
-		return proxyHost;
-	}
+	public abstract String getProxyServerHost();
 
-	public void setProxyServerPort(long port)
-	{
-		this.proxyPort = (int) port;
-		proxyInfoChanged = true;
-	}
+	public abstract void setProxyServerPort(long port);
 
-	public short getProxyServerPort()
-	{
-		return (short) proxyPort;
-	}
+	public abstract short getProxyServerPort();
 
-	public void setIncludeCookies(boolean value)
-	{
-		this.includeCookies = value;
-	}
+	public abstract void setIncludeCookies(boolean value);
 
-	public boolean getIncludeCookies()
-	{
-		return includeCookies;
-	}
+	public abstract boolean getIncludeCookies();
 
-	public void setURL(String stringURL)
-	{
-		try
-		{
-			URI url = new URI(stringURL);
-			setHost(url.getHost());
-			setPort(url.getPort());
-			setBaseURL(url.getPath());
-			setSecure(url.getScheme().equalsIgnoreCase("https") ? 1 : 0);
-		}
-		catch (ParseException e)
-		{
-			System.err.println("E " + e + " " + stringURL);
-			e.printStackTrace();
-		}
-	}
+	public abstract void setURL(String stringURL);
 
-	public void setHost(String host)
-	{
-		if(this.host == null || !this.host.equalsIgnoreCase(host))
-		{ // Si el host ha cambiado, dejo marcado para crear una nueva instancia de HTTPConnection
-			this.host = host;
-			hostChanged = true;
+	public abstract void setHost(String host);
 
-			if (SpecificImplementation.HttpClient != null)
-				SpecificImplementation.HttpClient.addSDHeaders(this.host, this.baseURL, this.headersToSend);
-		}
-	}
+	public abstract String getHost();
 
-	public String getHost()
-	{
-		return host;
-	}
+	public abstract void setWSDLURL(String WSDLURL);
 
-	public void setWSDLURL(String WSDLURL)
-	{
-		this.WSDLURL = WSDLURL;
-	}
+	public abstract void setBaseURL(String baseURL);
 
-	public void setBaseURL(String baseURL)
-	{
-		this.baseURL = baseURL;
-		if (SpecificImplementation.HttpClient != null)
-			SpecificImplementation.HttpClient.addSDHeaders(this.host, this.baseURL, this.headersToSend);
-	}
+	public abstract String getWSDLURL();
 
-	public String getWSDLURL()
-	{
-		return WSDLURL;
-	}
+	public abstract String getBaseURL();
 
-	public String getBaseURL()
-	{
-		return baseURL;
-	}
+	public abstract void setPort(int port);
 
-	public void setPort(int port)
-	{
-		if(this.port != port)
-		{
-			hostChanged = true; // Indico que cambio el Host, pues cambió el puerto
-			this.port = port;
-		}
-	}
+	public abstract int getPort();
 
-	public int getPort()
-	{
-		return port;
-	}
+	public abstract byte getSecure();
 
-	public byte getSecure()
-	{
-		return (byte) secure;
-	}
+	public abstract void setSecure(int secure);
 
-	public void setSecure(int secure)
-	{
-		if(this.secure != secure)
-		{
-			hostChanged = true; // Indico que cambio el Host, pues cambió el protocolo
-			this.secure = secure;
-		}
-	}
+	public abstract void setTimeout(int timeout);
 
-	public void setTimeout(int timeout)
-	{
-		this.timeout = timeout;
-	}
+	public abstract int getTimeout();
 
-	public int getTimeout()
-	{
-		return timeout;
-	}
+	public abstract void setTcpNoDelay(boolean tcpNoDelay);
 
-	public void setTcpNoDelay(boolean tcpNoDelay)
-	{
-		this.tcpNoDelay = tcpNoDelay;
-	}
+	public abstract boolean getTcpNoDelay();
 
-	public boolean getTcpNoDelay() {
-		return this.tcpNoDelay;
-	}
+	public abstract Hashtable<String, String> getheadersToSend();
 
-	public Hashtable<String, String> getheadersToSend() {
-		return this.headersToSend;
-	}
+//	public abstract MultipartTemplate getMultipartTemplate();
+//
+//	public abstract void setMultipartTemplate(MultipartTemplate multipartTemplate);
 
-	public MultipartTemplate getMultipartTemplate() {
-		return this.multipartTemplate;
-	}
+	public abstract boolean getIsMultipart();
 
-	public void setMultipartTemplate(MultipartTemplate multipartTemplate) {
-		this.multipartTemplate = multipartTemplate;
-	}
+	public abstract void setIsMultipart(boolean isMultipart);
 
-	public boolean getIsMultipart() {
-		return this.isMultipart;
-	}
+	public abstract Vector<HttpClientPrincipal> getBasicAuthorization();
 
-	public void setIsMultipart(boolean isMultipart) {
-		this.isMultipart = isMultipart;
-	}
+	public abstract Vector<HttpClientPrincipal> getDigestAuthorization();
 
-	public Vector<HttpClientPrincipal> getBasicAuthorization() {
-		return this.basicAuthorization;
-	}
+	public abstract Vector<HttpClientPrincipal> getNTLMAuthorization();
 
-	public Vector<HttpClientPrincipal> getDigestAuthorization() {
-		return this.digestAuthorization;
-	}
+	public abstract Vector<HttpClientPrincipal> getBasicProxyAuthorization();
 
-	public Vector<HttpClientPrincipal> getNTLMAuthorization() {
-		return this.NTLMAuthorization;
-	}
+	public abstract Vector<HttpClientPrincipal> getDigestProxyAuthorization();
 
-	public Vector<HttpClientPrincipal> getBasicProxyAuthorization() {
-		return this.basicProxyAuthorization;
-	}
-
-	public Vector<HttpClientPrincipal> getDigestProxyAuthorization() {
-		return this.digestProxyAuthorization;
-	}
-	public Vector<HttpClientPrincipal> getNTLMProxyAuthorization() {
-		return this.NTLMProxyAuthorization;
-	}
+	public abstract Vector<HttpClientPrincipal> getNTLMProxyAuthorization();
 
 	public void addCertificate(String fileName)
 	{
 	}
 
-	public void addAuthentication(int type, String realm, String name, String value)
-	{
-		setAuthorizationChanged(true);
-		switch (type)
-		{
-			case BASIC:
-				basicAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
-				break;
-			case DIGEST:
-				digestAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
-				break;
-			case NTLM:
-				NTLMAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
-				break;
-		}
-	}
+	public abstract void addAuthentication(int type, String realm, String name, String value);
 
-	public void addProxyAuthentication(int type, String realm, String name, String value)
-	{
-		setAuthorizationProxyChanged(true);
-		switch (type)
-		{
-			case BASIC:
-				basicProxyAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
-				break;
-			case DIGEST :
-				digestProxyAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
-				break;
-			case NTLM :
-				NTLMProxyAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
-				break;
-		}
-	}
+	public abstract void addProxyAuthentication(int type, String realm, String name, String value);
 
-	protected String contentEncoding = null;
+//	protected String contentEncoding = null;
 
-	public void addHeader(String name, String value)
-	{
-		if(name.equalsIgnoreCase("Content-Type"))
-		{
-			try
-			{
-				int index = value.toLowerCase().lastIndexOf("charset");
-				int equalsIndex = value.indexOf('=', index) + 1;
-				String charset = value.substring(equalsIndex).trim();
-				int lastIndex = charset.indexOf(' ');
-				if(lastIndex != -1)
-				{
-					charset = charset.substring(0, lastIndex);
-				}
-				charset = charset.replace('\"', ' ').replace('\'', ' ').trim();
+	public abstract void addHeader(String name, String value);
 
-				contentEncoding = SpecificImplementation.HttpClient.normalizeEncodingName(charset, "UTF-8");
-			}catch(Exception e)
-			{
-			}
+	public abstract void addVariable(String name, String value);
 
-			if (value.toLowerCase().startsWith("multipart/form-data")){
-				isMultipart = true;
-				value = multipartTemplate.contentType;
-			}
-		}
-		headersToSend.put(name, value);
-	}
+	public abstract void addBytes(byte[] value);
 
-	@SuppressWarnings("unchecked")
-	public void addVariable(String name, String value)
-	{
-		variablesToSend.put(name, value);
-	}
+	public abstract void addString(String value);
 
-	@SuppressWarnings("unchecked")
-	public void addBytes(byte[] value)
-	{
-		contentToSend.addElement(value);
-	}
+	public abstract void addFile(String fileName);
 
-	@SuppressWarnings("unchecked")
-	public void addString(String value)
-	{
-		contentToSend.addElement(value);
-	}
+	public abstract void addFile(String fileName, String varName);
 
-	@SuppressWarnings("unchecked")
-	public void addFile(String fileName)
-	{
-		fileName = SpecificImplementation.HttpClient.beforeAddFile(fileName);
-		contentToSend.addElement(new File(fileName));
-	}
-
-	@SuppressWarnings("unchecked")
-	public void addFile(String fileName, String varName)
-	{
-		fileName = SpecificImplementation.HttpClient.beforeAddFile(fileName);
-		contentToSend.addElement(new FormFile(fileName, varName));
-	}
-
-	@SuppressWarnings("unchecked")
-	public void addStringWriter(StringWriter writer, StringBuffer encoding)
-	{
-		contentToSend.addElement(new Object[]{writer, encoding});
-	}
+	public abstract void addStringWriter(StringWriter writer, StringBuffer encoding);
 
 	public abstract void execute(String method, String url);
 
@@ -402,274 +197,62 @@ public abstract class GXHttpClient implements IHttpClient{
 
 	public abstract void cleanup();
 
-	public boolean getHostChanged() {
-		return hostChanged;
-	}
+	public abstract boolean getHostChanged();
 
-	public void setHostChanged(boolean hostChanged) {
-		this.hostChanged = hostChanged;
-	}
+	public abstract void setHostChanged(boolean hostChanged);
 
-	public Vector getContentToSend() {
-		return  this.contentToSend;
-	}
+	public abstract Vector getContentToSend();
 
-	public void setContentToSend(Vector contentToSend) {
-		this.contentToSend = contentToSend;
-	}
+	public abstract void setContentToSend(Vector contentToSend);
 
-	public void setVariablesToSend(Hashtable variablesToSend) {
-		this.variablesToSend = variablesToSend;
-	}
+	public abstract void setVariablesToSend(Hashtable variablesToSend);
 
-	public Hashtable getVariablesToSend() {
-		return this.variablesToSend;
-	}
+	public abstract Hashtable getVariablesToSend();
 
-	public boolean isMultipart() {
-		return isMultipart;
-	}
+	public abstract boolean isMultipart();
 
-	public void setMultipart(boolean multipart) {
-		isMultipart = multipart;
-	}
+	public abstract void setMultipart(boolean multipart);
 
-	protected void resetState()
+	public abstract String getPrevURLhost();
+
+	public abstract void setPrevURLhost(String prevURLhost);
+
+	public abstract String getPrevURLbaseURL();
+
+	public abstract void setPrevURLbaseURL(String prevURLbaseURL);
+
+	public abstract int getPrevURLport();
+
+	public abstract void setPrevURLport(int prevURLport);
+
+	public abstract int getPrevURLsecure();
+
+	public abstract void setPrevURLsecure(int prevURLsecure);
+
+	public abstract boolean getIsURL();
+
+	public abstract void setIsURL(boolean isURL);
+
+	public abstract boolean getAuthorizationChanged();
+
+	public abstract void setAuthorizationChanged(boolean authorizationChanged);
+
+	public abstract boolean getAuthorizationProxyChanged();
+
+	public abstract void setAuthorizationProxyChanged(boolean authorizationProxyChanged);
+
+	protected NVPair[] hashtableToNVPair(Hashtable hashtable)
 	{
-		this.contentToSend.clear();
-		this.variablesToSend.clear();
-		this.contentToSend.removeAllElements();
-		setMultipartTemplate(new MultipartTemplate());
-		setIsMultipart(false);
-		System.out.println();
-	}
+		NVPair[] ret = new NVPair[hashtable.size()];
+		int idx = 0;
 
-	protected String getURLValid(String url) {
-		URI uri;
-		try
+		for (Enumeration en = hashtable.keys(); en.hasMoreElements();)
 		{
-			uri = new URI(url);		// En caso que la URL pasada por parametro no sea una URL valida, salta una excepcion en esta linea, y se continua haciendo todo el proceso con los datos ya guardados como atributos
-			prevURLhost = this.getHost();
-			prevURLbaseURL = this.getBaseURL();
-			prevURLport = this.getPort();
-			prevURLsecure = this.getSecure();
-			isURL = true;
-			setURL(url);
-
-			StringBuilder relativeUri = new StringBuilder();
-			if (uri.getPath() != null) {
-				relativeUri.append(uri.getPath());
-			}
-			if (uri.getQueryString() != null) {
-				relativeUri.append('?').append(uri.getQueryString());
-			}
-			if (uri.getFragment() != null) {
-				relativeUri.append('#').append(uri.getFragment());
-			}
-			return relativeUri.toString();
-		}
-		catch (ParseException e)
-		{
-			return url;
-		}
-	}
-
-	public String getPrevURLhost() {
-		return prevURLhost;
-	}
-
-	public void setPrevURLhost(String prevURLhost) {
-		this.prevURLhost = prevURLhost;
-	}
-
-	public String getPrevURLbaseURL() {
-		return prevURLbaseURL;
-	}
-
-	public void setPrevURLbaseURL(String prevURLbaseURL) {
-		this.prevURLbaseURL = prevURLbaseURL;
-	}
-
-	public int getPrevURLport() {
-		return prevURLport;
-	}
-
-	public void setPrevURLport(int prevURLport) {
-		this.prevURLport = prevURLport;
-	}
-
-	public int getPrevURLsecure() {
-		return prevURLsecure;
-	}
-
-	public void setPrevURLsecure(int prevURLsecure) {
-		this.prevURLsecure = prevURLsecure;
-	}
-
-	public boolean getIsURL() {
-		return isURL;
-	}
-
-	public void setIsURL(boolean isURL) {
-		this.isURL = isURL;
-	}
-
-	@SuppressWarnings("unchecked")
-	protected byte[] getData()
-	{
-		byte[] out = new byte[0];
-
-		for (Object key: getVariablesToSend().keySet())
-		{
-			String value = getMultipartTemplate().getFormDataTemplate((String)key, (String)getVariablesToSend().get(key));
-			getContentToSend().add(0, value); //Variables al principio
+			Object key = en.nextElement();
+			ret[idx++] = new NVPair((String) key, (String) hashtable.get(key));
 		}
 
-		for (int idx = 0; idx < getContentToSend().size(); idx++)
-		{
-			Object curr = getContentToSend().elementAt(idx);
-
-			if	(curr instanceof String)
-			{
-				try
-				{
-					if(contentEncoding != null)
-					{
-						out = addToArray(out, ((String)curr).getBytes(contentEncoding));
-					}else
-					{
-						out = addToArray(out, (String) curr);
-					}
-				}catch(UnsupportedEncodingException e)
-				{
-					System.err.println(e.toString());
-					out = addToArray(out, (String) curr);
-				}
-			}
-			else if	(curr instanceof Object[])
-			{
-				StringWriter writer = (StringWriter)((Object[])curr)[0];
-				StringBuffer encoding = (StringBuffer)((Object[])curr)[1];
-
-				if(encoding == null || encoding.length() == 0)
-				{
-					encoding = new StringBuffer("UTF-8");
-				}
-				try
-				{
-					out = addToArray(out, writer.toString().getBytes(encoding.toString()));
-				}
-				catch(UnsupportedEncodingException e)
-				{
-					out = addToArray(out, writer.toString());
-				}
-			}
-			else if	(curr instanceof byte[])
-			{
-				out = addToArray(out, (byte[]) curr);
-			}
-			else //File or FormFile
-			{
-				File file;
-				if (curr instanceof FormFile)
-				{
-					FormFile formFile = (FormFile)curr;
-					out = startMultipartFile(out, formFile.name, formFile.file);
-					file = new File(formFile.file);
-				}
-				else
-				{
-					file = (File) curr;
-				}
-				try
-				{
-					out = addToArray(out, CommonUtil.readToByteArray(new java.io.BufferedInputStream(new FileInputStream(file))));
-				}
-				catch (FileNotFoundException e)
-				{
-					setErrCode(ERROR_IO);
-					setErrDescription(e.getMessage());
-				}
-				catch (IOException e)
-				{
-					setErrCode(ERROR_IO);
-					setErrDescription(e.getMessage());
-				}
-			}
-		}
-		out = endMultipartBoundary(out);
-		return out;
-	}
-
-	private byte[] startMultipartFile(byte[] in, String name, String fileName)
-	{
-		if (getIsMultipart() && CommonUtil.fileExists(fileName)==1)
-		{
-			if (name==null || name=="")
-			{
-				name = CommonUtil.getFileName(fileName);
-			}
-			byte[] out = addToArray(in, getMultipartTemplate().boundarybytes);
-			String mimeType = SpecificImplementation.Application.getContentType(fileName);
-			String header = getMultipartTemplate().getHeaderTemplate(name, fileName, mimeType);
-			try{
-				byte[] headerbytes = header.getBytes("UTF8");
-				out = addToArray(out,headerbytes);
-			} catch( java.io.UnsupportedEncodingException uee)
-			{
-				byte[] headerbytes = header.getBytes();
-				out = addToArray(out,headerbytes);
-			}
-
-			return out;
-		}else{
-			return in;
-		}
-	}
-
-	private byte[] endMultipartBoundary(byte[] in)
-	{
-		if (getIsMultipart()){
-			return addToArray(in, getMultipartTemplate().endBoundaryBytes);
-		}else{
-			return in;
-		}
-	}
-
-	private byte[] addToArray(byte[] in, String val)
-	{
-		byte[] out = new byte[in.length + val.length()];
-
-		System.arraycopy(in, 0, out, 0, in.length);
-		out = val.getBytes();
-
-		return out;
-	}
-
-	private byte[] addToArray(byte[] in, byte[] val)
-	{
-		byte[] out = new byte[in.length + val.length];
-
-		System.arraycopy(in, 0, out, 0, in.length);
-		System.arraycopy(val, 0, out, in.length, val.length);
-
-		return out;
-	}
-
-	public boolean getAuthorizationChanged() {
-		return authorizationChanged;
-	}
-
-	public void setAuthorizationChanged(boolean authorizationChanged) {
-		this.authorizationChanged = authorizationChanged;
-	}
-
-	public boolean getAuthorizationProxyChanged() {
-		return authorizationProxyChanged;
-	}
-
-	public void setAuthorizationProxyChanged(boolean authorizationProxyChanged) {
-		this.authorizationProxyChanged = authorizationProxyChanged;
+		return ret;
 	}
 
 
@@ -679,37 +262,6 @@ public abstract class GXHttpClient implements IHttpClient{
 		FormFile(String file, String name){
 			this.file = file;
 			this.name = name;
-		}
-	}
-
-	class MultipartTemplate
-	{
-		public String boundary;
-		public String formdataTemplate;
-		public byte[] boundarybytes;
-		public byte[] endBoundaryBytes;
-		public String contentType;
-
-		public MultipartTemplate()
-		{
-			boundary = "----------------------------" + CommonUtil.now(false,false).getTime();
-			contentType = "multipart/form-data; boundary=" + boundary;
-			String boundaryStr = "\r\n--" + boundary + "\r\n";
-			String endBoundaryStr = "\r\n--" + boundary + "--";
-			try{
-				boundarybytes = boundaryStr.getBytes("ASCII");
-				endBoundaryBytes = endBoundaryStr.getBytes("ASCII");
-			} catch( java.io.UnsupportedEncodingException uee)
-			{
-				boundarybytes = boundaryStr.getBytes();
-				endBoundaryBytes = endBoundaryStr.getBytes();
-			}
-		}
-		String getHeaderTemplate(String name, String fileName, String mimeType){
-			return "Content-Disposition: form-data; name=\""+ name + "\"; filename=\""+ fileName + "\"\r\n" + "Content-Type: " + mimeType + "\r\n\r\n";
-		}
-		String getFormDataTemplate(String varName, String value){
-			return "\r\n--" + boundary + "\r\nContent-Disposition: form-data; name=\"" + varName + "\";\r\n\r\n" + value;
 		}
 	}
 
