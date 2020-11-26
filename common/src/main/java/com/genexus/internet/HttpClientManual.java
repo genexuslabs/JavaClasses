@@ -1004,6 +1004,27 @@ public class HttpClientManual extends GXHttpClient {
 
 	}
 
+	public InputStream getInputStream(String stringURL) throws IOException
+	{ // for this request always create a new HTTPConnection
+		return getInputStreamStaticMethod(stringURL);
+	}
+
+	private static InputStream getInputStreamStaticMethod(String stringURL) throws IOException {
+		try
+		{
+			URI url = new URI(stringURL);
+			return new HTTPConnection(url.getScheme(), url.getHost(), url.getPort()).Get(url.getPathAndQuery()).getInputStream();
+		}
+		catch (ParseException e)
+		{
+			throw new IOException("Malformed URL " + e.getMessage());
+		}
+		catch (ModuleException e)
+		{
+			throw new IOException("ModuleException " + e.getMessage());
+		}
+	}
+
 	@Override
 	public String getString()
 	{

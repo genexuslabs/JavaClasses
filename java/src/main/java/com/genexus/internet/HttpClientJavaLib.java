@@ -7,6 +7,7 @@ import java.util.*;
 
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.specific.java.HttpClient;
 import com.sun.istack.NotNull;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
@@ -17,9 +18,7 @@ import org.apache.http.client.*;
 import HTTPClient.*;
 import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.SocketConfig;
 import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
@@ -30,6 +29,7 @@ import org.apache.http.impl.client.*;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.cookie.*;
+import org.apache.http.util.EntityUtils;
 
 import javax.net.ssl.SSLSocketFactory;
 
@@ -87,6 +87,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private static HttpClientBuilder httpClientBuilder;
 	private static PoolingHttpClientConnectionManager connManager;
 	private static HttpClientContext httpClientContext;
+	private static CloseableHttpClient httpClient;
+	private static CloseableHttpResponse response;
 	private static CredentialsProvider credentialsProvider;
 	private static RequestConfig reqConfig;		// Atributo usado en la ejecucion del metodo (por ejemplo, httpGet, httpPost)
 	private static CookieStore cookies;
@@ -119,6 +121,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		issuedExternalHttpClientWarning = false;
 		contentEncoding = null;
 		httpClientBuilder = HttpClients.custom();
+		httpClient = null;
 		connManager = new PoolingHttpClientConnectionManager();
 		httpClientBuilder.setConnectionManager(connManager);
 		cookies = new BasicCookieStore();
@@ -132,6 +135,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		httpClientContext = null;
 		credentialsProvider = null;
 		cookiesToSend = null;
+		response = null;
 		resetErrors();
 	}
 
@@ -739,10 +743,9 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public void execute(String method, String url) {
-		resetExecParams();
 
-		CloseableHttpClient httpClient = null;
-		CloseableHttpResponse response = null;
+
+		resetExecParams();
 
 			url = getURLValid(url);		// Funcion genera parte del path en adelante de la URL
 		if (getSecure() == 1)		// Se completa con esquema y host
@@ -858,7 +861,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 			httpClient = this.httpClientBuilder.build();
 
-			if (method.equalsIgnoreCase("GET")) {		// No se le agrega ningun body al envio (caso excepcional)
+			if (method.equalsIgnoreCase("GET")) {		// No se le agrega ningun body al envio (caso excepcional segun RFC 7231)
 				HttpGet httpget = new HttpGet(url.trim());
 				httpget.setConfig(reqConfig);
 				Set<String> keys = headersToSend.keySet();
@@ -884,16 +887,91 @@ public class HttpClientJavaLib extends GXHttpClient {
 				else
 					dataToSend = new ByteArrayEntity(getData());
 				httpPost.setEntity(dataToSend);
-				response = httpClient.execute(httpPost, this.httpClientContext);
+				response = httpClient.execute(httpPost, httpClientContext);
 				statusCode = response.getStatusLine().getStatusCode();
 				reasonLine = response.getStatusLine().getReasonPhrase();
 
 			} else if (method.equalsIgnoreCase("PUT")) {
+				HttpPut httpPut = new HttpPut(url.trim());
+				httpPut.setConfig(reqConfig);
+				Set<String> keys = headersToSend.keySet();
+				for (String header : keys) {
+					httpPut.addHeader(header,headersToSend.get(header));
+				}
+				ByteArrayEntity dataToSend = new ByteArrayEntity(getData());
+				httpPut.setEntity(dataToSend);
+				response = httpClient.execute(httpPut,httpClientContext);
+				statusCode = response.getStatusLine().getStatusCode();
+				reasonLine = response.getStatusLine().getReasonPhrase();
 
-			} else if (method.equalsIgnoreCase("DELETE")) {
+			} else if (method.equalsIgnoreCase("DELETE")) {		// No se le agrega ningun body al envio (caso excepcional segun RFC 7231)
+				HttpDelete httpDelete = new HttpDelete(url.trim());
+				httpDelete.setConfig(reqConfig);
+				Set<String> keys = headersToSend.keySet();
+				for (String header : keys) {
+					httpDelete.addHeader(header,headersToSend.get(header));
+				}
+//				ByteArrayEntity dataToSend;
+//				if (getVariablesToSend().size() > 0 || getContentToSend().size() > 0) {
+//					dataToSend = new ByteArrayEntity(getData());
+//					httpDelete.
+//				}
+				response = httpClient.execute(httpDelete,httpClientContext);
+				statusCode = response.getStatusLine().getStatusCode();
+				reasonLine = response.getStatusLine().getReasonPhrase();
 
-			} else {
-				// VER COMO TRATAR ACA LOS OTROS METODOS QUE PUEDEN VENIR
+			} else if (method.equalsIgnoreCase("HEAD")) {		// No se le agrega ningun body al envio (caso excepcional segun RFC 7231)
+				HttpHead httpHead = new HttpHead(url.trim());
+				httpHead.setConfig(reqConfig);
+				Set<String> keys = headersToSend.keySet();
+				for (String header : keys) {
+					httpHead.addHeader(header,headersToSend.get(header));
+				}
+//				ByteArrayEntity dataToSend = new ByteArrayEntity(getData());
+
+				response = httpClient.execute(httpHead,httpClientContext);
+				statusCode = response.getStatusLine().getStatusCode();
+				reasonLine = response.getStatusLine().getReasonPhrase();
+
+
+			} else if (method.equalsIgnoreCase("CONNECT")) {		// No se le agrega ningun body al envio (caso excepcional segun RFC 7231)
+
+
+			} else if (method.equalsIgnoreCase("OPTIONS")) {		// No se le agrega ningun body al envio (caso excepcional segun RFC 7231)
+				HttpOptions httpOptions = new HttpOptions(url.trim());
+				httpOptions.setConfig(reqConfig);
+				Set<String> keys = headersToSend.keySet();
+				for (String header : keys) {
+					httpOptions.addHeader(header,headersToSend.get(header));
+				}
+//				ByteArrayEntity dataToSend = new ByteArrayEntity(getData());
+				response = httpClient.execute(httpOptions,httpClientContext);
+				statusCode = response.getStatusLine().getStatusCode();
+				reasonLine = response.getStatusLine().getReasonPhrase();
+
+			} else if (method.equalsIgnoreCase("TRACE")) {		// No lleva payload
+				HttpTrace httpTrace = new HttpTrace(url.trim());
+				httpTrace.setConfig(reqConfig);
+				Set<String> keys = headersToSend.keySet();
+				for (String header : keys) {
+					httpTrace.addHeader(header,headersToSend.get(header));
+				}
+				response = httpClient.execute(httpTrace,httpClientContext);
+				statusCode = response.getStatusLine().getStatusCode();
+				reasonLine = response.getStatusLine().getReasonPhrase();
+
+			} else if (method.equalsIgnoreCase("PATCH")) {
+				HttpPatch httpPatch = new HttpPatch(url.trim());
+				httpPatch.setConfig(reqConfig);
+				Set<String> keys = headersToSend.keySet();
+				for (String header : keys) {
+					httpPatch.addHeader(header,headersToSend.get(header));
+				}
+				ByteArrayEntity dataToSend = new ByteArrayEntity(getData());
+				httpPatch.setEntity(dataToSend);
+				response = httpClient.execute(httpPatch,httpClientContext);
+				statusCode = response.getStatusLine().getStatusCode();
+				reasonLine = response.getStatusLine().getReasonPhrase();
 			}
 
 
@@ -904,20 +982,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 			setErrDescription(e.getMessage());
 		}
 		finally {		// Se cierra la conexion siempre al final
-			if (response != null) {
-				try {
-					response.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-			if (httpClient != null) {
-				try {
-					httpClient.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
 			resetState();
 		}
 
@@ -934,40 +998,118 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public void getHeader(String name, long[] value) {
+		if (response == null)
+			return;
+		Header[] headers = response.getHeaders(name);
+		if (headers == null)
+			throw new NumberFormatException("null");
+//		for (int i = 0; i< headers.length; i++) {			// Posible solucion en el caso que se quieran poner todos los headers que se obtienen con el name pasado en el parametro value
+//			value[i] = Integer.parseInt(headers[i].getValue());
+//		}
+		value[0] = Integer.parseInt(headers[0].getValue());
 	}
 
 	public String getHeader(String name) {
-		return "";
+		if (response == null || response.getHeaders(name) == null)
+			return "";
+		return response.getHeaders(name)[0].getValue();
 	}
 
 	public void getHeader(String name, String[] value) {
+		if (response == null || response.getHeaders(name) == null)
+			return;
+		Header[] headers = response.getHeaders(name);
+//		for (int i = 0; i< headers.length; i++) {			// Posible solucion en el caso que se quieran poner todos los headers que se obtienen con el name pasado en el parametro value
+//			value[i] = headers[i].getValue();
+//		}
+		value[0] = headers[0].getValue();
 	}
 
 	public void getHeader(String name, java.util.Date[] value) {
+		HTTPResponse res = (HTTPClient.HTTPResponse) response;
+		if (res == null)
+			return;
+		try
+		{
+			value[0] = res.getHeaderAsDate(name);
+		}
+		catch (IOException e)
+		{
+			setErrCode(ERROR_IO);
+			setErrDescription(e.getMessage());
+		}
+		catch (ModuleException e)
+		{
+			setErrCode(ERROR_IO);
+			setErrDescription(e.getMessage());
+		}
 	}
 
 	public void getHeader(String name, double[] value) {
+		if (response == null || response.getHeaders(name) == null)
+			return;
+		value[0] = CommonUtil.val(response.getHeaders(name)[0].getValue());
 	}
 
 	public InputStream getInputStream() throws IOException {
-		return new InputStream() {
-			@Override
-			public int read() throws IOException {
+		return response.getEntity().getContent();
+	}
 
-				return 0;
-			}
-		};
+	public InputStream getInputStream(String stringURL) throws IOException
+	{
+		try {
+			URI url = new URI(stringURL);
+			HttpGet gISHttpGet = new HttpGet(String.valueOf(url));
+			CloseableHttpClient gISHttpClient = HttpClients.createDefault();
+			return gISHttpClient.execute(gISHttpGet).getEntity().getContent();
+
+		} catch (ParseException e) {
+			throw new IOException("Malformed URL " + e.getMessage());
+		}
 	}
 
 	public String getString() {
+		if (response == null)
+			return "";
+		try {
+			String res = EntityUtils.toString(response.getEntity());
+			return res;
+		} catch (IOException e) {
+			setErrCode(ERROR_IO);
+			setErrDescription(e.getMessage());
+		}
 		return "";
 	}
 
 	public void toFile(String fileName) {
+		if (response == null)
+			return;
+		try {
+			CommonUtil.InputStreamToFile(response.getEntity().getContent(), fileName);
+		} catch (IOException e) {
+			setErrCode(ERROR_IO);
+			setErrDescription(e.getMessage());
+		}
 	}
 
 
 	public void cleanup() {
+		if (response != null) {
+			try {
+				response.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		if (httpClient != null) {
+			try {
+				httpClient.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		if (connManager != null)
+			connManager.close();
 	}
 
 	static class MultipartTemplate
