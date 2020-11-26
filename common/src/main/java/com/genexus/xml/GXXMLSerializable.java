@@ -297,7 +297,7 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 	}
 	public Object GetJSONObject(boolean includeState, boolean includeNoInitialized)
 	{
-		jsonObj.clear();
+		jsonObj = new JSONObject();
 		tojson(includeState, includeNoInitialized);
 		if (isArrayObject)
 		{
