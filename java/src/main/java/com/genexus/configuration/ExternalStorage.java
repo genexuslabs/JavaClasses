@@ -115,16 +115,6 @@ public class ExternalStorage extends GXStorageProvider {
 				setEncryptProperty(properties, "ACCESS_KEY");
 				break;
 
-			case "BLUEMIXSTORAGE":
-				className = "com.genexus.db.driver.ExternalProviderBluemix";
-				setDefaultProperty(properties, "SERVER_URL", "https://identity.open.softlayer.com");
-				setDefaultProperty(properties, "STORAGE_PROVIDER_REGION", "dallas");
-				setEncryptProperty(properties, "PUBLIC_BUCKET_NAME");
-				setEncryptProperty(properties, "PRIVATE_BUCKET_NAME");
-				setEncryptProperty(properties, "STORAGE_PROVIDER_USER");
-				setEncryptProperty(properties, "STORAGE_PROVIDER_PASSWORD");
-				break;
-
 			case "BOX":
 				className = "com.genexus.db.driver.ExternalProviderBox";
 				break;
