@@ -51,6 +51,7 @@ import com.genexus.util.GXServices;
 public class GXPreparedStatement extends GXStatement implements PreparedStatement, com.genexus.db.IFieldSetter, IGXPreparedStatement
 {
 	private static final boolean DEBUG       = DebugFlag.DEBUG;
+	public static final int PLSQL_BOOLEAN = 252;
 
 	public static boolean longVarCharAsOracleLong = false;
 	public static com.genexus.LocalUtil localUtil = new com.genexus.LocalUtil('.', "MDY", "24", 40, "eng");
@@ -391,7 +392,14 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			log(GXDBDebug.LOG_MAX, "setBoolean - index : " + index + " value : " + value);
 			try
 			{
-		    	stmt.setBoolean(index, value);
+				if (this instanceof GXCallableStatement && con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+				{
+					stmt.setObject(index, value, PLSQL_BOOLEAN);
+				}
+				else
+				{
+					stmt.setBoolean(index, value);
+				}
 			}
 			catch (SQLException sqlException)
 			{
@@ -401,7 +409,14 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		}
 		else
 		{
-			stmt.setBoolean(index, value);
+			if (this instanceof GXCallableStatement && con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+			{
+				stmt.setObject(index, value, PLSQL_BOOLEAN);
+			}
+			else
+			{
+				stmt.setBoolean(index, value);
+			}
 		}
 	}
 

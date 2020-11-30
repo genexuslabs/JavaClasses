@@ -3,18 +3,7 @@ package com.genexus.db.driver;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
-import java.sql.Array;
-import java.sql.Blob;
-import java.sql.CallableStatement;
-import java.sql.Clob;
-import java.sql.Date;
-import java.sql.NClob;
-import java.sql.Ref;
-import java.sql.RowId;
-import java.sql.SQLException;
-import java.sql.SQLXML;
-import java.sql.Time;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.Calendar;
 import java.util.Map;
 
@@ -90,6 +79,10 @@ public final class GXCallableStatement extends GXPreparedStatement implements Ca
 
 	public void registerOutParameter(int parameterIndex, int sqlType) throws SQLException
 	{
+		if (con.getDBMS().getId() == GXDBMS.DBMS_ORACLE && sqlType == Types.BIT)
+		{
+			sqlType = PLSQL_BOOLEAN;
+		}
 		if	(DEBUG)
 		{
 			log(GXDBDebug.LOG_MAX, "registerOutParameter - index : " + parameterIndex + " sqlType " + sqlType);
