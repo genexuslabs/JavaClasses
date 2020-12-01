@@ -393,7 +393,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			log(GXDBDebug.LOG_MAX, "setBoolean - index : " + index + " value : " + value);
 			try
 			{
-				if (this instanceof GXCallableStatement && con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+				if (this instanceof GXCallableStatement && !isUpdateBlobStmt && con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
 				{
 					stmt.setObject(index, value, PLSQL_BOOLEAN);
 				}
@@ -410,7 +410,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		}
 		else
 		{
-			if (this instanceof GXCallableStatement && con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+			if (this instanceof GXCallableStatement && !isUpdateBlobStmt && con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
 			{
 				stmt.setObject(index, value, PLSQL_BOOLEAN);
 			}
@@ -1333,9 +1333,12 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 
 	protected boolean skipSetBlobs = false;
 	protected String [] blobFiles;
+	private boolean isUpdateBlobStmt = false;
+
 	public void skipSetBlobs(boolean skipSetBlobs)
 	{
 		this.skipSetBlobs = skipSetBlobs;
+		isUpdateBlobStmt = true;
 	}
 	
 	public boolean getSkipSetBlobs()
