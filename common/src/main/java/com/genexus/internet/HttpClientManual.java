@@ -47,12 +47,21 @@ public class HttpClientManual extends GXHttpClient {
 	private Vector<HttpClientPrincipal> digestProxyAuthorization = new Vector<>();
 	private Vector<HttpClientPrincipal> NTLMProxyAuthorization = new Vector<>();
 
-	public static boolean issuedExternalHttpClientWarning = false;
-	public boolean usingExternalHttpClient = false;
 
 
 	private HTTPConnection con = null;
 	private HTTPResponse res;
+
+	static
+	{
+		HTTPConnection.setDefaultAllowUserInteraction(false);
+
+        if(CommonUtil.isWindows())
+        {
+            String os = System.getProperty("os.name", "").trim().toUpperCase();
+            if(os.endsWith("95") || os.endsWith("98") || os.endsWith("ME"))HTTPConnection.setPipelining(false);
+        }
+	}
 
 	private void resetErrors()
 	{
@@ -633,6 +642,7 @@ public class HttpClientManual extends GXHttpClient {
 	@Override
 	public void execute(String method, String url)
 	{
+//		System.out.println("Viejito");
 		resetErrors();
 
 		// ESTE BLOQUE COMENTADO FUE REEMPLAZADO POR LA FUNCION getURLValid
@@ -739,9 +749,8 @@ public class HttpClientManual extends GXHttpClient {
 			proxyInfoChanged = false; // Desmarco las flags
 			setAuthorizationProxyChanged(false);
 
-
-			if  (!url.startsWith("/"))		// Este caso sucede cuando salta la excepcion ParseException, determinando que la url pasada por parametro no es una URL valida
-				url = getBaseURL().trim() + url;
+			if  (!url.startsWith("/"))
+				url = getBaseURL() + url;
 
 			if	(method.equalsIgnoreCase("GET"))
 			{

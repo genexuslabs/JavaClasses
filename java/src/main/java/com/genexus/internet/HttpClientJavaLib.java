@@ -70,9 +70,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private static  Vector<HttpClientPrincipal> digestProxyAuthorization;
 	private static  Vector<HttpClientPrincipal> NTLMProxyAuthorization;
 
-	public static boolean issuedExternalHttpClientWarning;
-	public boolean usingExternalHttpClient = false;
-
 	// Definicion de Singleton
 
 	private static HttpClientJavaLib httpClientJavaLib = new HttpClientJavaLib();
@@ -118,7 +115,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 		basicProxyAuthorization = new Vector<>();
 		digestProxyAuthorization = new Vector<>();
 		NTLMProxyAuthorization = new Vector<>();
-		issuedExternalHttpClientWarning = false;
 		contentEncoding = null;
 		httpClientBuilder = HttpClients.custom();
 		httpClient = null;
@@ -513,6 +509,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 		catch (ParseException e)
 		{
+			if (url.isEmpty())
+				url = "/null";
 			return url;
 		}
 	}
@@ -743,15 +741,16 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public void execute(String method, String url) {
-
-
+//		System.out.println("nuevito");
 		resetExecParams();
 
-			url = getURLValid(url);		// Funcion genera parte del path en adelante de la URL
-		if (getSecure() == 1)		// Se completa con esquema y host
-			url = "https://" + getHost() + url.trim();
+		url = getURLValid(url);		// Funcion genera parte del path en adelante de la URL
+		if  (!url.startsWith("/"))
+			url = !getBaseURL().startsWith("/")?"/" + getBaseURL() + url:getBaseURL() + url;
+		if (getSecure() == 1)        // Se completa con esquema y host
+			url = "https://" + getHost() + ":" + getPort() + url;
 		else
-			url = "http://" + getHost() + url.trim();
+			url = "http://" + getHost() + ":" + getPort() + url;
 
 		try {
 			if (getHostChanged()) {
@@ -856,6 +855,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			setAuthorizationProxyChanged(false);
 
 			if (this.credentialsProvider != null) {    // En caso que se haya agregado algun tipo de autenticacion (ya sea para el host destino como para el proxy) se agrega al contexto
+				httpClientContext = HttpClientContext.create();
 				httpClientContext.setCredentialsProvider(credentialsProvider);
 			}
 
@@ -974,14 +974,23 @@ public class HttpClientJavaLib extends GXHttpClient {
 				reasonLine = response.getStatusLine().getReasonPhrase();
 			}
 
-
-			SetCookieAtr(this.cookiesToSend);		// Se setean las cookies devueltas en la lista de cookies
+			if (cookiesToSend != null)
+				SetCookieAtr(this.cookiesToSend);		// Se setean las cookies devueltas en la lista de cookies
 
 		} catch (IOException e) {
 			setErrCode(ERROR_IO);
 			setErrDescription(e.getMessage());
 		}
 		finally {		// Se cierra la conexion siempre al final
+			getStatusCode();
+			if (getIsURL())
+			{
+				this.setHost(getPrevURLhost());
+				this.setBaseURL(getPrevURLbaseURL());
+				this.setPort(getPrevURLport());
+				this.setSecure(getPrevURLsecure());
+				setIsURL(false);
+			}
 			resetState();
 		}
 
@@ -1072,7 +1081,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		if (response == null)
 			return "";
 		try {
-			String res = EntityUtils.toString(response.getEntity());
+			String res = EntityUtils.toString(response.getEntity(), "UTF-8");
 			return res;
 		} catch (IOException e) {
 			setErrCode(ERROR_IO);
