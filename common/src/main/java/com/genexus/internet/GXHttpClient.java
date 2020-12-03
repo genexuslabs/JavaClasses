@@ -52,8 +52,8 @@ public abstract class GXHttpClient implements IHttpClient{
 //	private Vector<HttpClientPrincipal> digestProxyAuthorization = new Vector<>();
 //	private Vector<HttpClientPrincipal> NTLMProxyAuthorization = new Vector<>();
 //
-//	public static boolean issuedExternalHttpClientWarning = false;
-//	public boolean usingExternalHttpClient = false;
+	public static boolean issuedExternalHttpClientWarning = false;
+	public boolean usingExternalHttpClient = false;
 
 //	protected void resetErrors()
 //	{

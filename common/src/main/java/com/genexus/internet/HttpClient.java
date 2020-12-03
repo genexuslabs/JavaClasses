@@ -11,19 +11,16 @@ import com.genexus.CommonUtil;
 */
 public class HttpClient
 {
-	static
-	{
-		HTTPConnection.setDefaultAllowUserInteraction(false);
-        
-        if(CommonUtil.isWindows())
-        {
-            String os = System.getProperty("os.name", "").trim().toUpperCase();
-            if(os.endsWith("95") || os.endsWith("98") || os.endsWith("ME"))HTTPConnection.setPipelining(false);
-        }             
-	}
-
-//	public static boolean issuedExternalHttpClientWarning = false;	// AGREGADO EN GXHttpClient
-//	public boolean usingExternalHttpClient = false;		// AGREGADO EN GXHttpClient
+//	static
+//	{
+//		HTTPConnection.setDefaultAllowUserInteraction(false);
+//
+//        if(CommonUtil.isWindows())
+//        {
+//            String os = System.getProperty("os.name", "").trim().toUpperCase();
+//            if(os.endsWith("95") || os.endsWith("98") || os.endsWith("ME"))HTTPConnection.setPipelining(false);
+//        }
+//	}
 
 	private IHttpClient session;
 	
