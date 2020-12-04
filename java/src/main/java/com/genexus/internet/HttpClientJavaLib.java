@@ -745,12 +745,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		resetExecParams();
 
 		url = getURLValid(url);		// Funcion genera parte del path en adelante de la URL
-		if  (!url.startsWith("/"))
-			url = !getBaseURL().startsWith("/")?"/" + getBaseURL() + url:getBaseURL() + url;
-		if (getSecure() == 1)        // Se completa con esquema y host
-			url = "https://" + getHost() + ":" + getPort() + url;
-		else
-			url = "http://" + getHost() + ":" + getPort() + url;
+
 
 		try {
 			if (getHostChanged()) {
@@ -858,6 +853,13 @@ public class HttpClientJavaLib extends GXHttpClient {
 				httpClientContext = HttpClientContext.create();
 				httpClientContext.setCredentialsProvider(credentialsProvider);
 			}
+
+			if  (!url.startsWith("/"))
+				url = !getBaseURL().startsWith("/")?"/" + getBaseURL() + url:getBaseURL() + url;
+			if (getSecure() == 1)        // Se completa con esquema y host
+				url = "https://" + getHost() + ":" + getPort() + url;
+			else
+				url = "http://" + getHost() + ":" + getPort() + url;
 
 			httpClient = this.httpClientBuilder.build();
 
