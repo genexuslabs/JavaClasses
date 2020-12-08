@@ -1728,6 +1728,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
             batchRecords = new Object[size];
             batchSize = size;
             batchStmt = true;
+			resetRecordCount();
         }
 
         public Object[] getBatchRecords(){
