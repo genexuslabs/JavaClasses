@@ -163,6 +163,11 @@ public final class GXutil
     public static String formatDateTimeParm(Date date)
     {
         return CommonUtil.formatDateTimeParm(date);
+	}
+	
+	public static String formatDateTimeParmMS(Date date)
+    {
+        return CommonUtil.formatDateTimeParmMS(date);
     }
 
     public static String formatDateParm(Date date)
@@ -1635,6 +1640,11 @@ public final class GXutil
 	public static boolean isAbsoluteURL(String url)
 	{
 		return CommonUtil.isAbsoluteURL(url);
+	}
+
+	public static boolean hasUrlQueryString(String url)
+	{
+		return CommonUtil.hasUrlQueryString(url);
 	}
 
 	public static void ErrorToMessages(String errorId, String errorDescription, GXBaseCollection<SdtMessages_Message> messages)
