@@ -8,7 +8,6 @@ import com.genexus.sd.store.validation.model.exceptions.StoreException;
 import com.genexus.sd.store.validation.model.exceptions.StoreInvalidPurchaseException;
 import com.genexus.sd.store.validation.model.exceptions.StorePurchaseNotFoundException;
 
-import org.json.JSONObject;
 import org.junit.*;
 
 import com.genexus.sd.store.validation.platforms.*;
