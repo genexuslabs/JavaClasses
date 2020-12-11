@@ -3,6 +3,9 @@ package com.genexus.internet;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 import com.genexus.CommonUtil;
@@ -11,6 +14,7 @@ import com.genexus.specific.java.HttpClient;
 import com.sun.istack.NotNull;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.NTCredentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -20,17 +24,26 @@ import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
 import org.apache.http.config.SocketConfig;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.impl.auth.BasicSchemeFactory;
 import org.apache.http.impl.client.*;
+import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.cookie.*;
 import org.apache.http.util.EntityUtils;
 
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 
 public class HttpClientJavaLib extends GXHttpClient {
@@ -116,12 +129,20 @@ public class HttpClientJavaLib extends GXHttpClient {
 		digestProxyAuthorization = new Vector<>();
 		NTLMProxyAuthorization = new Vector<>();
 		contentEncoding = null;
-		httpClientBuilder = HttpClients.custom();
 		httpClient = null;
-		connManager = new PoolingHttpClientConnectionManager();
-		httpClientBuilder.setConnectionManager(connManager);
+		httpClientBuilder = HttpClients.custom();
+		setConnManager();
 		cookies = new BasicCookieStore();
 		resetExecParams();
+	}
+
+	public static void setConnManager() {
+		Registry<ConnectionSocketFactory> socketFactoryRegistry =
+			RegistryBuilder.<ConnectionSocketFactory>create()
+				.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
+				.build();
+		connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+		httpClientBuilder.setConnectionManager(connManager);
 	}
 
 	private static void resetExecParams() {
@@ -138,7 +159,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	private static void resetErrors()
 	{
-		errCode = 0;
+		if (errCode != 0) {
+			stcCleanup();
+			setConnManager();
+		}
+				errCode = 0;
 		errDescription = "";
 	}
 
@@ -714,7 +739,24 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 
-	private SSLConnectionSocketFactory getSSLSecureInstance() {
+	private static SSLConnectionSocketFactory getSSLSecureInstance() {
+		try {
+			SSLContext sslContext = SSLContextBuilder
+				.create()
+				.loadTrustMaterial(new TrustSelfSignedStrategy())
+				.build();
+			return new SSLConnectionSocketFactory(
+				sslContext,
+				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3" },
+				null,
+				SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (KeyManagementException e) {
+			e.printStackTrace();
+		} catch (KeyStoreException e) {
+			e.printStackTrace();
+		}
 		return new SSLConnectionSocketFactory(
 			SSLContexts.createDefault(),
 			new String[] { "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3" },
@@ -741,7 +783,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public void execute(String method, String url) {
-//		System.out.println("nuevito");
 		resetExecParams();
 
 		url = getURLValid(url);		// Funcion genera parte del path en adelante de la URL
@@ -752,10 +793,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 				if (getSecure() == 1 && getPort() == 80) {
 					setPort(443);
 				}
-				if (getSecure() != 0) {
-					SSLConnectionSocketFactory sslsf = getSSLSecureInstance();
-					httpClientBuilder.setSSLSocketFactory(sslsf);        // seteo SSL en HttpClientBuilder
-				}
+
 				SocketConfig socketConfig = SocketConfig.custom().setTcpNoDelay(getTcpNoDelay()).build();	// Seteo de TcpNoDelay
 				this.httpClientBuilder.setDefaultSocketConfig(socketConfig);
 
@@ -765,23 +803,28 @@ public class HttpClientJavaLib extends GXHttpClient {
 				this.httpClientBuilder.setDefaultCookieStore(this.cookiesToSend);    // CookiesSeteo CookieStore
 			}
 
-			if (proxyInfoChanged)
+			if (proxyInfoChanged) {
+				HttpHost proxy = new HttpHost(getProxyServerHost(), getProxyServerPort());
+				httpClientBuilder.setRoutePlanner(new DefaultProxyRoutePlanner(proxy));
 				this.reqConfig = RequestConfig.custom()
-					.setConnectionRequestTimeout(getTimeout() * 1000)	// Se multiplica por 1000 ya que tiene que ir en ms y se recibe en segundos
-					.setProxy(new HttpHost(getProxyServerHost(), getProxyServerPort()))
+					.setSocketTimeout(getTimeout() * 1000)    // Se multiplica por 1000 ya que tiene que ir en ms y se recibe en segundos
+					.setProxy(proxy)
 					.build();
-			else
+			} else {
+				httpClientBuilder.setRoutePlanner(null);
 				this.reqConfig = RequestConfig.custom()
-					.setConnectionRequestTimeout(getTimeout() * 1000)
+					.setConnectTimeout(getTimeout() * 1000)
 					.build();
+			}
 
 			if (getHostChanged() || getAuthorizationChanged()) { // Si el host cambio o si se agrego alguna credencial
 				this.credentialsProvider = new BasicCredentialsProvider();
 
 				for (Enumeration en = getBasicAuthorization().elements(); en.hasMoreElements(); ) {
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-					this.credentialsProvider.setCredentials(
-						new AuthScope(getHost(), getPort(), p.realm, AuthSchemes.BASIC),
+					credentialsProvider.setCredentials(
+//						new AuthScope(getHost(), getPort(), p.realm, AuthSchemes.BASIC),
+						AuthScope.ANY,
 						new UsernamePasswordCredentials(p.user, p.password));
 				}
 
@@ -792,7 +835,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 						new UsernamePasswordCredentials(p.user, p.password));
 				}
 
-				for (Enumeration en = getDigestAuthorization().elements(); en.hasMoreElements(); ) {
+				for (Enumeration en = getNTLMAuthorization().elements(); en.hasMoreElements(); ) {
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
 					try {
 						this.credentialsProvider.setCredentials(
@@ -823,14 +866,14 @@ public class HttpClientJavaLib extends GXHttpClient {
 						new UsernamePasswordCredentials(p.user, p.password));
 				}
 
-				for (Enumeration en = getDigestAuthorization().elements(); en.hasMoreElements(); ) {
+				for (Enumeration en = getDigestProxyAuthorization().elements(); en.hasMoreElements(); ) {
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
 					this.credentialsProvider.setCredentials(
 						new AuthScope(getProxyServerHost(), getProxyServerPort(), p.realm, AuthSchemes.DIGEST),
 						new UsernamePasswordCredentials(p.user, p.password));
 				}
 
-				for (Enumeration en = getDigestAuthorization().elements(); en.hasMoreElements(); ) {
+				for (Enumeration en = getNTLMProxyAuthorization().elements(); en.hasMoreElements(); ) {
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
 					try {
 						this.credentialsProvider.setCredentials(
@@ -856,10 +899,10 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 			if  (!url.startsWith("/"))
 				url = !getBaseURL().startsWith("/")?"/" + getBaseURL() + url:getBaseURL() + url;
-			if (getSecure() == 1)        // Se completa con esquema y host
-				url = "https://" + getHost() + ":" + getPort() + url;
+			if (getSecure() == 1)   // Se completa con esquema y host
+				url = "https://" + getHost() + url;		// La lib de HttpClient agrega el port
 			else
-				url = "http://" + getHost() + ":" + getPort() + url;
+				url = "http://" + getHost() + ":" + (getPort() == -1? URI.defaultPort("http"):getPort()) + url;
 
 			httpClient = this.httpClientBuilder.build();
 
@@ -870,7 +913,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 				for (String header : keys) {
 					httpget.addHeader(header,headersToSend.get(header));
 				}
-				response = httpClient.execute(httpget, this.httpClientContext);
+				response = httpClient.execute(httpget, httpClientContext);
 				statusCode = response.getStatusLine().getStatusCode();
 				reasonLine = response.getStatusLine().getReasonPhrase();
 
@@ -983,7 +1026,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			setErrCode(ERROR_IO);
 			setErrDescription(e.getMessage());
 		}
-		finally {		// Se cierra la conexion siempre al final
+		finally {
 			getStatusCode();
 			if (getIsURL())
 			{
@@ -1105,6 +1148,10 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 
 	public void cleanup() {
+		stcCleanup();
+	}
+
+	private static void stcCleanup() {
 		if (response != null) {
 			try {
 				response.close();
