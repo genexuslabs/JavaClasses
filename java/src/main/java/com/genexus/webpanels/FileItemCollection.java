@@ -6,6 +6,7 @@ import java.util.Vector;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 
+
 public class FileItemCollection
 {
   protected Vector<FileItem> vector;

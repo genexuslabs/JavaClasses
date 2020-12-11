@@ -122,7 +122,7 @@ public class GXFile extends AbstractGXFile {
         			URI uriFile = URI.create(absoluteFileName);
         			FileSource = new GXFileInfo(new File(uriFile));
         		} catch(Exception e) {
-        			FileSource = new GXFileInfo(new File(absoluteFileName));
+        				FileSource = new GXFileInfo(new File(absoluteFileName));
         		}
         }
     }
