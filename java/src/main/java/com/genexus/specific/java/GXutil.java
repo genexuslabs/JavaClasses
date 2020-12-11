@@ -11,6 +11,8 @@ import java.util.TimeZone;
 
 import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -20,8 +22,11 @@ import com.genexus.ModelContext;
 import com.genexus.common.interfaces.IExtensionGXutil;
 import com.genexus.db.IDataStoreProvider;
 import com.genexus.util.CacheAPI;
+import org.apache.logging.log4j.Logger;
 
 public class GXutil implements IExtensionGXutil {
+
+	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(GXutil.class);
 
 	private static org.joda.time.DateTimeZone Java2JodaTimeZone(TimeZone tz) {
 		org.joda.time.DateTimeZone jodaTZ;
@@ -154,11 +159,40 @@ public class GXutil implements IExtensionGXutil {
 	}
 
 	@Override
-	public String getUploadValue(String value, String uploadValue) {
-		if (com.genexus.CommonUtil.isUploadPrefix(value) && CacheAPI.files().contains(uploadValue)) {
-			uploadValue = CacheAPI.files().get(uploadValue);
-		}
+	public String getUploadValue(String value) {
+		String uploadValue = getUploadValue(value, "path");
+		if (uploadValue == null || uploadValue.isEmpty())
+			return value;
+
 		return uploadValue;
+	}
+
+	@Override
+	public String getUploadExtensionValue(String value) {
+		return getUploadValue(value, "fileExtension");
+	}
+
+	@Override
+	public String getUploadNameValue(String value) {
+		return getUploadValue(value, "fileName");
+	}
+
+	public String getUploadValue(String value, String fieldName) {
+		String uploadId = value.replace(CommonUtil.UPLOADPREFIX, "");
+		if (com.genexus.CommonUtil.isUploadPrefix(value) && CacheAPI.files().contains(uploadId)) {
+			String uploadValueJson = CacheAPI.files().get(uploadId);
+			try {
+				JSONObject json = new JSONObject(uploadValueJson);
+				value = (String)json.get(fieldName);
+			}
+			catch (JSONException e) {
+				log.debug("Error Getting Upload Value", e);
+			}
+		}
+		else
+			value = "";
+
+		return value;
 	}
 
 	@Override

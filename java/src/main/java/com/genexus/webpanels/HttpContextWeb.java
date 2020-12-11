@@ -162,16 +162,7 @@ public class HttpContextWeb extends HttpContext {
 	private FileItemIterator parseMultiParts() {
 		if (lstParts == null) {
 			try {
-				sTmpDir = context.getClientPreferences().getTMPMEDIA_DIR();
-				if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) == null) {
-					if (!new File(sTmpDir).isAbsolute()) {
-						sTmpDir = com.genexus.ModelContext.getModelContext().getHttpContext().getDefaultPath()
-								+ File.separator + "WEB-INF" + File.separatorChar + sTmpDir;
-					}
-					File path = new File(sTmpDir);
-					if (!path.exists())
-						path.mkdirs();
-				}
+				sTmpDir = Preferences.getDefaultPreferences().getPRIVATE_PATH();
 				if (request != null && ServletFileUpload.isMultipartContent(request)) {
 					ServletFileUpload upload = new ServletFileUpload();
 					upload.setHeaderEncoding("UTF-8");
@@ -1519,7 +1510,6 @@ public class HttpContextWeb extends HttpContext {
 		if (fileItemCollection != null) {
 			for (int j = 0; fileItemCollection.getCount() > j; j++) {
 				FileItem fileItem1 = fileItemCollection.item(j);
-				fileItem1.delete();
 				fileItem1 = null;
 			}
 			fileItemCollection.clear();
