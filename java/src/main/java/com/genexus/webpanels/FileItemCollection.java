@@ -6,10 +6,6 @@ import java.util.Vector;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 
-import com.genexus.Application;
-import com.genexus.GXDbFile;
-import com.genexus.util.GXServices;
-
 public class FileItemCollection
 {
   protected Vector<FileItem> vector;
@@ -28,16 +24,7 @@ public class FileItemCollection
                 String name = completeFileName;
                 if (!item.isFormField())
                 {
-                    String type = GXDbFile.getFileType(completeFileName);
-                    name = GXDbFile.getFileName(completeFileName) + (type.trim().length() == 0 ? "" : ".") + type;
-                    if (Application.getExternalProvider() == null)
-                    {
-                        name = rootPath + GXDbFile.generateUri(name, true, false);
-                    }
-                    else
-                    {
-                        name = rootPath.replace(java.io.File.separator, "/") + GXDbFile.generateUri(name, true, false);
-                    }
+					name = rootPath + com.genexus.PrivateUtilities.getTempFileName("tmp");
                 }
                 InputStream stream = item.openStream();
                 FileItem fileItem = new FileItem(completeFileName, name, item.isFormField(), item.getFieldName(), stream);

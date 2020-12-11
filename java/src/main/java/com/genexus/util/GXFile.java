@@ -11,6 +11,7 @@ import java.util.Vector;
 
 import com.genexus.IHttpContext;
 import com.genexus.ModelContext;
+import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.db.driver.ResourceAccessControlList;
 import com.genexus.db.driver.ExternalProvider;
 import com.genexus.webpanels.HttpContextWeb;
@@ -32,6 +33,7 @@ public class GXFile extends AbstractGXFile {
     private String ErrDescription;
     private boolean ret;
     private boolean isExternal = false;
+    private String uploadFileId;
     
     public static ICleanupFile CleanUp;
     
@@ -52,6 +54,11 @@ public class GXFile extends AbstractGXFile {
     }
     
     public GXFile(String fileName,  ResourceAccessControlList fileAcl, boolean isLocal) {
+		if (com.genexus.CommonUtil.isUploadPrefix(fileName)) {
+			uploadFileId = fileName;
+			fileName = SpecificImplementation.GXutil.getUploadValue(fileName);
+		}
+
     	ExternalProvider storageProvider = Application.getExternalProvider();
         if (storageProvider != null && !isLocal) {
             FileSource = new GXExternalFileInfo(fileName, storageProvider, true, fileAcl);
@@ -99,6 +106,10 @@ public class GXFile extends AbstractGXFile {
         if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) != null && !isLocal) {
         		FileSource = new GXExternalFileInfo(FileName, Application.getExternalProvider());
         } else {
+				if (com.genexus.CommonUtil.isUploadPrefix(FileName)) {
+					uploadFileId = FileName;
+					FileName = SpecificImplementation.GXutil.getUploadValue(FileName);
+				}
                 String absoluteFileName = FileName;
         		try {
         		    if (ModelContext.getModelContext() != null && ! new File(absoluteFileName).isAbsolute())
@@ -280,6 +291,9 @@ public class GXFile extends AbstractGXFile {
     public String getName() {
         if (sourceSeted()) {
             resetErrors();
+			if (uploadFileId != null) {
+				return SpecificImplementation.GXutil.getUploadNameValue(uploadFileId);
+			}
             try {
                 if ((FileSource == null) || !(FileSource.isFile() && FileSource.exists())) {
                     ErrCode = 2;
@@ -304,6 +318,9 @@ public class GXFile extends AbstractGXFile {
     }
 
     public String getExt() {
+    	if (uploadFileId != null) {
+			return SpecificImplementation.GXutil.getUploadExtensionValue(uploadFileId);
+		}
         String sExtension = FileSource.getName();
         int pos = sExtension.lastIndexOf(".");
         if ((pos == -1) || (pos == sExtension.length())) {
