@@ -26,8 +26,6 @@ import org.apache.logging.log4j.Logger;
 
 public class GXutil implements IExtensionGXutil {
 
-	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(GXutil.class);
-
 	private static org.joda.time.DateTimeZone Java2JodaTimeZone(TimeZone tz) {
 		org.joda.time.DateTimeZone jodaTZ;
 		try {
