@@ -642,7 +642,6 @@ public class HttpClientManual extends GXHttpClient {
 	@Override
 	public void execute(String method, String url)
 	{
-//		System.out.println("Viejito");
 		resetErrors();
 
 		// ESTE BLOQUE COMENTADO FUE REEMPLAZADO POR LA FUNCION getURLValid

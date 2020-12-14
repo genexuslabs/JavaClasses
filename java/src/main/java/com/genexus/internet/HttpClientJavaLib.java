@@ -102,16 +102,15 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private static CredentialsProvider credentialsProvider;
 	private static RequestConfig reqConfig;		// Atributo usado en la ejecucion del metodo (por ejemplo, httpGet, httpPost)
 	private static CookieStore cookies;
-	private static CookieStore cookiesToSend;
 
 	private static void init() {
 		secure = 0;
 		port = 80;
-		hostChanged = true; // Indica si el próximo request debe ser realizado en una nueva HTTPConnection (si cambio el host)
+		hostChanged = true;
 		headersToSend = new Hashtable<>();
 		errDescription = "";
-		proxyHost = "";// = HTTPConnection.getDefaultProxyHost() == null ? "" : HTTPConnection.getDefaultProxyHost();
-		proxyPort = 80;// = HTTPConnection.getDefaultProxyPort() == 0 ? 80 : HTTPConnection.getDefaultProxyPort();
+		proxyHost = "";
+		proxyPort = 80;
 		proxyInfoChanged = false;
 		includeCookies = true;
 		tcpNoDelay = false;
@@ -151,7 +150,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 		reqConfig = null;	// Atributo usado en la ejecucion del metodo (por ejemplo, httpGet, httpPost)
 		httpClientContext = null;
 		credentialsProvider = null;
-		cookiesToSend = null;
 		response = null;
 		resetErrors();
 	}
@@ -765,13 +763,14 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	private CookieStore setAllStoredCookies() {
-		if (this.cookies.getCookies().isEmpty())
-			return null;
+		if (cookies.getCookies().isEmpty())
+			return new BasicCookieStore();
 
 		CookieStore cookiesToSend = new BasicCookieStore();
-		this.cookies.clearExpired(new Date());
-		for (Cookie c : this.cookies.getCookies()) {
-			if (getHost().equalsIgnoreCase(c.getDomain()) && getBaseURL().equalsIgnoreCase(c.getPath()))
+		cookies.clearExpired(new Date());
+		for (Cookie c : cookies.getCookies()) {
+			if ((getHost().equalsIgnoreCase(c.getDomain()) || (getHost().substring(4).equalsIgnoreCase(c.getDomain()))) && 	// el substring(4) se debe a que el host puede estar guardado con el "www." previo al host
+				(getBaseURL().equalsIgnoreCase(c.getPath()) || (getBaseURL().isEmpty() && c.getPath().equalsIgnoreCase("/"))))
 				cookiesToSend.addCookie(c);
 		}
 		return cookiesToSend;
@@ -779,7 +778,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	private void SetCookieAtr(CookieStore cookiesToSend) {
 		for (Cookie c : cookiesToSend.getCookies())
-			this.cookies.addCookie(c);
+			cookies.addCookie(c);
 	}
 
 	public void execute(String method, String url) {
@@ -789,6 +788,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 
 		try {
+			CookieStore cookiesToSend = null;
 			if (getHostChanged()) {
 				if (getSecure() == 1 && getPort() == 80) {
 					setPort(443);
@@ -798,9 +798,9 @@ public class HttpClientJavaLib extends GXHttpClient {
 				this.httpClientBuilder.setDefaultSocketConfig(socketConfig);
 
 				if (!getIncludeCookies())
-					this.cookies.clear();
-				this.cookiesToSend = setAllStoredCookies();
-				this.httpClientBuilder.setDefaultCookieStore(this.cookiesToSend);    // CookiesSeteo CookieStore
+					cookies.clear();
+				cookiesToSend = setAllStoredCookies();
+				httpClientBuilder.setDefaultCookieStore(cookiesToSend);    // Cookies Seteo CookieStore
 			}
 
 			if (proxyInfoChanged) {
@@ -838,11 +838,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 				for (Enumeration en = getNTLMAuthorization().elements(); en.hasMoreElements(); ) {
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
 					try {
-						this.credentialsProvider.setCredentials(
+						credentialsProvider.setCredentials(
 							new AuthScope(getHost(), getPort(), p.realm, AuthSchemes.NTLM),
 							new NTCredentials(p.user, p.password, InetAddress.getLocalHost().getHostName(), getHost()));
 					} catch (UnknownHostException e) {
-						this.credentialsProvider.setCredentials(
+						credentialsProvider.setCredentials(
 							new AuthScope(getHost(), getPort(), p.realm, AuthSchemes.NTLM),
 							new NTCredentials(p.user, p.password, "localhost", getHost()));
 					}
@@ -1020,7 +1020,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			}
 
 			if (cookiesToSend != null)
-				SetCookieAtr(this.cookiesToSend);		// Se setean las cookies devueltas en la lista de cookies
+				SetCookieAtr(cookiesToSend);		// Se setean las cookies devueltas en la lista de cookies
 
 		} catch (IOException e) {
 			setErrCode(ERROR_IO);
