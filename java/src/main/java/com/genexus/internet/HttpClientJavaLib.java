@@ -10,6 +10,7 @@ import java.util.*;
 
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.specific.java.*;
 import com.genexus.specific.java.HttpClient;
 import com.sun.istack.NotNull;
 import org.apache.http.Header;
@@ -35,6 +36,8 @@ import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.auth.BasicSchemeFactory;
+import org.apache.http.impl.auth.NTLMSchemeFactory;
+import org.apache.http.impl.auth.SPNegoSchemeFactory;
 import org.apache.http.impl.client.*;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -498,11 +501,12 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	private void resetState()
 	{
-		this.contentToSend.clear();
-		this.variablesToSend.clear();
-		this.contentToSend.removeAllElements();
+		contentToSend.clear();
+		variablesToSend.clear();
+		contentToSend.removeAllElements();
 		setMultipartTemplate(new MultipartTemplate());
 		setIsMultipart(false);
+		headersToSend.clear();
 		System.out.println();
 	}
 
@@ -769,8 +773,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 		CookieStore cookiesToSend = new BasicCookieStore();
 		cookies.clearExpired(new Date());
 		for (Cookie c : cookies.getCookies()) {
-			if ((getHost().equalsIgnoreCase(c.getDomain()) || (getHost().substring(4).equalsIgnoreCase(c.getDomain()))) && 	// el substring(4) se debe a que el host puede estar guardado con el "www." previo al host
-				(getBaseURL().equalsIgnoreCase(c.getPath()) || (getBaseURL().isEmpty() && c.getPath().equalsIgnoreCase("/"))))
+			if (getHost().equalsIgnoreCase(c.getDomain()) || (getHost().substring(4).equalsIgnoreCase(c.getDomain())))  	// el substring(4) se debe a que el host puede estar guardado con el "www." previo al host
+//				&& (getBaseURL().equalsIgnoreCase(c.getPath()) || (getBaseURL().isEmpty() && c.getPath().equalsIgnoreCase("/"))))
 				cookiesToSend.addCookie(c);
 		}
 		return cookiesToSend;
@@ -837,6 +841,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 				for (Enumeration en = getNTLMAuthorization().elements(); en.hasMoreElements(); ) {
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
+					httpClientBuilder.setDefaultAuthSchemeRegistry(RegistryBuilder.<AuthSchemeProvider> create()
+						.register(AuthSchemes.NTLM, new NTLMSchemeFactory()).register(AuthSchemes.SPNEGO, new SPNegoSchemeFactory(true)).build());
 					try {
 						credentialsProvider.setCredentials(
 							new AuthScope(getHost(), getPort(), p.realm, AuthSchemes.NTLM),
@@ -904,37 +910,41 @@ public class HttpClientJavaLib extends GXHttpClient {
 			else
 				url = "http://" + getHost() + ":" + (getPort() == -1? URI.defaultPort("http"):getPort()) + url;
 
-			httpClient = this.httpClientBuilder.build();
+			httpClient = httpClientBuilder.build();
 
-			if (method.equalsIgnoreCase("GET")) {		// No se le agrega ningun body al envio (caso excepcional segun RFC 7231)
-				HttpGet httpget = new HttpGet(url.trim());
+			if (method.equalsIgnoreCase("GET")) {
+				HttpGetWithBody httpget = new HttpGetWithBody(url.trim());
 				httpget.setConfig(reqConfig);
 				Set<String> keys = headersToSend.keySet();
 				for (String header : keys) {
 					httpget.addHeader(header,headersToSend.get(header));
 				}
+
+				httpget.setEntity(new ByteArrayEntity(getData()));
+
 				response = httpClient.execute(httpget, httpClientContext);
-				statusCode = response.getStatusLine().getStatusCode();
-				reasonLine = response.getStatusLine().getReasonPhrase();
-
-
 
 			} else if (method.equalsIgnoreCase("POST")) {
 				HttpPost httpPost = new HttpPost(url.trim());
 				httpPost.setConfig(reqConfig);
 				Set<String> keys = headersToSend.keySet();
+				boolean hasConentType = false;
 				for (String header : keys) {
 					httpPost.addHeader(header,headersToSend.get(header));
+					if (headersToSend.get(header).equalsIgnoreCase("Content-type"))
+						hasConentType = true;
 				}
-				ByteArrayEntity dataToSend = null;
+				if (!hasConentType)		// Si no se setea Content-type, se pone uno default
+					httpPost.addHeader("Content-type", "application/x-www-form-urlencoded");
+
+				ByteArrayEntity dataToSend;
 				if (!getIsMultipart() && getVariablesToSend().size() > 0)
 					dataToSend = new ByteArrayEntity(Codecs.nv2query(hashtableToNVPair(getVariablesToSend())).getBytes());
 				else
 					dataToSend = new ByteArrayEntity(getData());
 				httpPost.setEntity(dataToSend);
+
 				response = httpClient.execute(httpPost, httpClientContext);
-				statusCode = response.getStatusLine().getStatusCode();
-				reasonLine = response.getStatusLine().getReasonPhrase();
 
 			} else if (method.equalsIgnoreCase("PUT")) {
 				HttpPut httpPut = new HttpPut(url.trim());
@@ -943,56 +953,50 @@ public class HttpClientJavaLib extends GXHttpClient {
 				for (String header : keys) {
 					httpPut.addHeader(header,headersToSend.get(header));
 				}
-				ByteArrayEntity dataToSend = new ByteArrayEntity(getData());
-				httpPut.setEntity(dataToSend);
-				response = httpClient.execute(httpPut,httpClientContext);
-				statusCode = response.getStatusLine().getStatusCode();
-				reasonLine = response.getStatusLine().getReasonPhrase();
 
-			} else if (method.equalsIgnoreCase("DELETE")) {		// No se le agrega ningun body al envio (caso excepcional segun RFC 7231)
-				HttpDelete httpDelete = new HttpDelete(url.trim());
+				httpPut.setEntity(new ByteArrayEntity(getData()));
+
+				response = httpClient.execute(httpPut,httpClientContext);
+
+			} else if (method.equalsIgnoreCase("DELETE")) {
+				HttpDeleteWithBody httpDelete = new HttpDeleteWithBody(url.trim());
 				httpDelete.setConfig(reqConfig);
 				Set<String> keys = headersToSend.keySet();
 				for (String header : keys) {
 					httpDelete.addHeader(header,headersToSend.get(header));
 				}
-//				ByteArrayEntity dataToSend;
-//				if (getVariablesToSend().size() > 0 || getContentToSend().size() > 0) {
-//					dataToSend = new ByteArrayEntity(getData());
-//					httpDelete.
-//				}
-				response = httpClient.execute(httpDelete,httpClientContext);
-				statusCode = response.getStatusLine().getStatusCode();
-				reasonLine = response.getStatusLine().getReasonPhrase();
 
-			} else if (method.equalsIgnoreCase("HEAD")) {		// No se le agrega ningun body al envio (caso excepcional segun RFC 7231)
-				HttpHead httpHead = new HttpHead(url.trim());
+				if (getVariablesToSend().size() > 0 || getContentToSend().size() > 0)
+					httpDelete.setEntity(new ByteArrayEntity(getData()));
+
+				response = httpClient.execute(httpDelete,httpClientContext);
+
+			} else if (method.equalsIgnoreCase("HEAD")) {
+				HttpHeadWithBody httpHead = new HttpHeadWithBody(url.trim());
 				httpHead.setConfig(reqConfig);
 				Set<String> keys = headersToSend.keySet();
 				for (String header : keys) {
 					httpHead.addHeader(header,headersToSend.get(header));
 				}
-//				ByteArrayEntity dataToSend = new ByteArrayEntity(getData());
+
+				httpHead.setEntity(new ByteArrayEntity(getData()));
 
 				response = httpClient.execute(httpHead,httpClientContext);
-				statusCode = response.getStatusLine().getStatusCode();
-				reasonLine = response.getStatusLine().getReasonPhrase();
-
 
 			} else if (method.equalsIgnoreCase("CONNECT")) {		// No se le agrega ningun body al envio (caso excepcional segun RFC 7231)
 
 
-			} else if (method.equalsIgnoreCase("OPTIONS")) {		// No se le agrega ningun body al envio (caso excepcional segun RFC 7231)
-				HttpOptions httpOptions = new HttpOptions(url.trim());
+			} else if (method.equalsIgnoreCase("OPTIONS")) {
+				HttpOptionsWithBody httpOptions = new HttpOptionsWithBody(url.trim());
 				httpOptions.setConfig(reqConfig);
 				Set<String> keys = headersToSend.keySet();
 				for (String header : keys) {
 					httpOptions.addHeader(header,headersToSend.get(header));
 				}
-//				ByteArrayEntity dataToSend = new ByteArrayEntity(getData());
+
+				httpOptions.setEntity(new ByteArrayEntity(getData()));
+
 				response = httpClient.execute(httpOptions,httpClientContext);
-				statusCode = response.getStatusLine().getStatusCode();
-				reasonLine = response.getStatusLine().getReasonPhrase();
 
 			} else if (method.equalsIgnoreCase("TRACE")) {		// No lleva payload
 				HttpTrace httpTrace = new HttpTrace(url.trim());
@@ -1002,8 +1006,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 					httpTrace.addHeader(header,headersToSend.get(header));
 				}
 				response = httpClient.execute(httpTrace,httpClientContext);
-				statusCode = response.getStatusLine().getStatusCode();
-				reasonLine = response.getStatusLine().getReasonPhrase();
 
 			} else if (method.equalsIgnoreCase("PATCH")) {
 				HttpPatch httpPatch = new HttpPatch(url.trim());
@@ -1015,9 +1017,10 @@ public class HttpClientJavaLib extends GXHttpClient {
 				ByteArrayEntity dataToSend = new ByteArrayEntity(getData());
 				httpPatch.setEntity(dataToSend);
 				response = httpClient.execute(httpPatch,httpClientContext);
-				statusCode = response.getStatusLine().getStatusCode();
-				reasonLine = response.getStatusLine().getReasonPhrase();
 			}
+
+			statusCode = response.getStatusLine().getStatusCode();
+			reasonLine = response.getStatusLine().getReasonPhrase();
 
 			if (cookiesToSend != null)
 				SetCookieAtr(cookiesToSend);		// Se setean las cookies devueltas en la lista de cookies
@@ -1052,7 +1055,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public void getHeader(String name, long[] value) {
-		if (response == null)
+		if (response == null || response.getHeaders(name).length == 0 || response.getHeaders(name) == null)
 			return;
 		Header[] headers = response.getHeaders(name);
 		if (headers == null)
@@ -1064,13 +1067,13 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public String getHeader(String name) {
-		if (response == null || response.getHeaders(name) == null)
+		if (response == null || response.getHeaders(name).length == 0 || response.getHeaders(name) == null)
 			return "";
 		return response.getHeaders(name)[0].getValue();
 	}
 
 	public void getHeader(String name, String[] value) {
-		if (response == null || response.getHeaders(name) == null)
+		if (response == null || response.getHeaders(name).length == 0 || response.getHeaders(name) == null)
 			return;
 		Header[] headers = response.getHeaders(name);
 //		for (int i = 0; i< headers.length; i++) {			// Posible solucion en el caso que se quieran poner todos los headers que se obtienen con el name pasado en el parametro value
@@ -1100,7 +1103,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public void getHeader(String name, double[] value) {
-		if (response == null || response.getHeaders(name) == null)
+		if (response == null || response.getHeaders(name).length == 0 || response.getHeaders(name) == null)
 			return;
 		value[0] = CommonUtil.val(response.getHeaders(name)[0].getValue());
 	}
@@ -1131,6 +1134,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		} catch (IOException e) {
 			setErrCode(ERROR_IO);
 			setErrDescription(e.getMessage());
+		} catch (IllegalArgumentException e) {
 		}
 		return "";
 	}
