@@ -1,6 +1,4 @@
 import com.genexus.CommonUtil;
-import com.genexus.DecimalUtil;
-import com.genexus.GXutil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -59,13 +57,5 @@ public class GXUtilTest {
 	public void strTestTruncate8() {
 		String result = CommonUtil.ltrimstr( 0.1090999999, 20, 2);
 		assertEquals("0.10", result);
-	}
-
-	@Test
-	public void strTestTruncateBigDecimal(){
-		java.math.BigDecimal AV5Val = DecimalUtil.stringToDec("999.999999999") ;
-		String result = GXutil.ltrimstr( AV5Val, 20, 3);
-		assertEquals("999.999", result);
-
 	}
 }

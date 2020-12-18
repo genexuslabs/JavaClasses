@@ -1,10 +1,10 @@
 package com.genexus;
 
-import java.math.RoundingMode;
 import java.util.*;
 import java.text.*;
 
 import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.diagnostics.Log;
 import com.genexus.util.GXSimpleDateFormat;
 public class LocalUtil
 {
@@ -334,7 +334,7 @@ public class LocalUtil
 		appGregorianCalendar = new GregorianCalendar(appLocale);
 		appGregorianCalendar.setTimeZone(defaultTimeZone);
 
-		str_df = (DecimalFormat) getNumberFormat(Locale.US);
+		str_df = (DecimalFormat) NumberFormat.getInstance(Locale.US);
 
 		dtoc_df = new GXSimpleDateFormat(dateFormat);
 		dtoc_df.setTimeZone(defaultTimeZone);
@@ -1271,16 +1271,6 @@ public class LocalUtil
 	}
 
 
-	private NumberFormat getNumberFormat() {
-		return getNumberFormat(getLocale());
-	}
-
-	private NumberFormat getNumberFormat(Locale l) {
-		NumberFormat nFormat = NumberFormat.getInstance(l);
-		nFormat.setRoundingMode(RoundingMode.DOWN); //MIZUHO Special Request
-		return nFormat;
-	}
-
 	public String pictureToDateFormat(String picture)
 	{
 	/*
@@ -1364,7 +1354,6 @@ public class LocalUtil
 	String alignAndPad(String text, char pad, String picture, boolean floating, NumberFormat numberFormat)
 	{
 		DecimalFormat df = (DecimalFormat) numberFormat;
-
 		char decimalSeparator  = df.getDecimalFormatSymbols().getDecimalSeparator();
 
 		text = text.trim();
@@ -1436,7 +1425,7 @@ public class LocalUtil
 
 	public String format(long value, String picture)
     {
-        return format(value, picture, getNumberFormat());
+        return format(value, picture, NumberFormat.getInstance(getLocale()));
     }
 
 	String format(long value, String picture, NumberFormat numberFormat)
@@ -1572,7 +1561,7 @@ public class LocalUtil
 			int decimalIndex = picture.indexOf('.');
 			if (decimalIndex == -1)
              decimalIndex = picture.indexOf(',');
-			return formatBigDecimal(CommonUtil.truncDecimal(value, picture.substring(decimalIndex).length()-1), picture);
+			return formatBigDecimal(CommonUtil.roundDecimal(value, picture.substring(decimalIndex).length()-1), picture);
 		}
 		else
 		{
@@ -1582,7 +1571,7 @@ public class LocalUtil
 
     public String formatBigDecimal(java.math.BigDecimal value, String picture)
     {
-        return formatBigDecimal(value, picture, getNumberFormat());
+        return formatBigDecimal(value, picture, NumberFormat.getInstance(getLocale()));
     }
 
 	private String formatBigDecimal(java.math.BigDecimal value, String picture, NumberFormat numberFormat)
@@ -1664,7 +1653,7 @@ public class LocalUtil
 
     public String format(double value, String picture)
     {
-        return format(value, picture, getNumberFormat());
+        return format(value, picture, NumberFormat.getInstance(getLocale()));
     }
 	private String format(double value, String picture, NumberFormat numberFormat)
 	{
@@ -1790,7 +1779,7 @@ public class LocalUtil
 
 	public java.math.BigDecimal ctond(String value)
 	{
-		DecimalFormat df = (DecimalFormat) getNumberFormat();
+		DecimalFormat df = (DecimalFormat) NumberFormat.getInstance(getLocale());
 
 		return DecimalUtil.stringToDec(normalize(value,
 		df.getDecimalFormatSymbols().getDecimalSeparator(),
@@ -1842,7 +1831,7 @@ public class LocalUtil
 	{
 		String picture = getPicture(digits, decimals, thousandsSep);
 
-        String result = format(value, picture, getNumberFormat(Locale.ENGLISH));//invariant
+        String result = format(value, picture, NumberFormat.getInstance(Locale.ENGLISH));//invariant
         if ((decimals == 0 && thousandsSep.length() == 0))
             return result;
         else
@@ -1853,7 +1842,7 @@ public class LocalUtil
 	{
 		String picture = getPicture(digits, decimals, thousandsSep);
 
-        String result = format(value, picture, getNumberFormat(Locale.ENGLISH));//invariant
+        String result = format(value, picture, NumberFormat.getInstance(Locale.ENGLISH));//invariant
         if ((decimals == 0 && thousandsSep.length() == 0))
             return result;
         else
@@ -1864,7 +1853,7 @@ public class LocalUtil
 	{
 		String picture = getPicture(digits, decimals, thousandsSep);
 
-        String result = formatBigDecimal(value, picture, getNumberFormat(Locale.ENGLISH));//invariant
+        String result = formatBigDecimal(value, picture, NumberFormat.getInstance(Locale.ENGLISH));//invariant
         if ((decimals == 0 && thousandsSep.length() == 0))
             return result;
         else
