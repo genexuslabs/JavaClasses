@@ -2879,6 +2879,11 @@ public final class CommonUtil
 		return str(DecimalUtil.unexponentString(Double.toString(value)), length, decimals, true);
 	}
 
+	public static String strNoRound(long value, int length, int decimals)
+	{
+		return str(DecimalUtil.unexponentString(Long.toString(value)), length, decimals, false);
+	}
+
 	public static String strNoRound(double value, int length, int decimals)
 	{
 		return str(DecimalUtil.unexponentString(Double.toString(value)), length, decimals, false);

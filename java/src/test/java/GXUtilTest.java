@@ -4,6 +4,8 @@ import com.genexus.GXutil;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.math.BigDecimal;
+
 import static org.junit.Assert.assertEquals;
 
 public class GXUtilTest {
@@ -63,9 +65,28 @@ public class GXUtilTest {
 
 	@Test
 	public void strTestTruncateBigDecimal(){
-		java.math.BigDecimal AV5Val = DecimalUtil.stringToDec("999.999999999") ;
-		String result = GXutil.ltrimstr( AV5Val, 20, 3);
-		assertEquals("999.999", result);
+		compareBigDecimal(DecimalUtil.stringToDec("999.999999999"), "999.999", 20, 3);
+		compareBigDecimal(DecimalUtil.doubleToDec(9999999999999991L), "9999999999999991", 16, 0);
 
+
+		compareLong(9999999999999991L, "9999999999999991", 20, 0);
+		compareLong(Long.MAX_VALUE, Long.toString(Long.MAX_VALUE, 10), 20, 0);
+		compareDouble(9999999999991L, "9999999999991", 20, 0);
 	}
+
+	private void compareBigDecimal(BigDecimal value, String expectedValue, int digits, int decimals){
+		String result = GXutil.ltrimstr( value, digits, decimals);
+		assertEquals(expectedValue, result);
+	}
+
+	private void compareLong(long value, String expectedValue, int digits, int decimals){
+		String result = CommonUtil.str(value, digits, decimals);
+		assertEquals(expectedValue, result.trim());
+	}
+
+	private void compareDouble(double value, String expectedValue, int digits, int decimals){
+		String result = CommonUtil.str(value, digits, decimals);
+		assertEquals(expectedValue, result.trim());
+	}
+
 }
