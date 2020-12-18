@@ -435,7 +435,7 @@ public final class GXutil
 
 	public static String str(double value, int length, int decimals)
 	{
-		return CommonUtil.strNoRound(value, length, decimals);
+		return CommonUtil.str(value, length, decimals);
 	}
 
 	public static String strNoRound(double value, int length, int decimals)
