@@ -2884,7 +2884,6 @@ public final class CommonUtil
 		return str(DecimalUtil.unexponentString(Double.toString(value)), length, decimals, false);
 	}
 
-
 	static String str(BigDecimal value, int length, int decimals, boolean round) {
 			if	(length - 1 <= decimals)
 			{
