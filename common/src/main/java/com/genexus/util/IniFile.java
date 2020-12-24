@@ -170,7 +170,8 @@ public class IniFile {
 			} else if (il.typeLine == PROPERTY) // && actSection != null)
 			{
 				String key = getMappedProperty(actSection, il.property);
-				String envValue = EnvVarReader.getEnvironmentValue(actSection, key);
+				boolean addPrefix = !isMappedProperty(il.property);
+				String envValue = EnvVarReader.getEnvironmentValue(actSection, key, addPrefix);
 				if (envValue != null)
 					il.value = envValue;
 
@@ -310,11 +311,14 @@ public class IniFile {
 	}
 
 	private String getMappedProperty(String section, String key){
-		if (getConfMapping() != null && getConfMapping().containsKey(key))
+		if (isMappedProperty(key))
 			return getConfMapping().get(key);
-
 		return key;
 	}
+	private boolean isMappedProperty(String key){
+		return (getConfMapping() != null && getConfMapping().containsKey(key));
+	}
+
 
 	static ConcurrentHashMap<String, String> getConfMapping(){
 	
