@@ -868,7 +868,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 				for (Enumeration en = getBasicProxyAuthorization().elements(); en.hasMoreElements(); ) {
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
 					this.credentialsProvider.setCredentials(
-						new AuthScope(getProxyServerHost(), getProxyServerPort(), p.realm, AuthSchemes.BASIC),
+						AuthScope.ANY,
+//						new AuthScope(getProxyServerHost(), getProxyServerPort(), p.realm, AuthSchemes.BASIC),
 						new UsernamePasswordCredentials(p.user, p.password));
 				}
 
@@ -983,8 +984,14 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 				response = httpClient.execute(httpHead,httpClientContext);
 
-			} else if (method.equalsIgnoreCase("CONNECT")) {		// No se le agrega ningun body al envio (caso excepcional segun RFC 7231)
-
+			} else if (method.equalsIgnoreCase("CONNECT")) {
+				HttpConnectMethod httpConnect = new HttpConnectMethod(url.trim());
+				httpConnect.setConfig(reqConfig);
+				Set<String> keys = headersToSend.keySet();
+				for (String header : keys) {
+					httpConnect.addHeader(header,headersToSend.get(header));
+				}
+				response = httpClient.execute(httpConnect,httpClientContext);
 
 			} else if (method.equalsIgnoreCase("OPTIONS")) {
 				HttpOptionsWithBody httpOptions = new HttpOptionsWithBody(url.trim());
