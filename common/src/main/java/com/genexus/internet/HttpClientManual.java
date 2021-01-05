@@ -407,7 +407,6 @@ public class HttpClientManual extends GXHttpClient {
 		this.contentToSend.removeAllElements();
 		setMultipartTemplate(new MultipartTemplate());
 		setIsMultipart(false);
-		System.out.println();
 	}
 
 	private String getURLValid(String url) {
