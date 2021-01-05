@@ -507,7 +507,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 		setMultipartTemplate(new MultipartTemplate());
 		setIsMultipart(false);
 		headersToSend.clear();
-		System.out.println();
 	}
 
 	private String getURLValid(String url) {
