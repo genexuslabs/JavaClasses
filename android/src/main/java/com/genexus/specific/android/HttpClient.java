@@ -60,7 +60,7 @@ public class HttpClient implements IExtensionHttpClient {
 			}
 		}catch(Throwable e)
 		{ // No estamos usando NUESTRA version del HttpClient (ej OracleAS)
-			client.usingExternalHttpClient = true;
+			client.usingExternalHttpClient.put(Thread.currentThread().getId(), true);
 			if(!client.issuedExternalHttpClientWarning)
 			{
 				System.err.println();
