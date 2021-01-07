@@ -15,6 +15,8 @@ public class HttpClientManual extends GXHttpClient {
 	private HTTPConnection con = null;
 	private HTTPResponse res;
 
+	public HttpClientManual() {initBaseAtr();}
+
 	static
 	{
 		HTTPConnection.setDefaultAllowUserInteraction(false);
