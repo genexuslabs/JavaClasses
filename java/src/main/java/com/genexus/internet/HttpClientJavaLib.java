@@ -99,8 +99,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 			connManager.get(Thread.currentThread().getId()).closeExpiredConnections();
 			connManager.get(Thread.currentThread().getId()).closeIdleConnections(30, TimeUnit.SECONDS);        // Seteados 30 de forma estandar
 		}
-//		httpClientBuilder.get(Thread.currentThread().getId())
-//			.setConnectionManager(connManager.get(Thread.currentThread().getId())).setConnectionManagerShared(true);
 	}
 
 	private void resetExecParams() {
@@ -120,10 +118,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	private void resetErrors()
 	{
-		if (getErrCode() != 0) {
+		if (getErrCode() != 0)
 			cleanReqAndRes();
-//			setConnManager();
-		}
 		setErrCode(0);
 		setErrDescription("");
 	}
