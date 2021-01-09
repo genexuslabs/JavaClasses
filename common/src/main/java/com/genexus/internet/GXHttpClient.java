@@ -117,7 +117,7 @@ public abstract class GXHttpClient implements IHttpClient{
 	}
 
 	public void setErrCode(int errCode) {
-		this.errCode.put(Thread.currentThread().getId(), errCode);
+		putOrRemoveIfNull(this.errCode, errCode);
 	}
 
 	public String getErrDescription()
@@ -126,7 +126,7 @@ public abstract class GXHttpClient implements IHttpClient{
 	}
 
 	public void setErrDescription(String errDescription) {
-		this.errDescription.put(Thread.currentThread().getId(), errDescription);
+		putOrRemoveIfNull(this.errDescription,errDescription);
 	}
 
 	public void setProxyServerHost(String host)
