@@ -1314,7 +1314,7 @@ public class PDFReportItext implements IReportHandler
 								bottomAux = bottomAux - drawingPageHeight;
 							}
 						}
-						if (objects.get(k) instanceof Paragraph);
+						if (objects.get(k) instanceof Paragraph)
 							((Paragraph)objects.get(k)).setAlignment(columnAlignment(alignment));
 
 						Col.addElement((Element)objects.get(k));
