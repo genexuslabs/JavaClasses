@@ -617,12 +617,12 @@ public class HttpContextWeb extends HttpContext {
 					return BROWSER_IE;
 			} else if (userAgent.toUpperCase().indexOf("SAFARI") != -1) {
 				return BROWSER_SAFARI;
-			} else if (userAgent.toUpperCase().indexOf("MOZILLA/") != -1) {
-				return BROWSER_NETSCAPE;
 			} else if ((userAgent.indexOf("Trident")) != -1) {
 				return BROWSER_IE;
 			} else if (userAgent.toUpperCase().indexOf("OPERA") != -1) {
 				return BROWSER_OPERA;
+			} else if (userAgent.toUpperCase().indexOf("MOZILLA/") != -1) {
+				return BROWSER_NETSCAPE;
 			} else if (userAgent.toUpperCase().indexOf("UP.Browser") != -1) {
 				return BROWSER_UP;
 			} else if (USERAGENT_SEARCH_BOT.matcher(userAgent).find()) {
