@@ -622,6 +622,65 @@ public final class GXCallableStatement extends GXPreparedStatement implements Ca
 		return value;
 	}
 
+	public BigDecimal getBigDecimal(int columnIndex) throws SQLException
+	{
+		BigDecimal value;
+
+		if	(DEBUG)
+		{
+			log(GXDBDebug.LOG_MAX, "getBigDecimal - index : " + columnIndex);
+
+			try
+			{
+				value = stmt.getBigDecimal(columnIndex);
+				if (stmt.wasNull() || value == null) value = BigDecimal.ZERO;
+				log(GXDBDebug.LOG_MAX, "getBigDecimal - value : " + value);
+			}
+			catch (SQLException sqlException)
+			{
+				if	(con.isLogEnabled()) con.logSQLException(con.getHandle(), sqlException);
+				throw sqlException;
+			}
+		}
+		else
+		{
+			value = stmt.getBigDecimal(columnIndex);
+			if (stmt.wasNull() || value == null) value = BigDecimal.ZERO;
+		}
+
+		return value;
+	}
+
+	@Deprecated
+	public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException
+	{
+		BigDecimal value;
+
+		if	(DEBUG)
+		{
+			log(GXDBDebug.LOG_MAX, "getBigDecimal - index : " + columnIndex);
+
+			try
+			{
+				value = stmt.getBigDecimal(columnIndex, scale);
+				if (stmt.wasNull() || value == null) value = BigDecimal.ZERO;
+				log(GXDBDebug.LOG_MAX, "getBigDecimal - value : " + value);
+			}
+			catch (SQLException sqlException)
+			{
+				if	(con.isLogEnabled()) con.logSQLException(con.getHandle(), sqlException);
+				throw sqlException;
+			}
+		}
+		else
+		{
+			value = stmt.getBigDecimal(columnIndex, scale);
+			if (stmt.wasNull() || value == null) value = BigDecimal.ZERO;
+		}
+
+		return value;
+	}
+
 	// -- Funciones que NO deberian ser llamadas desde los programas generados
 
 	public String getString(int columnIndex) throws SQLException
@@ -636,14 +695,6 @@ public final class GXCallableStatement extends GXPreparedStatement implements Ca
 		if	(DEBUG) log(GXDBDebug.LOG_MAX, "Warning: getBoolean");
 
 		return stmt.getBoolean(columnIndex);
-	}
-
-	@Deprecated
-	public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException
-	{
-		if	(DEBUG) log(GXDBDebug.LOG_MAX, "Warning: getBigDecimal");
-
-		return stmt.getBigDecimal(columnIndex, scale);
 	}
 
 	public byte[] getBytes(int columnIndex) throws SQLException
@@ -702,11 +753,6 @@ public final class GXCallableStatement extends GXPreparedStatement implements Ca
 	{
 		if	(DEBUG)
 			con.log(level, this, text);
-	}
-
-	public BigDecimal getBigDecimal(int parameterIndex) throws SQLException
-	{
-		return stmt.getBigDecimal(parameterIndex);
 	}
 
 	public Object  getObject (int i, java.util.Map<java.lang.String,java.lang.Class<?>> map) throws SQLException
