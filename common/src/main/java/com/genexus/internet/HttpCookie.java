@@ -11,6 +11,7 @@ public class HttpCookie
 	String path;
 	Date expirationDate;
 	String domain;
+	String sameSite;
 	boolean secure;
 	boolean httpOnly = true;
 	
@@ -21,6 +22,7 @@ public class HttpCookie
 		path = "";
 		expirationDate = CommonUtil.resetTime( CommonUtil.nullDate());
 		domain = "";
+		sameSite="";
 		secure = false;
 		if (SpecificImplementation.HttpCookie != null)
 			httpOnly = SpecificImplementation.HttpCookie.getHttpOnly();
@@ -77,6 +79,13 @@ public class HttpCookie
 	{
 		return domain;
 	}
+
+	public void setSamesite( String sameSite)
+	{
+		this.sameSite = sameSite;
+	}
+
+	public String getSamesite()	{  return sameSite; }
 
 	public void setSecure( boolean secure)
 	{
