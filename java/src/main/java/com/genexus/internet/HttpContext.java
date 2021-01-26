@@ -880,7 +880,7 @@ public abstract class HttpContext
 			if (_clientId == null || _clientId.equals(""))
 			{
 				_clientId = java.util.UUID.randomUUID().toString();
-				this.setCookie(CLIENT_ID_HEADER, _clientId, "", new Date(Long.MAX_VALUE), "", 0);
+				this.setCookie(CLIENT_ID_HEADER, _clientId, "", new Date(Long.MAX_VALUE), "", getHttpSecure());
 			}
 			this.setClientId(_clientId);
 		}            
@@ -979,7 +979,7 @@ public abstract class HttpContext
         }
         catch(com.genexus.util.Encryption.InvalidGXKeyException e)
         {
-            setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", 0);
+            setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", getHttpSecure());
             com.genexus.diagnostics.Log.debug("440 Invalid encryption key");
             sendResponseStatus(440, "Session timeout");
         }
@@ -995,7 +995,7 @@ public abstract class HttpContext
         }
         catch (com.genexus.util.Encryption.InvalidGXKeyException e)
         {
-            setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", 0);
+            setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", getHttpSecure());
             com.genexus.diagnostics.Log.debug( "440 Invalid encryption key");
             sendResponseStatus(440, "Session timeout");
         }
