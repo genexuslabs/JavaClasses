@@ -1,7 +1,6 @@
 package com.genexus.filters;
 
 import com.genexus.Application;
-import com.genexus.ApplicationContext;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -16,9 +15,9 @@ import javax.ws.rs.core.HttpHeaders;
 
 public class SameSiteFilter implements Filter {
 	String sameSiteMode;
-	private static final String SameSiteNone = "None";
-	private static final String SameSiteLax = "Lax";
-	private static final String SameSiteStrict = "Strict";
+	private static final String SAME_SITE_NONE = "None";
+	private static final String SAME_SITE_LAX = "Lax";
+	private static final String SAME_SITE_STRICT = "Strict";
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -42,7 +41,7 @@ public class SameSiteFilter implements Filter {
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
 		String sameSiteModeValue=Application.getClientPreferences().getProperty("SAMESITE_COOKIE", "");
-		if (sameSiteModeValue.equals(SameSiteNone) || sameSiteModeValue.equals(SameSiteLax)||sameSiteModeValue.equals(SameSiteStrict)) {
+		if (sameSiteModeValue.equals(SAME_SITE_NONE) || sameSiteModeValue.equals(SAME_SITE_LAX)||sameSiteModeValue.equals(SAME_SITE_STRICT)) {
 			sameSiteMode = sameSiteModeValue;
 		}
 	}
