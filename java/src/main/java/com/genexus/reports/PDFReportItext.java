@@ -121,6 +121,7 @@ public class PDFReportItext implements IReportHandler
 	private static String defaultRelativePrepend = null; // En aplicaciones web, contiene la ruta al root de la aplicación para ser agregado al inicio de las imagenes con path relativo
 	private static String defaultRelativePrependINI = null;
 	private static String webAppDir = null;
+	private static String staticContentBaseOverride = null;
 	//private boolean containsSpecialMetrics = false;
 	//private Hashtable fontMetricsProps = new Hashtable();
 	public static boolean DEBUG = false;
@@ -417,6 +418,9 @@ public class PDFReportItext implements IReportHandler
 		props.setupGeneralProperty(Const.STYLE_DASHED, Const.DEFAULT_STYLE_DASHED);
 		props.setupGeneralProperty(Const.STYLE_LONG_DASHED, Const.DEFAULT_STYLE_LONG_DASHED);
 		props.setupGeneralProperty(Const.STYLE_LONG_DOT_DASHED, Const.DEFAULT_STYLE_LONG_DOT_DASHED);
+
+		props.setupGeneralProperty("StaticContentBaseOverride", "");
+		staticContentBaseOverride = props.getGeneralProperty("StaticContentBaseOverride", "");
 
         loadSubstituteTable(); // Cargo la tabla de substitutos de fonts
 
@@ -868,6 +872,13 @@ public class PDFReportItext implements IReportHandler
 			com.lowagie.text.Image imageRef;
 			try
 			{
+				if (!staticContentBaseOverride.equals("") && bitmap.startsWith(httpContext.getStaticContentBase()))
+				{
+					String bitmapOverride = staticContentBaseOverride + bitmap.substring(httpContext.getStaticContentBase().length());
+					if(DEBUG)DEBUG_STREAM.println("GxDrawBitMap -> Overriding '" + bitmap + "' to '" + bitmapOverride + "'");
+					bitmap = bitmapOverride;
+				}
+				
 				if (documentImages != null && documentImages.containsKey(bitmap))
 				{
 					image = documentImages.get(bitmap);
@@ -913,6 +924,12 @@ public class PDFReportItext implements IReportHandler
 				java.net.URL url= new java.net.URL(bitmap);
 				image = com.lowagie.text.Image.getInstance(url);
 			}
+			catch(Exception ex)
+			{
+				if(DEBUG)DEBUG_STREAM.println("GxDrawBitMap -> '" + bitmap + "' " + ex.getMessage());
+				ex.printStackTrace(System.err);
+				throw ex;
+			}
 
 			if (documentImages == null)
 			{
@@ -936,6 +953,9 @@ public class PDFReportItext implements IReportHandler
 				else
 					image.scaleToFit(rightAux - leftAux , bottomAux - topAux);
 				document.add(image);
+			}
+			else if(DEBUG){
+				DEBUG_STREAM.println("GxDrawBitMap -> '" + bitmap + "' not found");
 			}
 		}
 		catch(DocumentException de) 
