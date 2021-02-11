@@ -39,6 +39,7 @@ public interface IContext {
 	String getDataBaseSyncFilePath();
 	String getDataBaseSyncHashesFilePath();
 
+	String getAssetsFontPath(String fontName);
 	String getApplicationDataPath();
 	String getTemporaryFilesPath();
 	String getExternalFilesPath();
