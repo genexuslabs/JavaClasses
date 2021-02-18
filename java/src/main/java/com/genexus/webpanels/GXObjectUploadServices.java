@@ -28,10 +28,9 @@ public class GXObjectUploadServices extends GXWebObjectStub
 		String savedFileName = "";
 		String fileName = "";
 		String ext = "";
-		String keyId = HttpUtils.getUploadFileKey();
         WebApplicationStartup.init(Application.gxCfg, context);
         context.setStream();
-        
+		String keyId;
 		try
 		{
 			String fileDirPath = Preferences.getDefaultPreferences().getPRIVATE_PATH();
@@ -47,6 +46,7 @@ public class GXObjectUploadServices extends GXWebObjectStub
 				JSONArray jsonArray = new JSONArray();
 				for (int i = 0, len = postedFiles.getCount(); i < len; i++)
 				{
+					keyId = HttpUtils.getUploadFileKey();
 					FileItem file = postedFiles.item(i);
 					if (!file.isFormField())
 					{
@@ -72,6 +72,7 @@ public class GXObjectUploadServices extends GXWebObjectStub
 			}
 			else
 			{
+				keyId = HttpUtils.getUploadFileKey();
 				String contentType = context.getHeader("Content-Type");
 				ext = getExtension(contentType);
 				fileName = com.genexus.PrivateUtilities.getTempFileName("tmp");
