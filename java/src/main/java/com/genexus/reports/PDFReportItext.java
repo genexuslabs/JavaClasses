@@ -880,7 +880,7 @@ public class PDFReportItext implements IReportHandler
 						bitmap = bitmap.replace(httpContext.getStaticContentBase(), "");
 					}				
 				
-					if(!new File(bitmap).isAbsolute() && !bitmap.toLowerCase().startsWith("http"))
+					if (!new File(bitmap).isAbsolute() && !bitmap.toLowerCase().startsWith("http:") && !bitmap.toLowerCase().startsWith("https:"))
 					{ 
 						if (bitmap.startsWith(httpContext.getStaticContentBase()))
 						{
@@ -1314,7 +1314,7 @@ public class PDFReportItext implements IReportHandler
 								bottomAux = bottomAux - drawingPageHeight;
 							}
 						}
-						if (objects.get(k) instanceof Paragraph);
+						if (objects.get(k) instanceof Paragraph)
 							((Paragraph)objects.get(k)).setAlignment(columnAlignment(alignment));
 
 						Col.addElement((Element)objects.get(k));

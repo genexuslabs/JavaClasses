@@ -492,7 +492,7 @@ public final  class NoneMasterPage extends GXMasterPage
         {
             if ( (GXutil.strcmp("", httpContext.getCookie( "GX_SESSION_ID"))==0) )
             {
-                gxcookieaux = httpContext.setCookie( "GX_SESSION_ID", httpContext.encrypt64( com.genexus.util.Encryption.getNewKey( ), context.getServerKey( )), "", GXutil.nullDate(), "", (short)(0)) ;
+                gxcookieaux = httpContext.setCookie( "GX_SESSION_ID", httpContext.encrypt64( com.genexus.util.Encryption.getNewKey( ), context.getServerKey( )), "", GXutil.nullDate(), "", httpContext.getHttpSecure()) ;
             }
             GXKey = httpContext.decrypt64( httpContext.getCookie( "GX_SESSION_ID"), context.getServerKey( )) ;
             toggleJsOutput = httpContext.isJsOutputEnabled( ) ;
