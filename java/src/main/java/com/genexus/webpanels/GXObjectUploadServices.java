@@ -1,5 +1,6 @@
 package com.genexus.webpanels;
 
+
 import com.genexus.*;
 import com.genexus.internet.HttpContext;
 
@@ -9,22 +10,19 @@ import javax.ws.rs.core.Response;
 
 
 public class GXObjectUploadServices extends GXWebObjectStub
-{
+{   
 	boolean isRestCall = false;
 	Response.ResponseBuilder builder = null;
-
 	public Response.ResponseBuilder doInternalRestExecute(HttpContext context) throws Exception
 	{
 		isRestCall = true;
 		doExecute(context);
 		return builder;
 	}
-
 	public void doInternalExecute(HttpContext context) throws Exception
 	{
 		doExecute(context);
 	}
-
     protected void doExecute(HttpContext context) throws Exception
     {
 		String savedFileName = "";
@@ -37,10 +35,10 @@ public class GXObjectUploadServices extends GXWebObjectStub
 		try
 		{
 			String fileDirPath = Preferences.getDefaultPreferences().getPRIVATE_PATH();
-			ModelContext modelContext =  new ModelContext(Application.gxCfg);
-			modelContext.setHttpContext(context);
-			ModelContext.getModelContext().setHttpContext(context);
-			context.setContext(modelContext);
+				ModelContext modelContext =  new ModelContext(Application.gxCfg);
+				modelContext.setHttpContext(context);
+				ModelContext.getModelContext().setHttpContext(context);
+				context.setContext(modelContext);
 
 			if (context.isMultipartContent())
 			{
@@ -50,19 +48,21 @@ public class GXObjectUploadServices extends GXWebObjectStub
 				for (int i = 0, len = postedFiles.getCount(); i < len; i++)
 				{
 					FileItem file = postedFiles.item(i);
-					if (!file. isFormField())
+					if (!file.isFormField())
 					{
 						fileName = file.getName();
-						long fileSize = file.getSize(); 
+						long fileSize = file.getSize();
 						ext = CommonUtil.getFileType(fileName);
 						savedFileName = file.getPath();
-
 						JSONObject jObj = new JSONObject();
 						jObj.put("name", fileName);
 						jObj.put("size", fileSize);
 						jObj.put("extension", ext);
 						jObj.put("path", HttpUtils.getUploadFileId(keyId));
 						jsonArray.put(jObj);
+						if (!savedFileName.isEmpty()){
+							HttpUtils.CacheUploadFile(keyId, savedFileName, fileName, ext);
+						}
 					}
 				}
 				JSONObject jObjResponse = new JSONObject();
@@ -93,6 +93,9 @@ public class GXObjectUploadServices extends GXWebObjectStub
 					builder = Response.status(201).entity(jsonResponse);
 					builder.header("GeneXus-Object-Id", keyId);
 				}
+				if (!savedFileName.isEmpty()) {
+					HttpUtils.CacheUploadFile(keyId, savedFileName, fileName, ext);
+				}
 			}
 		}
 		catch (Throwable e)
@@ -100,11 +103,8 @@ public class GXObjectUploadServices extends GXWebObjectStub
 			context.sendResponseStatus(404, e.getMessage());
 		}
 		finally {
-			if (!savedFileName.isEmpty()){
-				HttpUtils.CacheUploadFile(keyId, savedFileName, fileName, ext);
-			}
 			if (!isRestCall)
-				ModelContext.deleteThreadContext();
+			ModelContext.deleteThreadContext();
 		}
     }
 	
@@ -229,5 +229,5 @@ public class GXObjectUploadServices extends GXWebObjectStub
 	}
    protected void init(HttpContext context )
    {
-   }
+   }	   
 }
