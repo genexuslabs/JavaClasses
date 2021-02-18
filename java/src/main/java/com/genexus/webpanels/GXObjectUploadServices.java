@@ -48,21 +48,21 @@ public class GXObjectUploadServices extends GXWebObjectStub
 				for (int i = 0, len = postedFiles.getCount(); i < len; i++)
 				{
 					FileItem file = postedFiles.item(i);
-					if (!file. isFormField())
+					if (!file.isFormField())
 					{
-							fileName = file.getName();
-
-						long fileSize = file.getSize(); 
-
+						fileName = file.getName();
+						long fileSize = file.getSize();
 						ext = CommonUtil.getFileType(fileName);
-							savedFileName = file.getPath();
-
+						savedFileName = file.getPath();
 						JSONObject jObj = new JSONObject();
 						jObj.put("name", fileName);
 						jObj.put("size", fileSize);
 						jObj.put("extension", ext);
 						jObj.put("path", HttpUtils.getUploadFileId(keyId));
 						jsonArray.put(jObj);
+						if (!savedFileName.isEmpty()){
+							HttpUtils.CacheUploadFile(keyId, savedFileName, fileName, ext);
+						}
 					}
 				}
 				JSONObject jObjResponse = new JSONObject();
@@ -82,16 +82,19 @@ public class GXObjectUploadServices extends GXWebObjectStub
 				JSONObject jObj = new JSONObject();
 				jObj.put("object_id", HttpUtils.getUploadFileId(keyId));
 				if (!isRestCall) {
-				context.getResponse().setContentType("application/json");
-				context.getResponse().setStatus(201);
-				context.getResponse().setHeader("GeneXus-Object-Id", keyId);
-				context.writeText(jObj.toString());
-				context.getResponse().flushBuffer();
+					context.getResponse().setContentType("application/json");
+					context.getResponse().setStatus(201);
+					context.getResponse().setHeader("GeneXus-Object-Id", keyId);
+					context.writeText(jObj.toString());
+					context.getResponse().flushBuffer();
 				}
 				else {
 					String jsonResponse = jObj.toString();
 					builder = Response.status(201).entity(jsonResponse);
 					builder.header("GeneXus-Object-Id", keyId);
+				}
+				if (!savedFileName.isEmpty()) {
+					HttpUtils.CacheUploadFile(keyId, savedFileName, fileName, ext);
 				}
 			}
 		}
@@ -100,9 +103,6 @@ public class GXObjectUploadServices extends GXWebObjectStub
 			context.sendResponseStatus(404, e.getMessage());
 		}
 		finally {
-			if (!savedFileName.isEmpty()){
-				HttpUtils.CacheUploadFile(keyId, savedFileName, fileName, ext);
-			}
 			if (!isRestCall)
 			ModelContext.deleteThreadContext();
 		}
