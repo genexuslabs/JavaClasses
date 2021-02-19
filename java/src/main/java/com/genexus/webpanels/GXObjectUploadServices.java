@@ -50,9 +50,9 @@ public class GXObjectUploadServices extends GXWebObjectStub
 					FileItem file = postedFiles.item(i);
 					if (!file.isFormField())
 					{
-						fileName = file.getName();
+						ext = CommonUtil.getFileType(file.getName());
+						fileName = CommonUtil.getFileName(file.getName()) + "." + ext;
 						long fileSize = file.getSize();
-						ext = CommonUtil.getFileType(fileName);
 						savedFileName = file.getPath();
 						JSONObject jObj = new JSONObject();
 						jObj.put("name", fileName);
