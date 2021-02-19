@@ -49,7 +49,8 @@ public class HttpUtils
         {
 			String keyId = HttpUtils.getUploadFileKey();
 			itemFilePath = HttpUtils.getUploadFileId(keyId);
-			HttpUtils.CacheUploadFile(keyId, item.getPath(), item.getName(), CommonUtil.getFileType(item.getName()));
+			String fileExtension = CommonUtil.getFileType(item.getName());
+			HttpUtils.CacheUploadFile(keyId, item.getPath(), CommonUtil.getFileName(item.getName()) + "." + fileExtension, fileExtension);
         }
         pushValue(ht, item.getFieldName(), itemFilePath);
       }
