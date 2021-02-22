@@ -207,7 +207,7 @@ final  class getpendingeventandcheckpointsbytimestamp__default extends DataStore
 {
    protected Object[] conditional_P00022( ModelContext context ,
                                           int remoteHandle ,
-                                          com.genexus.internet.HttpContext httpContext ,
+                                          com.genexus.IHttpContext httpContext ,
                                           short AV5PendingEventStatus ,
                                           short A6PendingEventStatus )
    {
@@ -249,7 +249,7 @@ final  class getpendingeventandcheckpointsbytimestamp__default extends DataStore
    public Object [] getDynamicStatement( int cursor ,
                                          ModelContext context ,
                                          int remoteHandle ,
-                                         com.genexus.internet.HttpContext httpContext ,
+                                         com.genexus.IHttpContext httpContext ,
                                          Object [] dynConstraints )
    {
       switch ( cursor )
