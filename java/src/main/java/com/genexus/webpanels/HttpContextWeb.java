@@ -15,11 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletOutputStream;
+import javax.servlet.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -243,6 +239,11 @@ public class HttpContextWeb extends HttpContext {
 		this.useNamedParameters = useNamedParameters;
 		loadParameters(req.getQueryString());
 		isCrawlerRequest = isCrawlerRequest();
+
+		SessionCookieConfig scc = servletContext.getSessionCookieConfig();
+		if (req.isSecure() && !scc.isSecure()) {
+			scc.setSecure(true);
+		}
 	}
 
 	private void loadParameters(String value) {

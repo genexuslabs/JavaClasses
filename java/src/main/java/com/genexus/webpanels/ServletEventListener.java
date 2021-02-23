@@ -92,11 +92,6 @@ public class ServletEventListener implements ServletContextListener
 				appContext.setServletEngine(true);
 				appContext.setServletEngineDefaultPath(basePath);
 				Application.init(gxcfgClass);
-
-				if (Application.getClientPreferences().getProperty("HTTP_PROTOCOL", "").toLowerCase().equals("secure")) {
-					SessionCookieConfig scc = context.getSessionCookieConfig();
-					scc.setSecure(true);
-				}
 			}
 			catch (Exception e) {
 			}
