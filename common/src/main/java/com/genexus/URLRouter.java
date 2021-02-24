@@ -49,6 +49,7 @@ public class URLRouter
 			{
 				SpecificImplementation.Application.getConfigurationClass().getClassLoader().loadClass(packageName + lowURL);
 				key = packageName + lowURL;
+				lowURL = key;
 			}
 			catch(java.lang.ClassNotFoundException e)
 			{
