@@ -229,9 +229,11 @@ public class HttpContextWeb extends HttpContext {
 		loadParameters(req.getQueryString());
 		isCrawlerRequest = isCrawlerRequest();
 
-		SessionCookieConfig scc = servletContext.getSessionCookieConfig();
-		if (req.isSecure() && !scc.isSecure()) {
-			scc.setSecure(true);
+		if (servletContext!=null) {
+			SessionCookieConfig scc = servletContext.getSessionCookieConfig();
+			if (scc!=null && req.isSecure() && !scc.isSecure()) {
+				scc.setSecure(true);
+			}
 		}
 	}
 
