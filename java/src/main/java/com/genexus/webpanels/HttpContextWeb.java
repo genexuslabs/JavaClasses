@@ -1,5 +1,6 @@
 package com.genexus.webpanels;
 
+import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -238,12 +239,6 @@ public class HttpContextWeb extends HttpContext {
 		loadParameters(req.getQueryString());
 		isCrawlerRequest = isCrawlerRequest();
 
-		if (servletContext!=null) {
-			SessionCookieConfig scc = servletContext.getSessionCookieConfig();
-			if (scc!=null && req.isSecure() && !scc.isSecure()) {
-				scc.setSecure(true);
-			}
-		}
 	}
 
 	private void loadParameters(String value) {
@@ -1512,8 +1507,7 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	String sameSiteMode;
-	private void proxyCookieValues()
-	{
+	private void proxyCookieValues() {
 		if (sameSiteMode == null) {
 			String sameSiteModeValue = Application.getClientPreferences().getProperty("SAMESITE_COOKIE", "");
 			if (sameSiteModeValue.equals(SAME_SITE_NONE) || sameSiteModeValue.equals(SAME_SITE_LAX) || sameSiteModeValue.equals(SAME_SITE_STRICT))
@@ -1522,7 +1516,7 @@ public class HttpContextWeb extends HttpContext {
 				sameSiteMode = "";
 		}
 
-		if (!sameSiteMode.equals("")){
+		if (!sameSiteMode.equals("")) {
 			addSameSiteCookieAttribute(getResponse());
 		}
 	}
