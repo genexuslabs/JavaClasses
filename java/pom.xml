@@ -151,6 +151,7 @@
 			<groupId>com.sap.conn.jco</groupId>
 			<artifactId>sapjco3</artifactId>
 			<version>3.0.14</version>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.ws.security</groupId>
