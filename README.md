@@ -33,6 +33,14 @@ The dependencies between the projects are specified in each pom.xml within their
 - JDK 9 or greater
 - Maven 3.6 or greater
 
+In order to compile the *java* submodule, the [SAP JCo (SAP Java Connector)](https://support.sap.com/en/product/connectors/jco.html) needs to be installed in a Maven repository accessible while compiling (eg. the local Maven repository). This JAR can be downloaded from SAP's website (please note that a valid SAP Developer license may be required).
+
+In order to install the connector into the Maven local repository, open a terminal and execute:
+``` powershell
+mvn install:install-file -DgroupId=com.sap.conn.jco -DartifactId=sapjco3 -Dversion=3.0.14 -Dpackaging=jar -Dfile=sapjco3.jar
+```
+(The required version of the JCo jar can be found in [the POM file of the java submodule](https://github.com/genexuslabs/JavaClasses/blob/master/java/pom.xml))
+
 # Instructions
 
 ## How to build all projects?
