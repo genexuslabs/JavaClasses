@@ -1275,6 +1275,7 @@ public class HttpContextWeb extends HttpContext {
 			if (isSpaRequest(true)) {
 				pushUrlSessionStorage();
 				getResponse().setHeader(GX_SPA_REDIRECT_URL, url + popLvlParm);
+				sendCacheHeaders();
 			} else {
 				redirect_http(url + popLvlParm);
 			}
