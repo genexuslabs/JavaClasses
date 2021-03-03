@@ -34,14 +34,6 @@
 		<module>gxexternalproviders</module>
 	</modules>
 
-	<repositories>
-		<repository>
-			<id>mit-public</id>
-			<name>MIT Public</name>
-			<url>http://maven.mit.edu/nexus/content/repositories/public</url>
-		</repository>
-	</repositories>
-
 	<licenses>
 		<license>
 			<name>Apache 2.0</name>
