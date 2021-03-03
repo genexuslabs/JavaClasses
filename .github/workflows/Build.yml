@@ -34,6 +34,12 @@ jobs:
       with:
         java-version: 1.9
 
+    - name: Setup Maven settings
+      uses: whelk-io/maven-settings-xml-action@v14
+      with:
+        repositories: '[{ "id": "github-genexuslabs", "url": "https://maven.pkg.github.com/genexuslabs/Private-Maven-for-GX",  "releases": { "enabled": "true" }, "snapshots": { "enabled": "true" } }]'
+        servers: '[{ "id": "github-genexuslabs", "username": "genexusbot", "password": "${{ secrets.SECURE_TOKEN }}" }]'
+
     - name: Calculate build variables
       id: buildVariables
       run: |
