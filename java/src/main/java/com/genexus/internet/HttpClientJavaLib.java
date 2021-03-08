@@ -103,10 +103,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	private void resetExecParams() {
 		setConnManager();
-		if (httpClientBuilder.get(Thread.currentThread().getId()) == null)
-			initBaseAtr();	// Inicializacion de los atributos en la clase base del thread
+		if (httpClientBuilder.get(Thread.currentThread().getId()) == null) {
+			initBaseAtr();    // Inicializacion de los atributos en la clase base del thread
 			httpClientBuilder.put(Thread.currentThread().getId(),
 				HttpClients.custom().setConnectionManager(connManager.get(Thread.currentThread().getId())).setConnectionManagerShared(true));
+		}
 		if (cookies.get(Thread.currentThread().getId()) == null)
 			cookies.put(Thread.currentThread().getId(),
 				new BasicCookieStore());
@@ -134,7 +135,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		URI uri;
 		try
 		{
-			uri = new URI(url);		// En caso que la URL pasada por parametro no sea una URL valida, salta una excepcion en esta linea, y se continua haciendo todo el proceso con los datos ya guardados como atributos
+			uri = new URI(url);		// En caso que la URL pasada por parametro no sea una URL valida (en este caso seria que no sea un URL absoluta), salta una excepcion en esta linea, y se continua haciendo todo el proceso con los datos ya guardados como atributos
 			setPrevURLhost(getHost());
 			setPrevURLbaseURL(getBaseURL());
 			setPrevURLport(getPort());
@@ -156,8 +157,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 		catch (ParseException e)
 		{
-			if (url.isEmpty())
-				url = "/null";
+//			if (url.isEmpty())
+//				url = "/null";
 			return url;
 		}
 	}
@@ -326,8 +327,14 @@ public class HttpClientJavaLib extends GXHttpClient {
 				httpClientContext.get(Thread.currentThread().getId()).setCredentialsProvider(credentialsProvider.get(Thread.currentThread().getId()));
 			}
 
-			if  (!url.startsWith("/"))
-				url = !getBaseURL().startsWith("/")?"/" + getBaseURL() + url:getBaseURL() + url;
+			url = setPathUrl(url);
+
+
+			//// ESTO QUE ESTOY HACIENDO ACA ARRIBA PARA CONCATENACION VA A SUSTIRUIR ESTAS DOS LINEAS QUE SIGUEN ///
+//			if  (!url.startsWith("/"))
+//				url = !getBaseURL().startsWith("/")?"/" + getBaseURL() + url:getBaseURL() + url;
+			/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 			if (getSecure() == 1)   // Se completa con esquema y host
 				url = "https://" + getHost() + url;		// La lib de HttpClient agrega el port
 			else
@@ -469,10 +476,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			}
 			resetStateAdapted();
 		}
-
 	}
-
-
 
 	public int getStatusCode() {
 		return statusCode.get(Thread.currentThread().getId());

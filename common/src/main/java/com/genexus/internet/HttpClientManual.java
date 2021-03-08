@@ -146,8 +146,9 @@ public class HttpClientManual extends GXHttpClient {
 			setProxyInfoChanged(false); // Desmarco las flags
 			setAuthorizationProxyChanged(false);
 
-			if  (!url.startsWith("/"))
-				url = getBaseURL() + url;
+//			if  (!url.startsWith("/"))
+//				url = getBaseURL() + url;
+			url = setPathUrl(url);
 
 			if	(method.equalsIgnoreCase("GET"))
 			{
