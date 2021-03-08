@@ -65,29 +65,77 @@ public abstract class GXHttpClient implements IHttpClient{
 	}
 
 	protected void initBaseAtr() {
-		this.secure.put(Thread.currentThread().getId(), 0);
-		this.port.put(Thread.currentThread().getId(), 80);
-		this.hostChanged.put(Thread.currentThread().getId(), true);
-		this.headersToSend.put(Thread.currentThread().getId(),new Hashtable<>());
-		this.proxyHost.put(Thread.currentThread().getId(), "");
-		this.proxyPort.put(Thread.currentThread().getId(), 80);
-		this.proxyInfoChanged.put(Thread.currentThread().getId(), false);
-		this.includeCookies.put(Thread.currentThread().getId(), true);
-		this.tcpNoDelay.put(Thread.currentThread().getId(), false);
-		this.variablesToSend.put(Thread.currentThread().getId(),  new Hashtable());
-		this.contentToSend.put(Thread.currentThread().getId(), new Vector<>());
-		this.isMultipart.put(Thread.currentThread().getId(), false);
-		this.multipartTemplate.put(Thread.currentThread().getId(), new MultipartTemplate());
-		this.isURL.put(Thread.currentThread().getId(), false);
-		this.authorizationChanged.put(Thread.currentThread().getId(), false);
-		this.authorizationProxyChanged.put(Thread.currentThread().getId(), false);
-		this.basicAuthorization.put(Thread.currentThread().getId(), new Vector<>());
-		this.digestAuthorization.put(Thread.currentThread().getId(), new Vector<>());
-		this.NTLMAuthorization.put(Thread.currentThread().getId(), new Vector<>());
-		this.basicProxyAuthorization.put(Thread.currentThread().getId(), new Vector<>());
-		this.digestProxyAuthorization.put(Thread.currentThread().getId(), new Vector<>());
-		this.NTLMProxyAuthorization.put(Thread.currentThread().getId(), new Vector<>());
-		this.usingExternalHttpClient.put(Thread.currentThread().getId(), false);
+		if (this.secure.get(Thread.currentThread().getId()) == null)
+			this.secure.put(Thread.currentThread().getId(), 0);
+
+		if (this.port.get(Thread.currentThread().getId()) == null)
+			this.port.put(Thread.currentThread().getId(), 80);
+
+		if (this.baseURL.get(Thread.currentThread().getId()) == null)
+			this.baseURL.put(Thread.currentThread().getId(), "/");
+
+		if (this.hostChanged.get(Thread.currentThread().getId()) == null)
+			this.hostChanged.put(Thread.currentThread().getId(), true);
+
+		if (this.headersToSend.get(Thread.currentThread().getId()) == null)
+			this.headersToSend.put(Thread.currentThread().getId(),new Hashtable<>());
+
+		if (this.proxyHost.get(Thread.currentThread().getId()) == null)
+			this.proxyHost.put(Thread.currentThread().getId(), "");
+
+		if (this.proxyPort.get(Thread.currentThread().getId()) == null)
+			this.proxyPort.put(Thread.currentThread().getId(), 80);
+
+		if (this.proxyInfoChanged.get(Thread.currentThread().getId()) == null)
+			this.proxyInfoChanged.put(Thread.currentThread().getId(), false);
+
+		if (this.includeCookies.get(Thread.currentThread().getId()) == null)
+			this.includeCookies.put(Thread.currentThread().getId(), true);
+
+		if (this.tcpNoDelay.get(Thread.currentThread().getId()) == null)
+			this.tcpNoDelay.put(Thread.currentThread().getId(), false);
+
+		if (this.variablesToSend.get(Thread.currentThread().getId()) == null)
+			this.variablesToSend.put(Thread.currentThread().getId(),  new Hashtable());
+
+		if (this.contentToSend.get(Thread.currentThread().getId()) == null)
+			this.contentToSend.put(Thread.currentThread().getId(), new Vector<>());
+
+		if (this.isMultipart.get(Thread.currentThread().getId()) == null)
+			this.isMultipart.put(Thread.currentThread().getId(), false);
+
+		if (this.multipartTemplate.get(Thread.currentThread().getId()) == null)
+			this.multipartTemplate.put(Thread.currentThread().getId(), new MultipartTemplate());
+
+		if (this.isURL.get(Thread.currentThread().getId()) == null)
+			this.isURL.put(Thread.currentThread().getId(), false);
+
+		if (this.authorizationChanged.get(Thread.currentThread().getId()) == null)
+			this.authorizationChanged.put(Thread.currentThread().getId(), false);
+
+		if (this.authorizationProxyChanged.get(Thread.currentThread().getId()) == null)
+			this.authorizationProxyChanged.put(Thread.currentThread().getId(), false);
+
+		if (this.basicAuthorization.get(Thread.currentThread().getId()) == null)
+			this.basicAuthorization.put(Thread.currentThread().getId(), new Vector<>());
+
+		if (this.digestAuthorization.get(Thread.currentThread().getId()) == null)
+			this.digestAuthorization.put(Thread.currentThread().getId(), new Vector<>());
+
+		if (this.NTLMAuthorization.get(Thread.currentThread().getId()) == null)
+			this.NTLMAuthorization.put(Thread.currentThread().getId(), new Vector<>());
+
+		if (this.basicProxyAuthorization.get(Thread.currentThread().getId()) == null)
+			this.basicProxyAuthorization.put(Thread.currentThread().getId(), new Vector<>());
+
+		if (this.digestProxyAuthorization.get(Thread.currentThread().getId()) == null)
+			this.digestProxyAuthorization.put(Thread.currentThread().getId(), new Vector<>());
+
+		if (this.NTLMProxyAuthorization.get(Thread.currentThread().getId()) == null)
+			this.NTLMProxyAuthorization.put(Thread.currentThread().getId(), new Vector<>());
+
+		if (this.usingExternalHttpClient.get(Thread.currentThread().getId()) == null)
+			this.usingExternalHttpClient.put(Thread.currentThread().getId(), false);
 	}
 
 	public byte getBasic()
@@ -159,6 +207,7 @@ public abstract class GXHttpClient implements IHttpClient{
 	public void setIncludeCookies(boolean value)
 	{
 		this.includeCookies.put(Thread.currentThread().getId(), value);
+		this.hostChanged.put(Thread.currentThread().getId(), true);
 	}
 
 	public boolean getIncludeCookies()
@@ -228,7 +277,7 @@ public abstract class GXHttpClient implements IHttpClient{
 
 	public void setPort(int port)
 	{
-		if(this.port.get(Thread.currentThread().getId()) != port)
+		if(this.port.get(Thread.currentThread().getId()) == null || this.port.get(Thread.currentThread().getId()) != port)
 		{
 			putOrRemoveIfNull(this.port,port);
 			this.hostChanged.put(Thread.currentThread().getId(), true); // Indico que cambio el Host, pues cambió el puerto
@@ -248,7 +297,7 @@ public abstract class GXHttpClient implements IHttpClient{
 
 	public void setSecure(int secure)
 	{
-		if(this.secure.get(Thread.currentThread().getId()) != secure)
+		if(this.secure.get(Thread.currentThread().getId()) == null || this.secure.get(Thread.currentThread().getId()) != secure)
 		{
 			putOrRemoveIfNull(this.secure,secure);
 			this.hostChanged.put(Thread.currentThread().getId(), true); // Indico que cambio el Host, pues cambió el protocolo
@@ -274,6 +323,7 @@ public abstract class GXHttpClient implements IHttpClient{
 	public void setTcpNoDelay(boolean tcpNoDelay)
 	{
 		this.tcpNoDelay.put(Thread.currentThread().getId(), tcpNoDelay);
+		this.hostChanged.put(Thread.currentThread().getId(), true);
 	}
 
 	public boolean getTcpNoDelay() {
@@ -333,12 +383,20 @@ public abstract class GXHttpClient implements IHttpClient{
 		switch (type)
 		{
 			case BASIC:
+				if (this.basicAuthorization.get(Thread.currentThread().getId()) == null)
+					this.basicAuthorization.put(Thread.currentThread().getId(), new Vector<>());
 				basicAuthorization.get(Thread.currentThread().getId()).addElement(new HttpClientPrincipal(realm, name, value));
 				break;
+
 			case DIGEST:
+				if (this.digestAuthorization.get(Thread.currentThread().getId()) == null)
+					this.digestAuthorization.put(Thread.currentThread().getId(), new Vector<>());
 				digestAuthorization.get(Thread.currentThread().getId()).addElement(new HttpClientPrincipal(realm, name, value));
 				break;
+
 			case NTLM:
+				if (this.NTLMAuthorization.get(Thread.currentThread().getId()) == null)
+					this.NTLMAuthorization.put(Thread.currentThread().getId(), new Vector<>());
 				NTLMAuthorization.get(Thread.currentThread().getId()).addElement(new HttpClientPrincipal(realm, name, value));
 				break;
 		}
@@ -350,12 +408,20 @@ public abstract class GXHttpClient implements IHttpClient{
 		switch (type)
 		{
 			case BASIC:
+				if (this.basicProxyAuthorization.get(Thread.currentThread().getId()) == null)
+					this.basicProxyAuthorization.put(Thread.currentThread().getId(), new Vector<>());
 				basicProxyAuthorization.get(Thread.currentThread().getId()).addElement(new HttpClientPrincipal(realm, name, value));
 				break;
+
 			case DIGEST :
+				if (this.digestProxyAuthorization.get(Thread.currentThread().getId()) == null)
+					this.digestProxyAuthorization.put(Thread.currentThread().getId(), new Vector<>());
 				digestProxyAuthorization.get(Thread.currentThread().getId()).addElement(new HttpClientPrincipal(realm, name, value));
 				break;
+
 			case NTLM :
+				if (this.NTLMProxyAuthorization.get(Thread.currentThread().getId()) == null)
+					this.NTLMProxyAuthorization.put(Thread.currentThread().getId(), new Vector<>());
 				NTLMProxyAuthorization.get(Thread.currentThread().getId()).addElement(new HttpClientPrincipal(realm, name, value));
 				break;
 		}
@@ -389,25 +455,33 @@ public abstract class GXHttpClient implements IHttpClient{
 				value = multipartTemplate.get(Thread.currentThread().getId()).contentType;
 			}
 		}
+		if (this.headersToSend.get(Thread.currentThread().getId()) == null)
+			this.headersToSend.put(Thread.currentThread().getId(),new Hashtable<>());
 		headersToSend.get(Thread.currentThread().getId()).put(name, value);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void addVariable(String name, String value)
 	{
+		if (this.variablesToSend.get(Thread.currentThread().getId()) == null)
+			this.variablesToSend.put(Thread.currentThread().getId(),  new Hashtable());
 		variablesToSend.get(Thread.currentThread().getId()).put(name, value);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void addBytes(byte[] value)
 	{
+		if (this.contentToSend.get(Thread.currentThread().getId()) == null)
+			this.contentToSend.put(Thread.currentThread().getId(), new Vector<>());
 		contentToSend.get(Thread.currentThread().getId()).addElement(value);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void addString(String value)
 	{
-		contentToSend.get(Thread.currentThread().getId()).addElement(value);
+		if (this.contentToSend.get(Thread.currentThread().getId()) == null)
+			this.contentToSend.put(Thread.currentThread().getId(), new Vector<>());
+		this.contentToSend.get(Thread.currentThread().getId()).addElement(value);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -535,6 +609,34 @@ public abstract class GXHttpClient implements IHttpClient{
 
 	public void setIsURL(boolean isURL) {
 		putOrRemoveIfNull(this.isURL,isURL);
+	}
+
+	protected String setPathUrl(String url) {
+		if (!getIsURL()) {		// Si no es URL absoluta
+			if (!getBaseURL().isEmpty()) {
+				if (!getBaseURL().startsWith("/"))
+					setBaseURL("/" + getBaseURL());
+				if (url.isEmpty())
+					url = getBaseURL();
+				else {
+					if (!url.startsWith("/")) {
+						if (getBaseURL().endsWith("/"))
+							url = getBaseURL() + url;
+						else
+							url = getBaseURL() + "/" + url;
+					} else {
+						if (getBaseURL().endsWith("/"))
+							url = getBaseURL() + url.substring(1);
+						else
+							url = getBaseURL() + url;
+					}
+				}
+			} else {
+				if (!url.startsWith("/"))
+					url = "/" + url;
+			}
+		}
+		return url;
 	}
 
 	@SuppressWarnings("unchecked")
