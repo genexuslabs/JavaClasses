@@ -1976,7 +1976,7 @@ public class PDFReportItext implements IReportHandler
 		if(!new File(docName).isAbsolute())
 		{ // Si el nombre del documento es relativo, veo si hay que agregarle el outputDir
 			//String outputDir = props.getGeneralProperty(Const.OUTPUT_FILE_DIRECTORY, "").replace(alternateSeparator, File.separatorChar).trim();
-			String outputDir = AndroidContext.ApplicationContext.getExternalFilesPath();
+			String outputDir = AndroidContext.ApplicationContext.getTemporaryFilesPath();
 			if(!outputDir.equalsIgnoreCase("") && !outputDir.equalsIgnoreCase("."))
 			{
 				if(!outputDir.endsWith(File.separator))
