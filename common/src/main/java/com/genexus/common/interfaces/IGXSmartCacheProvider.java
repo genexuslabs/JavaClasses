@@ -15,11 +15,11 @@ public interface IGXSmartCacheProvider {
 
 	void invalidate(String item);
 
-	void recordUpdates();
+	void recordUpdates(int handle);
 
-	void setUpdated(String table);
+	void setUpdated(String table, int handle);
 
-	void discardUpdates();
+	void discardUpdates(int handle);
 
 	Object CheckDataStatus(String queryId, Date dateLastModified, Date[] dateUpdated_arr);
 
