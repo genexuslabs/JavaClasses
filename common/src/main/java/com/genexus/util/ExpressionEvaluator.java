@@ -75,6 +75,8 @@ public class ExpressionEvaluator
 	{
 		try
 		{
+			errCode = 0;
+			errDescription = "";
 			return eval(expr).getDecimal();
 		}
 		catch (IllegalArgumentException e)
@@ -179,8 +181,6 @@ public class ExpressionEvaluator
 
 	EvalValue eval(String expression)
 	{
-		errCode = 0;
-		errDescription = "";
 		if (expression == "")
 			return throwException(EXPRESSION_ERROR, "Empty expression");
 
