@@ -6,7 +6,7 @@
 
 	<groupId>com.genexus</groupId>
 	<artifactId>parent</artifactId>
-	<version>1.8-SNAPSHOT</version>
+	<version>1.11-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>GeneXus Standard Classes (Parent)</name>
@@ -36,14 +36,6 @@
         <module>gxawsserverless</module>
 		<module>androidreports</module>
     </modules>
-
-	<repositories>
-		<repository>
-			<id>mit-public</id>
-			<name>MIT Public</name>
-			<url>http://maven.mit.edu/nexus/content/repositories/public</url>
-		</repository>
-	</repositories>
 
 	<licenses>
 		<license>

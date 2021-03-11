@@ -324,6 +324,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 
 //@iroqueta
 	private boolean tcpNoDelay = false;
+	private boolean includeCookies = true;
 
     /** IAIK's SSL context */
 //    private SSLContext           ssl_ctxt;
@@ -4022,6 +4023,15 @@ static
 		this.tcpNoDelay = tcpNoDelay;
 	}
 
+//@iroqueta
+	public void setIncludeCookies(boolean includeCookies)
+	{
+		this.includeCookies = includeCookies;
+	}
+	public boolean getIncludeCookies()
+	{
+		return includeCookies;
+	}
 
     private class EstablishConnection extends Thread
     {

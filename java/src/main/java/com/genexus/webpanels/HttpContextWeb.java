@@ -1,29 +1,20 @@
 package com.genexus.webpanels;
 
+import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.Vector;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletOutputStream;
+import javax.servlet.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.ws.rs.core.HttpHeaders;
 
 import com.genexus.*;
 import org.apache.commons.fileupload.FileItemIterator;
@@ -64,7 +55,7 @@ public class HttpContextWeb extends HttpContext {
 	private String requestMethod;
 	protected String contentType = "";
 	private boolean SkipPushUrl = false;
-	private Hashtable<String, Cookie> cookies;
+	private Hashtable<String, String> cookies;
 	private boolean streamSet = false;
 	private WebSession webSession;
 	private FileItemCollection fileItemCollection;
@@ -72,6 +63,7 @@ public class HttpContextWeb extends HttpContext {
 	private boolean ajaxCallAsPOST = false;
 	private boolean htmlHeaderClosed = false;
 	private String sTmpDir;
+	private boolean firstParConsumed = false;
 
 	private static final Pattern USERAGENT_SEARCH_BOT = Pattern.compile("Googlebot|AhrefsBot|bingbot|MJ12bot",
 			Pattern.CASE_INSENSITIVE);
@@ -81,6 +73,10 @@ public class HttpContextWeb extends HttpContext {
 	private static final Pattern EDGE_BROWSER_VERSION_REGEX = Pattern.compile(" Edge\\/([0-9]+)\\.",
 			Pattern.CASE_INSENSITIVE);
 	private static final String GXEVENT_PARM = "gxevent";
+
+	private static final String SAME_SITE_NONE = "None";
+	private static final String SAME_SITE_LAX = "Lax";
+	private static final String SAME_SITE_STRICT = "Strict";
 
 	public boolean isMultipartContent() {
 		return ServletFileUpload.isMultipartContent(request);
@@ -229,7 +225,7 @@ public class HttpContextWeb extends HttpContext {
 
 		GX_msglist = new MsgList();
 		postData = null;
-		cookies = new Hashtable<>();
+		cookies = new Hashtable<String, String>();
 
 		httpRes = new HttpResponse(this);
 		httpReq = new HttpRequestWeb(this);
@@ -242,6 +238,7 @@ public class HttpContextWeb extends HttpContext {
 		this.useNamedParameters = useNamedParameters;
 		loadParameters(req.getQueryString());
 		isCrawlerRequest = isCrawlerRequest();
+
 	}
 
 	private void loadParameters(String value) {
@@ -422,8 +419,10 @@ public class HttpContextWeb extends HttpContext {
 		if (useOldQueryStringFormat)
 			return GetNextPar();
 		else {
-			if (namedParms.containsKey(GXEVENT_PARM))
+			if (!firstParConsumed && namedParms.containsKey(GXEVENT_PARM)) {
+				firstParConsumed = true;
 				return GetPar(GXEVENT_PARM);
+			}
 			else
 				return GetPar(parameter);
 		}
@@ -681,12 +680,12 @@ public class HttpContextWeb extends HttpContext {
 					return BROWSER_IE;
 			} else if (userAgent.toUpperCase().indexOf("SAFARI") != -1) {
 				return BROWSER_SAFARI;
-			} else if (userAgent.toUpperCase().indexOf("MOZILLA/") != -1) {
-				return BROWSER_NETSCAPE;
 			} else if ((userAgent.indexOf("Trident")) != -1) {
 				return BROWSER_IE;
 			} else if (userAgent.toUpperCase().indexOf("OPERA") != -1) {
 				return BROWSER_OPERA;
+			} else if (userAgent.toUpperCase().indexOf("MOZILLA/") != -1) {
+				return BROWSER_NETSCAPE;
 			} else if (userAgent.toUpperCase().indexOf("UP.Browser") != -1) {
 				return BROWSER_UP;
 			} else if (USERAGENT_SEARCH_BOT.matcher(userAgent).find()) {
@@ -861,24 +860,23 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getCookie(String name) {
-		Object o = cookies.get(name);
-		if (o != null) {
-			return WebUtils.decodeCookie(((Cookie) o).getValue());
+		if (cookies.containsKey(name)) {
+			return WebUtils.decodeCookie(cookies.get(name));
 		}
 
 		if (request != null) {
 			try {
 				Cookie[] cookies = request.getCookies();
-
 				if (cookies != null) {
 					for (int i = 0; i < cookies.length; i++) {
-						if (cookies[i].getName().equalsIgnoreCase(name)) {
-							return WebUtils.decodeCookie(cookies[i].getValue());
+						Cookie cookie = cookies[i];
+						if (cookie.getName().equalsIgnoreCase(name)) {
+							return WebUtils.decodeCookie(cookie.getValue());
 						}
 					}
 				}
 			} catch (Exception e) {
-				return "";
+				log.error("Failed getting cookie", e);
 			}
 		}
 
@@ -916,7 +914,8 @@ public class HttpContextWeb extends HttpContext {
 			if (servletContext.getMajorVersion() >= 3)
 				cookie.setHttpOnly(httpOnly); // Requiere servlet version 3.0
 			response.addCookie(cookie);
-			cookies.put(name, cookie);
+
+			cookies.put(name, value);
 		}
 
 		return 0;
@@ -1353,6 +1352,7 @@ public class HttpContextWeb extends HttpContext {
 			if (isSpaRequest(true)) {
 				pushUrlSessionStorage();
 				getResponse().setHeader(GX_SPA_REDIRECT_URL, url + popLvlParm);
+				sendCacheHeaders();
 			} else {
 				redirect_http(url + popLvlParm);
 			}
@@ -1483,6 +1483,7 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public void flushStream() {
+		proxyCookieValues();
 		try {
 			if (buffered) {
 				// Esto en realidad cierra el ZipOutputStream, o el ByteOutputStream, no cierra
@@ -1503,6 +1504,34 @@ public class HttpContextWeb extends HttpContext {
 			}
 		} catch (IOException e) {
 			log.error("Error flushing stream", e);
+		}
+	}
+
+	String sameSiteMode;
+	private void proxyCookieValues() {
+		if (sameSiteMode == null) {
+			String sameSiteModeValue = Application.getClientPreferences().getProperty("SAMESITE_COOKIE", "");
+			if (sameSiteModeValue.equals(SAME_SITE_NONE) || sameSiteModeValue.equals(SAME_SITE_LAX) || sameSiteModeValue.equals(SAME_SITE_STRICT))
+				sameSiteMode = sameSiteModeValue;
+			else
+				sameSiteMode = "";
+		}
+
+		if (!sameSiteMode.equals("")) {
+			addSameSiteCookieAttribute(getResponse());
+		}
+	}
+
+	private void addSameSiteCookieAttribute(HttpServletResponse response) {
+		Collection<String> headers = response.getHeaders(HttpHeaders.SET_COOKIE);
+		boolean firstHeader = true;
+		for (String header : headers) {
+			if (firstHeader) {
+				response.setHeader(HttpHeaders.SET_COOKIE, String.format("%s; %s", header, "SameSite="+sameSiteMode));
+				firstHeader = false;
+				continue;
+			}
+			response.addHeader(HttpHeaders.SET_COOKIE, String.format("%s; %s", header, "SameSite="+sameSiteMode));
 		}
 	}
 

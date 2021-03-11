@@ -37,6 +37,7 @@ public class HttpClient
 	private String proxyHost = "";// = HTTPConnection.getDefaultProxyHost() == null ? "" : HTTPConnection.getDefaultProxyHost();
 	private int proxyPort = 80;// = HTTPConnection.getDefaultProxyPort() == 0 ? 80 : HTTPConnection.getDefaultProxyPort();
 	private boolean tcpNoDelay = false;
+	private boolean includeCookies = true;
 
 	private HTTPConnection con = null;
 	private HTTPResponse res;
@@ -140,6 +141,15 @@ public class HttpClient
 	public short getProxyServerPort()
 	{
 		return (short) proxyPort;
+	}
+	public void setIncludeCookies(boolean value)
+	{
+		this.includeCookies = value;
+	}
+
+	public boolean getIncludeCookies()
+	{
+		return includeCookies;
 	}
 
 	public void setUrl(String url)
@@ -357,16 +367,28 @@ public class HttpClient
 	{
 		resetErrors();
 		
-		URI uri = null;
+		URI uri;
 		try
 		{
 		    uri = new URI(url);
-				prevURLhost = this.getHost();
-				prevURLbaseURL = this.getBaseURL();
-				prevURLport = this.getPort();
-				prevURLsecure = this.getSecure();	
-				isURL = true;		    
+		    prevURLhost = this.getHost();
+			prevURLbaseURL = this.getBaseURL();
+			prevURLport = this.getPort();
+			prevURLsecure = this.getSecure();
+			isURL = true;
 		    setURL(url);
+
+		    StringBuilder relativeUri = new StringBuilder();
+			if (uri.getPath() != null) {
+				relativeUri.append(uri.getPath());
+			}
+			if (uri.getQueryString() != null) {
+				relativeUri.append('?').append(uri.getQueryString());
+			}
+			if (uri.getFragment() != null) {
+				relativeUri.append('#').append(uri.getFragment());
+			}
+		    url = relativeUri.toString();
 		}
 		catch (ParseException e)
 		{
@@ -390,6 +412,7 @@ public class HttpClient
                     con.setSSLConnection(SSLManager.getSSLConnection());
 				
 				con.setTcpNoDelay(tcpNoDelay);
+				con.setIncludeCookies(includeCookies);
             }
 
 			con.setTimeout(timeout * 1000); // Este puede variar sin cambiar de instancia
@@ -444,7 +467,7 @@ public class HttpClient
             
             proxyInfoChanged = authorizationProxyChanged = false; // Desmarco las flags			
 
-			if  (!url.startsWith("/") && uri == null)
+			if  (!url.startsWith("/"))
 				url = baseURL + url;
 
 			if	(method.equalsIgnoreCase("GET"))

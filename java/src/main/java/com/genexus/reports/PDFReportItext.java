@@ -878,7 +878,7 @@ public class PDFReportItext implements IReportHandler
 						bitmap = bitmap.replace(httpContext.getStaticContentBase(), "");
 					}				
 				
-					if(!new File(bitmap).isAbsolute() && !bitmap.toLowerCase().startsWith("http"))
+					if (!new File(bitmap).isAbsolute() && !bitmap.toLowerCase().startsWith("http:") && !bitmap.toLowerCase().startsWith("https:"))
 					{ 
 						if (bitmap.startsWith(httpContext.getStaticContentBase()))
 						{
@@ -1282,6 +1282,7 @@ public class PDFReportItext implements IReportHandler
             topAux = (float)convertScale(top);
 
             ColumnText Col = new ColumnText(cb);
+            Col.setAlignment(columnAlignment((alignment)));
 			ColumnText simulationCol = new ColumnText(null);
 			float drawingPageHeight = (float)this.pageSize.getTop() - topMargin - bottomMargin;
             //Col.setSimpleColumn(llx, lly, urx, ury);
@@ -1307,11 +1308,15 @@ public class PDFReportItext implements IReportHandler
 								simulationCol.addElement((Element)objects.get(k));
 
 								Col = new ColumnText(cb);
+								Col.setAlignment(columnAlignment((alignment)));
 								Col.setSimpleColumn(leftAux + leftMargin,drawingPageHeight - bottomAux,rightAux + leftMargin,drawingPageHeight - topAux);
 
 								bottomAux = bottomAux - drawingPageHeight;
 							}
 						}
+						if (objects.get(k) instanceof Paragraph)
+							((Paragraph)objects.get(k)).setAlignment(columnAlignment(alignment));
+
 						Col.addElement((Element)objects.get(k));
 						Col.go();
 				}
@@ -1598,14 +1603,18 @@ public class PDFReportItext implements IReportHandler
 			Col.setLeading(leading, 1);
 		Col.setSimpleColumn(rect.getLeft(), rect.getBottom(), rect.getRight(), rect.getTop());
 
-		if (alignment == Element.ALIGN_JUSTIFIED)
-			Col.setAlignment(justifiedType);
-		else
-			Col.setAlignment(alignment);
+		Col.setAlignment(columnAlignment(alignment));
 		Col.addText(p);
 		Col.go();
-	}    
-    public void GxClearAttris()
+	}
+	private int columnAlignment(int alignment)
+	{
+		if (alignment == Element.ALIGN_JUSTIFIED)
+			return justifiedType;
+		else
+			return alignment;
+	}
+	public void GxClearAttris()
     {
     }
 
