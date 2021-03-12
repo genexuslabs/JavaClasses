@@ -10,7 +10,6 @@ import java.io.*;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
-import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class GXHttpClient implements IHttpClient{
 	protected final int BASIC  = 0;
@@ -19,124 +18,43 @@ public abstract class GXHttpClient implements IHttpClient{
 
 	public final int ERROR_IO = 1;
 
-	private ConcurrentHashMap<Long,String> host = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,String> baseURL = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,Integer> secure = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,Integer> timeout = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,Integer> port = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,Boolean> hostChanged = new ConcurrentHashMap<>(); // Indica si el próximo request debe ser realizado en una nueva HTTPConnection (si cambio el host)
-	private ConcurrentHashMap<Long,Hashtable<String, String>> headersToSend = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,String> WSDLURL = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,Integer> errCode = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,String> errDescription = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,String> proxyHost = new ConcurrentHashMap<>();// = HTTPConnection.getDefaultProxyHost() == null ? "" : HTTPConnection.getDefaultProxyHost();
-	private ConcurrentHashMap<Long,Integer> proxyPort = new ConcurrentHashMap<>();// = HTTPConnection.getDefaultProxyPort() == 0 ? 80 : HTTPConnection.getDefaultProxyPort();
-	private ConcurrentHashMap<Long,Boolean> proxyInfoChanged = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,Boolean> includeCookies = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,Boolean> tcpNoDelay = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,Hashtable> variablesToSend = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,Vector> contentToSend = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,Boolean> isMultipart = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,MultipartTemplate> multipartTemplate = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,String> prevURLhost = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,String> prevURLbaseURL = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,Integer> prevURLport = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,Integer> prevURLsecure = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,Boolean> isURL = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,Boolean> authorizationChanged = new ConcurrentHashMap<>(); // Indica si se agregó alguna autorización
-	private ConcurrentHashMap<Long,Boolean> authorizationProxyChanged = new ConcurrentHashMap<>(); // Indica si se agregó alguna autorización
+	private String host;
+	private String baseURL = "/";
+	private int secure = 0;
+	private int timeout;
+	private int port = 80;
+	private boolean  hostChanged = true; // Indica si el próximo request debe ser realizado en una nueva HTTPConnection (si cambio el host)
+	private Hashtable<String, String> headersToSend = new Hashtable<>();
+	private String WSDLURL;
+	private int errCode;
+	private String errDescription = "";
+	private String proxyHost = "";// = HTTPConnection.getDefaultProxyHost() == null ? "" : HTTPConnection.getDefaultProxyHost();
+	private int proxyPort = 80;// = HTTPConnection.getDefaultProxyPort() == 0 ? 80 : HTTPConnection.getDefaultProxyPort();
+	private boolean proxyInfoChanged = false;
+	private boolean includeCookies = true;
+	private boolean tcpNoDelay = false;
+	private Hashtable variablesToSend = new Hashtable();
+	private Vector contentToSend = new Vector<>();
+	private boolean isMultipart = false;
+	private MultipartTemplate multipartTemplate = new MultipartTemplate();
+	private String prevURLhost;
+	private String prevURLbaseURL;
+	private int prevURLport;
+	private int prevURLsecure;
+	private boolean isURL = false;
+	private boolean authorizationChanged = false; // Indica si se agregó alguna autorización
+	private boolean authorizationProxyChanged = false; // Indica si se agregó alguna autorización
 
-	private ConcurrentHashMap<Long,Vector<HttpClientPrincipal>> basicAuthorization = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,Vector<HttpClientPrincipal>> digestAuthorization = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,Vector<HttpClientPrincipal>> NTLMAuthorization = new ConcurrentHashMap<>();
+	private Vector<HttpClientPrincipal> basicAuthorization = new Vector<>();
+	private Vector<HttpClientPrincipal> digestAuthorization = new Vector<>();
+	private Vector<HttpClientPrincipal> NTLMAuthorization = new Vector<>();
 
-	private ConcurrentHashMap<Long,Vector<HttpClientPrincipal>> basicProxyAuthorization = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,Vector<HttpClientPrincipal>> digestProxyAuthorization = new ConcurrentHashMap<>();
-	private ConcurrentHashMap<Long,Vector<HttpClientPrincipal>> NTLMProxyAuthorization = new ConcurrentHashMap<>();
+	private Vector<HttpClientPrincipal> basicProxyAuthorization = new Vector<>();
+	private Vector<HttpClientPrincipal> digestProxyAuthorization = new Vector<>();
+	private Vector<HttpClientPrincipal> NTLMProxyAuthorization = new Vector<>();
 //
 	public static boolean issuedExternalHttpClientWarning = false;
-	public ConcurrentHashMap<Long,Boolean> usingExternalHttpClient = new ConcurrentHashMap<>();
-
-	private void putOrRemoveIfNull(ConcurrentHashMap atr, Object value) {
-		if (value == null)
-			atr.remove(Thread.currentThread().getId());
-		else
-			atr.put(Thread.currentThread().getId(), value);
-	}
-
-	protected void initBaseAtr() {
-		if (this.secure.get(Thread.currentThread().getId()) == null)
-			this.secure.put(Thread.currentThread().getId(), 0);
-
-		if (this.port.get(Thread.currentThread().getId()) == null)
-			this.port.put(Thread.currentThread().getId(), 80);
-
-		if (this.baseURL.get(Thread.currentThread().getId()) == null)
-			this.baseURL.put(Thread.currentThread().getId(), "/");
-
-		if (this.hostChanged.get(Thread.currentThread().getId()) == null)
-			this.hostChanged.put(Thread.currentThread().getId(), true);
-
-		if (this.headersToSend.get(Thread.currentThread().getId()) == null)
-			this.headersToSend.put(Thread.currentThread().getId(),new Hashtable<>());
-
-		if (this.proxyHost.get(Thread.currentThread().getId()) == null)
-			this.proxyHost.put(Thread.currentThread().getId(), "");
-
-		if (this.proxyPort.get(Thread.currentThread().getId()) == null)
-			this.proxyPort.put(Thread.currentThread().getId(), 80);
-
-		if (this.proxyInfoChanged.get(Thread.currentThread().getId()) == null)
-			this.proxyInfoChanged.put(Thread.currentThread().getId(), false);
-
-		if (this.includeCookies.get(Thread.currentThread().getId()) == null)
-			this.includeCookies.put(Thread.currentThread().getId(), true);
-
-		if (this.tcpNoDelay.get(Thread.currentThread().getId()) == null)
-			this.tcpNoDelay.put(Thread.currentThread().getId(), false);
-
-		if (this.variablesToSend.get(Thread.currentThread().getId()) == null)
-			this.variablesToSend.put(Thread.currentThread().getId(),  new Hashtable());
-
-		if (this.contentToSend.get(Thread.currentThread().getId()) == null)
-			this.contentToSend.put(Thread.currentThread().getId(), new Vector<>());
-
-		if (this.isMultipart.get(Thread.currentThread().getId()) == null)
-			this.isMultipart.put(Thread.currentThread().getId(), false);
-
-		if (this.multipartTemplate.get(Thread.currentThread().getId()) == null)
-			this.multipartTemplate.put(Thread.currentThread().getId(), new MultipartTemplate());
-
-		if (this.isURL.get(Thread.currentThread().getId()) == null)
-			this.isURL.put(Thread.currentThread().getId(), false);
-
-		if (this.authorizationChanged.get(Thread.currentThread().getId()) == null)
-			this.authorizationChanged.put(Thread.currentThread().getId(), false);
-
-		if (this.authorizationProxyChanged.get(Thread.currentThread().getId()) == null)
-			this.authorizationProxyChanged.put(Thread.currentThread().getId(), false);
-
-		if (this.basicAuthorization.get(Thread.currentThread().getId()) == null)
-			this.basicAuthorization.put(Thread.currentThread().getId(), new Vector<>());
-
-		if (this.digestAuthorization.get(Thread.currentThread().getId()) == null)
-			this.digestAuthorization.put(Thread.currentThread().getId(), new Vector<>());
-
-		if (this.NTLMAuthorization.get(Thread.currentThread().getId()) == null)
-			this.NTLMAuthorization.put(Thread.currentThread().getId(), new Vector<>());
-
-		if (this.basicProxyAuthorization.get(Thread.currentThread().getId()) == null)
-			this.basicProxyAuthorization.put(Thread.currentThread().getId(), new Vector<>());
-
-		if (this.digestProxyAuthorization.get(Thread.currentThread().getId()) == null)
-			this.digestProxyAuthorization.put(Thread.currentThread().getId(), new Vector<>());
-
-		if (this.NTLMProxyAuthorization.get(Thread.currentThread().getId()) == null)
-			this.NTLMProxyAuthorization.put(Thread.currentThread().getId(), new Vector<>());
-
-		if (this.usingExternalHttpClient.get(Thread.currentThread().getId()) == null)
-			this.usingExternalHttpClient.put(Thread.currentThread().getId(), false);
-	}
+	public boolean usingExternalHttpClient = false;
 
 	public byte getBasic()
 	{
@@ -156,63 +74,63 @@ public abstract class GXHttpClient implements IHttpClient{
 	public short getErrCode()
 	{
 		try {
-			return (short) (int) errCode.get(Thread.currentThread().getId());
+			return (short) errCode;
 		} catch (NullPointerException e) {
-			errCode.put(Thread.currentThread().getId(), 0);
+			errCode = 0;
 			return (short) 0;
 		}
 
 	}
 
 	public void setErrCode(int errCode) {
-		putOrRemoveIfNull(this.errCode, errCode);
+		this.errCode = errCode;
 	}
 
 	public String getErrDescription()
 	{
-		return errDescription.get(Thread.currentThread().getId());
+		return errDescription;
 	}
 
 	public void setErrDescription(String errDescription) {
-		putOrRemoveIfNull(this.errDescription,errDescription);
+		this.errDescription = errDescription;
 	}
 
 	public void setProxyServerHost(String host)
 	{
-		putOrRemoveIfNull(this.proxyHost,host);
-		this.proxyInfoChanged.put(Thread.currentThread().getId(), true);
+		this.proxyHost = host;
+		this.proxyInfoChanged = true;
 	}
 
 	public void setProxyServerPort(long port)
 	{
-		putOrRemoveIfNull(this.proxyPort,(int) port);
-		this.proxyInfoChanged.put(Thread.currentThread().getId(), true);
+		this.proxyPort = (int) port;
+		this.proxyInfoChanged = true;
 	}
 
 	public String getProxyServerHost()
 	{
-		return proxyHost.get(Thread.currentThread().getId());
+		return proxyHost;
 	}
 
 	public short getProxyServerPort()
 	{
 		try {
-			return (short) (int) proxyPort.get(Thread.currentThread().getId());
+			return (short) (int) proxyPort;
 		} catch (NullPointerException e) {
-			this.proxyPort.put(Thread.currentThread().getId(), 80);
+			this.proxyPort = 80;
 			return (short) 80;
 		}
 	}
 
 	public void setIncludeCookies(boolean value)
 	{
-		this.includeCookies.put(Thread.currentThread().getId(), value);
-		this.hostChanged.put(Thread.currentThread().getId(), true);
+		this.includeCookies = value;
+		this.hostChanged = true;
 	}
 
 	public boolean getIncludeCookies()
 	{
-		return this.includeCookies.get(Thread.currentThread().getId());
+		return this.includeCookies;
 	}
 
 	public void setURL(String stringURL)
@@ -234,143 +152,143 @@ public abstract class GXHttpClient implements IHttpClient{
 
 	public void setHost(String host)
 	{
-		if(this.host.get(Thread.currentThread().getId()) == null || !this.host.get(Thread.currentThread().getId()).equalsIgnoreCase(host))
+		if(this.host == null || !this.host.equalsIgnoreCase(host))
 		{ // Si el host ha cambiado, dejo marcado para crear una nueva instancia de HTTPConnection
-			putOrRemoveIfNull(this.host,host);
-			this.hostChanged.put(Thread.currentThread().getId(), true);
+			this.host = host;
+			this.hostChanged = true;
 
 			if (SpecificImplementation.HttpClient != null)
-				SpecificImplementation.HttpClient.addSDHeaders(this.host.get(Thread.currentThread().getId()),
-					this.baseURL.get(Thread.currentThread().getId()),
-					this.headersToSend.get(Thread.currentThread().getId()));
+				SpecificImplementation.HttpClient.addSDHeaders(this.host,
+					this.baseURL,
+					this.headersToSend);
 		}
 	}
 
 	public String getHost()
 	{
-		return host.get(Thread.currentThread().getId());
+		return host;
 	}
 
 	public void setWSDLURL(String WSDLURL)
 	{
-		putOrRemoveIfNull(this.WSDLURL,WSDLURL);
+		this.WSDLURL = WSDLURL;
 	}
 
 	public String getWSDLURL()
 	{
-		return WSDLURL.get(Thread.currentThread().getId());
+		return WSDLURL;
 	}
 
 	public void setBaseURL(String baseURL)
 	{
-		putOrRemoveIfNull(this.baseURL,baseURL);
+		this.baseURL = baseURL;
 		if (SpecificImplementation.HttpClient != null)
-			SpecificImplementation.HttpClient.addSDHeaders(this.host.get(Thread.currentThread().getId()),
-				this.baseURL.get(Thread.currentThread().getId()),
-				this.headersToSend.get(Thread.currentThread().getId()));
+			SpecificImplementation.HttpClient.addSDHeaders(this.host,
+				this.baseURL,
+				this.headersToSend);
 	}
 
 	public String getBaseURL()
 	{
-		return baseURL.get(Thread.currentThread().getId());
+		return baseURL;
 	}
 
 	public void setPort(int port)
 	{
-		if(this.port.get(Thread.currentThread().getId()) == null || this.port.get(Thread.currentThread().getId()) != port)
+		if(this.port != port)
 		{
-			putOrRemoveIfNull(this.port,port);
-			this.hostChanged.put(Thread.currentThread().getId(), true); // Indico que cambio el Host, pues cambió el puerto
+			this.port = port;
+			this.hostChanged = true; // Indico que cambio el Host, pues cambió el puerto
 		}
 	}
 
 	public int getPort()
 	{
-		return port.get(Thread.currentThread().getId());
+		return port;
 	}
 
 	public byte getSecure()
 	{
-		return (byte) (int) this.secure.get(Thread.currentThread().getId());
+		return (byte) (int) this.secure;
 
 	}
 
 	public void setSecure(int secure)
 	{
-		if(this.secure.get(Thread.currentThread().getId()) == null || this.secure.get(Thread.currentThread().getId()) != secure)
+		if(this.secure != secure)
 		{
-			putOrRemoveIfNull(this.secure,secure);
-			this.hostChanged.put(Thread.currentThread().getId(), true); // Indico que cambio el Host, pues cambió el protocolo
+			this.secure = secure;
+			this.hostChanged = true; // Indico que cambio el Host, pues cambió el protocolo
 
 		}
 	}
 
 	public void setTimeout(int timeout)
 	{
-		putOrRemoveIfNull(this.timeout,timeout);
+		this.timeout = timeout;
 	}
 
 	public int getTimeout()
 	{
 		try {
-			return timeout.get(Thread.currentThread().getId());
+			return timeout;
 		} catch (NullPointerException e) {
-			this.timeout.put(Thread.currentThread().getId(), 30);		// En caso que no se haya seteado un timeout se setea por defecto en 30 segundos
+			this.timeout = 30;		// En caso que no se haya seteado un timeout se setea por defecto en 30 segundos
 			return 30;
 		}
 	}
 
 	public void setTcpNoDelay(boolean tcpNoDelay)
 	{
-		this.tcpNoDelay.put(Thread.currentThread().getId(), tcpNoDelay);
-		this.hostChanged.put(Thread.currentThread().getId(), true);
+		this.tcpNoDelay = tcpNoDelay;
+		this.hostChanged = true;
 	}
 
 	public boolean getTcpNoDelay() {
-		return this.tcpNoDelay.get(Thread.currentThread().getId());
+		return this.tcpNoDelay;
 	}
 
 	public Hashtable<String, String> getheadersToSend() {
-		return this.headersToSend.get(Thread.currentThread().getId());
+		return this.headersToSend;
 	}
 
 	public MultipartTemplate getMultipartTemplate() {
-		return this.multipartTemplate.get(Thread.currentThread().getId());
+		return this.multipartTemplate;
 	}
 
 	public void setMultipartTemplate(MultipartTemplate multipartTemplate) {
-		putOrRemoveIfNull(this.multipartTemplate,multipartTemplate);
+		this.multipartTemplate = multipartTemplate;
 	}
 
 	public boolean getIsMultipart() {
-		return this.isMultipart.get(Thread.currentThread().getId());
+		return this.isMultipart;
 	}
 
 	public void setIsMultipart(boolean isMultipart) {
-		this.isMultipart.put(Thread.currentThread().getId(), isMultipart);
+		this.isMultipart = isMultipart;
 	}
 
 	public Vector<HttpClientPrincipal> getBasicAuthorization() {
-		return this.basicAuthorization.get(Thread.currentThread().getId());
+		return this.basicAuthorization;
 	}
 
 	public Vector<HttpClientPrincipal> getDigestAuthorization() {
-		return this.digestAuthorization.get(Thread.currentThread().getId());
+		return this.digestAuthorization;
 	}
 
 	public Vector<HttpClientPrincipal> getNTLMAuthorization() {
-		return this.NTLMAuthorization.get(Thread.currentThread().getId());
+		return this.NTLMAuthorization;
 	}
 
 	public Vector<HttpClientPrincipal> getBasicProxyAuthorization() {
-		return this.basicProxyAuthorization.get(Thread.currentThread().getId());
+		return this.basicProxyAuthorization;
 	}
 
 	public Vector<HttpClientPrincipal> getDigestProxyAuthorization() {
-		return this.digestProxyAuthorization.get(Thread.currentThread().getId());
+		return this.digestProxyAuthorization;
 	}
 	public Vector<HttpClientPrincipal> getNTLMProxyAuthorization() {
-		return this.NTLMProxyAuthorization.get(Thread.currentThread().getId());
+		return this.NTLMProxyAuthorization;
 	}
 
 	public void addCertificate(String fileName)
@@ -383,21 +301,21 @@ public abstract class GXHttpClient implements IHttpClient{
 		switch (type)
 		{
 			case BASIC:
-				if (this.basicAuthorization.get(Thread.currentThread().getId()) == null)
-					this.basicAuthorization.put(Thread.currentThread().getId(), new Vector<>());
-				basicAuthorization.get(Thread.currentThread().getId()).addElement(new HttpClientPrincipal(realm, name, value));
+				if (this.basicAuthorization == null)
+					this.basicAuthorization = new Vector<>();
+				basicAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
 				break;
 
 			case DIGEST:
-				if (this.digestAuthorization.get(Thread.currentThread().getId()) == null)
-					this.digestAuthorization.put(Thread.currentThread().getId(), new Vector<>());
-				digestAuthorization.get(Thread.currentThread().getId()).addElement(new HttpClientPrincipal(realm, name, value));
+				if (this.digestAuthorization == null)
+					this.digestAuthorization = new Vector<>();
+				digestAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
 				break;
 
 			case NTLM:
-				if (this.NTLMAuthorization.get(Thread.currentThread().getId()) == null)
-					this.NTLMAuthorization.put(Thread.currentThread().getId(), new Vector<>());
-				NTLMAuthorization.get(Thread.currentThread().getId()).addElement(new HttpClientPrincipal(realm, name, value));
+				if (this.NTLMAuthorization == null)
+					this.NTLMAuthorization = new Vector<>();
+				NTLMAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
 				break;
 		}
 	}
@@ -408,21 +326,21 @@ public abstract class GXHttpClient implements IHttpClient{
 		switch (type)
 		{
 			case BASIC:
-				if (this.basicProxyAuthorization.get(Thread.currentThread().getId()) == null)
-					this.basicProxyAuthorization.put(Thread.currentThread().getId(), new Vector<>());
-				basicProxyAuthorization.get(Thread.currentThread().getId()).addElement(new HttpClientPrincipal(realm, name, value));
+				if (this.basicProxyAuthorization == null)
+					this.basicProxyAuthorization = new Vector<>();
+				basicProxyAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
 				break;
 
 			case DIGEST :
-				if (this.digestProxyAuthorization.get(Thread.currentThread().getId()) == null)
-					this.digestProxyAuthorization.put(Thread.currentThread().getId(), new Vector<>());
-				digestProxyAuthorization.get(Thread.currentThread().getId()).addElement(new HttpClientPrincipal(realm, name, value));
+				if (this.digestProxyAuthorization == null)
+					this.digestProxyAuthorization = new Vector<>();
+				digestProxyAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
 				break;
 
 			case NTLM :
-				if (this.NTLMProxyAuthorization.get(Thread.currentThread().getId()) == null)
-					this.NTLMProxyAuthorization.put(Thread.currentThread().getId(), new Vector<>());
-				NTLMProxyAuthorization.get(Thread.currentThread().getId()).addElement(new HttpClientPrincipal(realm, name, value));
+				if (this.NTLMProxyAuthorization == null)
+					this.NTLMProxyAuthorization = new Vector<>();
+				NTLMProxyAuthorization.addElement(new HttpClientPrincipal(realm, name, value));
 				break;
 		}
 	}
@@ -451,80 +369,80 @@ public abstract class GXHttpClient implements IHttpClient{
 			}
 
 			if (value.toLowerCase().startsWith("multipart/form-data")){
-				this.isMultipart.put(Thread.currentThread().getId(), true);
-				value = multipartTemplate.get(Thread.currentThread().getId()).contentType;
+				this.isMultipart = true;
+				value = multipartTemplate.contentType;
 			}
 		}
-		if (this.headersToSend.get(Thread.currentThread().getId()) == null)
-			this.headersToSend.put(Thread.currentThread().getId(),new Hashtable<>());
-		headersToSend.get(Thread.currentThread().getId()).put(name, value);
+		if (this.headersToSend == null)
+			this.headersToSend =new Hashtable<>();
+		headersToSend.put(name, value);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void addVariable(String name, String value)
 	{
-		if (this.variablesToSend.get(Thread.currentThread().getId()) == null)
-			this.variablesToSend.put(Thread.currentThread().getId(),  new Hashtable());
-		variablesToSend.get(Thread.currentThread().getId()).put(name, value);
+		if (this.variablesToSend == null)
+			this.variablesToSend =  new Hashtable();
+		variablesToSend.put(name, value);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void addBytes(byte[] value)
 	{
-		if (this.contentToSend.get(Thread.currentThread().getId()) == null)
-			this.contentToSend.put(Thread.currentThread().getId(), new Vector<>());
-		contentToSend.get(Thread.currentThread().getId()).addElement(value);
+		if (this.contentToSend == null)
+			this.contentToSend = new Vector<>();
+		contentToSend.addElement(value);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void addString(String value)
 	{
-		if (this.contentToSend.get(Thread.currentThread().getId()) == null)
-			this.contentToSend.put(Thread.currentThread().getId(), new Vector<>());
-		this.contentToSend.get(Thread.currentThread().getId()).addElement(value);
+		if (this.contentToSend == null)
+			this.contentToSend = new Vector<>();
+		this.contentToSend.addElement(value);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void addFile(String fileName)
 	{
 		fileName = SpecificImplementation.HttpClient.beforeAddFile(fileName);
-		contentToSend.get(Thread.currentThread().getId()).addElement(new File(fileName));
+		contentToSend.addElement(new File(fileName));
 	}
 
 	@SuppressWarnings("unchecked")
 	public void addFile(String fileName, String varName)
 	{
 		fileName = SpecificImplementation.HttpClient.beforeAddFile(fileName);
-		contentToSend.get(Thread.currentThread().getId()).addElement(new FormFile(fileName, varName));
+		contentToSend.addElement(new FormFile(fileName, varName));
 	}
 
 	@SuppressWarnings("unchecked")
 	public void addStringWriter(StringWriter writer, StringBuffer encoding)
 	{
-		contentToSend.get(Thread.currentThread().getId()).addElement(new Object[]{writer, encoding});
+		contentToSend.addElement(new Object[]{writer, encoding});
 	}
 
 	public boolean getHostChanged() {
-		return hostChanged.get(Thread.currentThread().getId());
+		return hostChanged;
 	}
 
 	public void setHostChanged(boolean hostChanged) {
-		this.hostChanged.put(Thread.currentThread().getId(), hostChanged);
+		this.hostChanged = hostChanged;
 	}
 
 	public Vector getContentToSend() {
-		return  this.contentToSend.get(Thread.currentThread().getId());
+		return  this.contentToSend;
 	}
 
 	public void setContentToSend(Vector contentToSend) {
-		putOrRemoveIfNull(this.contentToSend,contentToSend);
+		this.contentToSend = contentToSend;
 	}
 
 	protected void resetState()
 	{
-		this.contentToSend.get(Thread.currentThread().getId()).clear();
-		this.variablesToSend.get(Thread.currentThread().getId()).clear();
-		this.contentToSend.get(Thread.currentThread().getId()).removeAllElements();
+		this.contentToSend.clear();
+		this.variablesToSend.clear();
+		this.contentToSend.removeAllElements();
 		setMultipartTemplate(new MultipartTemplate());
 		setIsMultipart(false);
 	}
@@ -556,59 +474,59 @@ public abstract class GXHttpClient implements IHttpClient{
 	public abstract void cleanup();
 
 	public void setVariablesToSend(Hashtable variablesToSend) {
-		putOrRemoveIfNull(this.variablesToSend,variablesToSend);
+		this.variablesToSend = variablesToSend;
 	}
 
 	public Hashtable getVariablesToSend() {
-		return this.variablesToSend.get(Thread.currentThread().getId());
+		return this.variablesToSend;
 	}
 
 	public boolean isMultipart() {
-		return this.isMultipart.get(Thread.currentThread().getId());
+		return this.isMultipart;
 	}
 
 	public void setMultipart(boolean multipart) {
-		this.isMultipart.put(Thread.currentThread().getId(), multipart);
+		this.isMultipart = multipart;
 	}
 
 	public String getPrevURLhost() {
-		return this.prevURLhost.get(Thread.currentThread().getId());
+		return this.prevURLhost;
 	}
 
 	public void setPrevURLhost(String prevURLhost) {
-		putOrRemoveIfNull(this.prevURLhost,prevURLhost);
+		this.prevURLhost = prevURLhost;
 	}
 
 	public String getPrevURLbaseURL() {
-		return this.prevURLbaseURL.get(Thread.currentThread().getId());
+		return this.prevURLbaseURL;
 	}
 
 	public void setPrevURLbaseURL(String prevURLbaseURL) {
-		putOrRemoveIfNull(this.prevURLbaseURL,prevURLbaseURL);
+		this.prevURLbaseURL = prevURLbaseURL;
 	}
 
 	public int getPrevURLport() {
-		return this.prevURLport.get(Thread.currentThread().getId());
+		return this.prevURLport;
 	}
 
 	public void setPrevURLport(int prevURLport) {
-		putOrRemoveIfNull(this.prevURLport,prevURLport);
+		this.prevURLport = prevURLport;
 	}
 
 	public int getPrevURLsecure() {
-		return this.prevURLsecure.get(Thread.currentThread().getId());
+		return this.prevURLsecure;
 	}
 
 	public void setPrevURLsecure(int prevURLsecure) {
-		putOrRemoveIfNull(this.prevURLsecure,prevURLsecure);
+		this.prevURLsecure = prevURLsecure;
 	}
 
 	public boolean getIsURL() {
-		return this.isURL.get(Thread.currentThread().getId());
+		return this.isURL;
 	}
 
 	public void setIsURL(boolean isURL) {
-		putOrRemoveIfNull(this.isURL,isURL);
+		this.isURL = isURL;
 	}
 
 	protected String setPathUrl(String url) {
@@ -782,19 +700,19 @@ public abstract class GXHttpClient implements IHttpClient{
 	}
 
 	public boolean getAuthorizationChanged() {
-		return this.authorizationChanged.get(Thread.currentThread().getId());
+		return this.authorizationChanged;
 	}
 
 	public void setAuthorizationChanged(boolean authorizationChanged) {
-		putOrRemoveIfNull(this.authorizationChanged,authorizationChanged);
+		this.authorizationChanged = authorizationChanged;
 	}
 
 	public boolean getAuthorizationProxyChanged() {
-		return this.authorizationProxyChanged.get(Thread.currentThread().getId());
+		return this.authorizationProxyChanged;
 	}
 
 	public void setAuthorizationProxyChanged(boolean authorizationProxyChanged) {
-		putOrRemoveIfNull(this.authorizationProxyChanged,authorizationProxyChanged);
+		this.authorizationProxyChanged = authorizationProxyChanged;
 	}
 
 	protected NVPair[] hashtableToNVPair(Hashtable hashtable)
@@ -812,11 +730,11 @@ public abstract class GXHttpClient implements IHttpClient{
 	}
 
 	public boolean getProxyInfoChanged() {
-		return proxyInfoChanged.get(Thread.currentThread().getId());
+		return proxyInfoChanged;
 	}
 
 	public void setProxyInfoChanged(boolean proxyInfoChanged) {
-		this.proxyInfoChanged.put(Thread.currentThread().getId(), proxyInfoChanged);
+		this.proxyInfoChanged = proxyInfoChanged;
 	}
 
 

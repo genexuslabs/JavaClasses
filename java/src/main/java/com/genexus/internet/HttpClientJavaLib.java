@@ -7,7 +7,6 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import com.genexus.CommonUtil;
@@ -54,65 +53,46 @@ import javax.net.ssl.SSLSocketFactory;
 
 public class HttpClientJavaLib extends GXHttpClient {
 
-	private static HttpClientJavaLib instance = null;
-	private HttpClientJavaLib() {init();}
-	public static HttpClientJavaLib getInstance() {
-		if(instance == null)
-			instance = new HttpClientJavaLib();
-		return instance;
+	public HttpClientJavaLib() {
+		getPoolInstance();
 	}
 
-	private static ConcurrentHashMap<Long,Integer> statusCode;
-	private static ConcurrentHashMap<Long,String> reasonLine;
-	private static ConcurrentHashMap<Long,HttpClientBuilder> httpClientBuilder;
-	private static ConcurrentHashMap<Long,PoolingHttpClientConnectionManager> connManager;
-	private static ConcurrentHashMap<Long,HttpClientContext> httpClientContext;
-	private static ConcurrentHashMap<Long,CloseableHttpClient> httpClient;
-	private static ConcurrentHashMap<Long,CloseableHttpResponse> response;
-	private static ConcurrentHashMap<Long,CredentialsProvider> credentialsProvider;
-	private static ConcurrentHashMap<Long,RequestConfig> reqConfig;		// Atributo usado en la ejecucion del metodo (por ejemplo, httpGet, httpPost)
-	private static ConcurrentHashMap<Long,CookieStore> cookies;
-
-	private void init() {
-		httpClient = new ConcurrentHashMap<>();
-		httpClientBuilder = new ConcurrentHashMap<>();
-		cookies = new ConcurrentHashMap<>();
-		statusCode = new ConcurrentHashMap<>();
-		reasonLine = new ConcurrentHashMap<>();
-		httpClientContext = new ConcurrentHashMap<>();
-		response = new ConcurrentHashMap<>();
-		credentialsProvider = new ConcurrentHashMap<>();
-		reqConfig = new ConcurrentHashMap<>();
-		connManager = new ConcurrentHashMap<>();
-	}
-
-	private void setConnManager() {
-		if (connManager.get(Thread.currentThread().getId()) == null) {
+	private static void getPoolInstance() {
+		if(connManager == null) {
 			Registry<ConnectionSocketFactory> socketFactoryRegistry =
 				RegistryBuilder.<ConnectionSocketFactory>create()
 					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
 					.build();
-			connManager.put(Thread.currentThread().getId(), new PoolingHttpClientConnectionManager(socketFactoryRegistry));
-			connManager.get(Thread.currentThread().getId()).setMaxTotal(100);
-			connManager.get(Thread.currentThread().getId()).setDefaultMaxPerRoute(8);
-		} else {
-			connManager.get(Thread.currentThread().getId()).closeExpiredConnections();
-			connManager.get(Thread.currentThread().getId()).closeIdleConnections(30, TimeUnit.SECONDS);        // Seteados 30 de forma estandar
+			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+			connManager.setMaxTotal(100);
+			connManager.setDefaultMaxPerRoute(8);
 		}
 	}
 
+	private static PoolingHttpClientConnectionManager connManager = null;
+	private Integer statusCode = 0;
+	private String reasonLine = "";
+	private HttpClientBuilder httpClientBuilder = null;
+	private HttpClientContext httpClientContext = null;
+	private CloseableHttpClient httpClient = null;
+	private CloseableHttpResponse response = null;
+	private CredentialsProvider credentialsProvider = null;
+	private RequestConfig reqConfig = null;		// Atributo usado en la ejecucion del metodo (por ejemplo, httpGet, httpPost)
+	private CookieStore cookies = null;
+
+	private void cleanConnManager() {
+		connManager.closeExpiredConnections();
+		connManager.closeIdleConnections(30, TimeUnit.SECONDS);        // Seteados 30 de forma estandar
+	}
+
 	private void resetExecParams() {
-		setConnManager();
-		if (httpClientBuilder.get(Thread.currentThread().getId()) == null) {
-			initBaseAtr();    // Inicializacion de los atributos en la clase base del thread
-			httpClientBuilder.put(Thread.currentThread().getId(),
-				HttpClients.custom().setConnectionManager(connManager.get(Thread.currentThread().getId())).setConnectionManagerShared(true));
-		}
-		if (cookies.get(Thread.currentThread().getId()) == null)
-			cookies.put(Thread.currentThread().getId(),
-				new BasicCookieStore());
-		statusCode.put(Thread.currentThread().getId(), 0);
-		reasonLine.put(Thread.currentThread().getId(),"");
+		cleanConnManager();
+		if (httpClientBuilder == null)
+			httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true);
+		if (cookies == null)
+			cookies = new BasicCookieStore();
+		statusCode = 0;
+		reasonLine = "";
 		resetErrors();
 	}
 
@@ -164,7 +144,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 
-	private SSLConnectionSocketFactory getSSLSecureInstance() {
+	private static SSLConnectionSocketFactory getSSLSecureInstance() {
 		try {
 			SSLContext sslContext = SSLContextBuilder
 				.create()
@@ -190,12 +170,12 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	private CookieStore setAllStoredCookies() {
-		if (cookies.get(Thread.currentThread().getId()).getCookies().isEmpty())
+		if (cookies.getCookies().isEmpty())
 			return new BasicCookieStore();
 
 		CookieStore cookiesToSend = new BasicCookieStore();
-		cookies.get(Thread.currentThread().getId()).clearExpired(new Date());
-		for (Cookie c : cookies.get(Thread.currentThread().getId()).getCookies()) {
+		cookies.clearExpired(new Date());
+		for (Cookie c : cookies.getCookies()) {
 			if (getHost().equalsIgnoreCase(c.getDomain()) || (getHost().substring(4).equalsIgnoreCase(c.getDomain())))  	// el substring(4) se debe a que el host puede estar guardado con el "www." previo al host
 //				&& (getBaseURL().equalsIgnoreCase(c.getPath()) || (getBaseURL().isEmpty() && c.getPath().equalsIgnoreCase("/"))))
 				cookiesToSend.addCookie(c);
@@ -205,7 +185,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	private void SetCookieAtr(CookieStore cookiesToSend) {
 		for (Cookie c : cookiesToSend.getCookies())
-			cookies.get(Thread.currentThread().getId()).addCookie(c);
+			cookies.addCookie(c);
 	}
 
 	public void execute(String method, String url) {
@@ -222,34 +202,34 @@ public class HttpClientJavaLib extends GXHttpClient {
 				}
 
 				SocketConfig socketConfig = SocketConfig.custom().setTcpNoDelay(getTcpNoDelay()).build();	// Seteo de TcpNoDelay
-				this.httpClientBuilder.get(Thread.currentThread().getId()).setDefaultSocketConfig(socketConfig);
+				this.httpClientBuilder.setDefaultSocketConfig(socketConfig);
 
 				if (!getIncludeCookies())
-					cookies.get(Thread.currentThread().getId()).clear();
+					cookies.clear();
 				cookiesToSend = setAllStoredCookies();
-				this.httpClientBuilder.get(Thread.currentThread().getId()).setDefaultCookieStore(cookiesToSend);    // Cookies Seteo CookieStore
+				this.httpClientBuilder.setDefaultCookieStore(cookiesToSend);    // Cookies Seteo CookieStore
 			}
 
 			if (getProxyInfoChanged()) {
 				HttpHost proxy = new HttpHost(getProxyServerHost(), getProxyServerPort());
-				this.httpClientBuilder.get(Thread.currentThread().getId()).setRoutePlanner(new DefaultProxyRoutePlanner(proxy));
-				this.reqConfig.put(Thread.currentThread().getId(),RequestConfig.custom()
+				this.httpClientBuilder.setRoutePlanner(new DefaultProxyRoutePlanner(proxy));
+				this.reqConfig = RequestConfig.custom()
 					.setSocketTimeout(getTimeout() * 1000)    // Se multiplica por 1000 ya que tiene que ir en ms y se recibe en segundos
 					.setProxy(proxy)
-					.build());
+					.build();
 			} else {
-				this.httpClientBuilder.get(Thread.currentThread().getId()).setRoutePlanner(null);
-				this.reqConfig.put(Thread.currentThread().getId(), RequestConfig.custom()
+				this.httpClientBuilder.setRoutePlanner(null);
+				this.reqConfig = RequestConfig.custom()
 					.setConnectTimeout(getTimeout() * 1000)		// Se multiplica por 1000 ya que tiene que ir en ms y se recibe en segundos
-					.build());
+					.build();
 			}
 
 			if (getHostChanged() || getAuthorizationChanged()) { // Si el host cambio o si se agrego alguna credencial
-				this.credentialsProvider.put(Thread.currentThread().getId(), new BasicCredentialsProvider());
+				this.credentialsProvider = new BasicCredentialsProvider();
 
 				for (Enumeration en = getBasicAuthorization().elements(); en.hasMoreElements(); ) {
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-					this.credentialsProvider.get(Thread.currentThread().getId()).setCredentials(
+					this.credentialsProvider.setCredentials(
 //						new AuthScope(getHost(), getPort(), p.realm, AuthSchemes.BASIC),
 						AuthScope.ANY,
 						new UsernamePasswordCredentials(p.user, p.password));
@@ -257,21 +237,21 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 				for (Enumeration en = getDigestAuthorization().elements(); en.hasMoreElements(); ) {
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-					this.credentialsProvider.get(Thread.currentThread().getId()).setCredentials(
+					this.credentialsProvider.setCredentials(
 						new AuthScope(getHost(), getPort(), p.realm, AuthSchemes.DIGEST),
 						new UsernamePasswordCredentials(p.user, p.password));
 				}
 
 				for (Enumeration en = getNTLMAuthorization().elements(); en.hasMoreElements(); ) {
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-					this.httpClientBuilder.get(Thread.currentThread().getId()).setDefaultAuthSchemeRegistry(RegistryBuilder.<AuthSchemeProvider> create()
+					this.httpClientBuilder.setDefaultAuthSchemeRegistry(RegistryBuilder.<AuthSchemeProvider> create()
 						.register(AuthSchemes.NTLM, new NTLMSchemeFactory()).register(AuthSchemes.SPNEGO, new SPNegoSchemeFactory(true)).build());
 					try {
-						credentialsProvider.get(Thread.currentThread().getId()).setCredentials(
+						credentialsProvider.setCredentials(
 							new AuthScope(getHost(), getPort(), p.realm, AuthSchemes.NTLM),
 							new NTCredentials(p.user, p.password, InetAddress.getLocalHost().getHostName(), getHost()));
 					} catch (UnknownHostException e) {
-						credentialsProvider.get(Thread.currentThread().getId()).setCredentials(
+						credentialsProvider.setCredentials(
 							new AuthScope(getHost(), getPort(), p.realm, AuthSchemes.NTLM),
 							new NTCredentials(p.user, p.password, "localhost", getHost()));
 					}
@@ -284,13 +264,13 @@ public class HttpClientJavaLib extends GXHttpClient {
 			setAuthorizationChanged(false); // Desmarco las flags
 
 			if (getProxyInfoChanged() || getAuthorizationProxyChanged()) {    // Si el proxyHost cambio o si se agrego alguna credencial para el proxy
-				if (this.credentialsProvider.get(Thread.currentThread().getId()) == null) {
-					this.credentialsProvider.put(Thread.currentThread().getId(), new BasicCredentialsProvider());
+				if (this.credentialsProvider == null) {
+					this.credentialsProvider = new BasicCredentialsProvider();
 				}
 
 				for (Enumeration en = getBasicProxyAuthorization().elements(); en.hasMoreElements(); ) {
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-					this.credentialsProvider.get(Thread.currentThread().getId()).setCredentials(
+					this.credentialsProvider.setCredentials(
 						AuthScope.ANY,
 //						new AuthScope(getProxyServerHost(), getProxyServerPort(), p.realm, AuthSchemes.BASIC),
 						new UsernamePasswordCredentials(p.user, p.password));
@@ -298,7 +278,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 				for (Enumeration en = getDigestProxyAuthorization().elements(); en.hasMoreElements(); ) {
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-					this.credentialsProvider.get(Thread.currentThread().getId()).setCredentials(
+					this.credentialsProvider.setCredentials(
 						new AuthScope(getProxyServerHost(), getProxyServerPort(), p.realm, AuthSchemes.DIGEST),
 						new UsernamePasswordCredentials(p.user, p.password));
 				}
@@ -306,11 +286,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 				for (Enumeration en = getNTLMProxyAuthorization().elements(); en.hasMoreElements(); ) {
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
 					try {
-						this.credentialsProvider.get(Thread.currentThread().getId()).setCredentials(
+						this.credentialsProvider.setCredentials(
 							new AuthScope(getProxyServerHost(), getProxyServerPort(), p.realm, AuthSchemes.NTLM),
 							new NTCredentials(p.user, p.password, InetAddress.getLocalHost().getHostName(), getProxyServerHost()));
 					} catch (UnknownHostException e) {
-						this.credentialsProvider.get(Thread.currentThread().getId()).setCredentials(
+						this.credentialsProvider.setCredentials(
 							new AuthScope(getProxyServerHost(), getProxyServerPort(), p.realm, AuthSchemes.NTLM),
 							new NTCredentials(p.user, p.password, "localhost", getProxyServerHost()));
 					}
@@ -322,29 +302,24 @@ public class HttpClientJavaLib extends GXHttpClient {
 			setProxyInfoChanged(false); // Desmarco las flags
 			setAuthorizationProxyChanged(false);
 
-			if (this.credentialsProvider.get(Thread.currentThread().getId()) != null) {    // En caso que se haya agregado algun tipo de autenticacion (ya sea para el host destino como para el proxy) se agrega al contexto
-				httpClientContext.put(Thread.currentThread().getId(), HttpClientContext.create());
-				httpClientContext.get(Thread.currentThread().getId()).setCredentialsProvider(credentialsProvider.get(Thread.currentThread().getId()));
+			if (this.credentialsProvider != null) {    // En caso que se haya agregado algun tipo de autenticacion (ya sea para el host destino como para el proxy) se agrega al contexto
+				httpClientContext = HttpClientContext.create();
+				httpClientContext.setCredentialsProvider(credentialsProvider);
 			}
 
 			url = setPathUrl(url);
 
-
-			//// ESTO QUE ESTOY HACIENDO ACA ARRIBA PARA CONCATENACION VA A SUSTIRUIR ESTAS DOS LINEAS QUE SIGUEN ///
-//			if  (!url.startsWith("/"))
-//				url = !getBaseURL().startsWith("/")?"/" + getBaseURL() + url:getBaseURL() + url;
-			/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 			if (getSecure() == 1)   // Se completa con esquema y host
 				url = "https://" + getHost() + url;		// La lib de HttpClient agrega el port
 			else
 				url = "http://" + getHost() + ":" + (getPort() == -1? URI.defaultPort("http"):getPort()) + url;
 
-			httpClient.put(Thread.currentThread().getId(), this.httpClientBuilder.get(Thread.currentThread().getId()).build());
+			httpClient = this.httpClientBuilder.build();
 
 			if (method.equalsIgnoreCase("GET")) {
 				HttpGetWithBody httpget = new HttpGetWithBody(url.trim());
-				httpget.setConfig(reqConfig.get(Thread.currentThread().getId()));
+				httpget.setConfig(reqConfig);
 				Set<String> keys = getheadersToSend().keySet();
 				for (String header : keys) {
 					httpget.addHeader(header,getheadersToSend().get(header));
@@ -352,11 +327,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 				httpget.setEntity(new ByteArrayEntity(getData()));
 
-				response.put(Thread.currentThread().getId(), httpClient.get(Thread.currentThread().getId()).execute(httpget, httpClientContext.get(Thread.currentThread().getId())));
+				response = httpClient.execute(httpget, httpClientContext);
 
 			} else if (method.equalsIgnoreCase("POST")) {
 				HttpPost httpPost = new HttpPost(url.trim());
-				httpPost.setConfig(reqConfig.get(Thread.currentThread().getId()));
+				httpPost.setConfig(reqConfig);
 				Set<String> keys = getheadersToSend().keySet();
 				boolean hasConentType = false;
 				for (String header : keys) {
@@ -374,11 +349,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 					dataToSend = new ByteArrayEntity(getData());
 				httpPost.setEntity(dataToSend);
 
-				response.put(Thread.currentThread().getId(),httpClient.get(Thread.currentThread().getId()).execute(httpPost, httpClientContext.get(Thread.currentThread().getId())));
+				response = httpClient.execute(httpPost, httpClientContext);
 
 			} else if (method.equalsIgnoreCase("PUT")) {
 				HttpPut httpPut = new HttpPut(url.trim());
-				httpPut.setConfig(reqConfig.get(Thread.currentThread().getId()));
+				httpPut.setConfig(reqConfig);
 				Set<String> keys = getheadersToSend().keySet();
 				for (String header : keys) {
 					httpPut.addHeader(header,getheadersToSend().get(header));
@@ -386,11 +361,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 				httpPut.setEntity(new ByteArrayEntity(getData()));
 
-				response.put(Thread.currentThread().getId(),httpClient.get(Thread.currentThread().getId()).execute(httpPut, httpClientContext.get(Thread.currentThread().getId())));
+				response = httpClient.execute(httpPut, httpClientContext);
 
 			} else if (method.equalsIgnoreCase("DELETE")) {
 				HttpDeleteWithBody httpDelete = new HttpDeleteWithBody(url.trim());
-				httpDelete.setConfig(reqConfig.get(Thread.currentThread().getId()));
+				httpDelete.setConfig(reqConfig);
 				Set<String> keys = getheadersToSend().keySet();
 				for (String header : keys) {
 					httpDelete.addHeader(header,getheadersToSend().get(header));
@@ -399,11 +374,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 				if (getVariablesToSend().size() > 0 || getContentToSend().size() > 0)
 					httpDelete.setEntity(new ByteArrayEntity(getData()));
 
-				response.put(Thread.currentThread().getId(),httpClient.get(Thread.currentThread().getId()).execute(httpDelete, httpClientContext.get(Thread.currentThread().getId())));
+				response = httpClient.execute(httpDelete, httpClientContext);
 
 			} else if (method.equalsIgnoreCase("HEAD")) {
 				HttpHeadWithBody httpHead = new HttpHeadWithBody(url.trim());
-				httpHead.setConfig(reqConfig.get(Thread.currentThread().getId()));
+				httpHead.setConfig(reqConfig);
 				Set<String> keys = getheadersToSend().keySet();
 				for (String header : keys) {
 					httpHead.addHeader(header,getheadersToSend().get(header));
@@ -411,20 +386,20 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 				httpHead.setEntity(new ByteArrayEntity(getData()));
 
-				response.put(Thread.currentThread().getId(),httpClient.get(Thread.currentThread().getId()).execute(httpHead, httpClientContext.get(Thread.currentThread().getId())));
+				response = httpClient.execute(httpHead, httpClientContext);
 
 			} else if (method.equalsIgnoreCase("CONNECT")) {
 				HttpConnectMethod httpConnect = new HttpConnectMethod(url.trim());
-				httpConnect.setConfig(reqConfig.get(Thread.currentThread().getId()));
+				httpConnect.setConfig(reqConfig);
 				Set<String> keys = getheadersToSend().keySet();
 				for (String header : keys) {
 					httpConnect.addHeader(header,getheadersToSend().get(header));
 				}
-				response.put(Thread.currentThread().getId(),httpClient.get(Thread.currentThread().getId()).execute(httpConnect, httpClientContext.get(Thread.currentThread().getId())));
+				response = httpClient.execute(httpConnect, httpClientContext);
 
 			} else if (method.equalsIgnoreCase("OPTIONS")) {
 				HttpOptionsWithBody httpOptions = new HttpOptionsWithBody(url.trim());
-				httpOptions.setConfig(reqConfig.get(Thread.currentThread().getId()));
+				httpOptions.setConfig(reqConfig);
 				Set<String> keys = getheadersToSend().keySet();
 				for (String header : keys) {
 					httpOptions.addHeader(header,getheadersToSend().get(header));
@@ -432,31 +407,31 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 				httpOptions.setEntity(new ByteArrayEntity(getData()));
 
-				response.put(Thread.currentThread().getId(),httpClient.get(Thread.currentThread().getId()).execute(httpOptions, httpClientContext.get(Thread.currentThread().getId())));
+				response = httpClient.execute(httpOptions, httpClientContext);
 
 			} else if (method.equalsIgnoreCase("TRACE")) {		// No lleva payload
 				HttpTrace httpTrace = new HttpTrace(url.trim());
-				httpTrace.setConfig(reqConfig.get(Thread.currentThread().getId()));
+				httpTrace.setConfig(reqConfig);
 				Set<String> keys = getheadersToSend().keySet();
 				for (String header : keys) {
 					httpTrace.addHeader(header,getheadersToSend().get(header));
 				}
-				response.put(Thread.currentThread().getId(),httpClient.get(Thread.currentThread().getId()).execute(httpTrace, httpClientContext.get(Thread.currentThread().getId())));
+				response = httpClient.execute(httpTrace, httpClientContext);
 
 			} else if (method.equalsIgnoreCase("PATCH")) {
 				HttpPatch httpPatch = new HttpPatch(url.trim());
-				httpPatch.setConfig(reqConfig.get(Thread.currentThread().getId()));
+				httpPatch.setConfig(reqConfig);
 				Set<String> keys = getheadersToSend().keySet();
 				for (String header : keys) {
 					httpPatch.addHeader(header,getheadersToSend().get(header));
 				}
 				ByteArrayEntity dataToSend = new ByteArrayEntity(getData());
 				httpPatch.setEntity(dataToSend);
-				response.put(Thread.currentThread().getId(),httpClient.get(Thread.currentThread().getId()).execute(httpPatch, httpClientContext.get(Thread.currentThread().getId())));
+				response = httpClient.execute(httpPatch, httpClientContext);
 			}
 
-			statusCode.put(Thread.currentThread().getId(), response.get(Thread.currentThread().getId()).getStatusLine().getStatusCode());
-			reasonLine.put(Thread.currentThread().getId(), response.get(Thread.currentThread().getId()).getStatusLine().getReasonPhrase());
+			statusCode =  response.getStatusLine().getStatusCode();
+			reasonLine =  response.getStatusLine().getReasonPhrase();
 
 			if (cookiesToSend != null)
 				SetCookieAtr(cookiesToSend);		// Se setean las cookies devueltas en la lista de cookies
@@ -479,17 +454,17 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public int getStatusCode() {
-		return statusCode.get(Thread.currentThread().getId());
+		return statusCode;
 	}
 
 	public String getReasonLine() {
-		return reasonLine.get(Thread.currentThread().getId());
+		return reasonLine;
 	}
 
 	public void getHeader(String name, long[] value) {
-		if (response.get(Thread.currentThread().getId()) == null || response.get(Thread.currentThread().getId()).getHeaders(name).length == 0 || response.get(Thread.currentThread().getId()).getHeaders(name) == null)
+		if (response == null || response.getHeaders(name).length == 0 || response.getHeaders(name) == null)
 			return;
-		Header[] headers = response.get(Thread.currentThread().getId()).getHeaders(name);
+		Header[] headers = response.getHeaders(name);
 		if (headers == null)
 			throw new NumberFormatException("null");
 //		for (int i = 0; i< headers.length; i++) {			// Posible solucion en el caso que se quieran poner todos los headers que se obtienen con el name pasado en el parametro value
@@ -499,15 +474,15 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public String getHeader(String name) {
-		if (response.get(Thread.currentThread().getId()) == null || response.get(Thread.currentThread().getId()).getHeaders(name).length == 0 || response.get(Thread.currentThread().getId()).getHeaders(name) == null)
+		if (response == null || response.getHeaders(name).length == 0 || response.getHeaders(name) == null)
 			return "";
-		return response.get(Thread.currentThread().getId()).getHeaders(name)[0].getValue();
+		return response.getHeaders(name)[0].getValue();
 	}
 
 	public void getHeader(String name, String[] value) {
-		if (response.get(Thread.currentThread().getId()) == null || response.get(Thread.currentThread().getId()).getHeaders(name).length == 0 || response.get(Thread.currentThread().getId()).getHeaders(name) == null)
+		if (response == null || response.getHeaders(name).length == 0 || response.getHeaders(name) == null)
 			return;
-		Header[] headers = response.get(Thread.currentThread().getId()).getHeaders(name);
+		Header[] headers = response.getHeaders(name);
 //		for (int i = 0; i< headers.length; i++) {			// Posible solucion en el caso que se quieran poner todos los headers que se obtienen con el name pasado en el parametro value
 //			value[i] = headers[i].getValue();
 //		}
@@ -515,7 +490,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public void getHeader(String name, java.util.Date[] value) {
-		HTTPResponse res = (HTTPClient.HTTPResponse) response.get(Thread.currentThread().getId());
+		HTTPResponse res = (HTTPClient.HTTPResponse) response;
 		if (res == null)
 			return;
 		try
@@ -535,13 +510,13 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public void getHeader(String name, double[] value) {
-		if (response.get(Thread.currentThread().getId()) == null || response.get(Thread.currentThread().getId()).getHeaders(name).length == 0 || response.get(Thread.currentThread().getId()).getHeaders(name) == null)
+		if (response == null || response.getHeaders(name).length == 0 || response.getHeaders(name) == null)
 			return;
-		value[0] = CommonUtil.val(response.get(Thread.currentThread().getId()).getHeaders(name)[0].getValue());
+		value[0] = CommonUtil.val(response.getHeaders(name)[0].getValue());
 	}
 
 	public InputStream getInputStream() throws IOException {
-		return response.get(Thread.currentThread().getId()).getEntity().getContent();
+		return response.getEntity().getContent();
 	}
 
 	public InputStream getInputStream(String stringURL) throws IOException
@@ -558,10 +533,10 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public String getString() {
-		if (response.get(Thread.currentThread().getId()) == null)
+		if (response == null)
 			return "";
 		try {
-			String res = EntityUtils.toString(response.get(Thread.currentThread().getId()).getEntity(), "UTF-8");
+			String res = EntityUtils.toString(response.getEntity(), "UTF-8");
 			return res;
 		} catch (IOException e) {
 			setErrCode(ERROR_IO);
@@ -572,10 +547,10 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public void toFile(String fileName) {
-		if (response.get(Thread.currentThread().getId()) == null)
+		if (response == null)
 			return;
 		try {
-			CommonUtil.InputStreamToFile(response.get(Thread.currentThread().getId()).getEntity().getContent(), fileName);
+			CommonUtil.InputStreamToFile(response.getEntity().getContent(), fileName);
 		} catch (IOException e) {
 			setErrCode(ERROR_IO);
 			setErrDescription(e.getMessage());
@@ -589,21 +564,21 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	private void stcCleanup() {
 		cleanReqAndRes();
-		if (connManager.get(Thread.currentThread().getId()) != null)
-			connManager.get(Thread.currentThread().getId()).close();
+//		if (connManager != null)
+//			connManager.close();
 	}
 
 	private void cleanReqAndRes() {
-		if (response.get(Thread.currentThread().getId()) != null) {
+		if (response != null) {
 			try {
-				response.get(Thread.currentThread().getId()).close();
+				response.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		if (httpClient.get(Thread.currentThread().getId()) != null) {
+		if (httpClient != null) {
 			try {
-				httpClient.get(Thread.currentThread().getId()).close();
+				httpClient.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
