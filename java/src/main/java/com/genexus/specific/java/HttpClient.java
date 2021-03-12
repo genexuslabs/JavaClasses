@@ -41,18 +41,20 @@ public class HttpClient implements IExtensionHttpClient {
 
 	@Override
 	public com.genexus.internet.IHttpClient initHttpClientImpl() {
-		try {
+		com.genexus.internet.IHttpClient client = null;
+//		try {
+//
+//			client = new HttpClientJavaLib();
+//
+//		} catch (Throwable e) {
 
-			com.genexus.internet.IHttpClient client = HttpClientJavaLib.getInstance();	// Se crea un Singleton
+			client = new HttpClientManual();
 			SpecificImplementation.HttpClient.initializeHttpClient(client);
+
+//		} finally {
+
 			return client;
 
-		} catch (Throwable e) {
-
-			com.genexus.internet.IHttpClient client = new HttpClientManual();
-			SpecificImplementation.HttpClient.initializeHttpClient(client);
-			return client;
-
-		}
+//		}
 	}
 }

@@ -15,7 +15,7 @@ public class HttpClientManual extends GXHttpClient {
 	private HTTPConnection con = null;
 	private HTTPResponse res;
 
-	public HttpClientManual() {initBaseAtr();}
+	public HttpClientManual() {}
 
 	static
 	{
