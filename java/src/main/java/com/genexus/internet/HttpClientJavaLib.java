@@ -10,11 +10,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import com.genexus.CommonUtil;
-import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.specific.java.*;
-import com.genexus.specific.java.HttpClient;
-import com.genexus.webpanels.BlobsCleaner;
-import com.sun.istack.NotNull;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthSchemeProvider;
@@ -31,13 +27,11 @@ import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.config.SocketConfig;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.impl.auth.BasicSchemeFactory;
 import org.apache.http.impl.auth.NTLMSchemeFactory;
 import org.apache.http.impl.auth.SPNegoSchemeFactory;
 import org.apache.http.impl.client.*;
@@ -45,16 +39,16 @@ import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
-import org.apache.http.cookie.*;
 import org.apache.http.util.EntityUtils;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
 
 public class HttpClientJavaLib extends GXHttpClient {
 
 	public HttpClientJavaLib() {
 		getPoolInstance();
+		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true);
+		cookies = new BasicCookieStore();
 	}
 
 	private static void getPoolInstance() {
@@ -72,25 +66,26 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private static PoolingHttpClientConnectionManager connManager = null;
 	private Integer statusCode = 0;
 	private String reasonLine = "";
-	private HttpClientBuilder httpClientBuilder = null;
+	private HttpClientBuilder httpClientBuilder;
 	private HttpClientContext httpClientContext = null;
 	private CloseableHttpClient httpClient = null;
 	private CloseableHttpResponse response = null;
 	private CredentialsProvider credentialsProvider = null;
 	private RequestConfig reqConfig = null;		// Atributo usado en la ejecucion del metodo (por ejemplo, httpGet, httpPost)
-	private CookieStore cookies = null;
+	private CookieStore cookies;
 
 	private void cleanConnManager() {
 		connManager.closeExpiredConnections();
+//		connManager.closeIdleConnections(-1, TimeUnit.NANOSECONDS);        // Seteados 30 de forma estandar
 		connManager.closeIdleConnections(30, TimeUnit.SECONDS);        // Seteados 30 de forma estandar
 	}
 
 	private void resetExecParams() {
 		cleanConnManager();
-		if (httpClientBuilder == null)
-			httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true);
-		if (cookies == null)
-			cookies = new BasicCookieStore();
+//		if (httpClientBuilder == null)
+//			httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true);
+//		if (cookies == null)
+//			cookies = new BasicCookieStore();
 		statusCode = 0;
 		reasonLine = "";
 		resetErrors();
@@ -137,8 +132,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 		catch (ParseException e)
 		{
-//			if (url.isEmpty())
-//				url = "/null";
 			return url;
 		}
 	}
@@ -439,6 +432,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 		} catch (IOException e) {
 			setErrCode(ERROR_IO);
 			setErrDescription(e.getMessage());
+			this.statusCode = 0;
+			this.reasonLine = "";
 		}
 		finally {
 			if (getIsURL())
