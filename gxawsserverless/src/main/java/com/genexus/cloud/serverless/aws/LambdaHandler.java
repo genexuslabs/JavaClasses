@@ -102,9 +102,6 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 		GXWebObjectStub handler = null;
 		String path = awsProxyRequest.getPath();
 		switch (path) {
-			case "/gxobject":
-				handler = new GXObjectUploadServices();
-				break;
 			case "/oauth/access_token":
 				handler = new GXOAuthAccessToken();
 				break;
