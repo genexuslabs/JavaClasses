@@ -240,7 +240,7 @@ public abstract class UserInformation extends AbstractUserInformation
 	public com.genexus.GXSmartCacheProvider getSmartCacheProvider()
 	{
 		if (smartCacheProvider == null)
-			smartCacheProvider = new com.genexus.GXSmartCacheProvider();
+			smartCacheProvider = new com.genexus.GXSmartCacheProvider(handle);
 		return smartCacheProvider;
 	}	
 

@@ -1,9 +1,7 @@
 package com.genexus.webpanels;
 
 
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -17,6 +15,7 @@ public class WebSession {
 	private HttpServletRequest request;
 	private Hashtable<String, Object> sessionValues;
 	private boolean useLocalSession;
+	private static Set<String> internalKeys = new HashSet<String>(Arrays.asList(Encryption.AJAX_ENCRYPTION_KEY, HttpContext.GX_NAV_HELPER, HttpContext.GXTheme, HttpContext.GXLanguage));
 
 	public WebSession(HttpServletRequest request) {
 		this.request = request;
@@ -150,6 +149,40 @@ public class WebSession {
 		}
 	}
 
+	public void renew() {
+		updateSessionInvalidated();
+		if (!useLocalSession) {
+			HttpSession session = getSession(false);
+			if (session != null) {
+				Map<String, Object> internalValues = backupInternalKeys(session);
+				session.invalidate();
+				restoreInternalKeys(internalValues);
+			}
+		} else {
+			clear();
+		}
+	}
+	private Map<String, Object> backupInternalKeys(HttpSession session) {
+		Map<String, Object> internalValues = new HashMap<>();
+		Enumeration e = session.getAttributeNames();
+		while (e.hasMoreElements()) {
+			String key = (String) e.nextElement();
+			if (internalKeys.contains(key)) {
+				Object value = getObjectAttribute(key);
+				if (value != null)
+					internalValues.put(key, value);
+			}
+		}
+		return internalValues;
+	}
+	private void restoreInternalKeys(Map<String, Object> internalValues) {
+		Iterator e = internalValues.keySet().iterator();
+		while (e.hasNext()) {
+			String key = (String) e.next();
+			setObjectAttribute(key, internalValues.get(key));
+		}
+	}
+
 	public void clear() {
 		updateSessionInvalidated();
 		if (!useLocalSession) {
@@ -159,7 +192,7 @@ public class WebSession {
 				Enumeration e = session.getAttributeNames();
 				while (e.hasMoreElements()) {
 					String key = (String) e.nextElement();
-					if (!key.equals(Encryption.AJAX_ENCRYPTION_KEY) && !key.equals(HttpContext.GX_NAV_HELPER)) {
+					if (!internalKeys.contains(key)) {
 						toRemove.add(key);
 					}
 				}
