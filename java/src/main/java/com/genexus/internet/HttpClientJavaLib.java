@@ -8,10 +8,13 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-
+import org.apache.http.HttpResponse;
 import com.genexus.CommonUtil;
 import com.genexus.specific.java.*;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.Header;
+import org.apache.http.HeaderElement;
+import org.apache.http.HeaderElementIterator;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
@@ -26,6 +29,7 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.config.SocketConfig;
+import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -37,6 +41,8 @@ import org.apache.http.impl.auth.SPNegoSchemeFactory;
 import org.apache.http.impl.client.*;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.message.BasicHeaderElementIterator;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
@@ -47,7 +53,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	public HttpClientJavaLib() {
 		getPoolInstance();
-		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true);
+		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();
+		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
 		cookies = new BasicCookieStore();
 	}
 
@@ -58,9 +65,29 @@ public class HttpClientJavaLib extends GXHttpClient {
 					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
 					.build();
 			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
-			connManager.setMaxTotal(100);
-			connManager.setDefaultMaxPerRoute(8);
+			connManager.setMaxTotal(50);
+			connManager.setDefaultMaxPerRoute(50);
 		}
+	}
+
+	private ConnectionKeepAliveStrategy generateKeepAliveStrategy() {
+		return new ConnectionKeepAliveStrategy() {
+			@Override
+			public long getKeepAliveDuration(HttpResponse response, HttpContext context) {
+				HeaderElementIterator it = new BasicHeaderElementIterator
+					(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
+				while (it.hasNext()) {
+					HeaderElement he = it.nextElement();
+					String param = he.getName();
+					String value = he.getValue();
+					if (value != null && param.equalsIgnoreCase
+						("timeout")) {
+						return Long.parseLong(value) * 1000;
+					}
+				}
+				return getTimeout() * 1000;
+			}
+		};
 	}
 
 	private static PoolingHttpClientConnectionManager connManager = null;
@@ -74,28 +101,25 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private RequestConfig reqConfig = null;		// Atributo usado en la ejecucion del metodo (por ejemplo, httpGet, httpPost)
 	private CookieStore cookies;
 
-	private void cleanConnManager() {
-		connManager.closeExpiredConnections();
-//		connManager.closeIdleConnections(-1, TimeUnit.NANOSECONDS);        // Seteados 30 de forma estandar
-		connManager.closeIdleConnections(30, TimeUnit.SECONDS);        // Seteados 30 de forma estandar
-	}
 
 	private void resetExecParams() {
-		cleanConnManager();
-//		if (httpClientBuilder == null)
-//			httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true);
-//		if (cookies == null)
-//			cookies = new BasicCookieStore();
 		statusCode = 0;
 		reasonLine = "";
-		resetErrors();
+		resetErrorsAndConnParams();
 	}
 
 
-	private void resetErrors()
+	private void resetErrorsAndConnParams()
 	{
 		if (getErrCode() != 0)
 			cleanReqAndRes();
+		else if (response != null) {
+			try {
+				EntityUtils.consume(response.getEntity());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 		setErrCode(0);
 		setErrDescription("");
 	}
@@ -196,7 +220,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 				SocketConfig socketConfig = SocketConfig.custom().setTcpNoDelay(getTcpNoDelay()).build();	// Seteo de TcpNoDelay
 				this.httpClientBuilder.setDefaultSocketConfig(socketConfig);
-
 				if (!getIncludeCookies())
 					cookies.clear();
 				cookiesToSend = setAllStoredCookies();
@@ -213,7 +236,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			} else {
 				this.httpClientBuilder.setRoutePlanner(null);
 				this.reqConfig = RequestConfig.custom()
-					.setConnectTimeout(getTimeout() * 1000)		// Se multiplica por 1000 ya que tiene que ir en ms y se recibe en segundos
+					.setConnectTimeout(getTimeout() * 1000)   	// Se multiplica por 1000 ya que tiene que ir en ms y se recibe en segundos
 					.build();
 			}
 
@@ -554,13 +577,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 
 	public void cleanup() {
-		stcCleanup();
-	}
-
-	private void stcCleanup() {
 		cleanReqAndRes();
-//		if (connManager != null)
-//			connManager.close();
 	}
 
 	private void cleanReqAndRes() {

@@ -21,7 +21,7 @@ public abstract class GXHttpClient implements IHttpClient{
 	private String host;
 	private String baseURL = "/";
 	private int secure = 0;
-	private int timeout;
+	private int timeout = 30;
 	private int port = 80;
 	private boolean  hostChanged = true; // Indica si el próximo request debe ser realizado en una nueva HTTPConnection (si cambio el host)
 	private Hashtable<String, String> headersToSend = new Hashtable<>();
