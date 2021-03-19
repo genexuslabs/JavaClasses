@@ -1,6 +1,5 @@
 package com.genexus.common.interfaces;
 
-import com.genexus.internet.HttpClient;
 import com.genexus.internet.IHttpClient;
 
 import javax.net.ssl.SSLSocket;
