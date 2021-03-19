@@ -1,27 +1,14 @@
 
 package com.genexus.internet;
 
-import HTTPClient.*;
 import java.io.*;
 import com.genexus.common.interfaces.SpecificImplementation;
-import com.genexus.CommonUtil;
 
 /**
 * Esta clase la usa un cliente que quiere hacer un get/post y recibir el resultado
 */
 public class HttpClient
 {
-//	static
-//	{
-//		HTTPConnection.setDefaultAllowUserInteraction(false);
-//
-//        if(CommonUtil.isWindows())
-//        {
-//            String os = System.getProperty("os.name", "").trim().toUpperCase();
-//            if(os.endsWith("95") || os.endsWith("98") || os.endsWith("ME"))HTTPConnection.setPipelining(false);
-//        }
-//	}
-
 	private IHttpClient session;
 	
 	public HttpClient()

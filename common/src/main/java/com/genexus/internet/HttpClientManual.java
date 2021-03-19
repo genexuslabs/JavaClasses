@@ -2,13 +2,8 @@ package com.genexus.internet;
 
 import HTTPClient.*;
 import com.genexus.CommonUtil;
-import com.genexus.common.interfaces.SpecificImplementation;
-
 import java.io.*;
-import java.util.Date;
 import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Vector;
 
 public class HttpClientManual extends GXHttpClient {
 
@@ -146,8 +141,6 @@ public class HttpClientManual extends GXHttpClient {
 			setProxyInfoChanged(false); // Desmarco las flags
 			setAuthorizationProxyChanged(false);
 
-//			if  (!url.startsWith("/"))
-//				url = getBaseURL() + url;
 			url = setPathUrl(url);
 
 			if	(method.equalsIgnoreCase("GET"))

@@ -7,7 +7,6 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import org.apache.http.HttpResponse;
 import com.genexus.CommonUtil;
 import com.genexus.specific.java.*;
@@ -90,6 +89,14 @@ public class HttpClientJavaLib extends GXHttpClient {
 		};
 	}
 
+	@Override
+	public void setTimeout(int timeout)
+	{
+		super.setTimeout(timeout);
+		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();	// Cuando se actualiza el timeout, se actualiza el KeepAliveStrategy ya que el mismo de basa el el timeout seteado
+		httpClientBuilder.setKeepAliveStrategy(myStrategy);
+	}
+
 	private static PoolingHttpClientConnectionManager connManager = null;
 	private Integer statusCode = 0;
 	private String reasonLine = "";
@@ -111,9 +118,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	private void resetErrorsAndConnParams()
 	{
-		if (getErrCode() != 0)
-			cleanReqAndRes();
-		else if (response != null) {
+		if (response != null) {
 			try {
 				EntityUtils.consume(response.getEntity());
 			} catch (IOException e) {
@@ -194,7 +199,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 		cookies.clearExpired(new Date());
 		for (Cookie c : cookies.getCookies()) {
 			if (getHost().equalsIgnoreCase(c.getDomain()) || (getHost().substring(4).equalsIgnoreCase(c.getDomain())))  	// el substring(4) se debe a que el host puede estar guardado con el "www." previo al host
-//				&& (getBaseURL().equalsIgnoreCase(c.getPath()) || (getBaseURL().isEmpty() && c.getPath().equalsIgnoreCase("/"))))
 				cookiesToSend.addCookie(c);
 		}
 		return cookiesToSend;
@@ -246,7 +250,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 				for (Enumeration en = getBasicAuthorization().elements(); en.hasMoreElements(); ) {
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
 					this.credentialsProvider.setCredentials(
-//						new AuthScope(getHost(), getPort(), p.realm, AuthSchemes.BASIC),
 						AuthScope.ANY,
 						new UsernamePasswordCredentials(p.user, p.password));
 				}
@@ -288,7 +291,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
 					this.credentialsProvider.setCredentials(
 						AuthScope.ANY,
-//						new AuthScope(getProxyServerHost(), getProxyServerPort(), p.realm, AuthSchemes.BASIC),
 						new UsernamePasswordCredentials(p.user, p.password));
 				}
 
@@ -485,9 +487,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 		Header[] headers = response.getHeaders(name);
 		if (headers == null)
 			throw new NumberFormatException("null");
-//		for (int i = 0; i< headers.length; i++) {			// Posible solucion en el caso que se quieran poner todos los headers que se obtienen con el name pasado en el parametro value
-//			value[i] = Integer.parseInt(headers[i].getValue());
-//		}
 		value[0] = Integer.parseInt(headers[0].getValue());
 	}
 
