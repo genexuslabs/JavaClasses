@@ -537,17 +537,10 @@ public abstract class GXHttpClient implements IHttpClient{
 				if (url.isEmpty())
 					url = getBaseURL();
 				else {
-					if (!url.startsWith("/")) {
-						if (getBaseURL().endsWith("/"))
-							url = getBaseURL() + url;
-						else
-							url = getBaseURL() + "/" + url;
-					} else {
-						if (getBaseURL().endsWith("/"))
-							url = getBaseURL() + url.substring(1);
-						else
-							url = getBaseURL() + url;
-					}
+					if (!url.startsWith("/"))
+						url = getBaseURL() + (getBaseURL().endsWith("/") ? url : "/" + url);
+					else
+						url = getBaseURL() + (getBaseURL().endsWith("/") ? url.substring(1) : url);
 				}
 			} else {
 				if (!url.startsWith("/"))
