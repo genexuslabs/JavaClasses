@@ -174,7 +174,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 				.build();
 			return new SSLConnectionSocketFactory(
 				sslContext,
-				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3" },
+				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2" },
 				null,
 				SSLConnectionSocketFactory.getDefaultHostnameVerifier());
 		} catch (NoSuchAlgorithmException e) {
@@ -186,7 +186,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 		return new SSLConnectionSocketFactory(
 			SSLContexts.createDefault(),
-			new String[] { "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3" },
+			new String[] { "TLSv1", "TLSv1.1", "TLSv1.2"},
 			null,
 			SSLConnectionSocketFactory.getDefaultHostnameVerifier());
 	}
