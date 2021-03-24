@@ -210,7 +210,8 @@ public abstract class GXWebObjectStub extends HttpServlet
 		}
 		catch (Throwable e)
 		{
-			res.reset();
+			if (!res.isCommitted())
+				res.reset();
 			logger.error("Web Execution Error", e);
 			if (DEBUG && httpContext != null)
 				dumpRequestInfo(httpContext);
