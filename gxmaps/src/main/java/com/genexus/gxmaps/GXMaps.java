@@ -1,6 +1,5 @@
 package com.genexus.gxmaps;
 
-import org.json.*;
 import java.io.IOException;
 import java.util.*;
 import com.genexus.CommonUtil;
@@ -11,6 +10,8 @@ import com.genexus.ClientContext;
 
 
 import org.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 public class GXMaps {
 
