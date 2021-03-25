@@ -126,9 +126,13 @@ public class GXObjectUploadServices extends GXWebObjectStub
 
 	private String getExtension(String contentType)
 	{
-		if (contentType.startsWith("image/jpeg"))
+		if (contentType.startsWith("image/jpg")||contentType.startsWith("application/jpg"))
 		{
 			return "jpg";
+		}
+		if (contentType.startsWith("image/jpeg")||contentType.startsWith("application/jpeg"))
+		{
+			return "jpeg";
 		}
 		if (contentType.startsWith("image/tiff"))
 		{
