@@ -540,6 +540,7 @@ public class ExpressionEvaluator
 			}
 			iifContext = true;
 			Boolean iif_result = eval(sarg1).isTrue();
+			iifContext = false;
 			if (errCode != 0)
 				return 0;
 
@@ -548,7 +549,6 @@ public class ExpressionEvaluator
 				result = eval(sarg2).getDecimal().doubleValue() ;
 			else 
 				result = eval(sarg3).getDecimal().doubleValue() ;
-			iifContext = false;
 			return result;
 		}
 
