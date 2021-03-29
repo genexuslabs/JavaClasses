@@ -68,8 +68,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
 			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client","HTTPCLIENT_MAXTOTAL","1000")));
 			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client","HTTPCLIENT_MAXROUTE","1000")));
-//			connManager.setMaxTotal(1000);
-//			connManager.setDefaultMaxPerRoute(1000);
 		}
 	}
 
@@ -581,25 +579,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 
 	public void cleanup() {
-//		cleanReqAndRes();
 		resetErrorsAndConnParams();
-	}
-
-	private void cleanReqAndRes() {
-		if (response != null) {
-			try {
-				response.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		if (httpClient != null) {
-			try {
-				httpClient.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
 	}
 
 }
