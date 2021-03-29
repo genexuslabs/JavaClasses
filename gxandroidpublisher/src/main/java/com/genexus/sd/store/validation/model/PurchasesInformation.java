@@ -3,6 +3,7 @@ package com.genexus.sd.store.validation.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -54,7 +55,7 @@ public class PurchasesInformation {
 					this.purchasePlatform = jObj.getInt("PurchasePlatform");				
 				}
 				if (jObj.has("Purchases")){									
-					org.json.JSONArray purchases = jObj.getJSONArray("Purchases");
+					JSONArray purchases = jObj.getJSONArray("Purchases");
 					for (int i = 0; i < purchases.length(); i++) {
 						PurchaseResult p = new PurchaseResult(purchases.getJSONObject(i));
 						this.purchases.add(p);					

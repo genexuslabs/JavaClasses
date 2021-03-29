@@ -1,7 +1,7 @@
 | Branch | Status
 |---|---
-|master|[![Build Status](https://dev.azure.com/gxazure/Java-classes/_apis/build/status/Build%20JavaClasses%20(master)?branchName=master)](https://dev.azure.com/gxazure/Java-classes/_build/latest?definitionId=2&branchName=master)
-|beta|[![Build Status](https://dev.azure.com/gxazure/Java-classes/_apis/build/status/Build%20JavaClasses%20(beta)?branchName=beta)](https://dev.azure.com/gxazure/Java-classes/_build/latest?definitionId=6&branchName=beta)
+|master |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Amaster)
+|beta   |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Abeta)
 
 # GeneXus Standard Classes for Java
 
@@ -31,6 +31,14 @@ The dependencies between the projects are specified in each pom.xml within their
 ## Requirements
 - JDK 9 or greater
 - Maven 3.6 or greater
+
+In order to compile the *java* submodule, the [SAP JCo (SAP Java Connector)](https://support.sap.com/en/product/connectors/jco.html) needs to be installed in a Maven repository accessible while compiling (eg. the local Maven repository). This JAR can be downloaded from SAP's website (please note that a valid SAP Developer license may be required).
+
+In order to install the connector into the Maven local repository, open a terminal and execute:
+``` powershell
+mvn install:install-file -DgroupId=com.sap.conn.jco -DartifactId=sapjco3 -Dversion=3.0.14 -Dpackaging=jar -Dfile=sapjco3.jar
+```
+(The required version of the JCo jar can be found in [the POM file of the java submodule](https://github.com/genexuslabs/JavaClasses/blob/master/java/pom.xml))
 
 # Instructions
 

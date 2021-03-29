@@ -23,11 +23,11 @@ public class GXSmartCacheProvider implements IExtensionGXSmartCacheProvider {
 		ICacheService updatedTables; 
 		SmartCacheStatus status = SmartCacheStatus.Unknown;
 		Object syncLock = new Object();
-		Vector<String> tablesUpdatedInUTL;
+		ConcurrentHashMap<Integer, Vector<String>> tablesUpdatedInUTL;
 
 		public JavaSmartCacheProvider() {
 			super();
-			tablesUpdatedInUTL = new Vector<String>();
+			tablesUpdatedInUTL = new ConcurrentHashMap<Integer, Vector<String>>();
 		}
 		
 		public void invalidateAll()
@@ -53,23 +53,24 @@ public class GXSmartCacheProvider implements IExtensionGXSmartCacheProvider {
 			if (isEnabled()) 
 				getUpdatedTables().clear(CacheFactory.CACHE_SD, normalizeKey(item));
 		}
-		public void recordUpdates()
+		public void recordUpdates(int handle)
 		{
-			if (isEnabled())
+			if (isEnabled() && tablesUpdatedInUTL.containsKey(handle))
 			{
+				Vector<String> tablesUpdatedInUTLHandle = getTablesUpdatedInUTL(handle);
 				Date  dt = CommonUtil.now(false,false);
-				if (!tablesUpdatedInUTL.isEmpty()) {
+				if (!tablesUpdatedInUTLHandle.isEmpty()) {
 					ICacheService updTables = getUpdatedTables();
-					normalizeKey(tablesUpdatedInUTL);
+					normalizeKey(tablesUpdatedInUTLHandle);
 					if (updTables instanceof ICacheService2) {
-						((ICacheService2)updTables).setAll(CacheFactory.CACHE_SD, tablesUpdatedInUTL.toArray(new String[tablesUpdatedInUTL.size()]), Collections.nCopies(tablesUpdatedInUTL.size(), dt).toArray(), 0);
+						((ICacheService2)updTables).setAll(CacheFactory.CACHE_SD, tablesUpdatedInUTLHandle.toArray(new String[tablesUpdatedInUTLHandle.size()]), Collections.nCopies(tablesUpdatedInUTLHandle.size(), dt).toArray(), 0);
 					}else {
-						for(String tbl:tablesUpdatedInUTL)
+						for(String tbl:tablesUpdatedInUTLHandle)
 						{
 							updTables.<Date>set(CacheFactory.CACHE_SD, tbl, dt);
 						}
 					}
-					tablesUpdatedInUTL.clear();
+					tablesUpdatedInUTL.remove(handle);
 				}
 			}
 		}
@@ -131,10 +132,10 @@ public class GXSmartCacheProvider implements IExtensionGXSmartCacheProvider {
 			}
 			return null;
 		}
-		public void discardUpdates()
+		public void discardUpdates(int handle)
 		{
-			if (isEnabled())
-				tablesUpdatedInUTL.clear();
+			if (isEnabled() && tablesUpdatedInUTL.containsKey(handle))
+				tablesUpdatedInUTL.remove(handle);
 		}
 		public boolean isEnabled() 
 		{ 	
@@ -150,10 +151,22 @@ public class GXSmartCacheProvider implements IExtensionGXSmartCacheProvider {
 		}
 
 		@Override
-		public void setUpdated(String table) {
-			if (isEnabled() && ! tablesUpdatedInUTL.contains(table))
-				tablesUpdatedInUTL.add(table);
+		public void setUpdated(String table, int handle) {
+			Vector<String> tablesUpdatedInUTLHandle = getTablesUpdatedInUTL(handle);
+			if (isEnabled() && ! tablesUpdatedInUTLHandle.contains(table))
+				tablesUpdatedInUTLHandle.add(table);
 			
+		}
+
+		private Vector<String> getTablesUpdatedInUTL(Integer handle){
+			if (tablesUpdatedInUTL.containsKey(handle)){
+				return tablesUpdatedInUTL.get(handle);
+			}
+			else {
+				Vector<String> tablesUpdated = new Vector<String>();
+				tablesUpdatedInUTL.put(handle, tablesUpdated);
+				return tablesUpdated;
+			}
 		}
 	}
 

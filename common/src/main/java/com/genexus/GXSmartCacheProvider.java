@@ -13,16 +13,18 @@ public class GXSmartCacheProvider
 {
 
 	static IGXSmartCacheProvider provider = SpecificImplementation.GXSmartCacheProvider.createCache();
+	private int handle;
 
 
-	public GXSmartCacheProvider()
+	public GXSmartCacheProvider(int handle)
 	{
+		this.handle = handle;
 	}
 
 	// Marca una tabla como modificada. Se utiliza desde los pgms generados luego de una actulizacion sobre la tabla
 	public void setUpdated(String table)
 	{
-		provider.setUpdated(table);
+		provider.setUpdated(table, handle);
 	}
 
 
@@ -47,13 +49,13 @@ public class GXSmartCacheProvider
 	// Commit de datos actualizados. Las tablas modificadas hasta el momento se registran con el timestamp del commit.
 	public void recordUpdates()
 	{
-		provider.recordUpdates();
+		provider.recordUpdates(handle);
 	}
 
 	// Rollback. Elimina todas las tablas pendientes sin registrarlas.
 	public void discardUpdates()
 	{
-		provider.discardUpdates();
+		provider.discardUpdates(handle);
 	}
 
 	// Dado un query y na fecha de actualizacion, chequea si la info del query esta vigente.
