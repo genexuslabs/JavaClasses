@@ -7,6 +7,8 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+
+import com.genexus.util.IniFile;
 import org.apache.http.HttpResponse;
 import com.genexus.CommonUtil;
 import com.genexus.specific.java.*;
@@ -64,8 +66,10 @@ public class HttpClientJavaLib extends GXHttpClient {
 					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
 					.build();
 			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
-			connManager.setMaxTotal(50);
-			connManager.setDefaultMaxPerRoute(50);
+			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client","HTTPCLIENT_MAXTOTAL","1000")));
+			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client","HTTPCLIENT_MAXROUTE","1000")));
+//			connManager.setMaxTotal(1000);
+//			connManager.setDefaultMaxPerRoute(1000);
 		}
 	}
 
@@ -107,12 +111,15 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private CredentialsProvider credentialsProvider = null;
 	private RequestConfig reqConfig = null;		// Atributo usado en la ejecucion del metodo (por ejemplo, httpGet, httpPost)
 	private CookieStore cookies;
+	private static IniFile clientCfg = new com.genexus.ModelContext(com.genexus.ModelContext.getModelContextPackageClass()).getPreferences().getIniFile();
 
 
 	private void resetExecParams() {
 		statusCode = 0;
 		reasonLine = "";
 		resetErrorsAndConnParams();
+		setErrCode(0);
+		setErrDescription("");
 	}
 
 
@@ -125,8 +132,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 				e.printStackTrace();
 			}
 		}
-		setErrCode(0);
-		setErrDescription("");
 	}
 
 	private void resetStateAdapted()
@@ -213,7 +218,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 		resetExecParams();
 
 		url = getURLValid(url);		// Funcion genera parte del path en adelante de la URL
-
 
 		try {
 			CookieStore cookiesToSend = null;
@@ -451,6 +455,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			statusCode =  response.getStatusLine().getStatusCode();
 			reasonLine =  response.getStatusLine().getReasonPhrase();
 
+
 			if (cookiesToSend != null)
 				SetCookieAtr(cookiesToSend);		// Se setean las cookies devueltas en la lista de cookies
 
@@ -576,7 +581,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 
 	public void cleanup() {
-		cleanReqAndRes();
+//		cleanReqAndRes();
+		resetErrorsAndConnParams();
 	}
 
 	private void cleanReqAndRes() {
