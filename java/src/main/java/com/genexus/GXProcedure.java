@@ -135,30 +135,15 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 	{
 		return Application.isRemoteProcedure(context, remoteHandle, location);
 	}
-	protected boolean batchCursorHolder(){ return false;}
-	protected void exitApp()
-	{
-		exitApplication(batchCursorHolder());
-	}
-	/**
-	 * @deprecated use exitApp()
-	 * */
+
 	protected void exitApplication()
-	{
-		exitApplication(true);
-	}
-	private void exitApplication(boolean flushBuffers)
 	{
 		if(dbgInfo != null && Application.realMainProgram == this)
 			dbgInfo.onExit();
-
-		if (flushBuffers) {
-			try {
-				Application.getConnectionManager().flushBuffers(remoteHandle, this);
-			} catch (Exception exception) {
-				;
-			}
-		}
+		try
+		{
+			Application.getConnectionManager().flushBuffers(remoteHandle, this);
+		}catch(Exception exception){ ; }
 		if(disconnectUserAtCleanup)
 		{
 			try
