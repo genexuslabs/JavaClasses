@@ -208,7 +208,7 @@ public class BatchUpdateCursor extends UpdateCursor {
 	public boolean isValidOwner(java.lang.Object o) throws SQLException {
 		return (o == null || o == mPreparedStatement.getOnCommitInstance());
 	}
-	public boolean beforeCommitEvent(java.lang.Object o) throws SQLException {
+	public boolean beforeCommitEvent() throws SQLException {
 		boolean done = false;
 		try {
 			DynamicExecute.dynamicInstaceExecute(mPreparedStatement.getOnCommitInstance(),
