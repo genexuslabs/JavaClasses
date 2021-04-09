@@ -52,7 +52,10 @@ public class GXObjectUploadServices extends GXWebObjectStub
 						String url = "";
 						if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) == null)
 						{
-							String fileDirPath = context.getDefaultPath() + File.separator + "WEB-INF" + File.separatorChar + Application.getClientPreferences().getTMPMEDIA_DIR();
+							String fileDirPath = Application.getClientPreferences().getTMPMEDIA_DIR();
+							if (!new File(fileDirPath).isAbsolute()) {
+								fileDirPath = context.getDefaultPath() + File.separator + "WEB-INF" + File.separatorChar + fileDirPath;
+							}
 							savedFileName = PrivateUtilities.getTempFileName(fileDirPath, CommonUtil.getFileName(fileName), ext == null || ext.length() == 0 ? "tmp" : ext);;
 							file.write(savedFileName);
 							url = GXDbFile.pathToUrl(savedFileName, context);
