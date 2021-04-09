@@ -1021,7 +1021,7 @@ public void rollback() throws SQLException
 			BatchUpdateCursor cursor = (BatchUpdateCursor) batchUpdateStmts.get(i);
 			if (cursor.isValidOwner(o)) {
 				if (cursor.pendingRecords()) {
-					cursor.beforeCommitEvent(o);
+					cursor.beforeCommitEvent();
 				}
 				toRemove.add(cursor);
 			}
@@ -1034,7 +1034,7 @@ public void rollback() throws SQLException
 		for (int i = 0; i < batchUpdateStmts.size(); i++) {
 			BatchUpdateCursor cursor = (BatchUpdateCursor) batchUpdateStmts.get(i);
 			if (cursor.pendingRecords())
-				cursor.beforeCommitEvent(null);
+				cursor.beforeCommitEvent();
 		}
 		batchUpdateStmts.clear();
 	}
