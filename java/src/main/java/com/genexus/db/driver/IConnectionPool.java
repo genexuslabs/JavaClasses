@@ -16,7 +16,6 @@ public interface IConnectionPool
 	public void disconnectOnException(int handle) throws SQLException;
 	public void disconnect(int handle) throws SQLException;
 	public void disconnect() throws SQLException;
-	public void flushBuffers(int handle, java.lang.Object o) throws SQLException;
 	public void runWithLock(Runnable runnable);
 	public void removeElement(GXConnection con);
 }

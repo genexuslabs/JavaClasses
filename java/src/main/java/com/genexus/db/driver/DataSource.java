@@ -474,25 +474,6 @@ public class DataSource extends AbstractDataSource
 		}
 	}
 
-	public void flushBuffers(int handle, java.lang.Object o) throws SQLException
-	{
-		if (connectionPools.size() == 0)
-		{
-			getConnectionPool().flushBuffers(handle, o);
-		}
-		else {
-			for (Enumeration en = connectionPools.elements(); en.hasMoreElements(); ) {
-				ConnectionPool connPool = ((ConnectionPool) en.nextElement());
-				for (Enumeration en1 = connPool.getConnections(); en1.hasMoreElements(); ) {
-					GXConnection conn = (GXConnection) en1.nextElement();
-					if (conn.getHandle() == handle) {
-						conn.flushBatchCursors(o);
-					}
-				}
-			}
-		}
-	}
-
 	public boolean getRWPoolEnabled()
 	{
 		return rwPoolEnabled;

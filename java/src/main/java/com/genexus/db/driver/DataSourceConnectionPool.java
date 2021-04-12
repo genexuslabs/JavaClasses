@@ -119,31 +119,6 @@ public final class DataSourceConnectionPool implements IConnectionPool
 			en.nextElement().disconnect();
 	}
 	@Override
-	public void flushBuffers(int handle, java.lang.Object o) throws SQLException
-	{
-		for (Enumeration<ConnectionPool> en = readWritePools.elements(); en.hasMoreElements(); )
-		{
-			ConnectionPool connPool = en.nextElement();
-			for (Enumeration en1 = connPool.getConnections(); en1.hasMoreElements(); ) {
-				GXConnection conn = (GXConnection) en1.nextElement();
-				if (conn.getHandle() == handle) {
-					conn.flushBatchCursors(o);
-				}
-			}
-		}
-
-		for (Enumeration<ConnectionPool> en = readOnlyPools.elements(); en.hasMoreElements(); )
-		{
-			ConnectionPool connPool = en.nextElement();
-			for (Enumeration en1 = connPool.getConnections(); en1.hasMoreElements(); ) {
-				GXConnection conn = (GXConnection) en1.nextElement();
-				if (conn.getHandle() == handle) {
-					conn.flushBatchCursors(o);
-				}
-			}
-		}
-	}
-	@Override
 	public void runWithLock(Runnable runnable) {
 		for (Enumeration<ConnectionPool> en = readWritePools.elements(); en.hasMoreElements(); )
 			((ConnectionPool) en.nextElement()).runWithLock(runnable);
