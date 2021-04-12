@@ -116,6 +116,7 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 	{
 		return this;
 	}
+	
 	public void handleError()
 	{
 		new DefaultErrorHandler().handleError(context, remoteHandle);
