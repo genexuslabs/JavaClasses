@@ -4,9 +4,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.genexus.servlet.IServletContext;
+import com.genexus.servlet.http.IHttpServletRequest;
+import com.genexus.servlet.http.IHttpServletResponse;
 
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.internet.HttpContext;
@@ -55,9 +55,9 @@ abstract public class GxRestService extends GXWebObjectBase
 	{
 		super();
 	}
-	
+
 	protected HttpContext restHttpContext;
-	public void init(String requestMethod, HttpServletRequest myServletRequest, HttpServletResponse myServletResponse, ServletContext myContext)
+	public void init(String requestMethod, IHttpServletRequest myServletRequest, IHttpServletResponse myServletResponse, IServletContext myContext)
 	{
 		initLogger(myContext);
 		try
@@ -85,7 +85,7 @@ abstract public class GxRestService extends GXWebObjectBase
 		}
 	}
 
-	private void initLogger(ServletContext myContext) {
+	private void initLogger(IServletContext myContext) {
 		if (logger == null) {
 			logger = com.genexus.specific.java.LogManager.initialize(myContext.getRealPath("/"), GxRestService.class);
 		}
@@ -133,7 +133,7 @@ abstract public class GxRestService extends GXWebObjectBase
 			logger.error("Invalid JSON", e);			
 		}
 	}
-	private boolean isAuthenticated(HttpServletRequest myServletRequest, int integratedSecurityLevel, boolean useAuthentication, String objPermissionPrefix)
+	private boolean isAuthenticated(IHttpServletRequest myServletRequest, int integratedSecurityLevel, boolean useAuthentication, String objPermissionPrefix)
 	{
 		if (!useAuthentication)
 		{
@@ -195,12 +195,12 @@ abstract public class GxRestService extends GXWebObjectBase
 		}
 	}
 	
-	public boolean isAuthenticated(HttpServletRequest myServletRequest)
+	public boolean isAuthenticated(IHttpServletRequest myServletRequest)
 	{
 		return isAuthenticated(myServletRequest, IntegratedSecurityLevel(), IntegratedSecurityEnabled(), permissionPrefix);
 	}
 
-	public boolean isAuthenticated(HttpServletRequest myServletRequest, String synchronizer)
+	public boolean isAuthenticated(IHttpServletRequest myServletRequest, String synchronizer)
 	{
 		boolean validSynchronizer = false;
 		try{
@@ -231,13 +231,13 @@ abstract public class GxRestService extends GXWebObjectBase
 		}
 	}
 	
-	public void setWWWAuthHeader(HttpServletRequest myServletRequest, HttpServletResponse myServletResponse)
+	public void setWWWAuthHeader(IHttpServletRequest myServletRequest, IHttpServletResponse myServletResponse)
 	{
 		String OauthRealm = "OAuth realm=\"" + myServletRequest.getServerName() + "\"";
 		myServletResponse.addHeader("WWW-Authenticate", OauthRealm);
 	}
 	
-	public boolean processHeaders(String queryId, HttpServletRequest myServletRequest, HttpServletResponse myServletResponse)	
+	public boolean processHeaders(String queryId, IHttpServletRequest myServletRequest, IHttpServletResponse myServletResponse)
 	{
 		String language = myServletRequest.getHeader("GeneXus-Language");
 		if (language != null)
@@ -274,7 +274,7 @@ abstract public class GxRestService extends GXWebObjectBase
 		return true;
 	}
 
-	private void addCacheHeaders(HttpServletResponse myServletResponse) {
+	private void addCacheHeaders(IHttpServletResponse myServletResponse) {
 		/*
 		 * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
 		 * Specifying no-cache or max-age=0 indicates that
@@ -286,12 +286,12 @@ abstract public class GxRestService extends GXWebObjectBase
 		}
 	}
 
-	boolean isPostRequest(HttpServletRequest request)
+	boolean isPostRequest(IHttpServletRequest request)
 	{
 		return request.getMethod().equalsIgnoreCase(POST);
 	}
 
-	void addHeader(HttpServletResponse response, String headerName, String headerValue)
+	void addHeader(IHttpServletResponse response, String headerName, String headerValue)
 	{
 		if (response != null) {
 			// Temporary: Jersey Service called through AWS Lambda where HttpResponse is null.

@@ -2,9 +2,8 @@ package com.genexus.internet;
 
 import java.util.Hashtable;
 
-import javax.ejb.EJBContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.genexus.servlet.http.IHttpServletRequest;
+import com.genexus.servlet.http.IHttpServletResponse;
 
 import com.genexus.Application;
 import com.genexus.GXutil;
@@ -251,10 +250,10 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 		}
 		return "";
 	}
-	public javax.servlet.http.Cookie[] getCookies()
+	public com.genexus.servlet.http.Cookie[] getCookies()
 	{
 
-		javax.servlet.http.Cookie[] cookies = {};
+		com.genexus.servlet.http.Cookie[] cookies = {};
 		return cookies;
 	}
 
@@ -370,7 +369,7 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 		return false;
 	}
 	
-	public HttpServletRequest getRequest()
+	public IHttpServletRequest getRequest()
 	{
 		if (request == null)
 			return null;
@@ -379,7 +378,7 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 		//throw new InternalError();
 	}
 
-	public void setRequest(HttpServletRequest request) {
+	public void setRequest(IHttpServletRequest request) {
 		this.request = new HttpGXServletRequest();
 		this.request.setHttpServletRequest(request);
 	}
@@ -388,7 +387,7 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 	public void sendResponseStatus(int statusCode, String statusDescription){
 
 	}
-	public HttpServletResponse getResponse()
+	public IHttpServletResponse getResponse()
 	{
 		throw new InternalError();
 	}

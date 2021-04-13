@@ -5,16 +5,16 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.genexus.servlet.ServletException;
+import com.genexus.servlet.http.HttpServlet;
+import com.genexus.servlet.http.IHttpServletRequest;
+import com.genexus.servlet.http.IHttpServletResponse;
 
 public final class gxver extends HttpServlet 
 {
 	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(gxver.class);
 
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException
+    public void doGet(IHttpServletRequest request, IHttpServletResponse response) throws IOException
     {
     	if (log.isInfoEnabled()) {
 			response.setContentType("text/html");
@@ -30,4 +30,12 @@ public final class gxver extends HttpServlet
 			response.setStatus(404);
 		}
     }
+
+	protected void callExecute(String method, IHttpServletRequest req, IHttpServletResponse res) throws ServletException{
+    	try {
+			doGet(req, res);
+		}catch (IOException e) {
+    		throw new ServletException(e.getMessage());
+		}
+	}
 }

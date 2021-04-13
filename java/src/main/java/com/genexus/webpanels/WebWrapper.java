@@ -1,6 +1,6 @@
 package com.genexus.webpanels;
 import java.io.ByteArrayOutputStream;
-import javax.servlet.http.HttpServletRequest;
+import com.genexus.servlet.http.IHttpServletRequest;
 import com.genexus.ModelContext;
 import com.genexus.internet.HttpContext;
 import com.genexus.internet.HttpContextNull;
@@ -27,7 +27,7 @@ public class WebWrapper
 		this.panel = panel;
 		ModelContext context = panel.getModelContext();
 		HttpRequest httpReq = ((HttpContext) context.getHttpContext()).getHttpRequest();
-		HttpServletRequest httpSerReq = ((HttpContext) context.getHttpContext()).getRequest();
+		IHttpServletRequest httpSerReq = ((HttpContext) context.getHttpContext()).getRequest();
 		context.setHttpContext(new HttpContextNull());
 		((HttpContext) context.getHttpContext()).setHttpRequest(httpReq);
 		((HttpContext) context.getHttpContext()).setRequest(httpSerReq);
