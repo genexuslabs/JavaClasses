@@ -84,8 +84,10 @@ import com.lowagie.text.pdf.PdfNumber;
 import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
 
-import uk.org.retep.pdf.PDFFont;
-import uk.org.retep.pdf.Type1FontMetrics;
+import com.genexus.reports.fonts.PDFFont;
+import com.genexus.reports.fonts.PDFFontDescriptor;
+import com.genexus.reports.fonts.Type1FontMetrics;
+import com.genexus.reports.fonts.Utilities;
 
 public class PDFReportItext implements IReportHandler
 {
@@ -431,7 +433,7 @@ public class PDFReportItext implements IReportHandler
 			DEBUG_STREAM = new PrintStream(new com.genexus.util.NullOutputStream());
 		}
 
-        uk.org.retep.pdf.Utilities.addPredefinedSearchPaths(new String[]{System.getProperty("java.awt.fonts", "c:\\windows\\fonts"),
+        Utilities.addPredefinedSearchPaths(new String[]{System.getProperty("java.awt.fonts", "c:\\windows\\fonts"),
                                            System.getProperty("com.ms.windir", "c:\\windows") + "\\fonts"});
 	}
 
@@ -1075,8 +1077,7 @@ public class PDFReportItext implements IReportHandler
 				boolean foundFont = true;
 				if (fontPath.equals(""))
 				{
-					uk.org.retep.pdf.PDFFontDescriptor fontDescriptor = uk.org.retep.pdf.PDFFontDescriptor.getPDFFontDescriptor();
-					fontPath = fontDescriptor.getTrueTypeFontLocation(fontName, props);
+					fontPath = PDFFontDescriptor.getTrueTypeFontLocation(fontName, props);
 					if (fontPath.equals(""))
 					{
 						baseFont = BaseFont.createFont("Helvetica", BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
@@ -1260,8 +1261,7 @@ public class PDFReportItext implements IReportHandler
 				String fontPath = (String)locations.get(fontName);
 				if (fontPath.equals(""))
 				{
-					uk.org.retep.pdf.PDFFontDescriptor fontDescriptor = uk.org.retep.pdf.PDFFontDescriptor.getPDFFontDescriptor();
-					fontPath = fontDescriptor.getTrueTypeFontLocation(fontName, props);
+					fontPath = PDFFontDescriptor.getTrueTypeFontLocation(fontName, props);
 				}
 				if (!fontPath.equals(""))
 				{
