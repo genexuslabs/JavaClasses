@@ -2,28 +2,26 @@ package com.genexus.filters;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
 
-import javax.servlet.*;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.genexus.servlet.*;
+import com.genexus.servlet.http.*;
 
-public class SessionFilter implements Filter{
+public class SessionFilter extends Filter{
 	String JSESSIONID="JSESSIONID";
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        String sessionCookieName = filterConfig.getServletContext().getSessionCookieConfig().getName();
+    public void init(Map<String, String> headers, String path, String sessionCookieName) throws ServletException {
         if (sessionCookieName!=null && !sessionCookieName.equals("")) {
 			JSESSIONID=sessionCookieName;
 		}
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        HttpServletRequest req = (HttpServletRequest) request;
-        HttpServletResponse res = (HttpServletResponse) response;
+    public void doFilter(IServletRequest request, IServletResponse response, IFilterChain chain) throws Exception {
+        IHttpServletRequest req = request.getHttpServletRequest();
+        IHttpServletResponse res = response.getHttpServletResponse();
 		Cookie session=null;
-        Cookie[] allCookies = req.getCookies();
+        Cookie[] allCookies = (Cookie[]) req.getCookies();
 		if (allCookies != null) {
 			session = Arrays.stream(allCookies).filter(x -> x.getName().equals(JSESSIONID)).findFirst().orElse(null);
 		}

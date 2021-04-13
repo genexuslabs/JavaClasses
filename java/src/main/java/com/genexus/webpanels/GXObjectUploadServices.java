@@ -95,7 +95,7 @@ public class GXObjectUploadServices extends GXWebObjectStub
 				{
 					filePath = Preferences.getDefaultPreferences().getBLOB_PATH().replace(java.io.File.separator, "/") + 	tempFileName;
 				}				
-				FileItem fileItem = new FileItem(filePath, false, "", context.getRequest().getInputStream());
+				FileItem fileItem = new FileItem(filePath, false, "", context.getRequest().getInputStream().getInputStream());
 				filePath = fileItem.getPath();
 				String keyId = UUID.randomUUID().toString().replace("-","");
 				CacheAPI.files().set(keyId, filePath, CommonUtil.UPLOAD_TIMEOUT );

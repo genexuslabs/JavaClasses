@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+				 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.genexus</groupId>
+		<artifactId>parent</artifactId>
+		<version>2.0</version>
+	</parent>
+
+	<artifactId>gxwrapperjakarta</artifactId>
+	<name>GeneXus Wrapper jakarta</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>gxwrappercommon</artifactId>
+			<version>${project.version}</version>
+		</dependency>	
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<version>5.0.0</version>
+		</dependency>
+	<dependency>
+		<groupId>jakarta.ws.rs</groupId>
+    <artifactId>jakarta.ws.rs-api</artifactId>
+    <version>3.0.0</version>
+	</dependency>	
+	</dependencies>	
+
+	<build>
+		<finalName>gxwrapperjakarta</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.1.1</version>				
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>false</addClasspath>
+						</manifest>
+						<manifestEntries>
+							<Build-Time>${maven.build.timestamp}</Build-Time>
+							<Build-User>GeneXus</Build-User>
+							<Build-Java>${java.version}</Build-Java>
+							<Build-OS>${os.name}</Build-OS>
+							<Build-Label>${project.version}</Build-Label>
+							<Build-Path>${basedir}</Build-Path>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>			
+		</plugins>
+	</build>
+</project>

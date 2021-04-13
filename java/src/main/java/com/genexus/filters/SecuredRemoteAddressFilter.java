@@ -19,18 +19,12 @@ package com.genexus.filters;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
+import com.genexus.servlet.*;
+import com.genexus.servlet.http.*;
 
 /**
  * <p>
@@ -99,7 +93,7 @@ import javax.servlet.http.HttpServletResponse;
  * 
  * @author <a href="mailto:cyrille@cyrilleleclerc.com">Cyrille Le Clerc</a>
  */
-public class SecuredRemoteAddressFilter implements Filter {
+public class SecuredRemoteAddressFilter extends Filter {
 
     protected final static String SECURED_REMOTE_ADDRESSES_PARAMETER = "securedRemoteAddresses";
 
@@ -172,16 +166,17 @@ public class SecuredRemoteAddressFilter implements Filter {
      * the incoming {@link HttpServletRequest} to override
      * {@link HttpServletRequest#isSecure()} to set it to <code>true</code>.
      */
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        ServletRequest xRequest;
-        if (request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
+    public void doFilter(IServletRequest request, IServletResponse response, IFilterChain chain) throws Exception {
+       	IServletRequest xRequest;
+        if (request.isHttpServletRequest() && response.isHttpServletResponse()) {
             if (!request.isSecure() && matchesOne(request.getRemoteAddr(), securedRemoteAddresses)) {
-                xRequest = new HttpServletRequestWrapper((HttpServletRequest) request) {
+				IHttpServletRequestWrapper reqw = new HttpServletRequestWrapper(request.getHttpServletRequest()) {
                     @Override
                     public boolean isSecure() {
                         return true;
                     }
                 };
+				xRequest = reqw.getServletRequest();
             } else {
                 xRequest = request;
             }
@@ -196,8 +191,8 @@ public class SecuredRemoteAddressFilter implements Filter {
     /**
      * Compile the secured remote addresses patterns.
      */
-    public void init(FilterConfig filterConfig) throws ServletException {
-        String comaDelimitedSecuredRemoteAddresses = filterConfig.getInitParameter(SECURED_REMOTE_ADDRESSES_PARAMETER);
+    public void init(Map<String, String> headers, String path, String sessionCookieName) throws ServletException {
+        String comaDelimitedSecuredRemoteAddresses = headers.get(SECURED_REMOTE_ADDRESSES_PARAMETER);
         if (comaDelimitedSecuredRemoteAddresses != null) {
             setSecuredRemoteAdresses(comaDelimitedSecuredRemoteAddresses);
         }

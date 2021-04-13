@@ -1,21 +1,31 @@
 package com.genexus.filters;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
+import com.genexus.servlet.IServletOutputStream;
+import com.genexus.servlet.http.ICookie;
+import com.genexus.servlet.http.Cookie;
+import com.genexus.servlet.http.IHttpServletResponse;
+import com.genexus.servlet.http.HttpServletResponseWrapper;
+
+import java.io.IOException;
 
 public class SecureCookieHttpServletResponseWrapper extends HttpServletResponseWrapper {
 
+	IHttpServletResponse response;
 	String cookieId;
-    public SecureCookieHttpServletResponseWrapper(HttpServletResponse response, String cookieId) {
+    public SecureCookieHttpServletResponseWrapper(IHttpServletResponse response, String cookieId) {
         super(response);
-		this.cookieId = cookieId.toLowerCase();
+		this.response = response;
+        this.cookieId = cookieId.toLowerCase();
     }
 	@Override
-	public void addCookie(Cookie cookie) {
-		if (!cookie.getSecure() && cookie.getName().toLowerCase()==cookieId){
-			cookie.setSecure(true);
+	public void addCookie(ICookie cookie) {
+		if (!((Cookie)cookie).getSecure() && ((Cookie)cookie).getName().toLowerCase()==cookieId){
+			((Cookie)cookie).setSecure(true);
 		}
 		super.addCookie(cookie);
+	}
+
+	public IServletOutputStream getWrapperOutputStream() throws IOException {
+    	return response.getOutputStream();
 	}
 }
