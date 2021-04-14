@@ -3,7 +3,7 @@ package com.genexus.webpanels;
 import java.util.Enumeration;
 
 import com.genexus.servlet.ServletException;
-import com.genexus.servlet.http.Cookie;
+import com.genexus.servlet.http.ICookie;
 import com.genexus.servlet.http.HttpServlet;
 import com.genexus.servlet.http.IHttpServletRequest;
 import com.genexus.servlet.http.IHttpServletResponse;
@@ -50,7 +50,7 @@ public abstract class GXWebObjectStub extends HttpServlet
 			sBuffer.append(request.getHeader(header));
 		}
 		sBuffer.append(nl + "HttpCookies: " + nl);
-		Cookie[] cookies = (Cookie[])httpContext.getCookies();
+		ICookie[] cookies = httpContext.getCookies();
 		if	(cookies != null)
 		{
 			for (int i = 0; i < cookies.length; i++)

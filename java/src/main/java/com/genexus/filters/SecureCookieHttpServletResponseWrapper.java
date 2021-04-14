@@ -2,7 +2,6 @@ package com.genexus.filters;
 
 import com.genexus.servlet.IServletOutputStream;
 import com.genexus.servlet.http.ICookie;
-import com.genexus.servlet.http.Cookie;
 import com.genexus.servlet.http.IHttpServletResponse;
 import com.genexus.servlet.http.HttpServletResponseWrapper;
 
@@ -19,8 +18,8 @@ public class SecureCookieHttpServletResponseWrapper extends HttpServletResponseW
     }
 	@Override
 	public void addCookie(ICookie cookie) {
-		if (!((Cookie)cookie).getSecure() && ((Cookie)cookie).getName().toLowerCase()==cookieId){
-			((Cookie)cookie).setSecure(true);
+		if (!cookie.getSecure() && cookie.getName().toLowerCase()==cookieId){
+			cookie.setSecure(true);
 		}
 		super.addCookie(cookie);
 	}

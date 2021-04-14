@@ -1,6 +1,5 @@
 package com.genexus.filters;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -20,8 +19,8 @@ public class SessionFilter extends Filter{
     public void doFilter(IServletRequest request, IServletResponse response, IFilterChain chain) throws Exception {
         IHttpServletRequest req = request.getHttpServletRequest();
         IHttpServletResponse res = response.getHttpServletResponse();
-		Cookie session=null;
-        Cookie[] allCookies = (Cookie[]) req.getCookies();
+		ICookie session=null;
+        ICookie[] allCookies = req.getCookies();
 		if (allCookies != null) {
 			session = Arrays.stream(allCookies).filter(x -> x.getName().equals(JSESSIONID)).findFirst().orElse(null);
 		}

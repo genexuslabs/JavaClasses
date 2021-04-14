@@ -250,10 +250,10 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 		}
 		return "";
 	}
-	public com.genexus.servlet.http.Cookie[] getCookies()
+	public com.genexus.servlet.http.ICookie[] getCookies()
 	{
 
-		com.genexus.servlet.http.Cookie[] cookies = {};
+		com.genexus.servlet.http.ICookie[] cookies = {};
 		return cookies;
 	}
 
