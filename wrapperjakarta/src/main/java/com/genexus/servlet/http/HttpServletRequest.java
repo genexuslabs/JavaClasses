@@ -154,4 +154,8 @@ public class HttpServletRequest implements IHttpServletRequest{
 		return req.getReader();
 	}
 
+	public String getRealPath(String path) {
+		return req.getRealPath(path);
+	}
+
 }

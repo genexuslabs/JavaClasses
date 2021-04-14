@@ -152,7 +152,7 @@ public class WebSession {
 	public void renew() {
 		updateSessionInvalidated();
 		if (!useLocalSession) {
-			HttpSession session = getSession(false);
+			IHttpSession session = getSession(false);
 			if (session != null) {
 				Map<String, Object> internalValues = backupInternalKeys(session);
 				session.invalidate();
@@ -162,7 +162,7 @@ public class WebSession {
 			clear();
 		}
 	}
-	private Map<String, Object> backupInternalKeys(HttpSession session) {
+	private Map<String, Object> backupInternalKeys(IHttpSession session) {
 		Map<String, Object> internalValues = new HashMap<>();
 		Enumeration e = session.getAttributeNames();
 		while (e.hasMoreElements()) {
