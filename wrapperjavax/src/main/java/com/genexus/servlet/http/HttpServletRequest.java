@@ -154,4 +154,8 @@ public class HttpServletRequest implements IHttpServletRequest{
 	public BufferedReader getReader() throws java.io.IOException {
 		return req.getReader();
 	}
+
+	public String getRealPath(String path) {
+		return req.getRealPath(path);
+	}
 }

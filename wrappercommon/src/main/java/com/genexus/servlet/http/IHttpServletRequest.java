@@ -39,4 +39,5 @@ public interface IHttpServletRequest {
 	String getMethod();
 	IServletContext getServletContext();
 	BufferedReader getReader() throws java.io.IOException;
+	String getRealPath(String path);
 }
