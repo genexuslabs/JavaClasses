@@ -847,7 +847,7 @@ public class HttpContextWeb extends HttpContext {
 		ICookie[] cookies = {};
 		if (request != null) {
 			try {
-				cookies = (Cookie[])request.getCookies();
+				cookies = request.getCookies();
 			} catch (Exception e) {
 			}
 		}
