@@ -117,7 +117,7 @@ public class HttpServletRequest implements IHttpServletRequest{
 		return new ServletInputStream(req.getInputStream());
 	}
 
-	public ICookie[]	getCookies()
+	public ICookie[] getCookies()
 	{
 		javax.servlet.http.Cookie[] cookies = req.getCookies();
 		if (cookies != null) {

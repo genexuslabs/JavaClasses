@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import com.genexus.servlet.http.Cookie;
+import com.genexus.servlet.http.ICookie;
 import com.genexus.servlet.http.IHttpServletRequest;
 import com.genexus.servlet.http.IHttpServletResponse;
 
@@ -302,7 +302,7 @@ public abstract class HttpContext
 	public abstract void setContextPath(String context);
 	public abstract String webSessionId();
 	public abstract String getCookie(String name);
-	public abstract Cookie[] getCookies();
+	public abstract ICookie[] getCookies();
 	public abstract byte setCookie(String name, String value, String path, java.util.Date expiry, String domain, double secure, Boolean httpOnly);
 	public abstract byte setCookie(String name, String value, String path, java.util.Date expiry, String domain, double secure);
 	public abstract byte setCookieRaw(String name, String value, String path, java.util.Date expiry, String domain, double secure);

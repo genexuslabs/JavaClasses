@@ -11,6 +11,7 @@ import java.util.zip.GZIPOutputStream;
 import com.genexus.fileupload.servlet.IServletFileUpload;
 import com.genexus.servlet.*;
 import com.genexus.servlet.http.Cookie;
+import com.genexus.servlet.http.ICookie;
 import com.genexus.servlet.http.IHttpServletRequest;
 import com.genexus.servlet.http.IHttpServletResponse;
 import com.genexus.servlet.http.HttpServletResponse;
@@ -849,11 +850,11 @@ public class HttpContextWeb extends HttpContext {
 		return "0";
 	}
 
-	public Cookie[] getCookies() {
-		Cookie[] cookies = {};
+	public ICookie[] getCookies() {
+		ICookie[] cookies = {};
 		if (request != null) {
 			try {
-				cookies = (Cookie[])request.getCookies();
+				cookies = request.getCookies();
 			} catch (Exception e) {
 			}
 		}
@@ -867,10 +868,10 @@ public class HttpContextWeb extends HttpContext {
 
 		if (request != null) {
 			try {
-				Cookie[] cookies = (Cookie[])request.getCookies();
+				ICookie[] cookies = request.getCookies();
 				if (cookies != null) {
 					for (int i = 0; i < cookies.length; i++) {
-						Cookie cookie = cookies[i];
+						ICookie cookie = cookies[i];
 						if (cookie.getName().equalsIgnoreCase(name)) {
 							return WebUtils.decodeCookie(cookie.getValue());
 						}
@@ -893,7 +894,7 @@ public class HttpContextWeb extends HttpContext {
 	public byte setCookieRaw(String name, String value, String path, java.util.Date expiry, String domain,
 			double secure, Boolean httpOnly) {
 		if (response != null) {
-			Cookie cookie = new Cookie(name, value);
+			ICookie cookie = new Cookie(name, value);
 
 			if (path.trim().length() > 0)
 				cookie.setPath(path.trim());
