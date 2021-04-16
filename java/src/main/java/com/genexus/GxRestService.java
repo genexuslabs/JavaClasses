@@ -56,7 +56,7 @@ abstract public class GxRestService extends GXWebObjectBase
 		super();
 	}
 	
-	HttpContext restHttpContext;
+	protected HttpContext restHttpContext;
 	public void init(String requestMethod, HttpServletRequest myServletRequest, HttpServletResponse myServletResponse, ServletContext myContext)
 	{
 		initLogger(myContext);

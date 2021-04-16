@@ -19,7 +19,6 @@ import java.util.UUID;
 
 import com.genexus.webpanels.FileItem;
 
-@Path("/gxobject")
 public class GxObjectRestService extends GxRestService {
     @Context
     private ServletContext myContext;
