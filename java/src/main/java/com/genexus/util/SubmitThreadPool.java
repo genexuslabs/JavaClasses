@@ -90,6 +90,11 @@ public class SubmitThreadPool
 		SubmitThreadPool.class.notify();
 	}
 
+	public static int getRemainingSubmits()
+	{
+		return remainingSubmits;
+	}
+
 	public synchronized static void waitForEnd()
 	{
 		if(remainingSubmits > 0)

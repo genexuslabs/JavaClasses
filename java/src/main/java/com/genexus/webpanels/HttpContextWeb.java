@@ -1,29 +1,20 @@
 package com.genexus.webpanels;
 
+import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.Vector;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletOutputStream;
+import javax.servlet.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.ws.rs.core.HttpHeaders;
 
 import com.genexus.*;
 import org.apache.commons.fileupload.FileItemIterator;
@@ -82,6 +73,10 @@ public class HttpContextWeb extends HttpContext {
 	private static final Pattern EDGE_BROWSER_VERSION_REGEX = Pattern.compile(" Edge\\/([0-9]+)\\.",
 			Pattern.CASE_INSENSITIVE);
 	private static final String GXEVENT_PARM = "gxevent";
+
+	private static final String SAME_SITE_NONE = "None";
+	private static final String SAME_SITE_LAX = "Lax";
+	private static final String SAME_SITE_STRICT = "Strict";
 
 	public boolean isMultipartContent() {
 		return ServletFileUpload.isMultipartContent(request);
@@ -234,6 +229,7 @@ public class HttpContextWeb extends HttpContext {
 		this.useNamedParameters = useNamedParameters;
 		loadParameters(req.getQueryString());
 		isCrawlerRequest = isCrawlerRequest();
+
 	}
 
 	private void loadParameters(String value) {
@@ -1347,6 +1343,7 @@ public class HttpContextWeb extends HttpContext {
 			if (isSpaRequest(true)) {
 				pushUrlSessionStorage();
 				getResponse().setHeader(GX_SPA_REDIRECT_URL, url + popLvlParm);
+				sendCacheHeaders();
 			} else {
 				redirect_http(url + popLvlParm);
 			}
@@ -1477,6 +1474,7 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public void flushStream() {
+		proxyCookieValues();
 		try {
 			if (buffered) {
 				// Esto en realidad cierra el ZipOutputStream, o el ByteOutputStream, no cierra
@@ -1497,6 +1495,34 @@ public class HttpContextWeb extends HttpContext {
 			}
 		} catch (IOException e) {
 			log.error("Error flushing stream", e);
+		}
+	}
+
+	String sameSiteMode;
+	private void proxyCookieValues() {
+		if (sameSiteMode == null) {
+			String sameSiteModeValue = Application.getClientPreferences().getProperty("SAMESITE_COOKIE", "");
+			if (sameSiteModeValue.equals(SAME_SITE_NONE) || sameSiteModeValue.equals(SAME_SITE_LAX) || sameSiteModeValue.equals(SAME_SITE_STRICT))
+				sameSiteMode = sameSiteModeValue;
+			else
+				sameSiteMode = "";
+		}
+
+		if (!sameSiteMode.equals("")) {
+			addSameSiteCookieAttribute(getResponse());
+		}
+	}
+
+	private void addSameSiteCookieAttribute(HttpServletResponse response) {
+		Collection<String> headers = response.getHeaders(HttpHeaders.SET_COOKIE);
+		boolean firstHeader = true;
+		for (String header : headers) {
+			if (firstHeader) {
+				response.setHeader(HttpHeaders.SET_COOKIE, String.format("%s; %s", header, "SameSite="+sameSiteMode));
+				firstHeader = false;
+				continue;
+			}
+			response.addHeader(HttpHeaders.SET_COOKIE, String.format("%s; %s", header, "SameSite="+sameSiteMode));
 		}
 	}
 

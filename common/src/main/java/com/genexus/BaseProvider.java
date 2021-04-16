@@ -83,14 +83,14 @@ public abstract class BaseProvider implements IGXSmartCacheProvider
 		
 		public void invalidateAll(){}
 		public void invalidate(String item){}
-		public void recordUpdates(){}
+		public void recordUpdates(int handle){}
 		public Object CheckDataStatus(String queryId, Date dateLastModified, Date[] dateUpdated_arr){return DataUpdateStatus.Unknown;}
-		public void discardUpdates(){}
+		public void discardUpdates(int handle){}
 		public boolean isEnabled() { return true;}
 		public ICacheService getUpdatedTables() {
 			return null;
 		}
-		public void setUpdated(String table) {
+		public void setUpdated(String table, int handle) {
 		}
 
 	}

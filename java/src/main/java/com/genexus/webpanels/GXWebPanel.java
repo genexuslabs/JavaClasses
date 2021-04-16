@@ -388,7 +388,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			else
 			{
 				String loginObject = Application.getClientContext().getClientPreferences().getProperty("IntegratedSecurityLoginWeb", "");
-				httpContext.redirect(GXutil.getClassName(loginObject));
+				httpContext.redirect(formatLink(GXutil.getClassName(loginObject)));
 				return false;
 			}
 		}

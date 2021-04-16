@@ -144,6 +144,7 @@ public abstract class GXWebObjectStub extends HttpServlet
 				ApplicationContext.getInstance().setPoolConnections(!Namespace.createNamespace(modelContext).isRemoteGXDB());
 				String loginObject = Application.getClientContext().getClientPreferences().getProperty("IntegratedSecurityLoginWeb", "");
 				loginObject = GXutil.getClassName(loginObject);
+				String loginObjectURL = URLRouter.getURLRoute(loginObject.toLowerCase(), new String[]{}, new String[]{}, httpContext.getRequest().getContextPath(), modelContext.getPackageName());
 				String permissionPrefix = IntegratedSecurityPermissionPrefix();
 				if (IntegratedSecurityLevel() == SECURITY_GXOBJECT)
 				{
@@ -174,7 +175,7 @@ public abstract class GXWebObjectStub extends HttpServlet
 					GXSecurityProvider.getInstance().checksession(-2, modelContext, reqUrl, flag);
 					if(!flag[0])
 					{
-						httpContext.redirect(loginObject.toLowerCase(), true);
+						httpContext.redirect(loginObjectURL, true);
 					}
 					else
 					{
@@ -192,13 +193,14 @@ public abstract class GXWebObjectStub extends HttpServlet
 					{
 						String notAuthorizedObject = Application.getClientContext().getClientPreferences().getProperty("IntegratedSecurityNotAuthorizedWeb", "");
 						notAuthorizedObject = GXutil.getClassName(notAuthorizedObject);
+						String notAuthorizedObjectURL = URLRouter.getURLRoute(notAuthorizedObject.toLowerCase(), new String[]{}, new String[]{}, httpContext.getRequest().getContextPath(), modelContext.getPackageName());
 						if (flag[0])
 						{
-							httpContext.redirect(notAuthorizedObject.toLowerCase(), true);
+							httpContext.redirect(notAuthorizedObjectURL, true);
 						}
 						else
 						{
-							httpContext.redirect(loginObject.toLowerCase(), true);
+							httpContext.redirect(loginObjectURL, true);
 						}
 					}
 				}
@@ -208,7 +210,8 @@ public abstract class GXWebObjectStub extends HttpServlet
 		}
 		catch (Throwable e)
 		{
-			res.reset();
+			if (!res.isCommitted())
+				res.reset();
 			logger.error("Web Execution Error", e);
 			if (DEBUG && httpContext != null)
 				dumpRequestInfo(httpContext);

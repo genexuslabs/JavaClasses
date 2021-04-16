@@ -55,7 +55,10 @@ public class CacheAPI
     
     public String get(String key)
     {   
-        return cache.get(cacheId, key, String.class);
+        String value = cache.get(cacheId, key, String.class);
+    	if (value == null)
+    		value = "";
+        return value;
     }
 
     public void remove(String key)
