@@ -5,21 +5,15 @@ import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.genexus.servlet.*;
+import com.genexus.servlet.http.IHttpServletResponse;
 
-public class AddResponseHeaderFilter implements Filter {
+public class AddResponseHeaderFilter extends Filter {
     private Map<String, String> headers = new LinkedHashMap<String, String>();
 
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
-            HttpServletResponse httpResponse = (HttpServletResponse) response;
+    public void doFilter(IServletRequest request, IServletResponse response, IFilterChain chain) throws Exception {
+        if (request.isHttpServletRequest() && response.isHttpServletResponse()) {
+            IHttpServletResponse httpResponse = response.getHttpServletResponse();
             for (Map.Entry<String, String> header : this.headers.entrySet()) {
                 httpResponse.setHeader(header.getKey(), header.getValue());
             }
@@ -27,16 +21,8 @@ public class AddResponseHeaderFilter implements Filter {
         chain.doFilter(request, response);
     }
 
-    public void init(FilterConfig filterConfig) throws ServletException {
-        for (Enumeration<String> names = filterConfig.getInitParameterNames(); names.hasMoreElements();) {
-            String name = names.nextElement();
-            String value = filterConfig.getInitParameter(name);
-            try {
-                this.headers.put(name, value);
-            } catch (RuntimeException e) {
-                throw new ServletException("Exception processing configuration parameter '" + name + "':'" + value + "'", e);
-            }
-        }
+    public void init(Map<String, String> headers, String path, String sessionCookieName) throws ServletException {
+		this.headers = headers;
     }
 
     public void destroy() {

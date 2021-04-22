@@ -1,17 +1,15 @@
 package com.genexus.webpanels;
 
-import javax.servlet.http.HttpSessionActivationListener;
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
+import com.genexus.servlet.http.SessionEventListenerWrapper;
+import com.genexus.servlet.http.HttpSessionBindingEvent;
+import com.genexus.servlet.http.HttpSessionEvent;
 
-public class SessionEventListener 
-	implements HttpSessionListener, HttpSessionActivationListener, HttpSessionBindingListener
+public class SessionEventListener
+	extends SessionEventListenerWrapper
 	
 {		
 	public void sessionCreated(HttpSessionEvent se)
-	{		
+	{
 	}
 	
 	public void sessionDestroyed(HttpSessionEvent se)
