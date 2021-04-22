@@ -1020,7 +1020,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 					if ((idx != -1) && (idx < fileName.length() - 1)) {
 						fileName = fileName.substring(idx + 1);
 					}
-					fileUri = storageProvider.copy(storageTargetObjectName, fileName, tableName, fieldName, defaultAcl);
+					fileUri = storageProvider.copy(gxFile.getAbsoluteName(), fileName, tableName, fieldName, defaultAcl);
 				} else {
 					// - 4. Upload Resource from local drive to External Storage: Ex: Image.FromImage(ActionDelete)
 					int idx = blobPath.lastIndexOf("/");
