@@ -23,7 +23,7 @@ public class RequestDispatcher implements IRequestDispatcher{
 	}
 	public void forward(IServletRequest req, IServletResponse resp) throws IOException, ServletException{
 		try {
-			this.req.forward(((HttpServletRequest)req).getWrappedClass(), ((ServletResponse)resp).getWrappedClass());
+			this.req.forward(((ServletRequest)req).getWrappedClass(), ((ServletResponse)resp).getWrappedClass());
 		} catch (javax.servlet.ServletException e) {
 			throw new ServletException(e.getMessage());
 		}
