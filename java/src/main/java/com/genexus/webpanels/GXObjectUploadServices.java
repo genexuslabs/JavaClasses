@@ -78,7 +78,7 @@ public class GXObjectUploadServices extends GXWebObjectStub
 				fileName = com.genexus.PrivateUtilities.getTempFileName("tmp");
 				String filePath = fileDirPath + fileName;
 				fileName = fileName.replaceAll(".tmp", "." + ext);
-				FileItem fileItem = new FileItem(filePath, false, "", context.getRequest().getInputStream());
+				FileItem fileItem = new FileItem(filePath, false, "", context.getRequest().getInputStream().getInputStream());
 				savedFileName = fileItem.getPath();
 				JSONObject jObj = new JSONObject();
 				jObj.put("object_id", HttpUtils.getUploadFileId(keyId));
