@@ -1,17 +1,25 @@
 package com.genexus.webpanels;
+import com.genexus.CommonUtil;
+import com.genexus.internet.HttpContext;
+import com.genexus.util.CacheAPI;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
+import java.util.UUID;
 
 import com.genexus.servlet.IServletInputStream;
 import com.genexus.servlet.http.IHttpServletRequest;
 
 public class HttpUtils
 {
+	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(HttpUtils.class);
 
   public static Hashtable<String, String[]> parseMultipartPostData(FileItemCollection fileItemCollection)
   {
@@ -39,7 +47,10 @@ public class HttpUtils
         }
         else
         {
-            itemFilePath = item.getPath();
+			String keyId = HttpUtils.getUploadFileKey();
+			itemFilePath = HttpUtils.getUploadFileId(keyId);
+			String fileExtension = CommonUtil.getFileType(item.getName());
+			HttpUtils.CacheUploadFile(keyId, item.getPath(), CommonUtil.getFileName(item.getName()) + "." + fileExtension, fileExtension);
         }
         pushValue(ht, item.getFieldName(), itemFilePath);
       }
@@ -238,5 +249,31 @@ public class HttpUtils
     }
 
     static Hashtable nullHashtable = new Hashtable();
+
+	public static String getUploadFileKey(){
+		return UUID.randomUUID().toString().replace("-","");
+	}
+
+	public static String getUploadFileId(String keyId) {
+		return CommonUtil.UPLOADPREFIX + keyId;
+	}
+
+	public static void CacheUploadFile(String keyId, String uploadFilePath, String fileName, String fileExtension) {
+		try {
+			JSONObject jObj = new JSONObject();
+			jObj.put("path", uploadFilePath);
+			jObj.put("fileName", fileName);
+			jObj.put("fileExtension", fileExtension);
+			CacheAPI.files().set(keyId, jObj.toString(), CommonUtil.UPLOAD_TIMEOUT);
+		}
+		catch (JSONException e) {
+			log.debug("Error Caching Upload File", e);
+		}
+		BlobsCleaner.getInstance().addBlobFile(uploadFilePath);
+	}
+
+	public static boolean isUploadRequest(HttpContext context) {
+		return context.getRequest().getRequestURI().endsWith("/gxobject");
+	}
 
 }
