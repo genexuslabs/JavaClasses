@@ -532,7 +532,7 @@ public abstract class GXHttpClient implements IHttpClient{
 	protected String setPathUrl(String url) {
 		if (!getIsURL()) {		// Si no es URL absoluta
 			if (!getBaseURL().isEmpty()) {
-				if (!getBaseURL().startsWith("/"))
+				if (!getBaseURL().startsWith("/") && !getBaseURL().startsWith("http"))
 					setBaseURL("/" + getBaseURL());
 				if (url.isEmpty())
 					url = getBaseURL();
