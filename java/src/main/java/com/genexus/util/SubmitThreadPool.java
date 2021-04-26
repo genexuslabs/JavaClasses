@@ -7,7 +7,7 @@ public class SubmitThreadPool
 {
 	public static final String SUBMIT_THREAD = "SubmitThread-";
 	private static SubmitThread [] threadPool = null;
-	private static Vector submitQueue = new Vector();
+	private static Vector<Object[]> submitQueue = new Vector<>();
 	private static int poolId = -1;
 	private static int remainingSubmits = 0;
 	private static GXParameterPacker parameterPacker;
@@ -90,6 +90,11 @@ public class SubmitThreadPool
 		SubmitThreadPool.class.notify();
 	}
 
+	public static int getRemainingSubmits()
+	{
+		return remainingSubmits;
+	}
+
 	public synchronized static void waitForEnd()
 	{
 		if(remainingSubmits > 0)
@@ -134,7 +139,7 @@ public class SubmitThreadPool
 	{
 		if(submitQueue.size() > 0)
 		{
-			Object [] nextSubmit = (Object[])submitQueue.firstElement();
+			Object [] nextSubmit = submitQueue.firstElement();
 			submitQueue.removeElement(nextSubmit);
 			return nextSubmit;
 		}

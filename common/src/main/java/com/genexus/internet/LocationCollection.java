@@ -6,7 +6,7 @@ import java.util.Enumeration;
 
 public class LocationCollection
 {
-	Hashtable table = new Hashtable();
+	Hashtable<String, Location> table = new Hashtable<>();
 
 	public void add(Location value, String key)
 	{
@@ -25,7 +25,7 @@ public class LocationCollection
 
 	public Location item(String key)
 	{
-		return (Location) table.get(CommonUtil.upper(key));
+		return table.get(CommonUtil.upper(key));
 	}
 
 	public int getCount()

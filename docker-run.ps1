@@ -1,7 +1,7 @@
 # Start a docker container with these files in the /usr/src folder
 # Follow the README file to compile (mvn compile) or package (mvn package)
 
-$containerName = "java-maven"
+$containerName = (Get-Item -Path .\).Name
 $containers = docker ps --all --format='{{json .Names}}'
 
 if ($containers -Contains "`"$($containerName)`""){

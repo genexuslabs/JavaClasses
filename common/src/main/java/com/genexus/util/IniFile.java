@@ -145,6 +145,7 @@ public class IniFile {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public void read() throws IOException {
 		sections = new Hashtable();
 		/*
@@ -168,6 +169,11 @@ public class IniFile {
 				sections.put(actSection, new Section(il.section, properties));
 			} else if (il.typeLine == PROPERTY) // && actSection != null)
 			{
+				String key = getMappedProperty(actSection, il.property);
+				String envValue = EnvVarReader.getEnvironmentValue(actSection, key);
+				if (envValue != null)
+					il.value = envValue;
+
 				properties.put(il.property.toUpperCase(), new Value(PROPERTY, il.property, il.value));
 			} else if (il.typeLine == COMMENT) {
 				ncomment = ncomment + 1;
@@ -178,8 +184,8 @@ public class IniFile {
 		br.close();
 	}
 
-	public Vector getPropertyList(String section, String prefix) {
-		Vector out = new Vector();
+	public Vector<String> getPropertyList(String section, String prefix) {
+		Vector<String> out = new Vector<>();
 
 		int idx = 0;
 		String tmp;
@@ -253,6 +259,7 @@ public class IniFile {
 		return sections.get(section.toUpperCase()) != null;
 	}
 
+	@SuppressWarnings("unchecked")
 	public void copySection(IniFile from, String sectionFrom, String sectionTo) {
 		Section newSection = from.getSection(sectionFrom);
 		newSection.key = sectionTo;
@@ -287,11 +294,6 @@ public class IniFile {
 
 	private String getPropertyImpl(String section, String key) {
 		String output = null;
-		key = getMappedProperty(section, key);
-		String envVal = getEnvironmentValue(section, key);
-		if (envVal != null && !envVal.isEmpty())
-			return envVal;
-
 		Section sec = (Section) sections.get(section.toUpperCase());
 		Hashtable prop = null;
 		if (sec != null) {
@@ -306,21 +308,6 @@ public class IniFile {
 		}
 		return output;
 	}
-
-	private String[] m_invalidChars = { ".","|" }; 
-	private final String ENVVAR_PREFIX = "GX_";
-
-	private String getEnvironmentValue(String section, String key){
-		if (section != null && !section.isEmpty() && section != "Client"){
-			for(int i = 0; i < m_invalidChars.length; i++)
-				section = section.replace(m_invalidChars[i], "_");
-			key = String.format("%s%s_%s", ENVVAR_PREFIX, section.toUpperCase(), key.toUpperCase());
-		}
-		else
-			key = String.format("%s%s", ENVVAR_PREFIX, key.toUpperCase());
-
-		return System.getenv(key);
-	} 
 
 	private String getMappedProperty(String section, String key){
 		if (getConfMapping() != null && getConfMapping().containsKey(key))
@@ -377,6 +364,7 @@ public class IniFile {
 		setProperty(section, key, CommonUtil.str(value, 10, 0).trim());
 	}
 
+	@SuppressWarnings("unchecked")
 	public void setProperty(String section, String key, String value) {
 		Section sec = (Section) sections.get(section.toUpperCase());
 		Hashtable sectionHash;

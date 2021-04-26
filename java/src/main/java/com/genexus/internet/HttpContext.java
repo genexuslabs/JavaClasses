@@ -12,9 +12,9 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.genexus.servlet.http.ICookie;
+import com.genexus.servlet.http.IHttpServletRequest;
+import com.genexus.servlet.http.IHttpServletResponse;
 
 import com.genexus.*;
 import org.apache.commons.io.IOUtils;
@@ -33,15 +33,20 @@ import json.org.json.IJsonFormattable;
 import json.org.json.JSONArray;
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
+import org.apache.logging.log4j.Logger;
 
 public abstract class HttpContext 
 		extends HttpAjaxContext implements IHttpContext
 {
+	private static Logger logger = org.apache.logging.log4j.LogManager.getLogger(HttpContext.class);
+
     private static String GX_AJAX_REQUEST_HEADER = "GxAjaxRequest";
     private static String GX_SPA_REQUEST_HEADER = "X-SPA-REQUEST";
     protected static String GX_SPA_REDIRECT_URL = "X-SPA-REDIRECT-URL";
 	private static String GX_SOAP_ACTION_HEADER = "SOAPAction";
-	
+	public static String GXTheme = "GXTheme";
+	public static String GXLanguage = "GXLanguage";
+
     private static String CACHE_INVALIDATION_TOKEN;
 
     protected boolean PortletMode = false;
@@ -148,10 +153,10 @@ public abstract class HttpContext
 	private boolean validEncryptedParm = true;        
 	private boolean encryptionKeySended = false;
 
-	private Vector javascriptSources = new Vector();
+	private Vector<String> javascriptSources = new Vector<>();
 	private Vector<String> deferredFragments = new Vector<String>();
 
-	private Vector styleSheets = new Vector();
+	private Vector<String> styleSheets = new Vector<>();
 	private HashSet<String> deferredJavascriptSources = new HashSet<String>();
 	private boolean responseCommited = false;
 	private boolean wrapped = false;
@@ -163,7 +168,9 @@ public abstract class HttpContext
 
 	private String webAppManifestFileName = "manifest.json";
 	private Boolean isWebAppManifestDefinedFlag = null;
-	
+
+	private static HashMap<String, Messages> cachedMessages = new HashMap<String, Messages>();
+	private String currentLanguage = null;
 
 	private boolean isServiceWorkerDefined()
 	{
@@ -256,8 +263,11 @@ public abstract class HttpContext
 
 	public abstract void cleanup();
 	public abstract String getResourceRelative(String path);
+	public abstract String getResourceRelative(String path, boolean includeBasePath);
 	public abstract String getResource(String path);
 	public abstract String GetNextPar();
+	public abstract String GetPar(String parameter);
+	public abstract String GetFirstPar(String parameter);
 	public abstract HttpContext copy();
 	public abstract byte setHeader(String header, String value);
 	public abstract void setDateHeader(String header, int value);
@@ -275,6 +285,7 @@ public abstract class HttpContext
 	public abstract String getUserId(String key, ModelContext context, int handle, com.genexus.db.IDataStoreProvider dataStore);
 	public abstract String getRemoteAddr();
 	public abstract boolean isLocalStorageSupported();
+	public abstract boolean exposeMetadata();
 	public abstract boolean isSmartDevice();
 	public abstract int getBrowserType();
 	public abstract boolean isIE55();
@@ -291,7 +302,7 @@ public abstract class HttpContext
 	public abstract void setContextPath(String context);
 	public abstract String webSessionId();
 	public abstract String getCookie(String name);
-	public abstract Cookie[] getCookies();
+	public abstract ICookie[] getCookies();
 	public abstract byte setCookie(String name, String value, String path, java.util.Date expiry, String domain, double secure, Boolean httpOnly);
 	public abstract byte setCookie(String name, String value, String path, java.util.Date expiry, String domain, double secure);
 	public abstract byte setCookieRaw(String name, String value, String path, java.util.Date expiry, String domain, double secure);
@@ -321,9 +332,9 @@ public abstract class HttpContext
 	public abstract HttpResponse getHttpResponse();
 	public abstract HttpRequest getHttpRequest();
 	public abstract void setHttpRequest(HttpRequest httprequest);
-	public abstract HttpServletRequest getRequest();
-	public abstract HttpServletResponse getResponse();
-	public abstract void setRequest(HttpServletRequest request);
+	public abstract IHttpServletRequest getRequest();
+	public abstract IHttpServletResponse getResponse();
+	public abstract void setRequest(IHttpServletRequest request);
 	public abstract Hashtable getPostData();
 	public abstract WebSession getWebSession();
 	public abstract void redirect(String url);
@@ -338,8 +349,9 @@ public abstract class HttpContext
 	public abstract boolean getHtmlHeaderClosed();
 	public abstract void ajax_rsp_command_close();
 	public abstract void dispatchAjaxCommands();
-	public abstract String getRepositoryPath();
-	public abstract void  setRepositoryPath(String path);
+
+	public abstract boolean isHttpContextNull();
+	public abstract boolean isHttpContextWeb();
 
 	public void AddDeferredFrags()
 	{
@@ -358,6 +370,7 @@ public abstract class HttpContext
 	{
 		if(!javascriptSources.contains(jsSrc))
 		{
+			urlBuildNumber = getURLBuildNumber(jsSrc, urlBuildNumber);
 			javascriptSources.add(jsSrc);
 			String queryString = urlBuildNumber;
 			String attributes = "";
@@ -486,9 +499,23 @@ public abstract class HttpContext
 	{
 		AddStyleSheetFile(styleSheet, "");
 	}
+
 	public void AddStyleSheetFile(String styleSheet, String urlBuildNumber)
 	{
+		urlBuildNumber = getURLBuildNumber(styleSheet, urlBuildNumber);
 		AddStyleSheetFile(styleSheet, urlBuildNumber, false);
+	}
+
+	private String getURLBuildNumber(String resourcePath, String urlBuildNumber)
+	{
+		if(urlBuildNumber.isEmpty() && !GXutil.isAbsoluteURL(resourcePath) && !GXutil.hasUrlQueryString(resourcePath))
+		{
+			return "?" + getCacheInvalidationToken();
+		}
+		else
+		{
+			return urlBuildNumber;
+		}
 	}
 
 	private void AddStyleSheetFile(String styleSheet, String urlBuildNumber, boolean isGxThemeHidden)
@@ -757,7 +784,7 @@ public abstract class HttpContext
 			if (clientKey != null && clientKey.trim().length() > 0)
 			{
 				boolean candecrypt[]=new boolean[1];
-				clientKey = Encryption.decryptRijndael(clientKey, Encryption.GX_AJAX_PRIVATE_KEY, candecrypt);
+				clientKey = Encryption.decryptRijndael(Encryption.GX_AJAX_PRIVATE_IV + clientKey, Encryption.GX_AJAX_PRIVATE_KEY, candecrypt);
 				if (candecrypt[0])
 				{
 					webPutSessionValue(Encryption.AJAX_ENCRYPTION_KEY, clientKey);
@@ -809,7 +836,7 @@ public abstract class HttpContext
 			sendResponseStatus(403, "Forbidden action");
 			return false;
 		}
-		else if (!insideAjaxCall && isGxAjaxRequest() && !isFullAjaxMode())
+		else if (!insideAjaxCall && isGxAjaxRequest() && !isFullAjaxMode() && ajaxOnSessionTimeout().equalsIgnoreCase("Warn"))
 		{
 			sendResponseStatus(440, "Session timeout");
 			return false;
@@ -828,10 +855,13 @@ public abstract class HttpContext
 			}
 		}        	
 		getResponse().setStatus(statusCode);
-		try { getResponse().sendError(statusCode, statusDescription); }
+		try {
+			getResponse().sendError(statusCode, statusDescription);
+		}
 		catch(Exception e) {
-					System.err.println("E " + e);
-					e.printStackTrace();
+			if (logger.isErrorEnabled()) {
+				logger.error("Could not send Response Error Code", e);
+			}
 		}
 		setAjaxCallMode();
 		disableOutput();
@@ -839,20 +869,20 @@ public abstract class HttpContext
 	
 	private void sendReferer()
 	{
-		ajax_rsp_assign_hidden("sCallerURL", getReferer());
+		ajax_rsp_assign_hidden("sCallerURL", org.owasp.encoder.Encode.forUri(getReferer()));
 	}
 	
 	private static String CLIENT_ID_HEADER = "GX_CLIENT_ID";
 	
 	public void initClientId()
 	{			
-		if (getWebSession() != null && this.getClientId().equals(""))
+		if (!isSoapRequest() && getWebSession() != null && this.getClientId().equals(""))
 		{                    
 			String _clientId = this.getCookie(CLIENT_ID_HEADER);
 			if (_clientId == null || _clientId.equals(""))
 			{
 				_clientId = java.util.UUID.randomUUID().toString();
-				this.setCookie(CLIENT_ID_HEADER, _clientId, "", new Date(Long.MAX_VALUE), "", 0);
+				this.setCookie(CLIENT_ID_HEADER, _clientId, "", new Date(Long.MAX_VALUE), "", getHttpSecure());
 			}
 			this.setClientId(_clientId);
 		}            
@@ -951,7 +981,7 @@ public abstract class HttpContext
         }
         catch(com.genexus.util.Encryption.InvalidGXKeyException e)
         {
-            setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", 0);
+            setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", getHttpSecure());
             com.genexus.diagnostics.Log.debug("440 Invalid encryption key");
             sendResponseStatus(440, "Session timeout");
         }
@@ -967,7 +997,7 @@ public abstract class HttpContext
         }
         catch (com.genexus.util.Encryption.InvalidGXKeyException e)
         {
-            setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", 0);
+            setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", getHttpSecure());
             com.genexus.diagnostics.Log.debug( "440 Invalid encryption key");
             sendResponseStatus(440, "Session timeout");
         }
@@ -980,6 +1010,7 @@ public abstract class HttpContext
 		 {
 			 String key = getAjaxEncryptionKey();
 			 ajax_rsp_assign_hidden(Encryption.AJAX_ENCRYPTION_KEY, key);
+			 ajax_rsp_assign_hidden(Encryption.AJAX_ENCRYPTION_IV, Encryption.GX_AJAX_PRIVATE_IV);
 			 try
 			 {
 				ajax_rsp_assign_hidden(Encryption.AJAX_SECURITY_TOKEN, Encryption.encryptRijndael(key, Encryption.GX_AJAX_PRIVATE_KEY));
@@ -1389,8 +1420,9 @@ public abstract class HttpContext
 		}
 		catch(IOException e) 
 		{
-			System.err.println("E " + e);
-			e.printStackTrace();
+			if (logger.isDebugEnabled()) {
+				logger.debug("ERROR: When Closing Output Stream.", e);
+			}
 		}
 	}
 
@@ -1442,7 +1474,7 @@ public abstract class HttpContext
 	{
 	    WebSession session = getWebSession();
 	    if (session!=null){
-			HashMap cThemeMap = (HashMap)session.getObjectAttribute("GXTheme");
+			HashMap cThemeMap = (HashMap)session.getObjectAttribute(GXTheme);
 			if (cThemeMap != null && cThemeMap.containsKey(theme))
 				return (String)cThemeMap.get(theme);
 		}
@@ -1456,6 +1488,7 @@ public abstract class HttpContext
 	{
 		theme = t;
 	}
+	@SuppressWarnings("unchecked")
 	public int setTheme(String t)
 	{
 	    WebSession session = getWebSession();
@@ -1463,11 +1496,11 @@ public abstract class HttpContext
 			return 0;
 		else
 		{
-			HashMap cThemeMap = (HashMap)session.getObjectAttribute("GXTheme");
+			HashMap<String, String> cThemeMap = (HashMap<String, String>)session.getObjectAttribute(GXTheme);
 			if (cThemeMap == null)
-				cThemeMap = new HashMap();
+				cThemeMap = new HashMap<>();
 			cThemeMap.put(theme, t);
-			session.setObjectAttribute("GXTheme", cThemeMap);
+			session.setObjectAttribute(GXTheme, cThemeMap);
 			return 1;
 		}
 	}
@@ -1530,7 +1563,7 @@ public abstract class HttpContext
 	{
 		String out = file.trim();
 
-		if	((file.startsWith("http:")) || (file.startsWith("https:")) || (file.startsWith("data:")) || (file.startsWith("//")) || (file.length() > 2 && file.charAt(1) == ':'))
+		if	((file.startsWith("http:")) || (file.startsWith("https:")) || (file.startsWith("data:")) || (file.startsWith("about:")) || (file.startsWith("//")) || (file.length() > 2 && file.charAt(1) == ':'))
 		{
 			return out;
 		}
@@ -1573,14 +1606,23 @@ public abstract class HttpContext
 				return msgs.getMessage(code);
 			}
 		}
+
 		public String getMessage(String code)
 		{
-			String _language = getLanguage();
-			_language = Application.getClientPreferences().getProperty("language|" + _language, "code", Application.getClientPreferences().getProperty("LANGUAGE", "eng"));
-			String resourceName = "messages." + _language + ".txt";
-			Messages msgs = com.genexus.Messages.getMessages(resourceName, Application.getClientLocalUtil().getLocale());
-			return msgs.getMessage(code);
+			String language = getLanguage();
+			Messages messages = cachedMessages.get(language);
+			if (messages == null) {
+				String languageCode = Application.getClientPreferences().getProperty("language|" + language, "code", Application.getClientPreferences().getProperty("LANGUAGE", "eng"));
+				messages = com.genexus.Messages.getMessages("messages." + languageCode + ".txt", Application.getClientLocalUtil().getLocale());
+				addCachedLanguageMessage(language, messages);
+			}
+			return messages.getMessage(code);
 		}
+
+		private synchronized void addCachedLanguageMessage(String language, Messages msg) {
+			cachedMessages.putIfAbsent(language, msg);
+		}
+
 		public String getLanguageProperty(String property)
 		{
 			String _language = getLanguage();
@@ -1588,13 +1630,17 @@ public abstract class HttpContext
 		}
 		public String getLanguage()
 		{
-			WebSession session = getWebSession();
-			String language = session!=null ? session.getAttribute("GXLanguage") : null;
-			if (language!=null && !language.equals(""))
-				return language;
-			else
-				//Por ahora obtengo el del modelo, mas adelante puede haber uno por cada session
-				return Application.getClientPreferences().getProperty("LANG_NAME", "English");
+			if (currentLanguage == null) {
+				WebSession session = getWebSession();
+				String language = session != null ? session.getAttribute(GXLanguage) : null;
+				if (language != null && !language.equals("")) {
+					currentLanguage = language;
+				} else {
+					//Por ahora obtengo el del modelo, mas adelante puede haber uno por cada session
+					currentLanguage = Application.getClientPreferences().getProperty("LANG_NAME", "English");
+				}
+			}
+			return currentLanguage;
 		}
 		public String htmlEndTag(HTMLElement element)
 		{
@@ -1642,7 +1688,8 @@ public abstract class HttpContext
 		{
 			if (!language.isEmpty() && Application.getClientPreferences().getProperty("language|"+ language, "code", null)!=null)
 			{
-				getWebSession().setAttribute("GXLanguage", language);
+				this.currentLanguage = language;
+				getWebSession().setAttribute(GXLanguage, language);
 				ajaxRefreshAsGET = true;
 				return 0;
 			}else

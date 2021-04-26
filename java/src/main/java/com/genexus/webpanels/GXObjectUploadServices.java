@@ -1,81 +1,68 @@
 package com.genexus.webpanels;
 
-import java.io.File;
-import java.util.UUID;
 
 import com.genexus.*;
 import com.genexus.internet.HttpContext;
-import com.genexus.internet.HttpResponse;
-import com.genexus.util.CacheAPI;
-import com.genexus.util.GXServices;
 
 import json.org.json.JSONArray;
 import json.org.json.JSONObject;
-
+import javax.ws.rs.core.Response;
 
 
 public class GXObjectUploadServices extends GXWebObjectStub
 {   
+	boolean isRestCall = false;
+	Response.ResponseBuilder builder = null;
+	public Response.ResponseBuilder doInternalRestExecute(HttpContext context) throws Exception
+	{
+		isRestCall = true;
+		doExecute(context);
+		return builder;
+	}
+	public void doInternalExecute(HttpContext context) throws Exception
+	{
+		doExecute(context);
+	}
     protected void doExecute(HttpContext context) throws Exception
     {
+		String savedFileName = "";
+		String fileName = "";
+		String ext = "";
         WebApplicationStartup.init(Application.gxCfg, context);
         context.setStream();
-        
+		String keyId;
 		try
 		{
-			if (context.isMultipartContent())
-			{
+			String fileDirPath = Preferences.getDefaultPreferences().getPRIVATE_PATH();
 				ModelContext modelContext =  new ModelContext(Application.gxCfg);
 				modelContext.setHttpContext(context);
 				ModelContext.getModelContext().setHttpContext(context);
 				context.setContext(modelContext);
 
+			if (context.isMultipartContent())
+			{
 				context.setContentType("text/plain");
 				FileItemCollection postedFiles = context.getHttpRequest().getPostedparts();
 				JSONArray jsonArray = new JSONArray();
 				for (int i = 0, len = postedFiles.getCount(); i < len; i++)
 				{
+					keyId = HttpUtils.getUploadFileKey();
 					FileItem file = postedFiles.item(i);
-					if (!file. isFormField())
+					if (!file.isFormField())
 					{
-						String fileName = "";
-						String[] files = file.getName().split("\\\\");
-						if (files.length > 0)
-							fileName = files[files.length - 1];
-						else
-							fileName = file.getName();
-
-						long fileSize = file.getSize(); 
-						if (fileSize == 0)
-							continue;
-
-						String ext = CommonUtil.getFileType(fileName);
-						String savedFileName = "";
-						String url = "";
-						if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) == null)
-						{
-							String fileDirPath = context.getDefaultPath() + File.separator + "WEB-INF" + File.separatorChar + Application.getClientPreferences().getTMPMEDIA_DIR();
-							savedFileName = PrivateUtilities.getTempFileName(fileDirPath, CommonUtil.getFileName(fileName), ext == null || ext.length() == 0 ? "tmp" : ext);;
-							file.write(savedFileName);
-							url = GXDbFile.pathToUrl(savedFileName, context);
-							BlobsCleaner.getInstance().addBlobFile(savedFileName);
-						}
-						else
-						{
-							savedFileName = file.getPath();
-							url = file.getAbsolutePath();
-							BlobsCleaner.getInstance().addBlobFile(fileName);
-						}
-
+						ext = CommonUtil.getFileType(file.getName());
+						fileName = CommonUtil.getFileName(file.getName()) + "." + ext;
+						long fileSize = file.getSize();
+						savedFileName = file.getPath();
 						JSONObject jObj = new JSONObject();
 						jObj.put("name", fileName);
 						jObj.put("size", fileSize);
-						jObj.put("url", url);
-						jObj.put("type", HttpResponse.getContentType(fileName));
 						jObj.put("extension", ext);
-						jObj.put("thumbnailUrl", url);
-						jObj.put("path", savedFileName);
+						jObj.put("path", HttpUtils.getUploadFileId(keyId));
 						jsonArray.put(jObj);
+						if (!savedFileName.isEmpty()){
+							HttpUtils.CacheUploadFile(keyId, savedFileName, fileName, ext);
+						}
 					}
 				}
 				JSONObject jObjResponse = new JSONObject();
@@ -85,58 +72,67 @@ public class GXObjectUploadServices extends GXWebObjectStub
 			}
 			else
 			{
+				keyId = HttpUtils.getUploadFileKey();
 				String contentType = context.getHeader("Content-Type");
-				String ext = getExtension(contentType);
-				String tempFileName = com.genexus.PrivateUtilities.getTempFileName(ext);
-				String filePath = tempFileName;		
-				if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) == null)
-				{
-					filePath = Preferences.getDefaultPreferences().getBLOB_PATH() + tempFileName;		
-				}
-				else
-				{
-					filePath = Preferences.getDefaultPreferences().getBLOB_PATH().replace(java.io.File.separator, "/") + 	tempFileName;
-				}				
-				FileItem fileItem = new FileItem(filePath, false, "", context.getRequest().getInputStream());
-				filePath = fileItem.getPath();
-				String keyId = UUID.randomUUID().toString().replace("-","");
-				CacheAPI.files().set(keyId, filePath, CommonUtil.UPLOAD_TIMEOUT );
-				context.getResponse().setContentType("application/json");
-				context.getResponse().setStatus(201);
-				context.getResponse().setHeader("GeneXus-Object-Id", keyId);
+				ext = getExtension(contentType);
+				fileName = com.genexus.PrivateUtilities.getTempFileName("tmp");
+				String filePath = fileDirPath + fileName;
+				fileName = fileName.replaceAll(".tmp", "." + ext);
+				FileItem fileItem = new FileItem(filePath, false, "", context.getRequest().getInputStream().getInputStream());
+				savedFileName = fileItem.getPath();
 				JSONObject jObj = new JSONObject();
-				jObj.put("object_id", CommonUtil.UPLOADPREFIX + keyId);
-				context.writeText(jObj.toString());
-				context.getResponse().flushBuffer();
-				return;
+				jObj.put("object_id", HttpUtils.getUploadFileId(keyId));
+				if (!isRestCall) {
+					context.getResponse().setContentType("application/json");
+					context.getResponse().setStatus(201);
+					context.getResponse().setHeader("GeneXus-Object-Id", keyId);
+					context.writeText(jObj.toString());
+					context.getResponse().flushBuffer();
+				}
+				else {
+					String jsonResponse = jObj.toString();
+					builder = Response.status(201).entity(jsonResponse);
+					builder.header("GeneXus-Object-Id", keyId);
+				}
+				if (!savedFileName.isEmpty()) {
+					HttpUtils.CacheUploadFile(keyId, savedFileName, fileName, ext);
+				}
 			}
 		}
 		catch (Throwable e)
 		{
 			context.sendResponseStatus(404, e.getMessage());
 		}
+		finally {
+			if (!isRestCall)
+			ModelContext.deleteThreadContext();
+		}
     }
 	
 	protected boolean IntegratedSecurityEnabled( )
 	{
-	return com.genexus.Application.getClientPreferences().getProperty("EnableIntegratedSecurity", "0").equals("1");
+		return com.genexus.Application.getClientPreferences().getProperty("EnableIntegratedSecurity", "0").equals("1");
 	}
 
 	protected int IntegratedSecurityLevel( )
 	{
-	return SECURITY_GXOBJECT;
+		return SECURITY_GXOBJECT;
 	}
 
 	protected String IntegratedSecurityPermissionPrefix( )
 	{
-	return "";
+		return "";
 	}   
 
 	private String getExtension(String contentType)
 	{
-		if (contentType.startsWith("image/jpeg"))
+		if (contentType.startsWith("image/jpg")||contentType.startsWith("application/jpg"))
 		{
 			return "jpg";
+		}
+		if (contentType.startsWith("image/jpeg")||contentType.startsWith("application/jpeg"))
+		{
+			return "jpeg";
 		}
 		if (contentType.startsWith("image/tiff"))
 		{

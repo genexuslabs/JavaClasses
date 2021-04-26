@@ -33,15 +33,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
+import com.genexus.servlet.*;
+import com.genexus.servlet.http.*;
 
 /**
  * <p>
@@ -414,7 +407,7 @@ import javax.servlet.http.HttpServletResponse;
  * </p>
  * <hr/>
  */
-public class XForwardedFilter implements Filter {
+public class XForwardedFilter extends Filter {
     public static class XForwardedRequest extends HttpServletRequestWrapper {
         
         final static ThreadLocal<SimpleDateFormat[]> threadLocalDateFormats = new ThreadLocal<SimpleDateFormat[]>() {
@@ -441,7 +434,7 @@ public class XForwardedFilter implements Filter {
         protected int serverPort;
         
         @SuppressWarnings("unchecked")
-        public XForwardedRequest(HttpServletRequest request) {
+        public XForwardedRequest(IHttpServletRequest request) {
             super(request);
             this.remoteAddr = request.getRemoteAddr();
             this.remoteHost = request.getRemoteHost();
@@ -499,12 +492,12 @@ public class XForwardedFilter implements Filter {
         }
         
         @Override
-        public Enumeration getHeaderNames() {
+        public Enumeration<String> getHeaderNames() {
             return Collections.enumeration(headers.keySet());
         }
         
         @Override
-        public Enumeration getHeaders(String name) {
+        public Enumeration<String> getHeaders(String name) {
             Map.Entry<String, List<String>> header = getHeaderEntry(name);
             if (header == null || header.getValue() == null) {
                 return Collections.enumeration(Collections.emptyList());
@@ -712,7 +705,7 @@ public class XForwardedFilter implements Filter {
     public void destroy() {
     }
     
-    public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+    public void doFilter(IHttpServletRequest request, IHttpServletResponse response, IFilterChain chain) throws Exception {
         
         if (matchesOne(request.getRemoteAddr(), allowedInternalProxies)) {
             String remoteIp = null;
@@ -789,9 +782,9 @@ public class XForwardedFilter implements Filter {
     /**
      * Wrap the incoming <code>request</code> in a {@link XForwardedRequest} if the http header <code>x-forwareded-for</code> is not empty.
      */
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
-            doFilter((HttpServletRequest)request, (HttpServletResponse)response, chain);
+    public void doFilter(IServletRequest request, IServletResponse response, IFilterChain chain) throws Exception {
+        if (request.isHttpServletRequest() && response.isHttpServletResponse()) {
+            doFilter(request, response, chain);
         } else {
             chain.doFilter(request, response);
         }
@@ -827,42 +820,42 @@ public class XForwardedFilter implements Filter {
         return trustedProxies;
     }
     
-    public void init(FilterConfig filterConfig) throws ServletException {
-        if (filterConfig.getInitParameter(INTERNAL_PROXIES_PARAMETER) != null) {
-            setAllowedInternalProxies(filterConfig.getInitParameter(INTERNAL_PROXIES_PARAMETER));
+    public void init(Map<String, String> headers, String path, String sessionCookieName) throws ServletException {
+        if (headers.get(INTERNAL_PROXIES_PARAMETER) != null) {
+            setAllowedInternalProxies(headers.get(INTERNAL_PROXIES_PARAMETER));
         }
 
-        if (filterConfig.getInitParameter(PROTOCOL_HEADER_PARAMETER) != null) {
-            setProtocolHeader(filterConfig.getInitParameter(PROTOCOL_HEADER_PARAMETER));
+        if (headers.get(PROTOCOL_HEADER_PARAMETER) != null) {
+            setProtocolHeader(headers.get(PROTOCOL_HEADER_PARAMETER));
         }
 
-        if (filterConfig.getInitParameter(PROTOCOL_HEADER_SSL_VALUE_PARAMETER) != null) {
-            setProtocolHeaderSslValue(filterConfig.getInitParameter(PROTOCOL_HEADER_SSL_VALUE_PARAMETER));
+        if (headers.get(PROTOCOL_HEADER_SSL_VALUE_PARAMETER) != null) {
+            setProtocolHeaderSslValue(headers.get(PROTOCOL_HEADER_SSL_VALUE_PARAMETER));
         }
 
-        if (filterConfig.getInitParameter(PROXIES_HEADER_PARAMETER) != null) {
-            setProxiesHeader(filterConfig.getInitParameter(PROXIES_HEADER_PARAMETER));
+        if (headers.get(PROXIES_HEADER_PARAMETER) != null) {
+            setProxiesHeader(headers.get(PROXIES_HEADER_PARAMETER));
         }
 
-        if (filterConfig.getInitParameter(REMOTE_IP_HEADER_PARAMETER) != null) {
-            setRemoteIPHeader(filterConfig.getInitParameter(REMOTE_IP_HEADER_PARAMETER));
+        if (headers.get(REMOTE_IP_HEADER_PARAMETER) != null) {
+            setRemoteIPHeader(headers.get(REMOTE_IP_HEADER_PARAMETER));
         }
 
-        if (filterConfig.getInitParameter(TRUSTED_PROXIES_PARAMETER) != null) {
-            setTrustedProxies(filterConfig.getInitParameter(TRUSTED_PROXIES_PARAMETER));
+        if (headers.get(TRUSTED_PROXIES_PARAMETER) != null) {
+            setTrustedProxies(headers.get(TRUSTED_PROXIES_PARAMETER));
         }
 
-        if (filterConfig.getInitParameter(HTTP_SERVER_PORT_PARAMETER) != null) {
+        if (headers.get(HTTP_SERVER_PORT_PARAMETER) != null) {
             try {
-                setHttpServerPort(Integer.parseInt(filterConfig.getInitParameter(HTTP_SERVER_PORT_PARAMETER)));
+                setHttpServerPort(Integer.parseInt(headers.get(HTTP_SERVER_PORT_PARAMETER)));
             } catch (NumberFormatException e) {
                 throw new NumberFormatException("Illegal " + HTTP_SERVER_PORT_PARAMETER + " : " + e.getMessage());
             }
         }
 
-        if (filterConfig.getInitParameter(HTTPS_SERVER_PORT_PARAMETER) != null) {
+        if (headers.get(HTTPS_SERVER_PORT_PARAMETER) != null) {
             try {
-                setHttpsServerPort(Integer.parseInt(filterConfig.getInitParameter(HTTPS_SERVER_PORT_PARAMETER)));
+                setHttpsServerPort(Integer.parseInt(headers.get(HTTPS_SERVER_PORT_PARAMETER)));
             } catch (NumberFormatException e) {
                 throw new NumberFormatException("Illegal " + HTTPS_SERVER_PORT_PARAMETER + " : " + e.getMessage());
             }

@@ -13,9 +13,10 @@ public class IODataMapExt implements IODataMap
     }
 
     @Override
+	@SuppressWarnings("unchecked")
     public Object getValue(IOServiceContext context, HashMap<String, Object> currentEntry)
     {
-        HashMap<String, Object> link = (HashMap<String, Object>) currentEntry.get((String)context.entity(entity));
+        HashMap<String, Object> link = (HashMap<String, Object>) currentEntry.get(context.entity(entity));
         return link != null ? map.getValue(context, link) : null;
     }
 
@@ -26,6 +27,7 @@ public class IODataMapExt implements IODataMap
     }
 
     @Override
+	@SuppressWarnings("unchecked")
     public void setValue(HashMap<String, Object> currentEntry, Object value)
     {
         HashMap<String, Object> child = (HashMap<String, Object>)currentEntry.get(entity);

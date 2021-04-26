@@ -37,6 +37,11 @@ public final class GXutil
 		CommonUtil.writeLogln(message);
 	}
 
+	public static void writeTLogln( String message)
+	{
+		CommonUtil.writeTLogln(message);
+	}
+
 	public static void writeLogRaw( String message, Object obj)
 	{
 		CommonUtil.writeLogRaw(message, obj);
@@ -345,10 +350,9 @@ public final class GXutil
 		return CommonUtil.DateTimeToUTC(value, TimeZone.getDefault());
 	}
 
-
 	public static Date DateTimeToUTC(Date value, TimeZone tz)
 	{
-		return CommonUtil.DateTimeToUTC(value, TimeZone.getDefault());
+		return CommonUtil.DateTimeToUTC(value, tz);
 	}
 
 	public static Date DateTimeFromUTC(Date value)
@@ -563,6 +567,19 @@ public final class GXutil
 	public static String ltrim(String text)
 	{
 		return CommonUtil.ltrim(text);
+	}
+	public static String ltrimstr(long val, int digits, int decimals)
+	{
+		return CommonUtil.ltrimstr(val, digits, decimals);
+	}
+
+	public static String ltrimstr(java.math.BigDecimal value, int length, int decimals)
+	{
+		return CommonUtil.ltrimstr(value, length, decimals);
+	}
+	public static String ltrimstr(double value, int length, int decimals)
+	{
+		return CommonUtil.ltrimstr(value, length, decimals);
 	}
 
 	public static String time()
@@ -1246,7 +1263,6 @@ public final class GXutil
 	public static String cutUploadPrefix(String value)
 	{
 		String uploadValue = value.replace(UPLOADPREFIX, "");
-		uploadValue = SpecificImplementation.GXutil.getUploadValue(value, uploadValue);
 	
 		//hack para salvar el caso de gxooflineeventreplicator que llegan los path de los blobs sin \ porque fueron sacadas por el FromJsonString
 		String blobPath = com.genexus.Preferences.getDefaultPreferences().getProperty("CS_BLOB_PATH", "");

@@ -119,7 +119,7 @@ public class GXDBMSoracle7 implements GXDBMS
 	
 	public java.util.Date serverDateTime(GXConnection con) throws SQLException
 	{
-		ResultSet rslt = con.getStatement("_ServerDT_", "SELECT SYSDATE FROM DUAL", false).executeQuery();
+		ResultSet rslt = con.getStatement("_ServerDT_", "SELECT SYSTIMESTAMP FROM DUAL", false).executeQuery();
 		
 		rslt.next();
 		Date value = rslt.getTimestamp(1);

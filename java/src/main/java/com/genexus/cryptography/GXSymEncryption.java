@@ -4,7 +4,7 @@ import java.security.NoSuchAlgorithmException;
 
 import javax.crypto.NoSuchPaddingException;
 
-import org.apache.logging.log4j.Logger;
+import com.genexus.diagnostics.Log;
 
 import com.genexus.cryptography.encryption.symmetric.CipherSymProvider;
 import com.genexus.cryptography.encryption.symmetric.IGXSymEncryption;
@@ -14,8 +14,6 @@ import com.genexus.cryptography.exception.InvalidKeyLengthException;
 
 public class GXSymEncryption {
 
-	private static Logger logger = org.apache.logging.log4j.LogManager.getLogger(GXSymEncryption.class);
-	
 	private int _lastError;
 	private String _lastErrorDescription;
 	private IGXSymEncryption _symAlg; // Algorithm instance
@@ -54,18 +52,17 @@ public class GXSymEncryption {
 				isDirty = false;
 			} catch (NoSuchAlgorithmException e) {
 				setError(2);
-				Utils.logError(logger, e);
+				logError(e);
 			} catch (NoSuchPaddingException e) {
 				setError(3);
-				Utils.logError(logger, e);
+				logError(e);
 			} catch (InvalidKeyLengthException e) {
 				setError(4, e.getMessage());
-				Utils.logError(logger, e);
+				logError(e);
 			} catch (AlgorithmNotSupportedException e) {
 				setError(2);
-				Utils.logError(logger, e);
+				logError(e);
 			}
-
 		}
 	}
 
@@ -81,7 +78,7 @@ public class GXSymEncryption {
 				encrypted = _symAlg.encrypt(text);
 			} catch (EncryptionException e) {
 				setError(1);
-				Utils.logError(logger, e);
+				Log.error(e.getMessage(), "GXSymEncryption", e);
 			}
 		}
 		return encrypted;
@@ -99,7 +96,7 @@ public class GXSymEncryption {
 				decrypted = _symAlg.decrypt(text);
 			} catch (EncryptionException e) {
 				setError(1);
-				Utils.logError(logger, e);
+				logError(e);
 			}
 		}
 		return decrypted;
@@ -203,5 +200,9 @@ public class GXSymEncryption {
 
 	public String getErrDescription() {
 		return _lastErrorDescription;
+	}
+
+	private static void logError(Throwable e) {
+		Log.error(e.getMessage(), "GXSymEncryption", e);
 	}
 }

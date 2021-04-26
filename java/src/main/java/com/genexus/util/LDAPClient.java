@@ -64,7 +64,7 @@ public class LDAPClient {
   public byte connect()
   {
     String host;
-    Hashtable env = new Hashtable(5);
+    Hashtable<String, String> env = new Hashtable<>(5);
 
     if (ldapHost.equals(""))
     {
@@ -116,9 +116,9 @@ public class LDAPClient {
     }
   }
 
-  public Vector getAttribute(String attName, String context, GXProperties ldapAttributes)
+  public Vector<String> getAttribute(String attName, String context, GXProperties ldapAttributes)
   {
-    Vector strResult = new Vector();
+    Vector<String> strResult = new Vector<>();
     Attributes matchAttrs = new BasicAttributes(true);
     String searchFilter = "";
     if (ldapAttributes.count() > 0)

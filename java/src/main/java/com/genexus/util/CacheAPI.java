@@ -5,6 +5,8 @@ import com.genexus.ICacheService;
 
 public class CacheAPI 
 {
+	static final String DEFAULT_CACHE_ID = "DefaultCache";
+
     public static CacheAPI database()
     {
         return new CacheAPI(CacheFactory.CACHE_DB);
@@ -24,7 +26,7 @@ public class CacheAPI
     
     private String cacheId;
     
-    public CacheAPI() {}
+    public CacheAPI() {cacheId = DEFAULT_CACHE_ID;}
     
     public CacheAPI(String name)
     {
@@ -53,7 +55,10 @@ public class CacheAPI
     
     public String get(String key)
     {   
-        return cache.get(cacheId, key, String.class);
+        String value = cache.get(cacheId, key, String.class);
+    	if (value == null)
+    		value = "";
+        return value;
     }
 
     public void remove(String key)

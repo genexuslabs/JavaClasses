@@ -90,18 +90,13 @@ public class Preferences implements IPreferences {
 	public String getBLOB_PATH() {
 
 		BLOB_PATH = AndroidContext.ApplicationContext.getFilesBlobsApplicationDirectory();
-		/*
-		 * if(BLOB_PATH == null) { String file = ""; BLOB_PATH =
-		 * getProperty("CS_BLOB_PATH", "").trim(); if(!BLOB_PATH.equals("") &&
-		 * !BLOB_PATH.endsWith(File.separator)) { BLOB_PATH += File.separator; }
-		 * if(com.genexus.ApplicationContext.getInstance().isServletEngine()) { try {
-		 * file =
-		 * com.genexus.ApplicationContext.getInstance().getServletEngineDefaultPath();
-		 * if(!file.equals("") && !file.endsWith(File.separator)) { file +=
-		 * File.separator; } }catch(Exception ee) { ; } }
-		 * 
-		 * new File(file + BLOB_PATH).mkdirs(); BLOB_PATH = file + BLOB_PATH; }
-		 */
+
+		// fix blobs path directory, add separator at the end
+		if(!BLOB_PATH.equals("") && !BLOB_PATH.endsWith(File.separator))
+		{
+			BLOB_PATH += File.separator;
+		}
+
 		return BLOB_PATH;
 	}
 
@@ -238,6 +233,15 @@ public class Preferences implements IPreferences {
 	public boolean getLOGIN_AS_USERID() {
 		try {
 			return booleanPreference(LOGIN_AS_USERID, "LOGIN_AS_USERID");
+		} catch (Throwable e) {
+			return false;
+		}
+	}
+	private Boolean EXPOSE_METADATA;
+
+	public boolean getEXPOSE_METADATA() {
+		try {
+			return booleanPreference(EXPOSE_METADATA, "EXPOSE_METADATA");
 		} catch (Throwable e) {
 			return false;
 		}

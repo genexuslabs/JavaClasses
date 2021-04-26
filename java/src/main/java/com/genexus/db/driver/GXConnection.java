@@ -123,7 +123,7 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 		{
 			try
 			{
-				DriverManager.setLogStream(new java.io.PrintStream(new java.io.FileOutputStream("_gx_jdbc_driver_log.log")));
+				DriverManager.setLogWriter(new java.io.PrintWriter(new java.io.FileOutputStream("_gx_jdbc_driver_log.log")));
 			} catch (java.io.IOException e){}
 		}
 
@@ -146,6 +146,11 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 			{
 				GXResultSet.longVarCharAsOracleLong = true;
 				GXPreparedStatement.longVarCharAsOracleLong = true;
+			}
+
+			if(context.getPreferences().getProperty("DontGetConId", "0").equals("1"))
+			{
+				dbmsId = "";
 			}
 
 			//En el caso de una aplicacion en dos capas hay que llamar al Before Connect aca
@@ -176,10 +181,20 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 
 			DatabaseMetaData dma = con.getMetaData ();
 
+			String version;
+			try
+			{
+				version = dma.getDatabaseProductVersion();
+			}
+			catch (SQLException e)
+			{
+				version = "";
+			}
+
 			log(GXDBDebug.LOG_MIN, "Connected to     : " + dma.getURL());
 			log(GXDBDebug.LOG_MIN, "                   " + dataSource.jdbcUrl);
 			log(GXDBDebug.LOG_MIN, "Connection class : " + con.getClass().getName());
-			log(GXDBDebug.LOG_MIN, "Database         : " + dma.getDatabaseProductName() + " version " + dma.getDatabaseProductVersion() );
+			log(GXDBDebug.LOG_MIN, "Database         : " + dma.getDatabaseProductName() + " version " + version);
 			log(GXDBDebug.LOG_MIN, "Driver           : " + dma.getDriverName());
 			log(GXDBDebug.LOG_MIN, "Version          : " + dma.getDriverVersion());
 			log(GXDBDebug.LOG_MIN, "GX DBMS          : " + dataSource.dbms);
@@ -450,7 +465,7 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 							}			
 							try
 							{
-								Class c = Class.forName(externalConnectionManager);
+								Class<?> c = Class.forName(externalConnectionManager);
 								Method m = c.getMethod("getConnection", new Class[]{String.class, String.class, String.class, String.class, Properties.class});
 								con = (Connection) m.invoke(null, new Object[]{_jdbcDriver, _dbURL, _user, _password, prop});
 							}
@@ -571,7 +586,7 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 	{
 			if (dataSource.dbms instanceof GXDBMSoracle7) {
 				try {
-					Class oracleDataStourceClass = Class.forName("oracle.jdbc.pool.OracleDataSource");
+					Class<?> oracleDataStourceClass = Class.forName("oracle.jdbc.pool.OracleDataSource");
 					if (ds.isWrapperFor(oracleDataStourceClass)) {
 						Object oracle_datasource = ds.unwrap(oracleDataStourceClass);
 						Properties dataSourceProps = new Properties();
@@ -992,25 +1007,41 @@ public void rollback() throws SQLException
 		state.setInAssignment(false);
 	}
 
-private void commit_impl() throws SQLException
-{
-	if(dataSource.usesJdbcDataSource() && GXJTA.isJTATX(handle, context))
-	  GXJTA.commit();
-	else
-	  dataSource.dbms.commit(con);
-}
+	private void commit_impl() throws SQLException
+	{
+		if(dataSource.usesJdbcDataSource() && GXJTA.isJTATX(handle, context))
+		  GXJTA.commit();
+		else
+		  dataSource.dbms.commit(con);
+	}
+	public void flushBatchCursors(java.lang.Object o) throws SQLException{
+		Vector<Cursor> toRemove = new Vector();
+		log(GXDBDebug.LOG_MIN, "Scanning " + batchUpdateStmts.size() + " batch Stmts with pending updates");
+		for (int i = 0; i < batchUpdateStmts.size(); i++) {
+			BatchUpdateCursor cursor = (BatchUpdateCursor) batchUpdateStmts.get(i);
+			if (cursor.isValidOwner(o)) {
+				if (cursor.pendingRecords()) {
+					cursor.beforeCommitEvent();
+				}
+				toRemove.add(cursor);
+			}
+		}
+		if (toRemove.size()>0)
+			batchUpdateStmts.removeAll(toRemove);
+	}
+	public void flushAllBatchCursors() throws SQLException{
+		log(GXDBDebug.LOG_MIN, "Scanning " + batchUpdateStmts.size() + " batch Stmts with pending updates");
+		for (int i = 0; i < batchUpdateStmts.size(); i++) {
+			BatchUpdateCursor cursor = (BatchUpdateCursor) batchUpdateStmts.get(i);
+			if (cursor.pendingRecords())
+				cursor.beforeCommitEvent();
+		}
+		batchUpdateStmts.clear();
+	}
 
     public void commit() throws SQLException
 	{
-
-            for(int i=0; i<batchUpdateStmts.size(); i++)
-            {
-                BatchUpdateCursor cursor = (BatchUpdateCursor)batchUpdateStmts.get(i);
-                if (cursor.pendingRecords()){
-                    cursor.beforeCommitEvent();
-                }
-            }
-            batchUpdateStmts.clear();
+		flushAllBatchCursors();
 
 		if	(DEBUG)
 		{
@@ -1372,7 +1403,7 @@ private void commit_impl() throws SQLException
 		return preparedStatementPool;
 	}
 
-	public java.util.Map getTypeMap()
+	public java.util.Map<String,Class<?>> getTypeMap()
 	{
 		return null;
 	}
@@ -1391,10 +1422,10 @@ private void commit_impl() throws SQLException
 		writer.writeStartElement("Connection_Information");
 			writer.writeAttribute("Id", getId());
 			writer.writeElement("PhysicalId", getDBMSId());
-			writer.writeElement("CreateTime", getTimeCreated().toGMTString());
-			writer.writeElement("LastAssignedTime", getTimeAssigned().toGMTString());
+			writer.writeElement("CreateTime", getTimeCreated().toString());
+			writer.writeElement("LastAssignedTime", getTimeAssigned().toString());
 			writer.writeElement("LastUserAssigned", getLastUserAssigned());
-			writer.writeElement("LastUserAssignedName", getContext().getUserId( "", getLastUserAssigned(), "DEFAULT"));
+			writer.writeElement("LastUserAssignedName", getUserId());
 			writer.writeElement("Error", new Boolean(getError()).toString());
 			writer.writeElement("Available", new Boolean(!getInAssigment() && getOpenCursorsJMX()==0 && !getUncommitedChanges()).toString());
 			writer.writeElement("OpenCursorCount", getOpenCursorsJMX());
@@ -1403,10 +1434,22 @@ private void commit_impl() throws SQLException
 			writer.writeStartElement("LastSQLStatement");
 				writer.writeCData(getSentenceLastRequest());
 			writer.writeEndElement();
-			writer.writeElement("LastSQLStatementTime", getTimeLastRequest().toGMTString());
+			writer.writeElement("LastSQLStatementTime", getTimeLastRequest().toString());
 			writer.writeElement("LastSQLStatementEnded", new Boolean(getFinishExecute()).toString());
 			writer.writeElement("LastObject", getLastObjectExecuted());
 		writer.writeEndElement();
+	}
+
+	private String getUserId()
+	{
+		try
+		{
+			return DBConnectionManager.getInstance().getUserName(context, getLastUserAssigned(), "DEFAULT");
+		}
+		catch (SQLException ex)
+		{
+			return "";
+		}
 	}
 
 	public GXDBDebug getLog()
@@ -1545,7 +1588,6 @@ private void commit_impl() throws SQLException
 		{
 			dbmsId = dataSource.dbms.connectionPhysicalId(this);
 		}
-		
 		return dbmsId;
 	}
 

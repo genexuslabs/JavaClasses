@@ -19,4 +19,9 @@ public class GXDirectory implements IExtensionGXDirectory {
 		return AndroidContext.ApplicationContext.getExternalFilesPath();
 	}
 
+	@Override
+	public String getCacheFilesPath() {
+		return AndroidContext.ApplicationContext.getTemporaryFilesPath();
+	}
+
 }

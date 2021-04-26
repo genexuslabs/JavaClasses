@@ -11,6 +11,8 @@ import java.util.TimeZone;
 
 import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -20,6 +22,7 @@ import com.genexus.ModelContext;
 import com.genexus.common.interfaces.IExtensionGXutil;
 import com.genexus.db.IDataStoreProvider;
 import com.genexus.util.CacheAPI;
+import org.apache.logging.log4j.Logger;
 
 public class GXutil implements IExtensionGXutil {
 
@@ -140,7 +143,10 @@ public class GXutil implements IExtensionGXutil {
 
 	@Override
 	public Date serverDate(Object context, int handle, Object dataStore) {
-		return com.genexus.CommonUtil.resetTime(((IDataStoreProvider) dataStore).serverNow());
+		if (dataStore == null)
+			return serverDate(context, handle, "DEFAULT");
+		else
+			return com.genexus.CommonUtil.resetTime(((IDataStoreProvider) dataStore).serverNow());
 	}
 
 	@Override
@@ -151,11 +157,40 @@ public class GXutil implements IExtensionGXutil {
 	}
 
 	@Override
-	public String getUploadValue(String value, String uploadValue) {
-		if (com.genexus.CommonUtil.isUploadPrefix(value) && CacheAPI.files().contains(uploadValue)) {
-			uploadValue = CacheAPI.files().get(uploadValue);
-		}
+	public String getUploadValue(String value) {
+		String uploadValue = getUploadValue(value, "path");
+		if (uploadValue == null || uploadValue.isEmpty())
+			return value;
+
 		return uploadValue;
+	}
+
+	@Override
+	public String getUploadExtensionValue(String value) {
+		return getUploadValue(value, "fileExtension");
+	}
+
+	@Override
+	public String getUploadNameValue(String value) {
+		return getUploadValue(value, "fileName");
+	}
+
+	public String getUploadValue(String value, String fieldName) {
+		String uploadId = value.replace(CommonUtil.UPLOADPREFIX, "");
+		if (com.genexus.CommonUtil.isUploadPrefix(value) && CacheAPI.files().contains(uploadId)) {
+			String uploadValueJson = CacheAPI.files().get(uploadId);
+			try {
+				JSONObject json = new JSONObject(uploadValueJson);
+				value = (String)json.get(fieldName);
+			}
+			catch (JSONException e) {
+				org.apache.logging.log4j.LogManager.getLogger(GXutil.class).debug("Error Getting Upload Value", e);
+			}
+		}
+		else
+			value = "";
+
+		return value;
 	}
 
 	@Override
@@ -183,7 +218,7 @@ public class GXutil implements IExtensionGXutil {
 	}
 
 	@Override
-	public Object convertObjectTo(Class toClass, String objStr) {
+	public Object convertObjectTo(Class<?> toClass, String objStr) {
 
 		try {
 			if (com.genexus.internet.IGxJSONSerializable.class.isAssignableFrom(toClass)) {

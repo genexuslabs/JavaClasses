@@ -77,8 +77,8 @@ public class GXDataInitialization extends GXProcedure {
 
 				System.out.println(localUtil.getMessages().getMessage("GXM_runpgm", new Object[] {fullName}));
 				 
-				Class dpClass = Class.forName(packagePath + fullName.toLowerCase());
-				Object dp = dpClass.getConstructor(new Class[] {int.class, ModelContext.class}).newInstance(new Object[] {new Integer(remoteHandle), context});
+				Class<?> dpClass = Class.forName(packagePath + fullName.toLowerCase());
+				Object dp = dpClass.getConstructor(new Class<?>[] {int.class, ModelContext.class}).newInstance(new Object[] {new Integer(remoteHandle), context});
 				Class[] parameterTypes = new Class[] {};
 				Object[] arguments = new Object[] {};
 				GXBCCollection bcs = (GXBCCollection) dp.getClass().getMethod("executeUdp", parameterTypes).invoke(dp, arguments);

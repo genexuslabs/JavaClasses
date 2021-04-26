@@ -42,7 +42,7 @@ public class GXHandlerConsumerChain implements SOAPHandler<SOAPMessageContext>
 		final QName fromAddressingHeader = new QName(WSSECURITY_ADDRESSING_URL, "From");
 		final QName toAddressingHeader = new QName(WSSECURITY_ADDRESSING_URL, "To");
 
-		final HashSet headers = new HashSet();
+		final HashSet<QName> headers = new HashSet<>();
 		headers.add(securityHeader);
 		headers.add(actionAddressingHeader);
 		headers.add(messageAddressingHeader);

@@ -2,6 +2,7 @@ package com.genexus.sap;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 
 import com.genexus.GXSimpleCollection;
@@ -82,7 +83,9 @@ public class EnterpriseConnect
 
 	public void setValue(String parameterName, Date value)
 	{
-	    Date baseDate = new Date(0,0,1);
+		GregorianCalendar calendar = new GregorianCalendar();
+		calendar.set(0, 0, 0);
+	    Date baseDate = calendar.getTime();
 		if (value != null && value.after(baseDate))
 		{
 			function.getImportParameterList().setValue(parameterName, value);

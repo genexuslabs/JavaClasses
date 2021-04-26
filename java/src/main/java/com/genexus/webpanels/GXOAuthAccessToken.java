@@ -51,6 +51,7 @@ public class GXOAuthAccessToken extends GXWebObjectStub
 						if (!nativeToken.equals(""))
 						{
 							isExternalSDAuth = true;
+							additional_parameters = context.getHttpRequest().getVariable("additional_parameters");
 						}
 						else
 						{
@@ -86,7 +87,7 @@ public class GXOAuthAccessToken extends GXWebObjectStub
 					{
 						if (isExternalSDAuth)
 						{
-							result = GXSecurityProvider.getInstance().externalauthenticationfromsdusingtoken(-2, modelContext, grantType, nativeToken, nativeVerifier, clientId, clientSecret, scopeInOut, gamout, flag);
+							result = GXSecurityProvider.getInstance().externalauthenticationfromsdusingtoken(-2, modelContext, grantType, nativeToken, nativeVerifier, clientId, clientSecret, scopeInOut, additional_parameters, gamout, flag);
 						}				
 						else 
 						{

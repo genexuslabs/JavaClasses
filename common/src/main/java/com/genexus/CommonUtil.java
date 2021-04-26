@@ -211,20 +211,35 @@ public final class CommonUtil
 	}
 
 
-	public static void writeLogln( String message)
+	public static void writeLogInfo( String message)
+	{
+		logger.info( message);
+	}
+
+	public static void writeLogError( String message)
 	{
 		logger.error( message);
 	}
 
+	public static void writeLogln( String message)
+	{
+		logger.debug( message);
+	}
+
+	public static void writeTLogln( String message)
+	{
+		logger.trace(message);
+	}
+
 	public static void writeLogRaw( String message, Object obj)
 	{
-		logger.error(message);
-		logger.error(obj.toString());
+		logger.debug(message);
+		logger.debug(obj.toString());
 	}
 
 	public static void writeLog( String message)
 	{
-		logger.error(message, new Throwable());
+		logger.debug(message, new Throwable());
 	}
 
 	public static String accessKey(String OCaption)
@@ -379,6 +394,14 @@ public final class CommonUtil
                 return CommonUtil.getYYYYMMDDHHMMSS_nosep(date);
         }
 
+		public static String formatDateTimeParmMS(Date date)
+        {
+                if (date.equals(CommonUtil.nullDate()))
+                        return "";
+
+                return CommonUtil.getYYYYMMDDHHMMSSmmm_nosep(date);
+		}
+		
         public static String formatDateParm(Date date)
         {
                 if (date.equals(CommonUtil.nullDate()))
@@ -498,6 +521,9 @@ public final class CommonUtil
 
 	public static Date ymdhmsToT_noYL(String yyyymmddhhmmss)
 	{
+
+		int mil = (yyyymmddhhmmss.trim().length() >= 17)? (int)Integer.parseInt(yyyymmddhhmmss.substring(14, 17)):0;
+
 		int year    = Integer.parseInt(yyyymmddhhmmss.substring( 0,  4));
 		int month   = Integer.parseInt(yyyymmddhhmmss.substring( 4,  6));
 		int day     = Integer.parseInt(yyyymmddhhmmss.substring( 6,  8));
@@ -505,7 +531,7 @@ public final class CommonUtil
 		int minute  = Integer.parseInt(yyyymmddhhmmss.substring(10, 12));
 		int seconds = Integer.parseInt(yyyymmddhhmmss.substring(12, 14));
 
-		return ymdhmsToT_noYL(year, month, day, hour, minute, seconds);
+		return ymdhmsToT_noYL(year, month, day, hour, minute, seconds, mil);
 	}
 
 	public static Date resetDate(Date date)
@@ -569,26 +595,25 @@ public final class CommonUtil
 		{
 			if (hour == 0)
 			{
-				try
-				{
-					synchronized (cal)
-					{
-						cal.setLenient(false);
-						cal.clear();
-						cal.set(year, month - 1, day, 1, minute, second);
-						if (millisecond > 0)
-						{
-							cal.add(cal.MILLISECOND, millisecond);
+				hour = 1;
+				while (hour < 24) {
+					try {
+						synchronized (cal) {
+							cal.setLenient(false);
+							cal.clear();
+							cal.set(year, month - 1, day, hour, minute, second);
+							if (millisecond > 0) {
+								cal.add(cal.MILLISECOND, millisecond);
+							}
+							Date date = cal.getTime();
+							cal.setLenient(lenient);
+							return date;
 						}
-						Date date = cal.getTime();
-						cal.setLenient(lenient);
-						return date;
+					} catch (IllegalArgumentException ex) {
+						hour ++;
 					}
 				}
-				catch (IllegalArgumentException ex)
-				{
-					return nullDate();
-				}
+				return nullDate();
 			}
 			else
 			{
@@ -704,8 +729,17 @@ public final class CommonUtil
 			}
 			catch (IllegalArgumentException e)
 			{
-				cal.set(Calendar.HOUR_OF_DAY, 1);
-				return cal.getTime();
+				int hour = 1;
+				while (hour < 24) {
+					cal.set(Calendar.HOUR_OF_DAY, hour);
+					try {
+						return cal.getTime();
+					}
+					catch (IllegalArgumentException e1) {
+						hour ++;
+					}
+				}
+				return dt;
 			}
 		}
 	}
@@ -836,7 +870,11 @@ public final class CommonUtil
 
 	public static boolean emptyDate( Date value)
 	{
-		return value.getYear() == nullDate.getYear() && value.getMonth() == nullDate.getMonth() && value.getDay() == nullDate.getDay();
+		Calendar calendar = GregorianCalendar.getInstance();
+		calendar.setTime(value);
+		Calendar nullCalendar = GregorianCalendar.getInstance();
+		nullCalendar.setTime(nullDate);
+		return calendar.get(Calendar.YEAR) == nullCalendar.get(Calendar.YEAR) && calendar.get(Calendar.MONTH) == nullCalendar.get(Calendar.MONTH) && calendar.get(Calendar.DAY_OF_MONTH) == nullCalendar.get(Calendar.DAY_OF_MONTH);
 	}
 
 
@@ -1029,6 +1067,17 @@ public final class CommonUtil
 
         return new String(buf);
     }
+	public static String ltrimstr(double value, int length, int decimals){
+		return ltrim(str(value, length, decimals));
+	}
+
+	public static String ltrimstr(BigDecimal value, int length, int decimals){
+		return ltrim(str(value, length, decimals, true));
+	}
+
+	public static String ltrimstr(long val, int digits, int decimals) {
+		return ltrim(str(val, digits, decimals));
+	}
 
 	public static String ltrim (String text)
 	{
@@ -1105,6 +1154,9 @@ public final class CommonUtil
 	//Debe ignorar los caracteres invalidos
 	public static long lval(String text)
 	{
+		if (text == null)
+			return 0;
+
 		text = text.trim();
 		try
 		{
@@ -1152,8 +1204,61 @@ public final class CommonUtil
             return val(text, ".");
         }
 
+	public static BigDecimal decimalVal(String text, String sDSep)
+	{
+		if (text == null)
+			return BigDecimal.ZERO;
+
+		text = text.trim();
+
+		try
+		{
+			return new BigDecimal(text);
+		}
+		catch (Exception e)
+		{
+			try
+			{
+				return new BigDecimal(extractNumericStringValue(text, sDSep).toString());
+			}
+			catch (Exception ex)
+			{
+			}
+		}
+		return BigDecimal.ZERO;
+	}
+
+	private static StringBuffer extractNumericStringValue(String text, String sDSep) {
+		StringBuffer out = new StringBuffer();
+
+		char dSep = (sDSep.length() > 0) ? sDSep.charAt(0) : '.';
+		boolean point = false;
+		boolean first = true;
+		int len = text.length();
+
+		for (int i = 0; i < len; i++) {
+			char c = text.charAt(i);
+
+			if (c >= '0' && c <= '9') {
+				out.append(c);
+			} else if (c == dSep && !point) {
+				out.append('.');
+				point = true;
+			} else if (c == '-' && first) {
+				out.append('-');
+				first = false;
+			} else {
+				break;
+			}
+		}
+		return out;
+	}
+
 	public static double val(String text, String sDSep)
 	{
+		if (text == null)
+			return 0;
+
 		text = text.trim();
 
 		try
@@ -1163,47 +1268,16 @@ public final class CommonUtil
 		}
 		catch (Exception e)
 		{
-			StringBuffer out = new StringBuffer();
-
-                        char dSep = (sDSep.length() > 0)?sDSep.charAt(0):'.';
-			boolean point = false;
-			boolean first = true;
-			int len = text.length();
-
-			for (int i = 0; i < len; i++)
-			{
-				char c = text.charAt(i);
-
-				if	(c >= '0' && c <= '9')
-				{
-					out.append(c);
-				}
-				else if	(c == dSep && !point)
-				{
-					out.append('.');
-					point = true;
-				}
-				else if	(c == '-' && first)
-				{
-					out.append('-');
-					first = false;
-				}
-				else
-				{
-					break;
-				}
-			}
-
 			try
 			{
-				java.lang.Double d = new java.lang.Double(out.toString());
+				java.lang.Double d = new java.lang.Double(extractNumericStringValue(text, sDSep).toString());
 				return d.doubleValue();
 			}
 			catch (Exception ex)
 			{
-				return 0;
 			}
 		}
+		return 0;
 	}
 
 	public static boolean notNumeric(String value)
@@ -1468,8 +1542,12 @@ public final class CommonUtil
 
 		if (!fn.equals(nullDate()) && !today.equals(nullDate()))
 		{
-			int fnTime 		= fn.getHours()    * 10000 + fn.getMinutes()    * 100 + fn.getSeconds();
-			int todayTime 	= today.getHours() * 10000 + today.getMinutes() * 100 + today.getSeconds();
+			Calendar calendar = GregorianCalendar.getInstance();
+			calendar.setTime(fn);
+			Calendar todayCalendar = GregorianCalendar.getInstance();
+			calendar.setTime(today);
+			int fnTime 		= calendar.get(Calendar.HOUR)    * 10000 + calendar.get(Calendar.MINUTE)    * 100 + calendar.get(Calendar.SECOND);
+			int todayTime 	= todayCalendar.get(Calendar.HOUR) * 10000 + todayCalendar.get(Calendar.MINUTE) * 100 + todayCalendar.get(Calendar.SECOND);
 
 			GregorianCalendar gage1, gage2;
 			gage1 = new GregorianCalendar(defaultLocale);
@@ -1606,7 +1684,7 @@ public final class CommonUtil
 
 	public static String getYYYYMMDDHHMMSSmmm_nosep(Date date)
 	{
-		SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("yyyyMMddHHmmss.SSS");
+		SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("yyyyMMddHHmmssSSS");
 		dateFormat.setTimeZone(defaultTimeZone);
 
 		return dateFormat.format(date);
@@ -2064,7 +2142,7 @@ public final class CommonUtil
                         }
                         else
                         {
-                                if(!(item instanceof String))
+                                if(item instanceof Number)
                                 {
                                         ret += item.toString();
                                 }
@@ -2363,7 +2441,7 @@ public final class CommonUtil
 	}
 
 
-
+				@SuppressWarnings("unchecked")
 				public static boolean compare(Comparable operand1, String op, Comparable operand2)
 				{
 						int compareValue;
@@ -2535,7 +2613,12 @@ public final class CommonUtil
 
 	public static boolean isAbsoluteURL(String url)
 	{
-		return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("ftp://");
+		return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("ftp://") || url.startsWith("sd:");
+	}
+
+	public static boolean hasUrlQueryString(String url)
+	{
+		return url.indexOf("?") >= 0;
 	}
 
 	public static String encodeJSON(String in)
@@ -2591,8 +2674,14 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+           		if (objStr.isEmpty())
+					objStr = "0";
+				else 
+				{
+					int i = objStr.indexOf(".");
+					if (i >= 0)
+            			objStr =  objStr.substring(0, i);  
+				}         	
                 return Short.valueOf(objStr);
             }
             catch(Exception e)
@@ -2606,8 +2695,14 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+				if (objStr.isEmpty())
+					objStr ="0";
+				else 
+				{
+					int i = objStr.indexOf(".");
+					if	(i >= 0)
+            			objStr =  objStr.substring(0, i);  
+				}               	              	
                 return Byte.valueOf(objStr);
             }
             catch(Exception e)
@@ -2621,8 +2716,14 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+            	if (objStr.isEmpty())
+					objStr ="0";
+				else 
+				{
+					int i = objStr.indexOf(".");
+					if	(i >= 0)
+            			objStr =  objStr.substring(0, i);  
+				}       	
                 return new Integer(objStr);
             }
             catch(Exception e)
@@ -2640,8 +2741,8 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+            	if (objStr.isEmpty())
+            		objStr = "0";                	
                 return Double.valueOf(objStr);
             }
             catch(Exception e)
@@ -2655,8 +2756,8 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+            	if (objStr.isEmpty())
+            		objStr = "0";                	
                 return Float.valueOf(objStr);
             }
             catch(Exception e)
@@ -2670,8 +2771,15 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+            	
+				if (objStr.isEmpty())
+					objStr ="0";
+				else 
+				{
+					int i = objStr.indexOf(".");
+					if	(i >= 0)
+            			objStr =  objStr.substring(0, i);  
+				}
                 return Long.valueOf(CommonUtil.strUnexponentString(objStr));
 
             }
@@ -2886,10 +2994,10 @@ public final class CommonUtil
 				if (SpecificImplementation.KeepDecimals) {
 					int decimalsToKeep = Math.max(0, length-integerPart.length()-1);
 					decimalsToKeep = Math.min(decimals, decimalsToKeep);
-					return str(val(base), length, decimalsToKeep);
+					return str(decimalVal(base, "."), length, decimalsToKeep, round);
 				}
 				else
-					return str(val(base), length, 0);
+					return str(decimalVal(base, "."), length, 0, round);
 				}
 	 		}
 
@@ -3075,18 +3183,17 @@ public final class CommonUtil
 	
 	public final static String URLEncode(String parm, String encoding)
     {
-		try 
-		{
+		try {
 			if (encoding.equals(""))
-				return java.net.URLEncoder.encode(parm); //Should not be used. Deprecated
+				return java.net.URLEncoder.encode(parm, "UTF8");
 			else
-				return java.net.URLEncoder.encode(parm, encoding); 	
+				return java.net.URLEncoder.encode(parm, encoding);
 		}
 		catch (java.io.UnsupportedEncodingException e)
 		{
-			System.out.println("URLEncoder unsupported encoding: " + encoding);			
+			System.out.println("URLEncoder unsupported encoding: " + encoding);
+			return "";
 		}
-		return java.net.URLEncoder.encode(parm);
     }
 	
 	public static byte remoteFileExists(String URLName){

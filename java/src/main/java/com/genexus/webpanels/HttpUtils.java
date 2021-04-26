@@ -1,19 +1,29 @@
 package com.genexus.webpanels;
+import com.genexus.CommonUtil;
+import com.genexus.internet.HttpContext;
+import com.genexus.util.CacheAPI;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
+import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
+import java.util.UUID;
 
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
+import com.genexus.servlet.IServletInputStream;
+import com.genexus.servlet.http.IHttpServletRequest;
 
 public class HttpUtils
 {
+	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(HttpUtils.class);
 
-  public static Hashtable parseMultipartPostData(FileItemCollection fileItemCollection)
+  public static Hashtable<String, String[]> parseMultipartPostData(FileItemCollection fileItemCollection)
   {
-    Hashtable ht = new Hashtable();
+    Hashtable<String, String[]> ht = new Hashtable<>();
     for (int i=0; i<fileItemCollection.getCount(); i++)
     {
       FileItem item = fileItemCollection.item(i);
@@ -37,7 +47,10 @@ public class HttpUtils
         }
         else
         {
-            itemFilePath = item.getPath();
+			String keyId = HttpUtils.getUploadFileKey();
+			itemFilePath = HttpUtils.getUploadFileId(keyId);
+			String fileExtension = CommonUtil.getFileType(item.getName());
+			HttpUtils.CacheUploadFile(keyId, item.getPath(), CommonUtil.getFileName(item.getName()) + "." + fileExtension, fileExtension);
         }
         pushValue(ht, item.getFieldName(), itemFilePath);
       }
@@ -45,11 +58,11 @@ public class HttpUtils
     return ht;
   }
 
-  public static Hashtable parseQueryString(String s)
+  public static Hashtable<String, String[]> parseQueryString(String s)
     {
 	if(s == null)
 	    throw new IllegalArgumentException();
-	Hashtable ht = new Hashtable();
+	Hashtable<String, String[]> ht = new Hashtable<>();
 	StringBuffer sb = new StringBuffer();
 	String key;
 	for(StringTokenizer st = new StringTokenizer(s, "&"); st.hasMoreTokens();)
@@ -66,7 +79,7 @@ public class HttpUtils
 	return ht;
     }
 
-    public static void pushValue( Hashtable ht, String key, String val)
+    public static void pushValue( Hashtable<String, String[]> ht, String key, String val)
     {
       String valArray[] = null;
       if(ht.containsKey(key))
@@ -85,11 +98,11 @@ public class HttpUtils
       ht.put(key, valArray);
     }
 
-    public static Hashtable parsePostData(HttpServletRequest request)
+    public static Hashtable<String, String[]> parsePostData(IHttpServletRequest request)
     {
     	String paramName = null;
     	String paramValues[] = null;
-    	Hashtable ht = new Hashtable();
+    	Hashtable<String, String[]> ht = new Hashtable<>();
     	String value;
     	for(Enumeration params = request.getParameterNames(); params.hasMoreElements();)
     	{
@@ -103,42 +116,19 @@ public class HttpUtils
     	return ht;
     }
 
-    public static Hashtable parsePostData(int len, ServletInputStream in)
+    public static Hashtable<String, String[]> parsePostData(IServletInputStream in)
     {
-	if(len <= 0)
-	    return new Hashtable();
-	if(in == null)
-	    throw new IllegalArgumentException();
-	byte postedBytes[] = new byte[len];
-	try
-	{
-	    int offset = 0;
-	    do
-	    {
-		int inputLen = in.read(postedBytes, offset, len - offset);
-		if(inputLen <= 0)
+		if(in == null)
+			throw new IllegalArgumentException();
+		try
 		{
-		    throw new IllegalArgumentException ("err.io.short_read : length " + len + " read : " + offset + " Content: \n" + new String(postedBytes));
+			return parseQueryString(IOUtils.toString(in.getInputStream(), "8859_1"));
 		}
-		offset += inputLen;
-	    } while(len - offset > 0);
-	}
-	catch(IOException e)
-	{
-	    throw new IllegalArgumentException(e.getMessage());
-	}
-	try
-	{
-	    String postedBody = new String(postedBytes, 0, len, "8859_1");
-	    return parseQueryString(postedBody);
-	}
-	catch(UnsupportedEncodingException e)
-	{
-	    throw new IllegalArgumentException(e.getMessage());
-	}
+		catch(IOException e)
+		{
+			throw new IllegalArgumentException(e.getMessage());
+		}
     }
-
-	private static String encoding = "UTF8";
 
     private static String parseName(String s, StringBuffer sb)
     {
@@ -240,7 +230,7 @@ public class HttpUtils
     }
 
 
-    public static StringBuffer getRequestURL(HttpServletRequest req)
+    public static StringBuffer getRequestURL(IHttpServletRequest req)
     {
 	StringBuffer url = new StringBuffer();
 	String scheme = req.getScheme();
@@ -259,5 +249,31 @@ public class HttpUtils
     }
 
     static Hashtable nullHashtable = new Hashtable();
+
+	public static String getUploadFileKey(){
+		return UUID.randomUUID().toString().replace("-","");
+	}
+
+	public static String getUploadFileId(String keyId) {
+		return CommonUtil.UPLOADPREFIX + keyId;
+	}
+
+	public static void CacheUploadFile(String keyId, String uploadFilePath, String fileName, String fileExtension) {
+		try {
+			JSONObject jObj = new JSONObject();
+			jObj.put("path", uploadFilePath);
+			jObj.put("fileName", fileName);
+			jObj.put("fileExtension", fileExtension);
+			CacheAPI.files().set(keyId, jObj.toString(), CommonUtil.UPLOAD_TIMEOUT);
+		}
+		catch (JSONException e) {
+			log.debug("Error Caching Upload File", e);
+		}
+		BlobsCleaner.getInstance().addBlobFile(uploadFilePath);
+	}
+
+	public static boolean isUploadRequest(HttpContext context) {
+		return context.getRequest().getRequestURI().endsWith("/gxobject");
+	}
 
 }

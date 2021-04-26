@@ -249,8 +249,14 @@ public final class PrivateUtilities
 	{
 		name = name.trim();
 		extension = extension.trim();
-			
-		return baseDir + '/' + name + getTempFileName(extension);
+
+		// fix blobs path directory, add separator at the end
+		if(!baseDir.equals("") && !baseDir.endsWith(File.separator))
+		{
+			baseDir += File.separator;
+		}
+
+		return baseDir + name + getTempFileName(extension);
 	}
 
 	public static String getPackageName(String className)

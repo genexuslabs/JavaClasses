@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -33,16 +32,8 @@ import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
+import com.genexus.servlet.*;
+import com.genexus.servlet.http.*;
 
 
 /**
@@ -477,7 +468,7 @@ import javax.servlet.http.HttpServletResponseWrapper;
  * 
  * @author <a href="mailto:cyrille@cyrilleleclerc.com">Cyrille Le Clerc</a>
  */
-public class ExpiresFilter implements Filter {
+public class ExpiresFilter extends Filter {
 
     /**
      * Duration composed of an {@link #amount} and a {@link #unit}
@@ -614,7 +605,7 @@ public class ExpiresFilter implements Filter {
 
         private PrintWriter printWriter;
 
-        private HttpServletRequest request;
+        private IHttpServletRequest request;
 
         private ServletOutputStream servletOutputStream;
 
@@ -627,7 +618,7 @@ public class ExpiresFilter implements Filter {
          * but no getter.
          * </p>
          */
-        private int status = HttpServletResponse.SC_OK;
+        private int status = HttpServletResponse.getSC_OK();
 
         /**
          * Indicates whether calls to write methods (<tt>write(...)</tt>,
@@ -636,7 +627,7 @@ public class ExpiresFilter implements Filter {
          */
         private boolean writeResponseBodyStarted;
 
-        public XHttpServletResponse(HttpServletRequest request, HttpServletResponse response) {
+        public XHttpServletResponse(IHttpServletRequest request, IHttpServletResponse response) {
             super(response);
             this.request = request;
         }
@@ -669,10 +660,9 @@ public class ExpiresFilter implements Filter {
             return this.lastModifiedHeader;
         }
 
-        @Override
-        public ServletOutputStream getOutputStream() throws IOException {
+        public ServletOutputStream getWrapperOutputStream() throws IOException {
             if (servletOutputStream == null) {
-                servletOutputStream = new XServletOutputStream(super.getOutputStream(), request, this);
+                servletOutputStream = new XServletOutputStream(getWrappedOutputStream(), request, this);
             }
             return servletOutputStream;
         }
@@ -707,7 +697,7 @@ public class ExpiresFilter implements Filter {
 
         @Override
         public void sendRedirect(String location) throws IOException {
-            this.status = HttpServletResponse.SC_FOUND;
+            this.status = HttpServletResponse.getSC_FOUND();
             super.sendRedirect(location);
         }
 
@@ -734,6 +724,7 @@ public class ExpiresFilter implements Filter {
         }
 
         @Override
+		@Deprecated
         public void setStatus(int sc, String sm) {
             this.status = sc;
             super.setStatus(sc, sm);
@@ -751,11 +742,11 @@ public class ExpiresFilter implements Filter {
     public class XPrintWriter extends PrintWriter {
         private PrintWriter out;
 
-        private HttpServletRequest request;
+        private IHttpServletRequest request;
 
         private XHttpServletResponse response;
 
-        public XPrintWriter(PrintWriter out, HttpServletRequest request, XHttpServletResponse response) {
+        public XPrintWriter(PrintWriter out, IHttpServletRequest request, XHttpServletResponse response) {
             super(out);
             this.out = out;
             this.request = request;
@@ -932,14 +923,14 @@ public class ExpiresFilter implements Filter {
      */
     public class XServletOutputStream extends ServletOutputStream {
 
-        private HttpServletRequest request;
+        private IHttpServletRequest request;
 
         private XHttpServletResponse response;
 
-        private ServletOutputStream servletOutputStream;
+        private IServletOutputStream servletOutputStream;
 
-        public XServletOutputStream(ServletOutputStream servletOutputStream, HttpServletRequest request, XHttpServletResponse response) {
-            super();
+        public XServletOutputStream(IServletOutputStream servletOutputStream, IHttpServletRequest request, XHttpServletResponse response) {
+            super((ServletOutputStream)servletOutputStream);
             this.servletOutputStream = servletOutputStream;
             this.response = response;
             this.request = request;
@@ -1216,7 +1207,7 @@ public class ExpiresFilter implements Filter {
      * list of response status code for which the {@link ExpiresFilter} will not
      * generate expiration headers.
      */
-    private int[] excludedResponseStatusCodes = new int[] { HttpServletResponse.SC_NOT_MODIFIED };
+    private int[] excludedResponseStatusCodes = new int[] { HttpServletResponse.getSC_NOT_MODIFIED() };
 
     /**
      * Expires configuration by content type. Visible for test.
@@ -1227,10 +1218,10 @@ public class ExpiresFilter implements Filter {
 
     }
 
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
-            HttpServletRequest httpRequest = (HttpServletRequest) request;
-            HttpServletResponse httpResponse = (HttpServletResponse) response;
+    public void doFilter(IServletRequest request, IServletResponse response, IFilterChain chain) throws Exception {
+        if (request.isHttpServletRequest() && response.isHttpServletResponse()) {
+            IHttpServletRequest httpRequest = request.getHttpServletRequest();
+            IHttpServletResponse httpResponse = response.getHttpServletResponse();
 
             if (response.isCommitted()) {
                 
@@ -1277,7 +1268,7 @@ public class ExpiresFilter implements Filter {
      * 
      * @see HttpServletResponse#getContentType()
      */
-    protected Date getExpirationDate(HttpServletRequest request, XHttpServletResponse response) {
+    protected Date getExpirationDate(IHttpServletRequest request, XHttpServletResponse response) {
         String contentType = response.getContentType();
 
         // lookup exact content-type match (e.g.
@@ -1341,31 +1332,22 @@ public class ExpiresFilter implements Filter {
     }
 
     @SuppressWarnings("unchecked")
-    public void init(FilterConfig filterConfig) throws ServletException {
-        for (Enumeration<String> names = filterConfig.getInitParameterNames(); names.hasMoreElements();) {
-            String name = names.nextElement();
-            String value = filterConfig.getInitParameter(name);
-
-            try {
-                if (name.startsWith(PARAMETER_EXPIRES_BY_TYPE)) {
-                    String contentType = name.substring(PARAMETER_EXPIRES_BY_TYPE.length()).trim();
-                    ExpiresConfiguration expiresConfiguration = parseExpiresConfiguration(value);
-                    this.expiresConfigurationByContentType.put(contentType, expiresConfiguration);
-                } else if (name.equalsIgnoreCase(PARAMETER_EXPIRES_DEFAULT)) {
-                    ExpiresConfiguration expiresConfiguration = parseExpiresConfiguration(value);
-                    this.defaultExpiresConfiguration = expiresConfiguration;
-                } else if (name.equalsIgnoreCase(PARAMETER_EXPIRES_ACTIVE)) {
-                    this.active = "On".equalsIgnoreCase(value) || Boolean.valueOf(value);
-                } else if (name.equalsIgnoreCase(PARAMETER_EXPIRES_EXCLUDED_RESPONSE_STATUS_CODES)) {
-                    this.excludedResponseStatusCodes = commaDelimitedListToIntArray(value);
-                } else {
-
-                }
-            } catch (RuntimeException e) {
-                throw new ServletException("Exception processing configuration parameter '" + name + "':'" + value + "'", e);
-            }
-        }
-
+    public void init(Map<String, String> headers, String path, String sessionCookieName) throws ServletException {
+		headers.forEach((name, value) -> {
+				if (name.startsWith(PARAMETER_EXPIRES_BY_TYPE)) {
+					String contentType = name.substring(PARAMETER_EXPIRES_BY_TYPE.length()).trim();
+					ExpiresConfiguration expiresConfiguration = parseExpiresConfiguration(value);
+					this.expiresConfigurationByContentType.put(contentType, expiresConfiguration);
+				} else if (name.equalsIgnoreCase(PARAMETER_EXPIRES_DEFAULT)) {
+					ExpiresConfiguration expiresConfiguration = parseExpiresConfiguration(value);
+					this.defaultExpiresConfiguration = expiresConfiguration;
+				} else if (name.equalsIgnoreCase(PARAMETER_EXPIRES_ACTIVE)) {
+					this.active = "On".equalsIgnoreCase(value) || Boolean.valueOf(value);
+				} else if (name.equalsIgnoreCase(PARAMETER_EXPIRES_EXCLUDED_RESPONSE_STATUS_CODES)) {
+					this.excludedResponseStatusCodes = commaDelimitedListToIntArray(value);
+				} else {
+				}
+		});
         
     }
 
@@ -1383,7 +1365,7 @@ public class ExpiresFilter implements Filter {
      * <code>protected</code> for extension.
      * </p>
      */
-    protected boolean isEligibleToExpirationHeaderGeneration(HttpServletRequest request, XHttpServletResponse response) {
+    protected boolean isEligibleToExpirationHeaderGeneration(IHttpServletRequest request, XHttpServletResponse response) {
         boolean expirationHeaderHasBeenSet = response.containsHeader(HEADER_EXPIRES)
                 || contains(response.getCacheControlHeader(), "max-age");
         if (expirationHeaderHasBeenSet) {
@@ -1419,7 +1401,7 @@ public class ExpiresFilter implements Filter {
      * objects instantiations (as of Tomcat 7).
      * </p>
      */
-    public void onBeforeWriteResponseBody(HttpServletRequest request, XHttpServletResponse response) {
+    public void onBeforeWriteResponseBody(IHttpServletRequest request, XHttpServletResponse response) {
 
         if (!isEligibleToExpirationHeaderGeneration(request, response)) {
             return;

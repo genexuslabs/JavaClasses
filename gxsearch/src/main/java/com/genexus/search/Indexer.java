@@ -125,7 +125,7 @@ public class Indexer
                 ir.setEntity(contentInfo.getType() == null ? file.getClass().getName() : contentInfo.getType());
                 ir.setTitle(contentInfo.getTitle() == null ? file.getName() : contentInfo.getTitle());
                 ir.setViewer(contentInfo.getViewer() == null ? file.getName() : contentInfo.getViewer());
-				ir.setKeys(contentInfo.getKeys() == null || contentInfo.getKeys().size()==0 ? new Vector() : contentInfo.getKeys());
+				ir.setKeys(contentInfo.getKeys() == null || contentInfo.getKeys().size()==0 ? new Vector<String>() : contentInfo.getKeys());
             }
             else if (obj instanceof GxSilentTrnSdt)
             {
@@ -145,7 +145,7 @@ public class Indexer
                 ir.setEntity(contentInfo.getType() == null ? "" : contentInfo.getType());
                 ir.setTitle(contentInfo.getTitle() == null ? "" : contentInfo.getTitle());
                 ir.setViewer(contentInfo.getViewer() == null ? "" : contentInfo.getViewer());
-				ir.setKeys(contentInfo.getKeys() == null || contentInfo.getKeys().size() == 0 ? new Vector() : contentInfo.getKeys());
+				ir.setKeys(contentInfo.getKeys() == null || contentInfo.getKeys().size() == 0 ? new Vector<String>() : contentInfo.getKeys());
             }
             else
             {
@@ -240,7 +240,7 @@ public class Indexer
 				doc.add(new Field(IndexRecord.URIFIELD,record.getUri(),Field.Store.YES, Field.Index.UN_TOKENIZED));
 				doc.add(new Field(IndexRecord.ENTITYFIELD,record.getEntity(),Field.Store.YES, Field.Index.UN_TOKENIZED));
 				doc.add(new Field(IndexRecord.CONTENTFIELD,new StringReader(record.getContent())));
-				doc.add(new Field(IndexRecord.TIMESTAMPFIELD, DateField.dateToString(new Date()),Field.Store.YES,Field.Index.NO));
+				doc.add(new Field(IndexRecord.TIMESTAMPFIELD, DateTools.dateToString(new Date(), DateTools.Resolution.SECOND),Field.Store.YES,Field.Index.NO));
 				doc.add(new Field(IndexRecord.VIEWERFIELD, record.getViewer(), Field.Store.YES, Field.Index.UN_TOKENIZED));
 				doc.add(new Field(IndexRecord.TITLEFIELD, record.getTitle(), Field.Store.YES, Field.Index.UN_TOKENIZED));
 
@@ -276,7 +276,7 @@ public class Indexer
 
 		private void delete(IndexRecord record)
 		{
-			IndexReader reader = Indexer.getInstance().getReader();
+			IndexReader reader = Indexer.getReader();
 			if(reader == null)
 				return;
 			try

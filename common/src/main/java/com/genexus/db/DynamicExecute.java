@@ -18,6 +18,38 @@ public class DynamicExecute
 
 	public static String dynamicWebExecute(ModelContext context, int handle, Class servlet, String wjLoc, String wjAuxLoc, String sPackage, String sPgmName, Object[] parms)
 	{
+		String pgmName = getDynamicPgmName(servlet, sPackage, sPgmName);
+		ClassLoader cLoader = servlet.getClassLoader();
+		Class c = tryLoadClass(cLoader, pgmName, false);
+
+		boolean isWebContext = false;
+		if (SpecificImplementation.DynamicExecute != null)
+			isWebContext = SpecificImplementation.DynamicExecute.getIsWebContext(context);
+
+		if (isWebContext && c.getSuperclass().equals(SpecificImplementation.Application.getGXWebObjectStubClass()))
+		{
+			// Es un call a un webpanel
+			String objetName;
+			int idx = wjAuxLoc.indexOf('?');
+			if (idx >= 0)
+			{
+				objetName = wjAuxLoc.substring(0, idx);
+				return objetName + wjAuxLoc.substring(idx);
+			}
+			else
+			{
+				return wjAuxLoc;
+			}
+		}
+		else
+		{
+			dynamicExecute(context, handle, servlet, pgmName, parms);
+		}
+		return wjLoc;
+	}
+
+	private static String getDynamicPgmName(Class servlet, String sPackage, String sPgmName)
+	{
 		String classPackage = SpecificImplementation.Application.getPACKAGE();
 		if	(!classPackage.equals(""))
 			classPackage += ".";
@@ -49,35 +81,7 @@ public class DynamicExecute
 			throw new RuntimeException("ClassNotFoundException Can't execute dynamic call " + pgmName);
 		}
 
-
-		boolean isWebContext = false;
-		if (SpecificImplementation.DynamicExecute != null)
-			isWebContext = SpecificImplementation.DynamicExecute.getIsWebContext(context);
-
-		if (isWebContext && c.getSuperclass().equals(SpecificImplementation.Application.getGXWebObjectStubClass()))
-		{
-			// Es un call a un webpanel
-			String objetName;
-			if (wjAuxLoc.startsWith(sPackage))
-			{
-				sPackage = "";
-			}
-			int idx = wjAuxLoc.indexOf('?');
-			if (idx >= 0)
-			{
-				objetName = (sPackage + wjAuxLoc.substring(0, idx)).toLowerCase();
-				return objetName + wjAuxLoc.substring(idx);
-			}
-			else
-			{
-				return (sPackage + wjAuxLoc).toLowerCase();
-			}
-		}
-		else
-		{
-			dynamicExecute(context, handle, servlet, pgmName, parms);
-		}
-		return wjLoc;
+		return pgmName;
 	}
 
 	public static Class tryLoadClass(ClassLoader cLoader, String className, Boolean throwException)
@@ -112,7 +116,7 @@ public class DynamicExecute
             for (int i = parms.length - 1; i >= 0; i--)
                 parmTypes[i] = parms[i].getClass();
         }
-        Class myClass = instance.getClass();
+        Class<?> myClass = instance.getClass();
         String pgmName = myClass.getName();
 
         try {
@@ -143,7 +147,7 @@ public class DynamicExecute
 		for (int i = parms.length - 1; i >= 0; i--)
 			parmTypes[i] = parms[i].getClass();
 
-		Class myClass;
+		Class<?> myClass;
 
 		try
 		{
@@ -186,24 +190,30 @@ public class DynamicExecute
 	}
 
 	private final static String METHOD_EXECUTE = "execute"; // El m�todo a ejecutar en la clase
+	public static boolean dynamicExecute(ModelContext context, int handle, Class caller, String sPackage, String sPgmName, Object[] params)
+	{
+		String pgmName = getDynamicPgmName(caller, sPackage, sPgmName);
+		return dynamicExecute(context, handle, caller, pgmName, params);
+	}
+
 	public static boolean dynamicExecute(ModelContext context, int handle, Class caller, String className, Object[] params)
 	{
 		Object [] callingParams = new Object[params.length]; // Contiene el verdadero array a pasarle a la clase
 		boolean [] needToUpdateParams = new boolean[params.length]; // Indica si hay que actualizar el array de parametros(params) al terminar la invocaci�n del m�todo. Solo se deben actualizar los parametros que en destino son 'arrays', que son los que pueden sufrir modificaci�n
 
 		// Primero obtengo la clase a ejecutar
-		Class myClass = tryLoadClass(caller.getClassLoader(), className, true);
+		Class<?> myClass = tryLoadClass(caller.getClassLoader(), className, true);
 
 		// Ahora matcheo los parametros
 		Method [] methods = myClass.getMethods();
 		Method methodToExecute = null; // method va a contener el m�todo a ejecutar
-		Class sourceClass = null, destClass = null;
+		Class<?> sourceClass = null, destClass = null;
 nextMethod:
 		for(int i = 0; i < methods.length; i++)
 		{
 			Method method = methods[i];
 			if(!method.getName().equalsIgnoreCase(METHOD_EXECUTE))continue;
-			Class [] parameters = method.getParameterTypes();
+			Class<?> [] parameters = method.getParameterTypes();
 
 			// Primero verificamos que la cantidad de parametros sea la misma
 			if(parameters.length != params.length)continue;
@@ -447,7 +457,7 @@ nextMethod:
 			if(needToUpdateParams[j])
 			{
 				Class paramClass = params[j].getClass();
-				Class calledClass = callingParams[j].getClass().getComponentType(); // pues ya se que el destIsArray
+				Class<?> calledClass = callingParams[j].getClass().getComponentType(); // pues ya se que el destIsArray
 				boolean sourceIsArray = paramClass.isArray();
 				int sourceArraySize = 1;
 				if(sourceIsArray)
@@ -535,7 +545,7 @@ nextMethod:
 
 	// El getPrimitiveType devuelve un codigo para cada tipo de dato primitivo Y para el BigDecimal
 	// pues para el tambi�n realizamos casts
-	protected static int getPrimitiveType(Class clase)
+	protected static int getPrimitiveType(Class<?> clase)
 	{
 		if(clase.isAssignableFrom(Byte.class) ||
 		   clase.isAssignableFrom(byte.class))

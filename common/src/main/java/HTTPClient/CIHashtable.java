@@ -107,6 +107,7 @@ class CIHashtable extends Hashtable
      *         there was none.
      * @see java.util.Hashtable.put(Object, Object)
      */
+	@SuppressWarnings("unchecked")
     public Object put(String key, Object value)
     {
 	return super.put(new CIString(key), value);

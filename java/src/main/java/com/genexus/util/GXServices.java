@@ -11,8 +11,9 @@ import com.genexus.xml.XMLReader;
 
 public class GXServices {
 	private static final boolean DEBUG = com.genexus.DebugFlag.DEBUG;
-	public static final String WEBNOTIFICATIONS_SERVICE = "WebNotifications";	
+	public static final String WEBNOTIFICATIONS_SERVICE = "WebNotifications";
 	public static final String STORAGE_SERVICE = "Storage";
+	public static final String STORAGE_APISERVICE = "StorageAPI";
 	public static final String CACHE_SERVICE = "Cache";
 	private static final String SERVICES_FILE = "CloudServices.config";
 	private static final String SERVICES_DEV_FILE = "CloudServices.dev.config";
@@ -22,7 +23,7 @@ public class GXServices {
 	public GXServices() {
 		readServices("");
 	}
-	
+
 	public GXServices(String basePath) {
 		readServices(basePath);
 	}
@@ -32,7 +33,7 @@ public class GXServices {
 			instance = new GXServices();
 		return instance;
 	}
-	
+
 	public static GXServices getInstance(String basePath) {
 		if (instance == null)
 			instance = new GXServices(basePath);
@@ -48,18 +49,18 @@ public class GXServices {
 			basePath = services.configBaseDirectory();
 		}
 		String fullPath = basePath + fileName;
-		XMLReader reader = new XMLReader();		
+		XMLReader reader = new XMLReader();
 		reader.open(fullPath);
 		reader.readType(1, "Services");
 		reader.read();
 		if (reader.getErrCode() == 0) {
-		    while (!reader.getName().equals("Services")) {
-		        services.processService(reader);
+			while (!reader.getName().equals("Services")) {
+				services.processService(reader);
 				reader.read();
 				if (reader.getName().equals("Service") && reader.getNodeType() == 2) //</Service>
 					reader.read();
-		    }
-		    reader.close();
+			}
+			reader.close();
 		}
 		else
 		{
@@ -75,17 +76,17 @@ public class GXServices {
 		String envVariable = System.getenv("LAMBDA_TASK_ROOT");
 		if (envVariable != null && envVariable.length() > 0)
 			return envVariable + File.separator;
-		
+
 		if (ModelContext.getModelContext() != null) {
 			HttpContext webContext = (HttpContext) ModelContext.getModelContext().getHttpContext();
 			if ((webContext != null) && (webContext instanceof HttpContextWeb)) {
 				baseDir = com.genexus.ModelContext.getModelContext()
-						.getHttpContext().getDefaultPath()
-						+ File.separator + "WEB-INF" + File.separatorChar;
-			}			
+					.getHttpContext().getDefaultPath()
+					+ File.separator + "WEB-INF" + File.separatorChar;
+			}
 		}
 		if (baseDir.equals("")) {
-			String servletPath = com.genexus.ApplicationContext.getInstance().getServletEngineDefaultPath();			
+			String servletPath = com.genexus.ApplicationContext.getInstance().getServletEngineDefaultPath();
 			if (servletPath != null && !servletPath.equals(""))
 			{
 				baseDir = servletPath + File.separator + "WEB-INF" + File.separatorChar;
@@ -117,28 +118,43 @@ public class GXServices {
 		result = reader.readType(1, "ClassName");
 		String className = new String(reader.getValue());
 
-		GXProperties properties = processProperties(reader);
- 
+		boolean allowMultiple = false;
+		reader.read();
+		if (reader.getName() == "AllowMultiple")
+		{
+			allowMultiple = Boolean.parseBoolean(reader.getValue());
+			reader.read();
+		}
+		GXProperties properties = processProperties(type, name, reader);
+
 		GXService service = new GXService();
 		service.setName(name);
 		service.setType(type);
 		service.setClassName(className);
+		service.setAllowMultiple(allowMultiple);
 		service.setProperties(properties);
-		if (!services.containsKey(type)){
+		if (service.getAllowMultiple()){
+			services.put(service.getType() + ":" + service.getName(), service);
+		}
+		else{
 			services.put(type, service);
 		}
 	}
 
-	private GXProperties processProperties(XMLReader reader) {
+	private GXProperties processProperties(String serviceType, String serviceName, XMLReader reader) {
 		short result;
 		GXProperties properties = new GXProperties();
-		reader.readType(1, "Properties");
 		reader.read();
 		while (reader.getName().equals("Property")) {
 			result = reader.readType(1, "Name");
 			String name = new String(reader.getValue());
 			result = reader.readType(1, "Value");
 			String value = new String(reader.getValue());
+
+			String envValue = EnvVarReader.getEnvironmentValue(serviceType, serviceName, name);
+			if (envValue != null)
+				value = envValue;
+
 			properties.add(name, value);
 			reader.read();
 			reader.read();

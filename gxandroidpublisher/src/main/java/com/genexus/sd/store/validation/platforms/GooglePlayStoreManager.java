@@ -89,7 +89,7 @@ public class GooglePlayStoreManager implements IStoreManager {
 					p.setSubscriptionFirstPurchased(new Date(s.getStartTimeMillis()));
 					p.setCustomConsumed(false);
 					p.setCustomWillRenew(s.getAutoRenewing());
-					
+					p.setAcknowledgementState(s.getAcknowledgementState());
 					Date now = new Date();
 					if (p.getSubscriptionExpiration().before(now))
 					{
@@ -118,7 +118,8 @@ public class GooglePlayStoreManager implements IStoreManager {
 					p.setProductType(prodType);					
 					p.setPurchaseDate(new Date(prod.getPurchaseTimeMillis()));					
 					p.setCustomConsumed(prod.getConsumptionState() == 1);
-					
+					p.setAcknowledgementState(prod.getAcknowledgementState());
+
 					if (prod.getPurchaseState() == 1)
 					{
 						p.setPurchaseStatus(PurchaseStatus.CANCELLED);

@@ -4,9 +4,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Enumeration;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
+import com.genexus.servlet.ServletContextListener;
 
 import com.genexus.*;
 import com.genexus.db.DBConnectionManager;
@@ -17,14 +15,19 @@ import com.genexus.util.GXServices;
 import com.genexus.util.PropertiesManager;
 import com.genexus.util.SubmitThreadPool;
 
-public class ServletEventListener implements ServletContextListener
+public class ServletEventListener extends ServletContextListener
 {
 	/** Se llama cuando se tira abajo la aplicacion (o se actualiza)
 	 */
-	public void contextDestroyed(ServletContextEvent event)
+	public void contextDestroyedWrapper()
 	{
 		BlobsCleaner.getInstance().contextDestroyed();
 
+		if (Application.isJMXEnabled())
+		{
+			com.genexus.management.MBeanUtils.unregisterObjects();
+			com.genexus.performance.MBeanUtils.unregisterObjects();
+		}
 
 		//Singletons
 		Application.gxCfg = null;
@@ -39,18 +42,12 @@ public class ServletEventListener implements ServletContextListener
 		DBConnectionManager.endDBConnectionManager();
 		BlobsCleaner.endBlobCleaner();
 		NativeFunctions.endNativeFunctions();
-		uk.org.retep.pdf.TrueTypeFontCache.cleanup();
+		com.genexus.reports.fonts.TrueTypeFontCache.cleanup();
 		CommonUtil.threadCalendar = null;
 		GXutil.threadTimeZone = null;
 		ClientContext.setLocalUtil(null);
 		ClientContext.setModelContext(null);
 		SubmitThreadPool.waitForEnd();
-
-		if (Application.isJMXEnabled())
-		{
-			com.genexus.management.MBeanUtils.unregisterObjects();
-			com.genexus.performance.MBeanUtils.unregisterObjects();
-		}
 
 		//Desregistro los JDBC drivers para que no tire Tomcat el mensaje que los va a desregistrar para evitar un memory leak
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
@@ -77,12 +74,9 @@ public class ServletEventListener implements ServletContextListener
 
 	/** Se llama al iniciar la aplicacion
 	 */
-	public void contextInitialized(ServletContextEvent event)
+	public void contextInitializedWrapper(String basePath, String gxcfg)
 	{
-		ServletContext context = event.getServletContext();
-		String basePath = context.getRealPath("/");
 		LogManager.initialize(basePath);
-		String gxcfg = context.getInitParameter("gxcfg");
 		if (gxcfg != null)
 		{
 			try

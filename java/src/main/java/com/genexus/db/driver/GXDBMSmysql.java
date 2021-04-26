@@ -127,7 +127,7 @@ public class GXDBMSmysql implements GXDBMS
 
 	public java.util.Date serverDateTime(GXConnection con) throws SQLException
 	{
-		ResultSet rslt = con.getStatement("_ServerDT_", "SELECT NOW()", false).executeQuery();
+		ResultSet rslt = con.getStatement("_ServerDT_", "SELECT NOW(3)", false).executeQuery();
 
 		rslt.next();
 		Date value = rslt.getTimestamp(1);

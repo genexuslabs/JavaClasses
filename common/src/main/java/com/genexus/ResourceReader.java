@@ -132,6 +132,9 @@ class GetResource implements Runnable
 	 	try
 	 	{
 	 		is = resourceClass.getResourceAsStream(fileName.toLowerCase());
+	 		if (is == null) {
+				is = resourceClass.getClassLoader().getResourceAsStream(fileName.toLowerCase());
+			}
 		}
 	 	catch (SecurityException e)
 	 	{

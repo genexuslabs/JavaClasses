@@ -45,6 +45,7 @@ public abstract class GXWebReport extends GXWebProcedure
 	protected void preExecute()
 	{
 		httpContext.setContentType("application/pdf");
+		httpContext.getResponse().addHeader("content-disposition", "inline; filename=" + getClass().getSimpleName() + ".pdf");
 		httpContext.setStream();
 
 		// Tiene que ir despues del setStream porque sino el getOutputStream apunta

@@ -2,7 +2,7 @@ package com.genexus.webpanels;
 
 import java.lang.reflect.Method;
 
-import javax.servlet.ServletInputStream;
+import com.genexus.servlet.IServletInputStream;
 
 import com.genexus.Application;
 import com.genexus.GXutil;
@@ -105,7 +105,7 @@ public class GXMultiCall extends GXWebObjectStub
       return "";
    }
    
-   private String parsePostData(int len, ServletInputStream in)
+   private String parsePostData(int len, IServletInputStream in)
    {
 	   if(len <= 0)
 		   return new String();
@@ -117,7 +117,7 @@ public class GXMultiCall extends GXWebObjectStub
 		   int offset = 0;
 		   do
 		   {
-			   int inputLen = in.read(postedBytes, offset, len - offset);
+			   int inputLen = in.getInputStream().read(postedBytes, offset, len - offset);
 			   if(inputLen <= 0)
 			   {
 				   throw new IllegalArgumentException ("err.io.short_read : length " + len + " read : " + offset + " Content: \n" + new String(postedBytes));

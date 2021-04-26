@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.StringBufferInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.Field;
@@ -32,6 +32,7 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Enumeration;
+import java.util.GregorianCalendar;
 
 import com.genexus.*;
 import com.genexus.common.classes.IGXPreparedStatement;
@@ -51,6 +52,7 @@ import com.genexus.util.GXServices;
 public class GXPreparedStatement extends GXStatement implements PreparedStatement, com.genexus.db.IFieldSetter, IGXPreparedStatement
 {
 	private static final boolean DEBUG       = DebugFlag.DEBUG;
+	public static final int PLSQL_BOOLEAN = 252;
 
 	public static boolean longVarCharAsOracleLong = false;
 	public static com.genexus.LocalUtil localUtil = new com.genexus.LocalUtil('.', "MDY", "24", 40, "eng");
@@ -391,7 +393,14 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			log(GXDBDebug.LOG_MAX, "setBoolean - index : " + index + " value : " + value);
 			try
 			{
-		    	stmt.setBoolean(index, value);
+				if (this instanceof GXCallableStatement && !isUpdateBlobStmt && con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+				{
+					stmt.setObject(index, value, PLSQL_BOOLEAN);
+				}
+				else
+				{
+					stmt.setBoolean(index, value);
+				}
 			}
 			catch (SQLException sqlException)
 			{
@@ -401,7 +410,14 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		}
 		else
 		{
-			stmt.setBoolean(index, value);
+			if (this instanceof GXCallableStatement && !isUpdateBlobStmt && con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+			{
+				stmt.setObject(index, value, PLSQL_BOOLEAN);
+			}
+			else
+			{
+				stmt.setBoolean(index, value);
+			}
 		}
 	}
 
@@ -711,12 +727,12 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 							}
 						}catch(UnsupportedEncodingException e)
 						{
-							stmt.setAsciiStream(index, new StringBufferInputStream(realValue), realLength);
+							stmt.setAsciiStream(index, new ByteArrayInputStream(realValue.getBytes()), realLength);
 						}
 					}
 					else
 					{
-						stmt.setAsciiStream(index, new StringBufferInputStream(realValue), realLength);
+						stmt.setAsciiStream(index, new ByteArrayInputStream(realValue.getBytes()), realLength);
 					}
 
 				}
@@ -760,12 +776,12 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 						}
 					}catch(UnsupportedEncodingException e)
 					{
-						stmt.setAsciiStream(index, new StringBufferInputStream(realValue), realLength);
+						stmt.setAsciiStream(index, new ByteArrayInputStream(realValue.getBytes()), realLength);
 					}
 				}
 				else
 				{
-					stmt.setAsciiStream(index, new StringBufferInputStream(realValue), realLength);
+					stmt.setAsciiStream(index, new ByteArrayInputStream(realValue.getBytes()), realLength);
 				}
 			}
 			else
@@ -927,6 +943,12 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
     {
 		setGXDbFileURI(index, fileName, blobPath, length, null, null);
 	}
+
+	public void setGXDbFileURI(int index, String fileName, String blobPath, int length, String tableName, String fieldName, boolean downloadContent) throws SQLException
+	{
+		setGXDbFileURI(index, fileName, blobPath, length, tableName, fieldName);
+	}
+
     public void setGXDbFileURI(int index, String fileName, String blobPath, int length, String tableName, String fieldName) throws SQLException
     {
 		 
@@ -937,7 +959,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
     	else
     	{
 			String fileUri = "";
-			if (fileName.trim().length() != 0)
+			if (fileName.trim().length() != 0 && !(blobPath.startsWith(com.genexus.Preferences.getDefaultPreferences().getMultimediaPath()) && ((fileName.toLowerCase().startsWith("http://") || fileName.toLowerCase().startsWith("https://")))))
 				fileUri = GXDbFile.generateUri(fileName, !GXDbFile.hasToken(fileName), true);
 			else
 			{
@@ -983,8 +1005,8 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 							if ( (dDelimIdx != -1) && (dDelimIdx < fileName.length() - 1) )
 							{
 								fileName = fileName.substring(dDelimIdx + 1);
-							}										
-							fileUri = Application.getExternalProvider().copy(sourceName, fileName, tableName, fieldName, true);
+							}
+							fileUri = Application.getExternalProvider().copy(gxFile.getAbsoluteName(), fileName, tableName, fieldName, true);
 						}
 						else
 						{
@@ -1059,20 +1081,30 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		setDateTime(index, value, onlyTime, false);
 	}
 
+	public void setDateTime(int index, java.util.Date value, boolean onlyTime, boolean onlyDate, boolean hasmilliseconds) throws SQLException
+	{
+		setDateTime(index, value, onlyTime, hasmilliseconds);
+	}
+
 	public void setDateTime(int index, java.util.Date value, boolean onlyTime, boolean hasmilliseconds) throws SQLException
 	{
 		if	(onlyTime && !value.equals(CommonUtil.nullDate()))
 		{
-			java.util.Date newValue = con.getNullDate();
+			Calendar valueCalendar = GregorianCalendar.getInstance();
+			valueCalendar.setTime(value);
 
-			newValue.setHours(value.getHours());
-			newValue.setMinutes(value.getMinutes());
-			newValue.setSeconds(value.getSeconds());
+			java.util.Date newValue = con.getNullDate();
+			Calendar newCalendar = GregorianCalendar.getInstance();
+			newCalendar.setTime(newValue);
+
+			newCalendar.set(Calendar.HOUR_OF_DAY, valueCalendar.get(Calendar.HOUR_OF_DAY));
+			newCalendar.set(Calendar.MINUTE, valueCalendar.get(Calendar.MINUTE));
+			newCalendar.set(Calendar.SECOND, valueCalendar.get(Calendar.SECOND));
 
 			if (hasmilliseconds)
-			 	value = CommonUtil.dtaddms(newValue, (double)(CommonUtil.millisecond(value)/1000.0));
+			 	value = CommonUtil.dtaddms(newCalendar.getTime(), (double)(CommonUtil.millisecond(value)/1000.0));
 			else	 			
-				value = newValue;
+				value = newCalendar.getTime();
 		}
 
 		if (!onlyTime && ModelContext.getModelContext() != null)
@@ -1169,9 +1201,17 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		else
 		{
 			// El saveNullDate tiene que hacerse sobre un java.util.Date de verdad, no sobre el java.sql.Date
-			setDate(index, saveNullDate(value)?
-										new java.sql.Date(con.getNullDate().getTime()):
-										new java.sql.Date(value.getYear(), value.getMonth(), value.getDate()));
+			java.sql.Date sDate = new java.sql.Date(con.getNullDate().getTime());
+			if (!saveNullDate(value))
+			{
+				Calendar valueCalendar = GregorianCalendar.getInstance();
+				valueCalendar.setTime(value);
+
+				GregorianCalendar sGregorianCalendar = new GregorianCalendar();
+				sGregorianCalendar.set(valueCalendar.get(Calendar.YEAR), valueCalendar.get(Calendar.MONTH), valueCalendar.get(Calendar.DATE), 0, 0, 0);
+				sDate = new java.sql.Date(sGregorianCalendar.getTime().getTime());
+			}
+			setDate(index, sDate);
 		}
 	}
 
@@ -1269,6 +1309,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		}
 	}
 
+	@Deprecated
     public void setUnicodeStream(int index, java.io.InputStream value, int length) throws SQLException
 	{
 		if	(DEBUG)
@@ -1292,9 +1333,12 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 
 	protected boolean skipSetBlobs = false;
 	protected String [] blobFiles;
+	private boolean isUpdateBlobStmt = false;
+
 	public void skipSetBlobs(boolean skipSetBlobs)
 	{
 		this.skipSetBlobs = skipSetBlobs;
+		isUpdateBlobStmt = true;
 	}
 	
 	public boolean getSkipSetBlobs()
@@ -1344,6 +1388,11 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		setBLOBFile(index, fileName, false);
 	}
 
+	public void setBLOBFile(int index, String fileName, boolean isMultiMedia, boolean downloadContent) throws SQLException
+	{
+		setBLOBFile(index, fileName, isMultiMedia);
+	}
+
     public void setBLOBFile(int index, String fileName, boolean isMultiMedia) throws SQLException
 	{
 		if (isMultiMedia && Application.getGXServices().get(GXServices.STORAGE_SERVICE) != null)
@@ -1358,6 +1407,9 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			{
 				if (fileName.toLowerCase().startsWith("http://") || fileName.toLowerCase().startsWith("https://"))
 				{
+					int queryIndex = fileName.lastIndexOf('?');
+					if (queryIndex > -1)
+						fileName = fileName.substring(0, queryIndex + 1) + PrivateUtilities.encodeURL(fileName.substring(queryIndex + 1));
 					URL fileURL = new URL(fileName);
 					String blobPath = com.genexus.Preferences.getDefaultPreferences().getBLOB_PATH();
 					fileName = com.genexus.PrivateUtilities.getTempFileName(blobPath, CommonUtil.getFileName(fileName), CommonUtil.getFileType(fileName), true);
@@ -1667,6 +1719,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
             batchRecords = new Object[size];
             batchSize = size;
             batchStmt = true;
+			resetRecordCount();
         }
 
         public Object[] getBatchRecords(){
