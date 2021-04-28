@@ -2655,8 +2655,14 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+           		if (objStr.isEmpty())
+					objStr = "0";
+				else 
+				{
+					int i = objStr.indexOf(".");
+					if (i >= 0)
+            			objStr =  objStr.substring(0, i);  
+				}         	
                 return Short.valueOf(objStr);
             }
             catch(Exception e)
@@ -2670,8 +2676,14 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+				if (objStr.isEmpty())
+					objStr ="0";
+				else 
+				{
+					int i = objStr.indexOf(".");
+					if	(i >= 0)
+            			objStr =  objStr.substring(0, i);  
+				}               	              	
                 return Byte.valueOf(objStr);
             }
             catch(Exception e)
@@ -2685,8 +2697,14 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+            	if (objStr.isEmpty())
+					objStr ="0";
+				else 
+				{
+					int i = objStr.indexOf(".");
+					if	(i >= 0)
+            			objStr =  objStr.substring(0, i);  
+				}       	
                 return new Integer(objStr);
             }
             catch(Exception e)
@@ -2734,8 +2752,15 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+            	
+				if (objStr.isEmpty())
+					objStr ="0";
+				else 
+				{
+					int i = objStr.indexOf(".");
+					if	(i >= 0)
+            			objStr =  objStr.substring(0, i);  
+				}
                 return Long.valueOf(CommonUtil.strUnexponentString(objStr));
 
             }
