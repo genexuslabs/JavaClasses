@@ -27,7 +27,7 @@ public class  GxRegex
 			if (txt.indexOf(CommonUtil.newLine()) > 0)
 				p = Pattern.compile(rex, Pattern.MULTILINE);
 			else
-				p = Pattern.compile(rex);
+				p = Pattern.compile(rex, Pattern.UNICODE_CHARACTER_CLASS);
 		}
 		catch(PatternSyntaxException e)
 		{
