@@ -16,6 +16,9 @@ These are the source of the GeneXus Standard Classes for Java, valid since GeneX
 | apacheandroid | Android apache class dependence. These were separated by size issues. They are candidates to disappear in the near future
 | gxmail | Classes related to mail handling
 | java | Java standard classes,  output is gxclassr.jar
+| wrappercommon | Interfaces to encapsulate Java EE and Jakarta EE support,  output is gxwrappercommon.jar
+| wrapperjavax | Implement the interfaces defined in wrappercommon in Java EE,  output is gxwrapperjavax.jar
+| wrapperjakarta | Implement the interfaces defined in wrappercommon in Jakarta EE,  output is gxwrapperjakarta.jar
 | gxoffice | Formerly Java classes are now separated to be included only when using office. 
 | gxsearch | Formerly in Java classes are now separated to be included only when using search.
 | gxandroidpublisher and javapns | They are necessary for when you have Push Notifications in your old implementation. These are projects that should disappear in the short term.
