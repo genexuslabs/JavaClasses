@@ -57,6 +57,14 @@ abstract public class GxRestService extends GXWebObjectBase
 	}
 
 	protected HttpContext restHttpContext;
+	protected com.genexus.ws.rs.core.IResponseBuilder builder;
+
+	protected void init(String requestMethod) {
+		initWrappedVars();
+		init( requestMethod , myServletRequestWrapper, myServletResponseWrapper, myContextWrapper);
+		ApplicationContext.getInstance().setServletEngineDefaultPath(myContextWrapper.getRealPath("/"));
+	}
+
 	public void init(String requestMethod, IHttpServletRequest myServletRequest, IHttpServletResponse myServletResponse, IServletContext myContext)
 	{
 		initLogger(myContext);
