@@ -56,6 +56,7 @@ public abstract class Response extends jakarta.ws.rs.core.Response{
 		}
 		public void entity(Object entity) { rb.entity(entity); }
 
+		public IResponseBuilder status(short i) { return new ResponseBuilder(rb.status(i)); }
 		public IResponseBuilder entityWrapped(Object entity) { return new ResponseBuilder(rb.entity(entity)); }
 
 		public void header(String header, Object object) {
