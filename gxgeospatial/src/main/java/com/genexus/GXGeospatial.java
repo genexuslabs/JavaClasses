@@ -5,6 +5,7 @@ import java.text.ParseException;
 import java.io.StringWriter;
 import java.lang.Double;
 import java.util.Locale;
+import java.math.*;
 import com.genexus.internet.IGxJSONSerializable;
 import org.simpleframework.xml.*;
 import org.noggit.JSONParser.*;
@@ -60,6 +61,11 @@ public final class GXGeospatial implements java.io.Serializable, IGxJSONSerializ
 		{
 			this.fromGeoJSON(serialString);
 		}
+	}
+
+	public GXGeospatial( BigDecimal latitude, BigDecimal longitude)
+	{
+		this(DecimalUtil.decToDouble(latitude),  DecimalUtil.decToDouble(longitude));
 	}
 
 	public GXGeospatial(double latitude, double longitude)
