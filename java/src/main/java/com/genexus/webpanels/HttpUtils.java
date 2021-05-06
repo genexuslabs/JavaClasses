@@ -14,8 +14,8 @@ import java.util.Hashtable;
 import java.util.StringTokenizer;
 import java.util.UUID;
 
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
+import com.genexus.servlet.IServletInputStream;
+import com.genexus.servlet.http.IHttpServletRequest;
 
 public class HttpUtils
 {
@@ -98,7 +98,7 @@ public class HttpUtils
       ht.put(key, valArray);
     }
 
-    public static Hashtable<String, String[]> parsePostData(HttpServletRequest request)
+    public static Hashtable<String, String[]> parsePostData(IHttpServletRequest request)
     {
     	String paramName = null;
     	String paramValues[] = null;
@@ -116,13 +116,13 @@ public class HttpUtils
     	return ht;
     }
 
-    public static Hashtable<String, String[]> parsePostData(ServletInputStream in)
+    public static Hashtable<String, String[]> parsePostData(IServletInputStream in)
     {
 		if(in == null)
 			throw new IllegalArgumentException();
 		try
 		{
-			return parseQueryString(IOUtils.toString(in, "8859_1"));
+			return parseQueryString(IOUtils.toString(in.getInputStream(), "8859_1"));
 		}
 		catch(IOException e)
 		{
@@ -230,7 +230,7 @@ public class HttpUtils
     }
 
 
-    public static StringBuffer getRequestURL(HttpServletRequest req)
+    public static StringBuffer getRequestURL(IHttpServletRequest req)
     {
 	StringBuffer url = new StringBuffer();
 	String scheme = req.getScheme();
