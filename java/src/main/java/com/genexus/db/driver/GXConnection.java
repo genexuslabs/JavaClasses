@@ -1007,25 +1007,41 @@ public void rollback() throws SQLException
 		state.setInAssignment(false);
 	}
 
-private void commit_impl() throws SQLException
-{
-	if(dataSource.usesJdbcDataSource() && GXJTA.isJTATX(handle, context))
-	  GXJTA.commit();
-	else
-	  dataSource.dbms.commit(con);
-}
+	private void commit_impl() throws SQLException
+	{
+		if(dataSource.usesJdbcDataSource() && GXJTA.isJTATX(handle, context))
+		  GXJTA.commit();
+		else
+		  dataSource.dbms.commit(con);
+	}
+	public void flushBatchCursors(java.lang.Object o) throws SQLException{
+		Vector<Cursor> toRemove = new Vector();
+		log(GXDBDebug.LOG_MIN, "Scanning " + batchUpdateStmts.size() + " batch Stmts with pending updates");
+		for (int i = 0; i < batchUpdateStmts.size(); i++) {
+			BatchUpdateCursor cursor = (BatchUpdateCursor) batchUpdateStmts.get(i);
+			if (cursor.isValidOwner(o)) {
+				if (cursor.pendingRecords()) {
+					cursor.beforeCommitEvent();
+				}
+				toRemove.add(cursor);
+			}
+		}
+		if (toRemove.size()>0)
+			batchUpdateStmts.removeAll(toRemove);
+	}
+	public void flushAllBatchCursors() throws SQLException{
+		log(GXDBDebug.LOG_MIN, "Scanning " + batchUpdateStmts.size() + " batch Stmts with pending updates");
+		for (int i = 0; i < batchUpdateStmts.size(); i++) {
+			BatchUpdateCursor cursor = (BatchUpdateCursor) batchUpdateStmts.get(i);
+			if (cursor.pendingRecords())
+				cursor.beforeCommitEvent();
+		}
+		batchUpdateStmts.clear();
+	}
 
     public void commit() throws SQLException
 	{
-
-            for(int i=0; i<batchUpdateStmts.size(); i++)
-            {
-                BatchUpdateCursor cursor = (BatchUpdateCursor)batchUpdateStmts.get(i);
-                if (cursor.pendingRecords()){
-                    cursor.beforeCommitEvent();
-                }
-            }
-            batchUpdateStmts.clear();
+		flushAllBatchCursors();
 
 		if	(DEBUG)
 		{

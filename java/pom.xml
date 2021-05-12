@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.genexus</groupId>
 		<artifactId>parent</artifactId>
-		<version>1.8-SNAPSHOT</version>
+		<version>2.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>gxclassR</artifactId>
@@ -19,6 +19,11 @@
 			<artifactId>gxcommon</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>gxwrapperjavax</artifactId>
+			<version>${project.version}</version> 			
+		</dependency>		
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>gxcryptocommon</artifactId>
@@ -61,11 +66,6 @@
 			<version>2.2</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-fileupload</groupId>
-			<artifactId>commons-fileupload</artifactId>
-			<version>1.3.3</version>
-		</dependency>
-		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
 			<version>2.10.4</version>
@@ -73,7 +73,7 @@
 		<dependency>
 			<groupId>com.github.spullara.mustache.java</groupId>
 			<artifactId>compiler</artifactId>
-			<version>0.8.18</version>
+			<version>0.9.7</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-logging</groupId>
@@ -89,11 +89,6 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-pool2</artifactId>
 			<version>2.4.2</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>3.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.transaction</groupId>
@@ -114,11 +109,6 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 			<version>2.11.0</version>
-		</dependency>
-		<dependency>
-    	<groupId>javax.ws.rs</groupId>
-    	<artifactId>javax.ws.rs-api</artifactId>
-    	<version>2.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.apis</groupId>
@@ -151,6 +141,7 @@
 			<groupId>com.sap.conn.jco</groupId>
 			<artifactId>sapjco3</artifactId>
 			<version>3.0.14</version>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.ws.security</groupId>
@@ -167,6 +158,11 @@
 		    <artifactId>encoder-jsp</artifactId>
 		    <version>1.2.2</version>
 		</dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.13</version>
+        </dependency>
 	</dependencies>
 	
 	<build>

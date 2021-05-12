@@ -7,7 +7,9 @@ import com.genexus.util.GXServices;
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
 
-import javax.servlet.ServletContext;
+import com.genexus.servlet.IServletContext;
+import com.genexus.servlet.ServletContext;
+import com.genexus.servlet.http.*;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -19,10 +21,9 @@ import java.util.UUID;
 
 import com.genexus.webpanels.FileItem;
 
-@Path("/gxobject")
 public class GxObjectRestService extends GxRestService {
     @Context
-    private ServletContext myContext;
+    private javax.servlet.ServletContext myContext;
     @Context
     private javax.servlet.http.HttpServletRequest myServletRequest;
     @Context
@@ -31,7 +32,10 @@ public class GxObjectRestService extends GxRestService {
     @POST
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8"})
     public Response execute() {
-        super.init("POST", myServletRequest, myServletResponse, myContext);
+		IHttpServletRequest myServletRequestWrapper = new HttpServletRequest(myServletRequest);
+		IHttpServletResponse myServletResponseWrapper = new HttpServletResponse(myServletResponse);
+		IServletContext myContextWrapper = new ServletContext(myContext);
+        super.init("POST", myServletRequestWrapper, myServletResponseWrapper, myContextWrapper);
         Response.ResponseBuilder builder = Response.status(201);
         String contentType = myServletRequest.getHeader("Content-Type");
         String ext = getExtension(contentType);

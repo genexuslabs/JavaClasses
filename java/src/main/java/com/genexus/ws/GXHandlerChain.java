@@ -6,9 +6,8 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
-import javax.xml.ws.WebServiceContext;
-import javax.annotation.Resource;
-import javax.servlet.ServletContext;
+import com.genexus.servlet.IServletContext;
+import com.genexus.servlet.ServletContext;
 
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.specific.java.LogManager;
@@ -43,7 +42,7 @@ public class GXHandlerChain implements SOAPHandler<SOAPMessageContext> {
 
     private void initialize(SOAPMessageContext messageContext) {
         if (logger == null) {
-            ServletContext servletContext = (ServletContext) messageContext.get(MessageContext.SERVLET_CONTEXT);
+            IServletContext servletContext = (ServletContext) messageContext.get(MessageContext.SERVLET_CONTEXT);
             logger = LogManager.initialize(servletContext.getRealPath("/"), GXHandlerChain.class);
         }
     }

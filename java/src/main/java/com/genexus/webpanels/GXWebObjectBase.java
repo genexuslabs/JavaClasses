@@ -356,7 +356,7 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 
 	protected String formatLink(String jumpURL)
 	{
-		return formatLink(formatLink1(jumpURL), new String[]{});
+		return formatLink(jumpURL, new String[]{});
 	}
 
 	protected String formatLink(String jumpURL, String[] parms)
@@ -366,56 +366,7 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 
 	protected String formatLink(String jumpURL, String[] parms, String[] parmsName)
 	{
-		return URLRouter.getURLRoute(formatLink1(jumpURL), parms, parmsName, httpContext.getRequest().getContextPath());
-	}
-
-	private String formatLink1(String jumpURL)
-	{
-		String lowURL = CommonUtil.lower(jumpURL);
-		if (jumpURL.indexOf("?") != -1)
-		{
-				lowURL = jumpURL.substring(0, jumpURL.indexOf("?")).toLowerCase() + jumpURL.substring(jumpURL.indexOf("?"));
-		}
-		String packageName = context.getPackageName();
-
-		if (!packageName.equals("") && lowURL.startsWith(packageName))
-		{
-			return lowURL;
-		}
-		else
-		{
-			try
-			{
-				if (!packageName.equals(""))
-					packageName += ".";
-				getClass().getClassLoader().loadClass(packageName + lowURL);
-				return packageName + lowURL;
-			}
-			catch(java.lang.ClassNotFoundException e)
-			{
-			}
-		}
-
-		if (lowURL.split("\\.").length == 2 && !(!packageName.equals("") && lowURL.startsWith(packageName)) && !lowURL.startsWith("file:") && !lowURL.startsWith("http:") && !lowURL.startsWith("https:") && !lowURL.startsWith("/"))
-		{
-			if (lowURL.indexOf("?") == -1 || lowURL.indexOf("?") > lowURL.indexOf("."))
-			{
-				return httpContext.getRequest().getContextPath() + "/" + jumpURL;
-			}
-		}
-
-		if	(packageName.endsWith(".") && packageName.trim().equals(""))
-		{
-			packageName += ".";
-		}
-
-		// Convierte el 'call', agregandole el package.
-		if	(GXWebPanel.isStaticGeneration && (lowURL.startsWith("http:" + packageName + "h") || lowURL.startsWith("https:" + packageName + "h")))
-		{
-			return  WebUtils.getDynURL() + jumpURL.substring(lowURL.indexOf(':') + 1);
-		}
-
-		return jumpURL;
+		return URLRouter.getURLRoute(jumpURL, parms, parmsName, httpContext.getRequest().getContextPath(), context.getPackageName());
 	}
 
 	public String getPgmname()
@@ -479,8 +430,15 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 
 	private String getObjectAccessWebToken(String cmpCtx)
 	{
-		return WebSecurityHelper.sign(getPgmInstanceId(cmpCtx), "", "", SecureTokenHelper.SecurityMode.Sign);
+		return WebSecurityHelper.sign(getPgmInstanceId(cmpCtx), "", "", SecureTokenHelper.SecurityMode.Sign, getSecretKey());
 	}
+
+	private String getSecretKey()
+    {
+    	//Some random SALT that is different in every GX App installation. Better if changes over time
+       String hashSalt = com.genexus.Application.getClientContext().getClientPreferences().getREORG_TIME_STAMP();
+       return WebUtils.getEncryptionKey(this.context, "") + hashSalt;
+    }
 
 	private String serialize(double Value, String Pic)
     {
@@ -615,7 +573,7 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 
     protected String getSecureSignedToken(String cmpCtx, String Value)
     {
-    	return WebSecurityHelper.sign(getPgmInstanceId(cmpCtx), "", Value, SecureTokenHelper.SecurityMode.Sign);
+    	return WebSecurityHelper.sign(getPgmInstanceId(cmpCtx), "", Value, SecureTokenHelper.SecurityMode.Sign, getSecretKey());
     }
 
     protected boolean verifySecureSignedToken(String cmpCtx, int Value, String picture, String token){
@@ -651,7 +609,7 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
     }
 
     protected boolean verifySecureSignedToken(String cmpCtx, String value, String token){
-    	return WebSecurityHelper.verify(getPgmInstanceId(cmpCtx), "", value, token);
+    	return WebSecurityHelper.verify(getPgmInstanceId(cmpCtx), "", value, token, getSecretKey());
     }
 
 	protected boolean validateObjectAccess(String cmpCtx)

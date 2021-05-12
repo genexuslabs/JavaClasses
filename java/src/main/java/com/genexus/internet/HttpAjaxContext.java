@@ -495,7 +495,12 @@ public abstract class HttpAjaxContext
                 com.genexus.internet.HttpContext webContext = (HttpContext) com.genexus.ModelContext.getModelContext().getHttpContext();
 				if (justCreated)
 				{
-					webContext.DeletePostValuePrefix(cmpCtx);
+					try {
+						webContext.DeletePostValuePrefix(cmpCtx);
+					}
+					catch (Exception e) {
+						logger.error("Could not delete post value prefix", e);
+					}
 				}
                 ComponentObjects.put(cmpCtx, objName);
             }

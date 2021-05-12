@@ -1,19 +1,19 @@
 package com.genexus.internet;
 
-import javax.servlet.http.HttpServletRequest;
+import com.genexus.servlet.http.IHttpServletRequest;
 
 public class HttpGXServletRequest {
-  private HttpServletRequest request = null;
+  private IHttpServletRequest request = null;
 
   public HttpGXServletRequest() {
   }
 
-  public void setHttpServletRequest(HttpServletRequest request)
+  public void setHttpServletRequest(IHttpServletRequest request)
   {
     this.request = request;
   }
 
-  public HttpServletRequest getHttpServletRequest()
+  public IHttpServletRequest getHttpServletRequest()
   {
     return request;
   }

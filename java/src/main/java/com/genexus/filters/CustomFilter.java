@@ -1,23 +1,18 @@
 package com.genexus.filters;
 
-import java.io.IOException;
+import java.util.Map;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.genexus.servlet.*;
+import com.genexus.servlet.http.IHttpServletRequest;
+import com.genexus.servlet.http.IHttpServletResponse;
 
-public class CustomFilter implements Filter {	
-	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {			
-		if (request != null && request instanceof HttpServletRequest) {
-			HttpServletRequest req = (HttpServletRequest) request;
+public class CustomFilter extends Filter {
+	public void doFilter(IServletRequest request, IServletResponse response, IFilterChain chain) throws Exception {
+		if (request != null && request.isHttpServletRequest()) {
+			IHttpServletRequest req = request.getHttpServletRequest();
 			String url = req.getRequestURL().toString();
 			if (url.contains("apple-app-site-association")) {
-				HttpServletResponse resp = (HttpServletResponse) response;
+				IHttpServletResponse resp = response.getHttpServletResponse();
 				resp.setContentType("application/json");
 			}
 		}		
@@ -28,10 +23,7 @@ public class CustomFilter implements Filter {
 	public void destroy() {
 	}
 
-	public void init(FilterConfig arg0) throws ServletException
-	{
-		// TODO Auto-generated method stub
-		
+	public void init(Map<String, String> headers, String path, String sessionCookieName) throws ServletException {
 	}
 
 }

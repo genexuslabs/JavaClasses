@@ -394,6 +394,14 @@ public final class CommonUtil
                 return CommonUtil.getYYYYMMDDHHMMSS_nosep(date);
         }
 
+		public static String formatDateTimeParmMS(Date date)
+        {
+                if (date.equals(CommonUtil.nullDate()))
+                        return "";
+
+                return CommonUtil.getYYYYMMDDHHMMSSmmm_nosep(date);
+		}
+		
         public static String formatDateParm(Date date)
         {
                 if (date.equals(CommonUtil.nullDate()))
@@ -513,6 +521,9 @@ public final class CommonUtil
 
 	public static Date ymdhmsToT_noYL(String yyyymmddhhmmss)
 	{
+
+		int mil = (yyyymmddhhmmss.trim().length() >= 17)? (int)Integer.parseInt(yyyymmddhhmmss.substring(14, 17)):0;
+
 		int year    = Integer.parseInt(yyyymmddhhmmss.substring( 0,  4));
 		int month   = Integer.parseInt(yyyymmddhhmmss.substring( 4,  6));
 		int day     = Integer.parseInt(yyyymmddhhmmss.substring( 6,  8));
@@ -520,7 +531,7 @@ public final class CommonUtil
 		int minute  = Integer.parseInt(yyyymmddhhmmss.substring(10, 12));
 		int seconds = Integer.parseInt(yyyymmddhhmmss.substring(12, 14));
 
-		return ymdhmsToT_noYL(year, month, day, hour, minute, seconds);
+		return ymdhmsToT_noYL(year, month, day, hour, minute, seconds, mil);
 	}
 
 	public static Date resetDate(Date date)
@@ -584,26 +595,25 @@ public final class CommonUtil
 		{
 			if (hour == 0)
 			{
-				try
-				{
-					synchronized (cal)
-					{
-						cal.setLenient(false);
-						cal.clear();
-						cal.set(year, month - 1, day, 1, minute, second);
-						if (millisecond > 0)
-						{
-							cal.add(cal.MILLISECOND, millisecond);
+				hour = 1;
+				while (hour < 24) {
+					try {
+						synchronized (cal) {
+							cal.setLenient(false);
+							cal.clear();
+							cal.set(year, month - 1, day, hour, minute, second);
+							if (millisecond > 0) {
+								cal.add(cal.MILLISECOND, millisecond);
+							}
+							Date date = cal.getTime();
+							cal.setLenient(lenient);
+							return date;
 						}
-						Date date = cal.getTime();
-						cal.setLenient(lenient);
-						return date;
+					} catch (IllegalArgumentException ex) {
+						hour ++;
 					}
 				}
-				catch (IllegalArgumentException ex)
-				{
-					return nullDate();
-				}
+				return nullDate();
 			}
 			else
 			{
@@ -719,8 +729,17 @@ public final class CommonUtil
 			}
 			catch (IllegalArgumentException e)
 			{
-				cal.set(Calendar.HOUR_OF_DAY, 1);
-				return cal.getTime();
+				int hour = 1;
+				while (hour < 24) {
+					cal.set(Calendar.HOUR_OF_DAY, hour);
+					try {
+						return cal.getTime();
+					}
+					catch (IllegalArgumentException e1) {
+						hour ++;
+					}
+				}
+				return dt;
 			}
 		}
 	}
@@ -1665,7 +1684,7 @@ public final class CommonUtil
 
 	public static String getYYYYMMDDHHMMSSmmm_nosep(Date date)
 	{
-		SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("yyyyMMddHHmmss.SSS");
+		SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("yyyyMMddHHmmssSSS");
 		dateFormat.setTimeZone(defaultTimeZone);
 
 		return dateFormat.format(date);
@@ -2594,7 +2613,12 @@ public final class CommonUtil
 
 	public static boolean isAbsoluteURL(String url)
 	{
-		return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("ftp://");
+		return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("ftp://") || url.startsWith("sd:");
+	}
+
+	public static boolean hasUrlQueryString(String url)
+	{
+		return url.indexOf("?") >= 0;
 	}
 
 	public static String encodeJSON(String in)
@@ -2650,8 +2674,14 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+           		if (objStr.isEmpty())
+					objStr = "0";
+				else 
+				{
+					int i = objStr.indexOf(".");
+					if (i >= 0)
+            			objStr =  objStr.substring(0, i);  
+				}         	
                 return Short.valueOf(objStr);
             }
             catch(Exception e)
@@ -2665,8 +2695,14 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+				if (objStr.isEmpty())
+					objStr ="0";
+				else 
+				{
+					int i = objStr.indexOf(".");
+					if	(i >= 0)
+            			objStr =  objStr.substring(0, i);  
+				}               	              	
                 return Byte.valueOf(objStr);
             }
             catch(Exception e)
@@ -2680,8 +2716,14 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+            	if (objStr.isEmpty())
+					objStr ="0";
+				else 
+				{
+					int i = objStr.indexOf(".");
+					if	(i >= 0)
+            			objStr =  objStr.substring(0, i);  
+				}       	
                 return new Integer(objStr);
             }
             catch(Exception e)
@@ -2699,8 +2741,8 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+            	if (objStr.isEmpty())
+            		objStr = "0";                	
                 return Double.valueOf(objStr);
             }
             catch(Exception e)
@@ -2714,8 +2756,8 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+            	if (objStr.isEmpty())
+            		objStr = "0";                	
                 return Float.valueOf(objStr);
             }
             catch(Exception e)
@@ -2729,8 +2771,15 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+            	
+				if (objStr.isEmpty())
+					objStr ="0";
+				else 
+				{
+					int i = objStr.indexOf(".");
+					if	(i >= 0)
+            			objStr =  objStr.substring(0, i);  
+				}
                 return Long.valueOf(CommonUtil.strUnexponentString(objStr));
 
             }

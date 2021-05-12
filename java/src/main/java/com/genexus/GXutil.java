@@ -163,6 +163,11 @@ public final class GXutil
     public static String formatDateTimeParm(Date date)
     {
         return CommonUtil.formatDateTimeParm(date);
+	}
+	
+	public static String formatDateTimeParmMS(Date date)
+    {
+        return CommonUtil.formatDateTimeParmMS(date);
     }
 
     public static String formatDateParm(Date date)
@@ -1342,13 +1347,11 @@ public final class GXutil
 		return com.genexus.Preferences.getDefaultPreferences().getBLOB_PATH() + blobPath;
 	}
 	public static final String FORMDATA_REFERENCE = "gxformdataref:";
-	public static final String UPLOADPREFIX = "gxupload:";	
 	public static final int UPLOAD_TIMEOUT = 10;	
 	
 	public static String cutUploadPrefix(String value)
 	{
-		String uploadValue = value.replace(UPLOADPREFIX, "");
-		uploadValue = SpecificImplementation.GXutil.getUploadValue(value, uploadValue);
+		String uploadValue = SpecificImplementation.GXutil.getUploadValue(value);
 	
 		//hack para salvar el caso de gxooflineeventreplicator que llegan los path de los blobs sin \ porque fueron sacadas por el FromJsonString
 		String blobPath = com.genexus.Preferences.getDefaultPreferences().getProperty("CS_BLOB_PATH", "");
@@ -1635,6 +1638,11 @@ public final class GXutil
 	public static boolean isAbsoluteURL(String url)
 	{
 		return CommonUtil.isAbsoluteURL(url);
+	}
+
+	public static boolean hasUrlQueryString(String url)
+	{
+		return CommonUtil.hasUrlQueryString(url);
 	}
 
 	public static void ErrorToMessages(String errorId, String errorDescription, GXBaseCollection<SdtMessages_Message> messages)
