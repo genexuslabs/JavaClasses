@@ -105,8 +105,8 @@ public class HttpContextWeb extends HttpContext {
 		if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) != null && !path.isEmpty()) {
 			GXFile gxFile = new GXFile(path);
 			String pathURL = gxFile.getAbsolutePath();
-			if (pathURL.toLowerCase().startsWith("http")) {
-				return gxFile.getAbsolutePath();
+			if (GXutil.isAbsoluteURL(pathURL)) {
+				return pathURL;
 			}
 		}
 

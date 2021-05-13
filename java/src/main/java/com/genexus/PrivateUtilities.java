@@ -255,12 +255,14 @@ public final class PrivateUtilities
 	{
 		extension = getTempFileName(extension.trim());
 		name = name.trim().toLowerCase();
+		String separator = name.length() > 0 ? "_": "";
 		if (encodeName)
 		{
 			name = encodeFileName(name);
 		}
-		name = checkFileNameLength(baseDir, name, extension);						
-		return baseDir + name + extension;
+		name = checkFileNameLength(baseDir, name, extension);
+
+		return String.format("%s%s%s%s", baseDir , name, separator, extension);
 	}
 	
 	public static String checkFileNameLength(String baseDir, String fileName, String extension ) 
