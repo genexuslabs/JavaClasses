@@ -950,12 +950,14 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 
     public void setGXDbFileURI(int index, String fileName, String blobPath, int length, String tableName, String fieldName) throws SQLException {
 
+		ExternalProvider storageProvider = Application.getExternalProvider();
+
 		fileName = fileName.trim();
 		blobPath = blobPath.trim();
 
 		//EMPTY BLOB
     	if (blobPath == null || blobPath.trim().length() == 0) {
-			setVarchar(index, fileName, length, false);
+			setVarchar(index, ExternalProviderCommon.getNormalizedProviderUrl(storageProvider, fileName), length, false);
 			return;
 		}
 
@@ -972,7 +974,6 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			fileUri = GXDbFile.generateUri(file.getName(), !GXDbFile.hasToken(blobPath), true);
 		}
 
-		ExternalProvider storageProvider = Application.getExternalProvider();
 		boolean externalStorageEnabled = storageProvider != null;
 		boolean attInExternalStorage = externalStorageEnabled && (tableName != null && fieldName != null); //Should improve this condition in order to not depend on tableName and FieldName.
 

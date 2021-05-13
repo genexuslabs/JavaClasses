@@ -3,7 +3,6 @@ package com.genexus.db.driver;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.genexus.db.driver.ResourceAccessControlList.Default;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
@@ -13,25 +12,15 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class TestExternalProviderIBM {
+public class TestExternalProviderS3 {
 	private ExternalProvider provider;
 	private String endpoint;
 	private String bucketName;
-	private static String PROVIDER_NAME = "IBMCOS";
+	private static String PROVIDER_NAME = "S3";
 
 	private ExternalProvider getExternalProvider() {
-		return getExternalProvider(Default);
-	}
-
-	private ExternalProvider getExternalProvider(com.genexus.db.driver.ResourceAccessControlList acl) {
 		try {
-			String accessKey = ExternalProviderHelper.getEnvironmentVariable(PROVIDER_NAME + "_ACCESS_KEY", true);
-			String secretKey = ExternalProviderHelper.getEnvironmentVariable(PROVIDER_NAME + "_SECRET_KEY", true);
-			this.bucketName = ExternalProviderHelper.getEnvironmentVariable(PROVIDER_NAME + "_BUCKET", true);
-			String folderName = ExternalProviderHelper.getEnvironmentVariable(PROVIDER_NAME + "_FOLDER", false);
-			String location = "sao01";
-			this.endpoint = String.format("s3.%s.cloud-object-storage.appdomain.cloud", location);
-			return new ExternalProviderIBM(accessKey, secretKey, bucketName, folderName, location, endpoint, acl.toString());
+			return new ExternalProviderS3();
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -55,6 +44,36 @@ public class TestExternalProviderIBM {
 		} catch (Exception e) {
 		}
 		assertTrue(provider != null);
+
+		java.io.BufferedReader in = null;
+		int statusCode = 0;
+		String response = "";
+		try {
+
+			java.net.URL url = new java.net.URL("https://api.github.com/users/google");
+			java.net.HttpURLConnection con = (java.net.HttpURLConnection) url.openConnection();
+			con.setRequestMethod("GET");
+			in = new java.io.BufferedReader(new java.io.InputStreamReader(con.getInputStream()));
+			String inputLine;
+
+			while ((inputLine = in.readLine()) != null) {
+				response += inputLine;
+			}
+			statusCode = con.getResponseCode();
+			in.close();
+
+		}
+		catch (Exception e) {
+
+		}
+		finally {
+			if (in != null) {
+				try {
+					in.close();
+				} catch (Exception e) {}
+			}
+		}
+
 	}
 
 

@@ -16,4 +16,17 @@ public class ExternalProviderCommon {
 		return objectName;
 	}
 
+	public static String getNormalizedProviderUrl(ExternalProvider provider, String url)
+	{
+		if (provider != null)
+		{
+			String objectName = provider.getObjectNameFromURL(url);
+			if (objectName != null && objectName.indexOf("?") > 0)
+			{
+				url = url.substring(0, url.indexOf("?"));
+			}
+		}
+		return url;
+	}
+
 }

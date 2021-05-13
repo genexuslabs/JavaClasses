@@ -9,7 +9,6 @@ import org.apache.logging.log4j.LogManager;
 import com.amazonaws.HttpMethod;
 import com.genexus.Application;
 import com.genexus.util.GXService;
-import com.genexus.util.Encryption;
 import com.genexus.util.StorageUtils;
 import com.genexus.StructSdtMessages_Message;
 import java.io.File;
@@ -21,6 +20,7 @@ import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.util.IOUtils;
+
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -31,19 +31,30 @@ import java.util.Date;
 import java.util.List;
 
 
-public class ExternalProviderS3 implements ExternalProvider {
+public class ExternalProviderS3 extends ExternalProviderService implements ExternalProvider  {
+	private static Logger logger = LogManager.getLogger(ExternalProviderS3.class);
 
-    private static Logger logger = LogManager.getLogger(ExternalProviderS3.class);
+	static final String NAME = "AWSS3";
+	static final String ACCESS_KEY = String.format("STORAGE_%s_ACCESS_KEY", NAME);
+	static final String SECRET_ACCESS_KEY = String.format("STORAGE_%s_SECRET_KEY", NAME);
+	static final String DEFAULT_ACL = String.format("STORAGE_%s_DEFAULT_ACL", NAME);
+	static final String DEFAULT_EXPIRATION = String.format("STORAGE_%s_DEFAULT_EXPIRATION", NAME);
+	static final String STORAGE_CUSTOM_ENDPOINT = String.format("STORAGE_%s_CUSTOM_ENDPOINT", NAME);
+	static final String STORAGE_ENDPOINT =  String.format("STORAGE_%s_ENDPOINT", NAME);
+	static final String BUCKET = String.format("STORAGE_%s_BUCKET_NAME", NAME);
+	static final String FOLDER = String.format("STORAGE_%s_FOLDER_NAME", NAME);
+	static final String REGION = String.format("STORAGE_%s_REGION", NAME);
 
-    static final String ACCESS_KEY_ID = "STORAGE_PROVIDER_ACCESSKEYID";
-    static final String SECRET_ACCESS_KEY = "STORAGE_PROVIDER_SECRETACCESSKEY";
-	static final String DEFAULT_ACL = "STORAGE_PROVIDER_DEFAULT_ACL";
-	static final String DEFAULT_EXPIRATION = "STORAGE_PROVIDER_DEFAULT_EXPIRATION";
-	static final String STORAGE_CUSTOM_ENDPOINT = "STORAGE_CUSTOM_ENDPOINT";
-    static final String STORAGE_ENDPOINT = "STORAGE_ENDPOINT";
-    static final String BUCKET = "BUCKET_NAME";
-    static final String FOLDER = "FOLDER_NAME";
-	static final String REGION = "STORAGE_PROVIDER_REGION";
+	//Keep it for compatibility reasons
+	static final String ACCESS_KEY_ID_DEPRECATED = "STORAGE_PROVIDER_ACCESSKEYID";
+	static final String SECRET_ACCESS_KEY_DEPRECATED = "STORAGE_PROVIDER_SECRETACCESSKEY";
+	static final String DEFAULT_ACL_DEPRECATED = "STORAGE_PROVIDER_DEFAULT_ACL";
+	static final String DEFAULT_EXPIRATION_DEPRECATED = "STORAGE_PROVIDER_DEFAULT_EXPIRATION";
+	static final String STORAGE_CUSTOM_ENDPOINT_DEPRECATED = "STORAGE_CUSTOM_ENDPOINT";
+	static final String STORAGE_ENDPOINT_DEPRECATED = "STORAGE_ENDPOINT";
+	static final String BUCKET_DEPRECATED = "BUCKET_NAME";
+	static final String FOLDER_DEPRECATED = "FOLDER_NAME";
+	static final String REGION_DEPRECATED = "STORAGE_PROVIDER_REGION";
 
 
     static final String ACCELERATED = "s3-accelerate.amazonaws.com";
@@ -53,48 +64,53 @@ public class ExternalProviderS3 implements ExternalProvider {
     private AmazonS3 client;
     private String bucket;
     private String folder;
-	private String region = DEFAULT_REGION;
     private String endpointUrl = ".s3.amazonaws.com/";
-	private CannedAccessControlList defaultACL;
+	private CannedAccessControlList defaultACL = CannedAccessControlList.PublicRead;
 	private int defaultExpirationMinutes = 24 * 60;
 
-    public ExternalProviderS3(String service) {
-        this(Application.getGXServices().get(service));
-    }
-
-	public ExternalProviderS3(String accessKey, String secretKey, String bucketName, String region, String folder, String endpoint) {
-		init(accessKey, secretKey, bucketName, region, folder, endpoint);
+	public String getName(){
+		return NAME;
 	}
 
-	public ExternalProviderS3(GXService providerService) {
-		String accessKey = Encryption.decrypt64(providerService.getProperties().get(ACCESS_KEY_ID));
-		String secretKey = Encryption.decrypt64(providerService.getProperties().get(SECRET_ACCESS_KEY));
+	public ExternalProviderS3(String service) throws Exception{
+		this(Application.getGXServices().get(service));
+	}
 
-		String bucket = Encryption.decrypt64(providerService.getProperties().get(BUCKET)).toLowerCase();
-		String folder = providerService.getProperties().get(FOLDER);
-		String region = providerService.getProperties().get(REGION);
-		String endpointValue = providerService.getProperties().get(STORAGE_ENDPOINT);
+	public ExternalProviderS3() throws Exception{
+		super();
+		initialize();
+	}
+
+	public ExternalProviderS3(GXService providerService) throws Exception{
+    	super(providerService);
+		initialize();
+    }
+
+	private void initialize() throws Exception{
+		String accessKey = getEncryptedPropertyValue(ACCESS_KEY, ACCESS_KEY_ID_DEPRECATED);
+		String secretKey = getEncryptedPropertyValue(SECRET_ACCESS_KEY, SECRET_ACCESS_KEY_DEPRECATED);
+		String bucket = getEncryptedPropertyValue(BUCKET, BUCKET_DEPRECATED);
+		String folder = getPropertyValue(FOLDER, FOLDER_DEPRECATED, "");
+		String region = getPropertyValue(REGION, REGION_DEPRECATED, DEFAULT_REGION);
+		String endpointValue = getPropertyValue(STORAGE_ENDPOINT, STORAGE_ENDPOINT_DEPRECATED, "");
 		if (endpointValue.equals("custom")) {
-			endpointValue = providerService.getProperties().get(STORAGE_CUSTOM_ENDPOINT);;
+			endpointValue = getPropertyValue(STORAGE_CUSTOM_ENDPOINT, STORAGE_CUSTOM_ENDPOINT_DEPRECATED);
 		}
-		
 
 		try {
-			defaultExpirationMinutes = Integer.parseInt(providerService.getProperties().get(DEFAULT_EXPIRATION));
+			defaultExpirationMinutes = Integer.parseInt(getPropertyValue(DEFAULT_EXPIRATION, DEFAULT_EXPIRATION_DEPRECATED, Integer.toString(defaultExpirationMinutes)));
+		} catch (Exception e) {
 		}
-		catch (Exception e) {}
-		setDefaultACL(providerService.getProperties().get(DEFAULT_ACL));
-		init(accessKey, secretKey, bucket, region, folder, endpointValue);
-    }
-	
-	private void init(String accessKey, String secretKey, String bucketName, String region, String folder, String endpoint) {
+		setDefaultACL(getPropertyValue(DEFAULT_ACL, DEFAULT_ACL_DEPRECATED, ""));
+
+
 		if (this.client == null) {
 			if (region.length() == 0) {
 				region = DEFAULT_REGION;
 			}
-			this.bucket = bucketName;
+			this.bucket = bucket;
 			this.folder = folder;
-			this.client = buildS3Client(accessKey, secretKey, endpoint, region);
+			this.client = buildS3Client(accessKey, secretKey, endpointValue, region);
 
 			bucketExists();
 			ensureFolder(folder);
@@ -131,6 +147,7 @@ public class ExternalProviderS3 implements ExternalProvider {
 	public void setDefaultACL(String acl) {
 		this.defaultACL = internalToAWSACL(ResourceAccessControlList.parse(acl));
 	}
+
     private void bucketExists() {
         if (!client.doesBucketExistV2(bucket)) {
             logger.debug(String.format("Bucket %s doesn't exist, please create the bucket", bucket));
