@@ -34,14 +34,11 @@ public class ExternalProviderIBM extends ExternalProviderService implements Exte
 
 	static final String NAME = "IBMCOS";
 
-	static final String ACCESS_KEY = String.format("STORAGE_%s_ACCESS_KEY", NAME);
-	static final String SECRET_ACCESS_KEY = String.format("STORAGE_%s_SECRET_KEY", NAME);
-	static final String DEFAULT_ACL = String.format("STORAGE_%s_DEFAULT_ACL", NAME);
-	static final String DEFAULT_EXPIRATION = String.format("STORAGE_%s_DEFAULT_EXPIRATION", NAME);
-	static final String STORAGE_ENDPOINT =  String.format("STORAGE_%s_ENDPOINT", NAME);
-	static final String REGION = String.format("STORAGE_%s_REGION", NAME);
-	static final String BUCKET = String.format("STORAGE_%s_BUCKET_NAME", NAME);
-	static final String FOLDER = String.format("STORAGE_%s_FOLDER_NAME", NAME);
+	static final String ACCESS_KEY = "ACCESS_KEY";
+	static final String SECRET_ACCESS_KEY = "SECRET_KEY";
+	static final String STORAGE_ENDPOINT =  "ENDPOINT";
+	static final String REGION = "REGION";
+	static final String BUCKET = "BUCKET_NAME";
 
 	@Deprecated
     static final String ACCESS_KEY_ID_DEPRECATED = "STORAGE_PROVIDER_ACCESS_KEY";
@@ -63,7 +60,7 @@ public class ExternalProviderIBM extends ExternalProviderService implements Exte
     private String folder;
     private String endpointUrl;
 	private CannedAccessControlList defaultACL;
-	private int defaultExpirationMinutes = 24 * 60;
+	private int defaultExpirationMinutes = DEFAULT_EXPIRATION_MINUTES;
 
     /* For compatibility reasons with GX16 U6 or lower*/
     public ExternalProviderIBM() throws Exception {

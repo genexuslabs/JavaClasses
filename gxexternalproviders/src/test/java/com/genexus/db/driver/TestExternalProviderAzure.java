@@ -1,16 +1,15 @@
 package com.genexus.db.driver;
 
 
-public class TestExternalProviderS3 extends TestExternalProvider {
-
+public class TestExternalProviderAzure extends TestExternalProvider {
 	@Override
 	public String getProviderName(){
-		return ExternalProviderS3.NAME;
+		return ExternalProviderAzureStorage.NAME;
 	}
 
 	@Override
 	public ExternalProvider getExternalProvider() throws Exception {
-		return new ExternalProviderS3();
+		return new ExternalProviderAzureStorage();
 	}
 
 }

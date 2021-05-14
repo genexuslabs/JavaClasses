@@ -3,7 +3,6 @@ package com.genexus.db.driver;
 import com.genexus.Application;
 import com.genexus.util.GXService;
 import com.genexus.util.Encryption;
-import com.genexus.util.GXServices;
 import com.genexus.util.StorageUtils;
 import com.genexus.StructSdtMessages_Message;
 
@@ -24,14 +23,24 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class ExternalProviderAzureStorage implements ExternalProvider {
-
+public class ExternalProviderAzureStorage extends ExternalProviderService implements ExternalProvider {
     private static Logger logger = LogManager.getLogger(ExternalProviderAzureStorage.class);
 
-    static final String ACCOUNT = "ACCOUNT_NAME";
-    static final String KEY = "ACCESS_KEY";
-    static final String PUBLIC_CONTAINER = "PUBLIC_CONTAINER_NAME";
-    static final String PRIVATE_CONTAINER = "PRIVATE_CONTAINER_NAME";
+	static final String NAME = "AZUREBS"; //Azure Blob Storage
+
+	static final String ACCOUNT = "ACCOUNT_NAME";
+	static final String ACCESS_KEY = "ACCESS_KEY";
+	static final String PUBLIC_CONTAINER = "PUBLIC_CONTAINER_NAME";
+	static final String PRIVATE_CONTAINER = "PRIVATE_CONTAINER_NAME";
+
+	@Deprecated
+    static final String ACCOUNT_DEPRECATED = "ACCOUNT_NAME";
+	@Deprecated
+    static final String KEY_DEPRECATED = "ACCESS_KEY";
+	@Deprecated
+    static final String PUBLIC_CONTAINER_DEPRECATED = "PUBLIC_CONTAINER_NAME";
+	@Deprecated
+    static final String PRIVATE_CONTAINER_DEPRECATED = "PRIVATE_CONTAINER_NAME";
 
     private String account;
     private String key;
@@ -39,39 +48,54 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
     private CloudBlobContainer privateContainer;
     private CloudBlobClient client;
 	private ResourceAccessControlList defaultAcl = ResourceAccessControlList.PublicRead;
+	private int defaultExpirationMinutes = DEFAULT_EXPIRATION_MINUTES;
 
-	private int defaultExpirationMinutes = 24 * 60;
-
-    public ExternalProviderAzureStorage(String service) {
-        this(Application.getGXServices().get(service));
+    public ExternalProviderAzureStorage(String service) throws Exception  {
+    	this(Application.getGXServices().get(service));
     }
 
-    public ExternalProviderAzureStorage(GXService providerService) {
-        try {
+	private void init() throws Exception {
+		try {
+			account = getEncryptedPropertyValue(ACCOUNT, ACCOUNT_DEPRECATED);
+			key = getEncryptedPropertyValue(ACCESS_KEY, KEY_DEPRECATED);
 
-            account = Encryption.decrypt64(providerService.getProperties().get(ACCOUNT));
-            key = Encryption.decrypt64(providerService.getProperties().get(KEY));
+			CloudStorageAccount storageAccount = CloudStorageAccount.parse(
+				String.format("DefaultEndpointsProtocol=%1s;AccountName=%2s;AccountKey=%3s", "https", account, key));
+			client = storageAccount.createCloudBlobClient();
 
-            CloudStorageAccount storageAccount = CloudStorageAccount.parse(
-                String.format("DefaultEndpointsProtocol=%1s;AccountName=%2s;AccountKey=%3s", "https", account, key));
-            client = storageAccount.createCloudBlobClient();
+			String privateContainerName = getEncryptedPropertyValue(PRIVATE_CONTAINER, PRIVATE_CONTAINER_DEPRECATED);
+			String publicContainerName = getEncryptedPropertyValue(PUBLIC_CONTAINER, PUBLIC_CONTAINER_DEPRECATED);
 
-            privateContainer = client.getContainerReference(Encryption.decrypt64(providerService.getProperties().get(PRIVATE_CONTAINER)).toLowerCase());
-            privateContainer.createIfNotExists();
-            publicContainer = client.getContainerReference(Encryption.decrypt64(providerService.getProperties().get(PUBLIC_CONTAINER)).toLowerCase());
-            publicContainer.createIfNotExists();
+			privateContainer = client.getContainerReference(privateContainerName.toLowerCase());
+			privateContainer.createIfNotExists();
+			publicContainer = client.getContainerReference(publicContainerName.toLowerCase());
+			publicContainer.createIfNotExists();
 
-            BlobContainerPermissions permissions = new BlobContainerPermissions();
-            permissions.setPublicAccess(BlobContainerPublicAccessType.BLOB);
-            publicContainer.uploadPermissions(permissions);
-        } catch (URISyntaxException ex) {
-            logger.error("Invalid URI", ex);
-        } catch (StorageException sex) {
-            logger.error(sex.getMessage());
-        } catch (InvalidKeyException ikex) {
-            logger.error("Invalid keys", ikex);
-        }
+			BlobContainerPermissions permissions = new BlobContainerPermissions();
+			permissions.setPublicAccess(BlobContainerPublicAccessType.BLOB);
+			publicContainer.uploadPermissions(permissions);
+		} catch (URISyntaxException ex) {
+			logger.error("Invalid URI", ex);
+		} catch (StorageException sex) {
+			logger.error(sex.getMessage());
+		} catch (InvalidKeyException ikex) {
+			logger.error("Invalid keys", ikex);
+		}
+	}
+
+	public ExternalProviderAzureStorage() throws Exception {
+    	super();
+		init();
+	}
+
+    public ExternalProviderAzureStorage(GXService providerService) throws Exception {
+    	super(providerService);
+		init();
     }
+
+	public String getName(){
+		return NAME;
+	}
 
     public void download(String externalFileName, String localFile, ResourceAccessControlList acl) {
         try {
@@ -87,7 +111,7 @@ public class ExternalProviderAzureStorage implements ExternalProvider {
     }
 
     private CloudBlockBlob getCloudBlockBlob(String fileName, ResourceAccessControlList acl) throws URISyntaxException, StorageException {
-        CloudBlockBlob blob = null;
+        CloudBlockBlob blob;
         if (isPrivateAcl(acl)) {
             blob = privateContainer.getBlockBlobReference(fileName);
         }

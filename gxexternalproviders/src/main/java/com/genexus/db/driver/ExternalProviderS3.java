@@ -35,15 +35,12 @@ public class ExternalProviderS3 extends ExternalProviderService implements Exter
 	private static Logger logger = LogManager.getLogger(ExternalProviderS3.class);
 
 	static final String NAME = "AWSS3";
-	static final String ACCESS_KEY = String.format("STORAGE_%s_ACCESS_KEY", NAME);
-	static final String SECRET_ACCESS_KEY = String.format("STORAGE_%s_SECRET_KEY", NAME);
-	static final String DEFAULT_ACL = String.format("STORAGE_%s_DEFAULT_ACL", NAME);
-	static final String DEFAULT_EXPIRATION = String.format("STORAGE_%s_DEFAULT_EXPIRATION", NAME);
-	static final String STORAGE_CUSTOM_ENDPOINT = String.format("STORAGE_%s_CUSTOM_ENDPOINT", NAME);
-	static final String STORAGE_ENDPOINT =  String.format("STORAGE_%s_ENDPOINT", NAME);
-	static final String BUCKET = String.format("STORAGE_%s_BUCKET_NAME", NAME);
-	static final String FOLDER = String.format("STORAGE_%s_FOLDER_NAME", NAME);
-	static final String REGION = String.format("STORAGE_%s_REGION", NAME);
+	static final String ACCESS_KEY = "ACCESS_KEY";
+	static final String SECRET_ACCESS_KEY = "SECRET_KEY";
+	static final String STORAGE_CUSTOM_ENDPOINT = "CUSTOM_ENDPOINT";
+	static final String STORAGE_ENDPOINT = "ENDPOINT";
+	static final String BUCKET = "BUCKET_NAME";
+	static final String REGION = "REGION";
 
 	//Keep it for compatibility reasons
 	@Deprecated
@@ -75,7 +72,7 @@ public class ExternalProviderS3 extends ExternalProviderService implements Exter
     private String folder;
     private String endpointUrl = ".s3.amazonaws.com/";
 	private CannedAccessControlList defaultACL = CannedAccessControlList.PublicRead;
-	private int defaultExpirationMinutes = 24 * 60;
+	private int defaultExpirationMinutes = DEFAULT_EXPIRATION_MINUTES;
 
 	public String getName(){
 		return NAME;
