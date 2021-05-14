@@ -25,13 +25,7 @@ public class TestExternalProviderIBM {
 
 	private ExternalProvider getExternalProvider(com.genexus.db.driver.ResourceAccessControlList acl) {
 		try {
-			String accessKey = ExternalProviderHelper.getEnvironmentVariable(PROVIDER_NAME + "_ACCESS_KEY", true);
-			String secretKey = ExternalProviderHelper.getEnvironmentVariable(PROVIDER_NAME + "_SECRET_KEY", true);
-			this.bucketName = ExternalProviderHelper.getEnvironmentVariable(PROVIDER_NAME + "_BUCKET", true);
-			String folderName = ExternalProviderHelper.getEnvironmentVariable(PROVIDER_NAME + "_FOLDER", false);
-			String location = "sao01";
-			this.endpoint = String.format("s3.%s.cloud-object-storage.appdomain.cloud", location);
-			return new ExternalProviderIBM(accessKey, secretKey, bucketName, folderName, location, endpoint, acl.toString());
+			return new ExternalProviderIBM();
 		}
 		catch (Exception e) {
 			e.printStackTrace();

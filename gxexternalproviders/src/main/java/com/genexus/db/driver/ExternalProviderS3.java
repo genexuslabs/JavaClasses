@@ -46,14 +46,23 @@ public class ExternalProviderS3 extends ExternalProviderService implements Exter
 	static final String REGION = String.format("STORAGE_%s_REGION", NAME);
 
 	//Keep it for compatibility reasons
+	@Deprecated
 	static final String ACCESS_KEY_ID_DEPRECATED = "STORAGE_PROVIDER_ACCESSKEYID";
+	@Deprecated
 	static final String SECRET_ACCESS_KEY_DEPRECATED = "STORAGE_PROVIDER_SECRETACCESSKEY";
+	@Deprecated
 	static final String DEFAULT_ACL_DEPRECATED = "STORAGE_PROVIDER_DEFAULT_ACL";
+	@Deprecated
 	static final String DEFAULT_EXPIRATION_DEPRECATED = "STORAGE_PROVIDER_DEFAULT_EXPIRATION";
+	@Deprecated
 	static final String STORAGE_CUSTOM_ENDPOINT_DEPRECATED = "STORAGE_CUSTOM_ENDPOINT";
+	@Deprecated
 	static final String STORAGE_ENDPOINT_DEPRECATED = "STORAGE_ENDPOINT";
+	@Deprecated
 	static final String BUCKET_DEPRECATED = "BUCKET_NAME";
+	@Deprecated
 	static final String FOLDER_DEPRECATED = "FOLDER_NAME";
+	@Deprecated
 	static final String REGION_DEPRECATED = "STORAGE_PROVIDER_REGION";
 
 
