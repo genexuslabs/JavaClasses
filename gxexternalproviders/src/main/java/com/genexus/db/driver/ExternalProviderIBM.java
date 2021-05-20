@@ -84,7 +84,7 @@ public class ExternalProviderIBM extends ExternalProviderService implements Exte
 		String secretKey = getEncryptedPropertyValue(SECRET_ACCESS_KEY, SECRET_ACCESS_KEY_DEPRECATED);
 		String location = getPropertyValue(REGION, COS_LOCATION_DEPRECATED, "us-south");
 		String endpoint = getPropertyValue(STORAGE_ENDPOINT, COS_ENDPOINT_DEPRECATED, String.format("s3.%s.cloud-object-storage.appdomain.cloud", location));
-		bucket = getPropertyValue(BUCKET, BUCKET_DEPRECATED);
+		bucket = getEncryptedPropertyValue(BUCKET, BUCKET_DEPRECATED);
 		folder = getPropertyValue(FOLDER, FOLDER_DEPRECATED, "");
 		String defaultAcl = getPropertyValue(DEFAULT_ACL, DEFAULT_ACL_DEPRECATED, "");
 
@@ -109,7 +109,7 @@ public class ExternalProviderIBM extends ExternalProviderService implements Exte
 	}
     private void bucketExists() {
         if (!client.doesBucketExistV2(bucket)) {
-            logger.debug(String.format("Bucket %s doesn't exist, please create the bucket", bucket));
+            logger.error(String.format("Bucket %s doesn't exist, please create the bucket", bucket));
         }
     }
 
@@ -184,7 +184,7 @@ public class ExternalProviderIBM extends ExternalProviderService implements Exte
 
     public String get(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
 		expirationMinutes = expirationMinutes > 0 ? expirationMinutes: defaultExpirationMinutes;
-        client.getObjectMetadata(bucket, externalFileName);
+		exists(externalFileName, acl);
         if (internalToAWSACL(acl) == CannedAccessControlList.Private) {
             java.util.Date expiration = new java.util.Date();
             long msec = expiration.getTime();
@@ -201,7 +201,7 @@ public class ExternalProviderIBM extends ExternalProviderService implements Exte
     }
 
     public void delete(String objectName, ResourceAccessControlList acl) {
-        client.deleteObject(bucket, objectName);
+		client.deleteObject(bucket, objectName);
     }
 
     public String rename(String objectName, String newName, ResourceAccessControlList acl) {
