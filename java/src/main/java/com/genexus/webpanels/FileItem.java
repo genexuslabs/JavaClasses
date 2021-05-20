@@ -28,7 +28,7 @@ public class FileItem
 	  this(null, name, formField, fieldName, stream);
   }
 
-  public FileItem(String sourceFileName, String name, boolean formField, String fieldName, InputStream stream)
+  public FileItem(String fileOriginalName, String filePathLocation, boolean formField, String fieldName, InputStream stream)
   {
 	  this.fieldName = fieldName;
 	  this.formField = formField;
@@ -45,8 +45,8 @@ public class FileItem
   	}
   	else
   	{
-  		this.sourceFileName = sourceFileName;
-	  	gxFile = new GXFile(name, ResourceAccessControlList.Private);
+  		this.sourceFileName = fileOriginalName;
+	  	gxFile = new GXFile(filePathLocation, ResourceAccessControlList.Private);
 	  	gxFile.create(stream);
 	  }
   }

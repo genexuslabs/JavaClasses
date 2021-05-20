@@ -77,7 +77,10 @@ public abstract class TestExternalProvider {
 		String upload = provider.get(fileName, acl, 100);
 		assertTrue(urlExists(upload));
 
+		provider.get(copyFileName, acl, 100);
 		provider.delete(copyFileName, acl);
+		assertFalse(urlExists(provider.get(copyFileName, acl, 100)));
+
 		provider.copy("text.txt", copyFileName, acl);
 		upload = provider.get(copyFileName, acl, 100);
 		assertTrue(urlExists(upload));
@@ -126,6 +129,8 @@ public abstract class TestExternalProvider {
 		String url = provider.get("text.txt", ResourceAccessControlList.PublicRead, 5);
 		assertTrue(urlExists(url));
 		provider.delete("text.txt", ResourceAccessControlList.PublicRead);
+
+		url = provider.get("text.txt", ResourceAccessControlList.PublicRead, 5);
 		assertFalse(urlExists(url));
 	}
 
