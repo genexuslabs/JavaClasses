@@ -106,10 +106,9 @@ public class GXMaps {
 
     private static final String DIRECTIONS_SERVICE_INTERNAL_PROCEDURE_CLASS_NAME = "com.genexuscore.genexus.common.googlemapsdirectionsserviceinternal";
 
-    public static GXXMLSerializable calculateDirections(Object DirectionsParametersSDTArray) 
+    public static GXXMLSerializable calculateDirections(Object DirectionsParametersSDT) 
     {
         try {
-            Object DirectionsParametersSDT = ((Object[]) DirectionsParametersSDTArray)[0];
             Class<?> DirectionsServiceProcedureClass = Class.forName(DIRECTIONS_SERVICE_INTERNAL_PROCEDURE_CLASS_NAME);
             Object DirectionsServiceProcedure = DirectionsServiceProcedureClass.getDeclaredConstructor(Integer.TYPE).newInstance(-1);
 
