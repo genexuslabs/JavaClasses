@@ -51,9 +51,10 @@
         </dependency>
         <dependency>
             <groupId>com.ibm.cos</groupId>
-            <artifactId>ibm-cos-java-sdk</artifactId>
-            <version>2.5.5</version>
+            <artifactId>ibm-cos-java-sdk-s3</artifactId>
+            <version>2.10.0</version>
         </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
