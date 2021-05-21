@@ -28,7 +28,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.*;
 
 
-public class ExternalProviderIBM extends ExternalProviderService implements ExternalProvider {
+public class ExternalProviderIBM extends ExternalProviderBase implements ExternalProvider {
 
 	private static Logger logger = LogManager.getLogger(ExternalProviderIBM.class);
 
@@ -87,10 +87,10 @@ public class ExternalProviderIBM extends ExternalProviderService implements Exte
 		bucket = getEncryptedPropertyValue(BUCKET, BUCKET_DEPRECATED);
 		folder = getPropertyValue(FOLDER, FOLDER_DEPRECATED, "");
 		String defaultAcl = getPropertyValue(DEFAULT_ACL, DEFAULT_ACL_DEPRECATED, "");
+		this.defaultACL = internalToAWSACL(ResourceAccessControlList.parse(defaultAcl));
 
-    	endpointUrl = endpoint;
-		setDefaultACL(defaultAcl);
-		
+		endpointUrl = endpoint;
+
 		ClientConfiguration clientConfig = new ClientConfiguration().withRequestTimeout(10000);
 		clientConfig.setUseTcpKeepAlive(true);
 		SDKGlobalConfiguration.IAM_ENDPOINT = "https://iam.cloud.ibm.com/identity/token";
@@ -105,9 +105,6 @@ public class ExternalProviderIBM extends ExternalProviderService implements Exte
 		ensureFolder(folder);
 	}
 
-	public void setDefaultACL(String acl) {
-		this.defaultACL = internalToAWSACL(ResourceAccessControlList.parse(acl));
-	}
     private void bucketExists() {
         if (!client.doesBucketExistV2(bucket)) {
             logger.error(String.format("Bucket %s doesn't exist, please create the bucket", bucket));
@@ -129,7 +126,7 @@ public class ExternalProviderIBM extends ExternalProviderService implements Exte
             S3Object object = client.getObject(new GetObjectRequest(bucket, externalFileName));
             try (InputStream objectData = object.getObjectContent()) {
 				try (OutputStream outputStream = new FileOutputStream(new File(localFile))){
-					int read = 0;
+					int read;
 					byte[] bytes = new byte[1024];
 					while ((read = objectData.read(bytes)) != -1) {
 						outputStream.write(bytes, 0, read);
@@ -145,7 +142,7 @@ public class ExternalProviderIBM extends ExternalProviderService implements Exte
 
     public String upload(String localFile, String externalFileName, ResourceAccessControlList acl) {
         client.putObject(new PutObjectRequest(bucket, externalFileName, new File(localFile)).withCannedAcl(internalToAWSACL(acl)));
-        return ((AmazonS3Client) client).getResourceUrl(bucket, externalFileName);
+        return getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
     }
 
     private CannedAccessControlList internalToAWSACL(ResourceAccessControlList acl) {
@@ -174,7 +171,7 @@ public class ExternalProviderIBM extends ExternalProviderService implements Exte
             String upload = "";
             try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes)) {
 				client.putObject(new PutObjectRequest(bucket, externalFileName, byteArrayInputStream, metadata).withCannedAcl(internalToAWSACL(acl)));
-				upload = ((AmazonS3Client) client).getResourceUrl(bucket, externalFileName);
+				upload = getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
 			}
 			return upload;
         } catch (IOException ex) {
@@ -184,25 +181,29 @@ public class ExternalProviderIBM extends ExternalProviderService implements Exte
     }
 
     public String get(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
-		expirationMinutes = expirationMinutes > 0 ? expirationMinutes: defaultExpirationMinutes;
-		exists(externalFileName, acl);
-        if (internalToAWSACL(acl) == CannedAccessControlList.Private) {
-            java.util.Date expiration = new java.util.Date();
-            long msec = expiration.getTime();
-            msec += 60000 * expirationMinutes;
-            expiration.setTime(msec);
+        client.getObjectMetadata(bucket, externalFileName);
+		return getResourceUrl(externalFileName, acl, expirationMinutes);
+	}
 
-            GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucket, externalFileName);
-            generatePresignedUrlRequest.setMethod(HttpMethod.GET);
-            generatePresignedUrlRequest.setExpiration(expiration);
-            return client.generatePresignedUrl(generatePresignedUrlRequest).toString();
-        } else {
-            return ((AmazonS3Client) client).getResourceUrl(bucket, externalFileName);
-        }
-    }
+	private String getResourceUrl(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
+		if (internalToAWSACL(acl) == CannedAccessControlList.Private) {
+			expirationMinutes = expirationMinutes > 0 ? expirationMinutes: defaultExpirationMinutes;
+			Date expiration = new Date();
+			long msec = expiration.getTime();
+			msec += 60000 * expirationMinutes;
+			expiration.setTime(msec);
 
-    public void delete(String objectName, ResourceAccessControlList acl) {
-		client.deleteObject(bucket, objectName);
+			GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucket, externalFileName);
+			generatePresignedUrlRequest.setMethod(HttpMethod.GET);
+			generatePresignedUrlRequest.setExpiration(expiration);
+			return client.generatePresignedUrl(generatePresignedUrlRequest).toString();
+		} else {
+			return ((AmazonS3Client) client).getResourceUrl(bucket, externalFileName);
+		}
+	}
+
+	public void delete(String objectName, ResourceAccessControlList acl) {
+        client.deleteObject(bucket, objectName);
     }
 
     public String rename(String objectName, String newName, ResourceAccessControlList acl) {
@@ -378,8 +379,8 @@ public class ExternalProviderIBM extends ExternalProviderService implements Exte
         }
     }
 
-	public String getObjectNameFromURL(String url) {
-		String objectName = null;
+    public String getObjectNameFromURL(String url) {
+    	String objectName = null;
 		if (url.startsWith(this.getStorageUri()))
 		{
 			objectName = url.replace(this.getStorageUri(), "");

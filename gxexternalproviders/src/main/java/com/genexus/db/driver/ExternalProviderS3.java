@@ -31,7 +31,7 @@ import java.util.Date;
 import java.util.List;
 
 
-public class ExternalProviderS3 extends ExternalProviderService implements ExternalProvider  {
+public class ExternalProviderS3 extends ExternalProviderBase implements ExternalProvider  {
 	private static Logger logger = LogManager.getLogger(ExternalProviderS3.class);
 
 	static final String NAME = "AWSS3";
@@ -47,10 +47,6 @@ public class ExternalProviderS3 extends ExternalProviderService implements Exter
 	static final String ACCESS_KEY_ID_DEPRECATED = "STORAGE_PROVIDER_ACCESSKEYID";
 	@Deprecated
 	static final String SECRET_ACCESS_KEY_DEPRECATED = "STORAGE_PROVIDER_SECRETACCESSKEY";
-	@Deprecated
-	static final String DEFAULT_ACL_DEPRECATED = "STORAGE_PROVIDER_DEFAULT_ACL";
-	@Deprecated
-	static final String DEFAULT_EXPIRATION_DEPRECATED = "STORAGE_PROVIDER_DEFAULT_EXPIRATION";
 	@Deprecated
 	static final String STORAGE_CUSTOM_ENDPOINT_DEPRECATED = "STORAGE_CUSTOM_ENDPOINT";
 	@Deprecated
@@ -109,8 +105,6 @@ public class ExternalProviderS3 extends ExternalProviderService implements Exter
 			defaultExpirationMinutes = Integer.parseInt(getPropertyValue(DEFAULT_EXPIRATION, DEFAULT_EXPIRATION_DEPRECATED, Integer.toString(defaultExpirationMinutes)));
 		} catch (Exception e) {
 		}
-		setDefaultACL(getPropertyValue(DEFAULT_ACL, DEFAULT_ACL_DEPRECATED, ""));
-
 
 		if (this.client == null) {
 			if (region.length() == 0) {
@@ -153,11 +147,6 @@ public class ExternalProviderS3 extends ExternalProviderService implements Exter
 			}
 		}
 		return s3Client;
-	}
-
-
-	public void setDefaultACL(String acl) {
-		this.defaultACL = internalToAWSACL(ResourceAccessControlList.parse(acl));
 	}
 
     private void bucketExists() {

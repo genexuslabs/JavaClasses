@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class ExternalProviderGoogle extends ExternalProviderService implements ExternalProvider  {
+public class ExternalProviderGoogle extends ExternalProviderBase implements ExternalProvider  {
 
     private static Logger logger = LogManager.getLogger(ExternalProviderGoogle.class);
 

@@ -5,7 +5,7 @@ import com.genexus.util.GXService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public abstract class ExternalProviderService {
+public abstract class ExternalProviderBase {
 	private static Logger logger = LogManager.getLogger(ExternalProviderS3.class);
 	private GXService service;
 
@@ -15,13 +15,29 @@ public abstract class ExternalProviderService {
 	static final String DEFAULT_EXPIRATION = "DEFAULT_EXPIRATION";
 	static final String FOLDER = "FOLDER_NAME";
 
-	static final int DEFAULT_EXPIRATION_MINUTES = 24 * 60;
-	public ExternalProviderService() {
+	@Deprecated
+	static final String DEFAULT_ACL_DEPRECATED = "STORAGE_PROVIDER_DEFAULT_ACL";
+	@Deprecated
+	static final String DEFAULT_EXPIRATION_DEPRECATED = "STORAGE_PROVIDER_DEFAULT_EXPIRATION";
 
+	static final int DEFAULT_EXPIRATION_MINUTES = 24 * 60;
+	 ResourceAccessControlList defaultAcl = ResourceAccessControlList.PublicRead;
+
+	public ExternalProviderBase() {
+		init();
 	}
 
-	public ExternalProviderService(GXService s) {
+
+	public ExternalProviderBase(GXService s) {
 		this.service = s;
+		init();
+	}
+
+	private void init() {
+		String aclS = getPropertyValue(DEFAULT_ACL, DEFAULT_ACL_DEPRECATED, "");
+		if (aclS.length() > 0) {
+			this.defaultAcl = ResourceAccessControlList.parse(aclS);
+		}
 	}
 
 	public String getEncryptedPropertyValue(String propertyName, String alternativePropertyName) throws Exception {
@@ -75,4 +91,5 @@ public abstract class ExternalProviderService {
 	private String resolvePropertyName(String propertyName) {
 		return String.format("STORAGE_%s_%s", getName(), propertyName);
 	}
+
 }

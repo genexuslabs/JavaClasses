@@ -2,7 +2,6 @@ package com.genexus.db.driver;
 
 import com.genexus.Application;
 import com.genexus.util.GXService;
-import com.genexus.util.Encryption;
 import com.genexus.util.StorageUtils;
 import com.genexus.StructSdtMessages_Message;
 
@@ -23,7 +22,7 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class ExternalProviderAzureStorage extends ExternalProviderService implements ExternalProvider {
+public class ExternalProviderAzureStorage extends ExternalProviderBase implements ExternalProvider {
 	private static Logger logger = LogManager.getLogger(ExternalProviderAzureStorage.class);
 
 	static final String NAME = "AZUREBS"; //Azure Blob Storage
@@ -47,7 +46,7 @@ public class ExternalProviderAzureStorage extends ExternalProviderService implem
 	private CloudBlobContainer publicContainer;
 	private CloudBlobContainer privateContainer;
 	private CloudBlobClient client;
-	private ResourceAccessControlList defaultAcl = ResourceAccessControlList.PublicRead;
+
 	private int defaultExpirationMinutes = DEFAULT_EXPIRATION_MINUTES;
 
 	private String privateContainerName;
@@ -116,6 +115,7 @@ public class ExternalProviderAzureStorage extends ExternalProviderService implem
 			logger.error("Error downloading file", ioex);
 		}
 	}
+
 
 	private CloudBlockBlob getCloudBlockBlob(String fileName, ResourceAccessControlList acl) throws URISyntaxException, StorageException {
 		CloudBlockBlob blob;
@@ -232,14 +232,13 @@ public class ExternalProviderAzureStorage extends ExternalProviderService implem
 		return ret;
 	}
 
+	private String resolveObjectName(String urlOrObjectName, ResourceAccessControlList acl) {
+		String objectName = getObjectNameFromURL(urlOrObjectName);
+		return (objectName == null || objectName.length() == 0)? urlOrObjectName: objectName;
+	}
+
 	public String copy(String objectName, String newName, ResourceAccessControlList acl) {
-		if (objectName.startsWith(getUrl())) {
-			if (isPrivateAcl(acl)) {
-				objectName = objectName.replace(getUrl() + privateContainer.getName() + "/", "");
-			} else {
-				objectName = objectName.replace(getUrl() + publicContainer.getName() + "/", "");
-			}
-		}
+		objectName = resolveObjectName(objectName, acl);
 		try {
 			CloudBlockBlob sourceBlob = getCloudBlockBlob(objectName, acl);
 			CloudBlockBlob targetBlob = getCloudBlockBlob(newName, acl);
