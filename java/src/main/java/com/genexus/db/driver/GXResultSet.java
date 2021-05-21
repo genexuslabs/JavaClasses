@@ -992,7 +992,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		  	gxFile.create(is);
 			
 			fileName = gxFile.getFilePath();
-			
+
 			if (temporary)
 			{
 					com.genexus.webpanels.BlobsCleaner.getInstance().addBlobFile(fileName);

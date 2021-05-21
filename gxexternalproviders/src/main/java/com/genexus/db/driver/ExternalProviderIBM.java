@@ -97,7 +97,8 @@ public class ExternalProviderIBM extends ExternalProviderService implements Exte
 		AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
 
 		client = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(credentials))
-			.withEndpointConfiguration(new EndpointConfiguration(endpointUrl, location)).withPathStyleAccessEnabled(true)
+			.withEndpointConfiguration(new EndpointConfiguration(endpointUrl, location))
+			.withPathStyleAccessEnabled(false)
 			.withClientConfiguration(clientConfig).build();
 
 		bucketExists();
@@ -388,7 +389,7 @@ public class ExternalProviderIBM extends ExternalProviderService implements Exte
 
 	private String getStorageUri()
 	{
-		return String.format("https://%s%s/", this.bucket, this.endpointUrl);
+		return String.format("https://%s.%s/", this.bucket, this.endpointUrl);
 	}
 
 }

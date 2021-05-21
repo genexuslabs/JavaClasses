@@ -74,6 +74,8 @@ public class ExternalProviderS3 extends ExternalProviderService implements Exter
 	private CannedAccessControlList defaultACL = CannedAccessControlList.PublicRead;
 	private int defaultExpirationMinutes = DEFAULT_EXPIRATION_MINUTES;
 
+	private Boolean pathStyleUrls = false;
+
 	public String getName(){
 		return NAME;
 	}
@@ -129,13 +131,17 @@ public class ExternalProviderS3 extends ExternalProviderService implements Exter
 		AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(credentials));
 
 		if (endpoint.length() > 0 && !endpoint.contains(".amazonaws.com")) {
+			pathStyleUrls = true;
+
 			s3Client = builder
 				.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, region))
 				.disableChunkedEncoding()
 				.enablePathStyleAccess()
 				.build();
+			endpointUrl = endpoint;
 		}
 		else {
+			pathStyleUrls = false;
 			s3Client = builder
 				.withRegion(region)
 				.build();
@@ -175,7 +181,7 @@ public class ExternalProviderS3 extends ExternalProviderService implements Exter
             S3Object object = client.getObject(new GetObjectRequest(bucket, externalFileName));
             try (InputStream objectData = object.getObjectContent()) {
 				try (OutputStream outputStream = new FileOutputStream(new File(localFile))){
-					int read = 0;
+					int read;
 					byte[] bytes = new byte[1024];
 					while ((read = objectData.read(bytes)) != -1) {
 						outputStream.write(bytes, 0, read);
@@ -191,7 +197,7 @@ public class ExternalProviderS3 extends ExternalProviderService implements Exter
 
     public String upload(String localFile, String externalFileName, ResourceAccessControlList acl) {
         client.putObject(new PutObjectRequest(bucket, externalFileName, new File(localFile)).withCannedAcl(internalToAWSACL(acl)));
-        return ((AmazonS3Client) client).getResourceUrl(bucket, externalFileName);
+        return getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
     }
 
     private CannedAccessControlList internalToAWSACL(ResourceAccessControlList acl) {
@@ -220,7 +226,7 @@ public class ExternalProviderS3 extends ExternalProviderService implements Exter
             String upload = "";
             try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes)) {
 				client.putObject(new PutObjectRequest(bucket, externalFileName, byteArrayInputStream, metadata).withCannedAcl(internalToAWSACL(acl)));
-				upload = ((AmazonS3Client) client).getResourceUrl(bucket, externalFileName);
+				upload = getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
 			}
 			return upload;
         } catch (IOException ex) {
@@ -230,24 +236,28 @@ public class ExternalProviderS3 extends ExternalProviderService implements Exter
     }
 
     public String get(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
-		expirationMinutes = expirationMinutes > 0 ? expirationMinutes: defaultExpirationMinutes;
         client.getObjectMetadata(bucket, externalFileName);
-        if (internalToAWSACL(acl) == CannedAccessControlList.Private) {
-            java.util.Date expiration = new java.util.Date();
-            long msec = expiration.getTime();
-            msec += 60000 * expirationMinutes;
-            expiration.setTime(msec);
+		return getResourceUrl(externalFileName, acl, expirationMinutes);
+	}
 
-            GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucket, externalFileName);
-            generatePresignedUrlRequest.setMethod(HttpMethod.GET);
-            generatePresignedUrlRequest.setExpiration(expiration);
-            return client.generatePresignedUrl(generatePresignedUrlRequest).toString();
-        } else {
-            return ((AmazonS3Client) client).getResourceUrl(bucket, externalFileName);
-        }
-    }
+	private String getResourceUrl(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
+		if (internalToAWSACL(acl) == CannedAccessControlList.Private) {
+			expirationMinutes = expirationMinutes > 0 ? expirationMinutes: defaultExpirationMinutes;
+			Date expiration = new Date();
+			long msec = expiration.getTime();
+			msec += 60000 * expirationMinutes;
+			expiration.setTime(msec);
 
-    public void delete(String objectName, ResourceAccessControlList acl) {
+			GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucket, externalFileName);
+			generatePresignedUrlRequest.setMethod(HttpMethod.GET);
+			generatePresignedUrlRequest.setExpiration(expiration);
+			return client.generatePresignedUrl(generatePresignedUrlRequest).toString();
+		} else {
+			return ((AmazonS3Client) client).getResourceUrl(bucket, externalFileName);
+		}
+	}
+
+	public void delete(String objectName, ResourceAccessControlList acl) {
         client.deleteObject(bucket, objectName);
     }
 
@@ -441,6 +451,8 @@ public class ExternalProviderS3 extends ExternalProviderService implements Exter
 
 	private String getStorageUri()
 	{
-		return String.format("https://%s%s", this.bucket, this.endpointUrl);
+		return (!pathStyleUrls) ? String.format("https://%s%s", this.bucket, this.endpointUrl):
+			String.format("%s/%s/",  this.endpointUrl, this.bucket);
 	}
 }
+//http://192.168.254.78:9000/java-classes-unittests/text.txt

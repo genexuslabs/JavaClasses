@@ -16,41 +16,46 @@ public class GXExternalFileInfo implements IGXFileInfo {
     ResourceAccessControlList fileAcl;
 
     public GXExternalFileInfo(String storageObjectFullName, String url, ExternalProvider provider) {
-        name = storageObjectFullName;
+		setName(storageObjectFullName);
         this.url = url;
         this.provider = provider;
         this.isFile = true;
     }
 
     public GXExternalFileInfo(String storageObjectFullName, String url, ExternalProvider provider, ResourceAccessControlList acl) {
-        name = storageObjectFullName;
         this.url = url;
         this.provider = provider;
         this.isFile = isFile;
         this.fileAcl = acl;
+		setName(storageObjectFullName);
     }
 
      public GXExternalFileInfo(String storageObjectFullName, ExternalProvider provider, boolean isFile) {
-        name = storageObjectFullName;
         this.url = "";
         this.provider = provider;
         this.isFile = isFile;
+		setName(storageObjectFullName);
     }
 
     public GXExternalFileInfo(String storageObjectFullName, ExternalProvider provider, boolean isFile, ResourceAccessControlList acl) {
-        name = storageObjectFullName;
         this.url = "";
         this.provider = provider;
         this.isFile = isFile;
         this.fileAcl = acl;
+		setName(storageObjectFullName);
     }
 
      public GXExternalFileInfo(String storageObjectFullName, ExternalProvider provider) {
-        name = storageObjectFullName;
         this.url = "";
         this.provider = provider;
         this.isFile = true;
+		setName(storageObjectFullName);
     }
+
+    private void setName(String objectNameOrUrl) {
+		String providerObjectName = ExternalProviderCommon.getProviderObjectName(this.provider, objectNameOrUrl);
+    	this.name = (providerObjectName == null) ? objectNameOrUrl: providerObjectName;
+	}
 
     public String getPath() {
     	if(isDirectory())

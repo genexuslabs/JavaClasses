@@ -9,12 +9,11 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
 public abstract class TestExternalProvider {
-	private ExternalProvider provider;
+	protected ExternalProvider provider;
 
 	public abstract String getProviderName();
 	public abstract ExternalProvider getExternalProvider() throws Exception ;
@@ -79,7 +78,7 @@ public abstract class TestExternalProvider {
 
 		provider.get(copyFileName, acl, 100);
 		provider.delete(copyFileName, acl);
-		assertFalse(urlExists(provider.get(copyFileName, acl, 100)));
+		assertFalse(urlExists(tryGet(copyFileName, acl)));
 
 		provider.copy("text.txt", copyFileName, acl);
 		upload = provider.get(copyFileName, acl, 100);
@@ -100,15 +99,24 @@ public abstract class TestExternalProvider {
 
 		provider.delete(copyFileName, acl);
 		provider.copy("text.txt", copyFileName, acl);
-		upload = provider.get(copyFileName, acl, 100);
+		upload = tryGet(copyFileName, acl);
 		assertTrue(urlExists(upload));
 	}
 
 	@Test
 	public void testGetMethod(){
 		testUploadPublicMethod();
-		String url = provider.get("text.txt", ResourceAccessControlList.Private, 10);
+		String url = provider.get("text.txt", ResourceAccessControlList.PublicRead, 10);
 		assertTrue(urlExists(url));
+	}
+
+	@Test
+	public void testGetObjectName(){
+		testUploadPublicMethod();
+		String url = provider.get("text.txt", ResourceAccessControlList.PublicRead, 10);
+		assertTrue(urlExists(url));
+		String objectName = provider.getObjectNameFromURL(url);
+		assertEquals("text.txt", objectName);
 	}
 
 	@Test
@@ -126,28 +134,43 @@ public abstract class TestExternalProvider {
 	@Test
 	public void testDeleteFile(){
 		testUploadPublicMethod();
-		String url = provider.get("text.txt", ResourceAccessControlList.PublicRead, 5);
+		String url = tryGet("text.txt", ResourceAccessControlList.PublicRead);
 		assertTrue(urlExists(url));
 		provider.delete("text.txt", ResourceAccessControlList.PublicRead);
 
-		url = provider.get("text.txt", ResourceAccessControlList.PublicRead, 5);
+		url = tryGet("text.txt", ResourceAccessControlList.PublicRead);
 		assertFalse(urlExists(url));
+	}
+
+	private String tryGet(String objectName, ResourceAccessControlList acl) {
+		String getValue = "";
+		try {
+			getValue = provider.get(objectName, acl, 5);
+		}
+		catch (Exception e) {
+
+		}
+		return getValue;
 	}
 
 	@Test
 	public void testUploadPrivateMethod(){
 		Path path = Paths.get("resources", "text.txt");
 		String relativePath = path.toString();
-		String externalFileName = "text-private.txt";
+		String externalFileName = "text-private2.txt";
 
-		provider.upload(relativePath, externalFileName, ResourceAccessControlList.Private);
+		String signedUrl = provider.upload(relativePath, externalFileName, ResourceAccessControlList.Private);
+		assertTrue(urlExists(signedUrl));
 
-		String upload = provider.get(externalFileName, ResourceAccessControlList.Private, 10);
-		assertTrue(urlExists(upload));
-		assertFalse(urlExists(upload.substring(0, upload.indexOf("?") + 1)));
+		signedUrl = provider.get(externalFileName, ResourceAccessControlList.Private, 10);
+		assertTrue(urlExists(signedUrl));
+
+		String noSignedUrl = signedUrl.substring(0, signedUrl.indexOf("?") + 1);
+		assertFalse("Resource must be private: " + noSignedUrl, urlExists(noSignedUrl));
+
 	}
 
-	private boolean urlExists(String httpUrl) {
+	protected boolean urlExists(String httpUrl) {
 		try {
 			URL url = new URL(httpUrl);
 			InputStream is = url.openStream();
