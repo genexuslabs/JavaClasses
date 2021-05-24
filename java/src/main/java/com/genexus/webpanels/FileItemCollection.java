@@ -28,9 +28,6 @@ public class FileItemCollection
                 if (!item.isFormField())
                 {
 					temporalFilePath = rootPath + com.genexus.PrivateUtilities.getTempFileName("tmp");
-					/*if (formFieldNameWithExtension.length() > 0) {
-						formFieldNameWithExtension = com.genexus.PrivateUtilities.getTempFileName("", PrivateUtilities.removeExtension(formFieldNameWithExtension), PrivateUtilities.getExtension(formFieldNameWithExtension), true);
-					}*/
                 }
                 InputStream stream = item.openStream();
                 FileItem fileItem = new FileItem(formFieldNameWithExtension, temporalFilePath, item.isFormField(), item.getFieldName(), stream);
