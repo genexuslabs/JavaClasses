@@ -53,8 +53,7 @@ public class GXExternalFileInfo implements IGXFileInfo {
     }
 
     private void setName(String objectNameOrUrl) {
-		String providerObjectName = ExternalProviderCommon.getProviderObjectName(this.provider, objectNameOrUrl);
-    	this.name = (providerObjectName == null) ? objectNameOrUrl: providerObjectName;
+    	this.name = ExternalProviderCommon.getProviderObjectNameSafe(this.provider, objectNameOrUrl);
 	}
 
     public String getPath() {
