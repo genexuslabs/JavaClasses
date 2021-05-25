@@ -1,6 +1,8 @@
 package com.genexus.util;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Vector;
 import com.genexus.db.driver.*;
 import com.genexus.common.interfaces.SpecificImplementation;
@@ -25,7 +27,6 @@ public class GXExternalFileInfo implements IGXFileInfo {
     public GXExternalFileInfo(String storageObjectFullName, String url, ExternalProvider provider, ResourceAccessControlList acl) {
         this.url = url;
         this.provider = provider;
-        this.isFile = isFile;
         this.fileAcl = acl;
 		setName(storageObjectFullName);
     }
