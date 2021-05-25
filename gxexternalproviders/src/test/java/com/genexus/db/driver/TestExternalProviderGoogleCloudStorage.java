@@ -1,16 +1,15 @@
 package com.genexus.db.driver;
 
 
-public class TestExternalProviderIBM extends TestExternalProvider {
-
+public class TestExternalProviderGoogleCloudStorage extends TestExternalProvider {
 	@Override
 	public String getProviderName(){
-		return ExternalProviderIBM.NAME;
+		return ExternalProviderGoogle.NAME;
 	}
 
 	@Override
 	public ExternalProvider getExternalProvider() throws Exception {
-		return new ExternalProviderIBM();
+		return new ExternalProviderGoogle();
 	}
 
 }

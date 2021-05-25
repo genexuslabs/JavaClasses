@@ -11,7 +11,6 @@ import com.ibm.cloud.objectstorage.SDKGlobalConfiguration;
 import com.ibm.cloud.objectstorage.auth.AWSCredentials;
 import com.ibm.cloud.objectstorage.auth.AWSStaticCredentialsProvider;
 import com.ibm.cloud.objectstorage.client.builder.AwsClientBuilder.EndpointConfiguration;
-import com.ibm.cloud.objectstorage.oauth.BasicIBMOAuthCredentials;
 import com.ibm.cloud.objectstorage.services.s3.AmazonS3;
 import com.ibm.cloud.objectstorage.services.s3.AmazonS3Client;
 import com.ibm.cloud.objectstorage.services.s3.AmazonS3ClientBuilder;
@@ -29,77 +28,86 @@ import org.apache.logging.log4j.Logger;
 import java.io.*;
 
 
-public class ExternalProviderIBM implements ExternalProvider {
+public class ExternalProviderIBM extends ExternalProviderBase implements ExternalProvider {
 
 	private static Logger logger = LogManager.getLogger(ExternalProviderIBM.class);
 
-    static final String ACCESS_KEY_ID = "STORAGE_PROVIDER_ACCESS_KEY";
-    static final String SECRET_ACCESS_KEY = "STORAGE_PROVIDER_SECRET_KEY";
-	static final String DEFAULT_ACL = "STORAGE_PROVIDER_DEFAULT_ACL";
-    static final String COS_ENDPOINT = "STORAGE_COS_ENDPOINT";
-    static final String COS_LOCATION = "STORAGE_COS_LOCATION";
+	static final String NAME = "IBMCOS";
 
-    static final String BUCKET = "BUCKET_NAME";
-    static final String FOLDER = "FOLDER_NAME";
+	static final String ACCESS_KEY = "ACCESS_KEY";
+	static final String SECRET_ACCESS_KEY = "SECRET_KEY";
+	static final String STORAGE_ENDPOINT =  "ENDPOINT";
+	static final String REGION = "REGION";
+	static final String BUCKET = "BUCKET_NAME";
+
+	@Deprecated
+    static final String ACCESS_KEY_ID_DEPRECATED = "STORAGE_PROVIDER_ACCESS_KEY";
+	@Deprecated
+    static final String SECRET_ACCESS_KEY_DEPRECATED = "STORAGE_PROVIDER_SECRET_KEY";
+	@Deprecated
+	static final String DEFAULT_ACL_DEPRECATED = "STORAGE_PROVIDER_DEFAULT_ACL";
+	@Deprecated
+    static final String COS_ENDPOINT_DEPRECATED = "STORAGE_COS_ENDPOINT";
+	@Deprecated
+    static final String COS_LOCATION_DEPRECATED = "STORAGE_COS_LOCATION";
+	@Deprecated
+    static final String BUCKET_DEPRECATED = "BUCKET_NAME";
+	@Deprecated
+    static final String FOLDER_DEPRECATED = "FOLDER_NAME";
 
     private AmazonS3 client;
     private String bucket;
     private String folder;
     private String endpointUrl;
 	private CannedAccessControlList defaultACL;
-	private int defaultExpirationMinutes = 24 * 60;
+	private int defaultExpirationMinutes = DEFAULT_EXPIRATION_MINUTES;
 
     /* For compatibility reasons with GX16 U6 or lower*/
-    public ExternalProviderIBM(){
+    public ExternalProviderIBM() throws Exception {
         this(GXServices.STORAGE_SERVICE);
     }
 
-    public ExternalProviderIBM(String service) {
+    public ExternalProviderIBM(String service) throws Exception {
         this(Application.getGXServices().get(service));
     }
 
-    public ExternalProviderIBM(GXService providerService) {
-        String accessKey = ExternalProviderHelper.getServicePropertyValue(providerService, ACCESS_KEY_ID, true);
-        String secret = ExternalProviderHelper.getServicePropertyValue(providerService, SECRET_ACCESS_KEY, true);
-        String location = ExternalProviderHelper.getServicePropertyValue(providerService, COS_LOCATION, false);
-        String endpoint = ExternalProviderHelper.getServicePropertyValue(providerService, COS_ENDPOINT, false);
-        String bucket = ExternalProviderHelper.getServicePropertyValue(providerService, BUCKET, true);
-        String folder = ExternalProviderHelper.getServicePropertyValue(providerService, FOLDER, false);
-		String defaultAcl = providerService.getProperties().get(DEFAULT_ACL);
-		init(accessKey, secret, bucket, folder, location, endpoint, defaultAcl);
+    public ExternalProviderIBM(GXService providerService) throws Exception {
+    	super(providerService);
+		init();
     }
 
-
-	public ExternalProviderIBM(String accessKey, String secretKey,  String bucketName, String folderName, String location, String endpoint, String defaultAcl) {
-		init(accessKey, secretKey, bucketName, folderName, location, endpoint, defaultAcl);
+	public String getName() {
+    	return NAME;
 	}
+	private void init() throws Exception {
+		String accessKey = getEncryptedPropertyValue(ACCESS_KEY, ACCESS_KEY_ID_DEPRECATED);
+		String secretKey = getEncryptedPropertyValue(SECRET_ACCESS_KEY, SECRET_ACCESS_KEY_DEPRECATED);
+		String location = getPropertyValue(REGION, COS_LOCATION_DEPRECATED, "us-south");
+		String endpoint = getPropertyValue(STORAGE_ENDPOINT, COS_ENDPOINT_DEPRECATED, String.format("s3.%s.cloud-object-storage.appdomain.cloud", location));
+		bucket = getEncryptedPropertyValue(BUCKET, BUCKET_DEPRECATED);
+		folder = getPropertyValue(FOLDER, FOLDER_DEPRECATED, "");
+		String defaultAcl = getPropertyValue(DEFAULT_ACL, DEFAULT_ACL_DEPRECATED, "");
+		this.defaultACL = internalToAWSACL(ResourceAccessControlList.parse(defaultAcl));
 
-	private void init(String accessKey, String secretKey, String bucketName, String folderName, String location, String endpoint, String defaultAcl) {
-    	endpointUrl = endpoint;
-		bucket = bucketName;
-		folder = folderName;
+		endpointUrl = endpoint;
 
-		setDefaultACL(defaultAcl);
-		
 		ClientConfiguration clientConfig = new ClientConfiguration().withRequestTimeout(10000);
 		clientConfig.setUseTcpKeepAlive(true);
 		SDKGlobalConfiguration.IAM_ENDPOINT = "https://iam.cloud.ibm.com/identity/token";
 		AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
 
 		client = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(credentials))
-			.withEndpointConfiguration(new EndpointConfiguration(endpointUrl, location)).withPathStyleAccessEnabled(true)
+			.withEndpointConfiguration(new EndpointConfiguration(endpointUrl, location))
+			.withPathStyleAccessEnabled(false)
 			.withClientConfiguration(clientConfig).build();
 
 		bucketExists();
 		ensureFolder(folder);
 	}
 
-	public void setDefaultACL(String acl) {
-		this.defaultACL = internalToAWSACL(ResourceAccessControlList.parse(acl));
-	}
     private void bucketExists() {
-        if (!client.doesBucketExist(bucket)) {
-            logger.debug(String.format("Bucket %s doesn't exist, please create the bucket", bucket));
+        if (!client.doesBucketExistV2(bucket)) {
+            logger.error(String.format("Bucket %s doesn't exist, please create the bucket", bucket));
         }
     }
 
@@ -118,7 +126,7 @@ public class ExternalProviderIBM implements ExternalProvider {
             S3Object object = client.getObject(new GetObjectRequest(bucket, externalFileName));
             try (InputStream objectData = object.getObjectContent()) {
 				try (OutputStream outputStream = new FileOutputStream(new File(localFile))){
-					int read = 0;
+					int read;
 					byte[] bytes = new byte[1024];
 					while ((read = objectData.read(bytes)) != -1) {
 						outputStream.write(bytes, 0, read);
@@ -134,7 +142,7 @@ public class ExternalProviderIBM implements ExternalProvider {
 
     public String upload(String localFile, String externalFileName, ResourceAccessControlList acl) {
         client.putObject(new PutObjectRequest(bucket, externalFileName, new File(localFile)).withCannedAcl(internalToAWSACL(acl)));
-        return ((AmazonS3Client) client).getResourceUrl(bucket, externalFileName);
+        return getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
     }
 
     private CannedAccessControlList internalToAWSACL(ResourceAccessControlList acl) {
@@ -163,7 +171,7 @@ public class ExternalProviderIBM implements ExternalProvider {
             String upload = "";
             try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes)) {
 				client.putObject(new PutObjectRequest(bucket, externalFileName, byteArrayInputStream, metadata).withCannedAcl(internalToAWSACL(acl)));
-				upload = ((AmazonS3Client) client).getResourceUrl(bucket, externalFileName);
+				upload = getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
 			}
 			return upload;
         } catch (IOException ex) {
@@ -173,24 +181,28 @@ public class ExternalProviderIBM implements ExternalProvider {
     }
 
     public String get(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
-		expirationMinutes = expirationMinutes > 0 ? expirationMinutes: defaultExpirationMinutes;
         client.getObjectMetadata(bucket, externalFileName);
-        if (internalToAWSACL(acl) == CannedAccessControlList.Private) {
-            java.util.Date expiration = new java.util.Date();
-            long msec = expiration.getTime();
-            msec += 60000 * expirationMinutes;
-            expiration.setTime(msec);
+		return getResourceUrl(externalFileName, acl, expirationMinutes);
+	}
 
-            GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucket, externalFileName);
-            generatePresignedUrlRequest.setMethod(HttpMethod.GET);
-            generatePresignedUrlRequest.setExpiration(expiration);
-            return client.generatePresignedUrl(generatePresignedUrlRequest).toString();
-        } else {
-            return ((AmazonS3Client) client).getResourceUrl(bucket, externalFileName);
-        }
-    }
+	private String getResourceUrl(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
+		if (internalToAWSACL(acl) == CannedAccessControlList.Private) {
+			expirationMinutes = expirationMinutes > 0 ? expirationMinutes: defaultExpirationMinutes;
+			Date expiration = new Date();
+			long msec = expiration.getTime();
+			msec += 60000 * expirationMinutes;
+			expiration.setTime(msec);
 
-    public void delete(String objectName, ResourceAccessControlList acl) {
+			GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucket, externalFileName);
+			generatePresignedUrlRequest.setMethod(HttpMethod.GET);
+			generatePresignedUrlRequest.setExpiration(expiration);
+			return client.generatePresignedUrl(generatePresignedUrlRequest).toString();
+		} else {
+			return ((AmazonS3Client) client).getResourceUrl(bucket, externalFileName);
+		}
+	}
+
+	public void delete(String objectName, ResourceAccessControlList acl) {
         client.deleteObject(bucket, objectName);
     }
 
@@ -367,8 +379,8 @@ public class ExternalProviderIBM implements ExternalProvider {
         }
     }
 
-	public String getObjectNameFromURL(String url) {
-		String objectName = null;
+    public String getObjectNameFromURL(String url) {
+    	String objectName = null;
 		if (url.startsWith(this.getStorageUri()))
 		{
 			objectName = url.replace(this.getStorageUri(), "");
@@ -378,7 +390,7 @@ public class ExternalProviderIBM implements ExternalProvider {
 
 	private String getStorageUri()
 	{
-		return String.format("https://%s%s/", this.bucket, this.endpointUrl);
+		return String.format("https://%s.%s/", this.bucket, this.endpointUrl);
 	}
 
 }

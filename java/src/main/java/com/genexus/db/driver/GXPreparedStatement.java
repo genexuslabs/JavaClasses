@@ -950,12 +950,14 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 
     public void setGXDbFileURI(int index, String fileName, String blobPath, int length, String tableName, String fieldName) throws SQLException {
 
+		ExternalProvider storageProvider = Application.getExternalProvider();
+
 		fileName = fileName.trim();
 		blobPath = blobPath.trim();
 
 		//EMPTY BLOB
     	if (blobPath == null || blobPath.trim().length() == 0) {
-			setVarchar(index, fileName, length, false);
+			setVarchar(index, ExternalProviderCommon.getNormalizedProviderUrl(storageProvider, fileName), length, false);
 			return;
 		}
 
@@ -972,7 +974,6 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			fileUri = GXDbFile.generateUri(file.getName(), !GXDbFile.hasToken(blobPath), true);
 		}
 
-		ExternalProvider storageProvider = Application.getExternalProvider();
 		boolean externalStorageEnabled = storageProvider != null;
 		boolean attInExternalStorage = externalStorageEnabled && (tableName != null && fieldName != null); //Should improve this condition in order to not depend on tableName and FieldName.
 
@@ -1012,7 +1013,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 				// - 3. Transaction Update Mode (nothing changed): An Storage URL that is already in External Storage (except in private), should not be uploaded nor copied.
 				fileUri = storageObjectName;
 			} else {
-				GXFile gxFile = new GXFile(storageTargetObjectName, defaultAcl);
+				GXFile gxFile = new GXFile(storageTargetObjectName, ResourceAccessControlList.Private); //Every temporal file is saved as private.
 				if (gxFile.exists()) {
 					// - 1. WebUpload: The URL is an External Storage URL in the Private Temp Storage Folder.
 					fileName = gxFile.getName();
@@ -1020,6 +1021,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 					if ((idx != -1) && (idx < fileName.length() - 1)) {
 						fileName = fileName.substring(idx + 1);
 					}
+					fileName = com.genexus.PrivateUtilities.getTempFileName("", CommonUtil.getFileName(fileName), CommonUtil.getFileType(fileName), true);
 					fileUri = storageProvider.copy(gxFile.getAbsoluteName(), fileName, tableName, fieldName, defaultAcl);
 				} else {
 					// - 4. Upload Resource from local drive to External Storage: Ex: Image.FromImage(ActionDelete)
