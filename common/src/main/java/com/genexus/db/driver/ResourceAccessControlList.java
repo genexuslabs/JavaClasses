@@ -6,18 +6,16 @@ public enum ResourceAccessControlList {
 	PublicReadWrite,
 	Private;
 
-	private static ResourceAccessControlList DEFAULT = PublicRead;
-
 	public static ResourceAccessControlList parse(String acl) {
-		ResourceAccessControlList resourceAcl = DEFAULT;
-		acl = acl.toLowerCase();
-		if (acl.toLowerCase().equals("publicread") ) {
+		ResourceAccessControlList resourceAcl = ResourceAccessControlList.PublicRead;
+
+		if (acl.equalsIgnoreCase("publicread") ) {
 			resourceAcl = ResourceAccessControlList.PublicRead;
 		}
-		if (acl.toLowerCase().equals("publicreadwrite") ) {
+		if (acl.equalsIgnoreCase("publicreadwrite") ) {
 			resourceAcl = ResourceAccessControlList.PublicReadWrite;
 		}
-		if (acl.toLowerCase().equals("private") ) {
+		if (acl.equalsIgnoreCase("private") ) {
 			resourceAcl = ResourceAccessControlList.Private;
 		}
 		return resourceAcl;
