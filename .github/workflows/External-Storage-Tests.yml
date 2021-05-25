@@ -1,0 +1,75 @@
+name: External Storage Tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - 'master'
+      - 'release-*'
+  push:
+    branches: 
+      - 'master'
+      - 'beta'
+      - 'release-*'
+      - 'beta-corona'
+  schedule:
+    - cron: '0 0 * * 1' # At 00:00 on (every) Monday
+
+jobs:
+ test-external-storages:
+    name: Test External Storage
+    env:
+      GIT_REF: ${{ github.ref }}
+      GIT_SHA: ${{ github.sha }}
+      POM_PATH: ./pom.xml
+    
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 1
+
+    - name: Setup Java JDK
+      uses: actions/setup-java@v1.4.3
+      with:
+        java-version: 1.9
+
+    - name: Setup Maven settings
+      uses: whelk-io/maven-settings-xml-action@v14
+      with:
+        repositories: '[{ "id": "github-genexuslabs", "url": "https://maven.pkg.github.com/genexuslabs/Private-Maven-for-GX",  "releases": { "enabled": "true" }, "snapshots": { "enabled": "true" } }]'
+        servers: '[{ "id": "github-genexuslabs", "username": "genexusbot", "password": "${{ secrets.SECURE_TOKEN }}" }]'
+
+    - name: Install
+      run: mvn -B install --file $POM_PATH
+
+    - name: Test External Storages
+      run: |
+        export AWSS3_TEST_ENABLED=true
+        export STORAGE_AWSS3_ACCESS_KEY="${{ secrets.AWSS3_ACCESS_KEY }}"
+        export STORAGE_AWSS3_SECRET_KEY="${{ secrets.AWSS3_SECRET_KEY }}"
+        export STORAGE_AWSS3_BUCKET_NAME=genexuss3test
+        export STORAGE_AWSS3_FOLDER_NAME=gxclasses
+        export STORAGE_AWSS3_REGION=us-east-1
+        export IBMCOS_TEST_ENABLED=true
+        export STORAGE_IBMCOS_ACCESS_KEY="${{ secrets.IBMCOS_ACCESS_KEY }}"
+        export STORAGE_IBMCOS_SECRET_KEY="${{ secrets.IBMCOS_SECRET_KEY }}"
+        export STORAGE_IBMCOS_BUCKET_NAME=gxclasses-unit-tests
+        export STORAGE_IBMCOS_FOLDER_NAME=tests
+        export STORAGE_IBMCOS_REGION=us-south
+        export AZUREBS_TEST_ENABLED=true
+        export STORAGE_AZUREBS_ACCESS_KEY="${{ secrets.AZUREBS_ACCESS_KEY }}"
+        export STORAGE_AZUREBS_ACCOUNT_NAME="${{ secrets.AZUREBS_ACCOUNT_NAME }}"
+        export STORAGE_AZUREBS_FOLDER_NAME=tests
+        export STORAGE_AZUREBS_PUBLIC_CONTAINER_NAME=contluispublic
+        export STORAGE_AZUREBS_PRIVATE_CONTAINER_NAME=contluisprivate
+        export GOOGLECS_TEST_ENABLED=true
+        export STORAGE_GOOGLECS_KEY="${{ secrets.GOOGLECS_KEY }}"
+        export STORAGE_GOOGLECS_PROJECT_ID=desarrollo-262414
+        export STORAGE_GOOGLECS_BUCKET_NAME=desarrollo-262414-vcm
+        export STORAGE_GOOGLECS_FOLDER_NAME=gxclasses
+        export STORAGE_GOOGLECS_APPLICATION_NAME=desarrollo
+
+        mvn -B -pl gxexternalproviders test --file $POM_PATH
