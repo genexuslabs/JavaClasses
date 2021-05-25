@@ -1,6 +1,5 @@
 package com.genexus.webpanels;
 
-import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -9,16 +8,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
-import javax.servlet.*;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.ws.rs.core.HttpHeaders;
+import com.genexus.fileupload.servlet.IServletFileUpload;
+import com.genexus.servlet.*;
+import com.genexus.servlet.http.Cookie;
+import com.genexus.servlet.http.ICookie;
+import com.genexus.servlet.http.IHttpServletRequest;
+import com.genexus.servlet.http.IHttpServletResponse;
+import com.genexus.servlet.http.HttpServletResponse;
+import com.genexus.servlet.http.IHttpSession;
 
 import com.genexus.*;
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import com.genexus.fileupload.IFileItemIterator;
+import com.genexus.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -41,7 +42,7 @@ public class HttpContextWeb extends HttpContext {
 
 	HttpResponse httpRes;
 	HttpRequest httpReq;
-	ServletContext servletContext;
+	IServletContext servletContext;
 
 	boolean useOldQueryStringFormat;
 	protected Vector<String> parms;
@@ -50,8 +51,8 @@ public class HttpContextWeb extends HttpContext {
 	private boolean useNamedParameters;
 	private int currParameter;
 
-	private HttpServletRequest request;
-	private HttpServletResponse response;
+	private IHttpServletRequest request;
+	private IHttpServletResponse response;
 	private String requestMethod;
 	protected String contentType = "";
 	private boolean SkipPushUrl = false;
@@ -59,7 +60,7 @@ public class HttpContextWeb extends HttpContext {
 	private boolean streamSet = false;
 	private WebSession webSession;
 	private FileItemCollection fileItemCollection;
-	private FileItemIterator lstParts;
+	private IFileItemIterator lstParts;
 	private boolean ajaxCallAsPOST = false;
 	private boolean htmlHeaderClosed = false;
 	private String sTmpDir;
@@ -77,6 +78,7 @@ public class HttpContextWeb extends HttpContext {
 	private static final String SAME_SITE_NONE = "None";
 	private static final String SAME_SITE_LAX = "Lax";
 	private static final String SAME_SITE_STRICT = "Strict";
+	private static final String SET_COOKIE = "Set-Cookie";
 
 	public boolean isMultipartContent() {
 		return ServletFileUpload.isMultipartContent(request);
@@ -154,22 +156,13 @@ public class HttpContextWeb extends HttpContext {
 		return Resource;
 	}
 
-	private FileItemIterator parseMultiParts() {
+	private IFileItemIterator parseMultiParts() {
 		if (lstParts == null) {
 			try {
-				sTmpDir = context.getClientPreferences().getTMPMEDIA_DIR();
-				if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) == null) {
-					if (!new File(sTmpDir).isAbsolute()) {
-						sTmpDir = com.genexus.ModelContext.getModelContext().getHttpContext().getDefaultPath()
-								+ File.separator + "WEB-INF" + File.separatorChar + sTmpDir;
-					}
-					File path = new File(sTmpDir);
-					if (!path.exists())
-						path.mkdirs();
-				}
+				sTmpDir = Preferences.getDefaultPreferences().getPRIVATE_PATH();
 				if (request != null && ServletFileUpload.isMultipartContent(request)) {
-					ServletFileUpload upload = new ServletFileUpload();
-					upload.setHeaderEncoding("UTF-8");
+					IServletFileUpload upload = new ServletFileUpload();
+					upload.setUploadHeaderEncoding("UTF-8");
 					lstParts = upload.getItemIterator(request);
 				}
 			} catch (Exception e) {
@@ -206,13 +199,13 @@ public class HttpContextWeb extends HttpContext {
 		}
 	}
 
-	public HttpContextWeb(String requestMethod, HttpServletRequest req, HttpServletResponse res,
-						  ServletContext servletContext) throws IOException {
+	public HttpContextWeb(String requestMethod, IHttpServletRequest req, IHttpServletResponse res,
+						  IServletContext servletContext) throws IOException {
 		this(ClientContext.getModelContext().getClientPreferences().getProperty("UseNamedParameters", "1").equals("1"), requestMethod, req, res, servletContext);
 	}
 
-	public HttpContextWeb(boolean useNamedParameters, String requestMethod, HttpServletRequest req, HttpServletResponse res,
-			ServletContext servletContext) throws IOException {
+	public HttpContextWeb(boolean useNamedParameters, String requestMethod, IHttpServletRequest req, IHttpServletResponse res,
+			IServletContext servletContext) throws IOException {
 		this.request = req;
 		this.response = res;
 
@@ -517,7 +510,7 @@ public class HttpContextWeb extends HttpContext {
 		return realPath;
 	}
 
-	public HttpServletResponse getResponse() {
+	public IHttpServletResponse getResponse() {
 		return response;
 	}
 
@@ -780,7 +773,7 @@ public class HttpContextWeb extends HttpContext {
 		try {
 			if (request != null) {
 				Object obj = null;
-				HttpSession session = request.getSession(false);
+				IHttpSession session = request.getSession(false);
 				if (session != null) {
 					try {
 						obj = session.getAttribute(CommonUtil.upper(name));
@@ -848,8 +841,8 @@ public class HttpContextWeb extends HttpContext {
 		return "0";
 	}
 
-	public Cookie[] getCookies() {
-		Cookie[] cookies = {};
+	public ICookie[] getCookies() {
+		ICookie[] cookies = {};
 		if (request != null) {
 			try {
 				cookies = request.getCookies();
@@ -866,10 +859,10 @@ public class HttpContextWeb extends HttpContext {
 
 		if (request != null) {
 			try {
-				Cookie[] cookies = request.getCookies();
+				ICookie[] cookies = request.getCookies();
 				if (cookies != null) {
 					for (int i = 0; i < cookies.length; i++) {
-						Cookie cookie = cookies[i];
+						ICookie cookie = cookies[i];
 						if (cookie.getName().equalsIgnoreCase(name)) {
 							return WebUtils.decodeCookie(cookie.getValue());
 						}
@@ -892,7 +885,7 @@ public class HttpContextWeb extends HttpContext {
 	public byte setCookieRaw(String name, String value, String path, java.util.Date expiry, String domain,
 			double secure, Boolean httpOnly) {
 		if (response != null) {
-			Cookie cookie = new Cookie(name, value);
+			ICookie cookie = new Cookie(name, value);
 
 			if (path.trim().length() > 0)
 				cookie.setPath(path.trim());
@@ -1195,11 +1188,11 @@ public class HttpContextWeb extends HttpContext {
 		this.httpReq = httpReq;
 	}
 
-	public HttpServletRequest getRequest() {
+	public IHttpServletRequest getRequest() {
 		return request;
 	}
 
-	public void setRequest(HttpServletRequest request) {
+	public void setRequest(IHttpServletRequest request) {
 		this.request = request;
 	}
 
@@ -1207,7 +1200,7 @@ public class HttpContextWeb extends HttpContext {
 		return com.genexus.webpanels.HttpUtils.parseMultipartPostData(fileItemCollection);
 	}
 
-	static public Hashtable<String, String[]> parsePostData(HttpServletRequest request, ServletInputStream in) {
+	static public Hashtable<String, String[]> parsePostData(IHttpServletRequest request, IServletInputStream in) {
 		try {
 			// Nuestra versión del parsePostData utiliza UTF-8
 			return com.genexus.webpanels.HttpUtils.parsePostData(in);
@@ -1235,8 +1228,8 @@ public class HttpContextWeb extends HttpContext {
 	public String getDefaultPath() {
 		String path = servletContext.getRealPath("/");
 
-		if (path == null && servletContext.getAttribute(servletContext.TEMPDIR) != null) {
-			return ((java.io.File) servletContext.getAttribute(servletContext.TEMPDIR)).getAbsolutePath();
+		if (path == null && servletContext.getAttribute(servletContext.getTEMPDIR()) != null) {
+			return ((java.io.File) servletContext.getAttribute(servletContext.getTEMPDIR())).getAbsolutePath();
 		}
 
 		if (path == null) { // AWS LAMBDA SERVERLESS
@@ -1266,7 +1259,7 @@ public class HttpContextWeb extends HttpContext {
 		if (url != null && url.trim().length() != 0) {
 			try {
 				if (forwardAsWebCallMethod()) {
-					RequestDispatcher dispatcher = getRequest().getRequestDispatcher(url);
+					IRequestDispatcher dispatcher = getRequest().getRequestDispatcher(url);
 					if (dispatcher != null) {
 						doForward(dispatcher);
 					} else {
@@ -1279,7 +1272,7 @@ public class HttpContextWeb extends HttpContext {
 					if (useCustomRedirect()) {
 						getResponse().setHeader("Location", url);
 						getRequest().setAttribute("gx_webcall_method", "customredirect");
-						getResponse().setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
+						getResponse().setStatus(HttpServletResponse.getSC_MOVED_TEMPORARILY());
 					} else {
 						doRedirect(url);
 					}
@@ -1294,7 +1287,7 @@ public class HttpContextWeb extends HttpContext {
 	private void doRedirect(String url) throws IOException {
 		getRequest().setAttribute("gx_webcall_method", "redirect");
 		// getResponse().sendRedirect(url); No retornamos 302 sino 301, debido al SEO.
-		response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
+		response.setStatus(HttpServletResponse.getSC_MOVED_PERMANENTLY());
 		response.setHeader("Location", url);
 		sendCacheHeaders();
 	}
@@ -1308,7 +1301,7 @@ public class HttpContextWeb extends HttpContext {
 		getResponse().addHeader("Cache-Control", "max-age=0, no-cache, no-store, must-revalidate");
 	}
 
-	private void doForward(RequestDispatcher dispatcher) throws IOException, ServletException {
+	private void doForward(IRequestDispatcher dispatcher) throws Exception {
 		getRequest().setAttribute("gx_webcall_method", "forward");
 		dispatcher.forward(getRequest(), getResponse());
 	}
@@ -1466,7 +1459,7 @@ public class HttpContextWeb extends HttpContext {
 					buffer = new com.genexus.util.FastByteArrayOutputStream();
 					setOutputStream(buffer);
 				} else {
-					setOutputStream(getResponse().getOutputStream());
+					setOutputStream(getResponse().getOutputStream().getOutputStream());
 				}
 
 				if (compressed) {
@@ -1492,11 +1485,11 @@ public class HttpContextWeb extends HttpContext {
 				// los datos
 				// que se grabaron al bytearray
 				closeOutputStream();
-				HttpServletResponse response = getResponse();
+				IHttpServletResponse response = getResponse();
 				if (buffer != null && !response.isCommitted()) {
-					ServletOutputStream stream = response.getOutputStream();
+					IServletOutputStream stream = response.getOutputStream();
 					response.setContentLength(buffer.size());
-					buffer.writeToOutputStream(stream);
+					buffer.writeToOutputStream(stream.getOutputStream());
 					stream.close();
 				}
 			} else {
@@ -1522,16 +1515,16 @@ public class HttpContextWeb extends HttpContext {
 		}
 	}
 
-	private void addSameSiteCookieAttribute(HttpServletResponse response) {
-		Collection<String> headers = response.getHeaders(HttpHeaders.SET_COOKIE);
+	private void addSameSiteCookieAttribute(IHttpServletResponse response) {
+		Collection<String> headers = response.getHeaders(SET_COOKIE);
 		boolean firstHeader = true;
 		for (String header : headers) {
 			if (firstHeader) {
-				response.setHeader(HttpHeaders.SET_COOKIE, String.format("%s; %s", header, "SameSite="+sameSiteMode));
+				response.setHeader(SET_COOKIE, String.format("%s; %s", header, "SameSite="+sameSiteMode));
 				firstHeader = false;
 				continue;
 			}
-			response.addHeader(HttpHeaders.SET_COOKIE, String.format("%s; %s", header, "SameSite="+sameSiteMode));
+			response.addHeader(SET_COOKIE, String.format("%s; %s", header, "SameSite="+sameSiteMode));
 		}
 	}
 
@@ -1545,7 +1538,6 @@ public class HttpContextWeb extends HttpContext {
 		if (fileItemCollection != null) {
 			for (int j = 0; fileItemCollection.getCount() > j; j++) {
 				FileItem fileItem1 = fileItemCollection.item(j);
-				fileItem1.delete();
 				fileItem1 = null;
 			}
 			fileItemCollection.clear();

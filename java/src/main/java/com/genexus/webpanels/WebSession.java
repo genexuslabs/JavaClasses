@@ -1,12 +1,10 @@
 package com.genexus.webpanels;
 
 
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import com.genexus.servlet.http.IHttpServletRequest;
+import com.genexus.servlet.http.IHttpSession;
 
 import com.genexus.CommonUtil;
 import com.genexus.internet.HttpContext;
@@ -14,21 +12,22 @@ import com.genexus.util.Encryption;
 import com.genexus.util.SubmitThreadPool;
 
 public class WebSession {
-	private HttpServletRequest request;
+	private IHttpServletRequest request;
 	private Hashtable<String, Object> sessionValues;
 	private boolean useLocalSession;
+	private static Set<String> internalKeys = new HashSet<String>(Arrays.asList(Encryption.AJAX_ENCRYPTION_KEY, HttpContext.GX_NAV_HELPER, HttpContext.GXTheme, HttpContext.GXLanguage));
 
-	public WebSession(HttpServletRequest request) {
+	public WebSession(IHttpServletRequest request) {
 		this.request = request;
 		sessionValues = null;
 		updateSessionInvalidated();
 	}
 
-	private HttpSession getSession() {
+	private IHttpSession getSession() {
 		return getSession(true);
 	}
 
-	private HttpSession getSession(boolean createIfNotExists) {
+	private IHttpSession getSession(boolean createIfNotExists) {
 		if (useLocalSession || request == null)
 			return null;
 		return request.getSession(createIfNotExists);
@@ -91,7 +90,7 @@ public class WebSession {
 	public void setObjectAttribute(String key, Object value) {
 		updateSessionInvalidated();
 		key = normalizeKey(key);
-		HttpSession session = getSession(true);
+		IHttpSession session = getSession(true);
 		if (useLocalSession || session == null) {
 			putHashValue(key, value);
 			return;
@@ -118,7 +117,7 @@ public class WebSession {
 		if (useLocalSession) {
 			return getHashValue(key);
 		}
-		HttpSession session = getSession(false);
+		IHttpSession session = getSession(false);
 		if (session != null) {
 			out = session.getAttribute(key);
 		}
@@ -132,7 +131,7 @@ public class WebSession {
 			removeHashValue(key);
 			return;
 		}
-		HttpSession session = getSession(false);
+		IHttpSession session = getSession(false);
 		if (session != null) {
 			session.removeAttribute(key);
 		}
@@ -141,7 +140,7 @@ public class WebSession {
 	public void destroy() {
 		updateSessionInvalidated();
 		if (!useLocalSession) {
-			HttpSession session = getSession(false);
+			IHttpSession session = getSession(false);
 			if (session != null) {
 				session.invalidate();
 			}
@@ -150,16 +149,50 @@ public class WebSession {
 		}
 	}
 
+	public void renew() {
+		updateSessionInvalidated();
+		if (!useLocalSession) {
+			IHttpSession session = getSession(false);
+			if (session != null) {
+				Map<String, Object> internalValues = backupInternalKeys(session);
+				session.invalidate();
+				restoreInternalKeys(internalValues);
+			}
+		} else {
+			clear();
+		}
+	}
+	private Map<String, Object> backupInternalKeys(IHttpSession session) {
+		Map<String, Object> internalValues = new HashMap<>();
+		Enumeration e = session.getAttributeNames();
+		while (e.hasMoreElements()) {
+			String key = (String) e.nextElement();
+			if (internalKeys.contains(key)) {
+				Object value = getObjectAttribute(key);
+				if (value != null)
+					internalValues.put(key, value);
+			}
+		}
+		return internalValues;
+	}
+	private void restoreInternalKeys(Map<String, Object> internalValues) {
+		Iterator e = internalValues.keySet().iterator();
+		while (e.hasNext()) {
+			String key = (String) e.next();
+			setObjectAttribute(key, internalValues.get(key));
+		}
+	}
+
 	public void clear() {
 		updateSessionInvalidated();
 		if (!useLocalSession) {
-			HttpSession session = getSession(false);
+			IHttpSession session = getSession(false);
 			if (session != null) {
 				Vector<String> toRemove = new Vector<>();
 				Enumeration e = session.getAttributeNames();
 				while (e.hasMoreElements()) {
 					String key = (String) e.nextElement();
-					if (!key.equals(Encryption.AJAX_ENCRYPTION_KEY) && !key.equals(HttpContext.GX_NAV_HELPER)) {
+					if (!internalKeys.contains(key)) {
 						toRemove.add(key);
 					}
 				}
@@ -178,7 +211,7 @@ public class WebSession {
 		return CommonUtil.rtrim(CommonUtil.upper(key));
 	}
 
-	public static boolean isSessionExpired(HttpServletRequest request) {
+	public static boolean isSessionExpired(IHttpServletRequest request) {
 		return request.getRequestedSessionId() != null && !request.isRequestedSessionIdValid();            //
 	}
 }

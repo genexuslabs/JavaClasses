@@ -1,9 +1,9 @@
 package com.genexus.webpanels;
-import javax.servlet.ServletContext;
+import com.genexus.servlet.IServletContext;
 
 public class ContextPath
 {
-	public static IContextPath getIContextPath(ServletContext context)
+	public static IContextPath getIContextPath(IServletContext context)
 	{
 		try
 		{

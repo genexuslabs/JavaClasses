@@ -12,9 +12,9 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.genexus.servlet.http.ICookie;
+import com.genexus.servlet.http.IHttpServletRequest;
+import com.genexus.servlet.http.IHttpServletResponse;
 
 import com.genexus.*;
 import org.apache.commons.io.IOUtils;
@@ -44,7 +44,9 @@ public abstract class HttpContext
     private static String GX_SPA_REQUEST_HEADER = "X-SPA-REQUEST";
     protected static String GX_SPA_REDIRECT_URL = "X-SPA-REDIRECT-URL";
 	private static String GX_SOAP_ACTION_HEADER = "SOAPAction";
-	
+	public static String GXTheme = "GXTheme";
+	public static String GXLanguage = "GXLanguage";
+
     private static String CACHE_INVALIDATION_TOKEN;
 
     protected boolean PortletMode = false;
@@ -300,7 +302,7 @@ public abstract class HttpContext
 	public abstract void setContextPath(String context);
 	public abstract String webSessionId();
 	public abstract String getCookie(String name);
-	public abstract Cookie[] getCookies();
+	public abstract ICookie[] getCookies();
 	public abstract byte setCookie(String name, String value, String path, java.util.Date expiry, String domain, double secure, Boolean httpOnly);
 	public abstract byte setCookie(String name, String value, String path, java.util.Date expiry, String domain, double secure);
 	public abstract byte setCookieRaw(String name, String value, String path, java.util.Date expiry, String domain, double secure);
@@ -330,9 +332,9 @@ public abstract class HttpContext
 	public abstract HttpResponse getHttpResponse();
 	public abstract HttpRequest getHttpRequest();
 	public abstract void setHttpRequest(HttpRequest httprequest);
-	public abstract HttpServletRequest getRequest();
-	public abstract HttpServletResponse getResponse();
-	public abstract void setRequest(HttpServletRequest request);
+	public abstract IHttpServletRequest getRequest();
+	public abstract IHttpServletResponse getResponse();
+	public abstract void setRequest(IHttpServletRequest request);
 	public abstract Hashtable getPostData();
 	public abstract WebSession getWebSession();
 	public abstract void redirect(String url);
@@ -1472,7 +1474,7 @@ public abstract class HttpContext
 	{
 	    WebSession session = getWebSession();
 	    if (session!=null){
-			HashMap cThemeMap = (HashMap)session.getObjectAttribute("GXTheme");
+			HashMap cThemeMap = (HashMap)session.getObjectAttribute(GXTheme);
 			if (cThemeMap != null && cThemeMap.containsKey(theme))
 				return (String)cThemeMap.get(theme);
 		}
@@ -1494,11 +1496,11 @@ public abstract class HttpContext
 			return 0;
 		else
 		{
-			HashMap<String, String> cThemeMap = (HashMap<String, String>)session.getObjectAttribute("GXTheme");
+			HashMap<String, String> cThemeMap = (HashMap<String, String>)session.getObjectAttribute(GXTheme);
 			if (cThemeMap == null)
 				cThemeMap = new HashMap<>();
 			cThemeMap.put(theme, t);
-			session.setObjectAttribute("GXTheme", cThemeMap);
+			session.setObjectAttribute(GXTheme, cThemeMap);
 			return 1;
 		}
 	}
@@ -1630,7 +1632,7 @@ public abstract class HttpContext
 		{
 			if (currentLanguage == null) {
 				WebSession session = getWebSession();
-				String language = session != null ? session.getAttribute("GXLanguage") : null;
+				String language = session != null ? session.getAttribute(GXLanguage) : null;
 				if (language != null && !language.equals("")) {
 					currentLanguage = language;
 				} else {
@@ -1687,7 +1689,7 @@ public abstract class HttpContext
 			if (!language.isEmpty() && Application.getClientPreferences().getProperty("language|"+ language, "code", null)!=null)
 			{
 				this.currentLanguage = language;
-				getWebSession().setAttribute("GXLanguage", language);
+				getWebSession().setAttribute(GXLanguage, language);
 				ajaxRefreshAsGET = true;
 				return 0;
 			}else
