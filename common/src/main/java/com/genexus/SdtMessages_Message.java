@@ -195,6 +195,12 @@ public final  class SdtMessages_Message extends GXXMLSerializable implements Clo
 		sTagName = "" ;
 	}
 
+	public byte isNull( )
+	{
+		return 0 ;
+	}
+
+
 	public SdtMessages_Message Clone( )
 	{
 		return (SdtMessages_Message)(clone()) ;

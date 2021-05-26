@@ -66,8 +66,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
 					.build();
 			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
-			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client","HTTPCLIENT_MAXTOTAL","1000")));
-			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client","HTTPCLIENT_MAXROUTE","1000")));
+			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client","HTTPCLIENT_MAX_SIZE","1000")));
+			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client","HTTPCLIENT_MAX_PER_ROUTE","1000")));
 		}
 	}
 
