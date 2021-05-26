@@ -81,6 +81,11 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 		return readxml(reader, "");
 	}
 
+	public byte isNull( )
+	{
+		return 0 ;
+	}
+
 	public Object clone()
 	{
 		try
