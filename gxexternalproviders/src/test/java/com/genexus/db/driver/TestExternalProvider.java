@@ -76,13 +76,38 @@ public abstract class TestExternalProvider {
 		String upload = provider.get(fileName, acl, 100);
 		assertTrue(urlExists(upload));
 
-		provider.get(copyFileName, acl, 100);
-		provider.delete(copyFileName, acl);
-		assertFalse(urlExists(tryGet(copyFileName, acl)));
+
+		String urlCopy = getSafe(copyFileName, acl);
+		deleteSafe(copyFileName, acl);
+		assertFalse(urlExists(urlCopy));
 
 		provider.copy("text.txt", copyFileName, acl);
 		upload = provider.get(copyFileName, acl, 100);
 		assertTrue(urlExists(upload));
+	}
+
+
+	private String getSafe(String objectName, ResourceAccessControlList acl) {
+		try {
+			return provider.get(objectName, acl, 100);
+		}
+		catch (Exception e)
+		{
+
+		}
+		return "";
+	}
+
+	private boolean deleteSafe(String objectName, ResourceAccessControlList acl) {
+		try {
+			provider.delete(objectName, acl);
+			return true;
+		}
+		catch (Exception e)
+		{
+
+		}
+		return false;
 	}
 
 	@Test
