@@ -8,11 +8,11 @@ public class TestExternalProviderCommon {
 	@Test
 	public void testGetProviderNormalizedUrl(){
 		String url = "http://myhost.com/base/myresource.png";
-		String result = ExternalProviderCommon.getProviderObjectNameSafe(null, url);
+		String result = ExternalProviderCommon.getProviderObjectAbsoluteUriSafe(null, url);
 		assertEquals(result, url);
 
 		url = "/serverRelativeUrl/myresource.png";
-		result = ExternalProviderCommon.getProviderObjectNameSafe(null, url);
+		result = ExternalProviderCommon.getProviderObjectAbsoluteUriSafe(null, url);
 		assertEquals(result, url);
 
 	}

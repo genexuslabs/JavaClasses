@@ -60,7 +60,6 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
     private String projectId;
     private String url;
     private String region;
-	private ResourceAccessControlList defaultACL = ResourceAccessControlList.PublicRead;
 
 	public ExternalProviderGoogle() throws Exception{
 		super();
@@ -213,7 +212,7 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
     }
 
 	private boolean isPrivateResource(ResourceAccessControlList acl) {
-		return acl == ResourceAccessControlList.Private || (acl == ResourceAccessControlList.Default && this.defaultACL == ResourceAccessControlList.Private);
+		return acl == ResourceAccessControlList.Private || (acl == ResourceAccessControlList.Default && this.defaultAcl == ResourceAccessControlList.Private);
 	}
 
 	public void delete(String objectName, ResourceAccessControlList acl) {

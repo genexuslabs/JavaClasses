@@ -16,9 +16,13 @@ public class ExternalProviderCommon {
 		return providerObjectName;
 	}
 
-	public static String getProviderObjectNameSafe(ExternalProvider provider, String objectNameOrUrl)
+	public static String getProviderObjectAbsoluteUriSafe(ExternalProvider provider, String rawObjectUri)
 	{
-		String providerObjectName = getProviderObjectName(provider, objectNameOrUrl);
-		return (providerObjectName != null) ? providerObjectName: objectNameOrUrl;
+		String providerObjectName = getProviderObjectName(provider, rawObjectUri);
+		if (providerObjectName != null && rawObjectUri.indexOf("?") > 0)
+		{
+			rawObjectUri = rawObjectUri.substring(0, rawObjectUri.indexOf("?"));
+		}
+		return rawObjectUri;
 	}
 }

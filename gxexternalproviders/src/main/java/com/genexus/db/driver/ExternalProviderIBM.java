@@ -45,8 +45,6 @@ public class ExternalProviderIBM extends ExternalProviderBase implements Externa
 	@Deprecated
     static final String SECRET_ACCESS_KEY_DEPRECATED = "STORAGE_PROVIDER_SECRET_KEY";
 	@Deprecated
-	static final String DEFAULT_ACL_DEPRECATED = "STORAGE_PROVIDER_DEFAULT_ACL";
-	@Deprecated
     static final String COS_ENDPOINT_DEPRECATED = "STORAGE_COS_ENDPOINT";
 	@Deprecated
     static final String COS_LOCATION_DEPRECATED = "STORAGE_COS_LOCATION";
@@ -59,7 +57,6 @@ public class ExternalProviderIBM extends ExternalProviderBase implements Externa
     private String bucket;
     private String folder;
     private String endpointUrl;
-	private CannedAccessControlList defaultACL;
 	private int defaultExpirationMinutes = DEFAULT_EXPIRATION_MINUTES;
 
     /* For compatibility reasons with GX16 U6 or lower*/
@@ -86,8 +83,6 @@ public class ExternalProviderIBM extends ExternalProviderBase implements Externa
 		String endpoint = getPropertyValue(STORAGE_ENDPOINT, COS_ENDPOINT_DEPRECATED, String.format("s3.%s.cloud-object-storage.appdomain.cloud", location));
 		bucket = getEncryptedPropertyValue(BUCKET, BUCKET_DEPRECATED);
 		folder = getPropertyValue(FOLDER, FOLDER_DEPRECATED, "");
-		String defaultAcl = getPropertyValue(DEFAULT_ACL, DEFAULT_ACL_DEPRECATED, "");
-		this.defaultACL = internalToAWSACL(ResourceAccessControlList.parse(defaultAcl));
 
 		endpointUrl = endpoint;
 
@@ -146,7 +141,11 @@ public class ExternalProviderIBM extends ExternalProviderBase implements Externa
     }
 
     private CannedAccessControlList internalToAWSACL(ResourceAccessControlList acl) {
-        CannedAccessControlList accessControl = this.defaultACL;
+		if (acl == ResourceAccessControlList.Default) {
+			acl = this.defaultAcl;
+		}
+
+		CannedAccessControlList accessControl = CannedAccessControlList.Private;
         if (acl == ResourceAccessControlList.Private) {
             accessControl = CannedAccessControlList.Private;
         }
