@@ -12,25 +12,22 @@ import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.InputStreamContent;
 import com.google.api.services.storage.StorageScopes;
-import com.google.api.services.storage.model.Bucket;
-import com.google.api.services.storage.model.ObjectAccessControl;
 import com.google.api.services.storage.model.Objects;
 import com.google.api.services.storage.model.StorageObject;
 import com.google.cloud.storage.*;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -38,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -51,16 +49,17 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
     static final String BUCKET = "BUCKET_NAME";
     static final String FOLDER = "FOLDER_NAME";
     static final String PROJECT_ID = "PROJECT_ID";
+	static final String REGION = "REGION";
 
-    private static final int BUCKET_EXISTS = 409;
     private static final int OBJECT_NOT_FOUND = 404;
 
     private com.google.api.services.storage.Storage legacyClient;
-    private com.google.cloud.storage.Storage betaClient; //Used only to get signed urls since it's on beta
+    private com.google.cloud.storage.Storage storageClient;
     private String bucket;
     private String folder;
     private String projectId;
     private String url;
+    private String region;
 	private ResourceAccessControlList defaultACL = ResourceAccessControlList.PublicRead;
 
 	public ExternalProviderGoogle() throws Exception{
@@ -73,7 +72,6 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 		initialize();
 	}
 
-
     private void initialize() throws Exception {
 		try {
 			HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
@@ -85,8 +83,9 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 
 			legacyClient = new com.google.api.services.storage.Storage.Builder(httpTransport, jsonFactory, credential).setApplicationName(getPropertyValue(APPLICATION_NAME, APPLICATION_NAME)).build();
 
+			region = getPropertyValue(REGION, REGION, "US-EAST1");
 			projectId = getPropertyValue(PROJECT_ID, PROJECT_ID);
-			betaClient = StorageOptions.newBuilder()
+			storageClient = StorageOptions.newBuilder()
 				.setCredentials(ServiceAccountCredentials.fromStream(new ByteArrayInputStream(keyArray)))
 				.setProjectId(projectId)
 				.build()
@@ -111,26 +110,27 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 
 	private void createBucket() {
 		try {
-			Bucket bucket = new Bucket();
-			bucket.setName(this.bucket);
-
-			legacyClient.buckets().insert(projectId, bucket).execute();
-		}
-		catch (GoogleJsonResponseException ex) {
-			if (ex.getStatusCode() != BUCKET_EXISTS) {
-				logger.error("Error creating bucket", ex.getMessage());
+			boolean bucketAlreadyExists = storageClient.get(this.bucket, Storage.BucketGetOption.fields()) != null;
+			if (!bucketAlreadyExists) {
+				StorageClass storageClass = StorageClass.STANDARD;
+				storageClient.create(
+						BucketInfo.newBuilder(this.bucket)
+							.setStorageClass(storageClass)
+							.setLocation(this.region)
+							.build());
 			}
-		} catch (IOException ex) {
+		}
+		catch (StorageException ex){
+
 			logger.error("Error creating bucket", ex.getMessage());
 		}
-
 	}
 
     private void createFolder(String folderName) {
         try {
             folderName = StorageUtils.normalizeDirectoryName(folderName);
 
-            StorageObject object = new StorageObject().setName(folderName).setAcl(getACLOptions(null));
+            StorageObject object = new StorageObject().setName(folderName);
             InputStreamContent emptyContent = new InputStreamContent("application/directory", new ByteArrayInputStream(new byte[0]));
             emptyContent.setLength(0);
 
@@ -158,81 +158,58 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
             out.close();
         } catch (IOException e) {
             handleIOException(e);
-            System.out.println(e.getMessage());
         }
     }
 
     public String upload(String localFile, String externalFileName, ResourceAccessControlList acl) {
         try {
-            File file = new File(localFile);
-            InputStreamContent contentStream = new InputStreamContent("application/octet-stream", new FileInputStream(file));
-            contentStream.setLength(file.length());
-            StorageObject objectMetadata = new StorageObject().setName(externalFileName);
-
-            objectMetadata.setAcl(getACLOptions(acl));
-
-			com.google.api.services.storage.Storage.Objects.Insert insertRequest = legacyClient.objects().insert(bucket, objectMetadata, contentStream);
-            insertRequest.execute();
-            return url + StorageUtils.encodeName(externalFileName);
+        	BlobId blobId = BlobId.of(bucket, externalFileName);
+			BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
+			storageClient.create(blobInfo, Files.readAllBytes(Paths.get(localFile)));
+			setBlobAcl(blobId, acl);
+			return getResourceUrl(blobInfo, acl);
         } catch (IOException ex) {
             handleIOException(ex);
             return "";
         }
     }
 
-	private Acl getAcl(ResourceAccessControlList acl) {
-		boolean isPrivate = isPrivateResource(acl);
-		if (isPrivate) {
-			return null; //Default ACL is private
-		}
-		else {
-			return betaClient.createAcl(this.bucket, Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER));
+    private void setBlobAcl(BlobId blobId, ResourceAccessControlList acl) {
+		if (!isPrivateResource(acl)) {
+			storageClient.createAcl(blobId, Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER));
+
 		}
 	}
 
-    private List<ObjectAccessControl> getACLOptions(ResourceAccessControlList acl) {
-    	boolean isPrivate = isPrivateResource(acl);
-        if (isPrivate)
-            return Arrays.asList(new ObjectAccessControl());
-        else
-			return Arrays.asList(new ObjectAccessControl().setEntity("allUsers").setRole("READER"));
-    }
-
     public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
         try {
-            String contentType = "application/octet-stream";
-            if (externalFileName.endsWith(".tmp")) {
-                contentType = "image/jpeg";
-            }
-            InputStreamContent contentStream = new InputStreamContent(contentType, input);
-
-            StorageObject objectMetadata = new StorageObject().setName(externalFileName);
-
-            objectMetadata.setAcl(getACLOptions(acl));
-
-			com.google.api.services.storage.Storage.Objects.Insert insertRequest = legacyClient.objects().insert(bucket, objectMetadata, contentStream);
-
-            insertRequest.execute();
-            return url + StorageUtils.encodeName(externalFileName);
+			BlobId blobId = BlobId.of(bucket, externalFileName);
+			BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
+			byte[] targetArray = IOUtils.toByteArray(input);
+			storageClient.create(blobInfo, targetArray);
+			setBlobAcl(blobId, acl);
+            return getResourceUrl(blobInfo, acl);
         } catch (IOException ex) {
             handleIOException(ex);
             return "";
         }
     }
 
+	private String getResourceUrl(BlobInfo blobInfo, ResourceAccessControlList acl) {
+		return getResourceUrl(blobInfo, acl, DEFAULT_EXPIRATION_MINUTES);
+	}
+    private String getResourceUrl(BlobInfo blobInfo, ResourceAccessControlList acl, int expirationMinutes){
+		if (isPrivateResource(acl)){
+			return storageClient.signUrl(blobInfo, expirationMinutes, TimeUnit.MINUTES, Storage.SignUrlOption.withV4Signature()).toString();
+		}
+		else {
+			return url + StorageUtils.encodeName(blobInfo.getName());
+		}
+	}
     public String get(String objectName, ResourceAccessControlList acl, int expirationMinutes) {
-        try {
-			legacyClient.objects().get(bucket, objectName).execute();
-            if(isPrivateResource(acl)) {
-				expirationMinutes = expirationMinutes > 0 ? expirationMinutes: DEFAULT_EXPIRATION_MINUTES;
-				return betaClient.signUrl(BlobInfo.newBuilder(bucket, objectName).build(), expirationMinutes, TimeUnit.MINUTES).toString();
-			}
-            else
-                return url + StorageUtils.encodeName(objectName);
-        } catch (IOException ex) {
-            handleIOException(ex);
-            return "";
-        }
+		Blob blob = storageClient.get(BlobId.of(bucket, objectName));
+		BlobInfo bInfo = BlobInfo.newBuilder(blob.getBlobId()).build();
+		return getResourceUrl(bInfo, acl, expirationMinutes);
     }
 
 	private boolean isPrivateResource(ResourceAccessControlList acl) {
@@ -240,7 +217,7 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 	}
 
 	public void delete(String objectName, ResourceAccessControlList acl) {
-		Boolean deleted = betaClient.delete(BlobId.of(this.bucket, objectName));
+		Boolean deleted = storageClient.delete(BlobId.of(this.bucket, objectName));
 		if (!deleted) {
 			logger.error("Could not delete resource: " + objectName);
 		}
@@ -257,13 +234,10 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
             objectName = objectName.replace(url, "");
         }
 
-		Blob blob = betaClient.get(this.bucket, objectName);
-		// Write a copy of the object to the target bucket
+		Blob blob = storageClient.get(this.bucket, objectName);
 		CopyWriter copyWriter = blob.copyTo(this.bucket, newName);
 		Blob copiedBlob = copyWriter.getResult();
-		if (acl != ResourceAccessControlList.Private) { //Default ACL is Public..
-			betaClient.createAcl(copiedBlob.getBlobId(), Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER));
-		}
+		setBlobAcl(copiedBlob.getBlobId(), acl);
 		return url + StorageUtils.encodeName(newName);
     }
 
@@ -274,12 +248,10 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
             objectUrl = objectUrl.replace(url, "");
             objectUrl = URLDecoder.decode(objectUrl, "UTF-8");
             try {
-                StorageObject newObject = new StorageObject();
-                newObject.setMetadata(createObjectMetadata(tableName, fieldName, resourceKey));
-                newObject.setAcl(getACLOptions(acl));
-				com.google.api.services.storage.Storage.Objects.Copy request = legacyClient.objects().copy(bucket, objectUrl, bucket, resourceKey, newObject);
-                request.execute();
-
+				Blob blob = storageClient.get(bucket, objectUrl);
+				CopyWriter copyWriter = blob.copyTo(bucket, resourceKey);
+				Blob copiedBlob = copyWriter.getResult();
+				setBlobAcl(copiedBlob.getBlobId(), acl);
                 return url + StorageUtils.encodeName(resourceKey);
             } catch (Exception ex) {
                 logger.error("Error saving file to external provider", ex.getMessage());
@@ -505,7 +477,14 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
         logger.error("Error " + ex.getClass(), ex);
     }
 
-    boolean canBuildException(IOException ex) {
+	void handleIOException(GoogleJsonResponseException ex) {
+		if (canBuildException(ex)) {
+			throw buildException(ex);
+		}
+		logger.error("Error " + ex.getClass(), ex);
+	}
+
+    boolean canBuildException(Exception ex) {
         return ex.getMessage().contains("<Message>") && ex.getMessage().contains("<Error><Code>");
     }
 
