@@ -182,8 +182,9 @@ public abstract class TestExternalProvider {
 	public void testUploadPrivateMethod(){
 		Path path = Paths.get("resources", "text.txt");
 		String relativePath = path.toString();
-		String externalFileName = "text-private2.txt";
+		String externalFileName = "text-private-2.txt";
 
+		deleteSafe(externalFileName, ResourceAccessControlList.Private);
 		String signedUrl = provider.upload(relativePath, externalFileName, ResourceAccessControlList.Private);
 		assertTrue(urlExists(signedUrl));
 
