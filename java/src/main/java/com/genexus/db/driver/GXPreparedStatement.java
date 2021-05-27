@@ -957,7 +957,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 
 		//EMPTY BLOB
     	if (blobPath == null || blobPath.trim().length() == 0) {
-			setVarchar(index, ExternalProviderCommon.getProviderObjectNameSafe(storageProvider, fileName), length, false);
+			setVarchar(index, ExternalProviderCommon.getProviderObjectAbsoluteUriSafe(storageProvider, fileName), length, false);
 			return;
 		}
 

@@ -1046,10 +1046,10 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 	{
 		ExternalProvider provider = Application.getExternalProvider();
 		String colValue = getVarchar(columnIndex);
-		if (colValue.length() > 0 && provider != null && GXutil.isAbsoluteURL(colValue)) {
-			String externalObjectName = ExternalProviderCommon.getProviderObjectName(provider, colValue);
-			if (externalObjectName != null) {
-				return new GXFile(externalObjectName).getAbsolutePath();
+		if (provider != null && colValue.length() > 0 && GXutil.isAbsoluteURL(colValue)) {
+			String providerObjectName = ExternalProviderCommon.getProviderObjectName(provider, colValue);
+			if (providerObjectName != null) {
+				return new GXFile(providerObjectName).getAbsolutePath();
 			}
 		}
 		return GXDbFile.resolveUri(colValue, absPath);

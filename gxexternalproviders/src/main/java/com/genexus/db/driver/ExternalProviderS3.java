@@ -67,7 +67,6 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
     private String bucket;
     private String folder;
     private String endpointUrl = ".s3.amazonaws.com/";
-	private CannedAccessControlList defaultACL = CannedAccessControlList.PublicRead;
 	private int defaultExpirationMinutes = DEFAULT_EXPIRATION_MINUTES;
 
 	private Boolean pathStyleUrls = false;
@@ -190,7 +189,11 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
     }
 
     private CannedAccessControlList internalToAWSACL(ResourceAccessControlList acl) {
-        CannedAccessControlList accessControl = this.defaultACL;
+        if (acl == ResourceAccessControlList.Default) {
+        	acl = this.defaultAcl;
+		}
+
+		CannedAccessControlList accessControl = CannedAccessControlList.Private;
         if (acl == ResourceAccessControlList.Private) {
             accessControl = CannedAccessControlList.Private;
         }
