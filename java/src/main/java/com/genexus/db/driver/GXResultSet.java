@@ -988,7 +988,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 			destination.close();
 
 			InputStream is = new ByteArrayInputStream(os.toByteArray());
-			GXFile gxFile = new GXFile(fileName);
+			GXFile gxFile = new GXFile(fileName, ResourceAccessControlList.Private);
 		  	gxFile.create(is);
 			
 			fileName = gxFile.getFilePath();

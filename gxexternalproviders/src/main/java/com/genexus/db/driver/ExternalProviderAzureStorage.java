@@ -128,7 +128,8 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 	}
 
 	private boolean isPrivateAcl(ResourceAccessControlList acl) {
-		return acl == ResourceAccessControlList.Private || (acl == ResourceAccessControlList.Default && this.defaultAcl == ResourceAccessControlList.Private);
+		// If default ACL is private, use always private.
+		return this.defaultAcl == ResourceAccessControlList.Private || acl == ResourceAccessControlList.Private;
 	}
 
 	public String upload(String localFile, String externalFileName, ResourceAccessControlList acl) {
@@ -147,28 +148,28 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 	}
 
 	public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
+
 		try {
 			CloudBlockBlob blob = getCloudBlockBlob(externalFileName, acl);
 			if (externalFileName.endsWith(".tmp")) {
 				blob.getProperties().setContentType("image/jpeg");
 			}
-			BlobOutputStream blobOutputStream = blob.openOutputStream();
-			int next = input.read();
-			while (next != -1) {
-				blobOutputStream.write(next);
-				next = input.read();
+			try (BlobOutputStream blobOutputStream = blob.openOutputStream()) {
+				int next = input.read();
+				while (next != -1) {
+					blobOutputStream.write(next);
+					next = input.read();
+				}
 			}
-			blobOutputStream.close();
-
-			return blob.getUri().toString();
+			return getResourceUrl(externalFileName, acl, DEFAULT_EXPIRATION_MINUTES);
 
 		} catch (URISyntaxException ex) {
 			logger.error("Invalid URI", ex);
 			return "";
-		} catch (StorageException sex) {
-			throw new RuntimeException(sex.getMessage(), sex);
-		} catch (java.io.IOException ioex) {
-			logger.error("Error uploading file", ioex);
+		} catch (StorageException ex) {
+			throw new RuntimeException(ex.getMessage(), ex);
+		} catch (java.io.IOException ex) {
+			logger.error("Error uploading file", ex);
 			return "";
 		}
 	}
@@ -305,8 +306,7 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 
 	public boolean exists(String objectName, ResourceAccessControlList acl) {
 		try {
-			CloudBlockBlob blob = getCloudBlockBlob(objectName, acl);
-			return blob.exists();
+			return getCloudBlockBlob(objectName, acl).exists();
 		} catch (URISyntaxException ex) {
 			logger.error("Invalid URI ", ex.getMessage());
 			return false;
