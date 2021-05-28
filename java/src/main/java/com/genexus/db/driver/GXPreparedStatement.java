@@ -1478,7 +1478,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		{
 			if	(fileName != null && !fileName.trim().equals("") && !fileName.toLowerCase().trim().endsWith("about:blank"))
 			{
-					if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) == null)
+					if (Application.getExternalProvider() == null)
 					{
 						try
 						{

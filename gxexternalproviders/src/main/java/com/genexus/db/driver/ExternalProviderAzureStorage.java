@@ -148,20 +148,19 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 	}
 
 	public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
-		BlobOutputStream blobOutputStream = null;
+
 		try {
 			CloudBlockBlob blob = getCloudBlockBlob(externalFileName, acl);
 			if (externalFileName.endsWith(".tmp")) {
 				blob.getProperties().setContentType("image/jpeg");
 			}
-			blobOutputStream = blob.openOutputStream();
-			int next = input.read();
-			while (next != -1) {
-				blobOutputStream.write(next);
-				next = input.read();
+			try (BlobOutputStream blobOutputStream = blob.openOutputStream()) {
+				int next = input.read();
+				while (next != -1) {
+					blobOutputStream.write(next);
+					next = input.read();
+				}
 			}
-			blobOutputStream.close();
-
 			return getResourceUrl(externalFileName, acl, DEFAULT_EXPIRATION_MINUTES);
 
 		} catch (URISyntaxException ex) {
