@@ -2,6 +2,7 @@ package com.genexus.internet;
 
 import HTTPClient.*;
 import com.genexus.CommonUtil;
+
 import java.io.*;
 import java.util.Enumeration;
 
@@ -185,15 +186,9 @@ public class HttpClientManual extends GXHttpClient {
 		{
 			System.err.println(e);
 		}
-		catch (IOException e)
+		catch (IOException | ModuleException e)
 		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
-		}
-		catch (ModuleException e)
-		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
+			setExceptionsCatch(e);
 		}
 		finally
 		{
@@ -225,14 +220,12 @@ public class HttpClientManual extends GXHttpClient {
 		}
 		catch (IOException e)
 		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
+			setExceptionsCatch(e);
 			res = null;
 		}
 		catch (ModuleException e)
 		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
+			setExceptionsCatch(e);
 		}
 		catch (Exception e)
 		{
@@ -254,16 +247,9 @@ public class HttpClientManual extends GXHttpClient {
 		{
 			return res.getReasonLine();
 		}
-		catch (IOException e)
+		catch (IOException | ModuleException e)
 		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
-			return "";
-		}
-		catch (ModuleException e)
-		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
+			setExceptionsCatch(e);
 			return "";
 		}
 		catch (Exception e)
@@ -290,15 +276,9 @@ public class HttpClientManual extends GXHttpClient {
 		{
 			value[0] = res.getHeaderAsInt(name);
 		}
-		catch (IOException e)
+		catch (IOException | ModuleException e)
 		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
-		}
-		catch (ModuleException e)
-		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
+			setExceptionsCatch(e);
 		}
 	}
 
@@ -314,17 +294,10 @@ public class HttpClientManual extends GXHttpClient {
 		{
 			return res.getHeader(name);
 		}
-		catch (IOException e)
+		catch (IOException | ModuleException e)
 		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
+			setExceptionsCatch(e);
 		}
-		catch (ModuleException e)
-		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
-		}
-
 		return "";
 	}
 
@@ -340,15 +313,9 @@ public class HttpClientManual extends GXHttpClient {
 		{
 			value[0] = res.getHeader(name);
 		}
-		catch (IOException e)
+		catch (IOException | ModuleException e)
 		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
-		}
-		catch (ModuleException e)
-		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
+			setExceptionsCatch(e);
 		}
 	}
 
@@ -364,15 +331,9 @@ public class HttpClientManual extends GXHttpClient {
 		{
 			value[0] = res.getHeaderAsDate(name);
 		}
-		catch (IOException e)
+		catch (IOException | ModuleException e)
 		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
-		}
-		catch (ModuleException e)
-		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
+			setExceptionsCatch(e);
 		}
 	}
 
@@ -388,15 +349,9 @@ public class HttpClientManual extends GXHttpClient {
 		{
 			value[0] = CommonUtil.val(res.getHeader(name));
 		}
-		catch (IOException e)
+		catch (IOException | ModuleException e)
 		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
-		}
-		catch (ModuleException e)
-		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
+			setExceptionsCatch(e);
 		}
 	}
 
@@ -452,22 +407,14 @@ public class HttpClientManual extends GXHttpClient {
 			return res.getText();
 			//return new String(PrivateUtilities.readToByteArray(res.getInputStream()));
 		}
-		catch (ModuleException e)
+		catch (ModuleException | IOException e)
 		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
-		}
-		catch (IOException e)
-		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
+			setExceptionsCatch(e);
 		}
 		catch (Exception e)
 		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
+			setExceptionsCatch(e);
 		}
-
 		return "";
 	}
 
@@ -483,15 +430,9 @@ public class HttpClientManual extends GXHttpClient {
 		{
 			CommonUtil.InputStreamToFile(res.getInputStream(), fileName);
 		}
-		catch (IOException e)
+		catch (IOException | ModuleException e)
 		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
-		}
-		catch (ModuleException e)
-		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
+			setExceptionsCatch(e);
 		}
 	}
 
