@@ -236,8 +236,7 @@ public class HttpClientManual extends GXHttpClient {
 		}
 		catch (Exception e)
 		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage().endsWith("because \"resp\" is null") ? "Possible fail reason: Proxy unavailable. Real error message: " + e.getMessage() : e.getMessage());
+			probableProxyError(e);
 		}
 
 		return 0;
@@ -269,10 +268,14 @@ public class HttpClientManual extends GXHttpClient {
 		}
 		catch (Exception e)
 		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage().endsWith("because \"resp\" is null") ? "Possible fail reason: Proxy unavailable. Real error message: " + e.getMessage() : e.getMessage());
+			probableProxyError(e);
 			return "";
 		}
+	}
+
+	private void probableProxyError(Exception e) {
+		setErrCode(ERROR_IO);
+		setErrDescription(e.getMessage().endsWith("because \"resp\" is null") ? "Possible fail reason: Proxy unavailable. Real error message: " + e.getMessage() : e.getMessage());
 	}
 
 	@Override
