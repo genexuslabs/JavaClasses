@@ -1,6 +1,7 @@
 package com.genexus;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -1370,6 +1371,20 @@ public final class GXutil
 	public static boolean isUploadPrefix(String value)
 	{
 		return CommonUtil.isUploadPrefix(value);
+	}
+
+	public static String getNonTransversalPath(String path, String fileName) {
+		String nonTransvesalPath =  path.endsWith(File.separator)?  path + fileName : path + File.separator + fileName;
+		try {
+			String canonicalPath = new File(nonTransvesalPath).getCanonicalPath();
+			if (canonicalPath.startsWith(path))
+				return nonTransvesalPath;
+			else
+				return path + File.separator + CommonUtil.getFileName(fileName);
+		}
+		catch(IOException ex) {
+			return path + File.separator + CommonUtil.getFileName(fileName);
+		}
 	}
 	
 	public static String dateToCharREST(Date value)
