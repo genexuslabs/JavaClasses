@@ -692,6 +692,11 @@ public abstract class GXHttpClient implements IHttpClient{
 		return out;
 	}
 
+	protected void setExceptionsCatch(Exception e) {
+		setErrCode(ERROR_IO);
+		setErrDescription(e.getMessage());
+	}
+
 	public boolean getAuthorizationChanged() {
 		return this.authorizationChanged;
 	}
