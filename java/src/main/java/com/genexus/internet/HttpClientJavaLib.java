@@ -458,8 +458,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 				SetCookieAtr(cookiesToSend);		// Se setean las cookies devueltas en la lista de cookies
 
 		} catch (IOException e) {
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
+			setExceptionsCatch(e);
 			this.statusCode = 0;
 			this.reasonLine = "";
 		}
@@ -517,15 +516,9 @@ public class HttpClientJavaLib extends GXHttpClient {
 		{
 			value[0] = res.getHeaderAsDate(name);
 		}
-		catch (IOException e)
+		catch (IOException | ModuleException e)
 		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
-		}
-		catch (ModuleException e)
-		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
+			setExceptionsCatch(e);
 		}
 	}
 
@@ -559,8 +552,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			String res = EntityUtils.toString(response.getEntity(), "UTF-8");
 			return res;
 		} catch (IOException e) {
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
+			setExceptionsCatch(e);
 		} catch (IllegalArgumentException e) {
 		}
 		return "";
@@ -572,8 +564,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		try {
 			CommonUtil.InputStreamToFile(response.getEntity().getContent(), fileName);
 		} catch (IOException e) {
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
+			setExceptionsCatch(e);
 		}
 	}
 
