@@ -15,7 +15,7 @@ public class GXExternalFileInfo implements IGXFileInfo {
     ExternalProvider provider;
     String url;
     boolean isFile;
-    ResourceAccessControlList fileAcl;
+    ResourceAccessControlList fileAcl = ResourceAccessControlList.Private;
 
     public GXExternalFileInfo(String storageObjectFullName, String url, ExternalProvider provider) {
 		setName(storageObjectFullName);
