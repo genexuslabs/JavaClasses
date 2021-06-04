@@ -263,7 +263,7 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
         CopyObjectRequest request = new CopyObjectRequest(bucket, objectName, bucket, newName);
         request.setCannedAccessControlList(internalToAWSACL(acl));
         client.copyObject(request);
-        return ((AmazonS3Client) client).getResourceUrl(bucket, newName);
+        return getResourceUrl(newName, acl, defaultExpirationMinutes);
     }
 
     public String copy(String objectUrl, String newName, String tableName, String fieldName, ResourceAccessControlList acl) {
@@ -287,7 +287,7 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
         request.setCannedAccessControlList(internalToAWSACL(acl));
         client.copyObject(request);
 
-        return ((AmazonS3Client) client).getResourceUrl(bucket, resourceKey);
+		return getResourceUrl(resourceKey, acl, defaultExpirationMinutes);
     }
 
     private String buildPath(String... pathPart) {
