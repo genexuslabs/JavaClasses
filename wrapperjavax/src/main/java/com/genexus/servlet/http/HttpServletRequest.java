@@ -13,6 +13,11 @@ public class HttpServletRequest implements IHttpServletRequest{
 		this.req = req;
 	}
 
+	public HttpServletRequest(Object req)
+	{
+		this.req = (javax.servlet.http.HttpServletRequest)req;
+	}
+
 	public javax.servlet.http.HttpServletRequest getWrappedClass() {
 		return req;
 	}

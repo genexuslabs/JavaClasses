@@ -14,6 +14,10 @@ public class HttpServletResponse implements IHttpServletResponse {
 		this.resp = resp;
 	}
 
+	public HttpServletResponse(Object resp) {
+		this.resp = (javax.servlet.http.HttpServletResponse)resp;
+	}
+
 	public javax.servlet.http.HttpServletResponse getWrappedClass() {
 		return resp;
 	}
