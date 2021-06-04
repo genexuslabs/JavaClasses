@@ -218,7 +218,7 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 	public void delete(String objectName, ResourceAccessControlList acl) {
 		Boolean deleted = storageClient.delete(BlobId.of(this.bucket, objectName));
 		if (!deleted) {
-			logger.error("Could not delete resource: " + objectName);
+			logger.warn("Could not delete resource: " + objectName);
 		}
     }
 

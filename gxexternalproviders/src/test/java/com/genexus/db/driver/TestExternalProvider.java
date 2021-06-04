@@ -18,6 +18,9 @@ public abstract class TestExternalProvider {
 	public abstract String getProviderName();
 	public abstract ExternalProvider getExternalProvider() throws Exception ;
 
+	private static String TEST_SAMPLE_FILE_NAME = "text.txt";
+	private static String TEST_SAMPLE_FILE_PATH = Paths.get("resources", TEST_SAMPLE_FILE_NAME).toString();
+
 	@Before
 	public void beforeEachTestMethod() {
 
@@ -40,20 +43,60 @@ public abstract class TestExternalProvider {
 
 	@Test
 	public void testUploadPublicMethod(){
-		Path path = Paths.get("resources", "text.txt");
-		String relativePath = path.toString();
-		String upload = provider.upload(relativePath, "text.txt", ResourceAccessControlList.PublicRead);
-
-		assertTrue("Not found URL: " + upload, urlExists(upload));
+		String upload = provider.upload(TEST_SAMPLE_FILE_PATH, TEST_SAMPLE_FILE_NAME, ResourceAccessControlList.PublicRead);
+		ensureUrl(upload, ResourceAccessControlList.PublicRead);
 	}
 
 	@Test
 	public void testUploadDefaultMethod(){
-		Path path = Paths.get("resources", "text.txt");
-		String relativePath = path.toString();
-		String upload = provider.upload(relativePath, "text.txt", ResourceAccessControlList.Default);
+		String upload = provider.upload(TEST_SAMPLE_FILE_PATH, TEST_SAMPLE_FILE_NAME, ResourceAccessControlList.Default);
+		ensureUrl(upload, ResourceAccessControlList.Default);
+	}
 
+	@Test
+	public void testUploadAndCopyDefault(){
+		testUploadAndCopyByAcl(ResourceAccessControlList.Default, ResourceAccessControlList.Default);
+	}
+
+	@Test
+	public void testUploadAndCopyPrivate(){
+		testUploadAndCopyByAcl(ResourceAccessControlList.Private, ResourceAccessControlList.Private);
+	}
+
+	@Test
+	public void testUploadAndCopyPublic(){
+		testUploadAndCopyByAcl(ResourceAccessControlList.PublicRead, ResourceAccessControlList.PublicRead);
+	}
+
+	@Test
+	public void testUploadAndCopyMixed(){
+		testUploadAndCopyByAcl(ResourceAccessControlList.Default, ResourceAccessControlList.Private);
+	}
+
+	@Test
+	public void testUploadAndCopyPrivateToPublic(){
+		testUploadAndCopyByAcl(ResourceAccessControlList.Private, ResourceAccessControlList.PublicRead);
+	}
+
+	@Test
+	public void testUploadAndCopyPublicToPrivate(){
+		testUploadAndCopyByAcl(ResourceAccessControlList.PublicRead, ResourceAccessControlList.Private);
+	}
+
+
+	public void testUploadAndCopyByAcl(ResourceAccessControlList aclUpload, ResourceAccessControlList aclCopy){
+		String copyFileName = "test-upload-and-copy.txt";
+		deleteSafe(TEST_SAMPLE_FILE_PATH);
+		deleteSafe(copyFileName);
+		String upload = provider.upload(TEST_SAMPLE_FILE_PATH, TEST_SAMPLE_FILE_NAME, aclUpload);
 		assertTrue("Not found URL: " + upload, urlExists(upload));
+
+		String copyUrl = tryGet(copyFileName, aclCopy);
+		assertFalse("URL cannot exist: " + copyUrl, urlExists(copyUrl));
+
+		provider.copy(TEST_SAMPLE_FILE_NAME, copyFileName, aclCopy);
+		upload = provider.get(copyFileName, aclCopy, 100);
+		ensureUrl(upload, aclCopy);
 	}
 
 	@Test
@@ -69,24 +112,28 @@ public abstract class TestExternalProvider {
 	}
 
 	private void copy(String copyFileName, ResourceAccessControlList acl) {
-		String fileName = "text.txt";
-		Path path = Paths.get("resources", fileName);
-		String relativePath = path.toString();
-		provider.upload(relativePath, fileName, acl);
-		String upload = provider.get(fileName, acl, 100);
-		assertTrue(urlExists(upload));
+		provider.upload(TEST_SAMPLE_FILE_PATH, TEST_SAMPLE_FILE_NAME, acl);
+		String upload = provider.get(TEST_SAMPLE_FILE_NAME, acl, 100);
+		ensureUrl(upload, acl);
 
+		deleteSafe(copyFileName);
+		wait(1000); //Google CDN replication seems to be delayed.
 
-		String urlCopy = getSafe(copyFileName, acl);
-		deleteSafe(copyFileName, acl);
-		assertFalse(urlExists(urlCopy));
+		String urlCopy = tryGet(copyFileName, ResourceAccessControlList.PublicRead);
+		assertFalse("URL cannot exist: " + urlCopy, urlExists(urlCopy));
 
 		provider.copy("text.txt", copyFileName, acl);
 		upload = provider.get(copyFileName, acl, 100);
-		assertTrue(urlExists(upload));
+		ensureUrl(upload, acl);
 	}
 
 
+	private void wait(int milliseconds) {
+		try {
+			Thread.sleep(milliseconds);
+		} catch (Exception e) {}
+
+	}
 	private String getSafe(String objectName, ResourceAccessControlList acl) {
 		try {
 			return provider.get(objectName, acl, 100);
@@ -98,16 +145,17 @@ public abstract class TestExternalProvider {
 		return "";
 	}
 
-	private boolean deleteSafe(String objectName, ResourceAccessControlList acl) {
+	private boolean deleteSafe(String objectName) {
 		try {
-			provider.delete(objectName, acl);
-			return true;
+			provider.delete(objectName, ResourceAccessControlList.Private);
 		}
-		catch (Exception e)
-		{
+		catch (Exception e) {}
+		try {
+			provider.delete(objectName, ResourceAccessControlList.PublicRead);
+		}
+		catch (Exception e) {}
 
-		}
-		return false;
+		return true;
 	}
 
 	@Test
@@ -115,30 +163,27 @@ public abstract class TestExternalProvider {
 		String copyFileName = "copy-text-private.txt";
 		ResourceAccessControlList acl = ResourceAccessControlList.Private;
 
-		String fileName = "text.txt";
-		Path path = Paths.get("resources", fileName);
-		String relativePath = path.toString();
-		provider.upload(relativePath, fileName, acl);
-		String upload = provider.get(fileName, acl, 100);
-		assertTrue(urlExists(upload));
+		provider.upload(TEST_SAMPLE_FILE_PATH, TEST_SAMPLE_FILE_NAME, acl);
+		String upload = provider.get(TEST_SAMPLE_FILE_NAME, acl, 100);
+		ensureUrl(upload, acl);
 
 		provider.delete(copyFileName, acl);
 		provider.copy("text.txt", copyFileName, acl);
 		upload = tryGet(copyFileName, acl);
-		assertTrue(urlExists(upload));
+		ensureUrl(upload, acl);
 	}
 
 	@Test
 	public void testGetMethod(){
 		testUploadPublicMethod();
 		String url = provider.get("text.txt", ResourceAccessControlList.PublicRead, 10);
-		assertTrue(urlExists(url));
+		ensureUrl(url, ResourceAccessControlList.PublicRead);
 	}
 
 	@Test
 	public void testGetObjectName(){
 		testUploadPublicMethod();
-		String url = provider.get("text.txt", ResourceAccessControlList.PublicRead, 10);
+		String url = provider.get(TEST_SAMPLE_FILE_NAME, ResourceAccessControlList.PublicRead, 10);
 		assertTrue(urlExists(url));
 		String objectName = provider.getObjectNameFromURL(url);
 		assertEquals("text.txt", objectName);
@@ -152,18 +197,18 @@ public abstract class TestExternalProvider {
 		File f = new File(filePath);
 		f.delete();
 		assertFalse(f.exists());
-		provider.download("text.txt", filePath, ResourceAccessControlList.PublicRead);
+		provider.download(TEST_SAMPLE_FILE_NAME, filePath, ResourceAccessControlList.PublicRead);
 		assertTrue(f.exists());
 	}
 
 	@Test
 	public void testDeleteFile(){
 		testUploadPublicMethod();
-		String url = tryGet("text.txt", ResourceAccessControlList.PublicRead);
-		assertTrue(urlExists(url));
-		provider.delete("text.txt", ResourceAccessControlList.PublicRead);
+		String url = tryGet(TEST_SAMPLE_FILE_NAME, ResourceAccessControlList.PublicRead);
+		ensureUrl(url, ResourceAccessControlList.PublicRead);
+		provider.delete(TEST_SAMPLE_FILE_NAME, ResourceAccessControlList.PublicRead);
 
-		url = tryGet("text.txt", ResourceAccessControlList.PublicRead);
+		url = tryGet(TEST_SAMPLE_FILE_NAME, ResourceAccessControlList.PublicRead);
 		assertFalse(urlExists(url));
 	}
 
@@ -180,20 +225,22 @@ public abstract class TestExternalProvider {
 
 	@Test
 	public void testUploadPrivateMethod(){
-		Path path = Paths.get("resources", "text.txt");
-		String relativePath = path.toString();
 		String externalFileName = "text-private-2.txt";
 
-		deleteSafe(externalFileName, ResourceAccessControlList.Private);
-		String signedUrl = provider.upload(relativePath, externalFileName, ResourceAccessControlList.Private);
-		assertTrue(urlExists(signedUrl));
-
+		deleteSafe(externalFileName);
+		String signedUrl = provider.upload(TEST_SAMPLE_FILE_PATH, externalFileName, ResourceAccessControlList.Private);
+		ensureUrl(signedUrl, ResourceAccessControlList.Private);
 		signedUrl = provider.get(externalFileName, ResourceAccessControlList.Private, 10);
-		assertTrue(urlExists(signedUrl));
+		ensureUrl(signedUrl, ResourceAccessControlList.Private);
 
-		String noSignedUrl = signedUrl.substring(0, signedUrl.indexOf("?") + 1);
-		assertFalse("Resource must be private: " + noSignedUrl, urlExists(noSignedUrl));
+	}
 
+	private void ensureUrl(String signedOrUnsignedUrl, ResourceAccessControlList acl) {
+		assertTrue("Resource not found: " + signedOrUnsignedUrl, urlExists(signedOrUnsignedUrl));
+		if (acl == ResourceAccessControlList.Private) {
+			String noSignedUrl = signedOrUnsignedUrl.substring(0, signedOrUnsignedUrl.indexOf("?") + 1);
+			assertFalse("Resource must be private: " + noSignedUrl, urlExists(noSignedUrl));
+		}
 	}
 
 	protected boolean urlExists(String httpUrl) {
