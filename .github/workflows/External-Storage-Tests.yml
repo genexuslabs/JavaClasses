@@ -67,9 +67,9 @@ jobs:
         export STORAGE_AZUREBS_PRIVATE_CONTAINER_NAME=contluisprivate
         export GOOGLECS_TEST_ENABLED=true
         export STORAGE_GOOGLECS_KEY="${{ secrets.GOOGLECS_KEY }}"
-        export STORAGE_GOOGLECS_PROJECT_ID=desarrollo-262414
-        export STORAGE_GOOGLECS_BUCKET_NAME=desarrollo-262414-vcm
+        export STORAGE_GOOGLECS_PROJECT_ID=gxjavacloudstorageunittests
+        export STORAGE_GOOGLECS_BUCKET_NAME=javaclasses-unittests
         export STORAGE_GOOGLECS_FOLDER_NAME=gxclasses
-        export STORAGE_GOOGLECS_APPLICATION_NAME=desarrollo
+        export STORAGE_GOOGLECS_APPLICATION_NAME=gxjavacloudstorageunittests
 
         mvn -B -pl gxexternalproviders test --file $POM_PATH
