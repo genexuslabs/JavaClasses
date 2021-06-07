@@ -1376,14 +1376,15 @@ public final class GXutil
 	public static String getNonTransversalPath(String path, String fileName) {
 		String nonTransvesalPath =  path.endsWith(File.separator)?  path + fileName : path + File.separator + fileName;
 		try {
-			String canonicalPath = new File(nonTransvesalPath).getCanonicalPath();
-			if (canonicalPath.startsWith(path))
+			File nonTransvesalFile = new File(nonTransvesalPath);
+			String canonicalPath = nonTransvesalFile.getCanonicalPath();
+			if (canonicalPath.startsWith(path) || ! nonTransvesalFile.isAbsolute())
 				return nonTransvesalPath;
 			else
-				return path + File.separator + CommonUtil.getFileName(fileName);
+				return path + File.separator +  new File( fileName).getName();
 		}
 		catch(IOException ex) {
-			return path + File.separator + CommonUtil.getFileName(fileName);
+			return path + File.separator +  new File( fileName).getName();
 		}
 	}
 	
