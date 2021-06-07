@@ -7,6 +7,10 @@ public class ServletContext implements IServletContext{
 		this.sc = sc;
 	}
 
+	public ServletContext(Object sc) {
+		this.sc = (jakarta.servlet.ServletContext)sc;
+	}
+
 	public jakarta.servlet.ServletContext getWrappedClass() {
 		return sc;
 	}
