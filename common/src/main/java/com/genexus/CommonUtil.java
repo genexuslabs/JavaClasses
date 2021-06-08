@@ -1637,7 +1637,7 @@ public final class CommonUtil
 
 	public static int day(Date date)
 	{
-		if	(date.equals(nullDate()))
+		if	(date == null || date.equals(nullDate()))
 			return 0;
 
 		SimpleDateFormat dayFormat = new java.text.SimpleDateFormat("d");
@@ -1647,7 +1647,7 @@ public final class CommonUtil
 
 	public static int month(Date date)
 	{
-		if	(date.equals(nullDate()))
+		if	(date == null || date.equals(nullDate()))
 			return 0;
 
 		SimpleDateFormat monthFormat = new java.text.SimpleDateFormat("M");
@@ -1657,7 +1657,7 @@ public final class CommonUtil
 
 	public static int  year(Date date)
 	{
-		if	(date.equals(nullDate()))
+		if	(date == null || date.equals(nullDate()))
 			return 0;
 
 		SimpleDateFormat yearFormat = new java.text.SimpleDateFormat("yyyy");
