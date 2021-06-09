@@ -260,7 +260,7 @@ public final class PrivateUtilities
 			name = encodeFileName(name);
 		}
 		name = checkFileNameLength(baseDir, name, extension);
-		return GXutil.getNonTransversalPath(baseDir, name + extension);
+		return GXutil.getNonTraversalPath(baseDir, name + extension);
 	}
 	
 	public static String checkFileNameLength(String baseDir, String fileName, String extension ) 

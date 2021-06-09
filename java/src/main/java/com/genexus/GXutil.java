@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -1373,13 +1374,13 @@ public final class GXutil
 		return CommonUtil.isUploadPrefix(value);
 	}
 
-	public static String getNonTransversalPath(String path, String fileName) {
-		String nonTransvesalPath =  path.endsWith(File.separator)?  path + fileName : path + File.separator + fileName;
+	public static String getNonTraversalPath(String path, String fileName) {
+		String nonTraversalPath =  Paths.get(path, fileName).toString();
 		try {
-			File nonTransvesalFile = new File(nonTransvesalPath);
-			String canonicalPath = nonTransvesalFile.getCanonicalPath();
-			if (canonicalPath.startsWith(path) || ! nonTransvesalFile.isAbsolute())
-				return nonTransvesalPath;
+			File nonTraversalFile = new File(nonTraversalPath);
+			String canonicalPath = nonTraversalFile.getCanonicalPath();
+			if (canonicalPath.startsWith(path) || ! nonTraversalFile.isAbsolute())
+				return nonTraversalPath;
 			else
 				return path + File.separator +  new File( fileName).getName();
 		}
