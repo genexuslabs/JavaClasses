@@ -262,7 +262,7 @@ public final class PrivateUtilities
 		}
 		name = checkFileNameLength(baseDir, name, extension);
 
-		return GXutil.getNonTransversalPath(baseDir, String.format("%s%s%s", name, separator, extension));
+		return GXutil.getNonTraversalPath(baseDir, String.format("%s%s%s", name, separator, extension));
 	}
 	
 	public static String checkFileNameLength(String baseDir, String fileName, String extension ) 

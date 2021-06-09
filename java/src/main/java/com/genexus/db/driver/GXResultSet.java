@@ -1017,7 +1017,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 				if (Application.getExternalProvider() == null)
 				{ 
 					String multimediaDir = com.genexus.Preferences.getDefaultPreferences().getMultimediaPath();
-					filePath = GXutil.getNonTransversalPath(multimediaDir, fileName);
+					filePath = GXutil.getNonTraversalPath(multimediaDir, fileName);
 				}
 				else
 				{
