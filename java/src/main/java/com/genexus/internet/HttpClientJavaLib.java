@@ -9,6 +9,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 import com.genexus.util.IniFile;
+import com.genexus.webpanels.HttpContextWeb;
 import org.apache.http.HttpResponse;
 import com.genexus.CommonUtil;
 import com.genexus.specific.java.*;
@@ -47,12 +48,14 @@ import org.apache.http.protocol.HTTP;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 
 import javax.net.ssl.SSLContext;
 
 public class HttpClientJavaLib extends GXHttpClient {
 
 	public HttpClientJavaLib() {
+		logger.info("HttpClient pool manager implementation");
 		getPoolInstance();
 		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();
 		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
@@ -98,6 +101,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();	// Cuando se actualiza el timeout, se actualiza el KeepAliveStrategy ya que el mismo de basa el el timeout seteado
 		httpClientBuilder.setKeepAliveStrategy(myStrategy);
 	}
+
+	private static Logger logger = org.apache.logging.log4j.LogManager.getLogger(HttpClientJavaLib.class);
 
 	private static PoolingHttpClientConnectionManager connManager = null;
 	private Integer statusCode = 0;
