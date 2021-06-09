@@ -9,7 +9,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 import com.genexus.util.IniFile;
-import com.genexus.webpanels.HttpContextWeb;
 import org.apache.http.HttpResponse;
 import com.genexus.CommonUtil;
 import com.genexus.specific.java.*;
