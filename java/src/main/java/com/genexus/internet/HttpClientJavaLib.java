@@ -9,7 +9,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 import com.genexus.util.IniFile;
-import com.genexus.webpanels.HttpContextWeb;
 import org.apache.http.HttpResponse;
 import com.genexus.CommonUtil;
 import com.genexus.specific.java.*;
@@ -55,7 +54,7 @@ import javax.net.ssl.SSLContext;
 public class HttpClientJavaLib extends GXHttpClient {
 
 	public HttpClientJavaLib() {
-		logger.info("HttpClient pool manager implementation");
+		logger.info("Using apache http client implementation");
 		getPoolInstance();
 		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();
 		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
