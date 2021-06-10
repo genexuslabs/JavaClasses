@@ -42,25 +42,26 @@ import org.apache.logging.log4j.Logger;
 
 public class ExternalProviderGoogle extends ExternalProviderBase implements ExternalProvider  {
 
-    private static Logger logger = LogManager.getLogger(ExternalProviderGoogle.class);
+	private static Logger logger = LogManager.getLogger(ExternalProviderGoogle.class);
 
 	static final String NAME = "GOOGLECS";  //Google Cloud Storage
-    static final String KEY = "KEY";
-    static final String APPLICATION_NAME = "APPLICATION_NAME";
-    static final String BUCKET = "BUCKET_NAME";
-    static final String FOLDER = "FOLDER_NAME";
-    static final String PROJECT_ID = "PROJECT_ID";
+	static final String KEY = "KEY";
+	static final String APPLICATION_NAME = "APPLICATION_NAME";
+	static final String BUCKET = "BUCKET_NAME";
+	static final String FOLDER = "FOLDER_NAME";
+	static final String PROJECT_ID = "PROJECT_ID";
 	static final String REGION = "REGION";
 
-    private static final int OBJECT_NOT_FOUND = 404;
+	private static final int OBJECT_NOT_FOUND = 404;
 
-    private com.google.api.services.storage.Storage legacyClient;
-    private com.google.cloud.storage.Storage storageClient;
-    private String bucket;
-    private String folder;
-    private String projectId;
-    private String url;
-    private String region;
+	private com.google.api.services.storage.Storage legacyClient;
+	private com.google.cloud.storage.Storage storageClient;
+	private String bucket;
+	private String folder;
+	private String projectId;
+	private String url;
+	private String region;
+	private int defaultExpirationMinutes = DEFAULT_EXPIRATION_MINUTES;
 
 	public ExternalProviderGoogle() throws Exception{
 		super();
@@ -76,7 +77,7 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 		initialize();
 	}
 
-    private void initialize() throws Exception {
+	private void initialize() throws Exception {
 		try {
 			HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
 			JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
@@ -118,10 +119,10 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 			if (!bucketAlreadyExists) {
 				StorageClass storageClass = StorageClass.STANDARD;
 				storageClient.create(
-						BucketInfo.newBuilder(this.bucket)
-							.setStorageClass(storageClass)
-							.setLocation(this.region)
-							.build());
+					BucketInfo.newBuilder(this.bucket)
+						.setStorageClass(storageClass)
+						.setLocation(this.region)
+						.build());
 			}
 		}
 		catch (StorageException ex){
@@ -130,91 +131,92 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 		}
 	}
 
-    private void createFolder(String folderName) {
-        try {
-            folderName = StorageUtils.normalizeDirectoryName(folderName);
+	private void createFolder(String folderName) {
+		try {
+			folderName = StorageUtils.normalizeDirectoryName(folderName);
 
-            StorageObject object = new StorageObject().setName(folderName);
-            InputStreamContent emptyContent = new InputStreamContent("application/directory", new ByteArrayInputStream(new byte[0]));
-            emptyContent.setLength(0);
+			StorageObject object = new StorageObject().setName(folderName);
+			InputStreamContent emptyContent = new InputStreamContent("application/directory", new ByteArrayInputStream(new byte[0]));
+			emptyContent.setLength(0);
 
 			com.google.api.services.storage.Storage.Objects.Insert insertRequest = legacyClient.objects().insert(bucket, object, emptyContent);
 
-            insertRequest.execute();
-        } catch (IOException ex) {
-            handleIOException(ex);
-        }
-    }
+			insertRequest.execute();
+		} catch (IOException ex) {
+			handleIOException(ex);
+		}
+	}
 
-    private Map<String, String> createObjectMetadata(String tableName, String fieldName, String resourceKey) {
-        Map<String, String> metadata = new HashMap<String, String>();
-        metadata.put("Table", tableName);
-        metadata.put("Field", fieldName);
-        metadata.put("KeyValue", resourceKey);
-        return metadata;
-    }
+	private Map<String, String> createObjectMetadata(String tableName, String fieldName, String resourceKey) {
+		Map<String, String> metadata = new HashMap<String, String>();
+		metadata.put("Table", tableName);
+		metadata.put("Field", fieldName);
+		metadata.put("KeyValue", resourceKey);
+		return metadata;
+	}
 
-    public void download(String externalFileName, String localFile, ResourceAccessControlList acl) {
-        try {
-            OutputStream out = new FileOutputStream(localFile);
+	public void download(String externalFileName, String localFile, ResourceAccessControlList acl) {
+		try {
+			OutputStream out = new FileOutputStream(localFile);
 			com.google.api.services.storage.Storage.Objects.Get request = legacyClient.objects().get(bucket, externalFileName);
-            request.getMediaHttpDownloader().setDirectDownloadEnabled(true).download(new GenericUrl(url + StorageUtils.encodeName(externalFileName)), out);
-            out.close();
-        } catch (IOException e) {
-            handleIOException(e);
-        }
-    }
+			request.getMediaHttpDownloader().setDirectDownloadEnabled(true).download(new GenericUrl(url + StorageUtils.encodeName(externalFileName)), out);
+			out.close();
+		} catch (IOException e) {
+			handleIOException(e);
+		}
+	}
 
-    public String upload(String localFile, String externalFileName, ResourceAccessControlList acl) {
-        try {
-        	BlobId blobId = BlobId.of(bucket, externalFileName);
+	public String upload(String localFile, String externalFileName, ResourceAccessControlList acl) {
+		try {
+			BlobId blobId = BlobId.of(bucket, externalFileName);
 			BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
 			storageClient.create(blobInfo, Files.readAllBytes(Paths.get(localFile)));
 			setBlobAcl(blobId, acl);
 			return getResourceUrl(blobInfo, acl);
-        } catch (IOException ex) {
-            handleIOException(ex);
-            return "";
-        }
-    }
+		} catch (IOException ex) {
+			handleIOException(ex);
+			return "";
+		}
+	}
 
-    private void setBlobAcl(BlobId blobId, ResourceAccessControlList acl) {
+	private void setBlobAcl(BlobId blobId, ResourceAccessControlList acl) {
 		if (!isPrivateResource(acl)) {
 			storageClient.createAcl(blobId, Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER));
 
 		}
 	}
 
-    public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
-        try {
+	public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
+		try {
 			BlobId blobId = BlobId.of(bucket, externalFileName);
 			BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
 			byte[] targetArray = IOUtils.toByteArray(input);
 			storageClient.create(blobInfo, targetArray);
 			setBlobAcl(blobId, acl);
-            return getResourceUrl(blobInfo, acl);
-        } catch (IOException ex) {
-            handleIOException(ex);
-            return "";
-        }
-    }
+			return getResourceUrl(blobInfo, acl);
+		} catch (IOException ex) {
+			handleIOException(ex);
+			return "";
+		}
+	}
 
 	private String getResourceUrl(BlobInfo blobInfo, ResourceAccessControlList acl) {
 		return getResourceUrl(blobInfo, acl, DEFAULT_EXPIRATION_MINUTES);
 	}
-    private String getResourceUrl(BlobInfo blobInfo, ResourceAccessControlList acl, int expirationMinutes){
+	private String getResourceUrl(BlobInfo blobInfo, ResourceAccessControlList acl, int expirationMinutes){
 		if (isPrivateResource(acl)){
+			expirationMinutes = expirationMinutes > 0 ? expirationMinutes: defaultExpirationMinutes;
 			return storageClient.signUrl(blobInfo, expirationMinutes, TimeUnit.MINUTES, Storage.SignUrlOption.withV4Signature()).toString();
 		}
 		else {
 			return url + StorageUtils.encodeName(blobInfo.getName());
 		}
 	}
-    public String get(String objectName, ResourceAccessControlList acl, int expirationMinutes) {
+	public String get(String objectName, ResourceAccessControlList acl, int expirationMinutes) {
 		Blob blob = storageClient.get(BlobId.of(bucket, objectName));
 		BlobInfo bInfo = BlobInfo.newBuilder(blob.getBlobId()).build();
 		return getResourceUrl(bInfo, acl, expirationMinutes);
-    }
+	}
 
 	private boolean isPrivateResource(ResourceAccessControlList acl) {
 		return acl == ResourceAccessControlList.Private || (acl == ResourceAccessControlList.Default && this.defaultAcl == ResourceAccessControlList.Private);
@@ -225,261 +227,261 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 		if (!deleted) {
 			logger.warn("Could not delete resource: " + objectName);
 		}
-    }
+	}
 
-    public String rename(String objectName, String newName, ResourceAccessControlList acl) {
-        String newUrl = copy(objectName, newName, acl);
-        delete(objectName, acl);
-        return newUrl;
-    }
+	public String rename(String objectName, String newName, ResourceAccessControlList acl) {
+		String newUrl = copy(objectName, newName, acl);
+		delete(objectName, acl);
+		return newUrl;
+	}
 
-    public String copy(String objectName, String newName, ResourceAccessControlList acl) {
-        if (objectName.contains(url)) {
-            objectName = objectName.replace(url, "");
-        }
+	public String copy(String objectName, String newName, ResourceAccessControlList acl) {
+		if (objectName.contains(url)) {
+			objectName = objectName.replace(url, "");
+		}
 
 		Blob blob = storageClient.get(this.bucket, objectName);
 		CopyWriter copyWriter = blob.copyTo(this.bucket, newName);
 		Blob copiedBlob = copyWriter.getResult();
 		setBlobAcl(copiedBlob.getBlobId(), acl);
 		return url + StorageUtils.encodeName(newName);
-    }
+	}
 
-    public String copy(String objectUrl, String newName, String tableName, String fieldName, ResourceAccessControlList acl) {
-        try {
-            String resourceFolderName = folder + "/" + tableName + "/" + fieldName;
-            String resourceKey = resourceFolderName + "/" + newName;
-            objectUrl = objectUrl.replace(url, "");
-            objectUrl = URLDecoder.decode(objectUrl, "UTF-8");
-            try {
+	public String copy(String objectUrl, String newName, String tableName, String fieldName, ResourceAccessControlList acl) {
+		try {
+			String resourceFolderName = folder + "/" + tableName + "/" + fieldName;
+			String resourceKey = resourceFolderName + "/" + newName;
+			objectUrl = objectUrl.replace(url, "");
+			objectUrl = URLDecoder.decode(objectUrl, "UTF-8");
+			try {
 				Blob blob = storageClient.get(bucket, objectUrl);
 				CopyWriter copyWriter = blob.copyTo(bucket, resourceKey);
 				Blob copiedBlob = copyWriter.getResult();
 				setBlobAcl(copiedBlob.getBlobId(), acl);
-                return url + StorageUtils.encodeName(resourceKey);
-            } catch (Exception ex) {
-                logger.error("Error saving file to external provider", ex.getMessage());
-                return "";
-            }
-        } catch (UnsupportedEncodingException ex) {
-            logger.error("Storage exception", ex.getMessage());
-        }
-        return "";
-    }
+				return url + StorageUtils.encodeName(resourceKey);
+			} catch (Exception ex) {
+				logger.error("Error saving file to external provider", ex.getMessage());
+				return "";
+			}
+		} catch (UnsupportedEncodingException ex) {
+			logger.error("Storage exception", ex.getMessage());
+		}
+		return "";
+	}
 
-    public long getLength(String objectName, ResourceAccessControlList acl) {
-        try {
-            return legacyClient.objects().get(bucket, objectName).execute().getSize().longValue();
-        } catch (IOException ex) {
-            handleIOException(ex);
-            return 0;
-        }
-    }
+	public long getLength(String objectName, ResourceAccessControlList acl) {
+		try {
+			return legacyClient.objects().get(bucket, objectName).execute().getSize().longValue();
+		} catch (IOException ex) {
+			handleIOException(ex);
+			return 0;
+		}
+	}
 
-    public Date getLastModified(String objectName, ResourceAccessControlList acl) {
-        try {
-            return new Date(legacyClient.objects().get(bucket, objectName).execute().getUpdated().getValue());
-        } catch (IOException ex) {
-            handleIOException(ex);
-            return new Date();
-        }
-    }
+	public Date getLastModified(String objectName, ResourceAccessControlList acl) {
+		try {
+			return new Date(legacyClient.objects().get(bucket, objectName).execute().getUpdated().getValue());
+		} catch (IOException ex) {
+			handleIOException(ex);
+			return new Date();
+		}
+	}
 
-    public boolean exists(String objectName, ResourceAccessControlList acl) {
-        try {
+	public boolean exists(String objectName, ResourceAccessControlList acl) {
+		try {
 			legacyClient.objects().get(bucket, objectName).execute();
-            return true;
-        } catch (GoogleJsonResponseException ex) {
-            if (ex.getStatusCode() != OBJECT_NOT_FOUND) {
-                logger.error("Error while checking if file exists", ex.getMessage());
-            }
-            return false;
-        } catch (IOException ex) {
-            handleIOException(ex);
-            return false;
-        }
-    }
+			return true;
+		} catch (GoogleJsonResponseException ex) {
+			if (ex.getStatusCode() != OBJECT_NOT_FOUND) {
+				logger.error("Error while checking if file exists", ex.getMessage());
+			}
+			return false;
+		} catch (IOException ex) {
+			handleIOException(ex);
+			return false;
+		}
+	}
 
-    public String getDirectory(String directoryName) {
-        directoryName = StorageUtils.normalizeDirectoryName(directoryName);
-        if (existsDirectory(directoryName)) {
-            return bucket + StorageUtils.DELIMITER + directoryName;
-        } else {
-            return "";
-        }
-    }
+	public String getDirectory(String directoryName) {
+		directoryName = StorageUtils.normalizeDirectoryName(directoryName);
+		if (existsDirectory(directoryName)) {
+			return bucket + StorageUtils.DELIMITER + directoryName;
+		} else {
+			return "";
+		}
+	}
 
-    public boolean existsDirectory(String directoryName) {
-        boolean exists = false;
-        directoryName = StorageUtils.normalizeDirectoryName(directoryName);
-        try {
+	public boolean existsDirectory(String directoryName) {
+		boolean exists = false;
+		directoryName = StorageUtils.normalizeDirectoryName(directoryName);
+		try {
 			com.google.api.services.storage.Storage.Objects.List listObjects = legacyClient.objects().list(bucket);
-            listObjects.setDelimiter(StorageUtils.DELIMITER);
-            Objects objects;
-            do {
-                objects = listObjects.execute();
-                if (objects.getPrefixes() != null) {
-                    for (String object : objects.getPrefixes()) {
-                        if (object.equals(directoryName)) {
-                            exists = true;
-                        }
-                    }
-                }
-                listObjects.setPageToken(objects.getNextPageToken());
-            } while (null != objects.getNextPageToken());
-        } catch (IOException ex) {
-            handleIOException(ex);
-        }
-        return exists;
-    }
+			listObjects.setDelimiter(StorageUtils.DELIMITER);
+			Objects objects;
+			do {
+				objects = listObjects.execute();
+				if (objects.getPrefixes() != null) {
+					for (String object : objects.getPrefixes()) {
+						if (object.equals(directoryName)) {
+							exists = true;
+						}
+					}
+				}
+				listObjects.setPageToken(objects.getNextPageToken());
+			} while (null != objects.getNextPageToken());
+		} catch (IOException ex) {
+			handleIOException(ex);
+		}
+		return exists;
+	}
 
-    public void createDirectory(String directoryName) {
-        createFolder(StorageUtils.normalizeDirectoryName(directoryName));
-    }
+	public void createDirectory(String directoryName) {
+		createFolder(StorageUtils.normalizeDirectoryName(directoryName));
+	}
 
-    public void deleteDirectory(String directoryName) {
-        directoryName = StorageUtils.normalizeDirectoryName(directoryName);
-        try {
+	public void deleteDirectory(String directoryName) {
+		directoryName = StorageUtils.normalizeDirectoryName(directoryName);
+		try {
 			com.google.api.services.storage.Storage.Objects.List listObjects = legacyClient.objects().list(bucket);
-            listObjects.setPrefix(directoryName);
-            Objects objects;
-            do {
-                objects = listObjects.execute();
-                if (objects.getItems() != null) {
-                    for (StorageObject object : objects.getItems()) {
-                        if (isFile(object.getName(), "")) {
-                            delete(object.getName(), null);
-                        }
-                    }
-                }
-                listObjects.setPageToken(objects.getNextPageToken());
-            } while (null != objects.getNextPageToken());
-            for (String subdir : getSubDirectories(directoryName)) {
-                deleteDirectory(subdir);
-            }
-            if (exists(directoryName, null)) {
-                delete(directoryName, null);
-            }
-        } catch (IOException ex) {
-            handleIOException(ex);
-        }
-    }
+			listObjects.setPrefix(directoryName);
+			Objects objects;
+			do {
+				objects = listObjects.execute();
+				if (objects.getItems() != null) {
+					for (StorageObject object : objects.getItems()) {
+						if (isFile(object.getName(), "")) {
+							delete(object.getName(), null);
+						}
+					}
+				}
+				listObjects.setPageToken(objects.getNextPageToken());
+			} while (null != objects.getNextPageToken());
+			for (String subdir : getSubDirectories(directoryName)) {
+				deleteDirectory(subdir);
+			}
+			if (exists(directoryName, null)) {
+				delete(directoryName, null);
+			}
+		} catch (IOException ex) {
+			handleIOException(ex);
+		}
+	}
 
-    public void renameDirectory(String directoryName, String newDirectoryName) {
+	public void renameDirectory(String directoryName, String newDirectoryName) {
 		ResourceAccessControlList acl = null;
-        directoryName = StorageUtils.normalizeDirectoryName(directoryName);
-        newDirectoryName = StorageUtils.normalizeDirectoryName(newDirectoryName);
-        try {
+		directoryName = StorageUtils.normalizeDirectoryName(directoryName);
+		newDirectoryName = StorageUtils.normalizeDirectoryName(newDirectoryName);
+		try {
 			com.google.api.services.storage.Storage.Objects.List listObjects = legacyClient.objects().list(bucket);
-            listObjects.setPrefix(directoryName);
-            Objects objects;
-            do {
-                objects = listObjects.execute();
-                if (objects.isEmpty()) {
-                    copy(directoryName, newDirectoryName, acl);
-                    delete(directoryName, acl);
-                }
-                if (objects.getItems() != null) {
-                    for (StorageObject object : objects.getItems()) {
-                        copy(object.getName(), object.getName().replace(directoryName, newDirectoryName), acl);
-                        delete(object.getName(), acl);
-                    }
-                }
-                listObjects.setPageToken(objects.getNextPageToken());
-            } while (null != objects.getNextPageToken());
-            for (String subdir : getSubDirectories(directoryName)) {
-                renameDirectory(subdir, subdir.replace(directoryName, newDirectoryName));
-                deleteDirectory(subdir);
-            }
-            if (exists(directoryName, acl)) {
-                delete(directoryName, acl);
-            }
-        } catch (IOException ex) {
-            handleIOException(ex);
-        }
-    }
+			listObjects.setPrefix(directoryName);
+			Objects objects;
+			do {
+				objects = listObjects.execute();
+				if (objects.isEmpty()) {
+					copy(directoryName, newDirectoryName, acl);
+					delete(directoryName, acl);
+				}
+				if (objects.getItems() != null) {
+					for (StorageObject object : objects.getItems()) {
+						copy(object.getName(), object.getName().replace(directoryName, newDirectoryName), acl);
+						delete(object.getName(), acl);
+					}
+				}
+				listObjects.setPageToken(objects.getNextPageToken());
+			} while (null != objects.getNextPageToken());
+			for (String subdir : getSubDirectories(directoryName)) {
+				renameDirectory(subdir, subdir.replace(directoryName, newDirectoryName));
+				deleteDirectory(subdir);
+			}
+			if (exists(directoryName, acl)) {
+				delete(directoryName, acl);
+			}
+		} catch (IOException ex) {
+			handleIOException(ex);
+		}
+	}
 
-    public List<String> getFiles(String directoryName, String filter) {
-        List<String> files = new ArrayList<String>();
-        directoryName = StorageUtils.normalizeDirectoryName(directoryName);
-        try {
+	public List<String> getFiles(String directoryName, String filter) {
+		List<String> files = new ArrayList<String>();
+		directoryName = StorageUtils.normalizeDirectoryName(directoryName);
+		try {
 			com.google.api.services.storage.Storage.Objects.List listObjects = legacyClient.objects().list(bucket);
-            listObjects.setPrefix(directoryName);
-            Objects objects;
-            do {
-                objects = listObjects.execute();
-                if (objects.getItems() != null) {
-                    for (StorageObject object : objects.getItems()) {
-                        if (isFile(object.getName(), "") && (filter.isEmpty() || object.getName().contains(filter))) {
-                            files.add(object.getName());
-                        }
-                    }
-                }
-                listObjects.setPageToken(objects.getNextPageToken());
-            } while (null != objects.getNextPageToken());
-        } catch (IOException ex) {
-            handleIOException(ex);
-        }
-        return files;
-    }
+			listObjects.setPrefix(directoryName);
+			Objects objects;
+			do {
+				objects = listObjects.execute();
+				if (objects.getItems() != null) {
+					for (StorageObject object : objects.getItems()) {
+						if (isFile(object.getName(), "") && (filter.isEmpty() || object.getName().contains(filter))) {
+							files.add(object.getName());
+						}
+					}
+				}
+				listObjects.setPageToken(objects.getNextPageToken());
+			} while (null != objects.getNextPageToken());
+		} catch (IOException ex) {
+			handleIOException(ex);
+		}
+		return files;
+	}
 
-    public List<String> getFiles(String directoryName) {
-        return getFiles(directoryName, "");
-    }
+	public List<String> getFiles(String directoryName) {
+		return getFiles(directoryName, "");
+	}
 
-    public List<String> getSubDirectories(String directoryName) {
-        List<String> directories = new ArrayList<String>();
-        directoryName = StorageUtils.normalizeDirectoryName(directoryName);
-        try {
+	public List<String> getSubDirectories(String directoryName) {
+		List<String> directories = new ArrayList<String>();
+		directoryName = StorageUtils.normalizeDirectoryName(directoryName);
+		try {
 			com.google.api.services.storage.Storage.Objects.List listObjects = legacyClient.objects().list(bucket);
-            listObjects.setPrefix(directoryName);
-            listObjects.setDelimiter(StorageUtils.DELIMITER);
-            Objects objects;
-            do {
-                objects = listObjects.execute();
-                if (objects.getPrefixes() != null) {
-                    for (String object : objects.getPrefixes()) {
-                        directories.add(object);
-                    }
-                }
-                listObjects.setPageToken(objects.getNextPageToken());
-            } while (null != objects.getNextPageToken());
-        } catch (IOException ex) {
-            handleIOException(ex);
-        }
-        return directories;
-    }
+			listObjects.setPrefix(directoryName);
+			listObjects.setDelimiter(StorageUtils.DELIMITER);
+			Objects objects;
+			do {
+				objects = listObjects.execute();
+				if (objects.getPrefixes() != null) {
+					for (String object : objects.getPrefixes()) {
+						directories.add(object);
+					}
+				}
+				listObjects.setPageToken(objects.getNextPageToken());
+			} while (null != objects.getNextPageToken());
+		} catch (IOException ex) {
+			handleIOException(ex);
+		}
+		return directories;
+	}
 
-    public InputStream getStream(String objectName, ResourceAccessControlList acl){
-        try {
+	public InputStream getStream(String objectName, ResourceAccessControlList acl){
+		try {
 			com.google.api.services.storage.Storage.Objects.Get request = legacyClient.objects().get(bucket, objectName);
-            return request.executeMediaAsInputStream();
-        } catch (IOException ex) {
-            handleIOException(ex);
-        }
-        return null;
-    }
+			return request.executeMediaAsInputStream();
+		} catch (IOException ex) {
+			handleIOException(ex);
+		}
+		return null;
+	}
 
-    public boolean getMessageFromException(Exception ex, StructSdtMessages_Message msg) {
-        try {
-            GoogleStorageException gex = (GoogleStorageException) ex;
-            msg.setId(gex.getStatusCode());
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
+	public boolean getMessageFromException(Exception ex, StructSdtMessages_Message msg) {
+		try {
+			GoogleStorageException gex = (GoogleStorageException) ex;
+			msg.setId(gex.getStatusCode());
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
 
-    private boolean isFile(String name, String directoryName) {
-        return !name.endsWith(StorageUtils.DELIMITER) && (directoryName.isEmpty() || !name.replace(directoryName, "").contains(StorageUtils.DELIMITER));
-    }
+	private boolean isFile(String name, String directoryName) {
+		return !name.endsWith(StorageUtils.DELIMITER) && (directoryName.isEmpty() || !name.replace(directoryName, "").contains(StorageUtils.DELIMITER));
+	}
 
-    void handleIOException(IOException ex) {
-        if (canBuildException(ex)) {
-            throw buildException(ex);
-        }
-        logger.error("Error " + ex.getClass(), ex);
-    }
+	void handleIOException(IOException ex) {
+		if (canBuildException(ex)) {
+			throw buildException(ex);
+		}
+		logger.error("Error " + ex.getClass(), ex);
+	}
 
 	void handleIOException(GoogleJsonResponseException ex) {
 		if (canBuildException(ex)) {
@@ -488,17 +490,17 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 		logger.error("Error " + ex.getClass(), ex);
 	}
 
-    boolean canBuildException(Exception ex) {
-        return ex.getMessage().contains("<Message>") && ex.getMessage().contains("<Error><Code>");
-    }
+	boolean canBuildException(Exception ex) {
+		return ex.getMessage().contains("<Message>") && ex.getMessage().contains("<Error><Code>");
+	}
 
-    GoogleStorageException buildException(IOException ex) {
-        String msg="";
-        if (ex.getMessage().contains("<Message>")) {
-            msg =  ex.getMessage().split("<Message>")[1].split("</Message>")[0];
-        }
-        return new GoogleStorageException(msg, ex);
-    }
+	GoogleStorageException buildException(IOException ex) {
+		String msg="";
+		if (ex.getMessage().contains("<Message>")) {
+			msg =  ex.getMessage().split("<Message>")[1].split("</Message>")[0];
+		}
+		return new GoogleStorageException(msg, ex);
+	}
 
 	public String getObjectNameFromURL(String url) {
 		String objectName = null;
@@ -514,19 +516,19 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 		return url;
 	}
 
-    class GoogleStorageException extends RuntimeException {
+	class GoogleStorageException extends RuntimeException {
 
-        private String statusCode;
+		private String statusCode;
 
-        GoogleStorageException(String msg, IOException ex) {
-            super(msg, ex);
-            if (ex.getMessage().contains("<Error><Code>")) {
-                statusCode = ex.getMessage().split("<Error><Code>")[1].split("</Code>")[0];
-            }
-        }
+		GoogleStorageException(String msg, IOException ex) {
+			super(msg, ex);
+			if (ex.getMessage().contains("<Error><Code>")) {
+				statusCode = ex.getMessage().split("<Error><Code>")[1].split("</Code>")[0];
+			}
+		}
 
-        public String getStatusCode() {
-            return statusCode;
-        }
-    }
+		public String getStatusCode() {
+			return statusCode;
+		}
+	}
 }
