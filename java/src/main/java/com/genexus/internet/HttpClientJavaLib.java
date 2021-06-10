@@ -54,7 +54,7 @@ import javax.net.ssl.SSLContext;
 public class HttpClientJavaLib extends GXHttpClient {
 
 	public HttpClientJavaLib() {
-		logger.info("HttpClient pool manager implementation");
+		logger.info("Using apache http client implementation");
 		getPoolInstance();
 		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();
 		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
