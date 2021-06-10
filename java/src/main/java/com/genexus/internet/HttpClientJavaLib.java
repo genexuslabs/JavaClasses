@@ -360,7 +360,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 				boolean hasConentType = false;
 				for (String header : keys) {
 					httpPost.addHeader(header,getheadersToSend().get(header));
-					if (getheadersToSend().get(header).equalsIgnoreCase("Content-type"))
+					if (header.equalsIgnoreCase("Content-type"))
 						hasConentType = true;
 				}
 				if (!hasConentType)		// Si no se setea Content-type, se pone uno default

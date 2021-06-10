@@ -34,9 +34,9 @@ public abstract class GXWebProcedure extends GXWebObjectBase
 		try
 		{
 			MessageContext msg = wsContext.getMessageContext();
-			IHttpServletRequest request = (HttpServletRequest)msg.get(MessageContext.SERVLET_REQUEST);
-			IHttpServletResponse response = (HttpServletResponse)msg.get(MessageContext.SERVLET_RESPONSE);
-			IServletContext myContext = (ServletContext)msg.get(MessageContext.SERVLET_CONTEXT);
+			IHttpServletRequest request = new HttpServletRequest(msg.get(MessageContext.SERVLET_REQUEST));
+			IHttpServletResponse response = new HttpServletResponse(msg.get(MessageContext.SERVLET_RESPONSE));
+			IServletContext myContext = new ServletContext(msg.get(MessageContext.SERVLET_CONTEXT));
 			String messageBody = (String)msg.get(GXHandlerChain.GX_SOAP_BODY);
 			HttpContext httpContext = new HttpContextWeb(request.getMethod(), request, response, myContext);
 			httpContext.getHttpRequest().setSoapMessageBody(messageBody);
