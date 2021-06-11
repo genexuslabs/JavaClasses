@@ -1,28 +1,30 @@
 package com.genexus.fileupload;
 
-import com.genexus.fileupload.IFileItemStream;
 import java.io.IOException;
 import java.io.InputStream;
+import jakarta.servlet.http.Part;
 
 public class FileItemStream implements IFileItemStream{
 
+	Part part;
+
+	public FileItemStream(Part part) {
+		this.part = part;
+	}
+
 	public String getName() {
-		//TODO
-		return null;
+		return part.getSubmittedFileName();
 	}
 
 	public boolean isFormField() {
-		//TODO
-		return false;
+		return part.getSubmittedFileName() == null;
 	}
 
 	public InputStream openStream() throws IOException {
-		//TODO
-		return null;
+		return part.getInputStream();
 	}
 
 	public String getFieldName() {
-		//TODO
-		return null;
+		return part.getName();
 	}
 }
