@@ -43,7 +43,8 @@ public class HttpClient implements IExtensionHttpClient {
 	public com.genexus.internet.IHttpClient initHttpClientImpl() {
 		com.genexus.internet.IHttpClient client = null;
 		try {
-
+			Class.forName("org.apache.http.impl.conn.PoolingHttpClientConnectionManager");	// httpclient-4.5.14.jar dectected by reflection
+			Class.forName("org.apache.http.ssl.SSLContextBuilder"); // httpcore-4.4.13.jar detected by reflection
 			client = new HttpClientJavaLib();
 
 		} catch (Throwable e) {
