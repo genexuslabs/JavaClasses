@@ -533,7 +533,16 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public InputStream getInputStream() throws IOException {
-		return response.getEntity().getContent();
+		try {
+			return response.getEntity().getContent();
+		} catch (NullPointerException e) {
+			return new InputStream() {
+				@Override
+				public int read() throws IOException {
+					return 0;
+				}
+			};
+		}
 	}
 
 	public InputStream getInputStream(String stringURL) throws IOException
