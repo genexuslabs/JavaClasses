@@ -28,6 +28,7 @@ public class GXExternalFileInfo implements IGXFileInfo {
         this.url = url;
         this.provider = provider;
         this.fileAcl = acl;
+		this.isFile = true;
 		setName(storageObjectFullName);
     }
 
@@ -75,6 +76,10 @@ public class GXExternalFileInfo implements IGXFileInfo {
     public boolean isFile() {
         return isFile;
     }
+
+    public void setIsFile(boolean isFile) {
+    	this.isFile = isFile;
+	}
 
     public boolean isDirectory() {
         return !isFile;
