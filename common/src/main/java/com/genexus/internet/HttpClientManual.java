@@ -264,7 +264,7 @@ public class HttpClientManual extends GXHttpClient {
 		try {	// Agregado este try-catch ya que puede suceder que se reciba la varaible e = null
 		setErrDescription(e.getMessage().endsWith("because \"resp\" is null") ? "Possible fail reason: Proxy unavailable. Real error message: " + e.getMessage() : e.getMessage());
 		} catch(NullPointerException getmsgException) {
-			setErrDescription("");
+			setErrDescription("Unknown error");
 		}
 	}
 
