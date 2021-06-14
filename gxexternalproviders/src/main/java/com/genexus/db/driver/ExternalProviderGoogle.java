@@ -1,5 +1,6 @@
 package com.genexus.db.driver;
 
+import com.genexus.Application;
 import com.genexus.util.GXService;
 import com.genexus.util.StorageUtils;
 import com.genexus.StructSdtMessages_Message;
@@ -65,6 +66,10 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 	public ExternalProviderGoogle() throws Exception{
 		super();
 		initialize();
+	}
+
+	public ExternalProviderGoogle(String service) throws Exception{
+		this(Application.getGXServices().get(service));
 	}
 
 	public ExternalProviderGoogle(GXService providerService) throws Exception{
