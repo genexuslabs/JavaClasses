@@ -86,7 +86,7 @@ public class ExternalProviderIBM extends ExternalProviderBase implements Externa
 
 		endpointUrl = endpoint;
 
-		ClientConfiguration clientConfig = new ClientConfiguration().withRequestTimeout(10000);
+		ClientConfiguration clientConfig = new ClientConfiguration();
 		clientConfig.setUseTcpKeepAlive(true);
 		SDKGlobalConfiguration.IAM_ENDPOINT = "https://iam.cloud.ibm.com/identity/token";
 		AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
