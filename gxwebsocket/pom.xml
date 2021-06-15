@@ -5,7 +5,7 @@
     <parent>
         <artifactId>parent</artifactId>
         <groupId>com.genexus</groupId>
-        <version>2.0-SNAPSHOT</version>
+        <version>2.0</version>
     </parent>
 
     <artifactId>gxwebsocket</artifactId>
