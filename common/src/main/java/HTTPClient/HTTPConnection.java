@@ -3673,7 +3673,7 @@ static
 
 	// Generate request line and Host header
 
-	String file = Util.escapeUnsafeChars(req.getRequestURI());
+	String file = com.genexus.CommonUtil.escapeUnsafeChars(req.getRequestURI());
 	if (Proxy_Host != null  &&  Protocol != HTTPS  &&  !file.equals("*"))
 	    dataout.writeBytes(req.getMethod() + " http://" + Host + ":" + Port+
 			       file + " " + RequestProtocolVersion + "\r\n");
