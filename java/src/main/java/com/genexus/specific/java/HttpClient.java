@@ -39,25 +39,17 @@ public class HttpClient implements IExtensionHttpClient {
 
 	}
 
-	private com.genexus.internet.IHttpClient useHttpClientOldImplementation() {
-		com.genexus.internet.IHttpClient client = new HttpClientManual();
-		SpecificImplementation.HttpClient.initializeHttpClient(client);
-		return client;
-	}
-
 	@Override
 	public com.genexus.internet.IHttpClient initHttpClientImpl() {
 		com.genexus.internet.IHttpClient client = null;
 		try {
-			if (com.genexus.ResourceReader.getResourceAsStream("useoldhttpclient.txt") == null)
-				client = new HttpClientJavaLib();
-			else {
-				client = useHttpClientOldImplementation();
-			}
+
+			client = new HttpClientJavaLib();
 
 		} catch (Throwable e) {
 
-			client = useHttpClientOldImplementation();
+			client = new HttpClientManual();
+			SpecificImplementation.HttpClient.initializeHttpClient(client);
 
 		} finally {
 
