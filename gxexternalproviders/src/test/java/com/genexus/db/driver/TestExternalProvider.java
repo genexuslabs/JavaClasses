@@ -168,7 +168,7 @@ public abstract class TestExternalProvider {
 		ensureUrl(upload, acl);
 
 		deleteSafe(copyFileName);
-		provider.copy(TEST_SAMPLE_FILE_PATH, copyFileName, acl);
+		provider.copy(TEST_SAMPLE_FILE_NAME, copyFileName, acl);
 		upload = tryGet(copyFileName, acl);
 		ensureUrl(upload, acl);
 	}
