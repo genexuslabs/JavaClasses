@@ -167,8 +167,8 @@ public abstract class TestExternalProvider {
 		String upload = provider.get(TEST_SAMPLE_FILE_NAME, acl, 100);
 		ensureUrl(upload, acl);
 
-		provider.delete(copyFileName, acl);
-		provider.copy("text.txt", copyFileName, acl);
+		deleteSafe(copyFileName);
+		provider.copy(TEST_SAMPLE_FILE_PATH, copyFileName, acl);
 		upload = tryGet(copyFileName, acl);
 		ensureUrl(upload, acl);
 	}
