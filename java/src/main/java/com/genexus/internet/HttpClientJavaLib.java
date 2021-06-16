@@ -56,11 +56,11 @@ import javax.net.ssl.SSLContext;
 public class HttpClientJavaLib extends GXHttpClient {
 
 	public HttpClientJavaLib() {
-		logger.info("Using apache http client implementation");
 		getPoolInstance();
 		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();
 		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
 		cookies = new BasicCookieStore();
+		logger.info("Using apache http client implementation");
 	}
 
 	private static void getPoolInstance() {
@@ -180,23 +180,27 @@ public class HttpClientJavaLib extends GXHttpClient {
 				.create()
 				.loadTrustMaterial(new TrustSelfSignedStrategy())
 				.build();
-			return new SSLConnectionSocketFactory(
+			return new org.apache.http.conn.ssl.SSLConnectionSocketFactory(
 				sslContext,
 				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2" },
 				null,
 				SSLConnectionSocketFactory.getDefaultHostnameVerifier());
-		} catch (NoSuchAlgorithmException e) {
+		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
 			e.printStackTrace();
-		} catch (KeyManagementException e) {
+			return new org.apache.http.conn.ssl.SSLConnectionSocketFactory(
+				SSLContexts.createDefault(),
+				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2"},
+				null,
+				SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+		} catch (Exception e) {
 			e.printStackTrace();
-		} catch (KeyStoreException e) {
-			e.printStackTrace();
+			return new org.apache.http.conn.ssl.SSLConnectionSocketFactory(
+				SSLContexts.createDefault(),
+				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2"},
+				null,
+				SSLConnectionSocketFactory.getDefaultHostnameVerifier());
 		}
-		return new SSLConnectionSocketFactory(
-			SSLContexts.createDefault(),
-			new String[] { "TLSv1", "TLSv1.1", "TLSv1.2"},
-			null,
-			SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+
 	}
 
 	private CookieStore setAllStoredCookies() {
