@@ -179,27 +179,19 @@ public class HttpClientJavaLib extends GXHttpClient {
 				.create()
 				.loadTrustMaterial(new TrustSelfSignedStrategy())
 				.build();
-			return new org.apache.http.conn.ssl.SSLConnectionSocketFactory(
+			return new SSLConnectionSocketFactory(
 				sslContext,
 				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2" },
 				null,
 				SSLConnectionSocketFactory.getDefaultHostnameVerifier());
 		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
 			e.printStackTrace();
-			return new org.apache.http.conn.ssl.SSLConnectionSocketFactory(
-				SSLContexts.createDefault(),
-				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2"},
-				null,
-				SSLConnectionSocketFactory.getDefaultHostnameVerifier());
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new org.apache.http.conn.ssl.SSLConnectionSocketFactory(
-				SSLContexts.createDefault(),
-				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2"},
-				null,
-				SSLConnectionSocketFactory.getDefaultHostnameVerifier());
 		}
-
+		return new SSLConnectionSocketFactory(
+			SSLContexts.createDefault(),
+			new String[] { "TLSv1", "TLSv1.1", "TLSv1.2"},
+			null,
+			SSLConnectionSocketFactory.getDefaultHostnameVerifier());
 	}
 
 	private CookieStore setAllStoredCookies() {
