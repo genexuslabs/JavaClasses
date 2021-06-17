@@ -2,6 +2,8 @@ package com.genexus.internet;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -172,7 +174,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 	}
 
-
 	private static SSLConnectionSocketFactory getSSLSecureInstance() {
 		try {
 			SSLContext sslContext = SSLContextBuilder
@@ -328,12 +329,13 @@ public class HttpClientJavaLib extends GXHttpClient {
 			}
 
 			url = setPathUrl(url);
-
+			url = com.genexus.CommonUtil.escapeUnsafeChars(url);
 
 			if (getSecure() == 1)   // Se completa con esquema y host
 				url = "https://" + getHost() + url;		// La lib de HttpClient agrega el port
 			else
 				url = "http://" + getHost() + ":" + (getPort() == -1? URI.defaultPort("http"):getPort()) + url;
+
 
 			httpClient = this.httpClientBuilder.build();
 
@@ -529,7 +531,10 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public InputStream getInputStream() throws IOException {
-		return response.getEntity().getContent();
+		if (response != null)
+			return response.getEntity().getContent();
+		else
+			return null;
 	}
 
 	public InputStream getInputStream(String stringURL) throws IOException
