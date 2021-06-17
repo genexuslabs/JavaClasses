@@ -491,7 +491,7 @@ public class XMLWriter implements IXMLWriter
 
 	private boolean IsBlank(String s)
 	{
-		return (s == null || s.trim().length() == 0);
+		return (s == null || s.length() == 0);
 	}
 		
 	private StringBuffer openRequestEncoding = null;
