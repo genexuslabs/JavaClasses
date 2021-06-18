@@ -1,15 +1,14 @@
-package com.genexus.msoffice;
+package com.genexus.msoffice.excel;
 
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
-import com.genexus.msoffice.excel.ExcelSpreadsheetGXWrapper;
-import com.genexus.msoffice.excel.IExcelCellRange;
 import com.genexus.msoffice.excel.style.ExcelStyle;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.Assert;
 
 import com.genexus.msoffice.excel.poi.xssf.ExcelCells;
 import com.genexus.msoffice.excel.poi.xssf.ExcelWorksheet;
@@ -21,8 +20,8 @@ import static org.junit.Assert.*;
  * Unit test for simple App.
  */
 
-public class AppTest {
-    private static String basePath = System.getProperty("user.dir") + File.separatorChar + "excel" + File.separatorChar;
+public class ExcelSpreadsheetTest {
+    private static String basePath = System.getProperty("user.dir") + File.separatorChar + "test-outputs" + File.separatorChar;
 
     static {
         com.genexus.specific.java.Connect.init();
@@ -50,7 +49,7 @@ public class AppTest {
         excel.getCells(2, 1, 1, 5).setCellStyle(newCellStyle);
 
         boolean ok = excel.save();
-        assertTrue(ok);
+        Assert.assertTrue(ok);
     }
 
     @Test
@@ -70,11 +69,11 @@ public class AppTest {
     public void testInsertSheets() {
 		ExcelSpreadsheetGXWrapper excel = create("testInsertSheets");
         boolean ok = excel.insertSheet("test1");
-        assertTrue(ok);
+        Assert.assertTrue(ok);
         ok = excel.insertSheet("test2");
-        assertTrue(ok);
+        Assert.assertTrue(ok);
         ok = excel.insertSheet("test1");
-        assertFalse(ok);
+        Assert.assertFalse(ok);
         excel.save();
     }
 
@@ -82,19 +81,19 @@ public class AppTest {
     public void testInsertDuplicateSheets() {
 		ExcelSpreadsheetGXWrapper excel = create("testInsertDuplicateSheets");
         boolean ok = excel.insertSheet("test1");
-        assertTrue(ok);
+        Assert.assertTrue(ok);
         ok = excel.insertSheet("test1");
-        assertFalse(ok);
+        Assert.assertFalse(ok);
         logErrorCodes(excel);
         ok = excel.insertSheet("test1");
         logErrorCodes(excel);
-        assertFalse(ok);
+        Assert.assertFalse(ok);
         excel.save();
     }
 
     @Test
     public void testActiveWorksheet() {
-		ExcelSpreadsheetGXWrapper excel = create("ActiveWorksheet");
+		ExcelSpreadsheetGXWrapper excel = create("testActiveWorksheet");
         excel.getCells(2, 1, 5, 5).setNumericValue(BigDecimal.valueOf(123.456));
         excel.insertSheet("test1");
 
@@ -130,14 +129,14 @@ public class AppTest {
         }
         boolean saved = excel.save();
 
-        assertFalse(saved);
-        assertNotSame(0, excel.getErrCode());
-        assertNotSame("", excel.getErrDescription());
+        Assert.assertFalse(saved);
+        Assert.assertNotSame(0, excel.getErrCode());
+        Assert.assertNotSame("", excel.getErrDescription());
     }
 
     @Test
     public void testWithoutExtensions() {
-        String excel1 = basePath + "test_withoutextension";
+        String excel1 = basePath + "testWithoutExtensions";
         ensureFileDoesNotExists(excel1 + ".xlsx");
         ExcelSpreadsheetGXWrapper excel = new ExcelSpreadsheetGXWrapper();
         excel.open(excel1);
@@ -146,10 +145,10 @@ public class AppTest {
         excel.insertSheet("genexus2");
 
         List<ExcelWorksheet> wSheets = excel.getWorksheets();
-        assertTrue(wSheets.size() == 3);
-        assertTrue(wSheets.get(0).getName() == "genexus0");
-        assertTrue(wSheets.get(1).getName() == "genexus1");
-        assertTrue(wSheets.get(2).getName() == "genexus2");
+        Assert.assertTrue(wSheets.size() == 3);
+        Assert.assertTrue(wSheets.get(0).getName() == "genexus0");
+        Assert.assertTrue(wSheets.get(1).getName() == "genexus1");
+        Assert.assertTrue(wSheets.get(2).getName() == "genexus2");
 
         excel.save();
 
@@ -163,10 +162,10 @@ public class AppTest {
         excel.insertSheet("genexus2");
 
         List<ExcelWorksheet> wSheets = excel.getWorksheets();
-        assertTrue(wSheets.size() == 3);
-        assertTrue(wSheets.get(0).getName() == "genexus0");
-        assertTrue(wSheets.get(1).getName() == "genexus1");
-        assertTrue(wSheets.get(2).getName() == "genexus2");
+        Assert.assertTrue(wSheets.size() == 3);
+        Assert.assertTrue(wSheets.get(0).getName() == "genexus0");
+        Assert.assertTrue(wSheets.get(1).getName() == "genexus1");
+        Assert.assertTrue(wSheets.get(2).getName() == "genexus2");
 
         excel.save();
 
@@ -182,14 +181,14 @@ public class AppTest {
         excel.insertSheet("gx4");
 
         List<ExcelWorksheet> wSheets = excel.getWorksheets();
-        assertTrue(wSheets.size() == 4);
-        assertTrue(wSheets.get(0).getName() == "gx1");
-        assertTrue(wSheets.get(1).getName() == "gx2");
-        assertTrue(wSheets.get(2).getName() == "gx3");
+        Assert.assertTrue(wSheets.size() == 4);
+        Assert.assertTrue(wSheets.get(0).getName() == "gx1");
+        Assert.assertTrue(wSheets.get(1).getName() == "gx2");
+        Assert.assertTrue(wSheets.get(2).getName() == "gx3");
         excel.deleteSheet(2);
         wSheets = excel.getWorksheets();
-        assertTrue(wSheets.get(0).getName() == "gx1");
-        assertTrue(wSheets.get(1).getName() == "gx3");
+        Assert.assertTrue(wSheets.get(0).getName() == "gx1");
+        Assert.assertTrue(wSheets.get(1).getName() == "gx3");
         excel.save();
 
     }
@@ -297,18 +296,18 @@ public class AppTest {
 
         boolean ok = excel.setCurrentWorksheet(2);
         assertEquals("hola", excel.getCell(5, 5).getText());
-        assertEquals(true, ok);
+        Assert.assertEquals(true, ok);
 
         ok = excel.setCurrentWorksheet(1);
-        assertEquals(true, ok);
+        Assert.assertEquals(true, ok);
         ok = excel.setCurrentWorksheet(3);
-        assertEquals(true, ok);
+        Assert.assertEquals(true, ok);
         ok = excel.setCurrentWorksheet(4);
-        assertEquals(false, ok);
+        Assert.assertEquals(false, ok);
         ok = excel.setCurrentWorksheet(5);
-        assertEquals(false, ok);
+        Assert.assertEquals(false, ok);
         ok = excel.setCurrentWorksheet(0);
-        assertEquals(false, ok);
+        Assert.assertEquals(false, ok);
         excel.close();
     }
 
@@ -405,7 +404,7 @@ public class AppTest {
 		if (!theDir.exists()){
 			theDir.mkdirs();
 		}
-		assertTrue("File must not exist: " + fileName, !new File(excelPath).exists());
+		Assert.assertTrue("File must not exist: " + fileName, !new File(excelPath).exists());
     	ExcelSpreadsheetGXWrapper excel = new ExcelSpreadsheetGXWrapper();
 		excel.open(excelPath);
 		return excel;
@@ -413,7 +412,7 @@ public class AppTest {
 
     private ExcelSpreadsheetGXWrapper open(String fileName){
 		String excelPath = basePath + fileName + ".xlsx";
-		assertTrue("Cannot open file. File does not exists: " + fileName, new File(excelPath).exists());
+		Assert.assertTrue("Cannot open file. File does not exists: " + fileName, new File(excelPath).exists());
         ExcelSpreadsheetGXWrapper excel = new ExcelSpreadsheetGXWrapper();
         excel.open(excelPath);
         return excel;
@@ -429,9 +428,9 @@ public class AppTest {
         excel.insertSheet("hoja4");
         excel.setCurrentWorksheetByName("hoja2");
 
-        assertFalse(excel.getCurrentWorksheet().isHidden());
-        assertTrue(excel.getCurrentWorksheet().setHidden(true));
-        assertTrue(excel.getCurrentWorksheet().isHidden());
+        Assert.assertFalse(excel.getCurrentWorksheet().isHidden());
+        Assert.assertTrue(excel.getCurrentWorksheet().setHidden(true));
+        Assert.assertTrue(excel.getCurrentWorksheet().isHidden());
 
         excel.setCurrentWorksheetByName("hoja1");
         excel.save();
@@ -452,7 +451,7 @@ public class AppTest {
         excel.close();
         excel = open("testCloneSheet");
         List<ExcelWorksheet> sheets = excel.getWorksheets();
-        assertEquals(4, sheets.size());
+        Assert.assertEquals(4, sheets.size());
         excel.close();
     }
 
@@ -461,12 +460,12 @@ public class AppTest {
 		ExcelSpreadsheetGXWrapper excel = create("testCloneSheet2");
         excel.getCell(2, 2).setText("hello");
         boolean ok = excel.cloneSheet(excel.getCurrentWorksheet().getName(), "clonedSheet");
-        assertTrue(ok);
+        Assert.assertTrue(ok);
         excel.save();
         excel.close();
         excel = open("testCloneSheet2");
         List<ExcelWorksheet> sheets = excel.getWorksheets();
-        assertEquals(2, sheets.size());
+        Assert.assertEquals(2, sheets.size());
         excel.close();
     }
 
@@ -484,7 +483,7 @@ public class AppTest {
         excel.close();
         excel = open("testCloneSheetError");
         List<ExcelWorksheet> sheets = excel.getWorksheets();
-        assertEquals(4, sheets.size());
+        Assert.assertEquals(4, sheets.size());
         excel.close();
     }
 
@@ -713,7 +712,7 @@ public class AppTest {
 		excel = open("testDeleteRow2");
         assertEquals("hola", excel.getCell(2, 2).getText());
         boolean result = excel.deleteRow(1);
-        assertTrue(result);
+        Assert.assertTrue(result);
         excel.save();
         excel.close();
 		excel = open("testDeleteRow2");
@@ -792,14 +791,14 @@ public class AppTest {
         excel = open("testDeleteColumn");
 
         assertEquals(2, excel.getCell(2, 2).getNumericValue().intValue());
-        assertTrue(excel.deleteColumn(2));
+        Assert.assertTrue(excel.deleteColumn(2));
         assertEquals(3, excel.getCell(2, 2).getNumericValue().intValue());
         excel.save();
     }
 
     @Test
     public void testDeleteColumn2() {
-        ExcelSpreadsheetGXWrapper excel = create("exceldeletecolumn");
+        ExcelSpreadsheetGXWrapper excel = create("testDeleteColumn2");
         excel.deleteColumn(2);
         excel.save();
     }
@@ -811,7 +810,7 @@ public class AppTest {
         String excelNew = basePath + "testSaveAsCopy.xlsx";
         excel.saveAs(excelNew);
         excel.close();
-        assertEquals(new File(excelNew).exists(), true);
+        Assert.assertEquals(new File(excelNew).exists(), true);
 
     }
 

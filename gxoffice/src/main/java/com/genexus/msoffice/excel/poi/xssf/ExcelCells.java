@@ -6,12 +6,12 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import com.genexus.CommonUtil;
-import com.genexus.msoffice.excel.IGXError;
 import com.genexus.msoffice.excel.exception.ExcelException;
 import com.genexus.msoffice.excel.exception.ExcelReadonlyException;
+import com.genexus.msoffice.excel.style.*;
+import com.genexus.msoffice.excel.IGXError;
 import com.genexus.msoffice.excel.IExcelCellRange;
 
-import com.genexus.msoffice.excel.style.*;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.model.StylesTable;

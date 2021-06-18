@@ -1,8 +1,8 @@
 package com.genexus.msoffice.excel;
 
+import com.genexus.msoffice.excel.poi.xssf.ExcelSpreadsheet;
 import com.genexus.msoffice.excel.exception.ExcelDocumentNotSupported;
 import com.genexus.msoffice.excel.exception.ExcelTemplateNotFoundException;
-import com.genexus.msoffice.excel.poi.xssf.ExcelSpreadsheet;
 
 import java.io.IOException;
 
