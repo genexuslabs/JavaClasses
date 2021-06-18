@@ -56,11 +56,11 @@ import javax.net.ssl.SSLContext;
 public class HttpClientJavaLib extends GXHttpClient {
 
 	public HttpClientJavaLib() {
-		logger.info("Using apache http client implementation");
 		getPoolInstance();
 		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();
 		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
 		cookies = new BasicCookieStore();
+		logger.info("Using apache http client implementation");
 	}
 
 	private static void getPoolInstance() {
@@ -185,11 +185,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2" },
 				null,
 				SSLConnectionSocketFactory.getDefaultHostnameVerifier());
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		} catch (KeyManagementException e) {
-			e.printStackTrace();
-		} catch (KeyStoreException e) {
+		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
 			e.printStackTrace();
 		}
 		return new SSLConnectionSocketFactory(
