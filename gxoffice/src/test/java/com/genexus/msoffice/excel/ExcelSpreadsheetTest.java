@@ -497,7 +497,6 @@ public class ExcelSpreadsheetTest {
 
     private ExcelSpreadsheetGXWrapper open(String fileName){
 		String excelPath = basePath + fileName + ".xlsx";
-		Assert.assertTrue("Cannot open file. File does not exists: " + fileName, new File(excelPath).exists());
         ExcelSpreadsheetGXWrapper excel = new ExcelSpreadsheetGXWrapper();
         excel.open(excelPath);
         return excel;
@@ -851,22 +850,49 @@ public class ExcelSpreadsheetTest {
 	@Test
 	public void testHideRow2() {
 		ExcelSpreadsheetGXWrapper excel = create("testHideRow2");
-
 		excel.toggleRow(2, false);
 		excel.getCell(1, 1).setNumericValue(new java.math.BigDecimal(1));
-
 		excel.getCell(2, 1).setNumericValue(new java.math.BigDecimal(2));
-
 		excel.getCell(3, 1).setNumericValue(new java.math.BigDecimal(3));
-
 		excel.save();
 		excel.close();
 		// Verify previous Excel Document
 		excel = open("testHideRow");
 
 		assertEquals(1, excel.getCell(1, 1).getNumericValue().intValue());
+		excel.save();
+	}
 
-		//assertEquals(7, excel.getCell(1, 1).getNumericValue().intValue());
+	@Test
+	public void testHideRow3() {
+		ExcelSpreadsheetGXWrapper excel = create("testHideRow3");
+		excel.toggleRow(2, false);
+		excel.deleteRow(5);
+		excel.toggleRow(7, true);
+		excel.deleteRow(8);
+		excel.getCell(1, 1).setNumericValue(new java.math.BigDecimal(1));
+		excel.getCell(2, 1).setNumericValue(new java.math.BigDecimal(2));
+		excel.getCell(3, 1).setNumericValue(new java.math.BigDecimal(3));
+		excel.save();
+		excel.close();
+		// Verify previous Excel Document
+		excel = open("testHideRow");
+
+		assertEquals(1, excel.getCell(1, 1).getNumericValue().intValue());
+		excel.save();
+	}
+
+	@Test
+	public void testMixed() {
+		ExcelSpreadsheetGXWrapper excel = open("testMixed");
+
+		excel.insertRow(1, 5);
+		excel.deleteRow(2);
+
+		excel.insertSheet("Inserted Sheet");
+		excel.toggleRow(7, false);
+		excel.toggleColumn(2, false);
+
 		excel.save();
 	}
 

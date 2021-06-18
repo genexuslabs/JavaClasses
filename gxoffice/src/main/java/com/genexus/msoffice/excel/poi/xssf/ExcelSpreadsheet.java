@@ -143,6 +143,9 @@ public class ExcelSpreadsheet implements IExcelSpreadsheet {
 					}
 				}
                 else {
+                	if (sheet.getRow(createNewRowAt) == null) {
+                		sheet.createRow(createNewRowAt);
+					}
 					sheet.shiftRows(createNewRowAt, lastRow, 1, true, false);
 				}
             }
@@ -471,10 +474,12 @@ public class ExcelSpreadsheet implements IExcelSpreadsheet {
 				insertRow(worksheet, i, 1);
 				row = sheet.getRow(i);
 			}
-			CellStyle style = _workbook.createCellStyle();
-			style.setHidden(!visible); //Does not work..
-			row.setRowStyle(style);
-			row.setZeroHeight(!visible);
+			if (row != null) {
+				CellStyle style = _workbook.createCellStyle();
+				style.setHidden(!visible); //Does not work..
+				row.setRowStyle(style);
+				row.setZeroHeight(!visible);
+			}
 			return true;
         }
         return false;
