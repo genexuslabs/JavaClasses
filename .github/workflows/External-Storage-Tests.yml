@@ -50,7 +50,7 @@ jobs:
         export AWSS3_TEST_ENABLED=true
         export STORAGE_AWSS3_ACCESS_KEY="${{ secrets.AWSS3_ACCESS_KEY }}"
         export STORAGE_AWSS3_SECRET_KEY="${{ secrets.AWSS3_SECRET_KEY }}"
-        export STORAGE_AWSS3_BUCKET_NAME=genexuss3test
+        export STORAGE_AWSS3_BUCKET_NAME=genexus-s3-test
         export STORAGE_AWSS3_FOLDER_NAME=gxclasses
         export STORAGE_AWSS3_REGION=us-east-1
         export IBMCOS_TEST_ENABLED=true
