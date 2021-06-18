@@ -112,33 +112,48 @@ public class Preferences implements IPreferences {
 
 	private Object objLock = new Object();
 	private String BLOB_PATH = null;
+	private String PRIVATE_PATH = null;
+
 
 	public String getBLOB_PATH() {
 		synchronized (objLock) {
 			if (BLOB_PATH == null) {
-				String file = "";
-				BLOB_PATH = getProperty("CS_BLOB_PATH", "").trim();
-				if (!BLOB_PATH.equals("") && !BLOB_PATH.endsWith(File.separator)) {
-					BLOB_PATH += File.separator;
-				}
-				if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) == null) {
-					if (com.genexus.ApplicationContext.getInstance().isServletEngine()) {
-						try {
-							file = com.genexus.ApplicationContext.getInstance().getServletEngineDefaultPath();
-							if (!file.equals("") && !file.endsWith(File.separator)) {
-								file += File.separator;
-							}
-						} catch (Exception ee) {
-							;
-						}
-					}
-
-					new File(file + BLOB_PATH).mkdirs();
-					BLOB_PATH = file + BLOB_PATH;
-				}
+				BLOB_PATH = getProperty_PATH(getProperty("CS_BLOB_PATH", "").trim(), "");
 			}
 		}
 		return BLOB_PATH;
+	}
+
+	public String getPRIVATE_PATH() {
+		synchronized (objLock) {
+			if (PRIVATE_PATH == null) {
+				PRIVATE_PATH = getProperty_PATH(getProperty("TMPMEDIA_DIR", "").trim(), "WEB-INF");
+			}
+		}
+		return PRIVATE_PATH;
+	}
+
+	public String getProperty_PATH(String propertyPath, String extraFolder) {
+		String file = "";
+		if (!propertyPath.equals("") && !propertyPath.endsWith(File.separator)) {
+			propertyPath += File.separator;
+		}
+		if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) == null) {
+			if (com.genexus.ApplicationContext.getInstance().isServletEngine() && !new File(propertyPath).isAbsolute()) {
+				file = com.genexus.ApplicationContext.getInstance().getServletEngineDefaultPath();
+				if (!file.equals("") && !file.endsWith(File.separator)) {
+					file += File.separator;
+				}
+				file = extraFolder.isEmpty()? file : file + extraFolder + File.separator;
+			}
+
+			new File(file + propertyPath).mkdirs();
+			propertyPath = file + propertyPath;
+		}
+		else {
+			propertyPath = propertyPath.replace(File.separator, "/");
+		}
+		return propertyPath;
 	}
 
 	public String getMultimediaPath() {

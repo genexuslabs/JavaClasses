@@ -3,7 +3,7 @@ package com.genexus;
 import java.io.StringWriter;
 import java.text.ParseException;
 import java.util.Locale;
-
+import java.math.*;
 import org.locationtech.spatial4j.context.SpatialContext;
 import org.locationtech.spatial4j.context.SpatialContextFactory;
 import org.locationtech.spatial4j.context.jts.JtsSpatialContextFactory;
@@ -53,6 +53,11 @@ public final class GXGeospatial implements java.io.Serializable, IGxJSONSerializ
 		{
 			this.fromGeoJSON(serialString);
 		}
+	}
+
+	public GXGeospatial( BigDecimal latitude, BigDecimal longitude)
+	{
+		this(DecimalUtil.decToDouble(latitude),  DecimalUtil.decToDouble(longitude));
 	}
 
 	public GXGeospatial(double latitude, double longitude)

@@ -52,6 +52,7 @@ import com.genexus.util.GXServices;
 public class GXPreparedStatement extends GXStatement implements PreparedStatement, com.genexus.db.IFieldSetter, IGXPreparedStatement
 {
 	private static final boolean DEBUG       = DebugFlag.DEBUG;
+	public static final int PLSQL_BOOLEAN = 252;
 
 	public static boolean longVarCharAsOracleLong = false;
 	public static com.genexus.LocalUtil localUtil = new com.genexus.LocalUtil('.', "MDY", "24", 40, "eng");
@@ -392,7 +393,14 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			log(GXDBDebug.LOG_MAX, "setBoolean - index : " + index + " value : " + value);
 			try
 			{
-		    	stmt.setBoolean(index, value);
+				if (this instanceof GXCallableStatement && !isUpdateBlobStmt && con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+				{
+					stmt.setObject(index, value, PLSQL_BOOLEAN);
+				}
+				else
+				{
+					stmt.setBoolean(index, value);
+				}
 			}
 			catch (SQLException sqlException)
 			{
@@ -402,7 +410,14 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		}
 		else
 		{
-			stmt.setBoolean(index, value);
+			if (this instanceof GXCallableStatement && !isUpdateBlobStmt && con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+			{
+				stmt.setObject(index, value, PLSQL_BOOLEAN);
+			}
+			else
+			{
+				stmt.setBoolean(index, value);
+			}
 		}
 	}
 
@@ -990,8 +1005,8 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 							if ( (dDelimIdx != -1) && (dDelimIdx < fileName.length() - 1) )
 							{
 								fileName = fileName.substring(dDelimIdx + 1);
-							}										
-							fileUri = Application.getExternalProvider().copy(sourceName, fileName, tableName, fieldName, true);
+							}
+							fileUri = Application.getExternalProvider().copy(gxFile.getAbsoluteName(), fileName, tableName, fieldName, true);
 						}
 						else
 						{
@@ -1318,9 +1333,12 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 
 	protected boolean skipSetBlobs = false;
 	protected String [] blobFiles;
+	private boolean isUpdateBlobStmt = false;
+
 	public void skipSetBlobs(boolean skipSetBlobs)
 	{
 		this.skipSetBlobs = skipSetBlobs;
+		isUpdateBlobStmt = true;
 	}
 	
 	public boolean getSkipSetBlobs()
@@ -1701,6 +1719,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
             batchRecords = new Object[size];
             batchSize = size;
             batchStmt = true;
+			resetRecordCount();
         }
 
         public Object[] getBatchRecords(){

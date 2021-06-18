@@ -225,26 +225,6 @@ public class JerseyAwsProxyTest {
         assertEquals("{\"ItemId\":12,\"ItemName\":\"12 Item\"}", output.getBody());
     }
 
-
-    @Test
-    public void gxUploadServicesTest() {
-        File file = new File("pom.xml");
-        try {
-            FileInputStream stream = new FileInputStream(file);
-
-            AwsProxyRequest request = new AwsProxyRequestBuilder("/gxobject", "POST")
-                    .binaryBody(stream)
-                    .header("Content-Type", "text/xml")
-                    .build();
-
-            AwsProxyResponse output = l.handleRequest(request, lambdaContext);
-            assertEquals(201, output.getStatusCode());
-            assert (output.getBody().contains("gxupload"));
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
-    }
-
     @Test
 	@Ignore
     public void gxTestOAuthAccessToken() {

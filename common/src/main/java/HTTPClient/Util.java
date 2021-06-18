@@ -55,7 +55,6 @@ public class Util
 {
     private static final BitSet Separators = new BitSet(128);
     private static final BitSet TokenChar = new BitSet(128);
-    private static final BitSet UnsafeChar = new BitSet(128);
     private static DateFormat http_format;
     private static DateFormat parse_1123;
     private static DateFormat parse_850;
@@ -89,24 +88,6 @@ public class Util
 	// rfc-2616 token
 	for (int ch=32; ch<127; ch++)  TokenChar.set(ch);
 	TokenChar.xor(Separators);
-
-	// rfc-1738 unsafe characters, including CTL and SP, and excluding
-	// "#" and "%"
-	for (int ch=0; ch<32; ch++)  UnsafeChar.set(ch);
-	UnsafeChar.set(' ');
-	UnsafeChar.set('<');
-	UnsafeChar.set('>');
-	UnsafeChar.set('"');
-	UnsafeChar.set('{');
-	UnsafeChar.set('}');
-	UnsafeChar.set('|');
-	UnsafeChar.set('\\');
-	UnsafeChar.set('^');
-	UnsafeChar.set('~');
-	UnsafeChar.set('[');
-	UnsafeChar.set(']');
-	UnsafeChar.set('`');
-	UnsafeChar.set(127);
 
 	// rfc-1123 date format (restricted to GMT, as per rfc-2616)
 	/* This initialization has been moved to httpDate() because it
@@ -957,41 +938,6 @@ public class Util
 		http_format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US);
 		http_format.setTimeZone(new SimpleTimeZone(0, "GMT"));
     }
-
-
-    /**
-     * Escape unsafe characters in a path.
-     *
-     * @param path the original path
-     * @return the path with all unsafe characters escaped
-     */
-    final static String escapeUnsafeChars(String path)
-    {
-	int len = path.length();
-	char[] buf = new char[3*len];
-
-	int dst = 0;
-	for (int src=0; src<len; src++)
-	{
-	    char ch = path.charAt(src);
-	    if (ch >= 128  ||  UnsafeChar.get(ch))
-	    {
-		buf[dst++] = '%';
-		buf[dst++] = hex_map[(ch & 0xf0) >>> 4];
-		buf[dst++] = hex_map[ch & 0x0f];
-	    }
-	    else
-		buf[dst++] = ch;
-	}
-
-	if (dst > len)
-	    return new String(buf, 0, dst);
-	else
-	    return path;
-    }
-
-    static final char[] hex_map =
-	    {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 
 
     /**
