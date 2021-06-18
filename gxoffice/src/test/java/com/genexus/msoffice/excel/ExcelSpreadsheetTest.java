@@ -1,7 +1,11 @@
 package com.genexus.msoffice.excel;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.math.BigDecimal;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 
@@ -68,14 +72,38 @@ public class ExcelSpreadsheetTest {
     @Test
     public void testInsertSheets() {
 		ExcelSpreadsheetGXWrapper excel = create("testInsertSheets");
-        boolean ok = excel.insertSheet("test1");
-        Assert.assertTrue(ok);
-        ok = excel.insertSheet("test2");
-        Assert.assertTrue(ok);
-        ok = excel.insertSheet("test1");
-        Assert.assertFalse(ok);
-        excel.save();
+        insertSheet(excel);
     }
+
+	@Test
+	public void testInsertSheetTwice() {
+		ExcelSpreadsheetGXWrapper excel = create("testInsertSheetTwice");
+		insertSheet(excel);
+
+		excel = open("testInsertSheetTwice");
+		boolean ok = excel.insertSheet("test1");
+		Assert.assertFalse(ok);
+		ok = excel.insertSheet("test2");
+		Assert.assertFalse(ok);
+		Assert.assertTrue(excel.getErrCode() != 0);
+		ok = excel.insertSheet("test1");
+		Assert.assertFalse(ok);
+		Assert.assertTrue(excel.getErrCode() != 0);
+		excel.save();
+		excel.close();
+	}
+
+	private void insertSheet(ExcelSpreadsheetGXWrapper excel) {
+
+		boolean ok = excel.insertSheet("test1");
+		Assert.assertTrue(ok);
+		ok = excel.insertSheet("test2");
+		Assert.assertTrue(ok);
+		ok = excel.insertSheet("test1");
+		Assert.assertFalse(ok);
+		excel.save();
+		excel.close();
+	}
 
     @Test
     public void testInsertDuplicateSheets() {
@@ -115,6 +143,38 @@ public class ExcelSpreadsheetTest {
         }
         excel.save();
     }
+
+	@Test
+	public void testOpenAndSaveLocked() {
+		String filePath = Paths.get(basePath, "testLocked.xlsx").toString();
+
+		ExcelSpreadsheetGXWrapper newFile = create("testLocked");
+		newFile.save();
+		newFile.close();
+
+    	try {
+			try (FileOutputStream fileOutputStream = new FileOutputStream(filePath);
+				 FileChannel channel = fileOutputStream.getChannel();
+				 FileLock lock = channel.lock()) {
+
+				//Excel should be opened.
+				ExcelSpreadsheetGXWrapper excel = open("testLocked");
+
+				Assert.assertEquals("File is locked", 7, excel.getErrCode());
+
+				try {
+					excel.getCells(2, 1, 5, 5).setDate(new Date());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				excel.save();
+
+			}
+		}
+    	catch (Exception e) {}
+
+
+	}
 
     @Test
     public void testFolderNotExists() {
@@ -426,11 +486,16 @@ public class ExcelSpreadsheetTest {
         excel.insertSheet("hoja2");
         excel.insertSheet("hoja3");
         excel.insertSheet("hoja4");
+		excel.insertSheet("hoja5");
+		excel.insertSheet("hoja6");
         excel.setCurrentWorksheetByName("hoja2");
 
         Assert.assertFalse(excel.getCurrentWorksheet().isHidden());
         Assert.assertTrue(excel.getCurrentWorksheet().setHidden(true));
         Assert.assertTrue(excel.getCurrentWorksheet().isHidden());
+
+        excel.setCurrentWorksheet(3);
+		Assert.assertTrue(excel.getCurrentWorksheet().setHidden(true));
 
         excel.setCurrentWorksheetByName("hoja1");
         excel.save();
@@ -479,6 +544,11 @@ public class ExcelSpreadsheetTest {
         excel.insertSheet("hoja3");
         excel.cloneSheet("hoja2", "cloned_hoja2");
         excel.cloneSheet("hoja2", "hoja2");
+
+		excel.cloneSheet("hoja2", "hoja2");
+		excel.cloneSheet("hoja2", "hoja2");
+		assertTrue(excel.getErrCode() > 0);
+		excel.cloneSheet("hoja2", "hoja2");
         excel.save();
         excel.close();
         excel = open("testCloneSheetError");
@@ -519,6 +589,16 @@ public class ExcelSpreadsheetTest {
         excel.save();
         excel.close();
     }
+
+	@Test
+	public void testMergeNestedCells() {
+		ExcelSpreadsheetGXWrapper excel = create("testMergeNestedCells");
+		excel.getCells(5, 5, 4, 4).mergeCells();
+		excel.getCells(5, 5, 4, 4).setText("merged cells");
+		excel.getCells(1, 1, 10, 10).mergeCells();
+		excel.save();
+		excel.close();
+	}
 
     @Test
     public void testMergeCellsError() {
@@ -599,7 +679,7 @@ public class ExcelSpreadsheetTest {
         style.getCellFont().setSize(10);
         style.getCellFont().getColor().setColorRGB(180, 180, 180);
         style.getCellFill().getCellBackColor().setColorRGB(45, 45, 45);
-        style.setTextRotation(-20);
+        style.setTextRotation(-90);
         cells.setCellStyle(style);
 
 
@@ -679,6 +759,7 @@ public class ExcelSpreadsheetTest {
         excel.save();
     }
 
+
     @Test
     public void testDeleteRow() {
 		ExcelSpreadsheetGXWrapper excel = create("testDeleteRow");
@@ -742,6 +823,28 @@ public class ExcelSpreadsheetTest {
         excel.save();
     }
 
+	@Test
+	public void testHideRow2() {
+		ExcelSpreadsheetGXWrapper excel = create("testHideRow2");
+
+		excel.toggleRow(2, false);
+		excel.getCell(1, 1).setNumericValue(new java.math.BigDecimal(1));
+
+		excel.getCell(2, 1).setNumericValue(new java.math.BigDecimal(2));
+
+		excel.getCell(3, 1).setNumericValue(new java.math.BigDecimal(3));
+
+		excel.save();
+		excel.close();
+		// Verify previous Excel Document
+		excel = open("testHideRow");
+
+		assertEquals(1, excel.getCell(1, 1).getNumericValue().intValue());
+
+		//assertEquals(7, excel.getCell(1, 1).getNumericValue().intValue());
+		excel.save();
+	}
+
     @Test
     public void testHideColumn() {
 		ExcelSpreadsheetGXWrapper excel = create("testHideColumn");
@@ -802,6 +905,23 @@ public class ExcelSpreadsheetTest {
         excel.deleteColumn(2);
         excel.save();
     }
+
+
+	@Test
+	public void testDeleteColumn3() {
+		ExcelSpreadsheetGXWrapper excel = create("testDeleteColumn3");
+		excel.getCells(1,1,5,5).setText("cell");
+		excel.insertRow(3, 5);
+		excel.deleteRow(3);
+		excel.deleteColumn(2);
+		/*
+
+		&ExcelSpreadsheet.InsertRow(&vLine-1, 5)
+&ExcelSpreadsheet.DeleteRow(&vLine-1)
+&ExcelSpreadsheet.DeleteColumn(&vColmnVal-1)
+		 */
+		excel.save();
+	}
 
     @Test
     public void testSaveAs() {

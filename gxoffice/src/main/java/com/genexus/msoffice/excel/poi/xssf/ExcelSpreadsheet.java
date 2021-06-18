@@ -52,12 +52,12 @@ public class ExcelSpreadsheet implements IExcelSpreadsheet {
                 throw new ExcelTemplateNotFoundException();
             }
         } else {
-            GXFile file = new GXFile(fileName, Constants.EXTERNAL_PRIVATE_UPLOAD);
-            if (file.exists()) {
-                _workbook = new XSSFWorkbook(file.getStream());
-            } else {
-                _workbook = new XSSFWorkbook();
-            }
+			GXFile file = new GXFile(fileName, Constants.EXTERNAL_PRIVATE_UPLOAD);
+			if (file.exists()) {
+				_workbook = new XSSFWorkbook(file.getStream());
+			} else {
+				_workbook = new XSSFWorkbook();
+			}
         }
 
         _documentFileName = fileName;
@@ -136,8 +136,15 @@ public class ExcelSpreadsheet implements IExcelSpreadsheet {
 
         if (sheet != null) {
             for (int i = 1; i <= rowCount; i++) {
-                int lastRow = sheet.getLastRowNum();
-                sheet.shiftRows(createNewRowAt, lastRow, 1, true, false);
+                int lastRow = Math.max(0, sheet.getLastRowNum());
+                if (lastRow < rowIdx) {
+					for (int j = lastRow; j <= rowIdx; j++) {
+						sheet.createRow(j);
+					}
+				}
+                else {
+					sheet.shiftRows(createNewRowAt, lastRow, 1, true, false);
+				}
             }
             return true;
         }
@@ -185,12 +192,15 @@ public class ExcelSpreadsheet implements IExcelSpreadsheet {
         return list;
     }
 
-    public Boolean insertWorksheet(String newSheetName, int idx) {
-        XSSFSheet newSheet = null;
+    public Boolean insertWorksheet(String newSheetName, int idx) throws ExcelException{
+        XSSFSheet newSheet;
         if (_workbook.getSheet(newSheetName) == null) {
             newSheet = _workbook.createSheet(newSheetName);
-            //_workbook.setSheetOrder(newSheetName, idx);
         }
+        else
+		{
+			throw new ExcelException(13, "The workbook already contains a sheet named:" + newSheetName);
+		}
         return newSheet != null;
     }
 
@@ -294,7 +304,7 @@ public class ExcelSpreadsheet implements IExcelSpreadsheet {
     private Boolean deleteColumnImpl(XSSFSheet sheet, int columnToDelete) {
         for (int rId = 0; rId <= sheet.getLastRowNum(); rId++) {
             Row row = sheet.getRow(rId);
-            for (int cID = columnToDelete; cID <= row.getLastCellNum(); cID++) {
+            for (int cID = columnToDelete; row != null && cID <= row.getLastCellNum(); cID++) {
                 Cell cOld = row.getCell(cID);
                 if (cOld != null) {
                     row.removeCell(cOld);
@@ -457,26 +467,17 @@ public class ExcelSpreadsheet implements IExcelSpreadsheet {
         XSSFSheet sheet = _workbook.getSheet(worksheet.getName());
         if (sheet != null) {
             XSSFRow row = sheet.getRow(i);
-            if (row != null) {
-                CellStyle style = _workbook.createCellStyle();
-                style.setHidden(!visible); //Does not work..
-                row.setRowStyle(style);
-                row.setZeroHeight(!visible);
-                return true;
-            }
+			if (row == null) {
+				insertRow(worksheet, i, 1);
+				row = sheet.getRow(i);
+			}
+			CellStyle style = _workbook.createCellStyle();
+			style.setHidden(!visible); //Does not work..
+			row.setRowStyle(style);
+			row.setZeroHeight(!visible);
+			return true;
         }
         return false;
     }
-
-
-	
-	
-	
-	/*@Override	
-	public Boolean setCurrentWorksheetByName(String sheetName)
-	{		
-		_workbook.setActiveSheet(_workbook.getSheetIndex(sheetName));
-		return true;
-	}*/
 
 }

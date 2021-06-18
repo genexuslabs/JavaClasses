@@ -66,7 +66,7 @@ public class ExcelSpreadsheetGXWrapper implements IGXError {
             this.setError("Excel Template file not found", e);
         } catch (IOException e) {
             logger.error("Excel File could not be loaded", e);
-
+			this.setError(ErrorCodes.FILE_EXCEPTION, "Could not open file");
         } catch (ExcelDocumentNotSupported e) {
             this.setError("Excel file extension not supported", e);
         }
@@ -198,7 +198,13 @@ public class ExcelSpreadsheetGXWrapper implements IGXError {
     }
 
     public Boolean insertSheet(String sheetName) {
-        return _document != null && _document.insertWorksheet(sheetName, 0) && initialize(sheetName);
+    	try {
+			return _document != null && _document.insertWorksheet(sheetName, 0) && initialize(sheetName);
+		}
+    	catch (ExcelException e){
+    		this.setError("Could not insert new sheet", e);
+		}
+		return false;
     }
 
     public Boolean cloneSheet(String sheetName, String newSheetName) {
@@ -294,7 +300,10 @@ public class ExcelSpreadsheetGXWrapper implements IGXError {
                 return true;
             }
             if (sheetsCount == 0) {
-                _document.insertWorksheet(sheetName, 0);
+            	try {
+					_document.insertWorksheet(sheetName, 0);
+				}
+            	catch (ExcelException e) {}
             }
             if (_currentWorksheet == null)
                 _currentWorksheet = _document.getWorksheets().get(0);
