@@ -38,7 +38,6 @@
 		<module>gxwebsocket</module>
 		<module>gxawsserverless</module>
 		<module>androidreports</module>
-        <module>gxexcel</module>
     </modules>
 
 	<licenses>

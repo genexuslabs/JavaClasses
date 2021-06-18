@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.genexus.msoffice.excel.Constants;
+import com.genexus.msoffice.excel.exception.ExcelException;
 import com.genexus.msoffice.excel.IExcelSpreadsheet;
 import com.genexus.msoffice.excel.IGXError;
-import com.genexus.msoffice.excel.exception.ExcelException;
 import com.genexus.msoffice.excel.exception.ExcelTemplateNotFoundException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
