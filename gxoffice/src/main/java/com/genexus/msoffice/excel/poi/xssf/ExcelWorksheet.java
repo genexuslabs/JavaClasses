@@ -1,5 +1,6 @@
 package com.genexus.msoffice.excel.poi.xssf;
 
+import com.genexus.msoffice.excel.exception.ExcelException;
 import org.apache.poi.ss.usermodel.SheetVisibility;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -61,8 +62,10 @@ public class ExcelWorksheet implements IExcelWorksheet
 	public Boolean copy(String newName) {
 		if (_sheet != null) {
 			XSSFWorkbook wb = _sheet.getWorkbook();
-			wb.cloneSheet(wb.getSheetIndex(getName()), newName);
-			return true;
+			if(wb.getSheet(newName) == null) {
+				wb.cloneSheet(wb.getSheetIndex(getName()), newName);
+				return true;
+			}
 		}
 		return false;
 	}

@@ -394,6 +394,31 @@ public class ExcelSpreadsheetTest {
         excel.close();
     }
 
+	@Test
+	public void testCopySheet2() {
+		ExcelSpreadsheetGXWrapper excel = create("testCopySheet");
+
+		excel.insertSheet("hoja1");
+		excel.setCurrentWorksheetByName("hoja1");
+		excel.getCells(1, 1, 3, 3).setText("test");
+		excel.insertSheet("hoja2");
+		excel.insertSheet("hoja3");
+		excel.save();
+		excel.close();
+		excel = open("testCopySheet");
+		excel.setCurrentWorksheetByName("hoja1");
+		excel.getCurrentWorksheet().copy("hoja1Copia");
+		excel.getCurrentWorksheet().copy("hoja1Copia");
+		excel.getCurrentWorksheet().copy("hoja1Copia");
+		excel.save();
+		excel.close();
+		excel = open("testCopySheet");
+		excel.setCurrentWorksheetByName("hoja1Copia");
+		assertEquals("No Coindicen", excel.getCells(1, 1, 3, 3).getText(), "test");
+		excel.close();
+	}
+
+
     @Test
     public void testGetWorksheets() {
 		ExcelSpreadsheetGXWrapper excel = create("testGetWorksheets");
