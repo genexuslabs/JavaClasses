@@ -129,7 +129,7 @@ public class ExcelSpreadsheetGXWrapper implements IGXError {
 
     public void setError(String errorMsg, ExcelException e) {
         this.setError(e.get_errorCode(), e.get_errDsc());
-        logger.error(errorMsg, e);
+        logger.error(errorMsg);
     }
 
     public ExcelCells getCells(int rowIdx, int colIdx, int rowCount, int colCount) {
