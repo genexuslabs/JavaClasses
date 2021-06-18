@@ -489,7 +489,7 @@ public class ExcelSpreadsheetTest {
 		if (!theDir.exists()){
 			theDir.mkdirs();
 		}
-		Assert.assertTrue("File must not exist: " + fileName, !new File(excelPath).exists());
+
     	ExcelSpreadsheetGXWrapper excel = new ExcelSpreadsheetGXWrapper();
 		excel.open(excelPath);
 		return excel;
