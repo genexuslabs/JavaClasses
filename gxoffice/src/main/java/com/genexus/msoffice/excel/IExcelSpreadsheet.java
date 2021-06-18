@@ -32,7 +32,7 @@ public interface IExcelSpreadsheet
 	List<ExcelWorksheet> getWorksheets();
 	ExcelWorksheet getWorkSheet(String name);
 
-	Boolean insertWorksheet(String newSheetName, int idx);
+	Boolean insertWorksheet(String newSheetName, int idx) throws ExcelException;
 	Boolean getAutofit();
 	void setAutofit(boolean autofit);
 
