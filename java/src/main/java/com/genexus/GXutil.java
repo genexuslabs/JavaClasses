@@ -1,8 +1,10 @@
 package com.genexus;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -1370,6 +1372,21 @@ public final class GXutil
 	public static boolean isUploadPrefix(String value)
 	{
 		return CommonUtil.isUploadPrefix(value);
+	}
+
+	public static String getNonTraversalPath(String path, String fileName) {
+		String nonTraversalPath =  Paths.get(path, fileName).toString();
+		try {
+			File nonTraversalFile = new File(nonTraversalPath);
+			String canonicalPath = nonTraversalFile.getCanonicalPath();
+			if (canonicalPath.startsWith(path) || ! nonTraversalFile.isAbsolute())
+				return nonTraversalPath;
+			else
+				return path + File.separator +  new File( fileName).getName();
+		}
+		catch(IOException ex) {
+			return path + File.separator +  new File( fileName).getName();
+		}
 	}
 	
 	public static String dateToCharREST(Date value)
