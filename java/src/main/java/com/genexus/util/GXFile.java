@@ -323,7 +323,10 @@ public class GXFile extends AbstractGXFile {
     }
 
     public String getNameNoExt() {
-        String FName = FileSource.getName();
+		String FName = FileSource.getName();
+    	if (uploadFileId != null) {
+			FName = SpecificImplementation.GXutil.getUploadNameValue(uploadFileId);
+		}
         int pos = FName.lastIndexOf(".");
         if (pos < 1) {
             return FName;
