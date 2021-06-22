@@ -59,7 +59,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		getPoolInstance();
 		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();
 		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
-		cookies = new BasicCookieStore();
+		getCookies();
 		logger.info("Using apache http client implementation");
 	}
 
@@ -73,6 +73,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client","HTTPCLIENT_MAX_SIZE","1000")));
 			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client","HTTPCLIENT_MAX_PER_ROUTE","1000")));
 		}
+	}
+
+	private static void getCookies() {
+		if (cookies == null)
+			cookies = new BasicCookieStore();
 	}
 
 	private ConnectionKeepAliveStrategy generateKeepAliveStrategy() {
@@ -114,7 +119,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private CloseableHttpResponse response = null;
 	private CredentialsProvider credentialsProvider = null;
 	private RequestConfig reqConfig = null;		// Atributo usado en la ejecucion del metodo (por ejemplo, httpGet, httpPost)
-	private CookieStore cookies;
+	private static CookieStore cookies;
 	private static IniFile clientCfg = new com.genexus.ModelContext(com.genexus.ModelContext.getModelContextPackageClass()).getPreferences().getIniFile();
 
 
