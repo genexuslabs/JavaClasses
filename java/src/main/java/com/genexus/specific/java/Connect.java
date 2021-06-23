@@ -44,6 +44,7 @@ public final class Connect {
 		SpecificImplementation.MillisecondMask = "S";
 		SpecificImplementation.cdowMask = "EEEEE";
 		SpecificImplementation.SupportPending = false;
+		SpecificImplementation.UseUnicodeCharacterClass = true;
 		JSONObject.extension = new JSONObjectExtension();
 		}
 		

@@ -2,6 +2,8 @@ package com.genexus.internet;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -47,6 +49,7 @@ import org.apache.http.protocol.HTTP;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 
 import javax.net.ssl.SSLContext;
 
@@ -57,6 +60,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();
 		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
 		cookies = new BasicCookieStore();
+		logger.info("Using apache http client implementation");
 	}
 
 	private static void getPoolInstance() {
@@ -66,8 +70,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
 					.build();
 			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
-			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client","HTTPCLIENT_MAXTOTAL","1000")));
-			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client","HTTPCLIENT_MAXROUTE","1000")));
+			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client","HTTPCLIENT_MAX_SIZE","1000")));
+			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client","HTTPCLIENT_MAX_PER_ROUTE","1000")));
 		}
 	}
 
@@ -98,6 +102,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();	// Cuando se actualiza el timeout, se actualiza el KeepAliveStrategy ya que el mismo de basa el el timeout seteado
 		httpClientBuilder.setKeepAliveStrategy(myStrategy);
 	}
+
+	private static Logger logger = org.apache.logging.log4j.LogManager.getLogger(HttpClientJavaLib.class);
 
 	private static PoolingHttpClientConnectionManager connManager = null;
 	private Integer statusCode = 0;
@@ -168,7 +174,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 	}
 
-
 	private static SSLConnectionSocketFactory getSSLSecureInstance() {
 		try {
 			SSLContext sslContext = SSLContextBuilder
@@ -180,11 +185,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2" },
 				null,
 				SSLConnectionSocketFactory.getDefaultHostnameVerifier());
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		} catch (KeyManagementException e) {
-			e.printStackTrace();
-		} catch (KeyStoreException e) {
+		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
 			e.printStackTrace();
 		}
 		return new SSLConnectionSocketFactory(
@@ -328,12 +329,13 @@ public class HttpClientJavaLib extends GXHttpClient {
 			}
 
 			url = setPathUrl(url);
-
+			url = com.genexus.CommonUtil.escapeUnsafeChars(url);
 
 			if (getSecure() == 1)   // Se completa con esquema y host
 				url = "https://" + getHost() + url;		// La lib de HttpClient agrega el port
 			else
 				url = "http://" + getHost() + ":" + (getPort() == -1? URI.defaultPort("http"):getPort()) + url;
+
 
 			httpClient = this.httpClientBuilder.build();
 
@@ -356,7 +358,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 				boolean hasConentType = false;
 				for (String header : keys) {
 					httpPost.addHeader(header,getheadersToSend().get(header));
-					if (getheadersToSend().get(header).equalsIgnoreCase("Content-type"))
+					if (header.equalsIgnoreCase("Content-type"))
 						hasConentType = true;
 				}
 				if (!hasConentType)		// Si no se setea Content-type, se pone uno default
@@ -458,8 +460,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 				SetCookieAtr(cookiesToSend);		// Se setean las cookies devueltas en la lista de cookies
 
 		} catch (IOException e) {
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
+			setExceptionsCatch(e);
 			this.statusCode = 0;
 			this.reasonLine = "";
 		}
@@ -517,15 +518,9 @@ public class HttpClientJavaLib extends GXHttpClient {
 		{
 			value[0] = res.getHeaderAsDate(name);
 		}
-		catch (IOException e)
+		catch (IOException | ModuleException e)
 		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
-		}
-		catch (ModuleException e)
-		{
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
+			setExceptionsCatch(e);
 		}
 	}
 
@@ -536,7 +531,10 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public InputStream getInputStream() throws IOException {
-		return response.getEntity().getContent();
+		if (response != null)
+			return response.getEntity().getContent();
+		else
+			return null;
 	}
 
 	public InputStream getInputStream(String stringURL) throws IOException
@@ -559,8 +557,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			String res = EntityUtils.toString(response.getEntity(), "UTF-8");
 			return res;
 		} catch (IOException e) {
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
+			setExceptionsCatch(e);
 		} catch (IllegalArgumentException e) {
 		}
 		return "";
@@ -572,8 +569,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		try {
 			CommonUtil.InputStreamToFile(response.getEntity().getContent(), fileName);
 		} catch (IOException e) {
-			setErrCode(ERROR_IO);
-			setErrDescription(e.getMessage());
+			setExceptionsCatch(e);
 		}
 	}
 

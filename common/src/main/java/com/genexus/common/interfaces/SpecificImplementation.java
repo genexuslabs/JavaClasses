@@ -33,4 +33,5 @@ public class SpecificImplementation {
 	public static String cdowMask;
 	public static boolean SendErrorOn401;
 	public static String Base64Encode = "GB2312";
+	public static boolean UseUnicodeCharacterClass;
 }

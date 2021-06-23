@@ -42,7 +42,7 @@ public class GXHandlerChain implements SOAPHandler<SOAPMessageContext> {
 
     private void initialize(SOAPMessageContext messageContext) {
         if (logger == null) {
-            IServletContext servletContext = (ServletContext) messageContext.get(MessageContext.SERVLET_CONTEXT);
+            IServletContext servletContext = new ServletContext(messageContext.get(MessageContext.SERVLET_CONTEXT));
             logger = LogManager.initialize(servletContext.getRealPath("/"), GXHandlerChain.class);
         }
     }
