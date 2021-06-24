@@ -1006,6 +1006,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 							{
 								fileName = fileName.substring(dDelimIdx + 1);
 							}
+							fileName = com.genexus.PrivateUtilities.getTempFileName("", CommonUtil.getFileName(fileName), CommonUtil.getFileType(fileName), true);
 							fileUri = Application.getExternalProvider().copy(gxFile.getAbsoluteName(), fileName, tableName, fieldName, true);
 						}
 						else
