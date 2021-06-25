@@ -14,4 +14,13 @@ public class ExternalProviderHelper {
 		}
 		return value;
 	}
+
+
+	public static String getEnvironmentVariable(String name, boolean required) throws Exception{
+		String value = System.getenv(name);
+		if ((value == null || value.length() == 0) && required){
+			throw new Exception("Parameter " + name + " is required");
+		}
+		return value;
+	}
 }
