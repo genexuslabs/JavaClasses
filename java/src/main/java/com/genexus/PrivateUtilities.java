@@ -550,6 +550,10 @@ public final class PrivateUtilities
 				}
 			}
 			c = c.getSuperclass();
+
+			if (c.getSimpleName().equals("GXRestServiceWrapper")) {
+				return null;
+			}
 		}
 		return null;
 	}
