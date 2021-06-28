@@ -176,7 +176,7 @@ public class ExternalProviderGoogle implements ExternalProvider {
     }
 
     private List<ObjectAccessControl> getACLOptions(boolean isPrivate) {
-        if (isPrivate)
+        if (!isPrivate)
             return Arrays.asList(new ObjectAccessControl().setEntity("allUsers").setRole("READER"));
         else
             return new ArrayList<ObjectAccessControl>();
