@@ -205,10 +205,10 @@ public class HttpClientJavaLib extends GXHttpClient {
 		if (!com.genexus.ModelContext.getModelContext().isNullHttpContext()) { // Caso de ejecucion de varias instancia de HttpClientJavaLib, por lo que se obtienen cookies desde sesion web del browser
 			webcookies = ((com.genexus.webpanels.HttpContextWeb) com.genexus.ModelContext.getModelContext().getHttpContext()).getCookies();
 			for (ICookie webcookie: webcookies)
-//				if (!webcookie.getName().equalsIgnoreCase("GX_CLIENT_ID") && !webcookie.getName().equalsIgnoreCase("JSESSIONID")) {
-				if (!webcookie.getName().equalsIgnoreCase("JSESSIONID")) {
+				if (!webcookie.getName().equalsIgnoreCase("GX_CLIENT_ID") && !webcookie.getName().equalsIgnoreCase("JSESSIONID")) {
+//				if (!webcookie.getName().equalsIgnoreCase("JSESSIONID")) {
 					cookiesToSend.addCookie(new BasicClientCookie(
-//						webcookie.getName().equalsIgnoreCase("GX_CLIENT_ID" + getHost()) ? "GX_CLIENT_ID" :
+						webcookie.getName().equalsIgnoreCase("GX_CLIENT_ID" + getHost()) ? "GX_CLIENT_ID" :
 						webcookie.getName().equalsIgnoreCase("JSESSIONID"+getHost()) ? "JSESSIONID" : webcookie.getName(),webcookie.getValue()));
 				}
 
@@ -241,10 +241,15 @@ public class HttpClientJavaLib extends GXHttpClient {
 				} else {
 					com.genexus.webpanels.HttpContextWeb webcontext = ((com.genexus.webpanels.HttpContextWeb) com.genexus.ModelContext.getModelContext().getHttpContext());
 					for (Cookie c : cookiesToSend.getCookies()) {
-						if (Arrays.stream(webcontext.getCookies()).filter(cookie -> c.getName().equalsIgnoreCase(cookie.getName())).findAny().orElse(null) == null)
-							webcontext.setCookie(c.getName(), c.getValue(), c.getPath(), c.getExpiryDate(), c.getDomain(), c.isSecure() ? 1 : 0);
+						if ((c.getName().equalsIgnoreCase("JSESSIONID") && Arrays.stream(webcontext.getCookies()).filter(cookie -> ("JSESSIONID"+getHost()).equalsIgnoreCase(cookie.getName())).findAny().orElse(null) == null) ||
+							(c.getName().equalsIgnoreCase("GX_CLIENT_ID") && Arrays.stream(webcontext.getCookies()).filter(cookie -> ("GX_CLIENT_ID"+getHost()).equalsIgnoreCase(cookie.getName())).findAny().orElse(null) == null))
+							webcontext.setCookie(c.getName() + getHost(), c.getValue(), c.getPath() == null ? "" : c.getPath(), c.getExpiryDate() == null ? CommonUtil.nullDate() : c.getExpiryDate(), c.getDomain() == null ? "":c.getDomain(), c.isSecure() ? 1 : 0);
+						else if ((!c.getName().equalsIgnoreCase("JSESSIONID") && !c.getName().equalsIgnoreCase("GX_CLIENT_ID") && Arrays.stream(webcontext.getCookies()).filter(cookie -> c.getName().equalsIgnoreCase(cookie.getName())).findAny().orElse(null) == null))
+							webcontext.setCookie(c.getName(), c.getValue(), c.getPath() == null ? "" : c.getPath(), c.getExpiryDate() == null ? CommonUtil.nullDate() : c.getExpiryDate(), c.getDomain() == null ? "":c.getDomain(), c.isSecure() ? 1 : 0);
 						else {
-							ICookie elem = Arrays.stream(webcontext.getCookies()).filter(cookie -> c.getName().equalsIgnoreCase(cookie.getName())).findAny().get();
+							ICookie elem = c.getName().equalsIgnoreCase("JSESSIONID") ? Arrays.stream(webcontext.getCookies()).filter(cookie -> ("JSESSIONID"+getHost()).equalsIgnoreCase(cookie.getName())).findAny().get() :
+								c.getName().equalsIgnoreCase("GX_CLIENT_ID") ? Arrays.stream(webcontext.getCookies()).filter(cookie -> ("GX_CLIENT_ID"+getHost()).equalsIgnoreCase(cookie.getName())).findAny().get() :
+								Arrays.stream(webcontext.getCookies()).filter(cookie -> c.getName().equalsIgnoreCase(cookie.getName())).findAny().get();
 							if (!elem.getValue().equalsIgnoreCase(c.getValue()))
 								webcontext.setCookie(c.getName() + getHost(), c.getValue(), c.getPath() == null ? "" : c.getPath(), c.getExpiryDate() == null ? CommonUtil.nullDate() : c.getExpiryDate(), c.getDomain() == null ? "":c.getDomain(), c.isSecure() ? 1 : 0);
 						}
