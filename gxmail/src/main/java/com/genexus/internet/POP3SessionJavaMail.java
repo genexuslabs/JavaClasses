@@ -22,7 +22,6 @@ import javax.mail.NoSuchProviderException;
 import javax.mail.Part;
 import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
 
@@ -296,8 +295,6 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
     if (this.downloadAttachments && (disposition!=null && (disposition.equalsIgnoreCase(Part.ATTACHMENT) || disposition.equalsIgnoreCase(Part.INLINE) || disposition.equalsIgnoreCase("UNKNOWN")))) 
     {
     	String fileName = "";
-//    	if (part.getFileName() != null)
-//				fileName = MimeUtility.decodeText(part.getFileName());
 		if (part.getFileName() != null || (isXForwardedFor && ((MimeMessage) part.getContent()).getFileName() != null))
 				fileName = MimeUtility.decodeText(part.getContent() instanceof MimeMessage ? ((MimeMessage) part.getContent()).getFileName() : part.getFileName());
 			else if (!(part.getContent() instanceof MimeMessage) || ((MimeMessage) part.getContent()).getFileName() == null)
@@ -310,9 +307,7 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
 			String newHTML = gxmessage.getHtmltext().replace(cid, fileName);
 			gxmessage.setHtmltext(newHTML);
 		}
-		
-		//fileName = Normalizer.normalize(decoded, Normalizer.Form.NFC); 
-//		saveFile(fileName, part.getInputStream());
+
 		saveFile(fileName, part.getContent() instanceof MimeMessage ? ((MimeMessage) part.getContent()).getInputStream() : part.getInputStream());
 		attachs.add(attachmentsPath + fileName);
 		gxmessage.setAttachments(attachs);
