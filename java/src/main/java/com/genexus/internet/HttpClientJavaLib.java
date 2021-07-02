@@ -2,22 +2,16 @@ package com.genexus.internet;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-
-import com.genexus.IHttpContext;
-import com.genexus.ModelContext;
 import com.genexus.servlet.http.ICookie;
 import com.genexus.util.IniFile;
 import org.apache.http.HttpResponse;
 import com.genexus.CommonUtil;
 import com.genexus.specific.java.*;
-import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
@@ -118,7 +112,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private CloseableHttpResponse response = null;
 	private CredentialsProvider credentialsProvider = null;
 	private RequestConfig reqConfig = null;		// Atributo usado en la ejecucion del metodo (por ejemplo, httpGet, httpPost)
-	private static CookieStore cookies;
+	private CookieStore cookies;
 	private static IniFile clientCfg = new com.genexus.ModelContext(com.genexus.ModelContext.getModelContextPackageClass()).getPreferences().getIniFile();
 
 
