@@ -2,14 +2,12 @@ package com.genexus.internet;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-
+import com.genexus.servlet.http.ICookie;
 import com.genexus.util.IniFile;
 import org.apache.http.HttpResponse;
 import com.genexus.CommonUtil;
@@ -196,21 +194,56 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	private CookieStore setAllStoredCookies() {
-		if (cookies.getCookies().isEmpty())
-			return new BasicCookieStore();
+		ICookie[] webcookies;
 
 		CookieStore cookiesToSend = new BasicCookieStore();
-		cookies.clearExpired(new Date());
-		for (Cookie c : cookies.getCookies()) {
-			if (getHost().equalsIgnoreCase(c.getDomain()) || (getHost().substring(4).equalsIgnoreCase(c.getDomain())))  	// el substring(4) se debe a que el host puede estar guardado con el "www." previo al host
-				cookiesToSend.addCookie(c);
+		if (!com.genexus.ModelContext.getModelContext().isNullHttpContext()) { 	// Caso de ejecucion de varias instancia de HttpClientJavaLib, por lo que se obtienen cookies desde sesion web del browser
+			webcookies = ((com.genexus.webpanels.HttpContextWeb) com.genexus.ModelContext.getModelContext().getHttpContext()).getCookies();
+			ICookie webcookie = Arrays.stream(webcookies).filter(cookie -> "Set-Cookie".equalsIgnoreCase(cookie.getName())).findAny().orElse(null);
+			if (webcookie != null)
+				this.addHeader("Cookie", com.genexus.webpanels.WebUtils.decodeCookie(webcookie.getValue()));
+
+		} else {	// Caso se ejecucion de una misma instancia HttpClientJavaLib mediante command line
+			if (!getIncludeCookies())
+				cookies.clear();
+			if (cookies.getCookies().isEmpty())
+				return new BasicCookieStore();
+
+			cookies.clearExpired(new Date());
+			for (Cookie c : cookies.getCookies()) {
+				if (getHost().equalsIgnoreCase(c.getDomain()) || (getHost().substring(4).equalsIgnoreCase(c.getDomain())))  	// el substring(4) se debe a que el host puede estar guardado con el "www." previo al host
+					cookiesToSend.addCookie(c);
+			}
 		}
 		return cookiesToSend;
 	}
 
 	private void SetCookieAtr(CookieStore cookiesToSend) {
-		for (Cookie c : cookiesToSend.getCookies())
-			cookies.addCookie(c);
+		if (cookiesToSend != null) {
+			if (com.genexus.ModelContext.getModelContext().isNullHttpContext()) {
+				for (Cookie c : cookiesToSend.getCookies())
+					cookies.addCookie(c);
+			} else {
+				try {
+					com.genexus.webpanels.HttpContextWeb webcontext = ((com.genexus.webpanels.HttpContextWeb) com.genexus.ModelContext.getModelContext().getHttpContext());
+
+					Header[] headers = this.response.getHeaders("Set-Cookie");
+					if (headers.length > 0) {
+						String webcontextCookieHeader = "";
+						for (Header header : headers) {
+							String[] cookieParts = header.getValue().split(";");
+							String[] cookieKeyAndValue = cookieParts[0].split("=");
+							webcontextCookieHeader += cookieKeyAndValue[0] + "=" + cookieKeyAndValue[1] + "; ";
+						}
+						webcontextCookieHeader = webcontextCookieHeader.trim().substring(0,webcontextCookieHeader.length()-2);	// Se quita el espacio y la coma al final
+						webcontext.setCookie("Set-Cookie",webcontextCookieHeader,"",CommonUtil.nullDate(),"",this.getSecure());
+					}
+					com.genexus.ModelContext.getModelContext().setHttpContext(webcontext);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	public void execute(String method, String url) {
@@ -227,9 +260,9 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 				SocketConfig socketConfig = SocketConfig.custom().setTcpNoDelay(getTcpNoDelay()).build();	// Seteo de TcpNoDelay
 				this.httpClientBuilder.setDefaultSocketConfig(socketConfig);
-				if (!getIncludeCookies())
-					cookies.clear();
+
 				cookiesToSend = setAllStoredCookies();
+
 				this.httpClientBuilder.setDefaultCookieStore(cookiesToSend);    // Cookies Seteo CookieStore
 			}
 
@@ -335,7 +368,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 				url = "https://" + getHost() + url;		// La lib de HttpClient agrega el port
 			else
 				url = "http://" + getHost() + ":" + (getPort() == -1? URI.defaultPort("http"):getPort()) + url;
-
 
 			httpClient = this.httpClientBuilder.build();
 
@@ -455,9 +487,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			statusCode =  response.getStatusLine().getStatusCode();
 			reasonLine =  response.getStatusLine().getReasonPhrase();
 
-
-			if (cookiesToSend != null)
-				SetCookieAtr(cookiesToSend);		// Se setean las cookies devueltas en la lista de cookies
+			SetCookieAtr(cookiesToSend);		// Se setean las cookies devueltas en la lista de cookies
 
 		} catch (IOException e) {
 			setExceptionsCatch(e);
