@@ -273,7 +273,7 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
     boolean isXForwardedFor = part.getContent() instanceof MimeMessage &&		// Para soportar attachments de mails que llegan a la casilla con el header "X-Forwarded-For"
 		Arrays.stream(part.getHeader("Content-Type")).filter(header -> header.toLowerCase().startsWith("message")).findFirst().orElse(null) != null;
 
-    if (System.getProperties().getProperty("DonwloadAllMailsAttachment", null) != null && isXForwardedFor)
+    if (System.getProperties().getProperty("DownloadAllMailsAttachment", null) != null && isXForwardedFor)
 		handlePart((MimeMessage) part.getContent(),gxmessage);
 
     if (part.isMimeType("text/plain"))
