@@ -375,6 +375,12 @@ public abstract class GXHttpClient implements IHttpClient{
 		}
 		if (this.headersToSend == null)
 			this.headersToSend =new Hashtable<>();
+		for (String elem: headersToSend.keySet()) {
+			if (elem.equalsIgnoreCase(name)) {
+				headersToSend.put(elem, value);
+				return;
+			}
+		}
 		headersToSend.put(name, value);
 	}
 
