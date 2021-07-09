@@ -563,7 +563,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	public InputStream getInputStream() throws IOException {
 		if (response != null) {
-			this.getEntity();
+			this.setEntity();
 			return entity.getContent();
 		} else
 			return null;
@@ -582,7 +582,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 	}
 
-	private void getEntity() throws IOException {
+	private void setEntity() throws IOException {
 		if (entity == null)
 			entity = new ByteArrayEntity(EntityUtils.toByteArray(response.getEntity()));
 	}
@@ -591,7 +591,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		if (response == null)
 			return "";
 		try {
-			this.getEntity();
+			this.setEntity();
 			String res = EntityUtils.toString(entity, "UTF-8");
 			return res;
 		} catch (IOException e) {
@@ -605,7 +605,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		if (response == null)
 			return;
 		try {
-			this.getEntity();
+			this.setEntity();
 			CommonUtil.InputStreamToFile(entity.getContent(), fileName);
 		} catch (IOException e) {
 			setExceptionsCatch(e);
