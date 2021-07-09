@@ -7,16 +7,15 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+
+import HTTPClient.ParseException;
 import com.genexus.servlet.http.ICookie;
 import com.genexus.util.IniFile;
-import org.apache.http.HttpResponse;
+import org.apache.http.*;
 import com.genexus.CommonUtil;
 import com.genexus.specific.java.*;
+import org.apache.http.HttpResponse;
 import org.apache.http.protocol.HttpContext;
-import org.apache.http.Header;
-import org.apache.http.HeaderElement;
-import org.apache.http.HeaderElementIterator;
-import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.NTCredentials;
@@ -113,6 +112,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private CredentialsProvider credentialsProvider = null;
 	private RequestConfig reqConfig = null;		// Atributo usado en la ejecucion del metodo (por ejemplo, httpGet, httpPost)
 	private CookieStore cookies;
+	private ByteArrayEntity entity = null;	// Para mantener el stream luego de cerrada la conexion en la lectura de la response
 	private static IniFile clientCfg = new com.genexus.ModelContext(com.genexus.ModelContext.getModelContextPackageClass()).getPreferences().getIniFile();
 
 
@@ -122,6 +122,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		resetErrorsAndConnParams();
 		setErrCode(0);
 		setErrDescription("");
+		entity = null;
 	}
 
 
@@ -561,9 +562,10 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public InputStream getInputStream() throws IOException {
-		if (response != null)
-			return response.getEntity().getContent();
-		else
+		if (response != null) {
+			this.setEntity();
+			return entity.getContent();
+		} else
 			return null;
 	}
 
@@ -580,11 +582,17 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 	}
 
+	private void setEntity() throws IOException {
+		if (entity == null)
+			entity = new ByteArrayEntity(EntityUtils.toByteArray(response.getEntity()));
+	}
+
 	public String getString() {
 		if (response == null)
 			return "";
 		try {
-			String res = EntityUtils.toString(response.getEntity(), "UTF-8");
+			this.setEntity();
+			String res = EntityUtils.toString(entity, "UTF-8");
 			return res;
 		} catch (IOException e) {
 			setExceptionsCatch(e);
@@ -597,7 +605,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 		if (response == null)
 			return;
 		try {
-			CommonUtil.InputStreamToFile(response.getEntity().getContent(), fileName);
+			this.setEntity();
+			CommonUtil.InputStreamToFile(entity.getContent(), fileName);
 		} catch (IOException e) {
 			setExceptionsCatch(e);
 		}
