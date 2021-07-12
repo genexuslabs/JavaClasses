@@ -111,19 +111,6 @@ public class Notifications {
 	
 		// new AndroidUserToken for gcm getting from config file now
 		String AndroidUserToken = cert.getAndroidAPIKey();
-		//String AndroidUserToken = Certificates.getInstance().getAndroidUserTokenFor(applicationId);
-		//if (AndroidUserToken == null )
-		//{
-		//	try {
-		//		AndroidUserToken = AuthenticationUtil.getToken(cert.getAndroidUser(),
-		//				cert.getAndroidPassword());
-		//	} catch (IOException e) {
-		//		_customError = e.getMessage();
-		//		return 3;
-		//	}
-		//	Certificates.getInstance().setAndroidUserTokenFor(applicationId, AndroidUserToken);
-		//}
-			
 		try {
 			MessageUtil.sendMessage(AndroidUserToken, deviceToken, alert, action);
 			
