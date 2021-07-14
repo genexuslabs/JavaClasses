@@ -11,6 +11,8 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Hashtable;
 import java.lang.reflect.Method;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.genexus.internet.IGxJSONAble;
 import com.genexus.internet.IGxJSONSerializable;
 
@@ -77,6 +79,11 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 	public short readxml(XMLReader reader)
 	{
 		return readxml(reader, "");
+	}
+
+	public byte isNull( )
+	{
+		return 0 ;
 	}
 
 	public Object clone()
@@ -481,11 +488,11 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
         }
 
         // cache of methods for classes, inpruve perfomance, becuase each intance get all methods each time called.
-        private static transient Hashtable<String, Hashtable<String, Method>> classesCacheMethods = new Hashtable<>();
+        private static transient ConcurrentHashMap<String, ConcurrentHashMap<String, Method>> classesCacheMethods = new ConcurrentHashMap<>();
         // cache of methods names, inpruve perfomance.
-        private static transient Hashtable<String, String> toLowerCacheMethods = new Hashtable<>();
+        private static transient ConcurrentHashMap<String, String> toLowerCacheMethods = new ConcurrentHashMap<>();
 
-        private transient Hashtable<String, Method> classMethods;
+        private transient ConcurrentHashMap<String, Method> classMethods;
         private Method getMethod(String methodName)
         {
         	String toLowerMethodName = (String)toLowerCacheMethods.get(methodName);
@@ -502,7 +509,7 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 			}
 			if (classMethods==null)
 			{
-				classMethods = new Hashtable<>();
+				classMethods = new ConcurrentHashMap<>();
 				Class thisClass = this.getClass();
 				Method[] methods = thisClass.getMethods();
 				for(int i=0; i<methods.length; i++)

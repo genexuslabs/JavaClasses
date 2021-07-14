@@ -23,7 +23,9 @@ import com.genexus.security.web.SecureTokenHelper;
 import com.genexus.security.web.WebSecurityHelper;
 import com.genexus.util.GXTimeZone;
 
-public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConstants, ISubmitteable
+import com.genexus.GXRestServiceWrapper;
+
+public abstract class GXWebObjectBase extends GXRestServiceWrapper implements IErrorHandler, GXInternetConstants, ISubmitteable
 {
 	public static final ILogger logger = LogManager.getLogger(GXWebObjectBase.class);
 

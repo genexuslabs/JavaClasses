@@ -1,7 +1,7 @@
 package com.genexus.webpanels;
-import javax.servlet.http.HttpServletRequest;
+import com.genexus.servlet.http.IHttpServletRequest;
 
 public interface IContextPath
 {
-	public String getContextPath(HttpServletRequest request);
+	public String getContextPath(IHttpServletRequest request);
 }

@@ -91,7 +91,7 @@ public class GXDBMShana implements GXDBMS
 
 	public java.util.Date nullDate()
 	{
-		return CommonUtil.ymdhmsToT_noYL(1000, 1, 1, 0, 0, 0);
+		return CommonUtil.ymdhmsToT_noYL(1, 1, 1, 0, 0, 0);
 	}
 
 	public boolean useDateTimeInDate()

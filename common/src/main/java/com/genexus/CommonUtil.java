@@ -38,6 +38,7 @@ public final class CommonUtil
 	public static final String [][] ENCODING_JAVA_IANA;
 	private static Random random;
 	private static Date nullDate;
+	private static final BitSet UnsafeChar = new BitSet(128);
 
 	public static final ILogger logger = LogManager.getLogger(CommonUtil.class);
 
@@ -45,6 +46,24 @@ public final class CommonUtil
 	{
 		try
 		{
+			// rfc-1738 unsafe characters, including CTL and SP, and excluding
+			// "#" and "%"
+			for (int ch=0; ch<32; ch++)  UnsafeChar.set(ch);
+			UnsafeChar.set(' ');
+			UnsafeChar.set('<');
+			UnsafeChar.set('>');
+			UnsafeChar.set('"');
+			UnsafeChar.set('{');
+			UnsafeChar.set('}');
+			UnsafeChar.set('|');
+			UnsafeChar.set('\\');
+			UnsafeChar.set('^');
+			UnsafeChar.set('~');
+			UnsafeChar.set('[');
+			UnsafeChar.set(']');
+			UnsafeChar.set('`');
+			UnsafeChar.set(127);
+
 			originalTimeZone = GXTimeZone.getDefaultOriginal();
 			defaultTimeZone = GXTimeZone.getDefault();
 			defaultLocale   = Locale.getDefault();
@@ -1637,7 +1656,7 @@ public final class CommonUtil
 
 	public static int day(Date date)
 	{
-		if	(date.equals(nullDate()))
+		if	(date == null || date.equals(nullDate()))
 			return 0;
 
 		SimpleDateFormat dayFormat = new java.text.SimpleDateFormat("d");
@@ -1647,7 +1666,7 @@ public final class CommonUtil
 
 	public static int month(Date date)
 	{
-		if	(date.equals(nullDate()))
+		if	(date == null || date.equals(nullDate()))
 			return 0;
 
 		SimpleDateFormat monthFormat = new java.text.SimpleDateFormat("M");
@@ -1657,7 +1676,7 @@ public final class CommonUtil
 
 	public static int  year(Date date)
 	{
-		if	(date.equals(nullDate()))
+		if	(date == null || date.equals(nullDate()))
 			return 0;
 
 		SimpleDateFormat yearFormat = new java.text.SimpleDateFormat("yyyy");
@@ -2674,8 +2693,14 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+           		if (objStr.isEmpty())
+					objStr = "0";
+				else 
+				{
+					int i = objStr.indexOf(".");
+					if (i >= 0)
+            			objStr =  objStr.substring(0, i);  
+				}         	
                 return Short.valueOf(objStr);
             }
             catch(Exception e)
@@ -2689,8 +2714,14 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+				if (objStr.isEmpty())
+					objStr ="0";
+				else 
+				{
+					int i = objStr.indexOf(".");
+					if	(i >= 0)
+            			objStr =  objStr.substring(0, i);  
+				}               	              	
                 return Byte.valueOf(objStr);
             }
             catch(Exception e)
@@ -2704,8 +2735,14 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+            	if (objStr.isEmpty())
+					objStr ="0";
+				else 
+				{
+					int i = objStr.indexOf(".");
+					if	(i >= 0)
+            			objStr =  objStr.substring(0, i);  
+				}       	
                 return new Integer(objStr);
             }
             catch(Exception e)
@@ -2723,8 +2760,8 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+            	if (objStr.isEmpty())
+            		objStr = "0";                	
                 return Double.valueOf(objStr);
             }
             catch(Exception e)
@@ -2738,8 +2775,8 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+            	if (objStr.isEmpty())
+            		objStr = "0";                	
                 return Float.valueOf(objStr);
             }
             catch(Exception e)
@@ -2753,8 +2790,15 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+            	
+				if (objStr.isEmpty())
+					objStr ="0";
+				else 
+				{
+					int i = objStr.indexOf(".");
+					if	(i >= 0)
+            			objStr =  objStr.substring(0, i);  
+				}
                 return Long.valueOf(CommonUtil.strUnexponentString(objStr));
 
             }
@@ -3170,6 +3214,40 @@ public final class CommonUtil
 			return "";
 		}
     }
+
+	/**
+	 * Escape unsafe characters in a path.
+	 *
+	 * @param path the original path
+	 * @return the path with all unsafe characters escaped
+	 */
+	public final static String escapeUnsafeChars(String path)
+	{
+		int len = path.length();
+		char[] buf = new char[3*len];
+
+		int dst = 0;
+		for (int src=0; src<len; src++)
+		{
+			char ch = path.charAt(src);
+			if (ch >= 128  ||  UnsafeChar.get(ch))
+			{
+				buf[dst++] = '%';
+				buf[dst++] = hex_map[(ch & 0xf0) >>> 4];
+				buf[dst++] = hex_map[ch & 0x0f];
+			}
+			else
+				buf[dst++] = ch;
+		}
+
+		if (dst > len)
+			return new String(buf, 0, dst);
+		else
+			return path;
+	}
+
+	static final char[] hex_map =
+		{'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 	
 	public static byte remoteFileExists(String URLName){
 	    try {	      

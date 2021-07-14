@@ -1,8 +1,10 @@
 package com.genexus;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -1347,13 +1349,11 @@ public final class GXutil
 		return com.genexus.Preferences.getDefaultPreferences().getBLOB_PATH() + blobPath;
 	}
 	public static final String FORMDATA_REFERENCE = "gxformdataref:";
-	public static final String UPLOADPREFIX = "gxupload:";	
 	public static final int UPLOAD_TIMEOUT = 10;	
 	
 	public static String cutUploadPrefix(String value)
 	{
-		String uploadValue = value.replace(UPLOADPREFIX, "");
-		uploadValue = SpecificImplementation.GXutil.getUploadValue(value, uploadValue);
+		String uploadValue = SpecificImplementation.GXutil.getUploadValue(value);
 	
 		//hack para salvar el caso de gxooflineeventreplicator que llegan los path de los blobs sin \ porque fueron sacadas por el FromJsonString
 		String blobPath = com.genexus.Preferences.getDefaultPreferences().getProperty("CS_BLOB_PATH", "");
@@ -1372,6 +1372,21 @@ public final class GXutil
 	public static boolean isUploadPrefix(String value)
 	{
 		return CommonUtil.isUploadPrefix(value);
+	}
+
+	public static String getNonTraversalPath(String path, String fileName) {
+		String nonTraversalPath =  Paths.get(path, fileName).toString();
+		try {
+			File nonTraversalFile = new File(nonTraversalPath);
+			String canonicalPath = nonTraversalFile.getCanonicalPath();
+			if (canonicalPath.startsWith(path) || ! nonTraversalFile.isAbsolute())
+				return nonTraversalPath;
+			else
+				return path + File.separator +  new File( fileName).getName();
+		}
+		catch(IOException ex) {
+			return path + File.separator +  new File( fileName).getName();
+		}
 	}
 	
 	public static String dateToCharREST(Date value)
