@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Vector;
 
 import com.genexus.common.classes.AbstractGXFile;
+import com.genexus.db.driver.ResourceAccessControlList;
 import com.genexus.util.GXFile;
 
 public class FileUtils implements com.genexus.common.interfaces.IExtensionFileUtils {
@@ -45,8 +46,8 @@ public class FileUtils implements com.genexus.common.interfaces.IExtensionFileUt
 	}
 
 	@Override
-	public AbstractGXFile createFile(String file, boolean priv, boolean local) {
-		return new GXFile(file, priv, local);
+	public AbstractGXFile createFile(String file, ResourceAccessControlList acl, boolean local) {
+		return new GXFile(file, acl, local);
 	}
 
 }
