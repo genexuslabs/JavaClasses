@@ -254,6 +254,10 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 
 	public java.util.UUID getGUID(int columnIndex) throws SQLException
 	{
-		return this.<java.util.UUID>getValue(getColumnIndex(columnIndex));
-	}		
+		Object value = this.getValue(getColumnIndex(columnIndex));
+		if (value instanceof java.util.UUID)
+			return this.<java.util.UUID>getValue(getColumnIndex(columnIndex));
+		else
+			return (java.util.UUID) CommonUtil.convertObjectTo(value, TypeConstants.UUID);
+	}
 }
