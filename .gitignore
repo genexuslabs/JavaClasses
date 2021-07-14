@@ -23,5 +23,7 @@ target/
 .settings
 *.versionsBackup
 
+*.xlsx
+
 PublicTempStorage/
 PrivateTempStorage/
