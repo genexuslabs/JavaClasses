@@ -3,8 +3,10 @@ package com.genexus.webpanels;
 import java.io.InputStream;
 import java.util.Vector;
 
+import com.genexus.PrivateUtilities;
 import com.genexus.fileupload.IFileItemIterator;
 import com.genexus.fileupload.IFileItemStream;
+import com.genexus.specific.java.FileUtils;
 
 
 public class FileItemCollection
@@ -21,14 +23,14 @@ public class FileItemCollection
             while (lstParts.hasNext()) 
             {
                 IFileItemStream item = lstParts.next();
-                String completeFileName = item.getName();
-                String name = completeFileName;
+                String formFieldNameWithExtension = item.getName();
+                String temporalFilePath = item.getName();
                 if (!item.isFormField())
                 {
-					name = rootPath + com.genexus.PrivateUtilities.getTempFileName("tmp");
+					temporalFilePath = rootPath + com.genexus.PrivateUtilities.getTempFileName("tmp");
                 }
                 InputStream stream = item.openStream();
-                FileItem fileItem = new FileItem(completeFileName, name, item.isFormField(), item.getFieldName(), stream);
+                FileItem fileItem = new FileItem(formFieldNameWithExtension, temporalFilePath, item.isFormField(), item.getFieldName(), stream);
                 vector.add(fileItem);
             }
         }

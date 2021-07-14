@@ -1,7 +1,5 @@
 package com.genexus.fileupload;
 
-import com.genexus.fileupload.IFileItemIterator;
-import com.genexus.fileupload.IFileItemStream;
 import java.io.IOException;
 
 public class FileItemIterator implements IFileItemIterator{
