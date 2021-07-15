@@ -2352,15 +2352,15 @@ public final class CommonUtil
 
 	public static String getFileType( String sFullFileName)
 	{
+		int indexOf = sFullFileName.lastIndexOf('?');
+		if (indexOf > 0)
+			sFullFileName = sFullFileName.substring(0, indexOf);
+
 		String fileName = new File( sFullFileName).getName();
-		int indexOf = fileName.lastIndexOf('.');
+		indexOf = fileName.lastIndexOf('.');
 		if	(indexOf < 0)
 			return "";
 		fileName = fileName.substring(indexOf + 1);
-
-		indexOf = fileName.lastIndexOf('?');
-		if (indexOf > 0)
-			fileName = fileName.substring(0, indexOf);
 
 		return fileName;
 	}
