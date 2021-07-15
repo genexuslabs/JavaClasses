@@ -12,6 +12,7 @@ import com.genexus.util.IniFile;
 import org.apache.http.HttpResponse;
 import com.genexus.CommonUtil;
 import com.genexus.specific.java.*;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
@@ -271,12 +272,14 @@ public class HttpClientJavaLib extends GXHttpClient {
 				this.httpClientBuilder.setRoutePlanner(new DefaultProxyRoutePlanner(proxy));
 				this.reqConfig = RequestConfig.custom()
 					.setSocketTimeout(getTimeout() * 1000)    // Se multiplica por 1000 ya que tiene que ir en ms y se recibe en segundos
+					.setCookieSpec(CookieSpecs.STANDARD)
 					.setProxy(proxy)
 					.build();
 			} else {
 				this.httpClientBuilder.setRoutePlanner(null);
 				this.reqConfig = RequestConfig.custom()
 					.setConnectTimeout(getTimeout() * 1000)   	// Se multiplica por 1000 ya que tiene que ir en ms y se recibe en segundos
+					.setCookieSpec(CookieSpecs.STANDARD)
 					.build();
 			}
 
