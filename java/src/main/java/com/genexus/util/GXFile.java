@@ -99,17 +99,15 @@ public class GXFile extends AbstractGXFile {
     }	
 
     public void setSource(String FileName) {
-    		setSource(FileName, !isExternal);
-    }
+		boolean isUpload = com.genexus.CommonUtil.isUploadPrefix(FileName);
+		if (isUpload) {
+			uploadFileId = FileName;
+			FileName = SpecificImplementation.GXutil.getUploadValue(FileName);
+		}
 
-    public void setSource(String FileName, boolean isLocal) {
-        if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) != null && !isLocal) {
+        if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) != null && (isUpload || isExternal)) {
         		FileSource = new GXExternalFileInfo(FileName, Application.getExternalProvider());
         } else {
-				if (com.genexus.CommonUtil.isUploadPrefix(FileName)) {
-					uploadFileId = FileName;
-					FileName = SpecificImplementation.GXutil.getUploadValue(FileName);
-				}
                 String absoluteFileName = FileName;
         		try {
         		    if (ModelContext.getModelContext() != null && ! new File(absoluteFileName).isAbsolute())

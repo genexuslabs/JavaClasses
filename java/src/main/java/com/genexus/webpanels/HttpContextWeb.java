@@ -102,12 +102,13 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getResourceRelative(String path, boolean includeBasePath) {
-		if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) != null && !path.isEmpty()) {
+		if (Application.getExternalProvider() != null && !path.isEmpty()) {
+			if (CommonUtil.isAbsoluteURL(path))
+				return path;
 			GXFile gxFile = new GXFile(path);
 			String pathURL = gxFile.getAbsolutePath();
-			if (GXutil.isAbsoluteURL(pathURL)) {
+			if (CommonUtil.isAbsoluteURL(pathURL))
 				return pathURL;
-			}
 		}
 
 		try {
