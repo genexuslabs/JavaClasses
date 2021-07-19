@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Vector;
 
 import com.genexus.common.classes.AbstractGXFile;
+import com.genexus.db.driver.ResourceAccessControlList;
 
 public interface IExtensionFileUtils {
 
@@ -21,6 +22,6 @@ public interface IExtensionFileUtils {
 
 	void copyFile(File file, File file2) throws IOException;
 
-	AbstractGXFile createFile(String absolutePath, boolean b, boolean c);
+	AbstractGXFile createFile(String absolutePath, ResourceAccessControlList acl, boolean c);
 
 }
