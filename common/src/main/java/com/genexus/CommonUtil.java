@@ -38,6 +38,7 @@ public final class CommonUtil
 	public static final String [][] ENCODING_JAVA_IANA;
 	private static Random random;
 	private static Date nullDate;
+	private static final BitSet UnsafeChar = new BitSet(128);
 
 	public static final ILogger logger = LogManager.getLogger(CommonUtil.class);
 
@@ -45,6 +46,24 @@ public final class CommonUtil
 	{
 		try
 		{
+			// rfc-1738 unsafe characters, including CTL and SP, and excluding
+			// "#" and "%"
+			for (int ch=0; ch<32; ch++)  UnsafeChar.set(ch);
+			UnsafeChar.set(' ');
+			UnsafeChar.set('<');
+			UnsafeChar.set('>');
+			UnsafeChar.set('"');
+			UnsafeChar.set('{');
+			UnsafeChar.set('}');
+			UnsafeChar.set('|');
+			UnsafeChar.set('\\');
+			UnsafeChar.set('^');
+			UnsafeChar.set('~');
+			UnsafeChar.set('[');
+			UnsafeChar.set(']');
+			UnsafeChar.set('`');
+			UnsafeChar.set(127);
+
 			originalTimeZone = GXTimeZone.getDefaultOriginal();
 			defaultTimeZone = GXTimeZone.getDefault();
 			defaultLocale   = Locale.getDefault();
@@ -394,6 +413,14 @@ public final class CommonUtil
                 return CommonUtil.getYYYYMMDDHHMMSS_nosep(date);
         }
 
+		public static String formatDateTimeParmMS(Date date)
+        {
+                if (date.equals(CommonUtil.nullDate()))
+                        return "";
+
+                return CommonUtil.getYYYYMMDDHHMMSSmmm_nosep(date);
+		}
+		
         public static String formatDateParm(Date date)
         {
                 if (date.equals(CommonUtil.nullDate()))
@@ -513,6 +540,9 @@ public final class CommonUtil
 
 	public static Date ymdhmsToT_noYL(String yyyymmddhhmmss)
 	{
+
+		int mil = (yyyymmddhhmmss.trim().length() >= 17)? (int)Integer.parseInt(yyyymmddhhmmss.substring(14, 17)):0;
+
 		int year    = Integer.parseInt(yyyymmddhhmmss.substring( 0,  4));
 		int month   = Integer.parseInt(yyyymmddhhmmss.substring( 4,  6));
 		int day     = Integer.parseInt(yyyymmddhhmmss.substring( 6,  8));
@@ -520,7 +550,7 @@ public final class CommonUtil
 		int minute  = Integer.parseInt(yyyymmddhhmmss.substring(10, 12));
 		int seconds = Integer.parseInt(yyyymmddhhmmss.substring(12, 14));
 
-		return ymdhmsToT_noYL(year, month, day, hour, minute, seconds);
+		return ymdhmsToT_noYL(year, month, day, hour, minute, seconds, mil);
 	}
 
 	public static Date resetDate(Date date)
@@ -584,26 +614,25 @@ public final class CommonUtil
 		{
 			if (hour == 0)
 			{
-				try
-				{
-					synchronized (cal)
-					{
-						cal.setLenient(false);
-						cal.clear();
-						cal.set(year, month - 1, day, 1, minute, second);
-						if (millisecond > 0)
-						{
-							cal.add(cal.MILLISECOND, millisecond);
+				hour = 1;
+				while (hour < 24) {
+					try {
+						synchronized (cal) {
+							cal.setLenient(false);
+							cal.clear();
+							cal.set(year, month - 1, day, hour, minute, second);
+							if (millisecond > 0) {
+								cal.add(cal.MILLISECOND, millisecond);
+							}
+							Date date = cal.getTime();
+							cal.setLenient(lenient);
+							return date;
 						}
-						Date date = cal.getTime();
-						cal.setLenient(lenient);
-						return date;
+					} catch (IllegalArgumentException ex) {
+						hour ++;
 					}
 				}
-				catch (IllegalArgumentException ex)
-				{
-					return nullDate();
-				}
+				return nullDate();
 			}
 			else
 			{
@@ -719,8 +748,17 @@ public final class CommonUtil
 			}
 			catch (IllegalArgumentException e)
 			{
-				cal.set(Calendar.HOUR_OF_DAY, 1);
-				return cal.getTime();
+				int hour = 1;
+				while (hour < 24) {
+					cal.set(Calendar.HOUR_OF_DAY, hour);
+					try {
+						return cal.getTime();
+					}
+					catch (IllegalArgumentException e1) {
+						hour ++;
+					}
+				}
+				return dt;
 			}
 		}
 	}
@@ -1618,7 +1656,7 @@ public final class CommonUtil
 
 	public static int day(Date date)
 	{
-		if	(date.equals(nullDate()))
+		if	(date == null || date.equals(nullDate()))
 			return 0;
 
 		SimpleDateFormat dayFormat = new java.text.SimpleDateFormat("d");
@@ -1628,7 +1666,7 @@ public final class CommonUtil
 
 	public static int month(Date date)
 	{
-		if	(date.equals(nullDate()))
+		if	(date == null || date.equals(nullDate()))
 			return 0;
 
 		SimpleDateFormat monthFormat = new java.text.SimpleDateFormat("M");
@@ -1638,7 +1676,7 @@ public final class CommonUtil
 
 	public static int  year(Date date)
 	{
-		if	(date.equals(nullDate()))
+		if	(date == null || date.equals(nullDate()))
 			return 0;
 
 		SimpleDateFormat yearFormat = new java.text.SimpleDateFormat("yyyy");
@@ -1665,7 +1703,7 @@ public final class CommonUtil
 
 	public static String getYYYYMMDDHHMMSSmmm_nosep(Date date)
 	{
-		SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("yyyyMMddHHmmss.SSS");
+		SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("yyyyMMddHHmmssSSS");
 		dateFormat.setTimeZone(defaultTimeZone);
 
 		return dateFormat.format(date);
@@ -2314,15 +2352,15 @@ public final class CommonUtil
 
 	public static String getFileType( String sFullFileName)
 	{
+		int indexOf = sFullFileName.lastIndexOf('?');
+		if (indexOf > 0)
+			sFullFileName = sFullFileName.substring(0, indexOf);
+
 		String fileName = new File( sFullFileName).getName();
-		int indexOf = fileName.lastIndexOf('.');
+		indexOf = fileName.lastIndexOf('.');
 		if	(indexOf < 0)
 			return "";
 		fileName = fileName.substring(indexOf + 1);
-
-		indexOf = fileName.lastIndexOf('?');
-		if (indexOf > 0)
-			fileName = fileName.substring(0, indexOf);
 
 		return fileName;
 	}
@@ -2594,7 +2632,12 @@ public final class CommonUtil
 
 	public static boolean isAbsoluteURL(String url)
 	{
-		return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("ftp://");
+		return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("ftp://") || url.startsWith("sd:");
+	}
+
+	public static boolean hasUrlQueryString(String url)
+	{
+		return url.indexOf("?") >= 0;
 	}
 
 	public static String encodeJSON(String in)
@@ -2650,8 +2693,14 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+           		if (objStr.isEmpty())
+					objStr = "0";
+				else 
+				{
+					int i = objStr.indexOf(".");
+					if (i >= 0)
+            			objStr =  objStr.substring(0, i);  
+				}         	
                 return Short.valueOf(objStr);
             }
             catch(Exception e)
@@ -2665,8 +2714,14 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+				if (objStr.isEmpty())
+					objStr ="0";
+				else 
+				{
+					int i = objStr.indexOf(".");
+					if	(i >= 0)
+            			objStr =  objStr.substring(0, i);  
+				}               	              	
                 return Byte.valueOf(objStr);
             }
             catch(Exception e)
@@ -2680,8 +2735,14 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+            	if (objStr.isEmpty())
+					objStr ="0";
+				else 
+				{
+					int i = objStr.indexOf(".");
+					if	(i >= 0)
+            			objStr =  objStr.substring(0, i);  
+				}       	
                 return new Integer(objStr);
             }
             catch(Exception e)
@@ -2699,8 +2760,8 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+            	if (objStr.isEmpty())
+            		objStr = "0";                	
                 return Double.valueOf(objStr);
             }
             catch(Exception e)
@@ -2714,8 +2775,8 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+            	if (objStr.isEmpty())
+            		objStr = "0";                	
                 return Float.valueOf(objStr);
             }
             catch(Exception e)
@@ -2729,8 +2790,15 @@ public final class CommonUtil
         {
             try
             {
-            		if (objStr.isEmpty())
-            			objStr = "0";                	
+            	
+				if (objStr.isEmpty())
+					objStr ="0";
+				else 
+				{
+					int i = objStr.indexOf(".");
+					if	(i >= 0)
+            			objStr =  objStr.substring(0, i);  
+				}
                 return Long.valueOf(CommonUtil.strUnexponentString(objStr));
 
             }
@@ -3146,6 +3214,40 @@ public final class CommonUtil
 			return "";
 		}
     }
+
+	/**
+	 * Escape unsafe characters in a path.
+	 *
+	 * @param path the original path
+	 * @return the path with all unsafe characters escaped
+	 */
+	public final static String escapeUnsafeChars(String path)
+	{
+		int len = path.length();
+		char[] buf = new char[3*len];
+
+		int dst = 0;
+		for (int src=0; src<len; src++)
+		{
+			char ch = path.charAt(src);
+			if (ch >= 128  ||  UnsafeChar.get(ch))
+			{
+				buf[dst++] = '%';
+				buf[dst++] = hex_map[(ch & 0xf0) >>> 4];
+				buf[dst++] = hex_map[ch & 0x0f];
+			}
+			else
+				buf[dst++] = ch;
+		}
+
+		if (dst > len)
+			return new String(buf, 0, dst);
+		else
+			return path;
+	}
+
+	static final char[] hex_map =
+		{'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 	
 	public static byte remoteFileExists(String URLName){
 	    try {	      

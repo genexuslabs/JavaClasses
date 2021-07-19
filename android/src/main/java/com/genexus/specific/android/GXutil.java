@@ -131,9 +131,17 @@ public class GXutil implements IExtensionGXutil {
 	}
 
 	@Override
-	public String getUploadValue(String value, String uploadValue) {
-		return uploadValue;
+	public String getUploadValue(String value) {
+		return "";
 	}
+
+	@Override
+	public String getUploadExtensionValue(String value) {
+		return "";
+	}
+
+	@Override
+	public String getUploadNameValue(String value) { return "";}
 
 	@Override
 	public Date serverNow(Object context, int handle, String dataSource) {

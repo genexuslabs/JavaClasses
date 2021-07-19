@@ -615,7 +615,7 @@ public class Application
 	  public static com.genexus.GXSmartCacheProvider getSmartCacheProvider()
 	  {
 		  if (smartCacheProvider == null)
-			  smartCacheProvider = new com.genexus.GXSmartCacheProvider();
+			  smartCacheProvider = new com.genexus.GXSmartCacheProvider((int)0);
 		  return smartCacheProvider;
 	  }	 
 }

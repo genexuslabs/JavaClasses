@@ -176,6 +176,9 @@ public class GXDbFile
 	{
 		if (name.length() == 0 && type.length() == 0 && path.length() != 0)
 		{
+			if (CommonUtil.isUploadPrefix(path)) {
+				return new GXFile(path).getName();
+			}
 			String fromPathType = getFileType(path);
 			if (fromPathType.length() != 0 && !fromPathType.equals("tmp"))
 			{

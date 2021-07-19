@@ -988,7 +988,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 			destination.close();
 
 			InputStream is = new ByteArrayInputStream(os.toByteArray());
-			GXFile gxFile = new GXFile(fileName);
+			GXFile gxFile = new GXFile(fileName, ResourceAccessControlList.Private);
 		  	gxFile.create(is);
 			
 			fileName = gxFile.getFilePath();
@@ -1014,10 +1014,10 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 			if (fileName.trim().length() != 0)
 			{
 				String filePath = "";
-				if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) == null)
+				if (Application.getExternalProvider() == null)
 				{ 
 					String multimediaDir = com.genexus.Preferences.getDefaultPreferences().getMultimediaPath();
-					filePath = multimediaDir + File.separator + fileName;
+					filePath = GXutil.getNonTraversalPath(multimediaDir, fileName);
 				}
 				else
 				{
@@ -1045,7 +1045,15 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 	
 	public String getMultimediaUri(int columnIndex, boolean absPath) throws SQLException
 	{
-		return GXDbFile.resolveUri(getVarchar(columnIndex), absPath);
+		ExternalProvider provider = Application.getExternalProvider();
+		String colValue = getVarchar(columnIndex);
+		if (provider != null && colValue.length() > 0 && GXutil.isAbsoluteURL(colValue)) {
+			String providerObjectName = ExternalProviderCommon.getProviderObjectName(provider, colValue);
+			if (providerObjectName != null) {
+				return new GXFile(providerObjectName).getAbsolutePath();
+			}
+		}
+		return GXDbFile.resolveUri(colValue, absPath);
 	}
 
 	private static String lastBlobsDir = "";
@@ -1053,7 +1061,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 	{
 		String blobPath = com.genexus.Preferences.getDefaultPreferences().getBLOB_PATH();
 		String fileName = com.genexus.PrivateUtilities.getTempFileName(blobPath, name, extension, true);
-		if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) == null)
+		if (Application.getExternalProvider() == null)
 		{
 			File file = new File(fileName);
 			

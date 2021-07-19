@@ -25,7 +25,6 @@ import json.org.json.JSONObject;
 
 public class EnterpriseConnect
 {
-
 	static String DESTINATION_NAME = "SAP_SERVER";
     JCoFunction function = null;
 	String destinationName = DESTINATION_NAME;
@@ -39,8 +38,7 @@ public class EnterpriseConnect
 		}
 	}
 	
-	/*        ---   Set Parameters   ---           */
-		
+	/*        ---   Set Parameters   ---           */	
 	public void setValue(String parameterName, String value)
 	{
 		boolean setvalue = false;
@@ -349,11 +347,15 @@ public class EnterpriseConnect
 		value[0] = function.getExportParameterList().getDouble(parameterName);
 	}
 	
+	public void getValue(String parameterName, BigDecimal[] value)
+	{		
+		value[0] = function.getExportParameterList().getBigDecimal(parameterName);
+	}
+
 	public int getIntValue(String parameterName)
 	{		
 		return function.getExportParameterList().getInt(parameterName);
 	}
-	
 	
 	/*        ---   Execute  ---           */
 	
@@ -421,5 +423,4 @@ public class EnterpriseConnect
         }
         return 0;
     }
-	
 }

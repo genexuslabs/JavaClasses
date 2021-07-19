@@ -4,6 +4,9 @@ import java.util.Hashtable;
 
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.IExtensionHttpClient;
+import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.internet.HttpClientJavaLib;
+import com.genexus.internet.HttpClientManual;
 
 import javax.net.ssl.SSLSocket;
 
@@ -34,5 +37,33 @@ public class HttpClient implements IExtensionHttpClient {
 	@Override
 	public void prepareSSLSocket(SSLSocket sock) {
 
+	}
+
+	private com.genexus.internet.IHttpClient useHttpClientOldImplementation() {
+		com.genexus.internet.IHttpClient client = new HttpClientManual();
+		SpecificImplementation.HttpClient.initializeHttpClient(client);
+		return client;
+	}
+
+	@Override
+	public com.genexus.internet.IHttpClient initHttpClientImpl() {
+		com.genexus.internet.IHttpClient client = null;
+		try {
+
+			if (com.genexus.ResourceReader.getResourceAsStream("useoldhttpclient.txt") == null) {
+				Class.forName("org.apache.http.impl.conn.PoolingHttpClientConnectionManager");    // httpclient-4.5.14.jar dectected by reflection
+				client = new HttpClientJavaLib();
+			} else
+				client = useHttpClientOldImplementation();
+
+		} catch (ClassNotFoundException e) {
+
+			client = useHttpClientOldImplementation();
+
+		} finally {
+
+			return client;
+
+		}
 	}
 }
