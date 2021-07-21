@@ -1,5 +1,7 @@
 package com.genexus.db.driver;
 
+import com.genexus.CommonUtil;
+
 public class ExternalProviderCommon {
 
 	public static String getProviderObjectName(ExternalProvider provider, String objectNameOrUrl)
@@ -14,6 +16,14 @@ public class ExternalProviderCommon {
 			}
 		}
 		return providerObjectName;
+	}
+
+	public static String getProviderObjectNameOrRelative(ExternalProvider provider, String objectNameOrUrl)
+	{
+		if (!CommonUtil.isAbsoluteURL(objectNameOrUrl)){
+			return objectNameOrUrl;
+		}
+		return  getProviderObjectName(provider, objectNameOrUrl);
 	}
 
 	public static String getProviderObjectAbsoluteUriSafe(ExternalProvider provider, String rawObjectUri)
