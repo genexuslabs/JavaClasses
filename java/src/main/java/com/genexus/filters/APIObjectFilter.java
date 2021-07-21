@@ -30,7 +30,6 @@ public class APIObjectFilter extends Filter {
             boolean isPath = appPath.contains(urlString);
             if(isPath)
             {
-                //String originalURI = httpRequest.getRequestURI();
                 String fwdURI = "/rest/" + path;
 				httpRequest.getRequestDispatcher(fwdURI).forward(request,response);
             }
@@ -45,20 +44,23 @@ public class APIObjectFilter extends Filter {
         }
     }
 
-    public void init(Map<String, String> headers, String path, String sessionCookieName) throws ServletException {
+    public void init(Map<String, String> headers, String path, String sessionCookieName) throws ServletException {        
         try {
             String paramValue = headers.get("BasePath");
             if (paramValue != null && !paramValue.isEmpty())
-            {
-                logger.info("API basepath parameter: " +  paramValue) ;
+            {                
                 if (paramValue.equals("*"))
-                {
-                    String privPath = path;
-                    if (privPath != null &&  !privPath.isEmpty())
-                        paramValue  = privPath + "private";
-                                            
+                {                    
+                    if (path != null &&  !path.isEmpty())
+                    {                        
+                        paramValue  = path + "private";                        
+                        Path privateFolder = Paths.get(paramValue);
+                        if (!Files.exists(privateFolder)){
+                            paramValue  = path + "WEB-INF" + File.separator + "private";
+                        }
+                    }
                 }
-                logger.info("API metadata path: " +  paramValue) ;            
+                logger.info("API metadata path: " +  paramValue) ; 
                 Stream<Path> walk = Files.walk(Paths.get(paramValue + File.separator)); 
                 List<String> result = walk.map(x -> x.toString()).filter(f -> f.endsWith(".grp.json")).collect(Collectors.toList());
                 for (String temp : result)
@@ -71,10 +73,14 @@ public class APIObjectFilter extends Filter {
                     }
                     catch(IOException e)
                     {
-                        logger.error("Exception in API Filter: ", e);            	        
+                        logger.error("Exception in API Filter: ", e);  
                     }
                 }        
-            }        
+            }
+            else
+            {
+                logger.info("API base path invalid.") ; 
+            }
         } 
         catch (Exception e) {
             logger.error("Exception in API Filter: ", e);            	        
