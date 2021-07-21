@@ -79,7 +79,7 @@ public class APIObjectFilter extends Filter {
             }
             else
             {
-                logger.info("API base path invalid.") ; 
+                logger.info("API base path invalid.");
             }
         } 
         catch (Exception e) {
