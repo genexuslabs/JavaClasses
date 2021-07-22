@@ -44,7 +44,7 @@ public class APIObjectFilter extends Filter {
         }
     }
 
-    public void init(Map<String, String> headers, String path, String sessionCookieName) throws ServletException {
+    public void init(Map<String, String> headers, String path, String sessionCookieName) throws ServletException {        
         try {
             String paramValue = headers.get("BasePath");
             if (paramValue != null && !paramValue.isEmpty())
@@ -52,7 +52,13 @@ public class APIObjectFilter extends Filter {
                 if (paramValue.equals("*"))
                 {                    
                     if (path != null &&  !path.isEmpty())
-                        paramValue  = path + "WEB-INF" + File.separator + "private";                                            
+                    {                        
+                        paramValue  = path + "private";                        
+                        Path privateFolder = Paths.get(paramValue);
+                        if (!Files.exists(privateFolder)){
+                            paramValue  = path + "WEB-INF" + File.separator + "private";
+                        }
+                    }
                 }
                 logger.info("API metadata path: " +  paramValue) ; 
                 Stream<Path> walk = Files.walk(Paths.get(paramValue + File.separator)); 
@@ -73,7 +79,7 @@ public class APIObjectFilter extends Filter {
             }
             else
             {
-                logger.info("API base path invalid."); 
+                logger.info("API base path invalid.");
             }
         } 
         catch (Exception e) {
