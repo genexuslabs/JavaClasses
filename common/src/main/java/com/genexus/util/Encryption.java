@@ -60,7 +60,7 @@ public class Encryption
 		if	(indexOf > 0)
 			key=  key.substring(0, indexOf);		
 		
-		if	(key.length() != 32)
+		if	(!isValidKey(key))
 			throw new InvalidGXKeyException();
 		try
 		{
@@ -77,7 +77,19 @@ public class Encryption
 			throw new InvalidGXKeyException(e.getMessage());
 		}
 	}
-
+	protected static String inverseKey(String key){
+		if	(!isValidKey(key))
+			throw new InvalidGXKeyException();
+		else {
+			int len = key.length();
+			int half = len / 2;
+			return key.substring(half, len) + key.substring(0, half);
+		}
+	}
+	private static boolean isValidKey(String key)
+	{
+		return key.length()>0 && key.length() % 2 == 0;
+	}
 	private static byte[] convertKey(String a)
 	{
 		byte[] out = new byte[a.length() / 2];
@@ -128,7 +140,7 @@ public class Encryption
 		if	(indexOf > 0)
 			key=  key.substring(0, indexOf);		
 		
-		if	(key.length() != 32)
+		if	(!isValidKey(key))
 			throw new InvalidGXKeyException();
 
 		value = CommonUtil.rtrim(value);
@@ -241,7 +253,6 @@ public class Encryption
 
 		return output;
 	}
-
    private static String toString (byte[] ba) {
       return toString(ba, 0, ba.length);
    }
