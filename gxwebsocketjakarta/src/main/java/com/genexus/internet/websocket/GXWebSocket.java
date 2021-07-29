@@ -1,11 +1,11 @@
 package com.genexus.internet.websocket;
 
-import javax.websocket.CloseReason;
-import javax.websocket.OnClose;
-import javax.websocket.OnError;
-import javax.websocket.OnMessage;
-import javax.websocket.OnOpen;
-import javax.websocket.server.ServerEndpoint;
+import jakarta.websocket.CloseReason;
+import jakarta.websocket.OnClose;
+import jakarta.websocket.OnError;
+import jakarta.websocket.OnMessage;
+import jakarta.websocket.OnOpen;
+import jakarta.websocket.server.ServerEndpoint;
 
 import com.genexus.websocket.Session;
 
@@ -23,22 +23,22 @@ public class GXWebSocket extends GXWebSocketCommon implements IGXWebSocketAsync 
 	}
 	
 	@OnOpen
-	public void OnOpen (javax.websocket.Session session) {
+	public void OnOpen (jakarta.websocket.Session session) {
 		OnOpenCommon(new Session(session));
 	}
 		
 	@OnMessage
-	public void OnMessage (String txt, javax.websocket.Session session) {
+	public void OnMessage (String txt, jakarta.websocket.Session session) {
 		OnMessageCommon(txt, new Session(session));
 	}
 
 	@OnClose
-	public void myOnClose (javax.websocket.Session session, CloseReason reason) {
+	public void myOnClose (jakarta.websocket.Session session, CloseReason reason) {
 		myOnCloseCommon(new Session(session));
 	}
 		
 	@OnError
-    public void onError(Throwable exception, javax.websocket.Session session) {
+    public void onError(Throwable exception, jakarta.websocket.Session session) {
 		onErrorCommon(exception, new Session(session));
     }
 		

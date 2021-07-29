@@ -36,6 +36,7 @@
 		<module>gxodata</module>
 		<module>gxexternalproviders</module>
 		<module>gxwebsocket</module>
+		<module>gxwebsocketjakarta</module>
 		<module>gxawsserverless</module>
 		<module>androidreports</module>
     </modules>
