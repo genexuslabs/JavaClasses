@@ -1,21 +1,20 @@
 package com.genexus.internet.websocket;
 
-import javax.websocket.Session;
-
+import com.genexus.websocket.ISession;
 
 public class GXWebSocketSession{
 	
 	private String id;
-	private Session session;
+	private ISession session;
 	
 	public String getId(){
 		return id;
 	}
-	public GXWebSocketSession(Session session){			
+	public GXWebSocketSession(ISession session){
 		id = session.getQueryString();
 		this.session = session;
 	}
-	public Session getSession()
+	public ISession getSession()
 	{
 		return session;
 	}
