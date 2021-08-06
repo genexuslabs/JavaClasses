@@ -163,6 +163,11 @@ public final class GXutil
     public static String formatDateTimeParm(Date date)
     {
         return CommonUtil.formatDateTimeParm(date);
+	}
+	
+	public static String formatDateTimeParmMS(Date date)
+    {
+        return CommonUtil.formatDateTimeParmMS(date);
     }
 
     public static String formatDateParm(Date date)
