@@ -114,7 +114,9 @@ public class HTTPResponse implements HTTPClientModuleConstants
     private String       method = null;
 
 
-    // Constructors    //@gusbro        
+    // Constructors
+    
+//@gusbro        
     HTTPResponse() { ; }
 //@gusbro\    
 

@@ -1,5 +1,7 @@
 package com.genexus;
 
+import HTTPClient.ModuleException;
+import HTTPClient.Util;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.util.*;
@@ -39,6 +41,11 @@ public final class CommonUtil
 	private static Random random;
 	private static Date nullDate;
 	private static final BitSet UnsafeChar = new BitSet(128);
+
+	private static DateFormat parse_1123;
+	private static DateFormat parse_850;
+	private static DateFormat parse_asctime;
+	private static final Object http_parse_lock  = new Object();
 
 	public static final ILogger logger = LogManager.getLogger(CommonUtil.class);
 
@@ -1308,7 +1315,7 @@ public final class CommonUtil
 			Number num = java.text.NumberFormat.getInstance().parse(value);
 			return false;
 		}
-		catch(ParseException pe)
+		catch(java.text.ParseException pe)
 		{
 			return true;
 		}
@@ -2413,7 +2420,7 @@ public final class CommonUtil
 				return dateFormat.parse(value);
 			}
 		}
-		catch (ParseException ex)
+		catch (java.text.ParseException ex)
 		{
 			return nullDate();
 		}
@@ -2844,7 +2851,7 @@ public final class CommonUtil
 					return LocalUtil.getISO8601Date(objStr);
 				else
 					return new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss zzz Z").parse(objStr);
-            } catch (ParseException ex) {
+            } catch (java.text.ParseException ex) {
                 return nullDate();
             }
         }
@@ -3248,6 +3255,127 @@ public final class CommonUtil
 
 	static final char[] hex_map =
 		{'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+
+	/**
+	 * Retrieves the value for a given header. The value is parsed as a
+	 * date; if this fails it is parsed as a long representing the number
+	 * of seconds since 12:00 AM, Jan 1st, 1970. If this also fails an
+	 * exception is thrown.
+	 * <br>Note: When sending dates use Util.httpDate().
+	 *
+	 * @param  raw_date the header value.
+	 * @return the value for the header, or null if non-existent.
+	 * @exception IllegalArgumentException if the header's value is neither a
+	 *            legal date nor a number.
+	 * @exception IOException if any exception occurs on the socket.
+	 * @exception ModuleException if any module encounters an exception.
+	 */
+	public static Date getHeaderAsDate(String raw_date)
+		throws IOException, IllegalArgumentException, com.genexus.ModuleException
+	{
+		if (raw_date == null) return null;
+
+		// asctime() format is missing an explicit GMT specifier
+		if (raw_date.toUpperCase().indexOf("GMT") == -1  &&
+			raw_date.indexOf(' ') > 0)
+			raw_date += " GMT";
+
+		Date   date;
+
+		try
+		{ date = parseHttpDate(raw_date); }
+		catch (IllegalArgumentException iae)
+		{
+			// some servers erroneously send a number, so let's try that
+			long time;
+			try
+			{ time = Long.parseLong(raw_date); }
+			catch (NumberFormatException nfe)
+			{ throw iae; }	// give up
+			if (time < 0)  time = 0;
+			date = new Date(time * 1000L);
+		}
+
+		return date;
+	}
+
+	/**
+	 * Parse the http date string. java.util.Date will do this fine, but
+	 * is deprecated, so we use SimpleDateFormat instead.
+	 *
+	 * @param dstr  the date string to parse
+	 * @return the Date object
+	 */
+	final static Date parseHttpDate(String dstr)
+	{
+		synchronized (http_parse_lock)
+		{
+			if (parse_1123 == null)
+				setupParsers();
+		}
+
+		try
+		{ return parse_1123.parse(dstr); }
+		catch (java.text.ParseException pe)
+		{ }
+		try
+		{ return parse_850.parse(dstr); }
+		catch (java.text.ParseException pe)
+		{ }
+		try
+		{ return parse_asctime.parse(dstr); }
+		catch (java.text.ParseException pe)
+		{ throw new IllegalArgumentException(pe.toString()); }
+	}
+
+	private static final void setupParsers()
+	{
+		parse_1123 =
+			new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US);
+		parse_850 =
+			new SimpleDateFormat("EEEE, dd-MMM-yy HH:mm:ss 'GMT'", Locale.US);
+		parse_asctime =
+			new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy", Locale.US);
+
+		parse_1123.setTimeZone(new SimpleTimeZone(0, "GMT"));
+		parse_850.setTimeZone(new SimpleTimeZone(0, "GMT"));
+		parse_asctime.setTimeZone(new SimpleTimeZone(0, "GMT"));
+
+		parse_1123.setLenient(true);
+		parse_850.setLenient(true);
+		parse_asctime.setLenient(true);
+	}
+
+	/**
+	 * Turns an array of name/value pairs into the string
+	 * "name1=value1&name2=value2&name3=value3". The names and values are
+	 * first urlencoded. This is the form in which form-data is passed to
+	 * a cgi script.
+	 *
+	 * @param pairs the array of name/value pairs
+	 * @return a string containg the encoded name/value pairs
+	 */
+	public final static String nv2query(HTTPClient.NVPair pairs[])
+	{
+		if (pairs == null)
+			return null;
+
+
+		int          idx;
+		StringBuffer qbuf = new StringBuffer();
+
+		for (idx = 0; idx < pairs.length; idx++)
+		{
+			if (pairs[idx] != null)
+				qbuf.append((pairs[idx].getName() == null ? null : URLEncode(pairs[idx].getName(),"UTF-8")) + "=" +
+					(pairs[idx].getName() == null ? null : URLEncode(pairs[idx].getValue(),"UTF-8")) + "&");
+		}
+
+		if (qbuf.length() > 0)
+			qbuf.setLength(qbuf.length()-1);	// remove trailing '&'
+
+		return qbuf.toString();
+	}
 	
 	public static byte remoteFileExists(String URLName){
 	    try {	      

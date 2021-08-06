@@ -7,8 +7,8 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-
-import HTTPClient.ParseException;
+import com.genexus.ParseException;
+import com.genexus.URI;
 import com.genexus.servlet.http.ICookie;
 import com.genexus.util.IniFile;
 import org.apache.http.*;
@@ -22,7 +22,6 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.NTCredentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.*;
-import HTTPClient.*;
 import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
@@ -148,7 +147,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		URI uri;
 		try
 		{
-			uri = new URI(url);		// En caso que la URL pasada por parametro no sea una URL valida (en este caso seria que no sea un URL absoluta), salta una excepcion en esta linea, y se continua haciendo todo el proceso con los datos ya guardados como atributos
+			uri = new com.genexus.URI(url);		// En caso que la URL pasada por parametro no sea una URL valida (en este caso seria que no sea un URL absoluta), salta una excepcion en esta linea, y se continua haciendo todo el proceso con los datos ya guardados como atributos
 			setPrevURLhost(getHost());
 			setPrevURLbaseURL(getBaseURL());
 			setPrevURLport(getPort());
@@ -402,7 +401,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 				ByteArrayEntity dataToSend;
 				if (!getIsMultipart() && getVariablesToSend().size() > 0)
-					dataToSend = new ByteArrayEntity(Codecs.nv2query(hashtableToNVPair(getVariablesToSend())).getBytes());
+					dataToSend = new ByteArrayEntity(com.genexus.CommonUtil.nv2query(hashtableToNVPair(getVariablesToSend())).getBytes());
 				else
 					dataToSend = new ByteArrayEntity(getData());
 				httpPost.setEntity(dataToSend);
@@ -545,14 +544,13 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public void getHeader(String name, java.util.Date[] value) {
-		HTTPResponse res = (HTTPClient.HTTPResponse) response;
-		if (res == null)
+		if (response == null)
 			return;
 		try
 		{
-			value[0] = res.getHeaderAsDate(name);
+			value[0] = com.genexus.CommonUtil.getHeaderAsDate(response.getFirstHeader(name).getValue());
 		}
-		catch (IOException | ModuleException e)
+		catch (IOException | com.genexus.ModuleException e)
 		{
 			setExceptionsCatch(e);
 		}
