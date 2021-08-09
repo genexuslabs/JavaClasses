@@ -401,7 +401,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 				ByteArrayEntity dataToSend;
 				if (!getIsMultipart() && getVariablesToSend().size() > 0)
-					dataToSend = new ByteArrayEntity(com.genexus.CommonUtil.nv2query(hashtableToNVPair(getVariablesToSend())).getBytes());
+					dataToSend = new ByteArrayEntity(com.genexus.CommonUtil.hashtable2query(getVariablesToSend()).getBytes());
 				else
 					dataToSend = new ByteArrayEntity(getData());
 				httpPost.setEntity(dataToSend);
@@ -550,7 +550,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		{
 			value[0] = com.genexus.CommonUtil.getHeaderAsDate(response.getFirstHeader(name).getValue());
 		}
-		catch (IOException | com.genexus.ModuleException e)
+		catch (IOException e)
 		{
 			setExceptionsCatch(e);
 		}

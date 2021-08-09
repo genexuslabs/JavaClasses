@@ -1,7 +1,5 @@
 package com.genexus;
 
-import HTTPClient.ModuleException;
-import HTTPClient.Util;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.util.*;
@@ -3268,10 +3266,9 @@ public final class CommonUtil
 	 * @exception IllegalArgumentException if the header's value is neither a
 	 *            legal date nor a number.
 	 * @exception IOException if any exception occurs on the socket.
-	 * @exception ModuleException if any module encounters an exception.
 	 */
 	public static Date getHeaderAsDate(String raw_date)
-		throws IOException, IllegalArgumentException, com.genexus.ModuleException
+		throws IOException, IllegalArgumentException
 	{
 		if (raw_date == null) return null;
 
@@ -3347,28 +3344,24 @@ public final class CommonUtil
 	}
 
 	/**
-	 * Turns an array of name/value pairs into the string
+	 * Turns an hashtable of name/value pairs into the string
 	 * "name1=value1&name2=value2&name3=value3". The names and values are
 	 * first urlencoded. This is the form in which form-data is passed to
 	 * a cgi script.
 	 *
-	 * @param pairs the array of name/value pairs
+	 * @param hashtable is Hashtable
 	 * @return a string containg the encoded name/value pairs
 	 */
-	public final static String nv2query(HTTPClient.NVPair pairs[])
+	public final static String hashtable2query(Hashtable hashtable)
 	{
-		if (pairs == null)
+		if (hashtable == null)
 			return null;
 
-
-		int          idx;
 		StringBuffer qbuf = new StringBuffer();
-
-		for (idx = 0; idx < pairs.length; idx++)
-		{
-			if (pairs[idx] != null)
-				qbuf.append((pairs[idx].getName() == null ? null : URLEncode(pairs[idx].getName(),"UTF-8")) + "=" +
-					(pairs[idx].getName() == null ? null : URLEncode(pairs[idx].getValue(),"UTF-8")) + "&");
+		for (Enumeration en = hashtable.keys(); en.hasMoreElements();) {
+			Object key = en.nextElement();
+			qbuf.append((key == null ? null : URLEncode((String)key,"UTF-8")) + "=" +
+				(key == null ? null : URLEncode((String)hashtable.get(key),"UTF-8")) + "&");
 		}
 
 		if (qbuf.length() > 0)
