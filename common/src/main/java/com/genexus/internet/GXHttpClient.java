@@ -1,13 +1,10 @@
 package com.genexus.internet;
 
-import HTTPClient.NVPair;
 import HTTPClient.ParseException;
 import HTTPClient.URI;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
-
 import java.io.*;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -717,20 +714,6 @@ public abstract class GXHttpClient implements IHttpClient{
 
 	public void setAuthorizationProxyChanged(boolean authorizationProxyChanged) {
 		this.authorizationProxyChanged = authorizationProxyChanged;
-	}
-
-	protected NVPair[] hashtableToNVPair(Hashtable hashtable)
-	{
-		NVPair[] ret = new NVPair[hashtable.size()];
-		int idx = 0;
-
-		for (Enumeration en = hashtable.keys(); en.hasMoreElements();)
-		{
-			Object key = en.nextElement();
-			ret[idx++] = new NVPair((String) key, (String) hashtable.get(key));
-		}
-
-		return ret;
 	}
 
 	public boolean getProxyInfoChanged() {
