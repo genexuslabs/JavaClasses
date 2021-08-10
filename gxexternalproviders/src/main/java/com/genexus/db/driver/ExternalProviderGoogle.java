@@ -244,7 +244,7 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 		CopyWriter copyWriter = blob.copyTo(this.bucket, newName);
 		Blob copiedBlob = copyWriter.getResult();
 		setBlobAcl(copiedBlob.getBlobId(), acl);
-		return getResourceUrl(copiedBlob, acl, defaultExpirationMinutes);
+		return url + StorageUtils.encodeName(newName);
 	}
 
 	public String copy(String objectUrl, String newName, String tableName, String fieldName, ResourceAccessControlList acl) {
@@ -258,7 +258,7 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 				CopyWriter copyWriter = blob.copyTo(bucket, resourceKey);
 				Blob copiedBlob = copyWriter.getResult();
 				setBlobAcl(copiedBlob.getBlobId(), acl);
-				return getResourceUrl(copiedBlob, acl, defaultExpirationMinutes);
+				return url + StorageUtils.encodeName(resourceKey);
 			} catch (Exception ex) {
 				logger.error("Error saving file to external provider", ex.getMessage());
 				return "";
