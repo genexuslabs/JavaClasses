@@ -206,7 +206,7 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 	private String getResourceUrl(BlobInfo blobInfo, ResourceAccessControlList acl, int expirationMinutes){
 		if (isPrivateResource(acl)){
 			expirationMinutes = expirationMinutes > 0 ? expirationMinutes: defaultExpirationMinutes;
-			return storageClient.signUrl(blobInfo, expirationMinutes, TimeUnit.MINUTES, Storage.SignUrlOption.withV4Signature()).toString();
+			return storageClient.signUrl(blobInfo, expirationMinutes, TimeUnit.MINUTES, Storage.SignUrlOption.withV4Signature(), Storage.SignUrlOption.withVirtualHostedStyle()).toString();
 		}
 		else {
 			return url + StorageUtils.encodeName(blobInfo.getName());
@@ -244,7 +244,7 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 		CopyWriter copyWriter = blob.copyTo(this.bucket, newName);
 		Blob copiedBlob = copyWriter.getResult();
 		setBlobAcl(copiedBlob.getBlobId(), acl);
-		return url + StorageUtils.encodeName(newName);
+		return getResourceUrl(copiedBlob, acl, defaultExpirationMinutes);
 	}
 
 	public String copy(String objectUrl, String newName, String tableName, String fieldName, ResourceAccessControlList acl) {
@@ -258,7 +258,7 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 				CopyWriter copyWriter = blob.copyTo(bucket, resourceKey);
 				Blob copiedBlob = copyWriter.getResult();
 				setBlobAcl(copiedBlob.getBlobId(), acl);
-				return url + StorageUtils.encodeName(resourceKey);
+				return getResourceUrl(copiedBlob, acl, defaultExpirationMinutes);
 			} catch (Exception ex) {
 				logger.error("Error saving file to external provider", ex.getMessage());
 				return "";
