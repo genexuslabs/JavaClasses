@@ -772,6 +772,7 @@ public abstract class GXHttpClient implements IHttpClient{
 			}
 		}
 		String getHeaderTemplate(String name, String fileName, String mimeType){
+			fileName = new File(fileName).getName();
 			return "Content-Disposition: form-data; name=\""+ name + "\"; filename=\""+ fileName + "\"\r\n" + "Content-Type: " + mimeType + "\r\n\r\n";
 		}
 		String getFormDataTemplate(String varName, String value){
