@@ -28,6 +28,7 @@ public class Encryption
 	public static String AJAX_SECURITY_TOKEN = "AJAX_SECURITY_TOKEN";
 	public static String GX_AJAX_PRIVATE_KEY = "595D54FF4A612E69FF4F3FFFFF0B01FF";
 	public static String GX_AJAX_PRIVATE_IV = "8722E2EA52FD44F599D35D1534485D8E";
+	private static int[] VALID_KEY_LENGHT_IN_BYTES = new int[]{32, 48, 64};
 
 	static public class InvalidGXKeyException extends RuntimeException
 	{
@@ -63,9 +64,9 @@ public class Encryption
 	{
 		int indexOf = key.lastIndexOf('.');
 		if	(indexOf > 0)
-			key=  key.substring(0, indexOf);
-
-		if	(key.length() != 32)
+			key=  key.substring(0, indexOf);		
+		
+		if	(!isValidKey(key))
 			throw new InvalidGXKeyException();
 		try
 		{
@@ -85,6 +86,27 @@ public class Encryption
 			System.err.println(e);
 			throw new InvalidGXKeyException(e.getMessage());
 		}
+	}
+	protected static String inverseKey(String key){
+		if	(!isValidKey(key))
+			throw new InvalidGXKeyException();
+		else {
+			int len = key.length();
+			int half = len / 2;
+			return key.substring(half, len) + key.substring(0, half);
+		}
+	}
+	private static boolean isValidKey(String key)
+	{
+		int len = key.length();
+		if (len>0) {
+			for (int x : VALID_KEY_LENGHT_IN_BYTES) {
+				if (x == len) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	private static byte[] convertKey(String a)
@@ -139,9 +161,9 @@ public class Encryption
 	{
 		int indexOf = key.lastIndexOf('.');
 		if	(indexOf > 0)
-			key=  key.substring(0, indexOf);
-
-		if	(key.length() != 32)
+			key=  key.substring(0, indexOf);		
+		
+		if	(!isValidKey(key))
 			throw new InvalidGXKeyException();
 
 		value = CommonUtil.rtrim(value);
@@ -260,7 +282,6 @@ public class Encryption
 
 		return output;
 	}
-
    private static String toString (byte[] ba) {
       return toString(ba, 0, ba.length);
    }
