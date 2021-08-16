@@ -8,8 +8,8 @@
         <version>2.2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>gxwebsocket</artifactId>
-    <name>GeneXus WebSocket Server</name>
+    <artifactId>gxwebsocketjakarta</artifactId>
+    <name>GeneXus WebSocket Jakarta Server</name>
     <modelVersion>4.0.0</modelVersion>
 
     <dependencies>
@@ -19,21 +19,21 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.0.1</version>
+        		<groupId>jakarta.servlet</groupId>
+        		<artifactId>jakarta.servlet-api</artifactId>
+        		<version>5.0.0</version>
         </dependency>
         <dependency>
-            <groupId>javax.websocket</groupId>
-            <artifactId>javax.websocket-api</artifactId>
-            <version>1.1</version>
+            <groupId>jakarta.websocket</groupId>
+            <artifactId>jakarta.websocket-api</artifactId>
+            <version>2.0.0</version>
             <scope>provided</scope>
         </dependency>
 
     </dependencies>
     
 	<build>
-		<finalName>GXWebSocket</finalName>
+		<finalName>GXWebSocketJakarta</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
