@@ -267,7 +267,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 				this.httpClientBuilder.setDefaultCookieStore(cookiesToSend);    // Cookies Seteo CookieStore
 			}
 
-			if (getProxyInfoChanged()) {
+			if (getProxyInfoChanged() && !getProxyServerHost().isEmpty() && getProxyServerPort() != 0) {
 				HttpHost proxy = new HttpHost(getProxyServerHost(), getProxyServerPort());
 				this.httpClientBuilder.setRoutePlanner(new DefaultProxyRoutePlanner(proxy));
 				this.reqConfig = RequestConfig.custom()
