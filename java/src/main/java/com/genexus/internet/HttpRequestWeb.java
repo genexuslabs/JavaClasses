@@ -7,6 +7,7 @@ import java.io.Reader;
 
 import com.genexus.PrivateUtilities;
 import com.genexus.webpanels.HttpContextWeb;
+import com.genexus.ws.RestReaderInterceptor;
 
 public class HttpRequestWeb extends HttpRequest
 {
@@ -46,7 +47,14 @@ public class HttpRequestWeb extends HttpRequest
 		{
 			return messageBody;
 		}
-		
+
+		String restRequestBody = RestReaderInterceptor.requestBodyThreadLocal.get();
+		if (restRequestBody != null)
+		{
+			return restRequestBody;
+		}
+
+
 		try
 		{
 			String requestEncoding = "UTF-8";
