@@ -72,8 +72,12 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 	}
 		
 	public String getVarchar(int columnIndex) throws SQLException
-	{	
-		return this.<String>getValue(getColumnIndex(columnIndex));
+	{
+		Object result = this.<String>getValue(getColumnIndex(columnIndex));
+		if (result.getClass().getName().equals("com.genexus.GXGeospatial"))
+			return result.toString();
+		else
+			return (String) result;
 	}
 		
 	public String getString(int columnIndex, int length) throws SQLException
