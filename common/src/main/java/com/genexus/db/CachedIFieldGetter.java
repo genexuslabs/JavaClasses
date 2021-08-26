@@ -156,7 +156,7 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 		}
 		else
 		{
-			if (SpecificImplementation.Application.getModelContext() != null && SpecificImplementation.Application.getModelContext().getClientTimeZone() != null && mTimeZone != null)
+			if (SpecificImplementation.Application.getModelContext() != null && SpecificImplementation.Application.getModelContext().getClientTimeZone() != null && mTimeZone != null && !CommonUtil.resetTime(val).equals(CommonUtil.nullDate()))
 				val = CommonUtil.ConvertDateTime(val, mTimeZone, SpecificImplementation.Application.getModelContext().getClientTimeZone());
 		}
 		return val;
