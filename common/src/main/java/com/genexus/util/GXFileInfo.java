@@ -45,7 +45,7 @@ public class GXFileInfo implements IGXFileInfo {
 		return fileSource.isDirectory();
 	}
 	public boolean mkdir(){
-		return fileSource.mkdir();
+		return fileSource.mkdirs();
 	}
 	public String[] list(){
 		return fileSource.list();
