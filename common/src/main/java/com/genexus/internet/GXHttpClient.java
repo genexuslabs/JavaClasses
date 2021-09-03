@@ -94,7 +94,7 @@ public abstract class GXHttpClient implements IHttpClient{
 
 	public void setProxyServerHost(String host)
 	{
-		this.proxyHost = host.trim();
+		this.proxyHost = host == null ? host : host.trim();
 		this.proxyInfoChanged = true;
 	}
 
@@ -151,7 +151,7 @@ public abstract class GXHttpClient implements IHttpClient{
 	{
 		if(this.host == null || !this.host.equalsIgnoreCase(host))
 		{ // Si el host ha cambiado, dejo marcado para crear una nueva instancia de HTTPConnection
-			this.host = host.trim();
+			this.host = host == null ? host : host.trim();
 			this.hostChanged = true;
 
 			if (SpecificImplementation.HttpClient != null)
@@ -168,7 +168,7 @@ public abstract class GXHttpClient implements IHttpClient{
 
 	public void setWSDLURL(String WSDLURL)
 	{
-		this.WSDLURL = WSDLURL.trim();
+		this.WSDLURL = WSDLURL == null ? WSDLURL : WSDLURL.trim();
 	}
 
 	public String getWSDLURL()
@@ -178,7 +178,7 @@ public abstract class GXHttpClient implements IHttpClient{
 
 	public void setBaseURL(String baseURL)
 	{
-		this.baseURL = baseURL.trim();
+		this.baseURL = baseURL == null ? baseURL : baseURL.trim();
 		if (SpecificImplementation.HttpClient != null)
 			SpecificImplementation.HttpClient.addSDHeaders(this.host,
 				this.baseURL,
