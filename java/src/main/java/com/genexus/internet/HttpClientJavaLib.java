@@ -251,7 +251,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 	public void execute(String method, String url) {
 		resetExecParams();
 
-		url = getURLValid(url);		// Funcion genera parte del path en adelante de la URL
+		url = getURLValid(url).trim();		// Funcion genera parte del path en adelante de la URL
 
 		try {
 			CookieStore cookiesToSend = null;
