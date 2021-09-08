@@ -35,6 +35,7 @@ import java.util.GregorianCalendar;
 
 import com.genexus.*;
 import com.genexus.common.classes.IGXPreparedStatement;
+import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.internet.HttpContext;
 import com.genexus.util.GXFile;
 import com.genexus.util.GXServices;
@@ -969,9 +970,10 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		}
 		else if (blobPath.trim().length() > 0)
 		{
+			String uploadNameValue = SpecificImplementation.GXutil.getUploadNameValue(blobPath);
 			blobPath = com.genexus.GXutil.cutUploadPrefix(blobPath);
 			File file = new File(blobPath);
-			fileUri = GXDbFile.generateUri(file.getName(), !GXDbFile.hasToken(blobPath), true);
+			fileUri = GXDbFile.generateUri(uploadNameValue.isEmpty()?file.getName(): uploadNameValue, !GXDbFile.hasToken(blobPath), true);
 		}
 
 		boolean externalStorageEnabled = storageProvider != null;
