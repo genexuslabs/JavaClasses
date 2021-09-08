@@ -17,7 +17,7 @@ public class ExternalProviderCommon {
 			}
 		}
 
-		if (CommonUtil.isAbsoluteURL(objectNameOrUrl))
+		if (providerObjectName != null && CommonUtil.isAbsoluteURL(objectNameOrUrl))
 			providerObjectName = SpecificImplementation.GXutil.URLDecode(providerObjectName);
 
 		return providerObjectName;
