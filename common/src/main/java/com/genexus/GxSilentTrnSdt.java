@@ -20,6 +20,11 @@ public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 		super( context, type);
 	}
 
+	public GxSilentTrnSdt( int remoteHandle, ModelContext context, String type)
+	{
+		super( remoteHandle, context, type);
+	}
+
 	public GxSilentTrnSdt()
 	{
 		super( SpecificImplementation.Application.getModelContext(), "");
