@@ -955,6 +955,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 
 		fileName = fileName.trim();
 		blobPath = blobPath.trim();
+		String uploadNameValue = SpecificImplementation.GXutil.getUploadNameValue(blobPath);
 
 		//EMPTY BLOB
     	if (blobPath == null || blobPath.trim().length() == 0) {
@@ -970,7 +971,6 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		}
 		else if (blobPath.trim().length() > 0)
 		{
-			String uploadNameValue = SpecificImplementation.GXutil.getUploadNameValue(blobPath);
 			blobPath = com.genexus.GXutil.cutUploadPrefix(blobPath);
 			File file = new File(blobPath);
 			fileUri = GXDbFile.generateUri(uploadNameValue.isEmpty()?file.getName(): uploadNameValue, !GXDbFile.hasToken(blobPath), true);
@@ -1018,7 +1018,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 				GXFile gxFile = new GXFile(storageTargetObjectName, ResourceAccessControlList.Private); //Every temporal file is saved as private.
 				if (gxFile.exists()) {
 					// - 1. WebUpload: The URL is an External Storage URL in the Private Temp Storage Folder.
-					fileName = gxFile.getName();
+					fileName = uploadNameValue.isEmpty()? gxFile.getName(): uploadNameValue;
 					int idx = fileName.lastIndexOf("/");
 					if ((idx != -1) && (idx < fileName.length() - 1)) {
 						fileName = fileName.substring(idx + 1);
