@@ -25,7 +25,6 @@ import com.genexus.util.Codecs;
 import com.genexus.util.Encryption;
 import com.genexus.util.GXMap;
 import com.genexus.util.ThemeHelper;
-import com.genexus.webpanels.GXResourceProvider;
 import com.genexus.webpanels.GXWebObjectBase;
 import com.genexus.webpanels.WebSession;
 
@@ -932,7 +931,6 @@ public abstract class HttpContext
 		addNavigationHidden();    
 		AddThemeHidden(this.getTheme());
 		AddStylesheetsToLoad();
-		AddResourceProvider(GXResourceProvider.PROVIDER_NAME);
 		if (isSpaRequest())
 		{
 			writeTextNL("<script>gx.ajax.saveJsonResponse(" + getJSONResponse() + ");</script>");
