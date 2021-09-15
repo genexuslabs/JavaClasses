@@ -517,15 +517,6 @@ public abstract class HttpAjaxContext
           }
         }
 
-        protected void AddResourceProvider(String provider)
-        {
-            try {
-            HiddenValues.put("GX_RES_PROVIDER", provider);
-          }
-          catch (JSONException e) {
-          }
-        }
-
         protected void AddThemeHidden(String theme)
         {
           try {
