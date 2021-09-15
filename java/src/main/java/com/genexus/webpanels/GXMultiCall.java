@@ -1,34 +1,41 @@
 package com.genexus.webpanels;
 
+import java.io.InputStream;
 import java.lang.reflect.Method;
-
-import com.genexus.servlet.IServletInputStream;
 
 import com.genexus.Application;
 import com.genexus.GXutil;
+import com.genexus.GxRestService;
 import com.genexus.ModelContext;
 import com.genexus.db.Namespace;
 import com.genexus.db.UserInformation;
-import com.genexus.internet.HttpContext;
+import com.genexus.ws.rs.core.Response;
 
 import json.org.json.JSONArray;
 
-public class GXMultiCall extends GXWebObjectStub
-{	
+@javax.ws.rs.Path("/gxmulticall")
+@jakarta.ws.rs.Path("/gxmulticall")
+public class GXMultiCall extends GxRestService
+{
 	private final static String METHOD_EXECUTE = "execute";
-	
-    protected void doExecute(HttpContext context) throws Exception
+
+	@javax.ws.rs.POST
+	@jakarta.ws.rs.POST
+	@javax.ws.rs.Consumes({javax.ws.rs.core.MediaType.APPLICATION_JSON})
+	@jakarta.ws.rs.Consumes({jakarta.ws.rs.core.MediaType.APPLICATION_JSON})
+	@javax.ws.rs.Produces({javax.ws.rs.core.MediaType.APPLICATION_JSON + ";charset=UTF-8"})
+	@jakarta.ws.rs.Produces({jakarta.ws.rs.core.MediaType.APPLICATION_JSON + ";charset=UTF-8"})
+    public Object gxMultiCall() throws Exception
     {
-		new WebApplicationStartup().init(Application.gxCfg, context);		
-		context.doNotCompress(true);
-		String procName = context.GetNextPar().toLowerCase();
+		super.init( "POST" );
+		String procName = ((HttpContextWeb) context.getHttpContext()).GetNextPar().toLowerCase();
+
 		ModelContext modelContext = ModelContext.getModelContext(Application.gxCfg);
 		String appPackage = modelContext.getPackageName();
 		if (!appPackage.equals(""))
 		{
 			appPackage = appPackage + ".";
 		}
-		modelContext.setHttpContext(context);
 		
 		String restProcName = procName + "_services_rest";
 		try
@@ -37,11 +44,12 @@ public class GXMultiCall extends GXWebObjectStub
 		}
 		catch(ClassNotFoundException cnf)
 		{
-			context.sendResponseStatus(404, "");
-			return;
+			builder = Response.notFound();
+			cleanup();
+			return builder.build() ;
 		}
 		
-		String jsonStr = parsePostData(context.getRequest().getContentLength(), context.getRequest().getInputStream());
+		String jsonStr = parsePostData( ((HttpContextWeb) context.getHttpContext()).getHttpRequest().getContentLength(), ((HttpContextWeb) context.getHttpContext()).getHttpRequest().getInputStream());
 		
 		Class myClass = Class.forName(appPackage + procName);
 		Method[] methods = myClass.getMethods();
@@ -73,21 +81,12 @@ public class GXMultiCall extends GXWebObjectStub
 		}
 		
 		Application.cleanupConnection(remoteHandle);
-		
-		context.setStream();		
-		
-		try
-		{
-			context.getResponse().setContentType("application/json");
-			context.getResponse().setStatus(200);
-			context.writeText("");
-			context.getResponse().flushBuffer();
-			return;			
-		}
-		catch (Throwable e)
-		{
-			context.sendResponseStatus(404, e.getMessage());
-		}
+
+		builder = Response.okWrapped();
+		builder.type("application/json");
+		builder.entity("");
+		cleanup();
+		return builder.build() ;
     }
 	
    protected boolean IntegratedSecurityEnabled( )
@@ -98,14 +97,9 @@ public class GXMultiCall extends GXWebObjectStub
    protected int IntegratedSecurityLevel( )
    {
       return 0;
-   }   
-   
-   protected String IntegratedSecurityPermissionPrefix( )
-   {
-      return "";
    }
    
-   private String parsePostData(int len, IServletInputStream in)
+   private String parsePostData(int len, InputStream in)
    {
 	   if(len <= 0)
 		   return new String();
@@ -117,7 +111,7 @@ public class GXMultiCall extends GXWebObjectStub
 		   int offset = 0;
 		   do
 		   {
-			   int inputLen = in.getInputStream().read(postedBytes, offset, len - offset);
+			   int inputLen = in.read(postedBytes, offset, len - offset);
 			   if(inputLen <= 0)
 			   {
 				   throw new IllegalArgumentException ("err.io.short_read : length " + len + " read : " + offset + " Content: \n" + new String(postedBytes));
@@ -139,8 +133,4 @@ public class GXMultiCall extends GXWebObjectStub
 		   throw new IllegalArgumentException(e.getMessage());
 	   }
    }
-	   
-   protected void init(HttpContext context )
-   {
-   }	   
 }

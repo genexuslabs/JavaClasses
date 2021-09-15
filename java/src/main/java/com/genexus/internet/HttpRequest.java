@@ -226,6 +226,8 @@ public abstract class HttpRequest implements IHttpRequest
 
 	public abstract InputStream getInputStream() throws IOException;
 
+	public abstract int getContentLength();
+
 	public abstract String getString();
 	
 	public abstract void setSoapMessageBody(String messageBody);
