@@ -36,6 +36,7 @@ import java.util.GregorianCalendar;
 
 import com.genexus.*;
 import com.genexus.common.classes.IGXPreparedStatement;
+import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.internet.HttpContext;
 import com.genexus.util.GXFile;
 import com.genexus.util.GXServices;
@@ -951,7 +952,8 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 
     public void setGXDbFileURI(int index, String fileName, String blobPath, int length, String tableName, String fieldName) throws SQLException
     {
-		 
+		String uploadNameValue = SpecificImplementation.GXutil.getUploadNameValue(blobPath);
+
     	if (blobPath==null || blobPath.trim().length() == 0)
     	{
     		setVarchar(index, fileName, length, false);
@@ -967,7 +969,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 				{
 					blobPath = com.genexus.GXutil.cutUploadPrefix(blobPath);
 					File file = new File(blobPath);
-					fileUri = GXDbFile.generateUri(file.getName(), !GXDbFile.hasToken(blobPath), true);
+					fileUri = GXDbFile.generateUri(uploadNameValue.isEmpty()?file.getName(): uploadNameValue, !GXDbFile.hasToken(blobPath), true);
 				}
 			}
 			boolean attInExternalStorage = (tableName!=null && fieldName!=null);
@@ -1000,7 +1002,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 						GXFile gxFile = new GXFile(sourceName, true);
 						if (gxFile.exists())
 						{
-							fileName = gxFile.getName();
+							fileName = uploadNameValue.isEmpty()? gxFile.getName(): uploadNameValue;
 							int dDelimIdx = fileName.lastIndexOf("/");
 							if ( (dDelimIdx != -1) && (dDelimIdx < fileName.length() - 1) )
 							{
