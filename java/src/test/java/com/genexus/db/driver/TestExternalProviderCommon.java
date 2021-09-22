@@ -7,6 +7,8 @@ public class TestExternalProviderCommon {
 
 	@Test
 	public void testGetProviderNormalizedUrl(){
+		com.genexus.specific.java.Connect.init();
+
 		String url = "http://myhost.com/base/myresource.png";
 		String result = ExternalProviderCommon.getProviderObjectAbsoluteUriSafe(null, url);
 		assertEquals(result, url);
