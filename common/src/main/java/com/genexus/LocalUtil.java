@@ -2084,7 +2084,7 @@ public class LocalUtil
 			calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR) - 100);
 		}
 
-		return dateTime;
+		return calendar.getTime();
 	}
 
 	public String getDateTimePicture(String dateTime)
