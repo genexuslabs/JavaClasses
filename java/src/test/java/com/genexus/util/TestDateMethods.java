@@ -20,7 +20,8 @@ public class TestDateMethods {
 	public void testYearLimit(){
 		Connect.init();
 		LocalUtil localUtil = new LocalUtil('.', "MDY", "24", 30, "eng");
-		Date testDate = CommonUtil.nullDate();
+		Date testDate1 = CommonUtil.nullDate();
+		Date testDate2 = CommonUtil.nullDate();
 
 		String pattern = "dd/MM/yy";
 
@@ -28,14 +29,17 @@ public class TestDateMethods {
 		df.setTimeZone(TimeZone.getDefault());
 		try
 		{
-			testDate = localUtil.applyYearLimit(df.parse("12/12/30"), pattern);
+			testDate1 = localUtil.applyYearLimit(df.parse("12/12/30"), pattern);
+			testDate2 = localUtil.applyYearLimit(df.parse("08/05/76"), pattern);
 		}
 		catch (ParseException e)
 		{
 
 		}
 		Calendar calendar = GregorianCalendar.getInstance();
-		calendar.setTime(testDate);
+		calendar.setTime(testDate1);
 		Assert.assertTrue(calendar.get(Calendar.YEAR) == 1930);
+		calendar.setTime(testDate2);
+		Assert.assertTrue(calendar.get(Calendar.YEAR) == 1976);
 	}
 }

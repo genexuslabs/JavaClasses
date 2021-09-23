@@ -2072,16 +2072,20 @@ public class LocalUtil
 			return 	dateTime;
 		}
 
+		Calendar currentCalendar = GregorianCalendar.getInstance();
+		currentCalendar.setTime(new Date());
+
 		Calendar calendar = GregorianCalendar.getInstance();
 		calendar.setTime(dateTime);
 		if	(calendar.get(Calendar.YEAR) % 100 < firstYear2K)
 		{
-			if (calendar.get(Calendar.YEAR) < 100)
+			if (calendar.get(Calendar.YEAR) -100 < 1900 )
 				calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR) + 100);
 		}
-		else if (calendar.get(Calendar.YEAR) > 100)
+		else
 		{
-			calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR) - 100);
+			if (calendar.get(Calendar.YEAR) > currentCalendar.get(Calendar.YEAR))
+				calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR) - 100);
 		}
 
 		return calendar.getTime();
