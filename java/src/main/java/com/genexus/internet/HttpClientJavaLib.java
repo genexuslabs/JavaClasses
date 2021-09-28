@@ -249,6 +249,12 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 	}
 
+	private void addBasicAuthHeader(String user, String password, Boolean isProxy) {
+		String auth = user + ":" + password;
+		String authHeader = "Basic " + Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.ISO_8859_1));
+		addHeader(isProxy ? HttpHeaders.PROXY_AUTHORIZATION: HttpHeaders.AUTHORIZATION, authHeader);
+	}
+
 	public void execute(String method, String url) {
 		resetExecParams();
 
@@ -290,9 +296,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 				for (Enumeration en = getBasicAuthorization().elements(); en.hasMoreElements(); ) {	// No se puede hacer la autorizacion del tipo Basic con el BasicCredentialsProvider porque esta funcionando bien en todos los casos
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-					String auth = p.user + ":" + p.password;
-					String authHeader = "Basic " + Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.ISO_8859_1));
-					addHeader(HttpHeaders.AUTHORIZATION, authHeader);
+					addBasicAuthHeader(p.user,p.password,false);
 				}
 
 				for (Enumeration en = getDigestAuthorization().elements(); en.hasMoreElements(); ) {
@@ -330,9 +334,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 				for (Enumeration en = getBasicProxyAuthorization().elements(); en.hasMoreElements(); ) { // No se puede hacer la autorizacion del tipo Basic con el BasicCredentialsProvider porque esta funcionando bien en todos los casos
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-					String auth = p.user + ":" + p.password;
-					String authHeader = "Basic " + Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.ISO_8859_1));
-					addHeader(HttpHeaders.PROXY_AUTHORIZATION, authHeader);
+					addBasicAuthHeader(p.user,p.password,true);
 				}
 
 				for (Enumeration en = getDigestProxyAuthorization().elements(); en.hasMoreElements(); ) {
