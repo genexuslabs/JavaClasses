@@ -3,6 +3,7 @@ package com.genexus.internet;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -16,6 +17,7 @@ import com.genexus.CommonUtil;
 import com.genexus.specific.java.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
@@ -286,11 +288,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 			if (getHostChanged() || getAuthorizationChanged()) { // Si el host cambio o si se agrego alguna credencial
 				this.credentialsProvider = new BasicCredentialsProvider();
 
-				for (Enumeration en = getBasicAuthorization().elements(); en.hasMoreElements(); ) {
+				for (Enumeration en = getBasicAuthorization().elements(); en.hasMoreElements(); ) {	// No se puede hacer la autorizacion del tipo Basic con el BasicCredentialsProvider porque esta funcionando bien en todos los casos
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-					this.credentialsProvider.setCredentials(
-						AuthScope.ANY,
-						new UsernamePasswordCredentials(p.user, p.password));
+					String auth = p.user + ":" + p.password;
+					String authHeader = "Basic " + Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.ISO_8859_1));
+					addHeader(HttpHeaders.AUTHORIZATION, authHeader);
 				}
 
 				for (Enumeration en = getDigestAuthorization().elements(); en.hasMoreElements(); ) {
@@ -326,11 +328,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 					this.credentialsProvider = new BasicCredentialsProvider();
 				}
 
-				for (Enumeration en = getBasicProxyAuthorization().elements(); en.hasMoreElements(); ) {
+				for (Enumeration en = getBasicProxyAuthorization().elements(); en.hasMoreElements(); ) { // No se puede hacer la autorizacion del tipo Basic con el BasicCredentialsProvider porque esta funcionando bien en todos los casos
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-					this.credentialsProvider.setCredentials(
-						AuthScope.ANY,
-						new UsernamePasswordCredentials(p.user, p.password));
+					String auth = p.user + ":" + p.password;
+					String authHeader = "Basic " + Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.ISO_8859_1));
+					addHeader(HttpHeaders.PROXY_AUTHORIZATION, authHeader);
 				}
 
 				for (Enumeration en = getDigestProxyAuthorization().elements(); en.hasMoreElements(); ) {
