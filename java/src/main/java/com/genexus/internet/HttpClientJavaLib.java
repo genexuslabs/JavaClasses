@@ -369,7 +369,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			url = com.genexus.CommonUtil.escapeUnsafeChars(url);
 
 			if (getSecure() == 1)   // Se completa con esquema y host
-				url = url.startsWith("https://") ? url : "https://" + getHost() + url;		// La lib de HttpClient agrega el port
+				url = url.startsWith("https://") ? url : "https://" + getHost()+ (getPort() != 443?":"+getPort():"")+ url;		// La lib de HttpClient agrega el port
 			else
 				url = url.startsWith("http://") ? url : "http://" + getHost() + ":" + (getPort() == -1? URI.defaultPort("http"):getPort()) + url;
 
