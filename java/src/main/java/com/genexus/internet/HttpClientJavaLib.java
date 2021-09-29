@@ -17,7 +17,6 @@ import com.genexus.CommonUtil;
 import com.genexus.specific.java.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
@@ -115,6 +114,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private RequestConfig reqConfig = null;		// Atributo usado en la ejecucion del metodo (por ejemplo, httpGet, httpPost)
 	private CookieStore cookies;
 	private ByteArrayEntity entity = null;	// Para mantener el stream luego de cerrada la conexion en la lectura de la response
+	private Boolean lastAuthIsBasic = null;
+	private Boolean lastAuthProxyIsBasic = null;
 	private static IniFile clientCfg = new com.genexus.ModelContext(com.genexus.ModelContext.getModelContextPackageClass()).getPreferences().getIniFile();
 
 
@@ -137,6 +138,24 @@ public class HttpClientJavaLib extends GXHttpClient {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	@Override
+	public void addAuthentication(int type, String realm, String name, String value) {	// Metodo overriden por tratarse de forma distinta el pasaje de auth Basic y el resto
+		if (type == BASIC)
+			lastAuthIsBasic = true;
+		else
+			lastAuthIsBasic = false;
+		super.addAuthentication(type,realm,name,value);
+	}
+
+	@Override
+	public void addProxyAuthentication(int type, String realm, String name, String value) {	// Metodo overriden por tratarse de forma distinta el pasaje de auth Basic y el resto
+		if (type == BASIC)
+			lastAuthProxyIsBasic = true;
+		else
+			lastAuthProxyIsBasic = false;
+		super.addProxyAuthentication(type,realm,name,value);
 	}
 
 	private void resetStateAdapted()
@@ -250,9 +269,12 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	private void addBasicAuthHeader(String user, String password, Boolean isProxy) {
-		String auth = user + ":" + password;
-		String authHeader = "Basic " + Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.ISO_8859_1));
-		addHeader(isProxy ? HttpHeaders.PROXY_AUTHORIZATION: HttpHeaders.AUTHORIZATION, authHeader);
+		Boolean typeAuth = isProxy ? this.lastAuthProxyIsBasic : this.lastAuthIsBasic;
+		if (typeAuth) {
+			String auth = user + ":" + password;
+			String authHeader = "Basic " + Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.ISO_8859_1));
+			addHeader(isProxy ? HttpHeaders.PROXY_AUTHORIZATION : HttpHeaders.AUTHORIZATION, authHeader);
+		}
 	}
 
 	public void execute(String method, String url) {
