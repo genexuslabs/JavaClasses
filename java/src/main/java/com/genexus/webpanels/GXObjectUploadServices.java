@@ -122,7 +122,9 @@ public class GXObjectUploadServices extends GXWebObjectStub
 	protected String IntegratedSecurityPermissionPrefix( )
 	{
 		return "";
-	}   
+	}
+
+	protected String EncryptURLParameters() {return "NO";};
 
 	private String getExtension(String contentType)
 	{
