@@ -3,6 +3,7 @@ package com.genexus.internet;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -114,6 +115,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private RequestConfig reqConfig = null;		// Atributo usado en la ejecucion del metodo (por ejemplo, httpGet, httpPost)
 	private CookieStore cookies;
 	private ByteArrayEntity entity = null;	// Para mantener el stream luego de cerrada la conexion en la lectura de la response
+	private Boolean lastAuthIsBasic = null;
+	private Boolean lastAuthProxyIsBasic = null;
 	private static IniFile clientCfg = new com.genexus.ModelContext(com.genexus.ModelContext.getModelContextPackageClass()).getPreferences().getIniFile();
 
 
@@ -136,6 +139,24 @@ public class HttpClientJavaLib extends GXHttpClient {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	@Override
+	public void addAuthentication(int type, String realm, String name, String value) {	// Metodo overriden por tratarse de forma distinta el pasaje de auth Basic y el resto
+		if (type == BASIC)
+			lastAuthIsBasic = true;
+		else
+			lastAuthIsBasic = false;
+		super.addAuthentication(type,realm,name,value);
+	}
+
+	@Override
+	public void addProxyAuthentication(int type, String realm, String name, String value) {	// Metodo overriden por tratarse de forma distinta el pasaje de auth Basic y el resto
+		if (type == BASIC)
+			lastAuthProxyIsBasic = true;
+		else
+			lastAuthProxyIsBasic = false;
+		super.addProxyAuthentication(type,realm,name,value);
 	}
 
 	private void resetStateAdapted()
@@ -248,6 +269,15 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 	}
 
+	private void addBasicAuthHeader(String user, String password, Boolean isProxy) {
+		Boolean typeAuth = isProxy ? this.lastAuthProxyIsBasic : this.lastAuthIsBasic;
+		if (typeAuth) {
+			String auth = user + ":" + password;
+			String authHeader = "Basic " + Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.ISO_8859_1));
+			addHeader(isProxy ? HttpHeaders.PROXY_AUTHORIZATION : HttpHeaders.AUTHORIZATION, authHeader);
+		}
+	}
+
 	public void execute(String method, String url) {
 		resetExecParams();
 
@@ -287,11 +317,9 @@ public class HttpClientJavaLib extends GXHttpClient {
 			if (getHostChanged() || getAuthorizationChanged()) { // Si el host cambio o si se agrego alguna credencial
 				this.credentialsProvider = new BasicCredentialsProvider();
 
-				for (Enumeration en = getBasicAuthorization().elements(); en.hasMoreElements(); ) {
+				for (Enumeration en = getBasicAuthorization().elements(); en.hasMoreElements(); ) {	// No se puede hacer la autorizacion del tipo Basic con el BasicCredentialsProvider porque esta funcionando bien en todos los casos
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-					this.credentialsProvider.setCredentials(
-						AuthScope.ANY,
-						new UsernamePasswordCredentials(p.user, p.password));
+					addBasicAuthHeader(p.user,p.password,false);
 				}
 
 				for (Enumeration en = getDigestAuthorization().elements(); en.hasMoreElements(); ) {
@@ -327,11 +355,9 @@ public class HttpClientJavaLib extends GXHttpClient {
 					this.credentialsProvider = new BasicCredentialsProvider();
 				}
 
-				for (Enumeration en = getBasicProxyAuthorization().elements(); en.hasMoreElements(); ) {
+				for (Enumeration en = getBasicProxyAuthorization().elements(); en.hasMoreElements(); ) { // No se puede hacer la autorizacion del tipo Basic con el BasicCredentialsProvider porque esta funcionando bien en todos los casos
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-					this.credentialsProvider.setCredentials(
-						AuthScope.ANY,
-						new UsernamePasswordCredentials(p.user, p.password));
+					addBasicAuthHeader(p.user,p.password,true);
 				}
 
 				for (Enumeration en = getDigestProxyAuthorization().elements(); en.hasMoreElements(); ) {
@@ -369,7 +395,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			url = com.genexus.CommonUtil.escapeUnsafeChars(url);
 
 			if (getSecure() == 1)   // Se completa con esquema y host
-				url = url.startsWith("https://") ? url : "https://" + getHost() + url;		// La lib de HttpClient agrega el port
+				url = url.startsWith("https://") ? url : "https://" + getHost()+ (getPort() != 443?":"+getPort():"")+ url;		// La lib de HttpClient agrega el port
 			else
 				url = url.startsWith("http://") ? url : "http://" + getHost() + ":" + (getPort() == -1? URI.defaultPort("http"):getPort()) + url;
 

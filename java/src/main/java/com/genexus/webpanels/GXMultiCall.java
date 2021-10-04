@@ -98,6 +98,8 @@ public class GXMultiCall extends GxRestService
    {
       return 0;
    }
+	
+   protected String EncryptURLParameters() {return "NO";};
    
    private String parsePostData(int len, InputStream in)
    {
