@@ -46,6 +46,8 @@ public class GXOAuthLogout extends GXWebObjectStub
 	{
 		return "";
 	}
+
+	protected String EncryptURLParameters() {return "NO";};
 	
    protected void init(HttpContext context )
    {
