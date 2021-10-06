@@ -19,7 +19,9 @@ public class agamstsauthappgetaccesstokenDummy extends GXWebObjectStub
    protected String IntegratedSecurityPermissionPrefix( )
    {
       return "";
-   }   
+   }
+
+   protected String EncryptURLParameters() {return "NO";};
    
    protected void init(HttpContext context )
    {

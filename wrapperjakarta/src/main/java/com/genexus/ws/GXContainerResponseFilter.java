@@ -13,7 +13,7 @@ public class GXContainerResponseFilter implements ContainerResponseFilter{
 	@Override
 	public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
 
-		if (responseContext.getStatus() == 400) {
+		if (responseContext.getStatus() == 400 && responseContext.getEntity() instanceof String) {
 			int statusCode[] = {400};
 			String reasonPhrase = "Bad Request";
 			String jsonString = WrapperUtils.getJsonFromRestExcpetion(statusCode, reasonPhrase, true, new Throwable((String)responseContext.getEntity()));

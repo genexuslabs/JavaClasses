@@ -206,7 +206,7 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 	private String getResourceUrl(BlobInfo blobInfo, ResourceAccessControlList acl, int expirationMinutes){
 		if (isPrivateResource(acl)){
 			expirationMinutes = expirationMinutes > 0 ? expirationMinutes: defaultExpirationMinutes;
-			return storageClient.signUrl(blobInfo, expirationMinutes, TimeUnit.MINUTES, Storage.SignUrlOption.withV4Signature()).toString();
+			return storageClient.signUrl(blobInfo, expirationMinutes, TimeUnit.MINUTES, Storage.SignUrlOption.withV4Signature(), Storage.SignUrlOption.withVirtualHostedStyle()).toString();
 		}
 		else {
 			return url + StorageUtils.encodeName(blobInfo.getName());

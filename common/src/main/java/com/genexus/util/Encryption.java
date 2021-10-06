@@ -5,6 +5,7 @@ import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
 import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.crypto.BlockCipher;
 import org.bouncycastle.crypto.BufferedBlockCipher;
 import org.bouncycastle.crypto.DataLengthException;
@@ -27,6 +28,7 @@ public class Encryption
 	public static String AJAX_SECURITY_TOKEN = "AJAX_SECURITY_TOKEN";
 	public static String GX_AJAX_PRIVATE_KEY = "595D54FF4A612E69FF4F3FFFFF0B01FF";
 	public static String GX_AJAX_PRIVATE_IV = "8722E2EA52FD44F599D35D1534485D8E";
+	private static int[] VALID_KEY_LENGHT_IN_BYTES = new int[]{32, 48, 64};
 
 	static public class InvalidGXKeyException extends RuntimeException
 	{
@@ -48,23 +50,31 @@ public class Encryption
 
 	public static String uriencrypt64(String value, String key)
 	{
-		return encrypt64(value, key).replace('/', '_');
+		return encrypt64(value, key, true);
 	}
 	public static String uridecrypt64(String value, String key)
 	{
-		return decrypt64(value.replace('_', '/'), key);
+		return decrypt64(value, key, true);
 	}
 	public static String encrypt64(String value, String key)
+	{
+		return encrypt64(value, key, false);
+	}
+	public static String encrypt64(String value, String key, boolean safeEncoding)
 	{
 		int indexOf = key.lastIndexOf('.');
 		if	(indexOf > 0)
 			key=  key.substring(0, indexOf);		
 		
-		if	(key.length() != 32)
+		if	(!isValidKey(key))
 			throw new InvalidGXKeyException();
 		try
 		{
-	    	return new String(Codecs.base64Encode(encrypt(value.getBytes("UTF8"), SpecificImplementation.Algorithms.twoFish_makeKey(convertKey(key)))));
+			byte[] encryptedValue = encrypt(value.getBytes("UTF8"), SpecificImplementation.Algorithms.twoFish_makeKey(convertKey(key)));
+			if (safeEncoding)
+				return new String(Base64.encodeBase64URLSafe(encryptedValue));
+			else
+				return new String(Codecs.base64Encode(encryptedValue));
 		}
 		catch(UnsupportedEncodingException e)
 		{
@@ -72,10 +82,31 @@ public class Encryption
 			throw new RuntimeException(e.getMessage());
 		}
 		catch (InvalidKeyException e)
- 		{
+		{
 			System.err.println(e);
 			throw new InvalidGXKeyException(e.getMessage());
 		}
+	}
+	protected static String inverseKey(String key){
+		if	(!isValidKey(key))
+			throw new InvalidGXKeyException();
+		else {
+			int len = key.length();
+			int half = len / 2;
+			return key.substring(half, len) + key.substring(0, half);
+		}
+	}
+	private static boolean isValidKey(String key)
+	{
+		int len = key.length();
+		if (len>0) {
+			for (int x : VALID_KEY_LENGHT_IN_BYTES) {
+				if (x == len) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	private static byte[] convertKey(String a)
@@ -124,21 +155,31 @@ public class Encryption
 
 	public static String decrypt64(String value, String key)
 	{
+		return decrypt64(value, key, false);
+	}
+	public static String decrypt64(String value, String key, boolean safeEncoding)
+	{
 		int indexOf = key.lastIndexOf('.');
 		if	(indexOf > 0)
 			key=  key.substring(0, indexOf);		
 		
-		if	(key.length() != 32)
+		if	(!isValidKey(key))
 			throw new InvalidGXKeyException();
 
 		value = CommonUtil.rtrim(value);
 
 		try
 		{
-	    	return CommonUtil.rtrim(new String(decrypt(Codecs.base64Decode(value.getBytes()), SpecificImplementation.Algorithms.twoFish_makeKey(convertKey(key))), "UTF8"));
+			byte[] decoded;
+			if (safeEncoding)
+				decoded = Base64.decodeBase64(value);
+			else
+				decoded = Codecs.base64Decode(value.getBytes());
+
+			return CommonUtil.rtrim(new String(decrypt(decoded, SpecificImplementation.Algorithms.twoFish_makeKey(convertKey(key))), "UTF8"));
 		}
 		catch (InvalidKeyException e)
- 		{
+		{
 			System.err.println(e);
 			throw new InvalidGXKeyException(e.getMessage());
 		}
@@ -148,7 +189,7 @@ public class Encryption
 			throw new RuntimeException(e.getMessage());
 		}
 		catch (ArrayIndexOutOfBoundsException e)
- 		{
+		{
 			return "";
 		}
 	}
@@ -241,7 +282,6 @@ public class Encryption
 
 		return output;
 	}
-
    private static String toString (byte[] ba) {
       return toString(ba, 0, ba.length);
    }

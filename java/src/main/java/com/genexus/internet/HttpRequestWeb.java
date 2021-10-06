@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.Reader;
 
 import com.genexus.PrivateUtilities;
+import com.genexus.WrapperUtils;
 import com.genexus.webpanels.HttpContextWeb;
 
 public class HttpRequestWeb extends HttpRequest
@@ -45,6 +46,12 @@ public class HttpRequestWeb extends HttpRequest
 		if (messageBody != null)
 		{
 			return messageBody;
+		}
+
+		String restRequestBody = WrapperUtils.requestBodyThreadLocal.get();
+		if (restRequestBody != null)
+		{
+			return restRequestBody;
 		}
 		
 		try
