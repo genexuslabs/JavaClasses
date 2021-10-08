@@ -2,14 +2,13 @@ package com.genexus.internet;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import com.genexus.ParseException;
-import com.genexus.URI;
 import com.genexus.servlet.http.ICookie;
 import com.genexus.util.IniFile;
 import org.apache.http.*;
@@ -164,31 +163,52 @@ public class HttpClientJavaLib extends GXHttpClient {
 		getheadersToSend().clear();
 	}
 
-	private String getURLValid(String url) {
-		URI uri;
+	@Override
+	public void setURL(String stringURL) {
 		try
 		{
-			uri = new com.genexus.URI(url);		// En caso que la URL pasada por parametro no sea una URL valida (en este caso seria que no sea un URL absoluta), salta una excepcion en esta linea, y se continua haciendo todo el proceso con los datos ya guardados como atributos
-			setPrevURLhost(getHost());
-			setPrevURLbaseURL(getBaseURL());
-			setPrevURLport(getPort());
-			setPrevURLsecure(getSecure());
-			setIsURL(true);
-			setURL(url);
-
-			StringBuilder relativeUri = new StringBuilder();
-			if (uri.getPath() != null) {
-				relativeUri.append(uri.getPath());
-			}
-			if (uri.getQueryString() != null) {
-				relativeUri.append('?').append(uri.getQueryString());
-			}
-			if (uri.getFragment() != null) {
-				relativeUri.append('#').append(uri.getFragment());
-			}
-			return relativeUri.toString();
+			java.net.URI url = new java.net.URI(stringURL);
+			setHost(url.getHost());
+			setPort(url.getPort());
+			setBaseURL(url.getPath());
+			setSecure(url.getScheme().equalsIgnoreCase("https") ? 1 : 0);
 		}
-		catch (ParseException e)
+		catch (URISyntaxException e)
+		{
+			System.err.println("E " + e + " " + stringURL);
+			e.printStackTrace();
+		}
+	}
+
+	private String getURLValid(String url) {
+		java.net.URI uri;
+		try
+		{
+			uri = new java.net.URI(url);
+			if (!uri.isAbsolute())		// En caso que la URL pasada por parametro no sea una URL valida (en este caso seria que no sea un URL absoluta), salta una excepcion en esta linea, y se continua haciendo todo el proceso con los datos ya guardados como atributos
+				return url;
+			else {
+				setPrevURLhost(getHost());
+				setPrevURLbaseURL(getBaseURL());
+				setPrevURLport(getPort());
+				setPrevURLsecure(getSecure());
+				setIsURL(true);
+				setURL(url);
+
+				StringBuilder relativeUri = new StringBuilder();
+				if (uri.getPath() != null) {
+					relativeUri.append(uri.getPath());
+				}
+				if (uri.getQuery() != null) {
+					relativeUri.append('?').append(uri.getQuery());
+				}
+				if (uri.getFragment() != null) {
+					relativeUri.append('#').append(uri.getFragment());
+				}
+				return relativeUri.toString();
+			}
+		}
+		catch (URISyntaxException e)
 		{
 			return url;
 		}
@@ -396,7 +416,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			if (getSecure() == 1)   // Se completa con esquema y host
 				url = url.startsWith("https://") ? url : "https://" + getHost()+ (getPort() != 443?":"+getPort():"")+ url;		// La lib de HttpClient agrega el port
 			else
-				url = url.startsWith("http://") ? url : "http://" + getHost() + ":" + (getPort() == -1? URI.defaultPort("http"):getPort()) + url;
+				url = url.startsWith("http://") ? url : "http://" + getHost() + ":" + (getPort() == -1? "80" :getPort()) + url;
 
 			httpClient = this.httpClientBuilder.build();
 
@@ -599,12 +619,12 @@ public class HttpClientJavaLib extends GXHttpClient {
 	public InputStream getInputStream(String stringURL) throws IOException
 	{
 		try {
-			URI url = new URI(stringURL);
+			java.net.URI url = new java.net.URI(stringURL);
 			HttpGet gISHttpGet = new HttpGet(String.valueOf(url));
 			CloseableHttpClient gISHttpClient = HttpClients.createDefault();
 			return gISHttpClient.execute(gISHttpGet).getEntity().getContent();
 
-		} catch (ParseException e) {
+		} catch (URISyntaxException e) {
 			throw new IOException("Malformed URL " + e.getMessage());
 		}
 	}
