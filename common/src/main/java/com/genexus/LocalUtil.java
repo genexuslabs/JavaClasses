@@ -2,7 +2,6 @@ package com.genexus;
 
 import java.util.*;
 import java.text.*;
-import java.text.ParseException;
 
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.util.GXSimpleDateFormat;
