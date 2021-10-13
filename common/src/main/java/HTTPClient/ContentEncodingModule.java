@@ -34,6 +34,7 @@ package HTTPClient;
 
 import java.io.IOException;
 import java.util.Vector;
+import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.GZIPInputStream;
 
@@ -179,7 +180,7 @@ class ContentEncodingModule implements HTTPClientModule
 	{
 	    Log.write(Log.MODS, "CEM:   pushing inflater-input-stream");
 
-	    resp.inp_stream = new InflaterInputStream(resp.inp_stream);
+	    resp.inp_stream = new InflaterInputStream(resp.inp_stream, new Inflater(true));
 	    pce.removeElementAt(pce.size()-1);
 	    resp.deleteHeader("Content-length");
 	}

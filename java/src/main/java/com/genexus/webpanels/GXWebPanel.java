@@ -388,7 +388,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			else
 			{
 				String loginObject = Application.getClientContext().getClientPreferences().getProperty("IntegratedSecurityLoginWeb", "");
-				httpContext.redirect(GXutil.getClassName(loginObject));
+				httpContext.redirect(formatLink(GXutil.getClassName(loginObject)));
 				return false;
 			}
 		}
@@ -445,8 +445,9 @@ public abstract class GXWebPanel extends GXWebObjectBase
 				httpContext.flushStream();
 			}
 		}
-		catch (Exception e)
+		catch (Throwable e)
 		{
+			handleException(e.getClass().getName(), e.getMessage(), CommonUtil.getStackTraceAsString(e));
 			cleanup(); // Antes de hacer el rethrow, hago un cleanup del objeto
 			throw e;
 		}
@@ -682,6 +683,19 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			} catch (Exception ex) {
 				logger.error("Failed to parse event metadata", ex);
 				anyError = true;
+			}
+		}
+
+		private void SetNullableScalarOrCollectionValue(JSONObject parm, Object value, JSONArray columnValues) throws JSONException, Exception
+		{
+			String nullableAttribute = parm.optString("nullAv", null);
+			if (nullableAttribute != null && value.toString().length() == 0)
+			{
+				SetScalarOrCollectionValue(nullableAttribute, null, true, null);
+			}
+			else
+			{
+				SetScalarOrCollectionValue(parm.has("av") ? parm.getString("av") : null, parm.has("prop") ? parm.getString("prop") : null, value, columnValues);
 			}
 		}
 
@@ -1005,7 +1019,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 								}
 								if (value != null)
 								{
-									SetScalarOrCollectionValue(parm.has("av") ? parm.getString("av") : null, parm.has("prop") ? parm.getString("prop") : null, value, columnValues);
+									SetNullableScalarOrCollectionValue(parm, value, columnValues);
 								}
 							}
 						}

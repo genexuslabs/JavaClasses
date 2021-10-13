@@ -22,9 +22,9 @@ public class IndexRecord
 	public IndexRecord() { }
 	public IndexRecord(String URI)
 	{
-		this(URI, "", "", "", "", new Vector());
+		this(URI, "", "", "", "", new Vector<String>());
 	}
-	public IndexRecord(String uri, String entity, String content, String title, String viewer, Vector vectorKeys)
+	public IndexRecord(String uri, String entity, String content, String title, String viewer, Vector<String> vectorKeys)
 	{
 		this.m_uri = uri;
 		this.m_entity = entity;
@@ -34,7 +34,7 @@ public class IndexRecord
 			this.m_keys = new String[vectorKeys.size()];
 			for (int i = 0; i < vectorKeys.size(); i++)
 			{
-				this.m_keys[i] = (String)vectorKeys.get(i);
+				this.m_keys[i] = vectorKeys.get(i);
 			}
 		}
 		this.m_title = title;
@@ -72,12 +72,12 @@ public class IndexRecord
 	{
 		return this.m_keys;
 	}
-	protected void setKeys(Vector vectorKeys)
+	protected void setKeys(Vector<String> vectorKeys)
 	{
 		this.m_keys = new String[vectorKeys.size()];
 		for (int i = 0; i < vectorKeys.size(); i++)
 		{
-			this.m_keys[i] = (String)vectorKeys.get(i);
+			this.m_keys[i] = vectorKeys.get(i);
 		}
 	}
 

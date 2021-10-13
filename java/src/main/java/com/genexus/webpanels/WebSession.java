@@ -1,233 +1,218 @@
 package com.genexus.webpanels;
 
 
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import com.genexus.servlet.http.IHttpServletRequest;
+import com.genexus.servlet.http.IHttpSession;
 
 import com.genexus.CommonUtil;
 import com.genexus.internet.HttpContext;
 import com.genexus.util.Encryption;
 import com.genexus.util.SubmitThreadPool;
 
-public class WebSession
-{
-	private HttpServletRequest request;
-        private Hashtable<String, Object> sessionValues;
-        private boolean invalidated;
+public class WebSession {
+	private IHttpServletRequest request;
+	private Hashtable<String, Object> sessionValues;
+	private boolean useLocalSession;
+	private static Set<String> internalKeys = new HashSet<String>(Arrays.asList(Encryption.AJAX_ENCRYPTION_KEY, HttpContext.GX_NAV_HELPER, HttpContext.GXTheme, HttpContext.GXLanguage));
 
-	public WebSession(HttpServletRequest request)
-	{
+	public WebSession(IHttpServletRequest request) {
 		this.request = request;
-                sessionValues = null;
-                updateSessionInvalidated();
+		sessionValues = null;
+		updateSessionInvalidated();
 	}
 
-	private HttpSession getSession() throws Exception
-	{
+	private IHttpSession getSession() {
 		return getSession(true);
 	}
 
-	private HttpSession getSession(boolean createIfNotExists) throws Exception
-	{
-		if (invalidated)
-			throw new Exception("WebSession is invalid");
+	private IHttpSession getSession(boolean createIfNotExists) {
+		if (useLocalSession || request == null)
+			return null;
 		return request.getSession(createIfNotExists);
 	}
 
-        private void updateSessionInvalidated()
-        {
-          invalidated = Thread.currentThread().getName().startsWith(SubmitThreadPool.SUBMIT_THREAD);
-        }
+	private void updateSessionInvalidated() {
+		useLocalSession = useLocalSession || Thread.currentThread().getName().startsWith(SubmitThreadPool.SUBMIT_THREAD) || this.request == null;
+	}
 
-        private void putHashValue(String key, Object value)
-        {
-          if (sessionValues == null)
-          {
-            sessionValues = new Hashtable<>();
-          }
-          sessionValues.put(key, value);
-        }
+	private void putHashValue(String key, Object value) {
+		if (sessionValues == null) {
+			sessionValues = new Hashtable<>();
+		}
+		sessionValues.put(key, value);
+	}
 
-        private Object getHashValue(String key)
-        {
-          if (sessionValues != null)
-          {
-            return sessionValues.get(key);
-          }
-          return null;
-        }
+	private Object getHashValue(String key) {
+		if (sessionValues != null) {
+			return sessionValues.get(key);
+		}
+		return null;
+	}
 
-        private void removeHashValue(String key)
-        {
-          if (sessionValues != null)
-          {
-            sessionValues.remove(key);
-          }
-        }
+	private void removeHashValue(String key) {
+		if (sessionValues != null) {
+			sessionValues.remove(key);
+		}
+	}
 
-        private void clearHashValues()
-        {
-          if (sessionValues != null)
-          {
-            sessionValues.clear();
-            sessionValues = null;
-          }
-        }
+	private void clearHashValues() {
+		if (sessionValues != null) {
+			sessionValues.clear();
+			sessionValues = null;
+		}
+	}
 
-        public void invalidate()
-        {
-            invalidated = true;
-        }
+	public void invalidate() {
+		useLocalSession = true;
+	}
 
-	public String getId()
-	{
-                try
-                {
-                  return getSession().getId();
-                }
-                catch(Throwable e) {} //Invalidated
+	public String getId() {
+		if (!useLocalSession) {
+			return getSession().getId();
+		}
 		return "";
 	}
 
-	public void setValue(String key, String value)
-	{
+	public void setValue(String key, String value) {
 		setAttribute(key, value);
 	}
 
-	public String getValue(String key)
-	{
+	public String getValue(String key) {
 		return getAttribute(key);
 	}
 
-	public void remove(String key)
-	{
+	public void remove(String key) {
 		removeAttribute(key);
 	}
 
-	public void setObjectAttribute(String key, Object value)
-	{
-        updateSessionInvalidated();
-        key = normalizeKey(key);
-		try
-		{
-	        getSession(true).setAttribute(key, value);
+	public void setObjectAttribute(String key, Object value) {
+		updateSessionInvalidated();
+		key = normalizeKey(key);
+		IHttpSession session = getSession(true);
+		if (useLocalSession || session == null) {
+			putHashValue(key, value);
+			return;
 		}
-		catch(Throwable e) // Invalidated
-        {
-	        putHashValue(key, value);
-        }
+		session.setAttribute(key, value);
 	}
 
-	public void setAttribute(String key, String value)
-	{
+	public void setAttribute(String key, String value) {
 		setObjectAttribute(key, value);
 	}
 
-	public String getAttribute(String key)
-	{
+	public String getAttribute(String key) {
 		Object out = getObjectAttribute(key);
-		if	(out == null)
+		if (out == null)
 			return "";
 		else
-	 		return (String)out;
+			return (String) out;
 	}
 
-	public Object getObjectAttribute(String key)
-	{
-        updateSessionInvalidated();
-        key = normalizeKey(key);
+	public Object getObjectAttribute(String key) {
+		updateSessionInvalidated();
+		key = normalizeKey(key);
 		Object out = null;
-		try
-		{
-			HttpSession session = getSession(false);
-			if (session != null)
-			{
-				out = session.getAttribute(key);				
-			}					
-		} catch (Throwable e) // Invalidated
-		{
-			out = getHashValue(key);
-        }
+		if (useLocalSession) {
+			return getHashValue(key);
+		}
+		IHttpSession session = getSession(false);
+		if (session != null) {
+			out = session.getAttribute(key);
+		}
 		return out;
 	}
 
-	public void removeAttribute(String key)
-	{
-			updateSessionInvalidated();
-                key = normalizeKey(key);
-		try
-		{
-			HttpSession session = getSession(false);
-			if (session != null)
-			{
-				session.removeAttribute(key);
-			}			
-		} catch (Throwable e) // Invalidated
-		{
+	public void removeAttribute(String key) {
+		updateSessionInvalidated();
+		key = normalizeKey(key);
+		if (useLocalSession) {
 			removeHashValue(key);
+			return;
+		}
+		IHttpSession session = getSession(false);
+		if (session != null) {
+			session.removeAttribute(key);
 		}
 	}
 
-	public void destroy()
-	{
+	public void destroy() {
 		updateSessionInvalidated();
-		try
-		{
-			HttpSession session = getSession(false);
-			if (session != null)
-			{
+		if (!useLocalSession) {
+			IHttpSession session = getSession(false);
+			if (session != null) {
 				session.invalidate();
-			}	
-		} catch (Throwable e) // Invalidated
-		{
+			}
+		} else {
 			clear();
 		}
 	}
 
-	public void clear()
-	{
+	public void renew() {
 		updateSessionInvalidated();
-		try
-		{
-			
-			HttpSession session = getSession(false);
-			if (session != null)
-			{
+		if (!useLocalSession) {
+			IHttpSession session = getSession(false);
+			if (session != null) {
+				Map<String, Object> internalValues = backupInternalKeys(session);
+				session.invalidate();
+				restoreInternalKeys(internalValues);
+			}
+		} else {
+			clear();
+		}
+	}
+	private Map<String, Object> backupInternalKeys(IHttpSession session) {
+		Map<String, Object> internalValues = new HashMap<>();
+		Enumeration e = session.getAttributeNames();
+		while (e.hasMoreElements()) {
+			String key = (String) e.nextElement();
+			if (internalKeys.contains(key)) {
+				Object value = getObjectAttribute(key);
+				if (value != null)
+					internalValues.put(key, value);
+			}
+		}
+		return internalValues;
+	}
+	private void restoreInternalKeys(Map<String, Object> internalValues) {
+		Iterator e = internalValues.keySet().iterator();
+		while (e.hasNext()) {
+			String key = (String) e.next();
+			setObjectAttribute(key, internalValues.get(key));
+		}
+	}
+
+	public void clear() {
+		updateSessionInvalidated();
+		if (!useLocalSession) {
+			IHttpSession session = getSession(false);
+			if (session != null) {
 				Vector<String> toRemove = new Vector<>();
 				Enumeration e = session.getAttributeNames();
-				while (e.hasMoreElements())
-				{
+				while (e.hasMoreElements()) {
 					String key = (String) e.nextElement();
-					if (!key.equals(Encryption.AJAX_ENCRYPTION_KEY) && !key.equals(HttpContext.GX_NAV_HELPER))
-					{
+					if (!internalKeys.contains(key)) {
 						toRemove.add(key);
 					}
 				}
 				e = toRemove.elements();
-				while (e.hasMoreElements())
-				{
+				while (e.hasMoreElements()) {
 					remove((String) e.nextElement());
 				}
 				toRemove.clear();
 			}
-		} catch (Throwable ex) // Invalidated
-		{
+		} else {
 			clearHashValues();
 		}
 	}
 
-	private String normalizeKey(String key)
-	{
+	private String normalizeKey(String key) {
 		return CommonUtil.rtrim(CommonUtil.upper(key));
 	}
 
-	public static boolean isSessionExpired(HttpServletRequest request)
-	{		
-		return request.getRequestedSessionId() != null && !request.isRequestedSessionIdValid();		    //
+	public static boolean isSessionExpired(IHttpServletRequest request) {
+		return request.getRequestedSessionId() != null && !request.isRequestedSessionIdValid();            //
 	}
 }
 

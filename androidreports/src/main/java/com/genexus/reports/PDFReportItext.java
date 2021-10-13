@@ -456,8 +456,6 @@ public class PDFReportItext implements IReportHandler
 	  catch(DocumentException de) {
             System.err.println(de.getMessage());
       }
-      document.addAuthor(Const.AUTHOR);
-      document.addCreator(Const.CREATOR);
       document.open();
     }
 
@@ -1082,15 +1080,14 @@ public class PDFReportItext implements IReportHandler
 			
 			String fontPath = getFontLocation(fontName);
 				boolean foundFont = true;
-				if (fontPath.equals(""))
-				{
-					//uk.org.retep.pdf.PDFFontDescriptor fontDescriptor = uk.org.retep.pdf.PDFFontDescriptor.getPDFFontDescriptor();
-					//fontPath = fontDescriptor.getTrueTypeFontLocation(fontName, props);
-					//if (fontPath.equals(""))
-					//{
+				if (fontPath.equals("")) {
+					String assetsFontPath = AndroidContext.ApplicationContext.getAssetsFontPath(fontName);
+					try {
+						baseFont = BaseFont.createFont(assetsFontPath, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+					} catch (Exception e) {
 						baseFont = BaseFont.createFont("Helvetica", BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
-						foundFont = false;
-					//}
+					}
+					foundFont = false;
 				}
 				if (foundFont)
 				{
@@ -1979,7 +1976,7 @@ public class PDFReportItext implements IReportHandler
 		if(!new File(docName).isAbsolute())
 		{ // Si el nombre del documento es relativo, veo si hay que agregarle el outputDir
 			//String outputDir = props.getGeneralProperty(Const.OUTPUT_FILE_DIRECTORY, "").replace(alternateSeparator, File.separatorChar).trim();
-			String outputDir = AndroidContext.ApplicationContext.getExternalFilesPath();
+			String outputDir = AndroidContext.ApplicationContext.getTemporaryFilesPath();
 			if(!outputDir.equalsIgnoreCase("") && !outputDir.equalsIgnoreCase("."))
 			{
 				if(!outputDir.endsWith(File.separator))

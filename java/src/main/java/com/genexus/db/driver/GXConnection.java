@@ -181,10 +181,20 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 
 			DatabaseMetaData dma = con.getMetaData ();
 
+			String version;
+			try
+			{
+				version = dma.getDatabaseProductVersion();
+			}
+			catch (SQLException e)
+			{
+				version = "";
+			}
+
 			log(GXDBDebug.LOG_MIN, "Connected to     : " + dma.getURL());
 			log(GXDBDebug.LOG_MIN, "                   " + dataSource.jdbcUrl);
 			log(GXDBDebug.LOG_MIN, "Connection class : " + con.getClass().getName());
-			log(GXDBDebug.LOG_MIN, "Database         : " + dma.getDatabaseProductName() + " version " + dma.getDatabaseProductVersion() );
+			log(GXDBDebug.LOG_MIN, "Database         : " + dma.getDatabaseProductName() + " version " + version);
 			log(GXDBDebug.LOG_MIN, "Driver           : " + dma.getDriverName());
 			log(GXDBDebug.LOG_MIN, "Version          : " + dma.getDriverVersion());
 			log(GXDBDebug.LOG_MIN, "GX DBMS          : " + dataSource.dbms);
@@ -997,25 +1007,41 @@ public void rollback() throws SQLException
 		state.setInAssignment(false);
 	}
 
-private void commit_impl() throws SQLException
-{
-	if(dataSource.usesJdbcDataSource() && GXJTA.isJTATX(handle, context))
-	  GXJTA.commit();
-	else
-	  dataSource.dbms.commit(con);
-}
+	private void commit_impl() throws SQLException
+	{
+		if(dataSource.usesJdbcDataSource() && GXJTA.isJTATX(handle, context))
+		  GXJTA.commit();
+		else
+		  dataSource.dbms.commit(con);
+	}
+	public void flushBatchCursors(java.lang.Object o) throws SQLException{
+		Vector<Cursor> toRemove = new Vector();
+		log(GXDBDebug.LOG_MIN, "Scanning " + batchUpdateStmts.size() + " batch Stmts with pending updates");
+		for (int i = 0; i < batchUpdateStmts.size(); i++) {
+			BatchUpdateCursor cursor = (BatchUpdateCursor) batchUpdateStmts.get(i);
+			if (cursor.isValidOwner(o)) {
+				if (cursor.pendingRecords()) {
+					cursor.beforeCommitEvent();
+				}
+				toRemove.add(cursor);
+			}
+		}
+		if (toRemove.size()>0)
+			batchUpdateStmts.removeAll(toRemove);
+	}
+	public void flushAllBatchCursors() throws SQLException{
+		log(GXDBDebug.LOG_MIN, "Scanning " + batchUpdateStmts.size() + " batch Stmts with pending updates");
+		for (int i = 0; i < batchUpdateStmts.size(); i++) {
+			BatchUpdateCursor cursor = (BatchUpdateCursor) batchUpdateStmts.get(i);
+			if (cursor.pendingRecords())
+				cursor.beforeCommitEvent();
+		}
+		batchUpdateStmts.clear();
+	}
 
     public void commit() throws SQLException
 	{
-
-            for(int i=0; i<batchUpdateStmts.size(); i++)
-            {
-                BatchUpdateCursor cursor = (BatchUpdateCursor)batchUpdateStmts.get(i);
-                if (cursor.pendingRecords()){
-                    cursor.beforeCommitEvent();
-                }
-            }
-            batchUpdateStmts.clear();
+		flushAllBatchCursors();
 
 		if	(DEBUG)
 		{

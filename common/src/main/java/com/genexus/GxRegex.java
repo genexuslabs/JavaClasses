@@ -2,6 +2,8 @@ package com.genexus;
 
 import java.util.Vector;
 import java.util.regex.*;
+
+import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.internet.*;
 
 public class  GxRegex
@@ -26,8 +28,13 @@ public class  GxRegex
 		{
 			if (txt.indexOf(CommonUtil.newLine()) > 0)
 				p = Pattern.compile(rex, Pattern.MULTILINE);
-			else
-				p = Pattern.compile(rex);
+			else {
+				if (SpecificImplementation.UseUnicodeCharacterClass)
+					p = Pattern.compile(rex, Pattern.UNICODE_CHARACTER_CLASS);
+				else
+					p = Pattern.compile(rex);
+
+			}
 		}
 		catch(PatternSyntaxException e)
 		{

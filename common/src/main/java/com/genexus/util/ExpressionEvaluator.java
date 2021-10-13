@@ -32,6 +32,7 @@ public class ExpressionEvaluator
 	short EXPRESSION_ERROR = 3;
 	short EVALUATION_ERROR = 4;
 	short EXTERNAL_FUNCTION_ERROR = 5;
+	boolean iifContext = false;
 
 	public ExpressionEvaluator(ModelContext context, int handle, String varParms)
 	{
@@ -74,6 +75,8 @@ public class ExpressionEvaluator
 	{
 		try
 		{
+			errCode = 0;
+			errDescription = "";
 			return eval(expr).getDecimal();
 		}
 		catch (IllegalArgumentException e)
@@ -178,8 +181,6 @@ public class ExpressionEvaluator
 
 	EvalValue eval(String expression)
 	{
-		errCode = 0;
-		errDescription = "";
 		if (expression == "")
 			return throwException(EXPRESSION_ERROR, "Empty expression");
 
@@ -187,7 +188,14 @@ public class ExpressionEvaluator
 		{
 			return throwException(EXPRESSION_ERROR, "The expression '" + expression + "' has unbalanced parenthesis");
 		}
-		Tokenizer tokenizer = new Tokenizer(getTokenizerExpression(expression), "'!+-/*><=" + GE + LE + AND + OR + NE, true);
+		String delim = "'!+-/*><=" + GE + LE + AND + OR + NE;
+		boolean useParentheses = false;
+		if (iifContext && (expression.contains(""+AND) || expression.contains(""+OR)))
+		{
+			delim = "" + AND + OR;
+			useParentheses = true;
+		}
+		Tokenizer tokenizer = new Tokenizer(getTokenizerExpression(expression), delim, true, useParentheses);
 		return evaluate(expression, tokenizer);
 	}
 
@@ -335,7 +343,7 @@ public class ExpressionEvaluator
 		// Hasta aqui tengo el termino a procesar
 		// Entonces, veo si lo que tengo es una expresion entre parentesis,
 		// un numero, o una funcion
-		if (token.startsWith("("))
+		if (token.startsWith("(") && token.endsWith(")"))
 		{
 			// Si es una expresion entre parentesis
 			return eval(token.substring(1, token.length() - 1).trim());
@@ -529,15 +537,19 @@ public class ExpressionEvaluator
 			catch (NoSuchElementException e)
 			{
 				return throwException(EVALUATION_ERROR, "The function " + funcName + " needs 3 arguments").getDecimal().doubleValue() ;
-			}		  
+			}
+			iifContext = true;
 			Boolean iif_result = eval(sarg1).isTrue();
+			iifContext = false;
 			if (errCode != 0)
 				return 0;
 
+			double result;
 			if(iif_result)
-				return eval(sarg2).getDecimal().doubleValue() ;
+				result = eval(sarg2).getDecimal().doubleValue() ;
 			else 
-				return eval(sarg3).getDecimal().doubleValue() ;
+				result = eval(sarg3).getDecimal().doubleValue() ;
+			return result;
 		}
 
 		return evalExternalFunctionCall(funcName, expr);		 
@@ -597,6 +609,10 @@ public class ExpressionEvaluator
 			token += tokenizer.nextToken();
 		}
 		while (!matchParentesis(token) || (token.trim().equals("") && tokenizer.hasMoreTokens()));
+		if (tokenizer.useParentheses() && !token.startsWith("(") && !token.startsWith("IIF"))
+		{
+			return "(" + token.trim() + ")";
+		}
 		return token.trim();
 	}
 
@@ -808,7 +824,15 @@ class Tokenizer
 {
 	private StringTokenizer m_Tokenizer;
 	private String m_PeekedToken;
-	
+	private boolean useParentheses;
+
+
+	public Tokenizer(String str, String delim, boolean returnDelims, boolean useParentheses)
+	{
+		this(str, delim, returnDelims);
+		this.useParentheses = useParentheses;
+	}
+
 	public Tokenizer(String str, String delim, boolean returnDelims)
 	{
 		m_Tokenizer = new StringTokenizer(str, delim, returnDelims);
@@ -851,6 +875,11 @@ class Tokenizer
 		}
 		
 		return m_Tokenizer.nextToken();
+	}
+
+	public boolean useParentheses()
+	{
+		return useParentheses;
 	}
 }
 

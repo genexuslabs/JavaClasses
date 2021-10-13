@@ -557,7 +557,7 @@ public abstract class HttpContext extends HttpAjaxContext implements IHttpContex
             }
             catch(com.genexus.util.Encryption.InvalidGXKeyException e)
             {
-                setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", 0);
+                setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", getHttpSecure());
                 com.genexus.diagnostics.Log.debug("440 Invalid encryption key");
                 sendResponseStatus(440, "Session timeout");
             }
@@ -573,7 +573,7 @@ public abstract class HttpContext extends HttpAjaxContext implements IHttpContex
             }
             catch (com.genexus.util.Encryption.InvalidGXKeyException e)
             {
-                setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", 0);
+                setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", getHttpSecure());
                 com.genexus.diagnostics.Log.debug( "440 Invalid encryption key");
                 sendResponseStatus(440, "Session timeout");
             }
@@ -586,6 +586,8 @@ public abstract class HttpContext extends HttpAjaxContext implements IHttpContex
              {
                  String key = getAjaxEncryptionKey();
                  ajax_rsp_assign_hidden(Encryption.AJAX_ENCRYPTION_KEY, key);
+                 ajax_rsp_assign_hidden(Encryption.AJAX_ENCRYPTION_IV, Encryption.GX_AJAX_PRIVATE_IV);
+
                  try
                  {
                     ajax_rsp_assign_hidden(Encryption.AJAX_SECURITY_TOKEN, Encryption.encryptRijndael(key, Encryption.GX_AJAX_PRIVATE_KEY));

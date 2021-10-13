@@ -84,8 +84,10 @@ import com.lowagie.text.pdf.PdfNumber;
 import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
 
-import uk.org.retep.pdf.PDFFont;
-import uk.org.retep.pdf.Type1FontMetrics;
+import com.genexus.reports.fonts.PDFFont;
+import com.genexus.reports.fonts.PDFFontDescriptor;
+import com.genexus.reports.fonts.Type1FontMetrics;
+import com.genexus.reports.fonts.Utilities;
 
 public class PDFReportItext implements IReportHandler
 {
@@ -431,7 +433,7 @@ public class PDFReportItext implements IReportHandler
 			DEBUG_STREAM = new PrintStream(new com.genexus.util.NullOutputStream());
 		}
 
-        uk.org.retep.pdf.Utilities.addPredefinedSearchPaths(new String[]{System.getProperty("java.awt.fonts", "c:\\windows\\fonts"),
+        Utilities.addPredefinedSearchPaths(new String[]{System.getProperty("java.awt.fonts", "c:\\windows\\fonts"),
                                            System.getProperty("com.ms.windir", "c:\\windows") + "\\fonts"});
 	}
 
@@ -457,8 +459,6 @@ public class PDFReportItext implements IReportHandler
 	  catch(DocumentException de) {
             System.err.println(de.getMessage());
       }
-      document.addAuthor(Const.AUTHOR);
-      document.addCreator(Const.CREATOR);
       document.open();
     }
 
@@ -880,7 +880,7 @@ public class PDFReportItext implements IReportHandler
 						bitmap = bitmap.replace(httpContext.getStaticContentBase(), "");
 					}				
 				
-					if(!new File(bitmap).isAbsolute() && !bitmap.toLowerCase().startsWith("http:"))
+					if (!new File(bitmap).isAbsolute() && !bitmap.toLowerCase().startsWith("http:") && !bitmap.toLowerCase().startsWith("https:"))
 					{ 
 						if (bitmap.startsWith(httpContext.getStaticContentBase()))
 						{
@@ -1077,8 +1077,7 @@ public class PDFReportItext implements IReportHandler
 				boolean foundFont = true;
 				if (fontPath.equals(""))
 				{
-					uk.org.retep.pdf.PDFFontDescriptor fontDescriptor = uk.org.retep.pdf.PDFFontDescriptor.getPDFFontDescriptor();
-					fontPath = fontDescriptor.getTrueTypeFontLocation(fontName, props);
+					fontPath = PDFFontDescriptor.getTrueTypeFontLocation(fontName, props);
 					if (fontPath.equals(""))
 					{
 						baseFont = BaseFont.createFont("Helvetica", BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
@@ -1262,8 +1261,7 @@ public class PDFReportItext implements IReportHandler
 				String fontPath = (String)locations.get(fontName);
 				if (fontPath.equals(""))
 				{
-					uk.org.retep.pdf.PDFFontDescriptor fontDescriptor = uk.org.retep.pdf.PDFFontDescriptor.getPDFFontDescriptor();
-					fontPath = fontDescriptor.getTrueTypeFontLocation(fontName, props);
+					fontPath = PDFFontDescriptor.getTrueTypeFontLocation(fontName, props);
 				}
 				if (!fontPath.equals(""))
 				{
@@ -1279,40 +1277,50 @@ public class PDFReportItext implements IReportHandler
 				}
 			}
 
-
             //Bottom y top son los absolutos, sin considerar la altura real a la que se escriben las letras.
             bottomAux = (float)convertScale(bottom);
             topAux = (float)convertScale(top);
 
             ColumnText Col = new ColumnText(cb);
+            Col.setAlignment(columnAlignment((alignment)));
+			ColumnText simulationCol = new ColumnText(null);
+			float drawingPageHeight = (float)this.pageSize.getTop() - topMargin - bottomMargin;
             //Col.setSimpleColumn(llx, lly, urx, ury);
-			Col.setSimpleColumn(leftAux + leftMargin,
-                    0,//(float)this.pageSize.getTop() - bottomAux - topMargin - bottomMargin,
-                    rightAux + leftMargin,
-                    (float)this.pageSize.getTop() - topAux - topMargin - bottomMargin);
-                                        
-			Col.setYLine((float)this.pageSize.getTop() - topAux - topMargin - bottomMargin);
+			Col.setSimpleColumn(leftAux + leftMargin,drawingPageHeight - bottomAux,rightAux + leftMargin,drawingPageHeight - topAux);
+			simulationCol.setSimpleColumn(leftAux + leftMargin,drawingPageHeight - bottomAux,rightAux + leftMargin,drawingPageHeight - topAux);
+
             try
             {
                 ArrayList objects = HTMLWorker.parseToList(new StringReader(sTxt), styles);
                 for (int k = 0; k < objects.size(); ++k)
-                    Col.addElement((Element)objects.get(k));
-            }
-            catch (Exception ex1)
-            {
-                sTxt = ex1.getMessage();
-                try
-                {
-                    ArrayList objects = HTMLWorker.parseToList(new StringReader(sTxt), styles);
-                    for (int k = 0; k < objects.size(); ++k)
-                        Col.addElement((Element)objects.get(k));
-                }
-                catch(Exception de1) {  }
-            }
+				{
+						if (pageHeightExceeded(bottomAux, drawingPageHeight))
+						{
+							simulationCol.addElement((Element)objects.get(k));
+							simulationCol.go(true);
 
-			try{
-				Col.go();
-			}catch(DocumentException de){
+							if (simulationCol.getYLine() < bottomMargin)
+							{
+								GxEndPage();
+								GxStartPage();
+								simulationCol = new ColumnText(null);
+								simulationCol.setSimpleColumn(leftAux + leftMargin,drawingPageHeight - bottomAux,rightAux + leftMargin,drawingPageHeight - topAux);
+								simulationCol.addElement((Element)objects.get(k));
+
+								Col = new ColumnText(cb);
+								Col.setAlignment(columnAlignment((alignment)));
+								Col.setSimpleColumn(leftAux + leftMargin,drawingPageHeight - bottomAux,rightAux + leftMargin,drawingPageHeight - topAux);
+
+								bottomAux = bottomAux - drawingPageHeight;
+							}
+						}
+						if (objects.get(k) instanceof Paragraph)
+							((Paragraph)objects.get(k)).setAlignment(columnAlignment(alignment));
+
+						Col.addElement((Element)objects.get(k));
+						Col.go();
+				}
+			}catch(Exception de){
 				System.out.println("ERROR printing HTML text " + de.getMessage());
 			}
 		}
@@ -1556,6 +1564,9 @@ public class PDFReportItext implements IReportHandler
 			}
 		}
     }
+    boolean pageHeightExceeded(float bottomAux, float drawingPageHeight){
+    	return bottomAux > drawingPageHeight;
+	}
 	ColumnText SimulateDrawColumnText(PdfContentByte cb, Rectangle rect, Paragraph p, float leading, int runDirection, int alignment) throws DocumentException
 	{
 		ColumnText Col = new ColumnText(cb);
@@ -1592,14 +1603,18 @@ public class PDFReportItext implements IReportHandler
 			Col.setLeading(leading, 1);
 		Col.setSimpleColumn(rect.getLeft(), rect.getBottom(), rect.getRight(), rect.getTop());
 
-		if (alignment == Element.ALIGN_JUSTIFIED)
-			Col.setAlignment(justifiedType);
-		else
-			Col.setAlignment(alignment);
+		Col.setAlignment(columnAlignment(alignment));
 		Col.addText(p);
 		Col.go();
-	}    
-    public void GxClearAttris()
+	}
+	private int columnAlignment(int alignment)
+	{
+		if (alignment == Element.ALIGN_JUSTIFIED)
+			return justifiedType;
+		else
+			return alignment;
+	}
+	public void GxClearAttris()
     {
     }
 

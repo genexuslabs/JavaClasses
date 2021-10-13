@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class GXDebugManager
 {
-    public static final short GXDEBUG_VERSION = 1;
+    public static final short GXDEBUG_VERSION = 2;
     private static final GXDebugGenId GENERATOR_ID = GXDebugGenId.JAVA;
 
     static final int PGM_INFO_NO_PARENT = 0;
@@ -37,7 +37,7 @@ public class GXDebugManager
         return instance;
     }
 
-    private static int BUFFER_INITIAL_SIZE = 16384;
+    private static int BUFFER_INITIAL_SIZE = 16383;
     private static final long TICKS_NOT_SET = Long.MAX_VALUE;
     private static final long TICKS_NOT_NEEDED = 0;
     private static String fileName = "gxperf.gxd";
@@ -245,16 +245,7 @@ public class GXDebugManager
     protected void onExit(GXDebugInfo dbgInfo)
     {
         pushSystem(GXDebugMsgCode.EXIT.toByteInt());
-        synchronized(saveLock)
-        {
-            if (toSave != null)
-            {
-                save(toSave);
-                toSave = null;
-            }
-            save(current, dbgIndex, false);
-            dbgIndex = 0;
-        }
+        save();
     }
 
     protected void onCleanup(GXDebugInfo dbgInfo)
@@ -264,9 +255,28 @@ public class GXDebugManager
         {
             if (dbgInfo.parent != null)
                 parentTable.put(dbgInfo.context.getHttpContext().getClientId(), dbgInfo.parent);
-            else parentTable.remove(dbgInfo.context.getHttpContext().getClientId());
+            else
+			{
+				parentTable.remove(dbgInfo.context.getHttpContext().getClientId());
+				if(!dbgInfo.context.isNullHttpContext())
+					save();
+			}
         }
     }
+
+    private void save()
+	{
+		synchronized(saveLock)
+		{
+			if (toSave != null)
+			{
+				save(toSave);
+				toSave = null;
+			}
+			save(current, dbgIndex, false);
+			dbgIndex = 0;
+		}
+	}
 
     private void clearDebugItem(GXDebugItem dbgItem)
     {
@@ -641,15 +651,15 @@ public class GXDebugManager
         void writeVLUInt(int value) throws IOException
         {
             if (value < 0) throw new IllegalArgumentException("Cannot handle negative values");
-            else if (value > 0x3FFFFFFFL)
-                throw new IllegalArgumentException("Cannot handle 31bit values");
+            else if (value > 0x1FFFFFFFL)
+                throw new IllegalArgumentException("Cannot handle > 29bit values");
             if (value < 0x80)
                 writeByte((byte) value);
             else if (value < 0x4000)
-                writeVLUShort((short) (((value & 0x3F80) << 1) | (value & 0x7F) | 0x80));
+                writeVLUShort((short) (value & 0x3FFF) );
             else
             {
-                writeVLUShort((short) (((value & 0x3F80) << 1) | (value & 0x7F) | 0x4080));
+                writeVLUShort((short) ((value & 0x3FFF) | 0x4000));
                 writeVLUShort((short) (value >> 14));
             }
         }

@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Properties;
@@ -21,6 +22,7 @@ import javax.mail.NoSuchProviderException;
 import javax.mail.Part;
 import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
 
 import com.genexus.common.interfaces.SpecificImplementation;
@@ -268,7 +270,13 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
   private void handlePart(Part part, GXMailMessage gxmessage) throws MessagingException, IOException 
   {
     String disposition = part.getDisposition();
-    if (part.isMimeType("text/plain")) 
+    boolean isXForwardedFor = part.getContent() instanceof MimeMessage &&		// Para soportar attachments de mails que llegan a la casilla con el header "X-Forwarded-For"
+		Arrays.stream(part.getHeader("Content-Type")).filter(header -> header.toLowerCase().startsWith("message")).findFirst().orElse(null) != null;
+
+    if (System.getProperties().getProperty("DownloadAllMailsAttachment", null) != null && isXForwardedFor)
+		handlePart((MimeMessage) part.getContent(),gxmessage);
+
+    if (part.isMimeType("text/plain"))
     {
     	gxmessage.setText(part.getContent().toString());
     } 
@@ -280,16 +288,16 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
     {
     	handleMultipart((Multipart)part.getContent(), gxmessage);
     }
-    if (disposition==null && part.isMimeType("application/octet-stream"))
+    if (disposition==null && part.isMimeType("application/*"))
     {
     	disposition = "UNKNOWN";
     }    
     if (this.downloadAttachments && (disposition!=null && (disposition.equalsIgnoreCase(Part.ATTACHMENT) || disposition.equalsIgnoreCase(Part.INLINE) || disposition.equalsIgnoreCase("UNKNOWN")))) 
     {
     	String fileName = "";
-    	if (part.getFileName() != null)
-				fileName = MimeUtility.decodeText(part.getFileName());
-			else
+		if (part.getFileName() != null || (isXForwardedFor && ((MimeMessage) part.getContent()).getFileName() != null))
+				fileName = MimeUtility.decodeText(part.getContent() instanceof MimeMessage ? ((MimeMessage) part.getContent()).getFileName() : part.getFileName());
+			else if (!(part.getContent() instanceof MimeMessage) || ((MimeMessage) part.getContent()).getFileName() == null)
 				fileName = SpecificImplementation.GXutil.getTempFileName("tmp");
 		
 		String cid = getAttachmentContentId(part);
@@ -299,9 +307,8 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
 			String newHTML = gxmessage.getHtmltext().replace(cid, fileName);
 			gxmessage.setHtmltext(newHTML);
 		}
-		
-		//fileName = Normalizer.normalize(decoded, Normalizer.Form.NFC); 
-		saveFile(fileName, part.getInputStream());
+
+		saveFile(fileName, part.getContent() instanceof MimeMessage ? ((MimeMessage) part.getContent()).getInputStream() : part.getInputStream());
 		attachs.add(attachmentsPath + fileName);
 		gxmessage.setAttachments(attachs);
     }

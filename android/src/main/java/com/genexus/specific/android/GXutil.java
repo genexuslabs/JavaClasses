@@ -109,7 +109,11 @@ public class GXutil implements IExtensionGXutil {
 
 	@Override
 	public String getRelativeURL(String path) {
-		return com.genexus.CommonUtil.getRelativeBlobFile(path);
+		String servletEnginePath = com.genexus.ApplicationContext.getInstance().getServletEngineDefaultPath();
+		if (servletEnginePath!=null && servletEnginePath.length()>0)
+			return com.genexus.CommonUtil.getRelativeBlobFile(path);
+		else
+			return path;
 	}
 
 	@Override
@@ -127,9 +131,17 @@ public class GXutil implements IExtensionGXutil {
 	}
 
 	@Override
-	public String getUploadValue(String value, String uploadValue) {
-		return uploadValue;
+	public String getUploadValue(String value) {
+		return "";
 	}
+
+	@Override
+	public String getUploadExtensionValue(String value) {
+		return "";
+	}
+
+	@Override
+	public String getUploadNameValue(String value) { return "";}
 
 	@Override
 	public Date serverNow(Object context, int handle, String dataSource) {

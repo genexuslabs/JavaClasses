@@ -2,16 +2,15 @@ package com.genexus.webpanels;
 
 import java.util.Enumeration;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.genexus.servlet.ServletException;
+import com.genexus.servlet.http.ICookie;
+import com.genexus.servlet.http.HttpServlet;
+import com.genexus.servlet.http.IHttpServletRequest;
+import com.genexus.servlet.http.IHttpServletResponse;
 
 import com.genexus.*;
 import com.genexus.db.Namespace;
 import com.genexus.diagnostics.core.ILogger;
-import com.genexus.diagnostics.core.LogManager;
 import com.genexus.internet.HttpContext;
 import com.genexus.security.GXResult;
 import com.genexus.security.GXSecurityProvider;
@@ -27,6 +26,7 @@ public abstract class GXWebObjectStub extends HttpServlet
 	protected abstract boolean IntegratedSecurityEnabled();
 	protected abstract int IntegratedSecurityLevel();
 	protected abstract String IntegratedSecurityPermissionPrefix();
+	protected abstract String EncryptURLParameters();
 
 	protected static final int SECURITY_GXOBJECT = 3;
 	protected static final int SECURITY_HIGH = 2;
@@ -34,45 +34,9 @@ public abstract class GXWebObjectStub extends HttpServlet
 
 	private static final int HTTP_RESPONSE_BUFFER_SIZE  = 131072;
 
-
-	public void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException
-	{
-		callExecute("POST", req, res);
-	}
-
-	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException
-	{
-		callExecute("GET", req, res);
-	}
-
-	public void doDelete(HttpServletRequest req, HttpServletResponse res) throws ServletException
-	{
-		callExecute("DELETE", req, res);
-	}
-
-	public void doHead(HttpServletRequest req, HttpServletResponse res) throws ServletException
-	{
-		callExecute("HEAD", req, res);
-	}
-
-	public void doOptions(HttpServletRequest req, HttpServletResponse res) throws ServletException
-	{
-		callExecute("OPTIONS", req, res);
-	}
-
-	public void doPut(HttpServletRequest req, HttpServletResponse res) throws ServletException
-	{
-		callExecute("PUT", req, res);
-	}
-
-	public void doTrace(HttpServletRequest req, HttpServletResponse res) throws ServletException
-	{
-		callExecute("TRACE", req, res);
-	}
-
 	private void dumpRequestInfo(HttpContext httpContext)
 	{
-		HttpServletRequest request = httpContext.getRequest();
+		IHttpServletRequest request = httpContext.getRequest();
 		StringBuffer sBuffer = new StringBuffer();
 		String nl = System.getProperty("line.separator");
 		sBuffer.append("Request Information");
@@ -87,7 +51,7 @@ public abstract class GXWebObjectStub extends HttpServlet
 			sBuffer.append(request.getHeader(header));
 		}
 		sBuffer.append(nl + "HttpCookies: " + nl);
-		Cookie[] cookies = httpContext.getCookies();
+		ICookie[] cookies = httpContext.getCookies();
 		if	(cookies != null)
 		{
 			for (int i = 0; i < cookies.length; i++)
@@ -100,13 +64,13 @@ public abstract class GXWebObjectStub extends HttpServlet
 		logger.debug(sBuffer.toString());
 	}
 
-	private void callExecute(String method, HttpServletRequest req, HttpServletResponse res) throws ServletException
+	protected void callExecute(String method, IHttpServletRequest req, IHttpServletResponse res) throws ServletException
 	{
 		initialize(req, res);
 		HttpContext httpContext = null;
 		try
 		{
-			String gxcfg = getServletContext().getInitParameter("gxcfg");
+			String gxcfg = getWrappedServletContext().getInitParameter("gxcfg");
 			if (gxcfg != null)
 			{
 				Class gxcfgClass = Class.forName(gxcfg);
@@ -115,7 +79,7 @@ public abstract class GXWebObjectStub extends HttpServlet
 				appContext.setServletEngine(true);
 				Application.init(gxcfgClass);
 			}
-			httpContext = new HttpContextWeb(method, req, res, getServletContext());
+			httpContext = new HttpContextWeb(method, req, res, getWrappedServletContext());
 			if (DEBUG)
 				dumpRequestInfo(httpContext);
 			boolean useAuthentication = IntegratedSecurityEnabled();
@@ -134,16 +98,26 @@ public abstract class GXWebObjectStub extends HttpServlet
 				boolean[] flag = new boolean[]{false};
 				boolean[] permissionFlag = new boolean[]{false};
 				String reqUrl = req.getRequestURL().toString();
-				String queryString = req.getQueryString();
-				if (queryString != null)
+				if (req.getMethod().equals("POST"))
 				{
-					reqUrl += "?"+queryString;
+					if (EncryptURLParameters().equals("SESSION"))
+						reqUrl = "";
+					else
+						reqUrl = req.getHeader("Referer");
+				}
+				else
+				{
+					String queryString = req.getQueryString();
+					if (queryString != null) {
+						reqUrl += "?" + queryString;
+					}
 				}
 				ModelContext modelContext = ModelContext.getModelContext(getClass());
 				modelContext.setHttpContext(httpContext);
 				ApplicationContext.getInstance().setPoolConnections(!Namespace.createNamespace(modelContext).isRemoteGXDB());
 				String loginObject = Application.getClientContext().getClientPreferences().getProperty("IntegratedSecurityLoginWeb", "");
 				loginObject = GXutil.getClassName(loginObject);
+				String loginObjectURL = URLRouter.getURLRoute(loginObject.toLowerCase(), new String[]{}, new String[]{}, httpContext.getRequest().getContextPath(), modelContext.getPackageName());
 				String permissionPrefix = IntegratedSecurityPermissionPrefix();
 				if (IntegratedSecurityLevel() == SECURITY_GXOBJECT)
 				{
@@ -174,7 +148,7 @@ public abstract class GXWebObjectStub extends HttpServlet
 					GXSecurityProvider.getInstance().checksession(-2, modelContext, reqUrl, flag);
 					if(!flag[0])
 					{
-						httpContext.redirect(loginObject.toLowerCase(), true);
+						httpContext.redirect(loginObjectURL, true);
 					}
 					else
 					{
@@ -192,13 +166,14 @@ public abstract class GXWebObjectStub extends HttpServlet
 					{
 						String notAuthorizedObject = Application.getClientContext().getClientPreferences().getProperty("IntegratedSecurityNotAuthorizedWeb", "");
 						notAuthorizedObject = GXutil.getClassName(notAuthorizedObject);
+						String notAuthorizedObjectURL = URLRouter.getURLRoute(notAuthorizedObject.toLowerCase(), new String[]{}, new String[]{}, httpContext.getRequest().getContextPath(), modelContext.getPackageName());
 						if (flag[0])
 						{
-							httpContext.redirect(notAuthorizedObject.toLowerCase(), true);
+							httpContext.redirect(notAuthorizedObjectURL, true);
 						}
 						else
 						{
-							httpContext.redirect(loginObject.toLowerCase(), true);
+							httpContext.redirect(loginObjectURL, true);
 						}
 					}
 				}
@@ -208,7 +183,8 @@ public abstract class GXWebObjectStub extends HttpServlet
 		}
 		catch (Throwable e)
 		{
-			res.reset();
+			if (!res.isCommitted())
+				res.reset();
 			logger.error("Web Execution Error", e);
 			if (DEBUG && httpContext != null)
 				dumpRequestInfo(httpContext);
@@ -216,14 +192,14 @@ public abstract class GXWebObjectStub extends HttpServlet
 		}
 	}
 
-	private void initialize(HttpServletRequest req, HttpServletResponse res) {
+	private void initialize(IHttpServletRequest req, IHttpServletResponse res) {
 		if (logger == null) {
 			logger = com.genexus.specific.java.LogManager.initialize(req.getServletContext().getRealPath("/"), GXWebObjectStub.class);
 		}
 		setResponseBufferSize(res);
 	}
 
-	private void setResponseBufferSize(HttpServletResponse res) {
+	private void setResponseBufferSize(IHttpServletResponse res) {
 		Integer bSize = 0;
 		try {
 			bSize = Application.getClientContext().getClientPreferences().getHttpBufferSize();

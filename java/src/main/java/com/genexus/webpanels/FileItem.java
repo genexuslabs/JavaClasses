@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
+import com.genexus.db.driver.ResourceAccessControlList;
 import org.apache.commons.io.IOUtils;
 
 import com.genexus.Application;
@@ -27,7 +28,7 @@ public class FileItem
 	  this(null, name, formField, fieldName, stream);
   }
 
-  public FileItem(String sourceFileName, String name, boolean formField, String fieldName, InputStream stream)
+  public FileItem(String fileOriginalName, String filePathLocation, boolean formField, String fieldName, InputStream stream)
   {
 	  this.fieldName = fieldName;
 	  this.formField = formField;
@@ -44,8 +45,8 @@ public class FileItem
   	}
   	else
   	{
-  		this.sourceFileName = sourceFileName;
-	  	gxFile = new GXFile(name, true);
+  		this.sourceFileName = fileOriginalName;
+	  	gxFile = new GXFile(filePathLocation, ResourceAccessControlList.Private);
 	  	gxFile.create(stream);
 	  }
   }

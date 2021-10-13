@@ -3,6 +3,7 @@ import java.io.*;
 import java.util.Vector;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.db.driver.ResourceAccessControlList;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.commons.io.IOCase;
 
@@ -44,7 +45,7 @@ public class GXFileInfo implements IGXFileInfo {
 		return fileSource.isDirectory();
 	}
 	public boolean mkdir(){
-		return fileSource.mkdir();
+		return fileSource.mkdirs();
 	}
 	public String[] list(){
 		return fileSource.list();
@@ -103,7 +104,7 @@ public class GXFileInfo implements IGXFileInfo {
 			for (int i = 0; i < files.length; i++) 
 			{
 				if (files[i].isFile())
-					gxfiles.add(SpecificImplementation.FileUtils.createFile(files[i].getAbsolutePath(), false, true));
+					gxfiles.add(SpecificImplementation.FileUtils.createFile(files[i].getAbsolutePath(), ResourceAccessControlList.Default, true));
 			}
 		}
 		return gxfiles;

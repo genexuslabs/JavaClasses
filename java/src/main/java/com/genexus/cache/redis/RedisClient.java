@@ -2,10 +2,10 @@ package com.genexus.cache.redis;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -29,6 +29,8 @@ import redis.clients.jedis.Pipeline;
 public class RedisClient implements ICacheService2, Closeable{
 	public static final ILogger logger = LogManager.getLogger(RedisClient.class);
 	private String keyPattern = "%s_%s_%s"; //Namespace_KEY
+	private static int UNDEFINED_PORT = -1;
+	private static int REDIS_DEFAULT_PORT = 6379;
 	private JedisPool pool;
 	private ObjectMapper objMapper; 	
 	public RedisClient() throws IOException {
@@ -39,27 +41,42 @@ public class RedisClient implements ICacheService2, Closeable{
 		objMapper = new ObjectMapper();
 		objMapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
 		objMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-	    objMapper.enable(SerializationFeature.INDENT_OUTPUT);
+		objMapper.enable(SerializationFeature.INDENT_OUTPUT);
 
 		GXService providerService = Application.getGXServices().get(GXServices.CACHE_SERVICE);
 		String addresses = providerService.getProperties().get("CACHE_PROVIDER_ADDRESS");
 		String cacheKeyPattern = providerService.getProperties().get("CACHE_PROVIDER_KEYPATTERN");
-		
+		String password = providerService.getProperties().get("CACHE_PROVIDER_PASSWORD");
+
 		if (!isNullOrEmpty(cacheKeyPattern))
 			keyPattern = cacheKeyPattern;
-		//String username = providerService.getProperties().get("CACHE_PROVIDER_USER");
-		//String password = providerService.getProperties().get("CACHE_PROVIDER_PASSWORD");
-		if (isNullOrEmpty(addresses))
-			addresses = "127.0.0.1";	
-		addresses = addresses.replace(":6379", ""); //remove default port
-		
-		pool = new JedisPool(new JedisPoolConfig(), addresses);
+
+		if (!isNullOrEmpty(addresses)){
+
+			if (!isNullOrEmpty(password)) {
+
+				addresses = "redis://:" + password.trim() + "@" + addresses.trim();
+				try {
+					URI redisUri = new URI(addresses);
+					if (redisUri.getPort()==UNDEFINED_PORT){
+						redisUri = new URI(addresses + ":" + REDIS_DEFAULT_PORT);
+					}
+					pool = new JedisPool(new JedisPoolConfig(), redisUri);
+				}catch (java.net.URISyntaxException ex){
+					logger.error("Invalid redis uri " + addresses, ex);
+				}
+			}
+		}else{
+			addresses ="127.0.0.1:" + REDIS_DEFAULT_PORT;
+		}
+		if (pool == null)
+			pool = new JedisPool(new JedisPoolConfig(), addresses);
 	}
 	
 	private boolean isNullOrEmpty(String s) {
 		return s == null || s.trim().length() == 0;
 	}
-	
+
 	private Boolean containsKey(String key) {
 		Jedis jedis = null;
 		try {

@@ -64,21 +64,10 @@ public class WebUtils
 									 (int) CommonUtil.val(valueString.substring(12, 14)));
 	}
 
-	public static String appendBaseURL(String protocol, String url)
-	{
-		String dynURL = getDynURL();
-
-		if	(dynURL.length() > 0)
-			return dynURL + url;
-
-		return protocol + url;
-	}
-
 	public static String getDynURL()
 	{
 		return PrivateUtilities.addLastChar(getSystemProperty(STATIC_DYNURL), "/");
 	}
-
 
 	public static String getSystemProperty(String property)
 	{
@@ -346,6 +335,10 @@ public class WebUtils
 								name = name.substring(index);
 							}
 						}
+						else
+						{
+							name = name.substring(name.lastIndexOf("/") + 1);
+						}
                         Object[] parmsArray = null;
                         int questIdx = name.indexOf("?");
                         int endClass = name.indexOf("_impl");
@@ -395,15 +388,16 @@ public class WebUtils
 			}
 
 			boolean endsWithSeparator = false;
-			if (parms.endsWith(",")) //Agrego un caracter al final para que el split funcione bien
+			boolean useNamedParameters = ModelContext.getModelContext().getPreferences().getProperty("UseNamedParameters", "1").equals("1") && parms.contains("=");
+			if ((parms.endsWith(",") && !useNamedParameters) || (parms.endsWith("=") && useNamedParameters)) //Agrego un caracter al final para que el split funcione bien
 			{
 				parms = parms + "_";
 				endsWithSeparator = true;
 			}
-			Object[] split = parms.split(",");
+			Object[] split = useNamedParameters? parms.split("&") : parms.split(",");
 			if (endsWithSeparator)
 			{
-				split[split.length -1] = "";
+				split[split.length -1] = useNamedParameters? "_= " : "";
 			}
 			Object[] parmsArray;
 			if (parms.endsWith(","))//Empty parameter at the end
@@ -417,8 +411,8 @@ public class WebUtils
 			}
 
 			for (int i = 0; i < split.length; i++)
-				parmsArray[i] = GXutil.URLDecode((String)split[i]);
-			
+				parmsArray[i] = useNamedParameters? GXutil.URLDecode(((String)split[i]).split("=")[1]) :GXutil.URLDecode((String)split[i]);
+
             return parmsArray;
         }
 		
@@ -502,6 +496,7 @@ public class WebUtils
 			}
 			input.close();
 			is.close();
+			rrcs.add(com.genexus.webpanels.GXMultiCall.class);
 		}
 		catch (Exception e)
 		{

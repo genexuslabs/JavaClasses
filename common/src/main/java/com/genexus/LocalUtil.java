@@ -4,7 +4,6 @@ import java.util.*;
 import java.text.*;
 
 import com.genexus.common.interfaces.SpecificImplementation;
-import com.genexus.diagnostics.Log;
 import com.genexus.util.GXSimpleDateFormat;
 public class LocalUtil
 {
@@ -1351,7 +1350,7 @@ public class LocalUtil
 		return output.toString();
 	}
 
-	String alignAndPad(String text, char pad, String picture, boolean floating, NumberFormat numberFormat)
+	String alignAndPad(String text, char pad, String picture, boolean floating, NumberFormat numberFormat, String originalPicture)
 	{
 		DecimalFormat df = (DecimalFormat) numberFormat;
 		char decimalSeparator  = df.getDecimalFormatSymbols().getDecimalSeparator();
@@ -1397,7 +1396,7 @@ public class LocalUtil
 			sText.append(pad);
 
 
-		if (floating)
+		if (floating || originalPicture.startsWith("$"))
 		{
 			return CommonUtil.ltrim(sText.toString());
 		}
@@ -1486,7 +1485,7 @@ public class LocalUtil
 			df.applyPattern(PictureFormatter.pictureToNumberFormat(withoutSuffixPicture.replace('9','0').replace('Z','#')));
 			if ( CommonUtil.in(picture, '.') || CommonUtil.in(picture, ','))
 			{
-				formatted = alignAndPad(df.format(value), '0', withoutSuffixPicture, floating, numberFormat);
+				formatted = alignAndPad(df.format(value), '0', withoutSuffixPicture, floating, numberFormat, originalPicture);
 			}
 			else
 			{
@@ -1495,7 +1494,15 @@ public class LocalUtil
 		}
 
 		if( originalPictLength > newPictLength && !floating) formatted = addSymbolsToText(formatted, originalPicture);
-		int negativeSign = (value < 0) ? 1 : 0;
+		int negativeSign = 0;
+		if (preffix.startsWith("("))
+		{
+			negativeSign = -1;
+		}
+		else if (value < 0)
+		{
+			negativeSign = 1;
+		}
 		if (floating)
 		{
 			return alignRight(preffix.substring(preffix.length() -1) + addPictureSuffix("%", originalPicture, addPicturePreffix(preffix, originalPicture, formatted)), originalPictLength + negativeSign);
@@ -1508,12 +1515,8 @@ public class LocalUtil
 
 	private String takeSymbolsFromPicture(String picture)
 	{
-		StringBuffer pictureWithoutSymbols = new StringBuffer();
-		boolean dotRemove = false;
-
-        //Si la picture tiene mas de un . entonces es considerado un simbolo mas (p.ej pictures para C.I.)
-		if (picture.lastIndexOf('.') != picture.indexOf('.'))
-			dotRemove = true;
+		StringBuffer pictureWithoutSymbols = new StringBuffer();		
+		boolean dotRemove = dotAsLiteral(picture);
 		for (int i = 0; i < picture.length(); i++)
 		{
 			char a = picture.charAt(i);
@@ -1528,30 +1531,53 @@ public class LocalUtil
 		}
 		return pictureWithoutSymbols.toString();
 	}
+	
+	private boolean dotAsLiteral(String originalPicture)
+	{
+		// If it has non-numerical characters, then the separators are used as literals
+		// to honor the positioning based on the digits and ignoring
+		// special characters like - or /. Ex: pic = "999,999-99" if the separators
+		// are not literals it is "12,345,6-78", if they are literal it is 123,456-78
+		// Same behaviour as .NET standard classes GeneXus.Utils.GXUtilsCommon.useLiteralSeparators()
+		if (originalPicture.indexOf('-') != -1 || originalPicture.indexOf('/') != -1)
+			return true;
+		
+		// If the picture has more than one point then they are considered as
+		// normal symbols (ex: pictures for C.I.)
+		if (originalPicture.lastIndexOf('.') != originalPicture.indexOf('.'))
+			return true;
+		
+		return false;
+	}
 
 	private String addSymbolsToText(String text, String originalPicture)
 	{
 		StringBuffer formattedText = new StringBuffer();
 		int textIdx = text.length() - 1;
-
-		//Si la picture tiene mas de un . entonces es considerado un simbolo mas (p.ej pictures para C.I.)
-		boolean dotAsLiteral = false;
-		if (originalPicture.lastIndexOf('.') != originalPicture.indexOf('.'))
-			dotAsLiteral = true;
-
+		
+		boolean dotAsLiteral = dotAsLiteral(originalPicture);
 		for (int i = originalPicture.length() - 1; i >= 0;)
 		{
 			char a = originalPicture.charAt(i--);
 			while( (a!='Z') && (a!='9') && (a!=',') && ((a!='.')  || (a=='.' && dotAsLiteral)) && (a!='%') && (a!=')') && (a!='('))
 			{
-				formattedText.append(a);
+				if (!(a =='+' && text.startsWith("-")))
+					formattedText.append(a);
 				if( i >= 0) a = originalPicture.charAt(i--);
 				else break;
 			}
 			if( textIdx >= 0 ) formattedText.append(text.charAt(textIdx--));
 		}
 		while( textIdx >= 0 ) formattedText.append(text.charAt(textIdx--));
-		return formattedText.reverse().toString();
+		String formattedString = formattedText.reverse().toString();
+		if (formattedString.endsWith("DB"))
+		{
+			if (formattedString.startsWith("-"))
+				formattedString = formattedString.substring(1);
+			else
+				formattedString = formattedString.replaceAll("DB", "CR");
+		}
+		return formattedString;
 	}
 
 	public String format(java.math.BigDecimal value, String picture)
@@ -1586,7 +1612,7 @@ public class LocalUtil
 		int valueStrLength = valueStr.length();
 		boolean continua = true;
 
-		if (picture.indexOf('.')==-1 && picture.indexOf(',')==-1 && picture.indexOf('Z')==-1)
+		if (picture.indexOf('.')==-1 && picture.indexOf(',')==-1 && picture.indexOf('Z')==-1 && picture.indexOf('(')==-1)
 		{
 		 for (int i = 0; i < picture.length(); i++) {
 			char a = picture.charAt(i);
@@ -1632,7 +1658,7 @@ public class LocalUtil
 			df.applyPattern(PictureFormatter.pictureToNumberFormat(withoutSuffixPicture.replace('9','0').replace('Z','#')));
 			if ( CommonUtil.in(picture, '.') || CommonUtil.in(picture, ','))
 			{
-				formatted = alignAndPad(df.format(value), '0', withoutSuffixPicture, floating, numberFormat);
+				formatted = alignAndPad(df.format(value), '0', withoutSuffixPicture, floating, numberFormat, originalPicture);
 			}
 			else
 			{
@@ -1640,7 +1666,15 @@ public class LocalUtil
 			}
 		}
 		if( originalPictLength > newPictLength && !floating) formatted = addSymbolsToText(formatted, originalPicture);
-		int negativeSign = (value.signum() == -1) ? 1 : 0;
+		int negativeSign = 0;
+		if (preffix.startsWith("("))
+		{
+			negativeSign = -1;
+		}
+		else if (value.signum() == -1)
+		{
+			negativeSign = 1;
+		}
 		if (floating)
 		{
 			return alignRight(preffix.substring(preffix.length() -1) + addPictureSuffix("%", originalPicture, addPicturePreffix(preffix, originalPicture, formatted)), originalPictLength + negativeSign);
@@ -1658,6 +1692,7 @@ public class LocalUtil
 	private String format(double value, String picture, NumberFormat numberFormat)
 	{
 		String formatted = "";
+		String originalPicture = picture;
 
 		String preffix = picturePreffix(picture);
 		if (preffix.startsWith("("))
@@ -1676,7 +1711,15 @@ public class LocalUtil
 
 		String withoutSuffixPicture = removePictureSuffix("%", removePicturePreffix(preffix,picture));
 
-		int negativeSign = (value < 0) ? 1 : 0;
+		int negativeSign = 0;
+		if (preffix.startsWith("("))
+		{
+			negativeSign = -1;
+		}
+		else if (value < 0)
+		{
+			negativeSign = 1;
+		}
 		if	(!isAllZ(picture) || value != 0)
 		{
 			DecimalFormat df = (DecimalFormat) numberFormat;
@@ -1685,11 +1728,11 @@ public class LocalUtil
 			{
 				if (floating)
 				{
-					return alignRight(preffix.substring(preffix.length() -1) + addPictureSuffix("%", picture, addPicturePreffix(preffix, picture, alignAndPad(df.format(value), '0', withoutSuffixPicture, floating, numberFormat))), picture.length()+negativeSign);
+					return alignRight(preffix.substring(preffix.length() -1) + addPictureSuffix("%", picture, addPicturePreffix(preffix, picture, alignAndPad(df.format(value), '0', withoutSuffixPicture, floating, numberFormat, originalPicture))), picture.length()+negativeSign);
 				}
 				else
 				{
-					return addPictureSuffix("%", picture, addPicturePreffix(preffix, picture, alignAndPad(df.format(value), '0', withoutSuffixPicture, floating, numberFormat)));
+					return addPictureSuffix("%", picture, addPicturePreffix(preffix, picture, alignAndPad(df.format(value), '0', withoutSuffixPicture, floating, numberFormat, originalPicture)));
 				}
 			}
 			formatted = df.format(value);
@@ -2028,19 +2071,23 @@ public class LocalUtil
 			return 	dateTime;
 		}
 
+		Calendar currentCalendar = GregorianCalendar.getInstance();
+		currentCalendar.setTime(new Date());
+
 		Calendar calendar = GregorianCalendar.getInstance();
 		calendar.setTime(dateTime);
 		if	(calendar.get(Calendar.YEAR) % 100 < firstYear2K)
 		{
-			if (calendar.get(Calendar.YEAR) < 100)
+			if (calendar.get(Calendar.YEAR) -100 < 1900 )
 				calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR) + 100);
 		}
-		else if (calendar.get(Calendar.YEAR) > 100)
+		else
 		{
-			calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR) - 100);
+			if (calendar.get(Calendar.YEAR) > currentCalendar.get(Calendar.YEAR))
+				calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR) - 100);
 		}
 
-		return dateTime;
+		return calendar.getTime();
 	}
 
 	public String getDateTimePicture(String dateTime)

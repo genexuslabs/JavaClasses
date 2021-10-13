@@ -2,11 +2,14 @@ package com.genexus.webpanels;
 
 import java.io.PrintWriter;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.ws.WebServiceContext;
-import javax.xml.ws.handler.MessageContext;
+import com.genexus.servlet.IServletContext;
+import com.genexus.servlet.ServletContext;
+import com.genexus.servlet.http.IHttpServletRequest;
+import com.genexus.servlet.http.HttpServletRequest;
+import com.genexus.servlet.http.IHttpServletResponse;
+import com.genexus.servlet.http.HttpServletResponse;
+import com.genexus.xml.ws.WebServiceContext;
+import com.genexus.xml.ws.handler.MessageContext;
 
 import com.genexus.ModelContext;
 import com.genexus.db.UserInformation;
@@ -30,10 +33,10 @@ public abstract class GXWebProcedure extends GXWebObjectBase
 	{	
 		try
 		{
-			MessageContext msg = wsContext.getMessageContext();
-			HttpServletRequest request = (HttpServletRequest)msg.get(MessageContext.SERVLET_REQUEST);
-			HttpServletResponse response = (HttpServletResponse)msg.get(MessageContext.SERVLET_RESPONSE);
-			ServletContext myContext = (ServletContext)msg.get(MessageContext.SERVLET_CONTEXT);		
+			MessageContext msg = new MessageContext(wsContext);
+			IHttpServletRequest request = new HttpServletRequest(msg.get(msg.getSERVLET_REQUEST()));
+			IHttpServletResponse response = new HttpServletResponse(msg.get(msg.getSERVLET_RESPONSE()));
+			IServletContext myContext = new ServletContext(msg.get(msg.getSERVLET_CONTEXT()));
 			String messageBody = (String)msg.get(GXHandlerChain.GX_SOAP_BODY);
 			HttpContext httpContext = new HttpContextWeb(request.getMethod(), request, response, myContext);
 			httpContext.getHttpRequest().setSoapMessageBody(messageBody);

@@ -1,4 +1,5 @@
 package com.genexus.db;
+import java.math.BigDecimal;
 import java.util.*;
 import java.io.Serializable;
 import java.sql.*;
@@ -71,8 +72,12 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 	}
 		
 	public String getVarchar(int columnIndex) throws SQLException
-	{	
-		return this.<String>getValue(getColumnIndex(columnIndex));
+	{
+		Object result = this.<String>getValue(getColumnIndex(columnIndex));
+		if (result.getClass().getName().equals("com.genexus.GXGeospatial"))
+			return result.toString();
+		else
+			return (String) result;
 	}
 		
 	public String getString(int columnIndex, int length) throws SQLException
@@ -83,8 +88,13 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 	public byte getByte(int columnIndex) throws SQLException
 	{
 		int index = getColumnIndex(columnIndex);
-		if (value[index] instanceof ArrayList)
-			return (Byte)CommonUtil.convertObjectTo(((ArrayList)value[index]).get(0), TypeConstants.BYTE);
+		if (value[index] instanceof ArrayList) {
+			return (Byte) CommonUtil.convertObjectTo(((ArrayList) value[index]).get(0), TypeConstants.BYTE);
+		}
+		else if (value[index] instanceof String){ //Some Cache providers encode64 bytes[]
+			byte[] decodedBytes = Base64.getDecoder().decode((String)value[index]);
+			return decodedBytes[0];
+		}
 		else 
 			return ((byte[])value[index])[0];
 	}
@@ -150,15 +160,25 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 		}
 		else
 		{
-			if (SpecificImplementation.Application.getModelContext() != null && SpecificImplementation.Application.getModelContext().getClientTimeZone() != null && mTimeZone != null)
+			if (SpecificImplementation.Application.getModelContext() != null && SpecificImplementation.Application.getModelContext().getClientTimeZone() != null && mTimeZone != null && !CommonUtil.resetTime(val).equals(CommonUtil.nullDate()))
 				val = CommonUtil.ConvertDateTime(val, mTimeZone, SpecificImplementation.Application.getModelContext().getClientTimeZone());
 		}
 		return val;
 	}
 		
-	public java.util.Date getGXDate(int columnIndex) throws SQLException
-	{
-		return this.<java.util.Date>getValue(getColumnIndex(columnIndex)); 
+	public java.util.Date getGXDate(int columnIndex) throws SQLException {
+
+		int index = getColumnIndex(columnIndex);
+		if (value[index] instanceof Long[])
+			return new java.util.Date(((Long[]) value[index])[0]);
+		if (value[index] instanceof ArrayList) {
+			ArrayList valueArray = (ArrayList) value[index];
+			if (valueArray.get(0) instanceof Long)
+				return new java.util.Date((Long) valueArray.get(0));
+			else
+				return (java.util.Date) CommonUtil.convertObjectTo(valueArray.get(0), TypeConstants.DATE);
+		} else
+			return ((java.util.Date[]) value[index])[0];
 	}
 		
 	public String getString(int columnIndex) throws SQLException
@@ -177,6 +197,8 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 		
 	public java.math.BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException
 	{
+		if (this.getValue(getColumnIndex(columnIndex)) instanceof Double)
+			return new BigDecimal((Double)this.getValue(getColumnIndex(columnIndex)));
 		return this.<java.math.BigDecimal>getValue(getColumnIndex(columnIndex));
 	}
 		
@@ -236,6 +258,10 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 
 	public java.util.UUID getGUID(int columnIndex) throws SQLException
 	{
-		return this.<java.util.UUID>getValue(getColumnIndex(columnIndex));
-	}		
+		Object value = this.getValue(getColumnIndex(columnIndex));
+		if (value instanceof java.util.UUID)
+			return this.<java.util.UUID>getValue(getColumnIndex(columnIndex));
+		else
+			return (java.util.UUID) CommonUtil.convertObjectTo(value, TypeConstants.UUID);
+	}
 }
