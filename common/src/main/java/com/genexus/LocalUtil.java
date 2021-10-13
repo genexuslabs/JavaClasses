@@ -4,7 +4,6 @@ import java.util.*;
 import java.text.*;
 
 import com.genexus.common.interfaces.SpecificImplementation;
-import com.genexus.diagnostics.Log;
 import com.genexus.util.GXSimpleDateFormat;
 public class LocalUtil
 {
