@@ -48,7 +48,7 @@ public class WrapperUtils {
 	public static ThreadLocal<String> requestBodyThreadLocal = new ThreadLocal<String>();
 
     public static InputStream storeRestRequestBody(InputStream is) throws IOException {
-		String body = new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining("\n"));
+		String body = new BufferedReader(new InputStreamReader(is, "UTF-8")).lines().collect(Collectors.joining("\n"));
 		requestBodyThreadLocal.set(body);
 
 		return IOUtils.toInputStream(body, "UTF-8");
