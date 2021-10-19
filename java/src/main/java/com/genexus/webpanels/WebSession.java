@@ -8,14 +8,16 @@ import com.genexus.servlet.http.IHttpSession;
 
 import com.genexus.CommonUtil;
 import com.genexus.internet.HttpContext;
+import com.genexus.session.LocalSession;
 import com.genexus.util.Encryption;
 import com.genexus.util.SubmitThreadPool;
 
 public class WebSession {
 	private IHttpServletRequest request;
-	private Hashtable<String, Object> sessionValues;
+	private IHttpSession session;
 	private boolean useLocalSession;
 	private static Set<String> internalKeys = new HashSet<String>(Arrays.asList(Encryption.AJAX_ENCRYPTION_KEY, HttpContext.GX_NAV_HELPER, HttpContext.GXTheme, HttpContext.GXLanguage));
+	private Object syncObject = new Object();
 
 	public WebSession(IHttpServletRequest request) {
 		this.request = request;
@@ -28,51 +30,35 @@ public class WebSession {
 	}
 
 	private IHttpSession getSession(boolean createIfNotExists) {
-		if (useLocalSession || request == null)
-			return null;
-		return request.getSession(createIfNotExists);
-	}
-
-	private void updateSessionInvalidated() {
-		useLocalSession = useLocalSession || Thread.currentThread().getName().startsWith(SubmitThreadPool.SUBMIT_THREAD) || this.request == null;
-	}
-
-	private void putHashValue(String key, Object value) {
-		if (sessionValues == null) {
-			sessionValues = new Hashtable<>();
+		if (this.request == null || Thread.currentThread().getName().startsWith(SubmitThreadPool.SUBMIT_THREAD)) {
+			if (session == null) {
+				synchronized (syncObject) {
+					if (session == null) {
+						session = new LocalSession();
+					}
+				}
+			}
+			return session;
 		}
-		sessionValues.put(key, value);
-	}
 
-	private Object getHashValue(String key) {
-		if (sessionValues != null) {
-			return sessionValues.get(key);
+		if (session == null && request != null){
+			if (session == null) {
+				synchronized (syncObject) {
+					if (session == null) {
+						session = request.getSession(createIfNotExists);
+					}
+				}
+			}
 		}
-		return null;
-	}
-
-	private void removeHashValue(String key) {
-		if (sessionValues != null) {
-			sessionValues.remove(key);
-		}
-	}
-
-	private void clearHashValues() {
-		if (sessionValues != null) {
-			sessionValues.clear();
-			sessionValues = null;
-		}
+		return session;
 	}
 
 	public void invalidate() {
-		useLocalSession = true;
+		session = new LocalSession();
 	}
 
 	public String getId() {
-		if (!useLocalSession) {
-			return getSession().getId();
-		}
-		return "";
+		return getSession().getId();
 	}
 
 	public void setValue(String key, String value) {
@@ -80,22 +66,17 @@ public class WebSession {
 	}
 
 	public String getValue(String key) {
+
 		return getAttribute(key);
 	}
 
 	public void remove(String key) {
+
 		removeAttribute(key);
 	}
 
 	public void setObjectAttribute(String key, Object value) {
-		updateSessionInvalidated();
-		key = normalizeKey(key);
-		IHttpSession session = getSession(true);
-		if (useLocalSession || session == null) {
-			putHashValue(key, value);
-			return;
-		}
-		session.setAttribute(key, value);
+		getSession(true).setAttribute(normalizeKey(key), value);
 	}
 
 	public void setAttribute(String key, String value) {
@@ -111,70 +92,26 @@ public class WebSession {
 	}
 
 	public Object getObjectAttribute(String key) {
-		updateSessionInvalidated();
-		key = normalizeKey(key);
-		Object out = null;
-		if (useLocalSession) {
-			return getHashValue(key);
-		}
-		IHttpSession session = getSession(false);
-		if (session != null) {
-			out = session.getAttribute(key);
-		}
-		return out;
+		return getSession(false).getAttribute(normalizeKey(key));
 	}
 
 	public void removeAttribute(String key) {
-		updateSessionInvalidated();
-		key = normalizeKey(key);
-		if (useLocalSession) {
-			removeHashValue(key);
-			return;
-		}
-		IHttpSession session = getSession(false);
-		if (session != null) {
-			session.removeAttribute(key);
-		}
+		getSession(false).removeAttribute(normalizeKey(key));
 	}
 
 	public void destroy() {
-		updateSessionInvalidated();
-		if (!useLocalSession) {
-			IHttpSession session = getSession(false);
-			if (session != null) {
-				session.invalidate();
-			}
-		} else {
-			clear();
-		}
+		getSession(false).invalidate();
 	}
 
 	public void renew() {
-		updateSessionInvalidated();
-		if (!useLocalSession) {
-			IHttpSession session = getSession(false);
-			if (session != null) {
-				Map<String, Object> internalValues = backupInternalKeys(session);
-				session.invalidate();
-				restoreInternalKeys(internalValues);
-			}
-		} else {
-			clear();
-		}
+		IHttpSession s = getSession();
+		Map<String, Object> internalValues = backupInternalKeys(s);
+		s.invalidate();
+		restoreInternalKeys(internalValues);
 	}
-	private Map<String, Object> backupInternalKeys(IHttpSession session) {
-		Map<String, Object> internalValues = new HashMap<>();
-		Enumeration e = session.getAttributeNames();
-		while (e.hasMoreElements()) {
-			String key = (String) e.nextElement();
-			if (internalKeys.contains(key)) {
-				Object value = getObjectAttribute(key);
-				if (value != null)
-					internalValues.put(key, value);
-			}
-		}
-		return internalValues;
-	}
+
+
+
 	private void restoreInternalKeys(Map<String, Object> internalValues) {
 		Iterator e = internalValues.keySet().iterator();
 		while (e.hasNext()) {
@@ -184,8 +121,7 @@ public class WebSession {
 	}
 
 	public void clear() {
-		updateSessionInvalidated();
-		if (!useLocalSession) {
+
 			IHttpSession session = getSession(false);
 			if (session != null) {
 				Vector<String> toRemove = new Vector<>();
@@ -202,9 +138,22 @@ public class WebSession {
 				}
 				toRemove.clear();
 			}
-		} else {
-			clearHashValues();
+
+	}
+
+
+	private Map<String, Object> backupInternalKeys(IHttpSession session) {
+		Map<String, Object> internalValues = new HashMap<>();
+		Enumeration e = session.getAttributeNames();
+		while (e.hasMoreElements()) {
+			String key = (String) e.nextElement();
+			if (internalKeys.contains(key)) {
+				Object value = getObjectAttribute(key);
+				if (value != null)
+					internalValues.put(key, value);
+			}
 		}
+		return internalValues;
 	}
 
 	private String normalizeKey(String key) {

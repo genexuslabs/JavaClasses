@@ -69,13 +69,10 @@ public class ExternalProviderIBM extends ExternalProviderBase implements Externa
     }
 
     public ExternalProviderIBM(GXService providerService) throws Exception {
-    	super(providerService);
+    	super(providerService, NAME);
 		init();
     }
 
-	public String getName() {
-    	return NAME;
-	}
 	private void init() throws Exception {
 		String accessKey = getEncryptedPropertyValue(ACCESS_KEY, ACCESS_KEY_ID_DEPRECATED);
 		String secretKey = getEncryptedPropertyValue(SECRET_ACCESS_KEY, SECRET_ACCESS_KEY_DEPRECATED);

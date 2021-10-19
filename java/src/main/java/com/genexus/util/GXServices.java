@@ -15,6 +15,7 @@ public class GXServices {
 	public static final String STORAGE_SERVICE = "Storage";
 	public static final String STORAGE_APISERVICE = "StorageAPI";
 	public static final String CACHE_SERVICE = "Cache";
+	public static final String SESSION_SERVICE = "Cache";
 	private static final String SERVICES_FILE = "CloudServices.config";
 	private static final String SERVICES_DEV_FILE = "CloudServices.dev.config";
 	private static GXServices instance;

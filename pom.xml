@@ -39,6 +39,7 @@
 		<module>gxwebsocketjakarta</module>
 		<module>gxawsserverless</module>
 		<module>androidreports</module>
+        <module>gxredis</module>
     </modules>
 
 	<licenses>

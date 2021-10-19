@@ -20,6 +20,7 @@ import com.genexus.servlet.http.IHttpSession;
 import com.genexus.*;
 import com.genexus.fileupload.IFileItemIterator;
 import com.genexus.fileupload.servlet.ServletFileUpload;
+import com.genexus.session.HttpSessionFactory;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -53,6 +54,7 @@ public class HttpContextWeb extends HttpContext {
 
 	private IHttpServletRequest request;
 	private IHttpServletResponse response;
+	private IHttpSession session;
 	private String requestMethod;
 	protected String contentType = "";
 	private boolean SkipPushUrl = false;
@@ -774,7 +776,7 @@ public class HttpContextWeb extends HttpContext {
 		try {
 			if (request != null) {
 				Object obj = null;
-				IHttpSession session = request.getSession(false);
+				IHttpSession session = HttpSessionFactory.getSession(request, false);
 				if (session != null) {
 					try {
 						obj = session.getAttribute(CommonUtil.upper(name));
@@ -797,7 +799,7 @@ public class HttpContextWeb extends HttpContext {
 	public void webPutSessionValue(String name, Object value) {
 		if (request != null) {
 			try {
-				request.getSession(true).setAttribute(CommonUtil.upper(name), value);
+				HttpSessionFactory.getSession(request, true).setAttribute(CommonUtil.upper(name), value);
 			}
 			catch (UnsupportedOperationException e)
 			{
@@ -810,7 +812,7 @@ public class HttpContextWeb extends HttpContext {
 	public void webPutSessionValue(String name, long value) {
 		if (request != null){
 			try {
-				request.getSession(true).setAttribute(CommonUtil.upper(name), new Long(value));
+				HttpSessionFactory.getSession(request, true).setAttribute(CommonUtil.upper(name), new Long(value));
 			}
 			catch (UnsupportedOperationException e)
 			{
@@ -822,7 +824,7 @@ public class HttpContextWeb extends HttpContext {
 	public void webPutSessionValue(String name, double value) {
 		if (request != null){
 			try {
-				request.getSession(true).setAttribute(CommonUtil.upper(name), new Double(value));
+				HttpSessionFactory.getSession(request, true).setAttribute(CommonUtil.upper(name), new Double(value));
 			}
 			catch (UnsupportedOperationException e)
 			{
@@ -837,7 +839,7 @@ public class HttpContextWeb extends HttpContext {
 
 	public String webSessionId() {
 		if (request != null)
-			return request.getSession(true).getId();
+			return HttpSessionFactory.getSession(request, true).getId();
 
 		return "0";
 	}

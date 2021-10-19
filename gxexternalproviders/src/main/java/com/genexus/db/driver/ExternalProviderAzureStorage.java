@@ -56,6 +56,16 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 		this(Application.getGXServices().get(service));
 	}
 
+	public ExternalProviderAzureStorage() throws Exception {
+		super(null, NAME);
+		init();
+	}
+
+	public ExternalProviderAzureStorage(GXService providerService) throws Exception {
+		super(providerService, NAME);
+		init();
+	}
+
 	private void init() throws Exception {
 		try {
 			account = getEncryptedPropertyValue(ACCOUNT, ACCOUNT_DEPRECATED);
@@ -89,15 +99,7 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 		}
 	}
 
-	public ExternalProviderAzureStorage() throws Exception {
-		super();
-		init();
-	}
 
-	public ExternalProviderAzureStorage(GXService providerService) throws Exception {
-		super(providerService);
-		init();
-	}
 
 	public String getName() {
 		return NAME;

@@ -75,17 +75,17 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 		return NAME;
 	}
 
-	public ExternalProviderS3(String service) throws Exception{
+	public ExternalProviderS3(String service) throws Exception {
 		this(Application.getGXServices().get(service));
 	}
 
 	public ExternalProviderS3() throws Exception{
-		super();
+		super(null, NAME);
 		initialize();
 	}
 
 	public ExternalProviderS3(GXService providerService) throws Exception{
-    	super(providerService);
+    	super(providerService, NAME);
 		initialize();
     }
 

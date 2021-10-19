@@ -5,95 +5,89 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.genexus.Application;
 import com.genexus.ICacheService2;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
-import com.genexus.util.GXService;
-import com.genexus.util.GXServices;
-
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Pipeline;
 
+public class RedisClient implements Closeable {
+	static final ILogger logger = LogManager.getLogger(RedisClient.class);
+	static int REDIS_DEFAULT_PORT = 6379;
+	static String REDIS_DEFAULT_HOSTNAME = "127.0.0.1";
 
-public class RedisClient implements ICacheService2, Closeable{
-	public static final ILogger logger = LogManager.getLogger(RedisClient.class);
-	private String keyPattern = "%s_%s_%s"; //Namespace_KEY
-	private static int UNDEFINED_PORT = -1;
-	private static int REDIS_DEFAULT_PORT = 6379;
 	private JedisPool pool;
-	private ObjectMapper objMapper; 	
-	public RedisClient() throws IOException {
-		initCache();
+	private ObjectMapper objMapper;
+	private String keyPattern = "%s_%s_%s"; //Namespace_KEY
+
+	public RedisClient(String hostName, int port, String password, String cacheKeyPattern) {
+		initCache(hostName, port, password, cacheKeyPattern);
 	}
 
-	private void initCache() throws IOException {
+	public RedisClient(String hostName) {
+		initCache(hostName, REDIS_DEFAULT_PORT, null, "");
+	}
+
+	private void initCache(String hostNameWithOptionalPort, int port, String password, String cacheKeyPattern) {
 		objMapper = new ObjectMapper();
 		objMapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
 		objMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 		objMapper.enable(SerializationFeature.INDENT_OUTPUT);
 
-		GXService providerService = Application.getGXServices().get(GXServices.CACHE_SERVICE);
-		String addresses = providerService.getProperties().get("CACHE_PROVIDER_ADDRESS");
-		String cacheKeyPattern = providerService.getProperties().get("CACHE_PROVIDER_KEYPATTERN");
-		String password = providerService.getProperties().get("CACHE_PROVIDER_PASSWORD");
+		keyPattern = !isNullOrEmpty(cacheKeyPattern)? cacheKeyPattern: keyPattern;
 
-		if (!isNullOrEmpty(cacheKeyPattern))
-			keyPattern = cacheKeyPattern;
-
-		if (!isNullOrEmpty(addresses)){
-
-			if (!isNullOrEmpty(password)) {
-
-				addresses = "redis://:" + password.trim() + "@" + addresses.trim();
-				try {
-					URI redisUri = new URI(addresses);
-					if (redisUri.getPort()==UNDEFINED_PORT){
-						redisUri = new URI(addresses + ":" + REDIS_DEFAULT_PORT);
-					}
-					pool = new JedisPool(new JedisPoolConfig(), redisUri);
-				}catch (java.net.URISyntaxException ex){
-					logger.error("Invalid redis uri " + addresses, ex);
-				}
-			}
-		}else{
-			addresses ="127.0.0.1:" + REDIS_DEFAULT_PORT;
+		if (hostNameWithOptionalPort.startsWith("redis://")) {
+			pool = new JedisPool(new JedisPoolConfig(), hostNameWithOptionalPort);
+			return;
 		}
-		if (pool == null)
-			pool = new JedisPool(new JedisPoolConfig(), addresses);
-	}
-	
+
+		port = (port > 0) ? port: REDIS_DEFAULT_PORT;
+		hostNameWithOptionalPort = (isNullOrEmpty(hostNameWithOptionalPort))? REDIS_DEFAULT_HOSTNAME: hostNameWithOptionalPort;
+
+		try {
+			URI redisUri = new URI(hostNameWithOptionalPort);
+			if (redisUri.getPort() > 0) {
+				port = redisUri.getPort();
+			}
+			hostNameWithOptionalPort = redisUri.getHost();
+		} catch (java.net.URISyntaxException ex) {
+			logger.error("Invalid redis uri " + hostNameWithOptionalPort, ex);
+		}
+
+		pool = new JedisPool(new JedisPoolConfig(), hostNameWithOptionalPort, port);
+		if (!isNullOrEmpty(password)) {
+			pool.getResource().auth(password);
+		}
+}
+
 	private boolean isNullOrEmpty(String s) {
+
 		return s == null || s.trim().length() == 0;
 	}
 
 	private Boolean containsKey(String key) {
 		Jedis jedis = null;
 		try {
-			jedis = pool.getResource();			
+			jedis = pool.getResource();
 			return jedis.exists(key);
 		} catch (Exception e) {
-			logger.error("Contains failed", e);
-		}
-		finally {
+			logger.error("Contains Key failed", e);
+		} finally {
 			close(jedis);
 		}
 		return false;
 	}
 
 	private void close(Jedis jedis) {
-		if (jedis != null)
-		{
+		if (jedis != null) {
 			jedis.close();
 		}
 	}
@@ -105,7 +99,7 @@ public class RedisClient implements ICacheService2, Closeable{
 	private <T> void set(String key, T value, int expirationSeconds) {
 		Jedis jedis = null;
 		try {
-			jedis = pool.getResource();	
+			jedis = pool.getResource();
 			String valueJSON = objMapper.writeValueAsString(value);
 			if (expirationSeconds > 0)
 				jedis.setex(key, expirationSeconds, valueJSON);
@@ -113,17 +107,16 @@ public class RedisClient implements ICacheService2, Closeable{
 				jedis.set(key, valueJSON);
 		} catch (Exception e) {
 			logger.error("Set with TTL failed", e);
-		}	
-		finally {
+		} finally {
 			close(jedis);
 		}
 	}
 
-	public <T> void setAll(String cacheid, String[] keys, T[] values, int expirationSeconds) {
+	public <T> void setAll(String cacheId, String[] keys, T[] values, int expirationSeconds) {
 		Jedis jedis = null;
 		try {
-			if (keys!=null && values!=null && keys.length == values.length) {
-				String[] prefixedKeys = getKey(cacheid, keys);
+			if (keys != null && values != null && keys.length == values.length) {
+				String[] prefixedKeys = getKey(cacheId, keys);
 				jedis = pool.getResource();
 				Pipeline p = jedis.pipelined();
 				int idx = 0;
@@ -139,8 +132,7 @@ public class RedisClient implements ICacheService2, Closeable{
 			}
 		} catch (Exception e) {
 			logger.error("SetAll with TTL failed", e);
-		}
-		finally {
+		} finally {
 			close(jedis);
 		}
 	}
@@ -148,88 +140,82 @@ public class RedisClient implements ICacheService2, Closeable{
 	private <T> T get(String key, Class<T> type) {
 		Jedis jedis = null;
 		try {
-			jedis = pool.getResource();	
+			jedis = pool.getResource();
 			String json = jedis.get(key);
-			if (StringUtils.isNotEmpty(json))
-			{
-				return  objMapper.readValue(json, type); 
-			}
-			else
-			{
+			if (StringUtils.isNotEmpty(json)) {
+				return objMapper.readValue(json, type);
+			} else {
 				return null;
 			}
 		} catch (Exception e) {
 			logger.error("Get Item failed", e);
-		}
-		finally {
+		} finally {
 			close(jedis);
 		}
 		return null;
 	}
-	public <T> List<T> getAll(String cacheid, String[] keys, Class<T> type){
+
+	public <T> List<T> getAll(String cacheId, String[] keys, Class<T> type) {
 		List<T> result = null;
 		Jedis jedis = null;
 		try {
-			String[] prefixedKeys = getKey(cacheid, keys);
-			jedis = pool.getResource();	
+			String[] prefixedKeys = getKey(cacheId, keys);
+			jedis = pool.getResource();
 			List<String> json = jedis.mget(prefixedKeys);
 			result = new ArrayList<T>();
-			for (String val: json) {
+			for (String val : json) {
 				if (val != null)
-					result.add(objMapper.readValue(val, type)); 
+					result.add(objMapper.readValue(val, type));
 				else
 					result.add(null);
 			}
 			return result;
 		} catch (Exception e) {
 			logger.error("Get Item failed", e);
-		}
-		finally {
+		} finally {
 			close(jedis);
 		}
 		return null;
 	}
-	
 
-	public boolean containtsKey(String cacheid, String key) {
-		return containsKey(getKey(cacheid, key));
+
+	public boolean containsKey(String cacheId, String key) {
+		return containsKey(getKey(cacheId, key));
 	}
 
-	public <T> T get(String cacheid, String key, Class<T> type) {
-		return get(getKey(cacheid, key), type);
-	}
-	
-
-	public <T> void set(String cacheid, String key, T value) {
-		set(getKey(cacheid, key), value);
+	public <T> T get(String cacheId, String key, Class<T> type) {
+		return get(getKey(cacheId, key), type);
 	}
 
-	public <T> void set(String cacheid, String key, T value, int duration) {
-		set(getKey(cacheid, key), value, duration);
+
+	public <T> void set(String cacheId, String key, T value) {
+		set(getKey(cacheId, key), cacheId);
 	}
 
-	public void clear(String cacheid, String key) {
+	public <T> void set(String cacheId, String key, T value, int duration) {
+		set(getKey(cacheId, key), value, duration);
+	}
+
+	public void clear(String cacheId, String key) {
 		Jedis jedis = null;
 		try {
-			jedis = pool.getResource();	
-			jedis.del(getKey(cacheid, key));
+			jedis = pool.getResource();
+			jedis.del(getKey(cacheId, key));
 		} catch (Exception e) {
 			logger.error("Remove Item failed", e);
-		}
-		finally {
+		} finally {
 			close(jedis);
 		}
 	}
 
-	public void clearCache(String cacheid) {
+	public void clearCache(String cacheId) {
 		Jedis jedis = null;
 		try {
-			jedis = pool.getResource();	
-			jedis.incr(cacheid);			
+			jedis = pool.getResource();
+			jedis.incr(cacheId);
 		} catch (Exception e) {
 			logger.error("clearCache failed", e);
-		}
-		finally {
+		} finally {
 			close(jedis);
 		}
 	}
@@ -237,12 +223,11 @@ public class RedisClient implements ICacheService2, Closeable{
 	public void clearKey(String key) {
 		Jedis jedis = null;
 		try {
-			jedis = pool.getResource();	
-			 jedis.del(key);
+			jedis = pool.getResource();
+			jedis.del(key);
 		} catch (Exception e) {
 			logger.error("Remove Item failed", e);
-		}
-		finally {
+		} finally {
 			close(jedis);
 		}
 	}
@@ -250,12 +235,11 @@ public class RedisClient implements ICacheService2, Closeable{
 	public void clearAllCaches() {
 		Jedis jedis = null;
 		try {
-			jedis = pool.getResource();	
-			 jedis.flushAll();
+			jedis = pool.getResource();
+			jedis.flushAll();
 		} catch (Exception e) {
 			logger.error("Clear All Caches failed", e);
-		}
-		finally {
+		} finally {
 			close(jedis);
 		}
 	}
@@ -264,17 +248,16 @@ public class RedisClient implements ICacheService2, Closeable{
 		return String.format(keyPattern, cacheid, getKeyPrefix(cacheid), com.genexus.CommonUtil.getHash(key));
 	}
 
-	private String[] getKey(String cacheid, String[] keys)
-	{
+	private String[] getKey(String cacheid, String[] keys) {
 		Long prefix = getKeyPrefix(cacheid);
 		String[] prefixedKeys = new String[keys.length];
-		for (int idx =0; idx<keys.length; idx++){
+		for (int idx = 0; idx < keys.length; idx++) {
 			prefixedKeys[idx] = formatKey(cacheid, keys[idx], prefix);
 		}
 		return prefixedKeys;
 	}
-	private String formatKey(String cacheid, String key, Long prefix)
-	{
+
+	private String formatKey(String cacheid, String key, Long prefix) {
 		return String.format(keyPattern, cacheid, prefix, com.genexus.CommonUtil.getHash(key));
 	}
 
@@ -286,8 +269,9 @@ public class RedisClient implements ICacheService2, Closeable{
 		}
 		return prefix;
 	}
+
 	@Override
-	public void close()  throws IOException {
+	public void close() throws IOException {
 		if (pool != null)
 			pool.destroy();
 	}
