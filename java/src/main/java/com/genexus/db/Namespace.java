@@ -294,6 +294,11 @@ public class Namespace extends AbstractNamespace
 		return (DataSource) dataSources.get(name.toUpperCase());
 	}
 
+	public DataSource getDataSourceCopy(String name)
+	{
+		return ((DataSource) dataSources.get(name.toUpperCase())).copy();
+	}
+
 	public static Enumeration getNamespaceList()
 	{
 		return namespaceList.keys();

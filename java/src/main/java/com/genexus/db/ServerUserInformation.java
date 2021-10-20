@@ -96,29 +96,22 @@ public final class ServerUserInformation extends UserInformation
 			throw new RuntimeException("Can't find connection information for datastore " + dataSourceName);
 		}
 
-	
-		DataSource dataSource = null;
-		DataSource dataSourceAux;
 		String defaultUser = null;
 		String defaultPassword = null;
 		String jdbcUrl = null;
 		boolean usesJdbcDataSource = false;
 
-		synchronized (lock) 
+		DataSource dataSource = (DataSource) context.beforeGetConnection(handle, getNamespace().getDataSource(dataSourceName));
+		if (dataSource != null)
 		{
-			dataSourceAux = (DataSource) context.beforeGetConnection(handle, getNamespace().getDataSource(dataSourceName));
-			if (dataSourceAux != null)
-			{
-				dataSource = dataSourceAux.copy();
-				defaultUser = dataSource.defaultUser;
-				defaultPassword = dataSource.defaultPassword;
-				jdbcUrl = dataSource.jdbcUrl;
-				usesJdbcDataSource = dataSource.usesJdbcDataSource();
-			}
+			defaultUser = dataSource.defaultUser;
+			defaultPassword = dataSource.defaultPassword;
+			jdbcUrl = dataSource.jdbcUrl;
+			usesJdbcDataSource = dataSource.usesJdbcDataSource();
 		}
 
 		GXConnection con;
-		if (dataSourceAux == null)
+		if (dataSource == null)
 		{
 			con = (GXConnection) getNamespace().getDataSource(dataSourceName).getConnectionPool().checkOut(context, null, handle, getUser(dataSourceName), getPassword(dataSourceName), readOnly, sticky);
 			if (con.getPreviousHandle() != handle)

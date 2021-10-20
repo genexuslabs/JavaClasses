@@ -22,6 +22,11 @@ public class DBConnection
 		return new DBConnection(DBConnectionManager.getInstance().getDataSource(handle, dataSourceName), handle);
 	}
 
+	public static DBConnection getDataStoreCopy(String dataSourceName, int handle)
+	{
+		return new DBConnection(DBConnectionManager.getInstance().getDataSourceCopy(handle, dataSourceName), handle);
+	}
+
 	public DBConnection()
 	{
 		errMsg = "Invalid DBConnection instance";

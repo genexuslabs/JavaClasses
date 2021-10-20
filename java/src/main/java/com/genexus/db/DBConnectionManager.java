@@ -340,6 +340,11 @@ public abstract class DBConnectionManager
 		return getUserInformation(handle).getNamespace().getDataSource(dataSourceName);
 	}
 
+	public DataSource getDataSourceCopy(int handle, String dataSourceName)
+	{
+		return getUserInformation(handle).getNamespace().getDataSourceCopy(dataSourceName);
+	}
+
 	public DataSource getDataSourceNoException(int handle, String dataSourceName)
 	{
 		UserInformation ui = getUserInformationNoException(handle);

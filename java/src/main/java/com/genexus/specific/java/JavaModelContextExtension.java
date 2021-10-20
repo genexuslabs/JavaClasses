@@ -74,7 +74,7 @@ public class JavaModelContextExtension implements IExtensionModelContext {
                 Object obj = ct.newInstance(arglist);
                 Class[] parameterTypes = new Class[] {com.genexus.db.DBConnection[].class};
                 com.genexus.db.DBConnection[] aP1 = new com.genexus.db.DBConnection[1];
-                aP1[0] = com.genexus.db.DBConnection.getDataStore( dataSource.getName(), handle) ;
+                aP1[0] = com.genexus.db.DBConnection.getDataStoreCopy( dataSource.getName(), handle) ;
                 Object[] arguments = new Object[] {aP1};
                 Method m = c.getMethod("execute", parameterTypes);
                 m.invoke(obj, arguments);
