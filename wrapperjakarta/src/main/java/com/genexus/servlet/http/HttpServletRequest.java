@@ -55,7 +55,7 @@ public class HttpServletRequest implements IHttpServletRequest{
 	}
 
 	public String getRemoteAddr() {
-		return req.getLocalAddr();
+		return req.getRemoteAddr();
 	}
 
 	public String getRemoteUser() {

@@ -30,4 +30,13 @@ public class BindingProvider {
 	public jakarta.xml.ws.BindingProvider getWrappedClass() {
 		return bindingProvider;
 	}
+
+	public Class getBindingClass() {
+		try {
+			return Class.forName("jakarta.xml.ws.BindingProvider");
+		}
+		catch (Exception e) {
+			return null;
+		}
+	}
 }
