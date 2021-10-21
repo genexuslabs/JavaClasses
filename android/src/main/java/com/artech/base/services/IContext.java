@@ -33,7 +33,9 @@ public interface IContext {
     IPropertiesObject runGxObjectFromProcedure(String objectToCall, IPropertiesObject parameters);
 
 	IAndroidSession getAndroidSession();
-	
+
+	IAndroidImageUtil getAndroidImageUtil();
+
 	/* path in android */
 	String getDataBaseFilePath();
 	String getDataBaseSyncFilePath();
