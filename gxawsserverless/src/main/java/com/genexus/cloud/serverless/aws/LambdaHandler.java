@@ -75,11 +75,7 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 		AwsProxyResponse response = this.handler.proxy(awsProxyRequest, context);
 		logger.debug("After handle Request");
 		int statusCode = response.getStatusCode();
-
-		/*if (statusCode == 404 && !path.startsWith("/rest")) {
-			response = handleServletRequest(awsProxyRequest, context);
-		}*/
-
+		
 		if (statusCode >= 400 && statusCode <= 599) {
 			logger.warn(String.format("Request could not be handled (%d): %s", response.getStatusCode(), path));
 		}
