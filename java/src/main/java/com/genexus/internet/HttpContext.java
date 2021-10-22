@@ -1781,6 +1781,7 @@ public abstract class HttpContext
 								{"dll"	, "application/x-msdownload"},
 								{"ps"	, "application/postscript"},
 								{"pdf"	, "application/pdf"},
+								{"svg"	, "image/svg+xml"},
 								{"tgz"	, "application/x-compressed"},
 								{"zip"	, "application/x-zip-compressed"},
 								{"gz"	, "application/x-gzip"}
