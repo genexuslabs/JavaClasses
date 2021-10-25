@@ -15,8 +15,10 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jersey.version>2.35</jersey.version>
+        <jersey.javax.version>2.34</jersey.javax.version>
+        <jersey.jakarta.version>3.0.1</jersey.jakarta.version>
         <jackson.version>2.12.5</jackson.version>
+        <junit.version>4.13.2</junit.version>
 	</properties>
 
     <modules>
@@ -49,6 +51,15 @@
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
 		</license>
 	</licenses>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 	<build>
 		<pluginManagement>

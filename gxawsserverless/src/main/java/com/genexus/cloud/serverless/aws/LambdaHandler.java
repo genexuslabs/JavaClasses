@@ -9,7 +9,6 @@ import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletReques
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
 import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.genexus.specific.java.LogManager;
-import com.genexus.webpanels.GXObjectUploadServices;
 import com.genexus.webpanels.GXWebObjectStub;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -25,8 +24,6 @@ import com.genexus.util.IniFile;
 import com.genexus.webpanels.*;
 
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
@@ -75,7 +72,7 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 		AwsProxyResponse response = this.handler.proxy(awsProxyRequest, context);
 		logger.debug("After handle Request");
 		int statusCode = response.getStatusCode();
-		
+
 		if (statusCode >= 400 && statusCode <= 599) {
 			logger.warn(String.format("Request could not be handled (%d): %s", response.getStatusCode(), path));
 		}
