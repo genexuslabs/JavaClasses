@@ -64,7 +64,12 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 
 	public boolean wasNull() throws SQLException
 	{
-		boolean result = ((boolean[])value[lastIndex.get()])[0];
+		boolean result;
+		if (value[lastIndex.get()] instanceof ArrayList)
+			result =  (boolean)((ArrayList)value[lastIndex.get()]).get(0);
+		else
+			result =  ((boolean[])value[lastIndex.get()])[0];
+
 		this.wasNullHits++;
 		return result;
 	}
