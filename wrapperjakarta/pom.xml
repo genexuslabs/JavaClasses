@@ -40,11 +40,6 @@
 			<version>3.0.0</version>
 		</dependency>
 		<dependency>
-			<groupId>jakarta.xml.ws</groupId>
-			<artifactId>jakarta.xml.ws-api</artifactId>
-			<version>3.0.0</version>
-		</dependency>
-		<dependency>
 			<groupId>com.sun.xml.ws</groupId>
 			<artifactId>jaxws-rt</artifactId>
 			<version>3.0.0</version>
@@ -90,7 +85,7 @@
             <artifactId>hk2-locator</artifactId>
             <version>${jersey.jakarta.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2-utils</artifactId>
