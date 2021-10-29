@@ -25,13 +25,13 @@ public class GXMultiCall extends GxRestService
 	@jakarta.ws.rs.Consumes({jakarta.ws.rs.core.MediaType.APPLICATION_JSON})
 	@javax.ws.rs.Produces({javax.ws.rs.core.MediaType.APPLICATION_JSON + ";charset=UTF-8"})
 	@jakarta.ws.rs.Produces({jakarta.ws.rs.core.MediaType.APPLICATION_JSON + ";charset=UTF-8"})
-    public Object gxMultiCall() throws Exception
+    public Object gxMultiCall(String jsonStr) throws Exception
     {
 		super.init( "POST" );
 		String procName = ((HttpContextWeb) context.getHttpContext()).GetNextPar().toLowerCase();
 
 		ModelContext modelContext = ModelContext.getModelContext(Application.gxCfg);
-		String appPackage = modelContext.getPackageName();
+		String appPackage = modelContext.getNAME_SPACE();
 		if (!appPackage.equals(""))
 		{
 			appPackage = appPackage + ".";
@@ -49,8 +49,7 @@ public class GXMultiCall extends GxRestService
 			return builder.build() ;
 		}
 		
-		String jsonStr = parsePostData( ((HttpContextWeb) context.getHttpContext()).getHttpRequest().getContentLength(), ((HttpContextWeb) context.getHttpContext()).getHttpRequest().getInputStream());
-		
+
 		Class myClass = Class.forName(appPackage + procName);
 		Method[] methods = myClass.getMethods();
 		Class[] parameters = null;
