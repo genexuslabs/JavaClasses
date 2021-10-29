@@ -1,4 +1,4 @@
-package com.genexus.cache.redis;
+package com.genexus.service.redis;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.genexus.ICacheService2;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import redis.clients.jedis.Jedis;
@@ -66,7 +65,7 @@ public class RedisClient implements Closeable {
 		if (!isNullOrEmpty(password)) {
 			pool.getResource().auth(password);
 		}
-}
+	}
 
 	private boolean isNullOrEmpty(String s) {
 

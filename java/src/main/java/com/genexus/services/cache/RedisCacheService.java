@@ -2,7 +2,7 @@ package com.genexus.services.cache;
 
 import com.genexus.Application;
 import com.genexus.ICacheService2;
-import com.genexus.cache.redis.RedisClient;
+import com.genexus.service.redis.RedisClient;
 import com.genexus.services.ServiceHelper;
 import com.genexus.services.ServiceConfigurationException;
 import com.genexus.util.GXService;
