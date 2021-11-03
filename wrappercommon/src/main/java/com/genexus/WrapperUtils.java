@@ -14,7 +14,7 @@ import org.apache.logging.log4j.Logger;
 public class WrapperUtils {
     private static Logger log = org.apache.logging.log4j.LogManager.getLogger(WrapperUtils.class);
 
-    public static String getJsonFromRestExcpetion(int[] statusCode, String reasonPhrase, boolean applicationException, Throwable ex) {
+    public static String getJsonFromRestException(int[] statusCode, String reasonPhrase, boolean applicationException, Throwable ex) {
         int localStatusCode = statusCode[0];
         if (!applicationException) {
             localStatusCode = 500;

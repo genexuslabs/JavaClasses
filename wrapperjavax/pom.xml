@@ -24,7 +24,13 @@
 			<artifactId>javax.servlet-api</artifactId>
 			<version>3.1.0</version>
 		</dependency>
-		<dependency>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+
+        <dependency>
     	<groupId>javax.ws.rs</groupId>
     	<artifactId>javax.ws.rs-api</artifactId>
     	<version>2.1</version>
@@ -70,7 +76,6 @@
             <version>${jersey.javax.version}</version>
         </dependency>
 
-
         <dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
@@ -83,7 +88,13 @@
             <version>${jackson.version}</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.jaxrs/jackson-jaxrs-json-provider -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
         <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-json-provider</artifactId>
@@ -106,8 +117,8 @@
         		</exclusion>
     		</exclusions>    			
     		<scope>runtime</scope>
-		</dependency>						
-	</dependencies>
+		</dependency>
+    </dependencies>
 
 	<build>
 		<finalName>gxwrapperjavax</finalName>
