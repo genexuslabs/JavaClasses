@@ -10,8 +10,8 @@ import com.genexus.util.GXServices;
 public class CacheFactory {
 
 	public static final ILogger logger = LogManager.getLogger(CacheFactory.class);
-    private static volatile ICacheService instance;
-    private static Object syncRoot = new Object();
+	private static volatile ICacheService instance;
+	private static Object syncRoot = new Object();
 	private static boolean forceHighestTimetoLive = false;
 	public static String FORCE_HIGHEST_TIME_TO_LIVE = "FORCE_HIGHEST_TIME_TO_LIVE";
 	private static final boolean DEBUG = com.genexus.DebugFlag.DEBUG;
@@ -27,38 +27,32 @@ public class CacheFactory {
 					GXService providerService = Application.getGXServices().get(GXServices.CACHE_SERVICE);
 					if (providerService != null) {
 						String warnMsg = "Couldn't create CACHE_PROVIDER as ICacheService: "
-								+ providerService.getClassName();
+							+ providerService.getClassName();
 						try {
 							logger.info("Loading providerService:" + providerService.getClassName());
 							Class<?> type = Class.forName(providerService.getClassName());
 							if (type != null) {
 								ICacheService cacheInstance = (ICacheService) type.getDeclaredConstructor()
-										.newInstance();
+									.newInstance();
 								if (cacheInstance != null) {
 									instance = cacheInstance;
 									if (providerService.getProperties().containsKey(FORCE_HIGHEST_TIME_TO_LIVE)) {
 										if (Integer.parseInt(
-												providerService.getProperties().get(FORCE_HIGHEST_TIME_TO_LIVE)) == 1) {
+											providerService.getProperties().get(FORCE_HIGHEST_TIME_TO_LIVE)) == 1) {
 											forceHighestTimetoLive = true;
 										}
 									}
 								} else {
 									logger.error(warnMsg);
-									System.err.println(warnMsg);
 								}
 							}
 						} catch (Exception ex) {
 							logger.error(warnMsg, ex);
-							System.err.println(warnMsg);
-							ex.printStackTrace();
 						}
 					}
 					if (instance == null) {
-
 						instance = new InProcessCache();
-
 					}
-
 					LoadTTLFromPreferences();
 				}
 			}
@@ -89,9 +83,7 @@ public class CacheFactory {
 
 	public static void restartCache() {
 		if (instance != null) {
-			if (DEBUG) {
-				System.err.println("Restarting cache...");
-			}
+			logger.debug("Restarting Cache");
 			instance.clearAllCaches();
 		}
 	}

@@ -1,9 +1,8 @@
-package com.genexus.services.cache;
+package com.genexus.service.redis;
 
 import com.genexus.Application;
 import com.genexus.ICacheService2;
-import com.genexus.service.redis.RedisClient;
-import com.genexus.services.ServiceHelper;
+import com.genexus.services.ServiceConfigurationHelper;
 import com.genexus.services.ServiceConfigurationException;
 import com.genexus.util.GXService;
 import com.genexus.util.GXServices;
@@ -18,12 +17,15 @@ public class RedisCacheService implements ICacheService2 {
 	public RedisCacheService() throws ServiceConfigurationException {
 
 		GXService providerService = Application.getGXServices().get(GXServices.CACHE_SERVICE);
-		ServiceHelper sHelper = new ServiceHelper(null, "", NAME);
+		ServiceConfigurationHelper sHelper = new ServiceConfigurationHelper(providerService, "CACHE_PROVIDER", NAME);
 		String hostName = sHelper.getPropertyValue("ADDRESS", "");
 		String keyPattern = sHelper.getPropertyValue("KEYPATTERN", "");
 		String password = sHelper.getPropertyValue("PASSWORD", "");
+		String portS = sHelper.getPropertyValue("PORT", "", "-1");
 
-		client = new RedisClient(hostName, -1, password, keyPattern);
+		int port = Integer.parseInt(portS);
+
+		client = new RedisClient(hostName, port, password, keyPattern);
 	}
 
 	@Override

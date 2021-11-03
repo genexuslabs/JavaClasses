@@ -1,7 +1,6 @@
 package com.genexus.db.driver;
 
-import com.genexus.services.ServiceHelper;
-import com.genexus.util.Encryption;
+import com.genexus.services.ServiceConfigurationHelper;
 import com.genexus.util.GXService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,7 +12,7 @@ public abstract class ExternalProviderBase {
 	static final String DEFAULT_EXPIRATION = "DEFAULT_EXPIRATION";
 	static final String FOLDER = "FOLDER_NAME";
 
-	private ServiceHelper sHelper;
+	private ServiceConfigurationHelper sHelper;
 
 	@Deprecated
 	static final String DEFAULT_ACL_DEPRECATED = "STORAGE_PROVIDER_DEFAULT_ACL";
@@ -24,7 +23,7 @@ public abstract class ExternalProviderBase {
 	ResourceAccessControlList defaultAcl = ResourceAccessControlList.PublicRead;
 
 	public ExternalProviderBase(GXService s, String name) {
-		sHelper = new ServiceHelper(s, name, SERVICE_TYPE_NAME);
+		sHelper = new ServiceConfigurationHelper(s, name, SERVICE_TYPE_NAME);
 		init();
 	}
 

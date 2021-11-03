@@ -5,13 +5,13 @@ import com.genexus.util.GXService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class ServiceHelper {
-	private static Logger logger = LogManager.getLogger(ServiceHelper.class);
+public class ServiceConfigurationHelper {
+	private static Logger logger = LogManager.getLogger(ServiceConfigurationHelper.class);
 	private GXService service;
 	private String serviceName;
 	private String serviceTypeName;
 
-	public ServiceHelper(GXService s, String sName, String sTypeName) {
+	public ServiceConfigurationHelper(GXService s, String sName, String sTypeName) {
 		this.service = s;
 		serviceName = sName;
 		serviceTypeName = sTypeName;

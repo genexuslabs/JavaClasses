@@ -2,24 +2,30 @@ package com.genexus.service.redis;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.sun.jndi.toolkit.url.Uri;
 import org.apache.commons.lang.StringUtils;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.genexus.diagnostics.core.ILogger;
-import com.genexus.diagnostics.core.LogManager;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Pipeline;
+import redis.clients.util.JedisURIHelper;
 
 public class RedisClient implements Closeable {
-	static final ILogger logger = LogManager.getLogger(RedisClient.class);
+	static final Logger logger = LogManager.getLogger(RedisClient.class);
 	static int REDIS_DEFAULT_PORT = 6379;
 	static String REDIS_DEFAULT_HOSTNAME = "127.0.0.1";
 
@@ -29,6 +35,10 @@ public class RedisClient implements Closeable {
 
 	public RedisClient(String hostName, int port, String password, String cacheKeyPattern) {
 		initCache(hostName, port, password, cacheKeyPattern);
+	}
+
+	public RedisClient(String hostName, int port) {
+		initCache(hostName, port, null, "");
 	}
 
 	public RedisClient(String hostName) {
@@ -43,16 +53,31 @@ public class RedisClient implements Closeable {
 
 		keyPattern = !isNullOrEmpty(cacheKeyPattern)? cacheKeyPattern: keyPattern;
 
-		if (hostNameWithOptionalPort.startsWith("redis://")) {
-			pool = new JedisPool(new JedisPoolConfig(), hostNameWithOptionalPort);
-			return;
-		}
+		if (hostNameWithOptionalPort.startsWith("redis://") || hostNameWithOptionalPort.startsWith("rediss://")) {
+			try {
+				URI uri = URI.create(hostNameWithOptionalPort);
+				if (JedisURIHelper.isValid(uri)) {
+					pool = new JedisPool(new JedisPoolConfig(), uri.getHost(), uri.getPort());
 
+					if (isNullOrEmpty(password)) {
+						password = JedisURIHelper.getPassword(uri);
+					}
+
+					if (!isNullOrEmpty(password)) {
+						pool.getResource().auth(password);
+					}
+
+					return;
+				}
+			} catch (Exception e) {
+				logger.error("Could not connect to Redis URL : " + hostNameWithOptionalPort, e);
+			}
+		}
 		port = (port > 0) ? port: REDIS_DEFAULT_PORT;
 		hostNameWithOptionalPort = (isNullOrEmpty(hostNameWithOptionalPort))? REDIS_DEFAULT_HOSTNAME: hostNameWithOptionalPort;
 
 		try {
-			URI redisUri = new URI(hostNameWithOptionalPort);
+			URI redisUri = new URI("redis://" + hostNameWithOptionalPort);
 			if (redisUri.getPort() > 0) {
 				port = redisUri.getPort();
 			}
@@ -62,9 +87,7 @@ public class RedisClient implements Closeable {
 		}
 
 		pool = new JedisPool(new JedisPoolConfig(), hostNameWithOptionalPort, port);
-		if (!isNullOrEmpty(password)) {
-			pool.getResource().auth(password);
-		}
+
 	}
 
 	private boolean isNullOrEmpty(String s) {
@@ -188,7 +211,7 @@ public class RedisClient implements Closeable {
 
 
 	public <T> void set(String cacheId, String key, T value) {
-		set(getKey(cacheId, key), cacheId);
+		set(getKey(cacheId, key), value);
 	}
 
 	public <T> void set(String cacheId, String key, T value, int duration) {
@@ -243,8 +266,8 @@ public class RedisClient implements Closeable {
 		}
 	}
 
-	private String getKey(String cacheid, String key) {
-		return String.format(keyPattern, cacheid, getKeyPrefix(cacheid), com.genexus.CommonUtil.getHash(key));
+	private String getKey(String cacheId, String key) {
+		return String.format(keyPattern, cacheId, getKeyPrefix(cacheId), com.genexus.CommonUtil.getHash(key));
 	}
 
 	private String[] getKey(String cacheid, String[] keys) {

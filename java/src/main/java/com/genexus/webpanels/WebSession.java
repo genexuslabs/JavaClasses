@@ -21,8 +21,8 @@ public class WebSession {
 
 	public WebSession(IHttpServletRequest request) {
 		this.request = request;
-		sessionValues = null;
-		updateSessionInvalidated();
+		//sessionValues = null;
+		//updateSessionInvalidated();
 	}
 
 	private IHttpSession getSession() {
