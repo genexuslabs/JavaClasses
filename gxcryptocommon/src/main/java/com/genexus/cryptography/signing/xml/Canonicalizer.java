@@ -1,5 +1,9 @@
 package com.genexus.cryptography.signing.xml;
 
+
+import java.io.ByteArrayOutputStream;
+
+
 import org.apache.xml.security.Init;
 
 public class Canonicalizer {
@@ -18,7 +22,14 @@ public class Canonicalizer {
 		org.apache.xml.security.c14n.Canonicalizer cononicalizer = org.apache.xml.security.c14n.Canonicalizer
 				.getInstance(org.apache.xml.security.c14n.Canonicalizer.ALGO_ID_C14N_OMIT_COMMENTS);
 
-		byte result[] = cononicalizer.canonicalize(inputBytes);
+		byte result[];
+		try(ByteArrayOutputStream newStream = new ByteArrayOutputStream())
+		{
+			cononicalizer.canonicalize(inputBytes, newStream, false);
+			result = newStream.toByteArray();
+		}
+		
+		
 		return new String(result);
 	}
 
