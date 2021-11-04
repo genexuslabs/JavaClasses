@@ -2,27 +2,26 @@ package com.genexus.internet;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import com.genexus.servlet.http.ICookie;
 import com.genexus.util.IniFile;
-import org.apache.http.HttpResponse;
+import org.apache.http.*;
 import com.genexus.CommonUtil;
 import com.genexus.specific.java.*;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.protocol.HttpContext;
-import org.apache.http.Header;
-import org.apache.http.HeaderElement;
-import org.apache.http.HeaderElementIterator;
-import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.NTCredentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.*;
-import HTTPClient.*;
 import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
@@ -113,6 +112,9 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private CredentialsProvider credentialsProvider = null;
 	private RequestConfig reqConfig = null;		// Atributo usado en la ejecucion del metodo (por ejemplo, httpGet, httpPost)
 	private CookieStore cookies;
+	private ByteArrayEntity entity = null;	// Para mantener el stream luego de cerrada la conexion en la lectura de la response
+	private Boolean lastAuthIsBasic = null;
+	private Boolean lastAuthProxyIsBasic = null;
 	private static IniFile clientCfg = new com.genexus.ModelContext(com.genexus.ModelContext.getModelContextPackageClass()).getPreferences().getIniFile();
 
 
@@ -122,6 +124,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		resetErrorsAndConnParams();
 		setErrCode(0);
 		setErrDescription("");
+		entity = null;
 	}
 
 
@@ -136,37 +139,76 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 	}
 
+	@Override
+	public void addAuthentication(int type, String realm, String name, String value) {	// Metodo overriden por tratarse de forma distinta el pasaje de auth Basic y el resto
+		if (type == BASIC)
+			lastAuthIsBasic = true;
+		else
+			lastAuthIsBasic = false;
+		super.addAuthentication(type,realm,name,value);
+	}
+
+	@Override
+	public void addProxyAuthentication(int type, String realm, String name, String value) {	// Metodo overriden por tratarse de forma distinta el pasaje de auth Basic y el resto
+		if (type == BASIC)
+			lastAuthProxyIsBasic = true;
+		else
+			lastAuthProxyIsBasic = false;
+		super.addProxyAuthentication(type,realm,name,value);
+	}
+
 	private void resetStateAdapted()
 	{
 		resetState();
 		getheadersToSend().clear();
 	}
 
-	private String getURLValid(String url) {
-		URI uri;
+	@Override
+	public void setURL(String stringURL) {
 		try
 		{
-			uri = new URI(url);		// En caso que la URL pasada por parametro no sea una URL valida (en este caso seria que no sea un URL absoluta), salta una excepcion en esta linea, y se continua haciendo todo el proceso con los datos ya guardados como atributos
-			setPrevURLhost(getHost());
-			setPrevURLbaseURL(getBaseURL());
-			setPrevURLport(getPort());
-			setPrevURLsecure(getSecure());
-			setIsURL(true);
-			setURL(url);
-
-			StringBuilder relativeUri = new StringBuilder();
-			if (uri.getPath() != null) {
-				relativeUri.append(uri.getPath());
-			}
-			if (uri.getQueryString() != null) {
-				relativeUri.append('?').append(uri.getQueryString());
-			}
-			if (uri.getFragment() != null) {
-				relativeUri.append('#').append(uri.getFragment());
-			}
-			return relativeUri.toString();
+			java.net.URI url = new java.net.URI(stringURL);
+			setHost(url.getHost());
+			setPort(url.getPort());
+			setBaseURL(url.getPath());
+			setSecure(url.getScheme().equalsIgnoreCase("https") ? 1 : 0);
 		}
-		catch (ParseException e)
+		catch (URISyntaxException e)
+		{
+			System.err.println("E " + e + " " + stringURL);
+			e.printStackTrace();
+		}
+	}
+
+	private String getURLValid(String url) {
+		java.net.URI uri;
+		try
+		{
+			uri = new java.net.URI(url);
+			if (!uri.isAbsolute())		// En caso que la URL pasada por parametro no sea una URL valida (en este caso seria que no sea un URL absoluta), salta una excepcion en esta linea, y se continua haciendo todo el proceso con los datos ya guardados como atributos
+				return url;
+			else {
+				setPrevURLhost(getHost());
+				setPrevURLbaseURL(getBaseURL());
+				setPrevURLport(getPort());
+				setPrevURLsecure(getSecure());
+				setIsURL(true);
+				setURL(url);
+
+				StringBuilder relativeUri = new StringBuilder();
+				if (uri.getPath() != null) {
+					relativeUri.append(uri.getPath());
+				}
+				if (uri.getQuery() != null) {
+					relativeUri.append('?').append(uri.getQuery());
+				}
+				if (uri.getFragment() != null) {
+					relativeUri.append('#').append(uri.getFragment());
+				}
+				return relativeUri.toString();
+			}
+		}
+		catch (URISyntaxException e)
 		{
 			return url;
 		}
@@ -246,10 +288,19 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 	}
 
+	private void addBasicAuthHeader(String user, String password, Boolean isProxy) {
+		Boolean typeAuth = isProxy ? this.lastAuthProxyIsBasic : this.lastAuthIsBasic;
+		if (typeAuth) {
+			String auth = user + ":" + password;
+			String authHeader = "Basic " + Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.ISO_8859_1));
+			addHeader(isProxy ? HttpHeaders.PROXY_AUTHORIZATION : HttpHeaders.AUTHORIZATION, authHeader);
+		}
+	}
+
 	public void execute(String method, String url) {
 		resetExecParams();
 
-		url = getURLValid(url);		// Funcion genera parte del path en adelante de la URL
+		url = getURLValid(url).trim();		// Funcion genera parte del path en adelante de la URL
 
 		try {
 			CookieStore cookiesToSend = null;
@@ -266,28 +317,28 @@ public class HttpClientJavaLib extends GXHttpClient {
 				this.httpClientBuilder.setDefaultCookieStore(cookiesToSend);    // Cookies Seteo CookieStore
 			}
 
-			if (getProxyInfoChanged()) {
+			if (getProxyInfoChanged() && !getProxyServerHost().isEmpty() && getProxyServerPort() != 0) {
 				HttpHost proxy = new HttpHost(getProxyServerHost(), getProxyServerPort());
 				this.httpClientBuilder.setRoutePlanner(new DefaultProxyRoutePlanner(proxy));
 				this.reqConfig = RequestConfig.custom()
 					.setSocketTimeout(getTimeout() * 1000)    // Se multiplica por 1000 ya que tiene que ir en ms y se recibe en segundos
+					.setCookieSpec(CookieSpecs.STANDARD)
 					.setProxy(proxy)
 					.build();
 			} else {
 				this.httpClientBuilder.setRoutePlanner(null);
 				this.reqConfig = RequestConfig.custom()
 					.setConnectTimeout(getTimeout() * 1000)   	// Se multiplica por 1000 ya que tiene que ir en ms y se recibe en segundos
+					.setCookieSpec(CookieSpecs.STANDARD)
 					.build();
 			}
 
 			if (getHostChanged() || getAuthorizationChanged()) { // Si el host cambio o si se agrego alguna credencial
 				this.credentialsProvider = new BasicCredentialsProvider();
 
-				for (Enumeration en = getBasicAuthorization().elements(); en.hasMoreElements(); ) {
+				for (Enumeration en = getBasicAuthorization().elements(); en.hasMoreElements(); ) {	// No se puede hacer la autorizacion del tipo Basic con el BasicCredentialsProvider porque esta funcionando bien en todos los casos
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-					this.credentialsProvider.setCredentials(
-						AuthScope.ANY,
-						new UsernamePasswordCredentials(p.user, p.password));
+					addBasicAuthHeader(p.user,p.password,false);
 				}
 
 				for (Enumeration en = getDigestAuthorization().elements(); en.hasMoreElements(); ) {
@@ -323,11 +374,9 @@ public class HttpClientJavaLib extends GXHttpClient {
 					this.credentialsProvider = new BasicCredentialsProvider();
 				}
 
-				for (Enumeration en = getBasicProxyAuthorization().elements(); en.hasMoreElements(); ) {
+				for (Enumeration en = getBasicProxyAuthorization().elements(); en.hasMoreElements(); ) { // No se puede hacer la autorizacion del tipo Basic con el BasicCredentialsProvider porque esta funcionando bien en todos los casos
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-					this.credentialsProvider.setCredentials(
-						AuthScope.ANY,
-						new UsernamePasswordCredentials(p.user, p.password));
+					addBasicAuthHeader(p.user,p.password,true);
 				}
 
 				for (Enumeration en = getDigestProxyAuthorization().elements(); en.hasMoreElements(); ) {
@@ -365,9 +414,9 @@ public class HttpClientJavaLib extends GXHttpClient {
 			url = com.genexus.CommonUtil.escapeUnsafeChars(url);
 
 			if (getSecure() == 1)   // Se completa con esquema y host
-				url = url.startsWith("https://") ? url : "https://" + getHost() + url;		// La lib de HttpClient agrega el port
+				url = url.startsWith("https://") ? url : "https://" + getHost()+ (getPort() != 443?":"+getPort():"")+ url;		// La lib de HttpClient agrega el port
 			else
-				url = url.startsWith("http://") ? url : "http://" + getHost() + ":" + (getPort() == -1? URI.defaultPort("http"):getPort()) + url;
+				url = url.startsWith("http://") ? url : "http://" + getHost() + ":" + (getPort() == -1? "80" :getPort()) + url;
 
 			httpClient = this.httpClientBuilder.build();
 
@@ -398,7 +447,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 				ByteArrayEntity dataToSend;
 				if (!getIsMultipart() && getVariablesToSend().size() > 0)
-					dataToSend = new ByteArrayEntity(Codecs.nv2query(hashtableToNVPair(getVariablesToSend())).getBytes());
+					dataToSend = new ByteArrayEntity(com.genexus.CommonUtil.hashtable2query(getVariablesToSend()).getBytes());
 				else
 					dataToSend = new ByteArrayEntity(getData());
 				httpPost.setEntity(dataToSend);
@@ -541,14 +590,13 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public void getHeader(String name, java.util.Date[] value) {
-		HTTPResponse res = (HTTPClient.HTTPResponse) response;
-		if (res == null)
+		if (response == null)
 			return;
 		try
 		{
-			value[0] = res.getHeaderAsDate(name);
+			value[0] = com.genexus.CommonUtil.getHeaderAsDate(response.getFirstHeader(name).getValue());
 		}
-		catch (IOException | ModuleException e)
+		catch (IOException e)
 		{
 			setExceptionsCatch(e);
 		}
@@ -561,30 +609,37 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public InputStream getInputStream() throws IOException {
-		if (response != null)
-			return response.getEntity().getContent();
-		else
+		if (response != null) {
+			this.setEntity();
+			return entity.getContent();
+		} else
 			return null;
 	}
 
 	public InputStream getInputStream(String stringURL) throws IOException
 	{
 		try {
-			URI url = new URI(stringURL);
+			java.net.URI url = new java.net.URI(stringURL);
 			HttpGet gISHttpGet = new HttpGet(String.valueOf(url));
 			CloseableHttpClient gISHttpClient = HttpClients.createDefault();
 			return gISHttpClient.execute(gISHttpGet).getEntity().getContent();
 
-		} catch (ParseException e) {
+		} catch (URISyntaxException e) {
 			throw new IOException("Malformed URL " + e.getMessage());
 		}
+	}
+
+	private void setEntity() throws IOException {
+		if (entity == null)
+			entity = new ByteArrayEntity(EntityUtils.toByteArray(response.getEntity()));
 	}
 
 	public String getString() {
 		if (response == null)
 			return "";
 		try {
-			String res = EntityUtils.toString(response.getEntity(), "UTF-8");
+			this.setEntity();
+			String res = EntityUtils.toString(entity, "UTF-8");
 			return res;
 		} catch (IOException e) {
 			setExceptionsCatch(e);
@@ -597,7 +652,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 		if (response == null)
 			return;
 		try {
-			CommonUtil.InputStreamToFile(response.getEntity().getContent(), fileName);
+			this.setEntity();
+			CommonUtil.InputStreamToFile(entity.getContent(), fileName);
 		} catch (IOException e) {
 			setExceptionsCatch(e);
 		}

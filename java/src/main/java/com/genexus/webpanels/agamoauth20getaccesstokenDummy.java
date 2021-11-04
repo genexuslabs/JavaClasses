@@ -20,6 +20,8 @@ public class agamoauth20getaccesstokenDummy extends GXWebObjectStub
    {
       return "";
    }
+
+   protected String EncryptURLParameters() {return "NO";};
    
    protected void init(HttpContext context )
    {

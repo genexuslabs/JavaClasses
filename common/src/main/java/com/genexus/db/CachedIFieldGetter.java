@@ -72,8 +72,12 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 	}
 		
 	public String getVarchar(int columnIndex) throws SQLException
-	{	
-		return this.<String>getValue(getColumnIndex(columnIndex));
+	{
+		Object result = this.<String>getValue(getColumnIndex(columnIndex));
+		if (result.getClass().getName().equals("com.genexus.GXGeospatial"))
+			return result.toString();
+		else
+			return (String) result;
 	}
 		
 	public String getString(int columnIndex, int length) throws SQLException
@@ -156,7 +160,7 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 		}
 		else
 		{
-			if (SpecificImplementation.Application.getModelContext() != null && SpecificImplementation.Application.getModelContext().getClientTimeZone() != null && mTimeZone != null)
+			if (SpecificImplementation.Application.getModelContext() != null && SpecificImplementation.Application.getModelContext().getClientTimeZone() != null && mTimeZone != null && !CommonUtil.resetTime(val).equals(CommonUtil.nullDate()))
 				val = CommonUtil.ConvertDateTime(val, mTimeZone, SpecificImplementation.Application.getModelContext().getClientTimeZone());
 		}
 		return val;
@@ -254,6 +258,10 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 
 	public java.util.UUID getGUID(int columnIndex) throws SQLException
 	{
-		return this.<java.util.UUID>getValue(getColumnIndex(columnIndex));
-	}		
+		Object value = this.getValue(getColumnIndex(columnIndex));
+		if (value instanceof java.util.UUID)
+			return this.<java.util.UUID>getValue(getColumnIndex(columnIndex));
+		else
+			return (java.util.UUID) CommonUtil.convertObjectTo(value, TypeConstants.UUID);
+	}
 }

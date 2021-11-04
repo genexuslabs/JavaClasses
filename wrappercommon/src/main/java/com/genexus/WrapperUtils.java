@@ -1,7 +1,14 @@
 package com.genexus;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.stream.Collectors;
+
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 
 public class WrapperUtils {
@@ -37,4 +44,13 @@ public class WrapperUtils {
         statusCode[0] = localStatusCode;
         return errorJson.toString();
     }
+
+	public static ThreadLocal<String> requestBodyThreadLocal = new ThreadLocal<String>();
+
+    public static InputStream storeRestRequestBody(InputStream is) throws IOException {
+		String body = new BufferedReader(new InputStreamReader(is, "UTF-8")).lines().collect(Collectors.joining("\n"));
+		requestBodyThreadLocal.set(body);
+
+		return IOUtils.toInputStream(body, "UTF-8");
+	}
 }

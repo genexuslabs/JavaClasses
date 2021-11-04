@@ -1,5 +1,8 @@
 package com.genexus.db.driver;
 
+import com.genexus.CommonUtil;
+import com.genexus.common.interfaces.SpecificImplementation;
+
 public class ExternalProviderCommon {
 
 	public static String getProviderObjectName(ExternalProvider provider, String objectNameOrUrl)
@@ -13,7 +16,19 @@ public class ExternalProviderCommon {
 				providerObjectName = providerObjectName.substring(0, providerObjectName.indexOf("?"));
 			}
 		}
+
+		if (providerObjectName != null && CommonUtil.isAbsoluteURL(objectNameOrUrl))
+			providerObjectName = SpecificImplementation.GXutil.URLDecode(providerObjectName);
+
 		return providerObjectName;
+	}
+
+	public static String getProviderObjectNameOrRelative(ExternalProvider provider, String objectNameOrUrl)
+	{
+		if (!CommonUtil.isAbsoluteURL(objectNameOrUrl)){
+			return objectNameOrUrl;
+		}
+		return  getProviderObjectName(provider, objectNameOrUrl);
 	}
 
 	public static String getProviderObjectAbsoluteUriSafe(ExternalProvider provider, String rawObjectUri)

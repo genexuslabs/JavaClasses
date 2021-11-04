@@ -1726,7 +1726,7 @@ public final class GXutil
 		}
 	}
 
-	public static String buildURLFromHttpClient(com.genexus.internet.HttpClient GXSoapHTTPClient, String serviceName, javax.xml.ws.BindingProvider bProvider)
+	public static String buildURLFromHttpClient(com.genexus.internet.HttpClient GXSoapHTTPClient, String serviceName, com.genexus.xml.ws.BindingProvider bProvider)
 	{
 		if (!GXSoapHTTPClient.getProxyServerHost().equals(""))
 		{
