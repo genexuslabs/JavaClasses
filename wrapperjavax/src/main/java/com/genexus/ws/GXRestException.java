@@ -4,9 +4,12 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+
 import com.genexus.WrapperUtils;
+import javax.annotation.Priority;
 
 @Provider
+@Priority(2)
 public class GXRestException extends Throwable implements ExceptionMapper<Throwable>
 {
 	private static final long serialVersionUID = 1L;
@@ -23,8 +26,8 @@ public class GXRestException extends Throwable implements ExceptionMapper<Throwa
 			reasonPhrase = ((WebApplicationException)ex).getResponse().getStatusInfo().getReasonPhrase();
 			applicationException = true;
 		}
-
-		String jsonString = WrapperUtils.getJsonFromRestExcpetion(statusCode, reasonPhrase, applicationException, ex);
+		
+		String jsonString = WrapperUtils.getJsonFromRestException(statusCode, reasonPhrase, applicationException, ex);
 		return Response.status(statusCode[0]).entity(jsonString).type("application/json").build();
 	}
 }
