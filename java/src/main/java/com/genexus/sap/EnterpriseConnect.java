@@ -194,8 +194,7 @@ public class EnterpriseConnect
 			throw new RuntimeException(ex.toString());
 		}
 		if (setValues)
-		{
-			//System.out.println( " TABLE " + jTable.toString() );
+		{			
 			function.getTableParameterList().setActive(parameterName, true);
 		}
 		else
@@ -276,16 +275,26 @@ public class EnterpriseConnect
 					tbl.setRow(i);
 					for(JCoField field : tbl)
 					{
-						if ( field.getType() == JCoMetaData.TYPE_NUM || 
-						     field.getType() == JCoMetaData.TYPE_FLOAT ||
-                             field.getType() == JCoMetaData.TYPE_BCD )
+						if  (field.getType() == JCoMetaData.TYPE_INT || 
+						    (field.getType() == JCoMetaData.TYPE_NUM  && field.getDecimals() == 0))
 						{
-							jRow.put(field.getName(), field.getDouble());
+							jRow.put(field.getName(), field.getLong());
+						}
+						else if (field.getType() == JCoMetaData.TYPE_INT2 || field.getType() == JCoMetaData.TYPE_INT1 
+								|| field.getType() == JCoMetaData.TYPE_BYTE )
+						{
+							jRow.put(field.getName(), field.getInt());
+						}
+						else if ( field.getType() == JCoMetaData.TYPE_NUM || 
+								field.getType() == JCoMetaData.TYPE_FLOAT ||
+    	    	            	field.getType() == JCoMetaData.TYPE_BCD )
+						{
+								jRow.put(field.getName(), field.getDouble());
 						}
 						else
 						{
-							jRow.put(field.getName(), field.getString());
-						}				
+								jRow.put(field.getName(), field.getString());
+						}										
 					}
 					jCol.put(jRow);
 				}		
