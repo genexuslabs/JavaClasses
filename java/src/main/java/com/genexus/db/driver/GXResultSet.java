@@ -35,6 +35,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 	private static final boolean DEBUG = DebugFlag.DEBUG;
 
 	public static boolean longVarCharAsOracleLong = false;
+	public static boolean blankStringAsEmpty = false;
 
 	private ResultSet result;
 	private Statement stmt;
@@ -251,6 +252,11 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		}
 
 		resultRegBytes += value.length();
+
+		if (con.getDBMS() instanceof GXDBMSoracle7 && blankStringAsEmpty && GXPreparedStatement.addSpaceToEmptyVarChar && value.equals(" "))
+		{
+			value = "";
+		}
 		return value;
 	}
 
