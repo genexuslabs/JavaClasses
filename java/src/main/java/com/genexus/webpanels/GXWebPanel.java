@@ -527,7 +527,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			try
 			{
 				String pckgName = (objMessage.has("pkgName") && objMessage.getString("pkgName").length() > 0)? objMessage.getString("pkgName") + ".": "";
-				if (objMessage.getBoolean("MPage"))
+				if (objMessage.has("MPage") && objMessage.getBoolean("MPage"))
 				{
 					if (objMessage.has("objClass"))
 					{
