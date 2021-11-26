@@ -27,14 +27,11 @@ public class GXWebProgressIndicator
 
         private void updateProgress()
         {
-			if (running)
-			{
-				GXWebNotificationInfo notif = new GXWebNotificationInfo(0,context,"");  
-				notif.setId(GXWebProgressIndicator.ID);
-				notif.setGroupName(GXWebProgressIndicator.ID);
-				notif.setMessage(info);          
-				notification.notify(notif);
-			}
+			GXWebNotificationInfo notif = new GXWebNotificationInfo(0,context,"");
+			notif.setId(GXWebProgressIndicator.ID);
+			notif.setGroupName(GXWebProgressIndicator.ID);
+			notif.setMessage(info);
+			notification.notify(notif);
         }
         
         public void showWithTitle(String title)
