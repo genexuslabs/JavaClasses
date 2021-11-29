@@ -29,8 +29,6 @@ import java.util.concurrent.CountDownLatch;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
 
 public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyResponse> {
-
-	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(HttpContextWeb.class);
 	private static ILogger logger = null;
 	public static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = null;
 	private static ResourceConfig jerseyApplication = null;
@@ -38,6 +36,7 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 
 	public LambdaHandler() throws Exception {
 		if (LambdaHandler.jerseyApplication == null) {
+			JerseyLambdaContainerHandler.getContainerConfig().setDefaultContentCharset("UTF-8");
 			LambdaHandler.jerseyApplication = ResourceConfig.forApplication(initialize());
 			if (jerseyApplication.getClasses().size() == 0) {
 				String errMsg = "No endpoints found for this application";
@@ -48,17 +47,6 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 		}
 	}
 
-	private void dumpRequest(AwsProxyRequest awsProxyRequest){
-		String lineSeparator = System.lineSeparator();
-
-		String reqData = "";
-		reqData += String.format("Path: %s", awsProxyRequest.getPath()) + lineSeparator;
-		reqData += String.format("Method: %s", awsProxyRequest.getHttpMethod()) + lineSeparator;
-		reqData += String.format("QueryString: %s", awsProxyRequest.getQueryString()) + lineSeparator;
-		reqData += String.format("Body: %sn", awsProxyRequest.getBody()) + lineSeparator;
-
-		logger.debug(reqData);
-	}
 
 	@Override
 	public AwsProxyResponse handleRequest(AwsProxyRequest awsProxyRequest, Context context) {
@@ -70,8 +58,8 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 
 		logger.debug("Before handle Request");
 		AwsProxyResponse response = this.handler.proxy(awsProxyRequest, context);
-		logger.debug("After handle Request");
 		int statusCode = response.getStatusCode();
+		logger.debug("After handle Request - Status Code: " + statusCode);
 
 		if (statusCode >= 400 && statusCode <= 599) {
 			logger.warn(String.format("Request could not be handled (%d): %s", response.getStatusCode(), path));
@@ -166,5 +154,14 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 			logger.error("Failed to initialize App", e);
 			throw e;
 		}
+	}
+
+	private void dumpRequest(AwsProxyRequest awsProxyRequest){
+		String lineSeparator = System.lineSeparator();
+		String reqData = String.format("Path: %s", awsProxyRequest.getPath()) + lineSeparator;
+		reqData += String.format("Method: %s", awsProxyRequest.getHttpMethod()) + lineSeparator;
+		reqData += String.format("QueryString: %s", awsProxyRequest.getQueryString()) + lineSeparator;
+		reqData += String.format("Body: %sn", awsProxyRequest.getBody()) + lineSeparator;
+		logger.debug(reqData);
 	}
 }

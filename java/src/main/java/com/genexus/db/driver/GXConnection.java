@@ -137,6 +137,11 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 				GXPreparedStatement.addSpaceToEmptyVarChar = false;
 			}
 
+			if(context.getPreferences().getProperty("BlankStringAsEmpty", "0").equals("1"))
+			{
+				GXResultSet.blankStringAsEmpty = true;
+			}
+
 			if(context.getPreferences().getProperty("AvoidDataTruncationError", "0").equals("1"))
 			{
 				GXPreparedStatement.avoidDataTruncationError = true;
