@@ -48,10 +48,13 @@ public class HttpRequestWeb extends HttpRequest
 			return messageBody;
 		}
 
-		String restRequestBody = WrapperUtils.requestBodyThreadLocal.get();
-		if (restRequestBody != null)
+		if (httpContext.isRestService())
 		{
-			return restRequestBody;
+			String restRequestBody = WrapperUtils.requestBodyThreadLocal.get();
+			if (restRequestBody != null)
+			{
+				return restRequestBody;
+			}
 		}
 		
 		try
