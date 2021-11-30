@@ -2,6 +2,8 @@ package com.genexus.security.web;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 
@@ -31,25 +33,29 @@ public class SecureTokenHelper {
         String encoded = "";
         JWTSigner signer = new JWTSigner(secretKey);
         Map<String,Object> claims;
-		try {
+
+        try {
 			claims = new ObjectMapper().readValue(payload, Map.class);
-			switch (mode)
-	        {
-	            case Sign:
+		}
+        catch (JsonProcessingException e) {
+			logger.error("Signature Error - Failed to serialize payload", e);
+			return "";
+		}
+
+		switch (mode)
+		{
+			case Sign:
 				try {
-					encoded = signer.sign(claims);				
+					encoded = signer.sign(claims);
 				} catch (Exception e) {
-					logger.error("Sign Error", e);
+					logger.error("Signature Error", e);
 				}
-	                break;
-	            case SignEncrypt:
-	            case None:
-	                throw new NotImplementedException();	                	            	            
-	        }		
-		} 
-		catch (Exception e1) {
-			logger.error("Sign Error", e1);
-		}												      
+				break;
+			case SignEncrypt:
+			case None:
+				logger.warn(String.format("Signature Mode '%s' not implemented", mode));
+				break;
+		}
         return encoded;
     }
 
