@@ -17,6 +17,7 @@ import com.genexus.PrivateUtilities;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.xml.XMLReader;
+import org.apache.commons.lang.StringUtils;
 
 
 public class WebUtils
@@ -437,12 +438,10 @@ public class WebUtils
 		
 		public static String parmsEncryptionKey(com.genexus.ModelContext context)
 		{
-			String GXKey = "";
             String keySourceType = com.genexus.Application.getClientPreferences().getUSE_ENCRYPTION();
-            if (!keySourceType.equals("")) {
-                GXKey = getEncryptionKey(context, keySourceType);
-            }
-            return GXKey;
+            if (keySourceType.equals(""))
+            	return "";
+            return getEncryptionKey(context, keySourceType);
 		}
 		
 		public static String getEncryptionKey(com.genexus.ModelContext context, String keySourceType){
@@ -450,16 +449,21 @@ public class WebUtils
 			{
 				keySourceType = com.genexus.Application.getClientPreferences().getUSE_ENCRYPTION();
 			}
-            String GXKey = "";
+
+            String encryptionKey;
             if (keySourceType.equalsIgnoreCase("SESSION"))
 			{
-            	GXKey = com.genexus.util.Encryption.decrypt64(((HttpContext) context.getHttpContext()).getCookie("GX_SESSION_ID"), context.getServerKey());
+            	encryptionKey = com.genexus.util.Encryption.decrypt64(((HttpContext) context.getHttpContext()).getCookie("GX_SESSION_ID"), context.getServerKey());
             }
             else
 			{            	
-            	GXKey = context.getSiteKey();                
-            }                                                                                     
-            return GXKey;			
+            	encryptionKey = context.getSiteKey();
+            }
+			if (StringUtils.isEmpty(encryptionKey)) {
+				logger.error("Encryption Key cannot be empty");
+				logger.debug(keySourceType);
+			}
+            return encryptionKey;
 		}
 		
 	private static final String gxApplicationClassesFileName = "GXApplicationClasses.txt";
