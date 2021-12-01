@@ -5,6 +5,8 @@ import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
 import java.nio.charset.StandardCharsets;
 
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.crypto.BlockCipher;
 import org.bouncycastle.crypto.BufferedBlockCipher;
@@ -23,6 +25,7 @@ import java.security.SecureRandom;
 
 public class Encryption
 {
+	public static final ILogger logger = LogManager.getLogger(Encryption.class);
     public static String AJAX_ENCRYPTION_KEY = "GX_AJAX_KEY";
 	public static String AJAX_ENCRYPTION_IV = "GX_AJAX_IV";
 	public static String AJAX_SECURITY_TOKEN = "AJAX_SECURITY_TOKEN";
@@ -180,12 +183,12 @@ public class Encryption
 		}
 		catch (InvalidKeyException e)
 		{
-			System.err.println(e);
+			logger.error("decrypt64 error", e);
 			throw new InvalidGXKeyException(e.getMessage());
 		}
 		catch(UnsupportedEncodingException e)
 		{
-			System.err.println(e);
+			logger.error("decrypt64 error", e);
 			throw new RuntimeException(e.getMessage());
 		}
 		catch (ArrayIndexOutOfBoundsException e)
@@ -374,7 +377,7 @@ public class Encryption
 		try {
 			outputBytes = aesCipher(inputBytes, true, key, GX_AJAX_PRIVATE_IV);
 		} catch (DataLengthException | IllegalStateException | InvalidCipherTextException e) {
-			e.printStackTrace();
+			logger.error("encryptRijndael error", e);
 			return "";
 		}
 		return Hex.toHexString(outputBytes);
