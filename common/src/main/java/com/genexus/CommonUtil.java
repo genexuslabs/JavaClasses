@@ -2694,68 +2694,50 @@ public final class CommonUtil
         }
         //Parameters in URL are always in Invariant Format
 
-        if (className.equals("short") || className.equals("java.lang.Short") || className.equals("[S"))
-        {
-            try
+        if (className.equals("short") || className.equals("java.lang.Short") || className.equals("[S") ||
+			className.equals("byte") || className.equals("java.lang.Byte") || className.equals("[B") ||
+			className.equals("int") || className.equals("java.lang.Integer") || className.equals("[I") ||
+			className.equals("long") || className.equals("java.lang.Long") || className.equals("[J"))
+		{
+			try
             {
-           		if (objStr.isEmpty())
-					objStr = "0";
-				else 
-				{
-					int i = objStr.indexOf(".");
-					if (i >= 0)
-            			objStr =  objStr.substring(0, i);  
-				}         	
-                return Short.valueOf(objStr);
-            }
-            catch(Exception e)
-            {
-                if (fail)
-                    throw e;
-                return new Short((short)0);
-            }
-        }
-        if (className.equals("byte") || className.equals("java.lang.Byte") || className.equals("[B"))
-        {
-            try
-            {
+            	
 				if (objStr.isEmpty())
 					objStr ="0";
 				else 
 				{
-					int i = objStr.indexOf(".");
+					int i = objStr.indexOf(".") ;
 					if	(i >= 0)
-            			objStr =  objStr.substring(0, i);  
-				}               	              	
+					{
+						if (objStr.indexOf('E') == -1 && objStr.indexOf('e') == -1)
+	            			objStr =  objStr.substring(0, i);  
+						else
+							objStr = CommonUtil.strUnexponentString(objStr);
+					}
+				}
+            }
+            catch(Exception e)
+            {
+                if (fail)
+                    throw e;
+				objStr = "0";                
+            }
+			if (className.equals("short") || className.equals("java.lang.Short") || className.equals("[S"))		   
+    	    {
+        	    return Short.valueOf(objStr);        
+        	}
+        	else if (className.equals("byte") || className.equals("java.lang.Byte") || className.equals("[B"))
+        	{
                 return Byte.valueOf(objStr);
             }
-            catch(Exception e)
-            {
-                if (fail)
-                    throw e;
-                return new Byte((byte)0);
-            }
-        }
-        else if (className.equals("int") || className.equals("java.lang.Integer") || className.equals("[I"))
-        {
-            try
-            {
-            	if (objStr.isEmpty())
-					objStr ="0";
-				else 
-				{
-					int i = objStr.indexOf(".");
-					if	(i >= 0)
-            			objStr =  objStr.substring(0, i);  
-				}       	
-                return new Integer(objStr);
-            }
-            catch(Exception e)
-            {
-                if (fail)
-                    throw e;
-                return new Integer(0);
-            }
+			else if (className.equals("int") || className.equals("java.lang.Integer") || className.equals("[I"))
+			{
+				return  Integer.valueOf(objStr);
+			}    
+			else if (className.equals("long") || className.equals("java.lang.Long") || className.equals("[J"))
+			{
+				return Long.valueOf(objStr);
+			}
         }
         else if (className.equals("string") || className.indexOf("java.lang.String") != -1)
         {
@@ -2773,7 +2755,7 @@ public final class CommonUtil
             {
                 if (fail)
                     throw e;
-                return new Double(0);
+                return Double.valueOf("0");
             }
         }
         else if (className.equals("float") || className.equals("java.lang.Float") || className.equals("[F"))
@@ -2788,30 +2770,7 @@ public final class CommonUtil
             {
                 if (fail)
                     throw e;
-                return new Float(0);
-            }
-        }
-        else if (className.equals("long") || className.equals("java.lang.Long") || className.equals("[J"))
-        {
-            try
-            {
-            	
-				if (objStr.isEmpty())
-					objStr ="0";
-				else 
-				{
-					int i = objStr.indexOf(".");
-					if	(i >= 0)
-            			objStr =  objStr.substring(0, i);  
-				}
-                return Long.valueOf(CommonUtil.strUnexponentString(objStr));
-
-            }
-            catch(Exception e)
-            {
-                if (fail)
-                    throw e;
-                return new Long(0);
+                return Float.valueOf("0");
             }
         }
         else if (className.equals("boolean") || className.equals("java.lang.Boolean") || className.equals("[Z"))
@@ -2824,14 +2783,14 @@ public final class CommonUtil
             {
                 if (fail)
                     throw e;
-                return new Boolean(false);
+                return Boolean.valueOf("false");
             }
         }
         else if (className.indexOf("java.math.BigDecimal") != -1)
         {
             try
             {
-            		if (objStr.isEmpty())
+            	if (objStr.isEmpty())
             			objStr = "0";                	
                 return DecimalUtil.stringToDec(objStr);
             }

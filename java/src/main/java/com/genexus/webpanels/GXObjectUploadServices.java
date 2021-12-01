@@ -168,6 +168,10 @@ public class GXObjectUploadServices extends GXWebObjectStub
 		{
 			return "ram";
 		}
+		if (contentType.startsWith("audio/vnd.rn-realaudio"))
+		{
+			return "ram";
+		}
 		if (contentType.startsWith("application/pdf"))
 		{
 			return "pdf";
@@ -191,7 +195,15 @@ public class GXObjectUploadServices extends GXWebObjectStub
 		if (contentType.startsWith("audio/mp4"))
 		{
 			return "m4a";
-		}	   
+		}
+		if (contentType.startsWith("audio/x-m4a"))
+		{
+			return "m4a";
+		}
+		if (contentType.startsWith("audio/aiff"))
+		{
+			return "aif";
+		}
 		if (contentType.startsWith("audio/3gpp"))
 		{
 			return "a3gpp";

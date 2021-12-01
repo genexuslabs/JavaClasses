@@ -7,16 +7,19 @@
           Main DBMS: SQL Server
 */
 package com.gx.serverless.test;
-import com.gx.serverless.*;
+
+import com.genexus.ApplicationContext;
+import com.genexus.GXutil;
+import com.genexus.GxRestService;
+
+import javax.servlet.ServletContext;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.*;
-import javax.servlet.*;
+import javax.ws.rs.core.Response;
 
-import com.genexus.*;
-
-@Path("/Test")
-public final  class test_services_rest extends GxRestService
+@Path("/ReceiveNumber")
+public final  class receivenumber_services_rest extends GxRestService
 {
    @Context
    private ServletContext myContext;
@@ -139,25 +142,6 @@ public final  class test_services_rest extends GxRestService
          return builder.build() ;
       }
    }
-
-	@javax.ws.rs.POST
-	@javax.ws.rs.Path("gxobject")
-	@javax.ws.rs.Produces({javax.ws.rs.core.MediaType.APPLICATION_JSON + ";charset=UTF-8"})
-	public javax.ws.rs.core.Response Upload( ) throws Exception
-	{
-		super.init( "POST" );
-		try
-		{
-			builder = new com.genexus.webpanels.GXObjectUploadServices().doInternalRestExecute(restHttpContext);
-			cleanup();
-			return (javax.ws.rs.core.Response) builder.build() ;
-		}
-		catch ( Exception e )
-		{
-			cleanup();
-			throw e;
-		}
-	}
 
    protected boolean IntegratedSecurityEnabled( )
    {
