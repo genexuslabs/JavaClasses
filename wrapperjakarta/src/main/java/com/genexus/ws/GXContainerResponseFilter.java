@@ -16,7 +16,7 @@ public class GXContainerResponseFilter implements ContainerResponseFilter{
 		if (responseContext.getStatus() == 400 && responseContext.getEntity() instanceof String) {
 			int statusCode[] = {400};
 			String reasonPhrase = "Bad Request";
-			String jsonString = WrapperUtils.getJsonFromRestExcpetion(statusCode, reasonPhrase, true, new Throwable((String)responseContext.getEntity()));
+			String jsonString = WrapperUtils.getJsonFromRestException(statusCode, reasonPhrase, true, new Throwable((String)responseContext.getEntity()));
 			responseContext.getHeaders().remove("Content-Type");
 			responseContext.getHeaders().add("Content-Type", "application/json");
 			responseContext.setEntity(jsonString);
