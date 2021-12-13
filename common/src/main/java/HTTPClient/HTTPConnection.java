@@ -664,11 +664,11 @@ static
      *
      * @param applet the current applet
      */
-    public HTTPConnection(Object applet)  throws ProtocolNotSuppException
-    {
-    	if (SpecificImplementation.HTTPConnection != null)
-    		SpecificImplementation.HTTPConnection.createHttpConnectionFromApplet(applet, this);
-    }
+//    public HTTPConnection(Object applet)  throws ProtocolNotSuppException
+//    {
+//    	if (SpecificImplementation.HTTPConnection != null)
+//    		SpecificImplementation.HTTPConnection.createHttpConnectionFromApplet(applet, this);
+//    }
 
 
     /**

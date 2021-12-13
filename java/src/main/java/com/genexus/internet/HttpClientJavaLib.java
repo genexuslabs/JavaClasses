@@ -163,23 +163,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 		getheadersToSend().clear();
 	}
 
-	@Override
-	public void setURL(String stringURL) {
-		try
-		{
-			java.net.URI url = new java.net.URI(stringURL);
-			setHost(url.getHost());
-			setPort(url.getPort());
-			setBaseURL(url.getPath());
-			setSecure(url.getScheme().equalsIgnoreCase("https") ? 1 : 0);
-		}
-		catch (URISyntaxException e)
-		{
-			System.err.println("E " + e + " " + stringURL);
-			e.printStackTrace();
-		}
-	}
-
 	private String getURLValid(String url) {
 		java.net.URI uri;
 		try
