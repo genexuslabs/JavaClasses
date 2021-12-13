@@ -24,7 +24,7 @@ public class SpecificImplementation {
 	public static IExtensionMessages						Messages;
 	public static IExtensionPictureFormatter				PictureFormatter;
 	public static IExtensionSdtMessages_Message				SdtMessages_Message;
-	public static IExtensionHTTPConnection					HTTPConnection;
+//	public static IExtensionHTTPConnection					HTTPConnection;
 	public static ICryptoAlhorithms 						Algorithms;
 	public static IExtensionModelContext					ModelContext;
 	public static boolean KeepDecimals;

@@ -32,7 +32,7 @@ public final class Connect {
 		if (!ApplicationContext.getInstance().getReorganization())
 			SpecificImplementation.GXXMLSerializer = new GXXMLserializer();
 		SpecificImplementation.HttpClient = new HttpClient();
-		SpecificImplementation.HTTPConnection = new HTTPConnection();
+//		SpecificImplementation.HTTPConnection = new HTTPConnection();
 		SpecificImplementation.HttpCookie = new HttpCookie();
 		SpecificImplementation.ImagesPath = new ImagesPath();
 		SpecificImplementation.LocalUtil = new LocalUtil();
