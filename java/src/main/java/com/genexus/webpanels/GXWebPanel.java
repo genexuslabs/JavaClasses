@@ -793,20 +793,22 @@ public abstract class GXWebPanel extends GXWebObjectBase
 				}
 				else
 				{
-					if (fieldType.isArray())
-					{
-						Object tempArray = getArrayFieldValue(fieldType, value);
-						if (tempArray != null)
-						{
-							value = tempArray;
-						}
-					}
 					try
 					{
-						if (fieldType == java.util.Date.class)
-							value = localUtil.ctot(value.toString(), 0);
-						else
-							value = GXutil.convertObjectTo(value, fieldType);
+						if (fieldType.isArray())
+						{
+							Object tempArray = getArrayFieldValue(fieldType, value);
+							if (tempArray != null)
+							{
+								value = tempArray;
+							}
+						}
+						else {
+							if (fieldType == java.util.Date.class)
+								value = localUtil.ctot(value.toString(), 0);
+							else
+								value = GXutil.convertObjectTo(value, fieldType);
+						}
 						PrivateUtilities.setFieldValue(targetObj, field.getName(), value);
 					}
 					catch (Exception e)
