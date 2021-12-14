@@ -28,6 +28,8 @@ import org.apache.commons.lang.StringUtils;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.platform.INativeFunctions;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.protocol.BasicHttpContext;
 
 final class SMTPSession implements GXInternetConstants,ISMTPSession
 {
@@ -452,23 +454,41 @@ final class SMTPSession implements GXInternetConstants,ISMTPSession
             }
     }
 
-    private Socket getConnectionSocket(int type) throws UnknownHostException, IOException
-    {
-			System.setProperty("HTTPClient.sslUseTLS", "false");
-			InetAddress ipAddr = InetAddress.getByName(host.trim());
-			switch(type)
-			{
-			  case CONN_NORMAL:
-			    return new Socket(host.trim(), port);
-			  case CONN_TLS:
-			    System.setProperty("HTTPClient.sslUseTLS", "true");
-			    return HTTPClient.SSLManager.getSSLConnection(false).getSSLSocket(ipAddr, port);
-			  case CONN_SSL:
-			    HTTPClient.ISSLConnection connection = HTTPClient.SSLManager.getSSLConnection(false);
-			    return connection.processSSLSocket(connection.getSSLSocket(ipAddr, port), ipAddr.getHostName(), port);
-			}
-			return new Socket(host.trim(), port);
-    }
+//    private Socket getConnectionSocket(int type) throws UnknownHostException, IOException
+//    {
+//			System.setProperty("HTTPClient.sslUseTLS", "false");
+//			InetAddress ipAddr = InetAddress.getByName(host.trim());
+//			switch(type)
+//			{
+//			  case CONN_NORMAL:
+//			    return new Socket(host.trim(), port);
+//			  case CONN_TLS:
+//			    System.setProperty("HTTPClient.sslUseTLS", "true");
+//			    return HTTPClient.SSLManager.getSSLConnection(false).getSSLSocket(ipAddr, port);
+//			  case CONN_SSL:
+//			    HTTPClient.ISSLConnection connection = HTTPClient.SSLManager.getSSLConnection(false);
+//			    return connection.processSSLSocket(connection.getSSLSocket(ipAddr, port), ipAddr.getHostName(), port);
+//			}
+//			return new Socket(host.trim(), port);
+//    }
+
+	private Socket getConnectionSocket(int type) throws UnknownHostException, IOException
+	{
+		InetAddress ipAddr = InetAddress.getByName(host.trim());
+		SSLConnectionSocketFactory sslConn;
+		switch(type)
+		{
+			case CONN_NORMAL:
+				return new Socket(host.trim(), port);
+			case CONN_TLS:
+				sslConn = SSLConnConstructor.getSSLSecureInstance(new String[] { "TLSv1.1", "TLSv1.2" });
+				return sslConn.createLayeredSocket(new Socket(host.trim(), port),ipAddr.getHostName(),port,new BasicHttpContext());
+			case CONN_SSL:
+				sslConn = SSLConnConstructor.getSSLSecureInstance(new String[] { "TLSv1" });
+				return sslConn.createLayeredSocket(new Socket(host.trim(), port),ipAddr.getHostName(),port,new BasicHttpContext());
+		}
+		return new Socket(host.trim(), port);
+	}
 
 	private void doLogin(boolean startTLS) throws GXMailException
 	{

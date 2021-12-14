@@ -43,12 +43,8 @@ import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
-
-import javax.net.ssl.SSLContext;
 
 public class HttpClientJavaLib extends GXHttpClient {
 
@@ -64,7 +60,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		if(connManager == null) {
 			Registry<ConnectionSocketFactory> socketFactoryRegistry =
 				RegistryBuilder.<ConnectionSocketFactory>create()
-					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
+					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https",SSLConnConstructor.getSSLSecureInstance(new String[] { "TLSv1", "TLSv1.1", "TLSv1.2" }))
 					.build();
 			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
 			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client","HTTPCLIENT_MAX_SIZE","1000")));
@@ -197,26 +193,26 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 	}
 
-	private static SSLConnectionSocketFactory getSSLSecureInstance() {
-		try {
-			SSLContext sslContext = SSLContextBuilder
-				.create()
-				.loadTrustMaterial(new TrustSelfSignedStrategy())
-				.build();
-			return new SSLConnectionSocketFactory(
-				sslContext,
-				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2" },
-				null,
-				SSLConnectionSocketFactory.getDefaultHostnameVerifier());
-		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
-			e.printStackTrace();
-		}
-		return new SSLConnectionSocketFactory(
-			SSLContexts.createDefault(),
-			new String[] { "TLSv1", "TLSv1.1", "TLSv1.2"},
-			null,
-			SSLConnectionSocketFactory.getDefaultHostnameVerifier());
-	}
+//	private static SSLConnectionSocketFactory getSSLSecureInstance() {
+//		try {
+//			SSLContext sslContext = SSLContextBuilder
+//				.create()
+//				.loadTrustMaterial(new TrustSelfSignedStrategy())
+//				.build();
+//			return new SSLConnectionSocketFactory(
+//				sslContext,
+//				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2" },
+//				null,
+//				SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+//		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
+//			e.printStackTrace();
+//		}
+//		return new SSLConnectionSocketFactory(
+//			SSLContexts.createDefault(),
+//			new String[] { "TLSv1", "TLSv1.1", "TLSv1.2"},
+//			null,
+//			SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+//	}
 
 	private CookieStore setAllStoredCookies() {
 		ICookie[] webcookies;
