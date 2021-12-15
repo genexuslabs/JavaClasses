@@ -11,23 +11,6 @@ import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
-import java.awt.Frame;
-import java.awt.Panel;
-import java.awt.Label;
-import java.awt.Color;
-import java.awt.Button;
-import java.awt.Graphics;
-import java.awt.Dimension;
-import java.awt.TextArea;
-import java.awt.TextField;
-import java.awt.GridLayout;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowAdapter;
-
 
 /**
  * This module handles Netscape cookies (also called Version 0 cookies)

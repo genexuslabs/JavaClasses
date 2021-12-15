@@ -28,8 +28,6 @@
 
 package HTTPClient;
 
-import  java.io.FileInputStream;
-
 
 /**
  * This class implements the MD4 hash as specified in RFC-1320.
