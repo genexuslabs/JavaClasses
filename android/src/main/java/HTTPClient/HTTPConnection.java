@@ -47,10 +47,7 @@ import java.net.UnknownHostException;
 import java.net.NoRouteToHostException;
 import java.util.Vector;
 
-import com.genexus.common.interfaces.SpecificImplementation;
-
 import java.util.StringTokenizer;
-import java.applet.Applet;
 
 
 /**

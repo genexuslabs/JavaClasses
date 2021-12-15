@@ -7,9 +7,7 @@ import java.net.*;
 import java.io.IOException;
 
 import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocketFactory;
-import javax.security.cert.X509Certificate;
 
 /** Esta clase provee un Binding SSL para la libreria JSSE de Sun
  *
