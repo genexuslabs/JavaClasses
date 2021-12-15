@@ -138,24 +138,6 @@ public class POP3Session  implements GXInternetConstants,IPOP3Session
 		login();
     }
 
-//    private Socket getConnectionSocket(int type) throws UnknownHostException, IOException
-//    {
-//			System.setProperty("HTTPClient.sslUseTLS", "false");
-//			InetAddress ipAddr = InetAddress.getByName(pop3Host.trim());
-//			switch(type)
-//			{
-//			  case CONN_NORMAL:
-//			    return new Socket(pop3Host.trim(), pop3Port);
-//			  case CONN_TLS:
-//			    System.setProperty("HTTPClient.sslUseTLS", "true");
-//			    return HTTPClient.SSLManager.getSSLConnection(false).getSSLSocket(ipAddr, pop3Port);
-//			  case CONN_SSL:
-//			    HTTPClient.ISSLConnection connection = HTTPClient.SSLManager.getSSLConnection(false);
-//			    return connection.processSSLSocket(connection.getSSLSocket(ipAddr, pop3Port), ipAddr.getHostName(), pop3Port);
-//			}
-//			return new Socket(pop3Host.trim(), pop3Port);
-//    }
-
 	private Socket getConnectionSocket(int type) throws UnknownHostException, IOException
 	{
 		InetAddress ipAddr = InetAddress.getByName(pop3Host.trim());

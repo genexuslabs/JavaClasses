@@ -454,24 +454,6 @@ final class SMTPSession implements GXInternetConstants,ISMTPSession
             }
     }
 
-//    private Socket getConnectionSocket(int type) throws UnknownHostException, IOException
-//    {
-//			System.setProperty("HTTPClient.sslUseTLS", "false");
-//			InetAddress ipAddr = InetAddress.getByName(host.trim());
-//			switch(type)
-//			{
-//			  case CONN_NORMAL:
-//			    return new Socket(host.trim(), port);
-//			  case CONN_TLS:
-//			    System.setProperty("HTTPClient.sslUseTLS", "true");
-//			    return HTTPClient.SSLManager.getSSLConnection(false).getSSLSocket(ipAddr, port);
-//			  case CONN_SSL:
-//			    HTTPClient.ISSLConnection connection = HTTPClient.SSLManager.getSSLConnection(false);
-//			    return connection.processSSLSocket(connection.getSSLSocket(ipAddr, port), ipAddr.getHostName(), port);
-//			}
-//			return new Socket(host.trim(), port);
-//    }
-
 	private Socket getConnectionSocket(int type) throws UnknownHostException, IOException
 	{
 		InetAddress ipAddr = InetAddress.getByName(host.trim());
