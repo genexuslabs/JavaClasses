@@ -5,9 +5,6 @@ import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import com.genexus.servlet.http.ICookie;
 import com.genexus.util.IniFile;
@@ -32,8 +29,6 @@ import org.apache.http.config.SocketConfig;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.auth.NTLMSchemeFactory;
@@ -192,27 +187,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 			return url;
 		}
 	}
-
-//	private static SSLConnectionSocketFactory getSSLSecureInstance() {
-//		try {
-//			SSLContext sslContext = SSLContextBuilder
-//				.create()
-//				.loadTrustMaterial(new TrustSelfSignedStrategy())
-//				.build();
-//			return new SSLConnectionSocketFactory(
-//				sslContext,
-//				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2" },
-//				null,
-//				SSLConnectionSocketFactory.getDefaultHostnameVerifier());
-//		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
-//			e.printStackTrace();
-//		}
-//		return new SSLConnectionSocketFactory(
-//			SSLContexts.createDefault(),
-//			new String[] { "TLSv1", "TLSv1.1", "TLSv1.2"},
-//			null,
-//			SSLConnectionSocketFactory.getDefaultHostnameVerifier());
-//	}
 
 	private CookieStore setAllStoredCookies() {
 		ICookie[] webcookies;
