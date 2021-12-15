@@ -15,6 +15,7 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 	private int wasNullHits;
 	private TimeZone mTimeZone;	
 	private Hashtable<Integer, Integer> realColIdx; //Introduced in order to enable getting an older column index, because wasNullHits always go forward.
+	private transient ThreadLocal<Integer> lastIndex = new ThreadLocal<>();
 	
 	public CachedIFieldGetter()
 	{
@@ -50,18 +51,27 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 
 	private int getColumnIndex(int colIdx)
 	{
+		int returnVal;
 		if (realColIdx.containsKey(colIdx))
-			return (int) realColIdx.get(colIdx);
+			returnVal = (int) realColIdx.get(colIdx);
 		else {
-			int returnVal = colIdx + wasNullHits - 1;
+			returnVal = colIdx + wasNullHits - 1;
 			realColIdx.put(colIdx, returnVal);
-			return returnVal;
 		}
+		if (lastIndex == null)
+			lastIndex = new ThreadLocal<>();
+		lastIndex.set(returnVal + 1);
+		return returnVal;
 	}
 
 	public boolean wasNull() throws SQLException
 	{
-		boolean result = (value == null);
+		boolean result;
+		if (value[lastIndex.get()] instanceof ArrayList)
+			result =  (boolean)((ArrayList)value[lastIndex.get()]).get(0);
+		else
+			result =  ((boolean[])value[lastIndex.get()])[0];
+
 		this.wasNullHits++;
 		return result;
 	}
