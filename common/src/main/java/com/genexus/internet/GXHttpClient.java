@@ -1,10 +1,9 @@
 package com.genexus.internet;
 
-import HTTPClient.ParseException;
-import HTTPClient.URI;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
 import java.io.*;
+import java.net.URISyntaxException;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -130,17 +129,17 @@ public abstract class GXHttpClient implements IHttpClient{
 		return this.includeCookies;
 	}
 
-	public void setURL(String stringURL)
-	{
+	@Override
+	public void setURL(String stringURL) {
 		try
 		{
-			URI url = new URI(stringURL);
+			java.net.URI url = new java.net.URI(stringURL);
 			setHost(url.getHost());
 			setPort(url.getPort());
 			setBaseURL(url.getPath());
 			setSecure(url.getScheme().equalsIgnoreCase("https") ? 1 : 0);
 		}
-		catch (ParseException e)
+		catch (URISyntaxException e)
 		{
 			System.err.println("E " + e + " " + stringURL);
 			e.printStackTrace();

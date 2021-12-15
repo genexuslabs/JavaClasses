@@ -5,9 +5,6 @@ import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import com.genexus.servlet.http.ICookie;
 import com.genexus.util.IniFile;
@@ -32,8 +29,6 @@ import org.apache.http.config.SocketConfig;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.auth.NTLMSchemeFactory;
@@ -43,12 +38,8 @@ import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
-
-import javax.net.ssl.SSLContext;
 
 public class HttpClientJavaLib extends GXHttpClient {
 
@@ -64,7 +55,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		if(connManager == null) {
 			Registry<ConnectionSocketFactory> socketFactoryRegistry =
 				RegistryBuilder.<ConnectionSocketFactory>create()
-					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
+					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https",SSLConnConstructor.getSSLSecureInstance(new String[] { "TLSv1", "TLSv1.1", "TLSv1.2" }))
 					.build();
 			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
 			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client","HTTPCLIENT_MAX_SIZE","1000")));
@@ -163,23 +154,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 		getheadersToSend().clear();
 	}
 
-	@Override
-	public void setURL(String stringURL) {
-		try
-		{
-			java.net.URI url = new java.net.URI(stringURL);
-			setHost(url.getHost());
-			setPort(url.getPort());
-			setBaseURL(url.getPath());
-			setSecure(url.getScheme().equalsIgnoreCase("https") ? 1 : 0);
-		}
-		catch (URISyntaxException e)
-		{
-			System.err.println("E " + e + " " + stringURL);
-			e.printStackTrace();
-		}
-	}
-
 	private String getURLValid(String url) {
 		java.net.URI uri;
 		try
@@ -212,27 +186,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 		{
 			return url;
 		}
-	}
-
-	private static SSLConnectionSocketFactory getSSLSecureInstance() {
-		try {
-			SSLContext sslContext = SSLContextBuilder
-				.create()
-				.loadTrustMaterial(new TrustSelfSignedStrategy())
-				.build();
-			return new SSLConnectionSocketFactory(
-				sslContext,
-				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2" },
-				null,
-				SSLConnectionSocketFactory.getDefaultHostnameVerifier());
-		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
-			e.printStackTrace();
-		}
-		return new SSLConnectionSocketFactory(
-			SSLContexts.createDefault(),
-			new String[] { "TLSv1", "TLSv1.1", "TLSv1.2"},
-			null,
-			SSLConnectionSocketFactory.getDefaultHostnameVerifier());
 	}
 
 	private CookieStore setAllStoredCookies() {

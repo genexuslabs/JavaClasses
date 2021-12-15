@@ -19,6 +19,8 @@ import java.util.TimeZone;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.platform.INativeFunctions;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.protocol.BasicHttpContext;
 
 public class POP3Session  implements GXInternetConstants,IPOP3Session
 {
@@ -136,23 +138,23 @@ public class POP3Session  implements GXInternetConstants,IPOP3Session
 		login();
     }
 
-    private Socket getConnectionSocket(int type) throws UnknownHostException, IOException
-    {
-			System.setProperty("HTTPClient.sslUseTLS", "false");
-			InetAddress ipAddr = InetAddress.getByName(pop3Host.trim());
-			switch(type)
-			{
-			  case CONN_NORMAL:
-			    return new Socket(pop3Host.trim(), pop3Port);
-			  case CONN_TLS:
-			    System.setProperty("HTTPClient.sslUseTLS", "true");
-			    return HTTPClient.SSLManager.getSSLConnection(false).getSSLSocket(ipAddr, pop3Port);
-			  case CONN_SSL:
-			    HTTPClient.ISSLConnection connection = HTTPClient.SSLManager.getSSLConnection(false);
-			    return connection.processSSLSocket(connection.getSSLSocket(ipAddr, pop3Port), ipAddr.getHostName(), pop3Port);
-			}
-			return new Socket(pop3Host.trim(), pop3Port);
-    }
+	private Socket getConnectionSocket(int type) throws UnknownHostException, IOException
+	{
+		InetAddress ipAddr = InetAddress.getByName(pop3Host.trim());
+		SSLConnectionSocketFactory sslConn;
+		switch(type)
+		{
+			case CONN_NORMAL:
+				return new Socket(pop3Host.trim(), pop3Port);
+			case CONN_TLS:
+				sslConn = SSLConnConstructor.getSSLSecureInstance(new String[] { "TLSv1.1", "TLSv1.2" });
+				return sslConn.createLayeredSocket(new Socket(pop3Host.trim(), pop3Port),ipAddr.getHostName(),pop3Port,new BasicHttpContext());
+			case CONN_SSL:
+				sslConn = SSLConnConstructor.getSSLSecureInstance(new String[] { "TLSv1" });
+				return sslConn.createLayeredSocket(new Socket(pop3Host.trim(), pop3Port),ipAddr.getHostName(),pop3Port,new BasicHttpContext());
+		}
+		return new Socket(pop3Host.trim(), pop3Port);
+	}
 
 	public void logout(GXPOP3Session sessionInfo)
 	{
