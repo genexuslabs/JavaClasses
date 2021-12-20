@@ -30,6 +30,7 @@ public abstract class GXWebObjectStub extends HttpServlet
 
 	protected ModelContext context;
 	protected int remoteHandle = -1;
+	protected transient LocalUtil localUtil;
 
 	protected static final int SECURITY_GXOBJECT = 3;
 	protected static final int SECURITY_HIGH = 2;
@@ -44,7 +45,8 @@ public abstract class GXWebObjectStub extends HttpServlet
 	public GXWebObjectStub(int remoteHandle , ModelContext context)
 	{
 		this.remoteHandle = remoteHandle;
-		this.context = context;
+		this.context      = context;
+		localUtil    	  = Application.getConnectionManager().createUserInformation(Namespace.getNamespace(context.getNAME_SPACE())).getLocalUtil();
 	}
 
 	private void dumpRequestInfo(HttpContext httpContext)
