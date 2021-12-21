@@ -155,13 +155,14 @@ public class EnterpriseConnect
 
 						if( jObj.get(key) instanceof String )
 						{
-							if (jcoType == JCoMetaData.TYPE_NUM && dec == 0 )
-							{
-								String sValue = new DecimalFormat("#").format(new BigDecimal(jObj.getString(key))); //"1.2"								
+							String  obj_value = jObj.getString(key);
+							if (jcoType == JCoMetaData.TYPE_NUM && dec == 0  && ( ! obj_value.trim().equals("") ))
+							{								
+								String sValue = new DecimalFormat("#").format(new BigDecimal(obj_value)); 							
 								jTable.setValue(key, sValue);
 							}
 							else {
-								jTable.setValue(key, jObj.getString(key));
+								jTable.setValue(key, obj_value);
 							}
 						}						
 						else if (jcoType == JCoMetaData.TYPE_NUM ||  jcoType == JCoMetaData.TYPE_INT)
@@ -174,7 +175,7 @@ public class EnterpriseConnect
 						}
 						else if (jcoType == JCoMetaData.TYPE_DATE)
 						{
-							jTable.setValue(key, jObj.getString(key)); 	
+							jTable.setValue(key, jObj.getString(key));
 						}
 						else if (jcoType == JCoMetaData.TYPE_INT2 || jcoType == JCoMetaData.TYPE_INT1 
 							      || jcoType == JCoMetaData.TYPE_BYTE)
