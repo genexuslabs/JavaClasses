@@ -1,8 +1,10 @@
 package com.genexus.sap;
 
+import java.io.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import com.sap.conn.jco.AbapClassException;
 import com.sap.conn.jco.AbapException;
@@ -52,7 +54,6 @@ public class DocumentClient {
             length = imports.getInt("LENGTH");
             blob = function.getTableParameterList().getTable("BLOB");
             FileOutputStream out = null;
-            System.out.println(   " file handle " + fname);
             try {
                 out = new FileOutputStream(fname);
                 boolean hasNextRow = false;
@@ -62,7 +63,6 @@ public class DocumentClient {
                 }
                 while (length > BLOB_LENGTH){
                     if (hasNextRow){
-                        System.out.println(  " write .... " );
                         out.write(blob.getByteArray(0), 0, BLOB_LENGTH);
                         length -= BLOB_LENGTH;
                         hasNextRow = blob.nextRow();
@@ -75,8 +75,6 @@ public class DocumentClient {
                 }
             }
             catch (IOException e) {
-                // Unfortunately there is no way of transmitting error details back to SAP, so we better log it here,
-                // if we want to keep the chance of trouble-shooting later, what exactly went wrong...
                 e.printStackTrace();
                 function.getExportParameterList().setValue("ERROR", 3);
             }
@@ -90,6 +88,41 @@ public class DocumentClient {
             }
         }
     
+    }
+
+    static class FTP_CLIENT_TO_R3Handler implements JCoServerFunctionHandler {
+        @Override
+        public void handleRequest(JCoServerContext serverCtx, JCoFunction function) throws AbapException, AbapClassException {
+            String fname;
+            
+            fname = function.getImportParameterList().getString("FNAME");
+            fname = fname.replace("#","");
+
+            try (InputStream source = Files.newInputStream(Paths.get(fname));) {
+
+                byte[] file2 = new byte[BLOB_LENGTH];
+                int bytesread;
+                int totallenght =0;
+
+                InputStream source2 = Files.newInputStream(Paths.get(fname));
+
+                JCoTable blobtable = function.getTableParameterList().getTable("BLOB");
+                while((bytesread = source2.read(file2,0,file2.length)) >0 )
+                {
+
+                    blobtable.appendRow();
+                    blobtable.setValue("LINE", file2);
+                    totallenght += bytesread;
+                }
+
+                JCoParameterList exports = function.getExportParameterList();
+                exports.setValue("LENGTH", totallenght);
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+                function.getExportParameterList().setValue("ERROR", 3);
+            }
+        }
     }
 
 }

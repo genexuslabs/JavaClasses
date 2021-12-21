@@ -1,8 +1,6 @@
 package com.genexus.sap;
 
-
 import java.util.Properties;
-
 import com.genexus.ModelContext;
 import com.genexus.diagnostics.Log;
 import com.sap.conn.jco.AbapException;
@@ -23,7 +21,6 @@ import com.sap.conn.jco.JCoCustomRepository;
 import com.sap.conn.jco.JCoFunctionTemplate;
 import com.sap.conn.jco.JCoListMetaData;
 import com.sap.conn.jco.JCo;
-
 
 public class SessionManager
 {
@@ -53,7 +50,7 @@ public class SessionManager
 	private String registrationCount = "3";
 	private String programID = "";
 	private String serverName = "";
-	private String repository = "";
+	private String repositoryName = "";
 
 	private ModelContext _context = null;
 	
@@ -104,9 +101,11 @@ public class SessionManager
 				}
 			}	
 		}
+
 		// Document Transfer server
-		connectionProperties.setProperty(DestinationDataProvider.JCO_GWHOST, gatewayHost);
-		connectionProperties.setProperty(DestinationDataProvider.JCO_GWSERV, gatewayService);
+		//connectionProperties.setProperty(DestinationDataProvider.JCO_GWHOST, gatewayHost);
+		//connectionProperties.setProperty(DestinationDataProvider.JCO_GWSERV, gatewayService);
+
 		connectionProperties.setProperty(DestinationDataProvider.JCO_R3NAME, systemId);
 		connectionProperties.setProperty(DestinationDataProvider.JCO_SAPROUTER, sapRouter);
 		connectionProperties.setProperty(DestinationDataProvider.JCO_GROUP, group);
@@ -122,7 +121,7 @@ public class SessionManager
 		connectionProperties.setProperty(DestinationDataProvider.JCO_PASSWD, password);
 
 		connectionProperties.setProperty(DestinationDataProvider.JCO_POOL_CAPACITY, poolCapacity);
-        connectionProperties.setProperty(DestinationDataProvider.JCO_PEAK_LIMIT, peekLimit);
+	        connectionProperties.setProperty(DestinationDataProvider.JCO_PEAK_LIMIT, peekLimit);
 
 		if ( ! language.equals(""))
 		{
@@ -139,26 +138,24 @@ public class SessionManager
 		_context.setContextProperty("SAPSessionName", hashedSession);
 		
 		_context.setContextProperty("SAPReceiverServerName", serverName);
-		_context.setContextProperty("SAPReceiverRepositoryName", repository);
+
+		_context.setContextProperty("SAPReceiverRepositoryName", repositoryName);
 		_context.setContextProperty("SAPSenderServerName", serverName);
-		_context.setContextProperty("SAPSenderRepositoryName", repository);
-		
+		_context.setContextProperty("SAPSenderRepositoryName", repositoryName);
 
 		try
 		{
 			JCoDestination destination = JCoDestinationManager.getDestination(hashedSession);
 			destination.ping();
-		
 		}
 		catch (AbapException ex)
 		{
-    		errorCode = ex.getGroup();
+	    		errorCode = ex.getGroup();
 			errorMessage = ex.toString();            
-        	Log.warning("GX SAP - Error Connecting " +  sessionName + " " + ex.toString()) ;
-		
+        		Log.warning("GX SAP - Error Connecting " +  sessionName + " " + ex.toString()) ;		
 		}
 		catch (JCoException ex)
-        {
+	        {
 			if(ex.getGroup() == JCoException.JCO_ERROR_INTERNAL)
 			{
 				Log.error("GX SAP - Error Connecting " +  sessionName + " " + ex.toString()) ;
@@ -167,23 +164,22 @@ public class SessionManager
 			errorCode = ex.getGroup();
 			errorMessage = ex.toString();            
 			Log.warning("GX SAP - Error Connecting " +  sessionName + " " + ex.toString()) ;
-        }
+        	}
 		catch (Exception ex)
-        {
+        	{
 			Log.error("GX SAP - Error Connecting " +  sessionName + " " + ex.toString()) ;
-            throw new RuntimeException(ex.toString());    
-        }
+			throw new RuntimeException(ex.toString());    
+	        }
 	}
 	
 	
-	public JCoServer setupServer(String serverName, String repositoryName) throws JCoException
+	public JCoServer setupServerDownload(String serverName, String repositoryName) throws JCoException
 	{
 		JCoServer server = JCoServerFactory.getServer(serverName);
 		JCoCustomRepository repo = JCo.createCustomRepository(repositoryName);
 		JCoListMetaData imports, exports, tables;
 		JCoFunctionTemplate FTP_R3_TO_CLIENT;
 		
-
 		imports = JCo.createListMetaData("IMPORTING");
 		imports.add("FNAME", JCoMetaData.TYPE_CHAR, 256, 512, JCoListMetaData.IMPORT_PARAMETER);
 		imports.add("LENGTH", JCoMetaData.TYPE_INT, 4, 4, JCoListMetaData.IMPORT_PARAMETER);
@@ -192,6 +188,7 @@ public class SessionManager
 
 		exports = JCo.createListMetaData("EXPORTING");
 		exports.add("ERROR", JCoMetaData.TYPE_INT, 4, 4, JCoListMetaData.EXPORT_PARAMETER);
+		exports.add("LENGTH", JCoMetaData.TYPE_INT, 4, 4, JCoListMetaData.EXPORT_PARAMETER);
 		exports.lock();
 
 		JCoRecordMetaData tabLine = JCo.createRecordMetaData("BLOB");
@@ -216,11 +213,53 @@ public class SessionManager
 		return server;
 	}
 
+
+	public JCoServer setupServerUpload(String serverName, String repositoryName) throws JCoException
+	{
+		JCoServer server = JCoServerFactory.getServer(serverName);
+
+		JCoCustomRepository repo = JCo.createCustomRepository(repositoryName);
+		JCoListMetaData imports, exports, tables;
+		JCoFunctionTemplate FTP_CLIENT_TO_R3;
+	
+		imports = JCo.createListMetaData("IMPORTING");
+		imports.add("FNAME", JCoMetaData.TYPE_CHAR, 256, 512, JCoListMetaData.IMPORT_PARAMETER);		
+		imports.add("MODE", JCoMetaData.TYPE_CHAR, 1, 2, JCoListMetaData.IMPORT_PARAMETER | JCoListMetaData.OPTIONAL_PARAMETER);
+		imports.lock();
+
+		exports = JCo.createListMetaData("EXPORTING");
+		exports.add("ERROR", JCoMetaData.TYPE_INT, 4, 4, JCoListMetaData.EXPORT_PARAMETER);
+		exports.add("LENGTH", JCoMetaData.TYPE_INT, 4, 4, JCoListMetaData.EXPORT_PARAMETER);
+		exports.lock();
+
+		JCoRecordMetaData tabLine = JCo.createRecordMetaData("BLOB");
+		tabLine.add("LINE", JCoMetaData.TYPE_BYTE, BLOB_LENGTH, 0, BLOB_LENGTH, 0);
+		tabLine.lock();
+
+		tables = JCo.createListMetaData("TABLES");
+		tables.add("BLOB", JCoMetaData.TYPE_TABLE, tabLine, 0);
+		tables.lock();
+
+		FTP_CLIENT_TO_R3 = JCo.createFunctionTemplate("FTP_CLIENT_TO_R3", imports, exports, null, tables, null);
+		repo.addFunctionTemplateToCache(FTP_CLIENT_TO_R3);
+		server.setRepository(repo);
+
+		DefaultServerHandlerFactory.FunctionHandlerFactory handlerFactory = new DefaultServerHandlerFactory.FunctionHandlerFactory();
+		handlerFactory.registerHandler("FTP_CLIENT_TO_R3", new DocumentClient.FTP_CLIENT_TO_R3Handler());
+		server.setCallHandlerFactory(handlerFactory);
+
+		DocumentClient.ErrorHandler hdl = new DocumentClient.ErrorHandler();
+		server.addServerErrorListener(hdl);
+		server.addServerExceptionListener(hdl);
+
+		return server;
+	}
+
 	public void DocumentReceiverStart()
 	{	
-		Log.info("GX SAP - DMS Receiver Start " +  serverName + " " + repository);
+		Log.info("GX SAP - DMS Receiver Start " +  serverName + " " + repositoryName);
 		try {
-			receiver = setupServer(serverName, repository);
+			receiver = setupServerDownload(serverName, repositoryName);
 			receiver.start();
 		}
 		catch (JCoException ex)
@@ -231,14 +270,30 @@ public class SessionManager
 	
 	public void DocumentReceiverStop() 
 	{
-		Object receiverObj = _context.getContextProperty(serverName);
-		try {
+		String receiverName = "";
+		if (serverName == null || serverName.equals(""))
+		{
+			Object receiverObj = _context.getContextProperty("SAPReceiverServerName");
 			if (receiverObj != null)
 			{
-				String receiverName = (String)receiverObj;
+				receiverName = (String)receiverObj;
+			}
+		}		
+		else
+		{
+			receiverName = serverName;
+		}
+		
+		try {
+			if (!receiverName.equals(""))
+			{
 				receiver = JCoServerFactory.getServer(receiverName);
 				if (receiver != null) receiver.stop();
-				Log.info("GX SAP - DMS Receiver stop " +  receiverName );
+				Log.info("GX SAP - DMS Receiver stop " +  receiverName );			
+			}
+			else
+			{
+				Log.error("GX SAP - Error Stopping receiver."  );	
 			}
 		}
 		catch (JCoException ex)
@@ -249,9 +304,10 @@ public class SessionManager
 
 	public void DocumentSenderStart() 
 	{		
-		Log.info("GX SAP - DMS Sender Start " +  serverName + " " + repository);
+		Log.info("GX SAP - DMS Sender Start " +  serverName + " " + repositoryName);		
+	
 		try {		
-			sender = setupServer(serverName, repository);
+			sender = setupServerUpload(serverName, repositoryName);
 			sender.start();
 		}
 		catch (JCoException ex)
@@ -262,14 +318,29 @@ public class SessionManager
 
 	public void DocumentSenderStop() 
 	{
-		Object senderObj = _context.getContextProperty(serverName);
-		try {
+		String senderName = "";
+		if (serverName == null || serverName.equals(""))
+		{
+			Object senderObj = _context.getContextProperty("SAPSenderServerName");
 			if (senderObj != null)
 			{
-				String senderName = (String)senderObj;
-				sender = JCoServerFactory.getServer(senderName);
+				senderName = (String)senderObj;
+			}
+		}		
+		else
+		{
+			senderName = serverName;
+		}
+		try {
+			if (!senderName.equals(""))
+			{
+				sender = JCoServerFactory.getServer(senderName);				
 				if (sender != null) sender.stop();
 				Log.info("GX SAP - DMS Sender stop " +  senderName );
+			}
+			else
+			{
+				Log.error("GX SAP - Error Stopping sender"  );	
 			}
 		}
 		catch (JCoException ex)
@@ -363,59 +434,59 @@ public class SessionManager
 	}
 
 	public String getUserName( )
-   	{
+	{
 		return userName;
-    }
+	}
 	
 	public String getPassword()
-    {
+	{
 		return password;
-    }
+	}
 	
 	public String getInstanceNumber( )
-    {
+	{
 		return instanceNumber;
-    }
+	}
 	
 	public String getAppServer( )
 	{
 		return appServer;
-    }
+	}
 	
 	public String getRouterString()
-    {
+	{
 		return routerString;
-    }
+	}
 	
 	public String getClientNumber( )
-    {
+	{
 		return clientNumber;
-    }
+	}
 				
 	public String getSystemId()
-    {
+	{
 		return systemId;
-    }
+	}
 	
 	public String getSessionName( )
-    {
+	{
 		return sessionName;
-    }
+	}
 	
 	public String getSAPGUI()
-    {
+	{
 		return sapGUI;
-    }
+	}
 	
 	public String getPeekLimit()
-    {
+	{
 		return peekLimit;
-    }
+	}
 	
 	public String getPoolCapacity()
-    {
+	{
 		return poolCapacity;
-    }
+	}
 	
 	public String getLanguage()
 	{
@@ -447,12 +518,10 @@ public class SessionManager
 		return serverName;
 	}
 	
-	
-	public String getRepository()
+	public String getRepositoryName()
 	{
-		return repository;
+		return repositoryName;
 	}
-	
 	
 	/* Setters */
 
@@ -496,39 +565,39 @@ public class SessionManager
 	}
 	
 	public void setPassword( String value )
-    {
+	{	
 		password = value;
-    }
+	}
 	
 	public void setInstanceNumber( String value )
-    {
+	{
 		instanceNumber = value;
-    }
+	}
 	
 	public void setAppServer( String value )
-    {
+	{
 		appServer = value;
-    }
+	}
 	
 	public void setRouterString( String value )
-    {
+	{
 		routerString = value;
-   	}
+	}
 	
 	public void setClientNumber( String value )
-    {
+	{
 		clientNumber = value;
-    }
+	}
 		
 	public void setSystemId( String value )
-    {
+	{
 		systemId = value;
-    }
+	}
 	
 	public void setSessionName( String value )
    	{
 		sessionName = value;
-    }
+	}
 	
 	public void setSAPGUI( String value )
 	{
@@ -551,12 +620,12 @@ public class SessionManager
 	}
 	
 	public void setErrorCode( Integer value )
-    {
+	{
 		errorCode = value;
-    }
+	}
 	
 	public void setErrorMessage( String value )
-    {
+	{
 		errorMessage = value;
 	}
 		
@@ -575,9 +644,9 @@ public class SessionManager
 		serverName = value;
 	}
 
-	public void setRepository(String value)
+	public void setRepositoryName(String value)
 	{
-		repository = value;
+		repositoryName = value;
 	}
 	
 }
