@@ -897,7 +897,7 @@ public class ExcelCells implements IExcelCellRange {
         CellRangeAddress cellRange = new CellRangeAddress(rowStartIdx, rowEndIdx, colStartIdx, colEndIdx);
         for (int i = 0; i < pSelectedSheet.getNumMergedRegions(); i++){
             CellRangeAddress mergedRegion = pSelectedSheet.getMergedRegion(i);
-            if (cellRange.intersects(cellRange)){
+            if (cellRange.intersects(mergedRegion)){
                 pSelectedSheet.removeMergedRegion(i);
             }
         }
