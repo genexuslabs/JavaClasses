@@ -5,10 +5,13 @@ import java.util.Hashtable;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.IExtensionHttpClient;
 import com.genexus.internet.HttpClientJavaLib;
+import org.apache.logging.log4j.Logger;
 
 import javax.net.ssl.SSLSocket;
 
 public class HttpClient implements IExtensionHttpClient {
+
+	private static Logger logger = org.apache.logging.log4j.LogManager.getLogger(HttpClient.class);
 
 	@Override
 	public void addSDHeaders(String host, String baseURL, Hashtable<String, String> headersToSend) {
@@ -45,7 +48,7 @@ public class HttpClient implements IExtensionHttpClient {
 			client = new HttpClientJavaLib();
 
 		} catch (ClassNotFoundException e) {
-			System.err.println("HttpClient jars not detected. Check if httpclient-4.5.*.jar and httpcore-4.4.*.jar are added in the classpath");
+			logger.error("HttpClient jars not detected. Check if httpclient-4.5.*.jar and httpcore-4.4.*.jar are added in the classpath");
 
 		} finally {
 
