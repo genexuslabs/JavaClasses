@@ -846,14 +846,11 @@ public class LocalUtil
 
 	public Date ymdhmsToT (int year, int month, int day , int hour , int minute , int second)
 	{
-		if (year < 100 && !(year == 0 && month == 0 && day == 0))
-			year += year > firstYear2K?1900:2000;
-
-		return CommonUtil.ymdhmsToT_noYL(year, month, day, hour , minute , second);
+		return ymdhmsToT (year, month, day ,hour ,minute ,second,0);
 	}
 	public Date ymdhmsToT (int year, int month, int day, int hour, int minute, int second, int milliseconds)
 	{
-		if (year < 100 && !(year == 0 && month == 0 && day == 0))
+		if (year < 100 && !((year == 0 && month == 0 && day == 0) || ((year == 1 && month == 1 && day == 1))))
 			year += year > firstYear2K?1900:2000;
 
 		return CommonUtil.ymdhmsToT_noYL(year, month, day, hour, minute, second, milliseconds);
