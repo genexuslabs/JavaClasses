@@ -45,7 +45,7 @@ public class HttpClient implements IExtensionHttpClient {
 			client = new HttpClientJavaLib();
 
 		} catch (ClassNotFoundException e) {
-			org.apache.logging.log4j.LogManager.getLogger(GXutil.class).error("HttpClient jars not detected. Check if httpclient-4.5.*.jar and httpcore-4.4.*.jar are added in the classpath",e);
+			org.apache.logging.log4j.LogManager.getLogger(HttpClient.class).error("HttpClient jars not detected. Check if httpclient-4.5.*.jar and httpcore-4.4.*.jar are added in the classpath",e);
 		} finally {
 
 			return client;
