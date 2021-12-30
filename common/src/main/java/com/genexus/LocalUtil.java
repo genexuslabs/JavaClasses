@@ -1080,6 +1080,10 @@ public class LocalUtil
 		}
 		catch (ParseException e)
 		{
+			//When parsing a date gives a ParseException we try with setLenient(true) to parse dates only with dates with
+			//daylighttime changes at 00:00 AM (Issue: 93038)
+			if (!isNullTimeValue(date.substring(date.indexOf(' ') + 1), false))
+				return null;
 			df.setLenient(true);
 			try
 			{
