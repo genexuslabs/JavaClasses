@@ -47,10 +47,7 @@ import java.net.UnknownHostException;
 import java.net.NoRouteToHostException;
 import java.util.Vector;
 
-import com.genexus.common.interfaces.SpecificImplementation;
-
 import java.util.StringTokenizer;
-import java.applet.Applet;
 
 
 /**
@@ -664,11 +661,11 @@ static
      *
      * @param applet the current applet
      */
-    public HTTPConnection(Object applet)  throws ProtocolNotSuppException
-    {
-    	if (SpecificImplementation.HTTPConnection != null)
-    		SpecificImplementation.HTTPConnection.createHttpConnectionFromApplet(applet, this);
-    }
+//    public HTTPConnection(Object applet)  throws ProtocolNotSuppException
+//    {
+//    	if (SpecificImplementation.HTTPConnection != null)
+//    		SpecificImplementation.HTTPConnection.createHttpConnectionFromApplet(applet, this);
+//    }
 
 
     /**

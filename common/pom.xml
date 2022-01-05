@@ -44,7 +44,13 @@
 			<artifactId>bcpkix-jdk15on</artifactId>
 			<version>1.69</version>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.13</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
 	<build>
 		<finalName>gxcommon</finalName>

@@ -9,21 +9,6 @@ import java.io.InputStreamReader;
 import java.util.Vector;
 import java.util.StringTokenizer;
 
-import java.awt.Frame;
-import java.awt.Panel;
-import java.awt.Label;
-import java.awt.Button;
-import java.awt.Dimension;
-import java.awt.TextField;
-import java.awt.GridLayout;
-import java.awt.BorderLayout;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowAdapter;
-
 /**
  * This class is the default authorization handler. It currently handles the
  * authentication schemes "Basic", "Digest", and "SOCKS5" (used for the
