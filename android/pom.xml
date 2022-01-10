@@ -23,9 +23,13 @@
                     <groupId>org.apache.httpcomponents</groupId>
                     <artifactId>httpclient</artifactId>
                 </exclusion>
+                <exclusion>  <!-- exclude common io from android -->
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
+                </exclusion>
             </exclusions>
 		</dependency>
-        <dependency>
+		<dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>gxcryptocommon</artifactId>
             <version>${project.version}</version>
@@ -33,6 +37,10 @@
                 <exclusion>  <!-- declare the exclusion here -->
                     <groupId>org.apache.httpcomponents</groupId>
                     <artifactId>httpclient</artifactId>
+                </exclusion>
+                <exclusion>  <!-- exclude common io from android -->
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -51,6 +59,14 @@
 			<artifactId>commons-collections4</artifactId>
 			<version>4.1</version>
 		</dependency>
+        <!-- add explicit common io in Android -->
+        <!-- Android need version 2.2 until api 26, where java.nio is added -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.2</version>
+        </dependency>
+
 	</dependencies>
 
 	<build>
