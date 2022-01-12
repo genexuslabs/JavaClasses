@@ -140,10 +140,13 @@ public abstract class TestExternalProvider {
 	public void testExistsDirectory(){
 		String copyFileName = buildRandomTextFileName("tempFolder/f1/f2/test-upload-and-copy");
 		String upload = provider.upload(testSampleFilePath, copyFileName, ResourceAccessControlList.Default);
-		wait(1000); //Google CDN replication seems to be delayed.
 		assertTrue("Not found URL: " + upload, urlExists(upload));
-		boolean existsDir = provider.existsDirectory("tempFolder/f1");
-		assertTrue("Directory does not exists \"tempFolder/f1\" " + upload, existsDir);
+		String folder = "tempFolder";
+		boolean existsDir = provider.existsDirectory(folder);
+		assertTrue("Directory does not exists " + folder + " - " + upload, existsDir);
+		String folderNotExists = "tempFolderNotExists";
+		existsDir = provider.existsDirectory(folder);
+		assertTrue("Directory does not exists " + folderNotExists, existsDir);
 	}
 
 	@Test
