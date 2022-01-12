@@ -19,9 +19,11 @@ public class agamextauthinputDummy extends GXWebObjectStub
    protected String IntegratedSecurityPermissionPrefix( )
    {
       return "";
-   }   
-   
-   protected void init(HttpContext context )
+   }
+
+   protected String EncryptURLParameters() {return "NO";};
+
+	protected void init(HttpContext context )
    {
    }   
 }

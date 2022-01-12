@@ -28,16 +28,24 @@ public class GXResourceProvider extends GXWebObjectStub
                 }
         }
         context.sendResponseStatus(404, "Resource not found");
-    }   protected boolean IntegratedSecurityEnabled( )
+    }
+
+   protected boolean IntegratedSecurityEnabled( )
    {
       return false;
-   }	   protected int IntegratedSecurityLevel( )
+   }	
+
+   protected int IntegratedSecurityLevel( )
    {
       return 0;
-   }      protected String IntegratedSecurityPermissionPrefix( )
+   }
+   
+   protected String IntegratedSecurityPermissionPrefix( )
    {
       return "";
    }
+
+   protected String EncryptURLParameters() {return "NO";};
    
    protected void init(HttpContext context )
    {
