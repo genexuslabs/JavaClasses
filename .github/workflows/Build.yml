@@ -41,7 +41,7 @@ jobs:
         repositories: '[{ "id": "github-genexuslabs", "url": "https://maven.pkg.github.com/genexuslabs/Private-Maven-for-GX",  "releases": { "enabled": "true" }, "snapshots": { "enabled": "true" } },
                         { "id": "github", "url": "https://maven.pkg.github.com/github/JavaClasses",  "releases": { "enabled": "true" }, "snapshots": { "enabled": "false" } }]'
         servers: '[{ "id": "github-genexuslabs", "username": "genexusbot", "password": "${{ secrets.SECURE_TOKEN }}" },
-                   { "id": "github", "username": "jechague", "password": "${{ secrets.SECURE_TOKEN }}" },
+                   { "id": "github", "username": "genexusbot", "password": "${{ secrets.SECURE_TOKEN }}" },
                    { "id": "gpg.passphrase", "passphrase": "${{ secrets.MAVEN_GPG_BUILDER_PASSPHRASE }}" }]'
 
     - name: Configure GPG Key
