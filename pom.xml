@@ -22,11 +22,11 @@
 	</properties>
 
     <modules>
-		<module>common</module>
-		<module>wrapperjavax</module>
-		<module>wrapperjakarta</module>
-		<module>wrappercommon</module>
-		<module>java</module>
+		<module>gxcommon</module>
+		<module>gxwrapperjavax</module>
+		<module>gxwrapperjakarta</module>
+		<module>gxwrappercommon</module>
+		<module>gxclassr</module>
 		<module>gxandroidpublisher</module>
 		<module>gxcryptocommon</module>
 		<module>gxmail</module>
@@ -35,14 +35,14 @@
 		<module>gxsearch</module>
 		<module>javapns</module>
 		<module>apacheandroid</module>
-		<module>android</module>
+		<module>gxandroid</module>
 		<module>gxgeospatial</module>
 		<module>gxodata</module>
 		<module>gxexternalproviders</module>
 		<module>gxwebsocket</module>
 		<module>gxwebsocketjakarta</module>
 		<module>gxawsserverless</module>
-		<module>androidreports</module>
+		<module>gxandroidreports</module>
     </modules>
 
 	<licenses>
@@ -108,9 +108,9 @@
 					<artifactItems>
 						<artifactItem>
 							<groupId>com.genexus</groupId>
-							<artifactId>gxclassR</artifactId>
+							<artifactId>gxclassr</artifactId>
 							<version>${project.version}</version>
-							<destFileName>gxclassR</destFileName>
+							<destFileName>gxclassr</destFileName>
 						</artifactItem>
 						<artifactItem>
 							<groupId>com.genexus</groupId>
@@ -163,4 +163,56 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+        <profile>
+            <id>ci-cd</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Prevent gpg from using pinentry programs. Fixes: gpg: signing 
+                                        failed: Inappropriate ioctl for device -->
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+		<profile>
+            <id>github-packages</id>
+			<distributionManagement>
+				<repository>
+					<id>github</id>
+					<name>GitHub Packages</name>
+					<url>https://maven.pkg.github.com/genexuslabs/JavaClasses</url>
+				</repository>
+    		</distributionManagement>
+		</profile>
+    </profiles>
+
+	<distributionManagement>
+        <repository>
+            <id>ossrh</id>
+			<name>Central Repository OSSRH</name>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
 </project>

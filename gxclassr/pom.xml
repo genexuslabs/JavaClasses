@@ -10,7 +10,7 @@
 		<version>2.4-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>gxclassR</artifactId>
+	<artifactId>gxclassr</artifactId>
 	<name>GeneXus Standard Classes for Java</name>
 
 	<dependencies>
@@ -257,7 +257,7 @@
     </dependencies>
 	
 	<build>
-		<finalName>gxclassR</finalName>
+		<finalName>gxclassr</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
