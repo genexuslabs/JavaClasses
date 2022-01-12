@@ -17,6 +17,7 @@ jobs:
 
     steps:
     - name: Dispatch Workflow
+      if: ${{ github.repository_owner == 'GeneXusLabs' && !startsWith( github.ref, 'refs/heads/release-' ) }}
       run: >
         curl -X POST
         -H 'Accept: application/vnd.github.v3+json' 
