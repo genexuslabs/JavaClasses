@@ -137,6 +137,15 @@ public abstract class TestExternalProvider {
 	}
 
 	@Test
+	public void testExistsDirectory(){
+		String copyFileName = buildRandomTextFileName("tempFolder/f1/f2/test-upload-and-copy");
+		String upload = provider.upload(testSampleFilePath, copyFileName, ResourceAccessControlList.Default);
+		assertTrue("Not found URL: " + upload, urlExists(upload));
+		boolean existsDir = provider.existsDirectory("tempFolder/f1");
+		assertTrue("Directory does not exists \"tempFolder/f1\"", existsDir);
+	}
+
+	@Test
 	public void testCopyPrivateMethod(){
 		String copyFileName = buildRandomTextFileName("copy-text-private");
 		copy(copyFileName, ResourceAccessControlList.Private);
