@@ -38,6 +38,7 @@
 		<module>android</module>
 		<module>gxgeospatial</module>
 		<module>gxodata</module>
+		<module>gxdynamodb</module>
 		<module>gxexternalproviders</module>
 		<module>gxwebsocket</module>
 		<module>gxwebsocketjakarta</module>
