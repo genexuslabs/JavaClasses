@@ -14,7 +14,8 @@ public class GxImageUtil {
 	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(GxImageUtil.class);
 
 	private static String getImageAbsolutePath(String imageFile){
-		return com.genexus.ModelContext.getModelContext().getHttpContext().getDefaultPath() + imageFile.replace("/", File.separator);
+		String defaultPath = com.genexus.ModelContext.getModelContext().getHttpContext().getDefaultPath();
+		return imageFile.startsWith(defaultPath)? imageFile : defaultPath + imageFile.replace("/", File.separator);
 	}
 
 	public static long getFileSize(String imageFile){
