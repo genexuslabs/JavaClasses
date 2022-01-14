@@ -8,12 +8,17 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import com.genexus.util.GXFile;
 import org.apache.logging.log4j.Logger;
 
 public class GxImageUtil {
 	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(GxImageUtil.class);
 
 	private static String getImageAbsolutePath(String imageFile){
+		if (CommonUtil.isUploadPrefix(imageFile)) {
+			return new GXFile(imageFile).getAbsolutePath();
+		}
 		String defaultPath = com.genexus.ModelContext.getModelContext().getHttpContext().getDefaultPath();
 		return imageFile.startsWith(defaultPath)? imageFile : defaultPath + imageFile.replace("/", File.separator);
 	}
