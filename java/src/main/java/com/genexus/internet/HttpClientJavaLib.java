@@ -9,6 +9,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import com.genexus.ModelContext;
 import com.genexus.util.IniFile;
 import org.apache.http.*;
 import com.genexus.CommonUtil;
@@ -46,6 +47,8 @@ import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
+import com.genexus.webpanels.HttpContextWeb;
+import java.net.URI;
 
 import javax.net.ssl.SSLContext;
 
@@ -114,7 +117,9 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private ByteArrayEntity entity = null;	// Para mantener el stream luego de cerrada la conexion en la lectura de la response
 	private Boolean lastAuthIsBasic = null;
 	private Boolean lastAuthProxyIsBasic = null;
-	private static IniFile clientCfg = new com.genexus.ModelContext(com.genexus.ModelContext.getModelContextPackageClass()).getPreferences().getIniFile();
+	private static IniFile clientCfg = new ModelContext(ModelContext.getModelContextPackageClass()).getPreferences().getIniFile();
+	private static final String SET_COOKIE = "Set-Cookie";
+	private static final String COOKIE = "Cookie";
 
 
 	private void resetExecParams() {
@@ -166,7 +171,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 	public void setURL(String stringURL) {
 		try
 		{
-			java.net.URI url = new java.net.URI(stringURL);
+			URI url = new URI(stringURL);
 			setHost(url.getHost());
 			setPort(url.getPort());
 			setBaseURL(url.getPath());
@@ -180,10 +185,10 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	private String getURLValid(String url) {
-		java.net.URI uri;
+		URI uri;
 		try
 		{
-			uri = new java.net.URI(url);
+			uri = new URI(url);
 			if (!uri.isAbsolute())		// En caso que la URL pasada por parametro no sea una URL valida (en este caso seria que no sea un URL absoluta), salta una excepcion en esta linea, y se continua haciendo todo el proceso con los datos ya guardados como atributos
 				return url;
 			else {
@@ -236,11 +241,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	private CookieStore setAllStoredCookies() {
 		CookieStore cookiesToSend = new BasicCookieStore();
-		if (!com.genexus.ModelContext.getModelContext().isNullHttpContext()) { 	// Caso de ejecucion de varias instancia de HttpClientJavaLib, por lo que se obtienen cookies desde sesion web del browser
+		if (!ModelContext.getModelContext().isNullHttpContext()) { 	// Caso de ejecucion de varias instancia de HttpClientJavaLib, por lo que se obtienen cookies desde sesion web del browser
 
-			String selfWebCookie = ((com.genexus.webpanels.HttpContextWeb) com.genexus.ModelContext.getModelContext().getHttpContext()).getCookie("Set-Cookie");
+			String selfWebCookie = ((HttpContextWeb) ModelContext.getModelContext().getHttpContext()).getCookie(SET_COOKIE);
 			if (!selfWebCookie.isEmpty())
-				this.addHeader("Cookie", selfWebCookie.replace("+",";"));
+				this.addHeader(COOKIE, selfWebCookie.replace("+",";"));
 
 		} else {	// Caso se ejecucion de una misma instancia HttpClientJavaLib mediante command line
 			if (!getIncludeCookies())
@@ -259,14 +264,14 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	private void SetCookieAtr(CookieStore cookiesToSend) {
 		if (cookiesToSend != null) {
-			if (com.genexus.ModelContext.getModelContext().isNullHttpContext()) {
+			if (ModelContext.getModelContext().isNullHttpContext()) {
 				for (Cookie c : cookiesToSend.getCookies())
 					cookies.addCookie(c);
 			} else {
 				try {
-					com.genexus.webpanels.HttpContextWeb webcontext = ((com.genexus.webpanels.HttpContextWeb) com.genexus.ModelContext.getModelContext().getHttpContext());
+					HttpContextWeb webcontext = ((HttpContextWeb) ModelContext.getModelContext().getHttpContext());
 
-					Header[] headers = this.response.getHeaders("Set-Cookie");
+					Header[] headers = this.response.getHeaders(SET_COOKIE);
 					if (headers.length > 0) {
 						String webcontextCookieHeader = "";
 						for (Header header : headers) {
@@ -275,9 +280,9 @@ public class HttpClientJavaLib extends GXHttpClient {
 							webcontextCookieHeader += cookieKeyAndValue[0] + "=" + cookieKeyAndValue[1] + "; ";
 						}
 						webcontextCookieHeader = webcontextCookieHeader.trim().substring(0,webcontextCookieHeader.length()-2);	// Se quita el espacio y la coma al final
-						webcontext.setCookie("Set-Cookie",webcontextCookieHeader,"",CommonUtil.nullDate(),"",this.getSecure());
+						webcontext.setCookie(SET_COOKIE,webcontextCookieHeader,"",CommonUtil.nullDate(),"",this.getSecure());
 					}
-					com.genexus.ModelContext.getModelContext().setHttpContext(webcontext);
+					ModelContext.getModelContext().setHttpContext(webcontext);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -408,7 +413,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			}
 
 			url = setPathUrl(url);
-			url = com.genexus.CommonUtil.escapeUnsafeChars(url);
+			url = CommonUtil.escapeUnsafeChars(url);
 
 			if (getSecure() == 1)   // Se completa con esquema y host
 				url = url.startsWith("https://") ? url : "https://" + getHost()+ (getPort() != 443?":"+getPort():"")+ url;		// La lib de HttpClient agrega el port
@@ -444,7 +449,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 				ByteArrayEntity dataToSend;
 				if (!getIsMultipart() && getVariablesToSend().size() > 0)
-					dataToSend = new ByteArrayEntity(com.genexus.CommonUtil.hashtable2query(getVariablesToSend()).getBytes());
+					dataToSend = new ByteArrayEntity(CommonUtil.hashtable2query(getVariablesToSend()).getBytes());
 				else
 					dataToSend = new ByteArrayEntity(getData());
 				httpPost.setEntity(dataToSend);
@@ -591,7 +596,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			return;
 		try
 		{
-			value[0] = com.genexus.CommonUtil.getHeaderAsDate(response.getFirstHeader(name).getValue());
+			value[0] = CommonUtil.getHeaderAsDate(response.getFirstHeader(name).getValue());
 		}
 		catch (IOException e)
 		{
@@ -616,7 +621,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 	public InputStream getInputStream(String stringURL) throws IOException
 	{
 		try {
-			java.net.URI url = new java.net.URI(stringURL);
+			URI url = new URI(stringURL);
 			HttpGet gISHttpGet = new HttpGet(String.valueOf(url));
 			CloseableHttpClient gISHttpClient = HttpClients.createDefault();
 			return gISHttpClient.execute(gISHttpGet).getEntity().getContent();
