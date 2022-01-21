@@ -24,6 +24,7 @@ import com.genexus.util.IniFile;
 import com.genexus.webpanels.*;
 
 import java.util.Enumeration;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
@@ -73,6 +74,12 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 			MultiValuedTreeMap<String, String> qString = new MultiValuedTreeMap<>();
 			qString.add("", parmValue);
 			awsProxyRequest.setMultiValueQueryStringParameters(qString);
+		}
+
+		// In Jersey lambda context, the Referer Header has a special meaning. So we copy it to another Header.
+		List<String> referer = awsProxyRequest.getMultiValueHeaders().get("Referer");
+		if (referer != null && !referer.isEmpty()) {
+			awsProxyRequest.getMultiValueHeaders().put("GX-Referer", referer);
 		}
 	}
 
