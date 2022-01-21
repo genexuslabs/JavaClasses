@@ -11,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import com.genexus.servlet.http.ICookie;
 import com.genexus.util.IniFile;
+import com.genexus.webpanels.HttpContextWeb;
 import org.apache.http.*;
 import com.genexus.CommonUtil;
 import com.genexus.specific.java.*;
@@ -240,10 +241,14 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 		CookieStore cookiesToSend = new BasicCookieStore();
 		if (!com.genexus.ModelContext.getModelContext().isNullHttpContext()) { 	// Caso de ejecucion de varias instancia de HttpClientJavaLib, por lo que se obtienen cookies desde sesion web del browser
-			webcookies = ((com.genexus.webpanels.HttpContextWeb) com.genexus.ModelContext.getModelContext().getHttpContext()).getCookies();
-			ICookie webcookie = webcookies == null ? null : Arrays.stream(webcookies).filter(cookie -> "Set-Cookie".equalsIgnoreCase(cookie.getName())).findAny().orElse(null);
-			if (webcookie != null)
-				this.addHeader("Cookie", com.genexus.webpanels.WebUtils.decodeCookie(webcookie.getValue()));
+
+			String selfWebCookie = ((com.genexus.webpanels.HttpContextWeb) com.genexus.ModelContext.getModelContext().getHttpContext()).getCookie("Set-Cookie");
+			if (!selfWebCookie.isEmpty())
+				this.addHeader("Cookie", selfWebCookie.replace("+",";"));
+//			webcookies = webcontext.getCookies();
+//			ICookie webcookie = webcookies == null ? null : Arrays.stream(webcookies).filter(cookie -> "Set-Cookie".equalsIgnoreCase(cookie.getName())).findAny().orElse(null);
+//			if (webcookie != null)
+//				this.addHeader("Cookie", com.genexus.webpanels.WebUtils.decodeCookie(webcookie.getValue()));
 
 		} else {	// Caso se ejecucion de una misma instancia HttpClientJavaLib mediante command line
 			if (!getIncludeCookies())
