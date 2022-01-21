@@ -198,10 +198,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 			String selfWebCookie = ((com.genexus.webpanels.HttpContextWeb) com.genexus.ModelContext.getModelContext().getHttpContext()).getCookie("Set-Cookie");
 			if (!selfWebCookie.isEmpty())
 				this.addHeader("Cookie", selfWebCookie.replace("+",";"));
-//			webcookies = webcontext.getCookies();
-//			ICookie webcookie = webcookies == null ? null : Arrays.stream(webcookies).filter(cookie -> "Set-Cookie".equalsIgnoreCase(cookie.getName())).findAny().orElse(null);
-//			if (webcookie != null)
-//				this.addHeader("Cookie", com.genexus.webpanels.WebUtils.decodeCookie(webcookie.getValue()));
 
 		} else {	// Caso se ejecucion de una misma instancia HttpClientJavaLib mediante command line
 			if (!getIncludeCookies())
