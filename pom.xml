@@ -43,6 +43,7 @@
 		<module>gxwebsocketjakarta</module>
 		<module>gxawsserverless</module>
 		<module>androidreports</module>
+        <module>mqttjavaexo</module>
     </modules>
 
 	<licenses>
