@@ -15,13 +15,13 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jersey.javax.version>2.34</jersey.javax.version>
-        <jersey.jakarta.version>3.0.1</jersey.jakarta.version>
-        <jackson.version>2.12.5</jackson.version>
-        <junit.version>4.13.2</junit.version>
+		<jersey.javax.version>2.34</jersey.javax.version>
+		<jersey.jakarta.version>3.0.1</jersey.jakarta.version>
+		<jackson.version>2.12.5</jackson.version>
+		<junit.version>4.13.2</junit.version>
 	</properties>
 
-    <modules>
+	<modules>
 		<module>common</module>
 		<module>wrapperjavax</module>
 		<module>wrapperjakarta</module>
@@ -43,8 +43,8 @@
 		<module>gxwebsocketjakarta</module>
 		<module>gxawsserverless</module>
 		<module>androidreports</module>
-        <module>mqttjavaexo</module>
-    </modules>
+		<module>mqttjavaexo</module>
+	</modules>
 
 	<licenses>
 		<license>
@@ -53,14 +53,14 @@
 		</license>
 	</licenses>
 
-    <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<pluginManagement>
@@ -164,4 +164,66 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>ci-cd</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.6</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+								<configuration>
+									<!-- Prevent gpg from using pinentry programs. Fixes: gpg: signing 
+										failed: Inappropriate ioctl for device -->
+									<gpgArguments>
+										<arg>--pinentry-mode</arg>
+										<arg>loopback</arg>
+									</gpgArguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>github-packages</id>
+			<distributionManagement>
+				<repository>
+					<id>github</id>
+					<name>GitHub Packages</name>
+					<url>https://maven.pkg.github.com/genexuslabs/JavaClasses</url>
+				</repository>
+			</distributionManagement>
+		</profile>
+
+		<profile>
+			<id>azure-artifacts</id>
+			<distributionManagement>
+				<repository>
+					<id>mqtt-temporal</id>
+					<name>Azure Artifacts</name>
+					<url>https://pkgs.dev.azure.com/genexuslabs/3361ab3b-96bc-4a69-a37a-f2b255ff2f35/_packaging/mqtt-temporal/maven/v1</url>
+				</repository>
+			</distributionManagement>
+		</profile>
+	</profiles>
+
+	<distributionManagement>
+		<repository>
+			<id>ossrh</id>
+			<name>Central Repository OSSRH</name>
+			<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
 </project>

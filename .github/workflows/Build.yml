@@ -2,6 +2,11 @@ name: Build
 
 on:
   workflow_dispatch:
+    inputs:
+      force-deploy:
+        type: boolean
+        default: false
+        description: Force package publication
   pull_request:
     branches:
       - 'master'
@@ -20,7 +25,7 @@ jobs:
       GIT_REF: ${{ github.ref }}
       GIT_SHA: ${{ github.sha }}
       POM_PATH: ./pom.xml
-      VERSION_SCRIPT: ./github/updatePOMVersion.sh
+      VERSION_SCRIPT: ./.github/updatePOMVersion.sh
     
     runs-on: ubuntu-latest
 
@@ -38,8 +43,19 @@ jobs:
     - name: Setup Maven settings
       uses: whelk-io/maven-settings-xml-action@v14
       with:
-        repositories: '[{ "id": "github-genexuslabs", "url": "https://maven.pkg.github.com/genexuslabs/Private-Maven-for-GX",  "releases": { "enabled": "true" }, "snapshots": { "enabled": "true" } }]'
-        servers: '[{ "id": "github-genexuslabs", "username": "genexusbot", "password": "${{ secrets.SECURE_TOKEN }}" }]'
+        repositories: '[{ "id": "github-genexuslabs", "url": "https://maven.pkg.github.com/genexuslabs/Private-Maven-for-GX",  "releases": { "enabled": "true" }, "snapshots": { "enabled": "true" } },
+                        { "id": "github", "url": "https://maven.pkg.github.com/github/JavaClasses",  "releases": { "enabled": "true" }, "snapshots": { "enabled": "false" } },
+                        { "id": "mqtt-temporal", "url": "https://pkgs.dev.azure.com/genexuslabs/3361ab3b-96bc-4a69-a37a-f2b255ff2f35/_packaging/mqtt-temporal/maven/v1",  "releases": { "enabled": "false" }, "snapshots": { "enabled": "true" } }]'
+        servers: '[{ "id": "github-genexuslabs", "username": "genexusbot", "password": "${{ secrets.SECURE_TOKEN }}" },
+                   { "id": "github", "username": "genexusbot", "password": "${{ secrets.SECURE_TOKEN }}" },
+                   { "id": "mqtt-temporal", "username": "genexuslabs", "password": "${{ secrets.AZURE_ARTIFACTS_TOKEN }}" },
+                   { "id": "gpg.passphrase", "passphrase": "${{ secrets.MAVEN_GPG_BUILDER_PASSPHRASE }}" }]'
+
+    - name: Configure GPG Key
+      env:
+        GPG_SIGNING_KEY: ${{ secrets.MAVEN_GPG_BUILDER_PRIVATE_KEY }}
+      run: |
+        echo -n "$GPG_SIGNING_KEY" | gpg --import --batch
 
     - name: Calculate build variables
       id: buildVariables
@@ -63,7 +79,7 @@ jobs:
         script="$VERSION_SCRIPT"
         if [ -f "$script" ]; then
           echo "Executing version script at: $script"
-          sh "$script"
+          "$script"
         else
           echo 'No version script specified. Will generate packages with the version on the POM file'
         fi
@@ -73,13 +89,17 @@ jobs:
         echo "::set-output name=finalPOMVersion::$finalPOMVersion"
 
     - name: Validate build
-      run: mvn -B validate --file $POM_PATH
+      run: mvn -B validate --file $POM_PATH -P ci-cd
 
     - name: Build
-      run: mvn -B compile --file $POM_PATH
+      run: mvn -B compile --file $POM_PATH -P ci-cd
 
     - name: Test
-      run: mvn -B test --file $POM_PATH
+      run: mvn -B test --file $POM_PATH -P ci-cd
 
     - name: Package
-      run: mvn -B package --file $POM_PATH
+      run: mvn -B package --file $POM_PATH -P ci-cd
+    
+    - name: Publish (Azure Artifacts)
+      if: ${{ github.event.inputs.force-deploy == 'true' || (github.base_ref == '' && startsWith( github.ref, 'refs/heads/release-' )) }}
+      run: mvn -B deploy -DdeployAtEnd=true --file $POM_PATH -P ci-cd,azure-artifacts
