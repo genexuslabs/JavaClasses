@@ -9,7 +9,6 @@ import java.util.Set;
 import com.genexus.ModelContext;
 import com.genexus.internet.HttpContext;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.BOMInputStream;
 
 import com.genexus.CommonUtil;
 import com.genexus.GXutil;
@@ -522,8 +521,9 @@ public class WebUtils
 			InputStream is = getInputStreamFile(gxAppClass, servicesClassesFileName);
 			if (is != null)
 			{
-				BOMInputStream bomInputStream = new BOMInputStream(is);
-				String xmlstring = IOUtils.toString(bomInputStream, "UTF-8");
+				//BOMInputStream bomInputStream = new BOMInputStream(is);// Avoid using BOMInputStream because of runtime error (java.lang.NoSuchMethodError: org.apache.commons.io.IOUtils.length([Ljava/lang/Object;)I) issue 94611
+				//IOUtils.toString(bomInputStream, "UTF-8");
+				String xmlstring = PrivateUtilities.BOMInputStreamToStringUTF8(is);
 				
 				XMLReader reader = new XMLReader();
 				reader.openFromString(xmlstring);
