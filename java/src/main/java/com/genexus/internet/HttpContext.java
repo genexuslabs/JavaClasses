@@ -1,12 +1,8 @@
 package com.genexus.internet;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.Date;
 import java.util.Enumeration;
-import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -17,8 +13,6 @@ import com.genexus.servlet.http.IHttpServletRequest;
 import com.genexus.servlet.http.IHttpServletResponse;
 
 import com.genexus.*;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.BOMInputStream;
 
 import com.genexus.usercontrols.UserControlFactoryImpl;
 import com.genexus.util.Codecs;
@@ -442,21 +436,20 @@ public abstract class HttpContext
 		if (cssContent == null)
 		{
 			String path = getRequest().getServletPath().replaceAll(".*/", "") + ".css";
-			try 
+			try(InputStream istream = context.packageClass.getResourceAsStream(path))
 			{
-				InputStream istream = context.packageClass.getResourceAsStream(path);
+
 				if (istream == null)
 				{
 					cssContent = "";
 				}
-				else
-				{
-					BOMInputStream bomInputStream = new BOMInputStream(istream);
-					cssContent = IOUtils.toString(bomInputStream, "UTF-8");
+				else {
+					//BOMInputStream bomInputStream = new BOMInputStream(istream);// Avoid using BOMInputStream because of runtime error (java.lang.NoSuchMethodError: org.apache.commons.io.IOUtils.length([Ljava/lang/Object;)I) issue 94611
+					//cssContent = IOUtils.toString(bomInputStream, "UTF-8");
+					cssContent = PrivateUtilities.BOMInputStreamToStringUTF8(istream);
 				}
 			}
-			catch ( Exception e)
-			{
+			catch ( Exception e) {
 				cssContent = "";
 			}
 			ApplicationContext.getcustomCSSContent().put(getRequest().getServletPath(), cssContent);
