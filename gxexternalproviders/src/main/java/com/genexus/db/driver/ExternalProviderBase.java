@@ -80,22 +80,18 @@ public abstract class ExternalProviderBase {
 			return value;
 		}
 		String resolvedPtyName = resolvePropertyName(propertyName);
-
-		if (value == null && this.service != null) {
+		if (this.service != null) {
 			value = this.service.getProperties().get(resolvedPtyName);
 			if (value == null || value.length() == 0) {
 				value = this.service.getProperties().get(alternativePropertyName);
 			}
-		}
-		if (value != null) {
-			logger.warn(String.format("Service getPropertyValue - (%s : %s)", resolvedPtyName, value));
 		}
 		return value != null? value: defaultValue;
 	}
 
 	private String readFromEnvVars(String propertyName, String alternativePropertyName) {
 		String value = System.getenv(resolvePropertyName(propertyName));
-		if (value == null || value.length() == 0){
+		if (value == null){
 			value = System.getenv(alternativePropertyName);
 		}
 		return value;
