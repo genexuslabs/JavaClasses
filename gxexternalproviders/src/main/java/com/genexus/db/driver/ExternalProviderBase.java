@@ -27,7 +27,6 @@ public abstract class ExternalProviderBase {
 		init();
 	}
 
-
 	public ExternalProviderBase(GXService s) {
 		this.service = s;
 		init();
@@ -51,21 +50,18 @@ public abstract class ExternalProviderBase {
 	}
 
 	public String getEncryptedPropertyValue(String propertyName, String alternativePropertyName, String defaultValue) {
-		String value = readFromEnvVars(propertyName, alternativePropertyName);
-		if (value != null) {
-			return value;
-		}
-
-		value = getServicePropertyValue(propertyName, alternativePropertyName, defaultValue);
-		if (value != null && value.length() > 0) {
+		String decryptedValue = null;
+		String encryptedOrClearTextValue = getPropertyValue(propertyName, alternativePropertyName, defaultValue);
+		if (encryptedOrClearTextValue != null && encryptedOrClearTextValue.length() > 0) {
 			try {
-				value = Encryption.decrypt64(value);
+				String decryptedTemp = Encryption.decrypt64(encryptedOrClearTextValue);
+				decryptedValue = (decryptedTemp != null) ? decryptedTemp: encryptedOrClearTextValue;
 			}
 			catch (Exception e) {
-				logger.error("Could not decrypt property name: " + resolvePropertyName(propertyName));
+				logger.warn("Could not decrypt property name: " + resolvePropertyName(propertyName));
 			}
 		}
-		return value;
+		return decryptedValue;
 	}
 
 	public String getPropertyValue(String propertyName, String alternativePropertyName) throws Exception{
@@ -83,20 +79,18 @@ public abstract class ExternalProviderBase {
 		if (value != null) {
 			return value;
 		}
-
-		return getServicePropertyValue(propertyName, alternativePropertyName, defaultValue);
-	}
-
-	private String getServicePropertyValue(String propertyName, String alternativePropertyName, String defaultValue) {
-		String value = null;
 		String resolvedPtyName = resolvePropertyName(propertyName);
-		if (this.service != null) {
+
+		if (value == null && this.service != null) {
 			value = this.service.getProperties().get(resolvedPtyName);
 			if (value == null || value.length() == 0) {
 				value = this.service.getProperties().get(alternativePropertyName);
 			}
 		}
-		return value != null ? value: defaultValue;
+		if (value != null) {
+			logger.warn(String.format("Service getPropertyValue - (%s : %s)", resolvedPtyName, value));
+		}
+		return value != null? value: defaultValue;
 	}
 
 	private String readFromEnvVars(String propertyName, String alternativePropertyName) {
@@ -110,4 +104,5 @@ public abstract class ExternalProviderBase {
 	private String resolvePropertyName(String propertyName) {
 		return String.format("STORAGE_%s_%s", getName(), propertyName);
 	}
+
 }
