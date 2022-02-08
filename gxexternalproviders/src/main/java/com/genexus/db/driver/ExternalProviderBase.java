@@ -51,13 +51,18 @@ public abstract class ExternalProviderBase {
 	}
 
 	public String getEncryptedPropertyValue(String propertyName, String alternativePropertyName, String defaultValue) {
-		String value = getPropertyValue(propertyName, alternativePropertyName, defaultValue);
+		String value = readFromEnvVars(propertyName, alternativePropertyName);
+		if (value != null) {
+			return value;
+		}
+
+		value = getServicePropertyValue(propertyName, alternativePropertyName, defaultValue);
 		if (value != null && value.length() > 0) {
 			try {
 				value = Encryption.decrypt64(value);
 			}
 			catch (Exception e) {
-				logger.warn("Could not decrypt property name: " + resolvePropertyName(propertyName));
+				logger.error("Could not decrypt property name: " + resolvePropertyName(propertyName));
 			}
 		}
 		return value;
@@ -74,22 +79,35 @@ public abstract class ExternalProviderBase {
 	}
 
 	public String getPropertyValue(String propertyName, String alternativePropertyName, String defaultValue) {
-		propertyName = resolvePropertyName(propertyName);
-		String value = System.getenv(propertyName);
-		if (value == null || value.length() == 0){
-			value = System.getenv(alternativePropertyName);
+		String value = readFromEnvVars(propertyName, alternativePropertyName);
+		if (value != null) {
+			return value;
 		}
+
+		return getServicePropertyValue(propertyName, alternativePropertyName, defaultValue);
+	}
+
+	private String getServicePropertyValue(String propertyName, String alternativePropertyName, String defaultValue) {
+		String value = null;
+		String resolvedPtyName = resolvePropertyName(propertyName);
 		if (this.service != null) {
-			value = this.service.getProperties().get(propertyName);
+			value = this.service.getProperties().get(resolvedPtyName);
 			if (value == null || value.length() == 0) {
 				value = this.service.getProperties().get(alternativePropertyName);
 			}
 		}
-		return value != null? value: defaultValue;
+		return value != null ? value: defaultValue;
+	}
+
+	private String readFromEnvVars(String propertyName, String alternativePropertyName) {
+		String value = System.getenv(resolvePropertyName(propertyName));
+		if (value == null || value.length() == 0){
+			value = System.getenv(alternativePropertyName);
+		}
+		return value;
 	}
 
 	private String resolvePropertyName(String propertyName) {
 		return String.format("STORAGE_%s_%s", getName(), propertyName);
 	}
-
 }
