@@ -50,12 +50,12 @@ public abstract class ExternalProviderBase {
 	}
 
 	public String getEncryptedPropertyValue(String propertyName, String alternativePropertyName, String defaultValue) {
-		String decryptedValue = null;
-		String encryptedOrClearTextValue = getPropertyValue(propertyName, alternativePropertyName, defaultValue);
-		if (encryptedOrClearTextValue != null && encryptedOrClearTextValue.length() > 0) {
+		String encryptedOrUnEncryptedValue = getPropertyValue(propertyName, alternativePropertyName, defaultValue);
+		String decryptedValue = encryptedOrUnEncryptedValue;
+		if (encryptedOrUnEncryptedValue != null && encryptedOrUnEncryptedValue.length() > 0) {
 			try {
-				String decryptedTemp = Encryption.decrypt64(encryptedOrClearTextValue);
-				decryptedValue = (decryptedTemp != null) ? decryptedTemp: encryptedOrClearTextValue;
+				String decryptedTemp = Encryption.decrypt64(encryptedOrUnEncryptedValue);
+				decryptedValue = (decryptedTemp != null) ? decryptedTemp: encryptedOrUnEncryptedValue;
 			}
 			catch (Exception e) {
 				logger.warn("Could not decrypt property name: " + resolvePropertyName(propertyName));
