@@ -151,10 +151,40 @@ public class Encryption
 		return "";
 	}
         
-        public static String decrypt64(String value){
-            value= decrypt64(value,  SpecificImplementation.Application.getModelContext().getServerKey());
-            return value.substring(0, value.length()-CHECKSUM_LENGTH);
-        }
+	public static String decrypt64(String value){
+		value = decrypt64(value,  SpecificImplementation.Application.getModelContext().getServerKey());
+		return value.substring(0, value.length()-CHECKSUM_LENGTH);
+	}
+
+	/**
+	 *  Returns decrpyted value if the checksum verification succedes. Otherwise, original value is returned
+	 * @param encryptedOrDecryptedValue
+	 * @return Decrypted Value
+	 */
+	public static String tryDecrypt64(String encryptedOrDecryptedValue) {
+		return tryDecrypt64(encryptedOrDecryptedValue, SpecificImplementation.Application.getModelContext().getServerKey());
+	}
+
+	public static String tryDecrypt64(String encryptedOrDecryptedValue, String key) {
+		if (encryptedOrDecryptedValue == null) {
+			return null;
+		}
+
+		int checkSumLength = Encryption.getCheckSumLength();
+		if (encryptedOrDecryptedValue.length() > checkSumLength) {
+			String dec = Encryption.decrypt64(encryptedOrDecryptedValue, key);
+			// Ojo, el = de aca es porque sino no me deja tener passwords vacias, dado que el length queda igual al length del checksum
+			if (dec.length() >= checkSumLength) {
+				String checksum = CommonUtil.right(dec, checkSumLength);
+				String decryptedValue = CommonUtil.left(dec, dec.length() - checkSumLength);
+				if (checksum.equals(Encryption.checksum(decryptedValue, Encryption.getCheckSumLength()))) {
+					return decryptedValue;
+				}
+			}
+		}
+		return encryptedOrDecryptedValue;
+	}
+
 
 	public static String decrypt64(String value, String key)
 	{
@@ -196,7 +226,9 @@ public class Encryption
 			return "";
 		}
 	}
-	
+
+
+
 	private static final int CHECKSUM_LENGTH = 6;
 
 	public static int getCheckSumLength()

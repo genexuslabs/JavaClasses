@@ -54,7 +54,7 @@ public abstract class ExternalProviderBase {
 		String decryptedValue = encryptedOrUnEncryptedValue;
 		if (encryptedOrUnEncryptedValue != null && encryptedOrUnEncryptedValue.length() > 0) {
 			try {
-				String decryptedTemp = Encryption.decrypt64(encryptedOrUnEncryptedValue);
+				String decryptedTemp = Encryption.tryDecrypt64(encryptedOrUnEncryptedValue);
 				decryptedValue = (decryptedTemp != null) ? decryptedTemp: encryptedOrUnEncryptedValue;
 			}
 			catch (Exception e) {
