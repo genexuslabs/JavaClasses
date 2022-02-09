@@ -8,8 +8,6 @@ public class GXWebProgressIndicator
         private GXWebNotification notification;        
         private GXWebProgressIndicatorInfo info;       
 		private ModelContext context;
-		private boolean running = false;
-		
 		
         public GXWebProgressIndicator(ModelContext gxContext)
         {
@@ -20,26 +18,21 @@ public class GXWebProgressIndicator
       
         public void show()
         {
-			running = true;
             setAction("0");
             updateProgress();
         }
 
         private void updateProgress()
         {
-			if (running)
-			{
-				GXWebNotificationInfo notif = new GXWebNotificationInfo(0,context,"");  
-				notif.setId(GXWebProgressIndicator.ID);
-				notif.setGroupName(GXWebProgressIndicator.ID);
-				notif.setMessage(info);          
-				notification.notify(notif);
-			}
+			GXWebNotificationInfo notif = new GXWebNotificationInfo(0,context,"");
+			notif.setId(GXWebProgressIndicator.ID);
+			notif.setGroupName(GXWebProgressIndicator.ID);
+			notif.setMessage(info);
+			notification.notify(notif);
         }
         
         public void showWithTitle(String title)
         {
-			running = true;
             setTitle(title);
             setAction("1");
             updateProgress();
@@ -47,7 +40,6 @@ public class GXWebProgressIndicator
 
         public void showWithTitleAndDescription(String title, String desc)
         {
-			running = true;
             setTitle(title);
             setDescription(desc);
             setAction("2");
@@ -58,7 +50,6 @@ public class GXWebProgressIndicator
         {			
             setAction("3");
             updateProgress();
-			running = false;
         }
 
 		private String getAction() {

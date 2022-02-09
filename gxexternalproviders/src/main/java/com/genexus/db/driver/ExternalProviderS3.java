@@ -328,27 +328,14 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
         }
     }
 
-    public boolean existsDirectory(String directoryName) {
-        directoryName = StorageUtils.normalizeDirectoryName(directoryName);
-        ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
-            .withBucketName(bucket).withDelimiter(StorageUtils.DELIMITER);
-        List<String> directories = new ArrayList<String>();
-        for (String prefix : client.listObjects(listObjectsRequest).getCommonPrefixes()) {
-            directories.add(prefix);
-            getAllDirectories(prefix, directories);
-        }
-        return directories.contains(directoryName);
-    }
-
-    public void getAllDirectories(String directoryName, List<String> directories) {
-        directoryName = StorageUtils.normalizeDirectoryName(directoryName);
-        ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
-            .withBucketName(bucket).withPrefix(directoryName).withDelimiter(StorageUtils.DELIMITER);
-        for (String prefix : client.listObjects(listObjectsRequest).getCommonPrefixes()) {
-            directories.add(prefix);
-            getAllDirectories(prefix, directories);
-        }
-    }
+	public boolean existsDirectory(String directoryName) {
+		ListObjectsV2Request listObjectsRequest = new ListObjectsV2Request()
+			.withBucketName(bucket)
+			.withDelimiter(StorageUtils.DELIMITER)
+			.withPrefix(StorageUtils.normalizeDirectoryName(directoryName))
+			.withMaxKeys(1);
+		return client.listObjectsV2(listObjectsRequest).getKeyCount() > 0;
+	}
 
     public void createDirectory(String directoryName) {
         ensureFolder(directoryName);
