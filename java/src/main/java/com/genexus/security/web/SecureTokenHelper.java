@@ -23,13 +23,14 @@ public class SecureTokenHelper {
         SignEncrypt,           
         None 
     }
-    
+
+	@SuppressWarnings("unchecked")
     public static String sign(SecureToken token, SecurityMode mode, String secretKey)
     {        
         String payload = token.ToJavascriptSource();
         String encoded = "";
         JWTSigner signer = new JWTSigner(secretKey);
-        Map<String,Object> claims = null;
+        Map<String,Object> claims;
 		try {
 			claims = new ObjectMapper().readValue(payload, Map.class);
 			switch (mode)

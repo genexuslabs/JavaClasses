@@ -99,7 +99,7 @@ public class GXWebRow implements IGxJSONAble
 			Iterator it = null;
             if (this._parentGrid != null && this._parentGrid.GetColsPropsCommon().size() > this._Count )
             {
-            	it = ((JSONArray)(this._parentGrid.GetColsPropsCommon().get(_Count))).iterator();
+            	it = this._parentGrid.GetColsPropsCommon().get(_Count).iterator();
             }
 			return it;
         }

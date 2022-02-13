@@ -11,6 +11,8 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Hashtable;
 import java.lang.reflect.Method;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.genexus.internet.IGxJSONAble;
 import com.genexus.internet.IGxJSONSerializable;
 
@@ -79,6 +81,11 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 		return readxml(reader, "");
 	}
 
+	public byte isNull( )
+	{
+		return 0 ;
+	}
+
 	public Object clone()
 	{
 		try
@@ -108,7 +115,7 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 		if(SpecificImplementation.Application.getProperty("SIMPLE_XML_SUPPORT", "0").equals("1"))
 		{
 			try {
-				Class me = getClass();
+				Class<?> me = getClass();
 				Object struct = me.getMethod("getStruct", new Class[]{}).invoke(this, (Object[])null);
 				GXProperties stateAttributes=null;
 				if (isVisitorStrategy(includeState)){
@@ -159,7 +166,7 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 		try {
 			if(SpecificImplementation.Application.getProperty("SIMPLE_XML_SUPPORT", "0").equals("1"))
 			{
-				Class me = getClass();
+				Class<?> me = getClass();
 				Object struct = me.getMethod("getStruct", new Class[]{}).invoke(this, (Object[])null);
                 me.getMethod("setStruct", struct.getClass()).invoke(this, GXXMLSerializer.deserializeSimpleXml(struct, sXML));
 				return true;
@@ -297,7 +304,7 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 	}
 	public Object GetJSONObject(boolean includeState, boolean includeNoInitialized)
 	{
-		jsonObj.clear();
+		jsonObj = new JSONObject();
 		tojson(includeState, includeNoInitialized);
 		if (isArrayObject)
 		{
@@ -343,7 +350,7 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 		String map;
 		Method setMethod;
 		Method getMethod;
-		Class setClass;
+		Class<?> setClass;
 		GXSimpleCollection currColl;
 		if (isArrayObject)
 		{
@@ -458,7 +465,7 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
                     Object currObj = jsonArray.get(i);
                     if(currObj instanceof JSONObject || !gxColl.IsSimpleCollection())
                     {
-                        Class innerClass = gxColl.getElementsType();
+                        Class<?> innerClass = gxColl.getElementsType();
 						IGxJSONAble innerObj;
 						if (GxSilentTrnSdt.class.isAssignableFrom(innerClass))
 						{
@@ -481,11 +488,11 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
         }
 
         // cache of methods for classes, inpruve perfomance, becuase each intance get all methods each time called.
-        private static transient Hashtable classesCacheMethods = new Hashtable();
+        private static transient ConcurrentHashMap<String, ConcurrentHashMap<String, Method>> classesCacheMethods = new ConcurrentHashMap<>();
         // cache of methods names, inpruve perfomance.
-        private static transient Hashtable toLowerCacheMethods = new Hashtable();
+        private static transient ConcurrentHashMap<String, String> toLowerCacheMethods = new ConcurrentHashMap<>();
 
-        private transient Hashtable classMethods;
+        private transient ConcurrentHashMap<String, Method> classMethods;
         private Method getMethod(String methodName)
         {
         	String toLowerMethodName = (String)toLowerCacheMethods.get(methodName);
@@ -498,11 +505,11 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 			{
         		Class thisClass = this.getClass();
         		//System.out.println("get methods from cache " + thisClass.getName());
-        		classMethods = (Hashtable)classesCacheMethods.get(thisClass.getName());
+        		classMethods = classesCacheMethods.get(thisClass.getName());
 			}
 			if (classMethods==null)
 			{
-				classMethods = new Hashtable();
+				classMethods = new ConcurrentHashMap<>();
 				Class thisClass = this.getClass();
 				Method[] methods = thisClass.getMethods();
 				for(int i=0; i<methods.length; i++)
@@ -512,7 +519,7 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 				//System.out.println("put methods in cache " + thisClass.getName());
 				classesCacheMethods.put(thisClass.getName(), classMethods);
 			}
-            return (Method)classMethods.get(toLowerMethodName);
+            return classMethods.get(toLowerMethodName);
         }
 	public String toJSonString()
 	{
@@ -553,6 +560,11 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 			return true;
 		}
 		catch (JSONException ex)
+		{
+			CommonUtil.ErrorToMessages("fromxml error", ex.getMessage(), messages);
+			return false;
+		}
+		catch (Exception ex)
 		{
 			CommonUtil.ErrorToMessages("fromxml error", ex.getMessage(), messages);
 			return false;

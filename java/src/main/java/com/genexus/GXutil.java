@@ -1,8 +1,10 @@
 package com.genexus;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -25,9 +27,22 @@ public final class GXutil
 {
 	public static boolean Confirmed = false;
 
+	public static void writeLogInfo(String message)
+	{
+		CommonUtil.writeLogInfo(message);
+	}
+	public static void writeLogError(String message)
+	{
+		CommonUtil.writeLogError(message);
+	}
+
 	public static void writeLogln( String message)
 	{
 		CommonUtil.writeLogln(message);
+	}
+	public static void writeTLogln( String message)
+	{
+		CommonUtil.writeTLogln(message);
 	}
 
 	public static void writeLogRaw( String message, Object obj)
@@ -111,7 +126,8 @@ public final class GXutil
 	public static byte fileExists(String fileName)
 	{
 		if (!fileName.startsWith("http")){
-			return new File(fileName).exists()? (byte)1:0;
+			File file = new File(fileName);
+			return (file.isFile() && file.exists())? (byte)1:0;
 		}
 		else
 		{
@@ -148,13 +164,22 @@ public final class GXutil
 
     public static String formatDateTimeParm(Date date)
     {
-        return CommonUtil.formatDateParm(date);
+        return CommonUtil.formatDateTimeParm(date);
+	}
+	
+	public static String formatDateTimeParmMS(Date date)
+    {
+        return CommonUtil.formatDateTimeParmMS(date);
     }
 
     public static String formatDateParm(Date date)
     {
         return CommonUtil.formatDateParm(date);
     }
+	public static String formatDateParm(Date[] date)
+	{
+		return formatDateParm(date[0]);
+	}
 	
 	public static String delete(String text,char del)
 	{
@@ -175,6 +200,14 @@ public final class GXutil
 	public static String rtrim(String text)
 	{
         return CommonUtil.rtrim(text);
+	}
+	public static String rtrim(String[] text)
+	{
+		return CommonUtil.rtrim(text[0]);
+	}
+	public static String rtrim(String[][] text)
+	{
+		return CommonUtil.rtrim(text[0][0]);
 	}
 	public static boolean endsWith(String s1, String s2)
 	{
@@ -340,13 +373,23 @@ public final class GXutil
 
 	public static Date DateTimeToUTC(Date value)
 	{
-		return CommonUtil.DateTimeToUTC(value, TimeZone.getDefault());
+		if ( emptyDate( value))
+			return value;
+		if (ModelContext.getModelContext() == null)
+		{
+			TimeZone tz = (TimeZone)com.genexus.GXutil.threadTimeZone.get();
+			if (tz != null)
+				return DateTimeToUTC(value, tz);
+			else
+				return DateTimeToUTC(value, TimeZone.getDefault());
+		}
+		else
+			return DateTimeToUTC(value, ModelContext.getModelContext().getClientTimeZone());
 	}
-
 
 	public static Date DateTimeToUTC(Date value, TimeZone tz)
 	{
-		return CommonUtil.DateTimeToUTC(value, TimeZone.getDefault());
+		return CommonUtil.DateTimeToUTC(value, tz);
 	}
 
 	public static Date DateTimeFromUTC(Date value)
@@ -414,8 +457,10 @@ public final class GXutil
 		// Aca el numero tiene el valor redondeado y tiene los decimales correctos. Ahora
 		// hay que empezar a achicarlo si no entra en el espacio indicado.
 
-
-
+	public static String str(int[] value, int length, int decimals)
+	{
+		return str(value[0], length, decimals);
+	}
 
 	public static String str(double value, int length, int decimals)
 	{
@@ -575,6 +620,45 @@ public final class GXutil
 	{
 		return CommonUtil.ltrim(text);
 	}
+	public static String ltrimstr(long val, int digits, int decimals)
+	{
+		return CommonUtil.ltrimstr(val, digits, decimals);
+	}
+
+	public static String ltrimstr(long[] val, int digits, int decimals)
+	{
+		return ltrimstr(val[0], digits, decimals);
+	}
+
+	public static String ltrimstr(java.math.BigDecimal value, int length, int decimals)
+	{
+		return CommonUtil.ltrimstr(value, length, decimals);
+	}
+	public static String ltrimstr(java.math.BigDecimal[] value, int length, int decimals)
+	{
+		return ltrimstr(value[0], length, decimals);
+	}
+	public static String ltrimstr(double value, int length, int decimals)
+	{
+		return CommonUtil.ltrimstr(value, length, decimals);
+	}
+	public static String ltrimstr(double[] value, int length, int decimals)
+	{
+		return ltrimstr(value[0], length, decimals);
+	}
+
+	public static String ltrimstr(int[] value, int length, int decimals)
+	{
+		return ltrimstr(value[0], length, decimals);
+	}
+	public static String ltrimstr(short[] value, int length, int decimals)
+	{
+		return ltrimstr(value[0], length, decimals);
+	}
+	public static String ltrimstr(byte[] value, int length, int decimals)
+	{
+		return ltrimstr(value[0], length, decimals);
+	}
 
 	public static String time()
 	{
@@ -626,6 +710,10 @@ public final class GXutil
 	{
 		return CommonUtil.dtadd(date, seconds);
 	}
+	public static Date dtadd(Date date, double seconds)
+	{
+		return dtadd(date, (int)seconds);
+	}
 
 	public static Date dtaddms(Date date, double seconds)
 	{
@@ -636,6 +724,10 @@ public final class GXutil
 	public static Date dadd(Date date, int cnt)
 	{
 		return CommonUtil.dadd(date, cnt);
+	}
+	public static Date dadd(Date date, double cnt)
+	{
+		return dadd(date, (int)cnt);
 	}
 
 	public static long dtdiff(Date dateStart, Date dateEnd)
@@ -1101,7 +1193,7 @@ public final class GXutil
   		{
 			return Codecs.decode(s, "UTF8");
 		}
-		catch(  UnsupportedEncodingException e)
+		catch(  UnsupportedEncodingException | IllegalArgumentException e)
 		{
 			return s;
 		}
@@ -1117,7 +1209,7 @@ public final class GXutil
 		}
 		catch(  UnsupportedEncodingException e)
 		{
-			return Codecs.encode(s);
+			return s;
 		}
 	}
 
@@ -1257,13 +1349,11 @@ public final class GXutil
 		return com.genexus.Preferences.getDefaultPreferences().getBLOB_PATH() + blobPath;
 	}
 	public static final String FORMDATA_REFERENCE = "gxformdataref:";
-	public static final String UPLOADPREFIX = "gxupload:";	
 	public static final int UPLOAD_TIMEOUT = 10;	
 	
 	public static String cutUploadPrefix(String value)
 	{
-		String uploadValue = value.replace(UPLOADPREFIX, "");
-		uploadValue = SpecificImplementation.GXutil.getUploadValue(value, uploadValue);
+		String uploadValue = SpecificImplementation.GXutil.getUploadValue(value);
 	
 		//hack para salvar el caso de gxooflineeventreplicator que llegan los path de los blobs sin \ porque fueron sacadas por el FromJsonString
 		String blobPath = com.genexus.Preferences.getDefaultPreferences().getProperty("CS_BLOB_PATH", "");
@@ -1282,6 +1372,21 @@ public final class GXutil
 	public static boolean isUploadPrefix(String value)
 	{
 		return CommonUtil.isUploadPrefix(value);
+	}
+
+	public static String getNonTraversalPath(String path, String fileName) {
+		String nonTraversalPath =  Paths.get(path, fileName).toString();
+		try {
+			File nonTraversalFile = new File(nonTraversalPath);
+			String canonicalPath = nonTraversalFile.getCanonicalPath();
+			if (canonicalPath.startsWith(path) || ! nonTraversalFile.isAbsolute())
+				return nonTraversalPath;
+			else
+				return path + File.separator +  new File( fileName).getName();
+		}
+		catch(IOException ex) {
+			return path + File.separator +  new File( fileName).getName();
+		}
 	}
 	
 	public static String dateToCharREST(Date value)
@@ -1480,7 +1585,10 @@ public final class GXutil
         return res;
 	}
 
-	
+	public static int setTheme(String theme, ModelContext context) {
+		HttpContext httpContext = (HttpContext) context.getHttpContext();
+		return httpContext.setTheme(theme);
+	}
 	public static GxJsonArray stringCollectionsToJsonObj(StringCollection gxdynajaxctrlcodr, StringCollection gxdynajaxctrldescr)
 	{
 		return new GxJsonArray(stringCollectionsToJson(gxdynajaxctrlcodr, gxdynajaxctrldescr));
@@ -1549,6 +1657,11 @@ public final class GXutil
 		return CommonUtil.isAbsoluteURL(url);
 	}
 
+	public static boolean hasUrlQueryString(String url)
+	{
+		return CommonUtil.hasUrlQueryString(url);
+	}
+
 	public static void ErrorToMessages(String errorId, String errorDescription, GXBaseCollection<SdtMessages_Message> messages)
 	{
 		if (messages != null)
@@ -1601,7 +1714,19 @@ public final class GXutil
 		return CommonUtil.getHash( com.genexus.security.web.WebSecurityHelper.StripInvalidChars(value), com.genexus.cryptography.Constants.SECURITY_HASH_ALGORITHM).equals(Encryption.decrypt64(hash, key));
 	}
 
-	public static String buildURLFromHttpClient(com.genexus.internet.HttpClient GXSoapHTTPClient, String serviceName, javax.xml.ws.BindingProvider bProvider)
+	public static String buildWSDLFromHttpClient(com.genexus.internet.HttpClient GXSoapHTTPClient, String wsdlURL)
+	{
+		if (GXSoapHTTPClient.getWSDLURL() != null && !GXSoapHTTPClient.getWSDLURL().isEmpty())
+		{
+			return GXSoapHTTPClient.getWSDLURL();
+		}
+		else
+		{
+			return wsdlURL;
+		}
+	}
+
+	public static String buildURLFromHttpClient(com.genexus.internet.HttpClient GXSoapHTTPClient, String serviceName, com.genexus.xml.ws.BindingProvider bProvider)
 	{
 		if (!GXSoapHTTPClient.getProxyServerHost().equals(""))
 		{

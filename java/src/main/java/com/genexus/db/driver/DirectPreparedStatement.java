@@ -12,12 +12,12 @@ public class DirectPreparedStatement implements IPreparedStatementCache
 {
 	private static final boolean DEBUG       = DebugFlag.DEBUG;
 	private GXConnection jdbcConnection;
-	private Vector activeStatements;
+	private Vector<GXPreparedStatement> activeStatements;
 
 	DirectPreparedStatement(GXConnection jdbcConnection)
 	{
 		this.jdbcConnection = jdbcConnection;
-		activeStatements = new Vector();
+		activeStatements = new Vector<>();
 	}
 
 	public CallableStatement getCallableStatement(int handle, String index, String sqlSentence) throws SQLException

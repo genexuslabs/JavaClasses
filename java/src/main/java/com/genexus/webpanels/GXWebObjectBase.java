@@ -6,6 +6,8 @@ import java.util.TimeZone;
 
 import com.genexus.*;
 import com.genexus.configuration.ConfigurationManager;
+import com.genexus.diagnostics.GXDebugInfo;
+import com.genexus.diagnostics.GXDebugManager;
 import org.apache.commons.lang.StringUtils;
 
 import com.genexus.ModelContext;
@@ -21,7 +23,9 @@ import com.genexus.security.web.SecureTokenHelper;
 import com.genexus.security.web.WebSecurityHelper;
 import com.genexus.util.GXTimeZone;
 
-public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConstants, ISubmitteable
+import com.genexus.GXRestServiceWrapper;
+
+public abstract class GXWebObjectBase extends GXRestServiceWrapper implements IErrorHandler, GXInternetConstants, ISubmitteable
 {
 	public static final ILogger logger = LogManager.getLogger(GXWebObjectBase.class);
 
@@ -218,8 +222,9 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 				httpContext.flushStream();
 			}
 		}
-		catch (Exception e)
+		catch (Throwable e)
 		{
+			handleException(e.getClass().getName(), e.getMessage(), CommonUtil.getStackTraceAsString(e));
 			cleanup(); // Antes de hacer el rethrow, hago un cleanup del objeto
 			throw e;
 		}
@@ -309,7 +314,11 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
             this.localUtil = ui.getLocalUtil();
             return res;
         }
-
+		public int setTheme(String theme)
+		{
+			int res = GXutil.setTheme(theme, context);
+			return res;
+		}
         public void executeUsercontrolMethod(String CmpContext, boolean IsMasterPage, String containerName, String methodName, String input, Object[] parms)
         {
             httpContext.executeUsercontrolMethod(CmpContext, IsMasterPage, containerName, methodName, input, parms);
@@ -349,51 +358,17 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 
 	protected String formatLink(String jumpURL)
 	{
-		String lowURL = CommonUtil.lower(jumpURL);
-		if (jumpURL.indexOf("?") != -1)
-		{
-				lowURL = jumpURL.substring(0, jumpURL.indexOf("?")).toLowerCase() + jumpURL.substring(jumpURL.indexOf("?"));
-		}
-		String packageName = context.getPackageName();
+		return formatLink(jumpURL, new String[]{});
+	}
 
-		if (!packageName.equals("") && lowURL.startsWith(packageName))
-		{
-			return lowURL;
-		}
-		else
-		{
-			try
-			{
-				if (!packageName.equals(""))
-					packageName += ".";
-				getClass().getClassLoader().loadClass(packageName + lowURL);
-				return packageName + lowURL;
-			}
-			catch(java.lang.ClassNotFoundException e)
-			{
-			}
-		}
+	protected String formatLink(String jumpURL, String[] parms)
+	{
+		return formatLink(jumpURL, parms, new String[]{});
+	}
 
-		if (lowURL.split("\\.").length == 2 && !(!packageName.equals("") && lowURL.startsWith(packageName)) && !lowURL.startsWith("file:") && !lowURL.startsWith("http:") && !lowURL.startsWith("https:") && !lowURL.startsWith("/"))
-		{
-			if (lowURL.indexOf("?") == -1 || lowURL.indexOf("?") > lowURL.indexOf("."))
-			{
-				return httpContext.getRequest().getContextPath() + "/" + jumpURL;
-			}
-		}
-
-		if	(packageName.endsWith(".") && packageName.trim().equals(""))
-		{
-			packageName += ".";
-		}
-
-		// Convierte el 'call', agregandole el package.
-		if	(GXWebPanel.isStaticGeneration && (lowURL.startsWith("http:" + packageName + "h") || lowURL.startsWith("https:" + packageName + "h")))
-		{
-			return  WebUtils.getDynURL() + jumpURL.substring(lowURL.indexOf(':') + 1);
-		}
-
-		return jumpURL;
+	protected String formatLink(String jumpURL, String[] parms, String[] parmsName)
+	{
+		return URLRouter.getURLRoute(jumpURL, parms, parmsName, httpContext.getRequest().getContextPath(), context.getPackageName());
 	}
 
 	public String getPgmname()
@@ -457,8 +432,15 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 
 	private String getObjectAccessWebToken(String cmpCtx)
 	{
-		return WebSecurityHelper.sign(getPgmInstanceId(cmpCtx), "", "", SecureTokenHelper.SecurityMode.Sign);
+		return WebSecurityHelper.sign(getPgmInstanceId(cmpCtx), "", "", SecureTokenHelper.SecurityMode.Sign, getSecretKey());
 	}
+
+	private String getSecretKey()
+    {
+    	//Some random SALT that is different in every GX App installation. Better if changes over time
+       String hashSalt = com.genexus.Application.getClientContext().getClientPreferences().getREORG_TIME_STAMP();
+       return WebUtils.getEncryptionKey(this.context, "") + hashSalt;
+    }
 
 	private String serialize(double Value, String Pic)
     {
@@ -562,7 +544,15 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 	    		}
 	        }
 	        else{
-	        	strValue = (Value instanceof IGxJSONSerializable) ? ((IGxJSONSerializable)Value).toJSonString() : Value.toString();
+				if (Value instanceof com.genexus.xml.GXXMLSerializable) {
+					strValue = ((com.genexus.xml.GXXMLSerializable) Value).toJSonString(false);
+				}
+				else if (Value instanceof IGxJSONSerializable) {
+					strValue = ((IGxJSONSerializable) Value).toJSonString();
+				}
+				else {
+					strValue = Value.toString();
+				}
 	        }
 		}
 		return strValue;
@@ -585,7 +575,7 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 
     protected String getSecureSignedToken(String cmpCtx, String Value)
     {
-    	return WebSecurityHelper.sign(getPgmInstanceId(cmpCtx), "", Value, SecureTokenHelper.SecurityMode.Sign);
+    	return WebSecurityHelper.sign(getPgmInstanceId(cmpCtx), "", Value, SecureTokenHelper.SecurityMode.Sign, getSecretKey());
     }
 
     protected boolean verifySecureSignedToken(String cmpCtx, int Value, String picture, String token){
@@ -621,7 +611,7 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
     }
 
     protected boolean verifySecureSignedToken(String cmpCtx, String value, String token){
-    	return WebSecurityHelper.verify(getPgmInstanceId(cmpCtx), "", value, token);
+    	return WebSecurityHelper.verify(getPgmInstanceId(cmpCtx), "", value, token, getSecretKey());
     }
 
 	protected boolean validateObjectAccess(String cmpCtx)
@@ -644,5 +634,42 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 		return true;
 	}
 
+	public void handleException(String gxExceptionType, String gxExceptionDetails, String gxExceptionStack)
+	{
+	}
 
+	private GXDebugInfo dbgInfo = null;
+	protected void trkCleanup()
+	{
+		if(dbgInfo != null)
+			dbgInfo.onCleanup();
+	}
+
+	protected void initialize(int objClass, int objId, int dbgLines, long hash)
+	{
+		dbgInfo = GXDebugManager.getInstance().getDbgInfo(context, objClass, objId, dbgLines, hash);
+	}
+
+	protected void trk(int lineNro)
+	{
+		if(dbgInfo != null)
+			dbgInfo.trk(lineNro);
+	}
+
+	protected void trk(int lineNro, int lineNro2)
+	{
+		if(dbgInfo != null)
+			dbgInfo.trk(lineNro, lineNro2);
+	}
+
+	protected void trkrng(int lineNro, int lineNro2)
+	{
+		trkrng(lineNro, 0, lineNro2, 0);
+	}
+
+	protected void trkrng(int lineNro, int colNro, int lineNro2, int colNro2)
+	{
+		if(dbgInfo != null)
+			dbgInfo.trkRng(lineNro, colNro, lineNro2, colNro2);
+	}
 }

@@ -7,19 +7,21 @@
 	<parent>
 		<groupId>com.genexus</groupId>
 		<artifactId>parent</artifactId>
-		<version>1.1-SNAPSHOT</version>
+		<version>2.5-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>gxandroidpublisher</artifactId>
 	<name>GeneXus Android Publisher</name>
 
 	<dependencies>
-		<dependency>
-			<groupId>com.google.api-client</groupId>
-			<artifactId>google-api-client</artifactId>
-			<version>1.22.0</version>
-		</dependency>
-		<dependency>
+        <!-- https://mvnrepository.com/artifact/com.google.apis/google-api-services-androidpublisher -->
+        <dependency>
+            <groupId>com.google.apis</groupId>
+            <artifactId>google-api-services-androidpublisher</artifactId>
+            <version>v3-rev129-1.25.0</version>
+        </dependency>
+
+        <dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>gxclassR</artifactId>
 			<version>${project.version}</version>
@@ -28,15 +30,5 @@
 
 	<build>
 		<finalName>gxandroidpublisher</finalName>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.0</version>
-				<configuration>
-					<release>6</release>
-				</configuration>
-			</plugin>
-		</plugins>
 	</build>
 </project>

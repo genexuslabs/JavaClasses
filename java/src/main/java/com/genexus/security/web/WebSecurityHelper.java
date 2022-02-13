@@ -18,31 +18,19 @@ public class WebSecurityHelper {
 		if (input == null)
 			return input;			 
         String output = input.replaceAll("[\u0000-\u001f]", "");
-        return output.trim();
+        return StringUtils.strip(output);
      }
 	
-	 public static String sign(String pgmName, String issuer, String value, SecurityMode mode)
+	 public static String sign(String pgmName, String issuer, String value, SecurityMode mode, String key)
      {            
 		 WebSecureToken token = new WebSecureToken(pgmName, issuer, StripInvalidChars(value));
-         return SecureTokenHelper.sign(token, mode, getSecretKey());
+         return SecureTokenHelper.sign(token, mode, key);
      }
 
-     private static String getSecretKey()
-     {    	 
-		String hashSalt = com.genexus.Application.getClientContext().getClientPreferences().getREORG_TIME_STAMP(); //Some random SALT that is different in every GX App installation. Better if changes over time
-		return WebUtils.getEncryptionKey(ModelContext.getModelContext(), "") + hashSalt;
-     }
-/*
-     public static boolean verify(String pgmName, String issuer, String value, String jwtToken)
-     {
-         WebSecureToken token = new WebSecureToken();
-         return WebSecurityHelper.verify(pgmName, issuer, value, jwtToken, token);
-     }
-  */
-     public static boolean verify(String pgmName, String issuer, String value, String jwtToken)
+     public static boolean verify(String pgmName, String issuer, String value, String jwtToken, String key)
      {
     	 WebSecureToken token = new WebSecureToken();
-    	 if(!SecureTokenHelper.verify(jwtToken, token, getSecretKey()))
+    	 if(!SecureTokenHelper.verify(jwtToken, token, key))
     		 return false;            
     	 boolean ret = !StringUtils.isBlank(pgmName) && token.get_pgmName().equals(pgmName) && issuer.equals(token.get_issuer()) &&
     			 StripInvalidChars(value).equals(StripInvalidChars(token.get_value())) && new Date().compareTo(token.get_expiration()) < 0;

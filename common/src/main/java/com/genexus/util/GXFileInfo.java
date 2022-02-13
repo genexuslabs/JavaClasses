@@ -3,15 +3,23 @@ import java.io.*;
 import java.util.Vector;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.db.driver.ResourceAccessControlList;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
+import org.apache.commons.io.IOCase;
 
 import java.util.Date;
 
 public class GXFileInfo implements IGXFileInfo {
 
 	private File fileSource;
+	private boolean isDirectory;
 
 	public GXFileInfo(File file){
+		this(file, false);
+	}
+	public GXFileInfo(File file, boolean isDirectory){
 		fileSource = file;
+		this.isDirectory = isDirectory;
 	}
 	public String getPath(){
 		if (fileSource.isFile()){
@@ -25,7 +33,10 @@ public class GXFileInfo implements IGXFileInfo {
 		}
 	}
 	public boolean exists(){
-		return fileSource.exists();
+		if ((isDirectory && fileSource.isDirectory()) || (!isDirectory && fileSource.isFile())) {
+			return fileSource.exists();
+		}
+		return false;
 	}
 	public boolean isFile(){
 		return fileSource.isFile();
@@ -34,7 +45,7 @@ public class GXFileInfo implements IGXFileInfo {
 		return fileSource.isDirectory();
 	}
 	public boolean mkdir(){
-		return fileSource.mkdir();
+		return fileSource.mkdirs();
 	}
 	public String[] list(){
 		return fileSource.list();
@@ -77,21 +88,23 @@ public class GXFileInfo implements IGXFileInfo {
            SpecificImplementation.FileUtils.copyFile(new java.io.File(origin), new java.io.File(destination));
         }
 	public GXFileCollection listFiles(String strFilter){
-		Filter filter = new Filter(strFilter);
 		GXFileCollection gxfiles = null;
 
 		File[] files;
-		if (filter==null || strFilter.isEmpty())
+		if (strFilter.isEmpty())
 			files = fileSource.listFiles();
-		else
-			files = fileSource.listFiles(filter);
+		else {
+			strFilter = "*" + strFilter;
+			FileFilter fileFilter = new WildcardFileFilter(strFilter, IOCase.INSENSITIVE);
+			files = fileSource.listFiles(fileFilter);
+		}
 		if (files != null) 
 		{
 			gxfiles = new GXFileCollection();
 			for (int i = 0; i < files.length; i++) 
 			{
 				if (files[i].isFile())
-					gxfiles.add(SpecificImplementation.FileUtils.createFile(files[i].getAbsolutePath(), false, true));
+					gxfiles.add(SpecificImplementation.FileUtils.createFile(files[i].getAbsolutePath(), ResourceAccessControlList.Default, true));
 			}
 		}
 		return gxfiles;

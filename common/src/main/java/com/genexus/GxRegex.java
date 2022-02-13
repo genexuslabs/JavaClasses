@@ -2,6 +2,8 @@ package com.genexus;
 
 import java.util.Vector;
 import java.util.regex.*;
+
+import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.internet.*;
 
 public class  GxRegex
@@ -26,8 +28,13 @@ public class  GxRegex
 		{
 			if (txt.indexOf(CommonUtil.newLine()) > 0)
 				p = Pattern.compile(rex, Pattern.MULTILINE);
-			else
-				p = Pattern.compile(rex);
+			else {
+				if (SpecificImplementation.UseUnicodeCharacterClass)
+					p = Pattern.compile(rex, Pattern.UNICODE_CHARACTER_CLASS);
+				else
+					p = Pattern.compile(rex);
+
+			}
 		}
 		catch(PatternSyntaxException e)
 		{
@@ -59,9 +66,9 @@ public class  GxRegex
 		return m.replaceAll(replace);		
 	}
 	
-	public static Vector Split(String txt ,String rex)
+	public static Vector<String> Split(String txt ,String rex)
 	{
-		Vector result = new Vector();
+		Vector<String> result = new Vector<>();
 		Pattern p;
 		resetError();
 		try
@@ -85,7 +92,8 @@ public class  GxRegex
 		}
 		return result;
 	}
-	
+
+	@SuppressWarnings("unchecked")
 	public static GxUnknownObjectCollection Matches(String txt, String rex)
 	{
 		GxUnknownObjectCollection result = new GxUnknownObjectCollection();

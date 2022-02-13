@@ -3,33 +3,23 @@ package com.genexus.webpanels;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.Vector;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import com.genexus.fileupload.servlet.IServletFileUpload;
+import com.genexus.servlet.*;
+import com.genexus.servlet.http.Cookie;
+import com.genexus.servlet.http.ICookie;
+import com.genexus.servlet.http.IHttpServletRequest;
+import com.genexus.servlet.http.IHttpServletResponse;
+import com.genexus.servlet.http.HttpServletResponse;
+import com.genexus.servlet.http.IHttpSession;
 
 import com.genexus.*;
-import org.apache.commons.fileupload.DiskFileUpload;
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileUpload;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import com.genexus.fileupload.IFileItemIterator;
+import com.genexus.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -52,26 +42,29 @@ public class HttpContextWeb extends HttpContext {
 
 	HttpResponse httpRes;
 	HttpRequest httpReq;
-	ServletContext servletContext;
+	IServletContext servletContext;
 
-	protected Vector parms;
-	private Hashtable postData;
+	boolean useOldQueryStringFormat;
+	protected Vector<String> parms;
+	private Hashtable<String, String> namedParms;
+	private Hashtable<String, String[]> postData;
+	private boolean useNamedParameters;
 	private int currParameter;
 
-	private HttpServletRequest request;
-	private HttpServletResponse response;
+	private IHttpServletRequest request;
+	private IHttpServletResponse response;
 	private String requestMethod;
 	protected String contentType = "";
 	private boolean SkipPushUrl = false;
-	private Hashtable cookies;
+	private Hashtable<String, String> cookies;
 	private boolean streamSet = false;
 	private WebSession webSession;
 	private FileItemCollection fileItemCollection;
-	private FileItemIterator lstParts;
-	private DiskFileUpload fileupload = new DiskFileUpload();
+	private IFileItemIterator lstParts;
 	private boolean ajaxCallAsPOST = false;
 	private boolean htmlHeaderClosed = false;
 	private String sTmpDir;
+	private boolean firstParConsumed = false;
 
 	private static final Pattern USERAGENT_SEARCH_BOT = Pattern.compile("Googlebot|AhrefsBot|bingbot|MJ12bot",
 			Pattern.CASE_INSENSITIVE);
@@ -80,17 +73,15 @@ public class HttpContextWeb extends HttpContext {
 
 	private static final Pattern EDGE_BROWSER_VERSION_REGEX = Pattern.compile(" Edge\\/([0-9]+)\\.",
 			Pattern.CASE_INSENSITIVE);
+	private static final String GXEVENT_PARM = "gxevent";
 
-	public String getRepositoryPath() {
-		return fileupload.getRepositoryPath();
-	}
+	private static final String SAME_SITE_NONE = "None";
+	private static final String SAME_SITE_LAX = "Lax";
+	private static final String SAME_SITE_STRICT = "Strict";
+	private static final String SET_COOKIE = "Set-Cookie";
 
 	public boolean isMultipartContent() {
-		return FileUpload.isMultipartContent(request);
-	}
-
-	public void setRepositoryPath(String path) {
-		fileupload.setRepositoryPath(path);
+		return ServletFileUpload.isMultipartContent(request);
 	}
 
 	public String getResource(String path) {
@@ -107,12 +98,17 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getResourceRelative(String path) {
-		if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) != null && !path.isEmpty()) {
+		return getResourceRelative(path, true);
+	}
+
+	public String getResourceRelative(String path, boolean includeBasePath) {
+		if (Application.getExternalProvider() != null && !path.isEmpty()) {
+			if (CommonUtil.isAbsoluteURL(path))
+				return path;
 			GXFile gxFile = new GXFile(path);
 			String pathURL = gxFile.getAbsolutePath();
-			if (pathURL.toLowerCase().startsWith("http")) {
-				return gxFile.getAbsolutePath();
-			}
+			if (CommonUtil.isAbsoluteURL(pathURL))
+				return pathURL;
 		}
 
 		try {
@@ -143,32 +139,31 @@ public class HttpContextWeb extends HttpContext {
 
 		Resource = Resource.replace('\\', '/');
 
-		if (Resource.startsWith("/"))
-			Resource = ContextPath + Resource;
+		if (includeBasePath)
+		{
+			if (Resource.startsWith("/"))
+				Resource = ContextPath + Resource;
+			else
+				Resource = ContextPath + "/" + Resource;
+		}
 		else
-			Resource = ContextPath + "/" + Resource;
-
+		{
+			if (Resource.startsWith("/"))
+				Resource = Resource.substring(1);
+		}
+		
 		String baseName = FilenameUtils.getBaseName(Resource);
 		Resource = CommonUtil.replaceLast(Resource, baseName, PrivateUtilities.encodeFileName(baseName));
 		return Resource;
 	}
 
-	private FileItemIterator parseMultiParts() {
+	private IFileItemIterator parseMultiParts() {
 		if (lstParts == null) {
 			try {
-				sTmpDir = context.getClientPreferences().getTMPMEDIA_DIR();
-				if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) == null) {
-					if (!new File(sTmpDir).isAbsolute()) {
-						sTmpDir = com.genexus.ModelContext.getModelContext().getHttpContext().getDefaultPath()
-								+ File.separator + "WEB-INF" + File.separatorChar + sTmpDir;
-					}
-					File path = new File(sTmpDir);
-					if (!path.exists())
-						path.mkdirs();
-				}
+				sTmpDir = Preferences.getDefaultPreferences().getPRIVATE_PATH();
 				if (request != null && ServletFileUpload.isMultipartContent(request)) {
-					ServletFileUpload upload = new ServletFileUpload();
-					upload.setHeaderEncoding("UTF-8");
+					IServletFileUpload upload = new ServletFileUpload();
+					upload.setUploadHeaderEncoding("UTF-8");
 					lstParts = upload.getItemIterator(request);
 				}
 			} catch (Exception e) {
@@ -194,6 +189,7 @@ public class HttpContextWeb extends HttpContext {
 			o.httpReq = httpReq;
 			o.postData = postData;
 			o.parms = parms;
+			o.namedParms = namedParms;
 			o.streamSet = streamSet;
 			o.isCrawlerRequest = o.isCrawlerRequest();
 			copyCommon(o);
@@ -204,8 +200,13 @@ public class HttpContextWeb extends HttpContext {
 		}
 	}
 
-	public HttpContextWeb(String requestMethod, HttpServletRequest req, HttpServletResponse res,
-			ServletContext servletContext) throws IOException {
+	public HttpContextWeb(String requestMethod, IHttpServletRequest req, IHttpServletResponse res,
+						  IServletContext servletContext) throws IOException {
+		this(ClientContext.getModelContext().getClientPreferences().getProperty("UseNamedParameters", "1").equals("1"), requestMethod, req, res, servletContext);
+	}
+
+	public HttpContextWeb(boolean useNamedParameters, String requestMethod, IHttpServletRequest req, IHttpServletResponse res,
+			IServletContext servletContext) throws IOException {
 		this.request = req;
 		this.response = res;
 
@@ -218,7 +219,7 @@ public class HttpContextWeb extends HttpContext {
 
 		GX_msglist = new MsgList();
 		postData = null;
-		cookies = new Hashtable();
+		cookies = new Hashtable<String, String>();
 
 		httpRes = new HttpResponse(this);
 		httpReq = new HttpRequestWeb(this);
@@ -226,28 +227,45 @@ public class HttpContextWeb extends HttpContext {
 		this.GX_webresponse = httpRes;
 
 		super.useUtf8 = true;
-		parms = new Vector();
+		parms = new Vector<>();
+		namedParms = new Hashtable<>();
+		this.useNamedParameters = useNamedParameters;
 		loadParameters(req.getQueryString());
 		isCrawlerRequest = isCrawlerRequest();
+
 	}
 
 	private void loadParameters(String value) {
 		String value1;
 		initpars();
 		parms.clear();
+		namedParms.clear();
 		boolean oneParm = false;
 		if (value != null && value.length() > 0) {
+			useOldQueryStringFormat = !(useNamedParameters && removeInternalParms(value).contains("="));
+			String[] elements;
 			if (value.charAt(0) == '?')
 				value1 = value.substring(1);
 			else
 				value1 = value;
-			String[] elements = value1.split(",");
+			if (useOldQueryStringFormat)
+				elements = value1.split(",");
+			else
+				elements = value1.split("&");
 			oneParm = (elements.length > 0);
 			for (int i = 0; i < elements.length; i++) {
 				String parm = elements[i];
 				if (parm.indexOf("gx-no-cache=") != -1)
 					break;
-				parms.addElement(parm);
+				if (useOldQueryStringFormat)
+					parms.addElement(parm);
+				else {
+					String parameterValue = "";
+					if (parm.split("=").length > 1)
+						parameterValue = parm.split("=")[1];
+					parms.addElement(parameterValue);
+					namedParms.put(parm.split("=")[0].toLowerCase(), parameterValue);
+				}
 			}
 		}
 		if (requestMethod.equalsIgnoreCase("POST") && oneParm && parms.size() == 0) {
@@ -281,7 +299,7 @@ public class HttpContextWeb extends HttpContext {
 				if (gxEvent != null && !gxEvent.trim().equals("")) {
 					try {
 						Pattern pattern = Pattern.compile("GXParm([0-9]+)");
-						Vector indexedParms = new Vector();
+						Vector<String> indexedParms = new Vector<>();
 						Enumeration postParms = parsePostData.keys();
 						while (postParms.hasMoreElements()) {
 							String name = (String) postParms.nextElement();
@@ -331,22 +349,22 @@ public class HttpContextWeb extends HttpContext {
 		}
 	}
 
-	public Hashtable getPostData() {
+	public Hashtable<String, String[]> getPostData() {
 		if (postData == null) {
 			String contentType = request.getContentType();
 			if (ajaxCallAsPOST || isForward()) {
-				return new Hashtable();
+				return new Hashtable<>();
 			}
 
 			try {
 				if (contentType != null
 						&& (contentType.contains("application/json") || contentType.contains("text/xml"))) {
-					postData = new Hashtable();
+					postData = new Hashtable<>();
 				} else {
-					if (FileUpload.isMultipartContent(request))
+					if (ServletFileUpload.isMultipartContent(request))
 						postData = parseMultipartPostData(getPostedparts());
 					else
-						postData = parsePostData(request, request.getContentLength(), request.getInputStream());
+						postData = parsePostData(request, request.getInputStream());
 				}
 				Object value = postData.get("GXState");
 				if (value != null) {
@@ -371,12 +389,37 @@ public class HttpContextWeb extends HttpContext {
 					}
 				}
 			} catch (IOException e) {
-				postData = new Hashtable();
+				postData = new Hashtable<>();
 				log.debug("GetPostData", e);
 			}
 		}
 
 		return postData;
+	}
+
+	public String GetPar(String parameter) {
+		if (useOldQueryStringFormat)
+			return GetNextPar();
+		else {
+			String parm = namedParms.get(parameter.toLowerCase());
+			if (!ajaxCallAsPOST && parm != null) {
+				parm = GXutil.URLDecode(parm);
+			}
+			return parm == null? "" : parm;
+		}
+	}
+
+	public String GetFirstPar(String parameter) {
+		if (useOldQueryStringFormat)
+			return GetNextPar();
+		else {
+			if (!firstParConsumed && namedParms.containsKey(GXEVENT_PARM)) {
+				firstParConsumed = true;
+				return GetPar(GXEVENT_PARM);
+			}
+			else
+				return GetPar(parameter);
+		}
 	}
 
 	public String GetNextPar() {
@@ -448,6 +491,8 @@ public class HttpContextWeb extends HttpContext {
 		return contextPath;
 	}
 
+	public void setContextPath(String path) {}
+
 	public String getRealPath(String path) {
 		String realPath = path;
 
@@ -466,7 +511,7 @@ public class HttpContextWeb extends HttpContext {
 		return realPath;
 	}
 
-	public HttpServletResponse getResponse() {
+	public IHttpServletResponse getResponse() {
 		return response;
 	}
 
@@ -560,7 +605,11 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getRemoteAddr() {
-		String address = request.getRemoteAddr();
+		String address = getHeader("X-Forwarded-For");
+		if (address.length() > 0){
+			return address;
+		}
+		address = request.getRemoteAddr();
 		return address == null ? "" : address;
 	}
 
@@ -605,6 +654,9 @@ public class HttpContextWeb extends HttpContext {
 		return supported;
 	}
 
+	public boolean exposeMetadata() {
+		return context.getClientPreferences().getEXPOSE_METADATA();
+	}
 	public int getBrowserType() {
 		String userAgent = request.getHeader("USER-AGENT");
 
@@ -622,12 +674,12 @@ public class HttpContextWeb extends HttpContext {
 					return BROWSER_IE;
 			} else if (userAgent.toUpperCase().indexOf("SAFARI") != -1) {
 				return BROWSER_SAFARI;
-			} else if (userAgent.toUpperCase().indexOf("MOZILLA/") != -1) {
-				return BROWSER_NETSCAPE;
 			} else if ((userAgent.indexOf("Trident")) != -1) {
 				return BROWSER_IE;
 			} else if (userAgent.toUpperCase().indexOf("OPERA") != -1) {
 				return BROWSER_OPERA;
+			} else if (userAgent.toUpperCase().indexOf("MOZILLA/") != -1) {
+				return BROWSER_NETSCAPE;
 			} else if (userAgent.toUpperCase().indexOf("UP.Browser") != -1) {
 				return BROWSER_UP;
 			} else if (USERAGENT_SEARCH_BOT.matcher(userAgent).find()) {
@@ -722,9 +774,16 @@ public class HttpContextWeb extends HttpContext {
 		try {
 			if (request != null) {
 				Object obj = null;
-				HttpSession session = request.getSession(false);
-				if (session != null)
-					obj = session.getValue(CommonUtil.upper(name));
+				IHttpSession session = request.getSession(false);
+				if (session != null) {
+					try {
+						obj = session.getAttribute(CommonUtil.upper(name));
+					}
+					catch (UnsupportedOperationException e)
+					{
+						//In some environments, websession is not supported
+					}
+				}
 				return obj;
 			}
 		} catch (Exception e) {
@@ -736,18 +795,40 @@ public class HttpContextWeb extends HttpContext {
 
 	// ---- Set values
 	public void webPutSessionValue(String name, Object value) {
-		if (request != null)
-			request.getSession(true).putValue(CommonUtil.upper(name), value);
+		if (request != null) {
+			try {
+				request.getSession(true).setAttribute(CommonUtil.upper(name), value);
+			}
+			catch (UnsupportedOperationException e)
+			{
+				//In some environments, websession is not supported
+			}
+		}
+
 	}
 
 	public void webPutSessionValue(String name, long value) {
-		if (request != null)
-			request.getSession(true).putValue(CommonUtil.upper(name), new Long(value));
+		if (request != null){
+			try {
+				request.getSession(true).setAttribute(CommonUtil.upper(name), new Long(value));
+			}
+			catch (UnsupportedOperationException e)
+			{
+				//In some environments, websession is not supported
+			}
+		}
 	}
 
 	public void webPutSessionValue(String name, double value) {
-		if (request != null)
-			request.getSession(true).putValue(CommonUtil.upper(name), new Double(value));
+		if (request != null){
+			try {
+				request.getSession(true).setAttribute(CommonUtil.upper(name), new Double(value));
+			}
+			catch (UnsupportedOperationException e)
+			{
+				//In some environments, websession is not supported
+			}
+		}
 	}
 
 	public void webSessionId(String[] id) {
@@ -761,8 +842,8 @@ public class HttpContextWeb extends HttpContext {
 		return "0";
 	}
 
-	public Cookie[] getCookies() {
-		Cookie[] cookies = {};
+	public ICookie[] getCookies() {
+		ICookie[] cookies = {};
 		if (request != null) {
 			try {
 				cookies = request.getCookies();
@@ -773,24 +854,23 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getCookie(String name) {
-		Object o = cookies.get(name);
-		if (o != null) {
-			return WebUtils.decodeCookie(((Cookie) o).getValue());
+		if (cookies.containsKey(name)) {
+			return WebUtils.decodeCookie(cookies.get(name));
 		}
 
 		if (request != null) {
 			try {
-				Cookie[] cookies = request.getCookies();
-
+				ICookie[] cookies = request.getCookies();
 				if (cookies != null) {
 					for (int i = 0; i < cookies.length; i++) {
-						if (cookies[i].getName().equalsIgnoreCase(name)) {
-							return WebUtils.decodeCookie(cookies[i].getValue());
+						ICookie cookie = cookies[i];
+						if (cookie.getName().equalsIgnoreCase(name)) {
+							return WebUtils.decodeCookie(cookie.getValue());
 						}
 					}
 				}
 			} catch (Exception e) {
-				return "";
+				log.error("Failed getting cookie", e);
 			}
 		}
 
@@ -806,10 +886,12 @@ public class HttpContextWeb extends HttpContext {
 	public byte setCookieRaw(String name, String value, String path, java.util.Date expiry, String domain,
 			double secure, Boolean httpOnly) {
 		if (response != null) {
-			Cookie cookie = new Cookie(name, value);
+			ICookie cookie = new Cookie(name, value);
 
 			if (path.trim().length() > 0)
 				cookie.setPath(path.trim());
+			else
+				cookie.setPath("/");
 
 			if (!expiry.equals(CommonUtil.nullDate())) {
 				long expiryTime = ((expiry.getTime() - new Date().getTime()) / 1000);
@@ -826,7 +908,8 @@ public class HttpContextWeb extends HttpContext {
 			if (servletContext.getMajorVersion() >= 3)
 				cookie.setHttpOnly(httpOnly); // Requiere servlet version 3.0
 			response.addCookie(cookie);
-			cookies.put(name, cookie);
+
+			cookies.put(name, value);
 		}
 
 		return 0;
@@ -842,8 +925,12 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getServerName() {
+		String host = getHeader("X-Forwarded-Host");
+		if (host.length() > 0){
+			return host;
+		}
 		String serverNameProperty = ModelContext.getModelContext().getPreferences().getProperty("SERVER_NAME", "");
-		if (!serverNameProperty.equals("")) {
+		if (!StringUtils.isBlank(serverNameProperty)) {
 			return serverNameProperty;
 		}
 		if (request != null)
@@ -853,13 +940,21 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public int getServerPort() {
+		String port = getHeader("X-Forwarded-Port");
+		if (port.length() > 0){
+			return Integer.parseInt(port);
+		}
+		String serverPortProperty = ModelContext.getModelContext().getPreferences().getProperty("SERVER_PORT", "");
+		if (!StringUtils.isBlank(serverPortProperty)) {
+			return Integer.parseInt(serverPortProperty);
+		}
 		String serverNameProperty = ModelContext.getModelContext().getPreferences().getProperty("SERVER_NAME", "");
 		if (serverNameProperty.indexOf(':') != -1) {
 			return 80;
 		}
-		if (request != null)
+		if (request != null) {
 			return request.getServerPort();
-
+		}
 		return 80;
 	}
 
@@ -890,6 +985,11 @@ public class HttpContextWeb extends HttpContext {
 		if (protocol != null && !protocol.equals("")) {
 			return protocol.equalsIgnoreCase("https") ? 1 : 0;
 		}
+		String serverProtocolProperty = ModelContext.getModelContext().getPreferences().getProperty("SERVER_PROTOCOL", "");
+		if (!StringUtils.isBlank(serverProtocolProperty)) {
+			return serverProtocolProperty.equalsIgnoreCase("https") ? 1: 0;
+		}
+
 		if (request != null && request.getScheme() != null)
 			return request.getScheme().equalsIgnoreCase("http") ? 0 : 1;
 
@@ -920,6 +1020,7 @@ public class HttpContextWeb extends HttpContext {
 
 	public void sendError(int error) {
 		try {
+			setHeader("Content-Encoding", "text/html");
 			response.sendError(error);
 		} catch (Exception e) {
 			log.error("Error " + error, e);
@@ -962,6 +1063,8 @@ public class HttpContextWeb extends HttpContext {
 	private String removeEventPrefix(String query) {
 		if (isAjaxEventMode()) {
 			int comIdx = query.indexOf(",");
+			if (comIdx == -1)
+				comIdx = query.indexOf("&");
 			if (comIdx != -1)
 				query = query.substring(comIdx + 1);
 		}
@@ -995,7 +1098,7 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public boolean isFileParm(String parm) {
-		if (FileUpload.isMultipartContent(request)) {
+		if (ServletFileUpload.isMultipartContent(request)) {
 			return getPostedparts().hasitembyname(parm);
 		}
 		return false;
@@ -1060,9 +1163,9 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public void DeletePostValuePrefix(String sPrefix) {
-		Hashtable postData = getPostData();
+		Hashtable<String, String[]> postData = getPostData();
 		Set<String> keys = postData.keySet();
-		Vector<String> toDelete = new Vector();
+		Vector<String> toDelete = new Vector<>();
 		for (String key : keys) {
 			if (key != null && key.startsWith(sPrefix + "nRC_GXsfl_")) {
 				toDelete.addElement(key);
@@ -1086,22 +1189,22 @@ public class HttpContextWeb extends HttpContext {
 		this.httpReq = httpReq;
 	}
 
-	public HttpServletRequest getRequest() {
+	public IHttpServletRequest getRequest() {
 		return request;
 	}
 
-	public void setRequest(HttpServletRequest request) {
+	public void setRequest(IHttpServletRequest request) {
 		this.request = request;
 	}
 
-	static private Hashtable parseMultipartPostData(FileItemCollection fileItemCollection) {
+	static private Hashtable<String, String[]> parseMultipartPostData(FileItemCollection fileItemCollection) {
 		return com.genexus.webpanels.HttpUtils.parseMultipartPostData(fileItemCollection);
 	}
 
-	static public Hashtable parsePostData(HttpServletRequest request, int len, ServletInputStream in) {
+	static public Hashtable<String, String[]> parsePostData(IHttpServletRequest request, IServletInputStream in) {
 		try {
 			// Nuestra versión del parsePostData utiliza UTF-8
-			return com.genexus.webpanels.HttpUtils.parsePostData(len, in);
+			return com.genexus.webpanels.HttpUtils.parsePostData(in);
 		} catch (IllegalArgumentException e) {
 			return com.genexus.webpanels.HttpUtils.parsePostData(request);
 		}
@@ -1126,12 +1229,15 @@ public class HttpContextWeb extends HttpContext {
 	public String getDefaultPath() {
 		String path = servletContext.getRealPath("/");
 
-		if (path == null && servletContext.getAttribute(servletContext.TEMPDIR) != null) {
-			return ((java.io.File) servletContext.getAttribute(servletContext.TEMPDIR)).getAbsolutePath();
+		if (path == null && servletContext.getAttribute(servletContext.getTEMPDIR()) != null) {
+			return ((java.io.File) servletContext.getAttribute(servletContext.getTEMPDIR())).getAbsolutePath();
 		}
 
-		if (path == null) // AWS LAMBDA SERVERLESS
+		if (path == null) { // AWS LAMBDA SERVERLESS
 			path = System.getenv("LAMBDA_TASK_ROOT");
+			if (path == null)
+				path = System.getProperty("LAMBDA_TASK_ROOT");
+		}
 
 		if (path.endsWith(File.separator)) {
 			path = path.substring(0, path.length() - 1);
@@ -1154,7 +1260,7 @@ public class HttpContextWeb extends HttpContext {
 		if (url != null && url.trim().length() != 0) {
 			try {
 				if (forwardAsWebCallMethod()) {
-					RequestDispatcher dispatcher = getRequest().getRequestDispatcher(url);
+					IRequestDispatcher dispatcher = getRequest().getRequestDispatcher(url);
 					if (dispatcher != null) {
 						doForward(dispatcher);
 					} else {
@@ -1167,7 +1273,7 @@ public class HttpContextWeb extends HttpContext {
 					if (useCustomRedirect()) {
 						getResponse().setHeader("Location", url);
 						getRequest().setAttribute("gx_webcall_method", "customredirect");
-						getResponse().setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
+						getResponse().setStatus(HttpServletResponse.getSC_MOVED_TEMPORARILY());
 					} else {
 						doRedirect(url);
 					}
@@ -1182,7 +1288,7 @@ public class HttpContextWeb extends HttpContext {
 	private void doRedirect(String url) throws IOException {
 		getRequest().setAttribute("gx_webcall_method", "redirect");
 		// getResponse().sendRedirect(url); No retornamos 302 sino 301, debido al SEO.
-		response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
+		response.setStatus(HttpServletResponse.getSC_MOVED_PERMANENTLY());
 		response.setHeader("Location", url);
 		sendCacheHeaders();
 	}
@@ -1196,7 +1302,7 @@ public class HttpContextWeb extends HttpContext {
 		getResponse().addHeader("Cache-Control", "max-age=0, no-cache, no-store, must-revalidate");
 	}
 
-	private void doForward(RequestDispatcher dispatcher) throws IOException, ServletException {
+	private void doForward(IRequestDispatcher dispatcher) throws Exception {
 		getRequest().setAttribute("gx_webcall_method", "forward");
 		dispatcher.forward(getRequest(), getResponse());
 	}
@@ -1233,13 +1339,14 @@ public class HttpContextWeb extends HttpContext {
 			String popupLvl = getNavigationHelper(false).getUrlPopupLevel(getRequestNavUrl());
 			String popLvlParm = "";
 			if (popupLvl != "-1") {
-				popLvlParm = (url.indexOf('?') != -1) ? "," : "?";
+				popLvlParm = (url.indexOf('?') != -1) ? (useOldQueryStringFormat? "," : "&") : "?";
 				popLvlParm += com.genexus.util.Encoder.encodeURL("gxPopupLevel=" + popupLvl + ";");
 			}
 
 			if (isSpaRequest(true)) {
 				pushUrlSessionStorage();
 				getResponse().setHeader(GX_SPA_REDIRECT_URL, url + popLvlParm);
+				sendCacheHeaders();
 			} else {
 				redirect_http(url + popLvlParm);
 			}
@@ -1353,7 +1460,7 @@ public class HttpContextWeb extends HttpContext {
 					buffer = new com.genexus.util.FastByteArrayOutputStream();
 					setOutputStream(buffer);
 				} else {
-					setOutputStream(getResponse().getOutputStream());
+					setOutputStream(getResponse().getOutputStream().getOutputStream());
 				}
 
 				if (compressed) {
@@ -1370,6 +1477,7 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public void flushStream() {
+		proxyCookieValues();
 		try {
 			if (buffered) {
 				// Esto en realidad cierra el ZipOutputStream, o el ByteOutputStream, no cierra
@@ -1378,11 +1486,11 @@ public class HttpContextWeb extends HttpContext {
 				// los datos
 				// que se grabaron al bytearray
 				closeOutputStream();
-				HttpServletResponse response = getResponse();
+				IHttpServletResponse response = getResponse();
 				if (buffer != null && !response.isCommitted()) {
-					ServletOutputStream stream = response.getOutputStream();
+					IServletOutputStream stream = response.getOutputStream();
 					response.setContentLength(buffer.size());
-					buffer.writeToOutputStream(stream);
+					buffer.writeToOutputStream(stream.getOutputStream());
 					stream.close();
 				}
 			} else {
@@ -1390,6 +1498,34 @@ public class HttpContextWeb extends HttpContext {
 			}
 		} catch (IOException e) {
 			log.error("Error flushing stream", e);
+		}
+	}
+
+	String sameSiteMode;
+	private void proxyCookieValues() {
+		if (sameSiteMode == null) {
+			String sameSiteModeValue = Application.getClientPreferences().getProperty("SAMESITE_COOKIE", "");
+			if (sameSiteModeValue.equals(SAME_SITE_NONE) || sameSiteModeValue.equals(SAME_SITE_LAX) || sameSiteModeValue.equals(SAME_SITE_STRICT))
+				sameSiteMode = sameSiteModeValue;
+			else
+				sameSiteMode = "";
+		}
+
+		if (!sameSiteMode.equals("")) {
+			addSameSiteCookieAttribute(getResponse());
+		}
+	}
+
+	private void addSameSiteCookieAttribute(IHttpServletResponse response) {
+		Collection<String> headers = response.getHeaders(SET_COOKIE);
+		boolean firstHeader = true;
+		for (String header : headers) {
+			if (firstHeader) {
+				response.setHeader(SET_COOKIE, String.format("%s; %s", header, "SameSite="+sameSiteMode));
+				firstHeader = false;
+				continue;
+			}
+			response.addHeader(SET_COOKIE, String.format("%s; %s", header, "SameSite="+sameSiteMode));
 		}
 	}
 
@@ -1403,7 +1539,6 @@ public class HttpContextWeb extends HttpContext {
 		if (fileItemCollection != null) {
 			for (int j = 0; fileItemCollection.getCount() > j; j++) {
 				FileItem fileItem1 = fileItemCollection.item(j);
-				fileItem1.delete();
 				fileItem1 = null;
 			}
 			fileItemCollection.clear();
@@ -1412,4 +1547,6 @@ public class HttpContextWeb extends HttpContext {
 		}
 	}
 
+	public boolean isHttpContextNull() {return false;}
+	public boolean isHttpContextWeb() {return true;}
 }

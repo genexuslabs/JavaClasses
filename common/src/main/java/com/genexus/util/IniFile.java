@@ -145,6 +145,7 @@ public class IniFile {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public void read() throws IOException {
 		sections = new Hashtable();
 		/*
@@ -168,6 +169,11 @@ public class IniFile {
 				sections.put(actSection, new Section(il.section, properties));
 			} else if (il.typeLine == PROPERTY) // && actSection != null)
 			{
+				String key = getMappedProperty(actSection, il.property);
+				String envValue = EnvVarReader.getEnvironmentValue(actSection, key);
+				if (envValue != null)
+					il.value = envValue;
+
 				properties.put(il.property.toUpperCase(), new Value(PROPERTY, il.property, il.value));
 			} else if (il.typeLine == COMMENT) {
 				ncomment = ncomment + 1;
@@ -178,8 +184,8 @@ public class IniFile {
 		br.close();
 	}
 
-	public Vector getPropertyList(String section, String prefix) {
-		Vector out = new Vector();
+	public Vector<String> getPropertyList(String section, String prefix) {
+		Vector<String> out = new Vector<>();
 
 		int idx = 0;
 		String tmp;
@@ -211,7 +217,7 @@ public class IniFile {
 	public void setPropertyEncrypted(String section, String key, String value) {
 		String serverKey = getServerKey();
 		if (key.equals("USER_PASSWORD")) {
-			serverKey = serverKey.substring(16, 32) + serverKey.substring(0, 16);
+			serverKey = Encryption.inverseKey(serverKey);
 		}
 		setProperty(section, key,
 				Encryption.encrypt64(value + Encryption.checksum(value, Encryption.getCheckSumLength()), serverKey));
@@ -225,7 +231,7 @@ public class IniFile {
 			if (val.length() > checkSumLength) {
 				String serverKey = getServerKey();
 				if (key.equals("USER_PASSWORD")) {
-					serverKey = serverKey.substring(16, 32) + serverKey.substring(0, 16);
+					serverKey = Encryption.inverseKey(serverKey);
 				}
 				String dec = Encryption.decrypt64(val, serverKey);
 				// Ojo, el = de aca es porque sino no me deja tener passwords vacias, dado que
@@ -253,6 +259,7 @@ public class IniFile {
 		return sections.get(section.toUpperCase()) != null;
 	}
 
+	@SuppressWarnings("unchecked")
 	public void copySection(IniFile from, String sectionFrom, String sectionTo) {
 		Section newSection = from.getSection(sectionFrom);
 		newSection.key = sectionTo;
@@ -384,6 +391,7 @@ public class IniFile {
 		setProperty(section, key, CommonUtil.str(value, 10, 0).trim());
 	}
 
+	@SuppressWarnings("unchecked")
 	public void setProperty(String section, String key, String value) {
 		Section sec = (Section) sections.get(section.toUpperCase());
 		Hashtable sectionHash;

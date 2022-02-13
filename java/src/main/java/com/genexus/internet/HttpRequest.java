@@ -4,6 +4,7 @@ package com.genexus.internet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.text.DateFormat;
 import java.util.Date;
 import java.util.Enumeration;
 
@@ -26,16 +27,6 @@ public abstract class HttpRequest implements IHttpRequest
 	{
 		this.httpContext = httpContext;
 		resetErrors();
-	}
-
-	public String getRepositoryPath()
-	{
-	  return httpContext.getRepositoryPath();
-	}
-
-	public void setRepositoryPath( String path)
-	{
-	  httpContext.setRepositoryPath( path);
 	}
 
 	public FileItemCollection getPostedparts()
@@ -111,7 +102,9 @@ public abstract class HttpRequest implements IHttpRequest
 	
 	public String getBaseURL()
 	{
-		return (getSecure() == 0? "http://": "https://") + getServerHost() + ":" + getServerPort() + getScriptPath();
+		int port = getServerPort();
+		String portS = (port == 80 || port == 443) ? "" : ":" + port;
+		return (getSecure() == 0? "http://": "https://") + getServerHost() + portS + getScriptPath();
 	}
 
 	public void getHeader(String name, long[] value)
@@ -171,9 +164,9 @@ public abstract class HttpRequest implements IHttpRequest
 		{
 			try
 		    {
-			    date = new Date(raw_date);
+			    date = DateFormat.getDateInstance().parse(raw_date);
 		    }
-			catch (IllegalArgumentException iae)
+			catch (java.text.ParseException iae)
 			{
 			    // some servers erroneously send a number, so let's try that
 			    long time;
@@ -234,6 +227,8 @@ public abstract class HttpRequest implements IHttpRequest
 	public abstract Reader getReader() throws IOException;
 
 	public abstract InputStream getInputStream() throws IOException;
+
+	public abstract int getContentLength();
 
 	public abstract String getString();
 	

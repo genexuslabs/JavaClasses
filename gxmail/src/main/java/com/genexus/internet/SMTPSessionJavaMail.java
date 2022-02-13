@@ -12,7 +12,7 @@ import com.genexus.CommonUtil;
 import javax.mail.internet.MimeBodyPart;
 import javax.activation.*;
 
-final class SMTPSessionJavaMail implements GXInternetConstants,ISMTPSession
+public final class SMTPSessionJavaMail implements GXInternetConstants,ISMTPSession
 {
 	static private boolean DEBUG = GXInternetConstants.DEBUG;
 	
@@ -63,6 +63,7 @@ final class SMTPSessionJavaMail implements GXInternetConstants,ISMTPSession
 
 	public void login(GXSMTPSession sessionInfo, boolean useTLS)
 	{
+
 		host = sessionInfo.getHost();
 		port = sessionInfo.getPort();
 		timeout = sessionInfo.getTimeout() * 1000;
@@ -76,10 +77,18 @@ final class SMTPSessionJavaMail implements GXInternetConstants,ISMTPSession
 		props.setProperty("mail.smtp.port", String.valueOf(port));
 		props.setProperty("mail.smtp.connectiontimeout", String.valueOf(timeout));
 		props.setProperty("mail.smtp.timeout", String.valueOf(timeout));
-		props.setProperty("mail.smtp.ssl.enable", String.valueOf(secureConnection));
+
+		if (sessionInfo.getAuthenticationMethod().length() > 0) {
+			props.setProperty("mail.smtp.auth.mechanisms", sessionInfo.getAuthenticationMethod().toUpperCase());
+		}
+
 		if (useTLS)
 		{
 			props.setProperty("mail.smtp.starttls.enable", "true");
+		}
+		else
+		{
+			props.setProperty("mail.smtp.ssl.enable", String.valueOf(secureConnection));
 		}
 		if (authenticate)
 		{

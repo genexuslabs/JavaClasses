@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
 
+import com.genexus.db.driver.ResourceAccessControlList;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.io.output.FileWriterWithEncoding;
@@ -46,10 +47,10 @@ public class GXFile extends AbstractGXFile {
 	}
 
 	public GXFile(String FileName) {
-		this(FileName, false, false);
+		this(FileName, null, false);
 	}
 
-	public GXFile(String FileName, boolean isPrivate, boolean isLocal) {
+	public GXFile(String FileName, ResourceAccessControlList acl, boolean isLocal) {
 		FileName = convertToLocalFullPath(FileName);
 		FileSource = new File(FileName);
 	}
@@ -73,7 +74,7 @@ public class GXFile extends AbstractGXFile {
 				String gxdbFileUriFileName = FileName.substring(blobDBFilePrefix.length());
 
 				// Local path in sdcard.
-				FileName = blobBasePath + File.separator + gxdbFileUriFileName;
+				FileName = blobBasePath + gxdbFileUriFileName;
 			} else if (!FileName.contains(File.separator)) // check if its a relative path.
 			{
 				// is a relative path, add app root

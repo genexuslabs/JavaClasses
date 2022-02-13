@@ -1,75 +1,95 @@
 package com.genexus.util;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Vector;
+
+import com.genexus.CommonUtil;
 import com.genexus.db.driver.*;
-import com.genexus.*;
 import com.genexus.common.interfaces.SpecificImplementation;
 
 import java.util.Date;
 
 public class GXExternalFileInfo implements IGXFileInfo {
-
+    private static int DEFAULT_OBJECT_EXPIRATION_MINUTES = -1; //Specified by Provider
     String name;
+    String providerObjectName;
     ExternalProvider provider;
     String url;
     boolean isFile;
-    boolean isPrivate;
+    ResourceAccessControlList fileAcl = ResourceAccessControlList.Private;
 
     public GXExternalFileInfo(String storageObjectFullName, String url, ExternalProvider provider) {
-        name = storageObjectFullName;
+		setName(storageObjectFullName);
         this.url = url;
         this.provider = provider;
         this.isFile = true;
     }
 
-    public GXExternalFileInfo(String storageObjectFullName, String url, ExternalProvider provider, boolean isFile) {
-        name = storageObjectFullName;
+    public GXExternalFileInfo(String storageObjectFullName, String url, ExternalProvider provider, ResourceAccessControlList acl) {
         this.url = url;
         this.provider = provider;
-        this.isFile = isFile;
+        this.fileAcl = acl;
+		this.isFile = true;
+		setName(storageObjectFullName);
     }
 
      public GXExternalFileInfo(String storageObjectFullName, ExternalProvider provider, boolean isFile) {
-        name = storageObjectFullName;
         this.url = "";
         this.provider = provider;
         this.isFile = isFile;
+		setName(storageObjectFullName);
     }
 
-    public GXExternalFileInfo(String storageObjectFullName, ExternalProvider provider, boolean isFile, boolean isPrivate) {
-        name = storageObjectFullName;
+    public GXExternalFileInfo(String storageObjectFullName, ExternalProvider provider, boolean isFile, ResourceAccessControlList acl) {
         this.url = "";
         this.provider = provider;
         this.isFile = isFile;
-        this.isPrivate = isPrivate;
+        this.fileAcl = acl;
+		setName(storageObjectFullName);
     }
 
      public GXExternalFileInfo(String storageObjectFullName, ExternalProvider provider) {
-        name = storageObjectFullName;
         this.url = "";
         this.provider = provider;
         this.isFile = true;
+		setName(storageObjectFullName);
     }
+
+    private void setName(String objectNameOrUrl) {
+    	this.name = ExternalProviderCommon.getProviderObjectAbsoluteUriSafe(provider, objectNameOrUrl);
+
+    	//If objectNameOrUrl is a relative URL => We are sure that it's already an External Storage valid location.
+    	if (!CommonUtil.isAbsoluteURL(objectNameOrUrl)){
+			this.providerObjectName = objectNameOrUrl;
+		} else {
+			this.providerObjectName = ExternalProviderCommon.getProviderObjectName(provider, objectNameOrUrl);
+		}
+	}
 
     public String getPath() {
     	if(isDirectory())
-				return provider.getDirectory(name);
+				return provider.getDirectory(providerObjectName);
 			else
 				return getParent();
     }
 
     public boolean exists() {
         if (isFile) {
-            return (provider != null && provider.exists(name, isPrivate));
+            return (provider != null && provider.exists(providerObjectName, fileAcl));
         } else {
-            return (provider != null && provider.existsDirectory(name));
+            return (provider != null && provider.existsDirectory(providerObjectName));
         }
     }
 
     public boolean isFile() {
         return isFile;
     }
+
+    public void setIsFile(boolean isFile) {
+    	this.isFile = isFile;
+	}
 
     public boolean isDirectory() {
         return !isFile;
@@ -85,7 +105,7 @@ public class GXExternalFileInfo implements IGXFileInfo {
 
     public boolean createNewFile() throws IOException {
         if (isDirectory()) {
-            provider.createDirectory(name);
+            provider.createDirectory(providerObjectName);
             return true;
         }
         return false;
@@ -93,7 +113,7 @@ public class GXExternalFileInfo implements IGXFileInfo {
 
     public boolean createNewFile(InputStream input) throws IOException{
         if (isFile()) {
-            provider.upload(name, input, isPrivate);
+            provider.upload(providerObjectName, input, fileAcl);
             return true;
         }
         return false;
@@ -101,9 +121,9 @@ public class GXExternalFileInfo implements IGXFileInfo {
 
     public boolean delete() {
         if(isFile){
-            provider.delete(name, isPrivate);
+            provider.delete(providerObjectName, fileAcl);
         }else{
-            provider.deleteDirectory(name);
+            provider.deleteDirectory(providerObjectName);
         }
         return true;
     }
@@ -118,7 +138,7 @@ public class GXExternalFileInfo implements IGXFileInfo {
 
     public boolean renameTo(String fileName) {
         if(isFile){
-            provider.rename(name, fileName, isPrivate);
+            provider.rename(name, fileName, fileAcl);
             name=fileName;
         }else{
             provider.renameDirectory(name, fileName);
@@ -140,41 +160,42 @@ public class GXExternalFileInfo implements IGXFileInfo {
     }
 
     public String getAbsolutePath() {
-        if(url.isEmpty())
-            if(isDirectory())
-                return provider.getDirectory(name);
-            else
-                return provider.get(name, isPrivate, 0);
+        if(url.isEmpty()) {
+			if (isDirectory())
+				return provider.getDirectory(providerObjectName);
+			else
+				return provider.get(providerObjectName, fileAcl, DEFAULT_OBJECT_EXPIRATION_MINUTES);
+		}
         else
             return url;
     }
 
     public long length() {
-        return provider.getLength(name, isPrivate);
+        return provider.getLength(providerObjectName, fileAcl);
     }
 
     public Date lastModified() {
-        return provider.getLastModified(name, isPrivate);
+        return provider.getLastModified(providerObjectName, fileAcl);
     }
 
     public GXFileCollection listFiles(String filter) {
-    	return (GXFileCollection) SpecificImplementation.GXExternalFileInfo.listFiles(filter, provider, name);
+    	return (GXFileCollection) SpecificImplementation.GXExternalFileInfo.listFiles(filter, provider, providerObjectName);
     }
 
     public GXFileCollection listFiles() {
-    	return (GXFileCollection) SpecificImplementation.GXExternalFileInfo.listFiles(null, provider, name);
+    	return (GXFileCollection) SpecificImplementation.GXExternalFileInfo.listFiles(null, provider, providerObjectName);
     }
 
     public GXDirectoryCollection listDirectories() {
         GXDirectoryCollection dirs = new GXDirectoryCollection ();
-        for(String dir: provider.getSubDirectories(name)){
+        for(String dir: provider.getSubDirectories(providerObjectName)){
             dirs.add(new GXDirectory(new GXExternalFileInfo(dir, provider, false)));
         }
         return dirs;
     }
 
     public InputStream getStream(){
-        return provider.getStream(name, isPrivate);
+        return provider.getStream(providerObjectName, fileAcl);
     }
 
 	public String getSeparator(){
@@ -211,6 +232,6 @@ public class GXExternalFileInfo implements IGXFileInfo {
     }
 
     public void copy(String origin, String destination){
-        provider.copy(origin, destination, isPrivate);
+        provider.copy(origin, destination, fileAcl);
     }
 }

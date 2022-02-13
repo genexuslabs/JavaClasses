@@ -3,10 +3,7 @@ package com.genexus.webpanels;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -55,7 +52,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 	protected static boolean isStaticGeneration = false;
 	protected boolean isStatic = false;
 	protected static String staticDir;
-	private Hashtable eventsMetadata = new Hashtable();
+	private Hashtable<String, String> eventsMetadata = new Hashtable<>();
 	protected boolean fullAjaxMode = false;
 	private Hashtable<String, String> callTargetsByObject = new Hashtable<String, String>();
 
@@ -100,6 +97,10 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		return httpContext.isAjaxCallMode();
 	}
 
+	public void addString(String value) {
+		httpContext.GX_webresponse.addString(value);
+	}
+
 	public GXMasterPage createMasterPage(int remoteHandle, String fullClassName) {
 
 		String masterPage = this.context.getPreferences().getProperty("MasterPage", "");
@@ -121,8 +122,8 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			fullClassName = fullClassName + "_impl";
 		}
 		try {
-			Class masterPageClass = Class.forName(fullClassName);
-			return (GXMasterPage) masterPageClass.getConstructor(int.class, ModelContext.class).newInstance(remoteHandle, context.copy());
+			Class<?> masterPageClass = Class.forName(fullClassName);
+			return (GXMasterPage) masterPageClass.getConstructor(new Class<?>[] {int.class, ModelContext.class}).newInstance(remoteHandle, context.copy());
 		} catch (ClassNotFoundException e) {
 			logger.error("MasterPage not found: " + fullClassName);
 			e.printStackTrace();
@@ -162,27 +163,27 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		}
 	}
 
-        protected Object convertparm(Class[] pars, int i, Object value) {
+        protected Object convertparm(Class<?>[] pars, int i, Object value) {
             try {
 				String parmTypeName = pars[i].getName();
                 if (parmTypeName.equals("java.util.Date"))
                 {
                     String strVal = value.toString();
                     if (strVal.length() > 8)
-                        return WebUtils.parseDTimeParm(strVal);
+                        return localUtil.parseDTimeParm(strVal);
                     else
-                        return WebUtils.parseDateParm(strVal);
+                        return localUtil.parseDateParm(strVal);
                 }
                 if(IGxJSONSerializable.class.isAssignableFrom(pars[i]))
                 {
                     IGxJSONSerializable parmObj = null;
                     if(com.genexus.xml.GXXMLSerializable.class.isAssignableFrom(pars[i]))
                     {
-                        parmObj = (com.genexus.xml.GXXMLSerializable)pars[i].getConstructor(new Class[] { ModelContext.class }).newInstance(new Object[] { context });
+                        parmObj = (com.genexus.xml.GXXMLSerializable)pars[i].getConstructor(new Class<?>[] { ModelContext.class }).newInstance(new Object[] { context });
                     }
                     else
                     {
-                        parmObj = (IGxJSONSerializable)pars[i].getConstructor(new Class[] {}).newInstance(new Object[] {});
+                        parmObj = (IGxJSONSerializable)pars[i].getConstructor(new Class<?>[] {}).newInstance(new Object[] {});
                     }
                     parmObj.fromJSonString(value.toString());
                     return parmObj;
@@ -387,7 +388,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			else
 			{
 				String loginObject = Application.getClientContext().getClientPreferences().getProperty("IntegratedSecurityLoginWeb", "");
-				httpContext.redirect(GXutil.getClassName(loginObject));
+				httpContext.redirect(formatLink(GXutil.getClassName(loginObject)));
 				return false;
 			}
 		}
@@ -444,8 +445,9 @@ public abstract class GXWebPanel extends GXWebObjectBase
 				httpContext.flushStream();
 			}
 		}
-		catch (Exception e)
+		catch (Throwable e)
 		{
+			handleException(e.getClass().getName(), e.getMessage(), CommonUtil.getStackTraceAsString(e));
 			cleanup(); // Antes de hacer el rethrow, hago un cleanup del objeto
 			throw e;
 		}
@@ -525,13 +527,13 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			try
 			{
 				String pckgName = (objMessage.has("pkgName") && objMessage.getString("pkgName").length() > 0)? objMessage.getString("pkgName") + ".": "";
-				if (objMessage.getBoolean("MPage"))
+				if (objMessage.has("MPage")  && objMessage.getBoolean("MPage"))
 				{
 					if (objMessage.has("objClass"))
 					{
 						String fullClassName = pckgName + objMessage.getString("objClass") + "_impl";
-						Class webComponentClass = targetObj.getClass().forName(fullClassName);
-						GXWebPanel webComponent = (GXWebPanel) webComponentClass.getConstructor(new Class[] { int.class, ModelContext.class }).newInstance(new Object[] {new Integer(remoteHandle), context});
+						Class<?> webComponentClass = targetObj.getClass().forName(fullClassName);
+						GXWebPanel webComponent = (GXWebPanel) webComponentClass.getConstructor(new Class<?>[] { int.class, ModelContext.class }).newInstance(new Object[] {new Integer(remoteHandle), context});
 						this.targetObj = webComponent;
 					}
 				}
@@ -668,7 +670,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 				for (int i=0; i< events.length(); i++ )
 				{
 					String eventName = events.getString(i);
-					JSONObject eventMetadata = new JSONObject((String)targetObj.eventsMetadata.get(eventName));
+					JSONObject eventMetadata = new JSONObject(targetObj.eventsMetadata.get(eventName));
 					eventHandlers[eventCount] = eventMetadata.getString("handler");
 					JSONArray eventInputParms = eventMetadata.getJSONArray("iparms");
 					for (int j=0; j< eventInputParms.length(); j++ )
@@ -681,6 +683,19 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			} catch (Exception ex) {
 				logger.error("Failed to parse event metadata", ex);
 				anyError = true;
+			}
+		}
+
+		private void SetNullableScalarOrCollectionValue(JSONObject parm, Object value, JSONArray columnValues) throws JSONException, Exception
+		{
+			String nullableAttribute = parm.optString("nullAv", null);
+			if (nullableAttribute != null && value.toString().length() == 0)
+			{
+				SetScalarOrCollectionValue(nullableAttribute, null, true, null);
+			}
+			else
+			{
+				SetScalarOrCollectionValue(parm.has("av") ? parm.getString("av") : null, parm.has("prop") ? parm.getString("prop") : null, value, columnValues);
 			}
 		}
 
@@ -702,7 +717,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 				Class fieldType = field.getType();
 				if (fieldType != null)
 				{
-					if (fieldType.getSuperclass() == GXSimpleCollection.class || fieldType.getSuperclass() == java.util.Vector.class)
+					if ( fieldType.getSuperclass() == GXBaseCollection.class || fieldType.getSuperclass() == GXSimpleCollection.class || fieldType.getSuperclass() == java.util.Vector.class)
 						SetCollectionFieldValue(fieldName, values);
 					else
 						SetFieldValue( targetVar, fieldName, value);
@@ -778,20 +793,22 @@ public abstract class GXWebPanel extends GXWebObjectBase
 				}
 				else
 				{
-					if (fieldType.isArray())
-					{
-						Object tempArray = getArrayFieldValue(fieldType, value);
-						if (tempArray != null)
-						{
-							value = tempArray;
-						}
-					}
 					try
 					{
-						if (fieldType == java.util.Date.class)
-							value = localUtil.ctot(value.toString(), 0);
-						else
-							value = GXutil.convertObjectTo(value, fieldType);
+						if (fieldType.isArray())
+						{
+							Object tempArray = getArrayFieldValue(fieldType, value);
+							if (tempArray != null)
+							{
+								value = tempArray;
+							}
+						}
+						else {
+							if (fieldType == java.util.Date.class)
+								value = localUtil.ctot(value.toString(), 0);
+							else
+								value = GXutil.convertObjectTo(value, fieldType);
+						}
 						PrivateUtilities.setFieldValue(targetObj, field.getName(), value);
 					}
 					catch (Exception e)
@@ -1004,7 +1021,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 								}
 								if (value != null)
 								{
-									SetScalarOrCollectionValue(parm.has("av") ? parm.getString("av") : null, parm.has("prop") ? parm.getString("prop") : null, value, columnValues);
+									SetNullableScalarOrCollectionValue(parm, value, columnValues);
 								}
 							}
 						}

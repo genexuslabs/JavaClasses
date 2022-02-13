@@ -55,5 +55,10 @@ public class HttpRequestNull extends HttpRequest
 		return null;
 	}
 
+	@Override
+	public int getContentLength() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 	
 }

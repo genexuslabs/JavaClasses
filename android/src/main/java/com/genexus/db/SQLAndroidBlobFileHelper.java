@@ -76,7 +76,7 @@ public class SQLAndroidBlobFileHelper
 			{
 				String blobBasePath = com.genexus.Preferences.getDefaultPreferences().getBLOB_PATH();
 				String fileResourceNameNew = "kbfile_" + imagePath.replace("/", "_");
-				fileResourceNameNew = blobBasePath + "/" + CommonUtil.getFileName(fileResourceNameNew)+ "." + CommonUtil.getFileType(fileResourceNameNew);
+				fileResourceNameNew = blobBasePath + CommonUtil.getFileName(fileResourceNameNew)+ "." + CommonUtil.getFileType(fileResourceNameNew);
 
 				imagePath = fileResourceNameNew;
 			}

@@ -53,7 +53,7 @@ public class UpdateCursor extends Cursor
 		{
 			try
 			{
-				if ((errMask & DataStoreHelperBase.GX_ROLLBACKSAVEPOINT) > 0)
+				if ((errMask & CommonDataStoreHelperBase.GX_ROLLBACKSAVEPOINT) > 0)
 				{
 					SentenceProvider.executeStatement(connectionProvider, "ROLLBACK TO SAVEPOINT gxupdate");
 				}

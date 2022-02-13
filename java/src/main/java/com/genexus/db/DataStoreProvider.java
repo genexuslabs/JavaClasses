@@ -136,11 +136,8 @@ public class DataStoreProvider extends DataStoreProviderBase implements
                                 }
                         }while (context.globals.Gx_eop == DefaultExceptionErrorHandler.ERROPT_RETRY);
 
-                        if (cursor.getBatchSize() == 0){
-
-                            cursor.setBatchSize(batchSize);
-                            cursor.onCommitEvent(instance, method);
-                        }
+						cursor.setBatchSize(batchSize);
+						cursor.onCommitEvent(instance, method);
                         cursor.notInUse();
                         try {
                             Application.getConnectionManager(context).getConnection(
@@ -485,12 +482,14 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 		{
 			context.globals.Gx_eop = DefaultExceptionErrorHandler.ERROPT_DEFAULT;
 			try {
-				GXResultSet result = (GXResultSet) cursor.getResultSet();
+				GXResultSet result = null;
+				if (cursor.hasResult())
+				{
+					result = (GXResultSet) cursor.getResultSet();
+				}
 				if ((result != null) && (cursor.next(dataSource))) {
 					if (cursor.getStatus() == 0) {
-						synchronized (lock) {
 							helper.getResults(cursorIdx, result, cursor.getBuffers());
-						}
 						if (cacheValue != null && cacheValue[cursorIdx] != null) { // Si
 																					// estoy
 																					// cacheando
@@ -540,9 +539,7 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 				context.globals.Gx_eop = DefaultExceptionErrorHandler.ERROPT_DEFAULT;
 			}
 			try {
-				synchronized (lock) {
 					cursor.close();
-				}
 				if (cursor.isForFirst() && cursor.status != Cursor.EOF
 						&& cacheValue != null && cacheValue[cursorIdx] != null) { // Si
 																					// estoy

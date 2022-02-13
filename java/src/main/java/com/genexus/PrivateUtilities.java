@@ -180,7 +180,7 @@ public final class PrivateUtilities
 	
 	public static String encodeStaticParm(String parm)
 	{
-		return URLEncode(parm);		
+		return URLEncode(parm, "UTF8");
 	}
 
 	public static String getJDBC_DRIVER(IniFile iniFile, String section)
@@ -255,12 +255,13 @@ public final class PrivateUtilities
 	{
 		extension = getTempFileName(extension.trim());
 		name = name.trim().toLowerCase();
+		String separator = name.length() > 0 ? "_": "";
 		if (encodeName)
 		{
 			name = encodeFileName(name);
 		}
-		name = checkFileNameLength(baseDir, name, extension);						
-		return baseDir + name + extension;
+		name = checkFileNameLength(baseDir, name, extension);
+		return GXutil.getNonTraversalPath(baseDir, String.format("%s%s%s", name, separator, extension));
 	}
 	
 	public static String checkFileNameLength(String baseDir, String fileName, String extension ) 
@@ -519,6 +520,10 @@ public final class PrivateUtilities
 					}
 				}
 				c = c.getSuperclass();
+
+				if (c.getSimpleName().equals("GXRestServiceWrapper")) {
+					return null;
+				}
 			}
 		}
 		return null;
@@ -549,6 +554,10 @@ public final class PrivateUtilities
 				}
 			}
 			c = c.getSuperclass();
+
+			if (c.getSimpleName().equals("GXRestServiceWrapper")) {
+				return null;
+			}
 		}
 		return null;
 	}
@@ -862,7 +871,7 @@ public final class PrivateUtilities
 		if	(fileName.indexOf('.') == -1)
 			return fileName;
 
-		return fileName.substring(0, fileName.indexOf('.'));
+		return fileName.substring(0, fileName.lastIndexOf('.'));
 	}
 
     public static final String readLine(InputStream in) throws IOException 

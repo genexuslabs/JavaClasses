@@ -135,10 +135,18 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 
 	}
 
-        public int setLanguage(String language)
-        {
-            int res = com.genexus.GXutil.setLanguage(language, context, ui);
-            this.localUtil = ui.getLocalUtil();
-            return res;
-        }
+	public int setLanguage(String language)
+	{
+		int res = com.genexus.GXutil.setLanguage(language, context, ui);
+		this.localUtil = ui.getLocalUtil();
+		return res;
+	}
+
+	protected void cleanup()
+	{
+	}
+
+	protected void trkCleanup()
+	{
+	}
 }

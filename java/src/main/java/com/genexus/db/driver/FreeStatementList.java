@@ -26,7 +26,7 @@ public class FreeStatementList {
 	 * A sequence of sql statements strings with a list of Statements for each string sentence. Be aware this list is not threa safe
 	 * so we MUST use objectLock to ensure right concurrency
 	 */
-	private LinkedMap freeCache;
+	private LinkedMap<String, StatementList> freeCache;
 	/***
 	 * the underline connection
 	 */
@@ -40,7 +40,7 @@ public class FreeStatementList {
 
 	FreeStatementList(int maxSize, GXConnection jdbcConnection)
 	{
-		freeCache = new LinkedMap(maxSize);
+		freeCache = new LinkedMap<>(maxSize);
 		this.jdbcConnection = jdbcConnection;
 		this.statementCount = 0;
 	}
@@ -57,7 +57,7 @@ public class FreeStatementList {
 	{
 		String sqlStatement = stmt.getCacheId(jdbcConnection);
 		synchronized (objectLock) {
-			StatementList sl = (StatementList) freeCache.get(sqlStatement);
+			StatementList sl = freeCache.get(sqlStatement);
 			boolean firstsql=false;
 			if (sl == null)
 			{
@@ -77,7 +77,7 @@ public class FreeStatementList {
 	{
 		String sqlStatement = stmt.getCacheId(jdbcConnection);
 		synchronized (objectLock) {
-			StatementList sl = (StatementList) freeCache.get(sqlStatement);
+			StatementList sl = freeCache.get(sqlStatement);
 			if (sl != null) {
 				statementCount -= sl.size();
 		        freeCache.remove(sqlStatement);
@@ -85,17 +85,24 @@ public class FreeStatementList {
 		}
 	}
 
-	void removeOlder()
+	boolean removeOlder()
 	{
 		// First remove from the cache and after close the statements to reduce the lock time
 		StatementList statementList = null;
 		synchronized (objectLock) {
 			// Asume que el size de freeCache > 0.
-			statementList = (StatementList) freeCache.get(freeCache.firstKey());
+			statementList = freeCache.get(freeCache.firstKey());
+			if (statementList.firstElement().isBatch() && statementList.firstElement().getRecordCount() > 0)
+			{
+				if (freeCache.size() == 1)
+					return false;
+				statementList = freeCache.get(freeCache.get(1));
+			}
 			freeCache.remove(statementList.peek().getCacheId(jdbcConnection));
 			statementCount -= statementList.size();
 		}
 		statementList.popAndCloseStatements();
+		return true;
 	}
 	private GXPreparedStatement popSentence(StatementList sl)
 	{
@@ -113,7 +120,7 @@ public class FreeStatementList {
 	GXPreparedStatement get(String sqlSentence)
 	{
 		synchronized (objectLock) {
-			StatementList sl = (StatementList) freeCache.get(sqlSentence);
+			StatementList sl = freeCache.get(sqlSentence);
 			return (sl == null? null : popSentence(sl));
 		}
 	}

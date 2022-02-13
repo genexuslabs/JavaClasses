@@ -38,8 +38,8 @@ public class NotificationParameters {
 		return _data.get(key);
 	}
 	
-	public Vector getNames() {
-		Vector v = new Vector();
+	public Vector<String> getNames() {
+		Vector<String> v = new Vector<>();
 		Enumeration<String> e = _data.keys();
 		while(e.hasMoreElements())
 			v.add(e.nextElement());

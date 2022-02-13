@@ -14,14 +14,14 @@ import json.org.json.JSONObject;
 public class HTMLChoice extends HTMLObject implements IChoice
 {
 	private String value = "";
-	protected Vector listval;
+	protected Vector<HTMLChoiceElement> listval;
 	protected boolean sortDescriptions = false;
     private boolean _IsSet = false;
     private String caption;
 
 	public HTMLChoice()
 	{
-		listval = new Vector();
+		listval = new Vector<>();
 	}
 
 	public HTMLChoice(GXWebPanel webPanel)
@@ -33,13 +33,13 @@ public class HTMLChoice extends HTMLObject implements IChoice
 	{
 		if	(idx == 1)
 		{
-			if	(((HTMLChoiceElement) listval.elementAt(idx - 1)).key.equals(value.trim()))
+			if	((listval.elementAt(idx - 1)).key.equals(value.trim()))
 				return true;
 
 			boolean any_selected = false;
 			for(int i = 0; i < listval.size(); i++)
 			{
-				if (((HTMLChoiceElement) listval.elementAt(i)).key.equals(value.trim()))
+				if ((listval.elementAt(i)).key.equals(value.trim()))
 				{
 					any_selected = true;
 					break;
@@ -50,7 +50,7 @@ public class HTMLChoice extends HTMLObject implements IChoice
 
 		}
 
-		return ((HTMLChoiceElement) listval.elementAt(idx - 1)).key.trim().equals(value.trim());
+		return (listval.elementAt(idx - 1)).key.trim().equals(value.trim());
 	}
 
 	public void addItem(long value, String description)
@@ -154,7 +154,7 @@ public class HTMLChoice extends HTMLObject implements IChoice
 
 		for (int i = 0; i < listval.size(); i++)
 		{
-			if	(CommonUtil.upper(CommonUtil.trim((  (HTMLChoiceElement) listval.elementAt(i)).key)).equals(key))
+			if	(CommonUtil.upper(CommonUtil.trim((  listval.elementAt(i)).key)).equals(key))
 			{
 				index = i;
 			}
@@ -169,7 +169,7 @@ public class HTMLChoice extends HTMLObject implements IChoice
 	public String getItemText(int ndx)
 	{
 		if	(ndx > 0 && ndx <= listval.size())
-			return ((HTMLChoiceElement) listval.elementAt(ndx - 1)).description;
+			return (listval.elementAt(ndx - 1)).description;
 
 		return "";
 	}
@@ -177,7 +177,7 @@ public class HTMLChoice extends HTMLObject implements IChoice
 	public String getItemValue(int ndx)
 	{
 		if	(ndx > 0 && ndx <= listval.size())
-			return ((HTMLChoiceElement) listval.elementAt(ndx - 1)).key;
+			return (listval.elementAt(ndx - 1)).key;
 
 		return "";
 	}
@@ -191,7 +191,7 @@ public class HTMLChoice extends HTMLObject implements IChoice
         {
             for (int i = 0; i < listval.size(); i++)
 			 {
-					  HTMLChoiceElement el = (HTMLChoiceElement) listval.elementAt(i);
+					  HTMLChoiceElement el = listval.elementAt(i);
 					  if (el.key.trim().equals(valid.toString().trim()))
 							  return valid.toString();
 			 }
@@ -202,7 +202,7 @@ public class HTMLChoice extends HTMLObject implements IChoice
         {
           for (int i = 0; i < listval.size(); i++)
           {
-                  HTMLChoiceElement el = (HTMLChoiceElement) listval.elementAt(i);
+                  HTMLChoiceElement el = listval.elementAt(i);
                   if (el.key.trim().equals(key.trim()))
                           return true;
           }
@@ -213,7 +213,7 @@ public class HTMLChoice extends HTMLObject implements IChoice
         {
 	        for (int i = 0; i < listval.size(); i++)
 	        {
-	                HTMLChoiceElement el = (HTMLChoiceElement) listval.elementAt(i);
+	                HTMLChoiceElement el = listval.elementAt(i);
 	                if (el.key.trim().equals(key.trim()))
 	                        return i +1;
 	        }
@@ -228,7 +228,7 @@ public class HTMLChoice extends HTMLObject implements IChoice
 	{
 		for (int i = 0; i < listval.size(); i++)
 		{
-			HTMLChoiceElement el = (HTMLChoiceElement) listval.elementAt(i);
+			HTMLChoiceElement el = listval.elementAt(i);
 			if (el.key.trim().equals(value.trim()))
 				return el.description;
 		}
@@ -265,18 +265,18 @@ public class HTMLChoice extends HTMLObject implements IChoice
                         HashMap<String, JSONArray> itemsHash = new HashMap<String, JSONArray>();
 			for (int i = 0; i < listval.size(); i++)
 			{
-                                String itemValue = CommonUtil.rtrim(((HTMLChoiceElement)listval.elementAt(i)).key);
+                                String itemValue = CommonUtil.rtrim((listval.elementAt(i)).key);
                                 if (!itemsHash.containsKey(itemValue))
                                 {
                                     JSONArray jsonItem = new JSONArray();
                                     jsonItem.put(itemValue);
-                                    jsonItem.put(((HTMLChoiceElement)listval.elementAt(i)).description);
+                                    jsonItem.put((listval.elementAt(i)).description);
                                     itemsHash.put(itemValue, jsonItem);
                                     jsonArrValues.put(jsonItem);
                                 }
                                 else
                                 {
-                                    itemsHash.get(itemValue).put(1, ((HTMLChoiceElement)listval.elementAt(i)).description);
+                                    itemsHash.get(itemValue).put(1, (listval.elementAt(i)).description);
                                 }
 			}
 			jsonObj.put("v", jsonArrValues);

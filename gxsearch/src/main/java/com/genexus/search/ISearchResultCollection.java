@@ -1,10 +1,7 @@
 package com.genexus.search;
 
-import java.util.Collection;
-import java.io.IOException;
-
-public interface ISearchResultCollection
-{
+public interface ISearchResultCollection {
 	int getItemCount();
-	SearchResultItem item(int index); //throws SearchException, IOException;
+
+	SearchResultItem item(int index); // throws SearchException, IOException;
 }

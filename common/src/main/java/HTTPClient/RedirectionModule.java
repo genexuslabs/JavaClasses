@@ -50,7 +50,7 @@ class RedirectionModule implements HTTPClientModule
     private static Hashtable perm_redir_cntxt_list = new Hashtable();
 
     /** a list of deferred redirections (used with Response.retryRequest()) */
-    private static Hashtable deferred_redir_list = new Hashtable();
+    private static Hashtable<HttpOutputStream, RedirectionModule> deferred_redir_list = new Hashtable<>();
 
     /** the level of redirection */
     private int level;
@@ -95,7 +95,7 @@ class RedirectionModule implements HTTPClientModule
 	HttpOutputStream out = req.getStream();
 	if (out != null  &&  deferred_redir_list.get(out) != null)
 	{
-	    copyFrom((RedirectionModule) deferred_redir_list.remove(out));
+	    copyFrom(deferred_redir_list.remove(out));
 	    req.copyFrom(saved_req);
 
 	    if (new_con)
@@ -480,6 +480,7 @@ class RedirectionModule implements HTTPClientModule
      * @param the original request
      * @param the new location
      */
+	@SuppressWarnings("unchecked")
     private static void update_perm_redir_list(RoRequest req, URI new_loc)
     {
 	HTTPConnection con = req.getConnection();

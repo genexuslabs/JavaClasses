@@ -31,5 +31,6 @@ public interface IFieldGetter
 	String getBLOBFile(int columnIndex, String extension, String name) throws SQLException;
 	String getMultimediaFile(int columnIndex, String name) throws SQLException;
 	String getMultimediaUri(int columnIndex) throws SQLException;
+	String getMultimediaUri(int columnIndex, boolean absPath) throws SQLException;
 	java.util.UUID getGUID(int columnIndex) throws SQLException;
 }

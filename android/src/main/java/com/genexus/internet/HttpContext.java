@@ -8,7 +8,6 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import com.genexus.*;
-import org.apache.logging.log4j.util.Strings;
 
 import com.artech.base.services.AndroidContext;
 import com.genexus.util.Codecs;
@@ -146,6 +145,7 @@ public abstract class HttpContext extends HttpAjaxContext implements IHttpContex
 
 	public abstract void cleanup();
 	public abstract String getResourceRelative(String path);
+	public abstract String getResourceRelative(String path, boolean includeBasePath);
 	public abstract String getResource(String path);
 	public abstract String GetNextPar();
 	public abstract HttpContext copy();
@@ -557,7 +557,7 @@ public abstract class HttpContext extends HttpAjaxContext implements IHttpContex
             }
             catch(com.genexus.util.Encryption.InvalidGXKeyException e)
             {
-                setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", 0);
+                setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", getHttpSecure());
                 com.genexus.diagnostics.Log.debug("440 Invalid encryption key");
                 sendResponseStatus(440, "Session timeout");
             }
@@ -573,7 +573,7 @@ public abstract class HttpContext extends HttpAjaxContext implements IHttpContex
             }
             catch (com.genexus.util.Encryption.InvalidGXKeyException e)
             {
-                setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", 0);
+                setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", getHttpSecure());
                 com.genexus.diagnostics.Log.debug( "440 Invalid encryption key");
                 sendResponseStatus(440, "Session timeout");
             }
@@ -586,6 +586,8 @@ public abstract class HttpContext extends HttpAjaxContext implements IHttpContex
              {
                  String key = getAjaxEncryptionKey();
                  ajax_rsp_assign_hidden(Encryption.AJAX_ENCRYPTION_KEY, key);
+                 ajax_rsp_assign_hidden(Encryption.AJAX_ENCRYPTION_IV, Encryption.GX_AJAX_PRIVATE_IV);
+
                  try
                  {
                     ajax_rsp_assign_hidden(Encryption.AJAX_SECURITY_TOKEN, Encryption.encryptRijndael(key, Encryption.GX_AJAX_PRIVATE_KEY));
@@ -1147,7 +1149,7 @@ public abstract class HttpContext extends HttpAjaxContext implements IHttpContex
 
         public int setLanguage(String language)
         {
-            if (Strings.isNotBlank(language) && Application.getClientPreferences().getProperty("language|"+ language, "code", null) != null)
+            if (!language.isEmpty() && Application.getClientPreferences().getProperty("language|"+ language, "code", null) != null)
             {
                 ajaxRefreshAsGET = true;
                 return 0;

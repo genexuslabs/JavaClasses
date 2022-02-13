@@ -1,16 +1,19 @@
 package com.genexus.gxmaps;
 
-import org.json.*;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import com.genexus.CommonUtil;
 import com.genexus.GXGeospatial;
 import com.genexus.GXSimpleCollection;
 import com.genexus.util.GXGeolocation;
+import com.genexus.xml.GXXMLSerializable;
 import com.genexus.ClientContext;
 
 
 import org.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 public class GXMaps {
 
@@ -27,7 +30,7 @@ public class GXMaps {
     }
 
     public static LocationInfo getCurrentLocation(int minAccuracy, int _timeout, boolean includeHAndS, Boolean ignoreErrors) {
-            return new LocationInfo();       
+        return new LocationInfo();       
     }
     
     public static double getDistance(GXGeospatial start, GXGeospatial destination)
@@ -57,139 +60,82 @@ public class GXMaps {
         return addresses;
     }
 
-    public static Directions calculateDirections(GXGeospatial a, GXGeospatial b)
+    public static GXXMLSerializable calculateDirections(GXGeospatial a, GXGeospatial b)
     {
         return calculateDirections(a, b, "", false);
-
     }
 
-    public static Directions calculateDirections(GXGeospatial a, GXGeospatial b, String transportType, boolean requestAlternateRoutes)
+    private static final String DIRECTIONS_PARAMETERS_SDT_CLASS_NAME = "com.genexuscore.genexus.common.SdtDirectionsRequestParameters";
+
+    public static GXXMLSerializable calculateDirections(GXGeospatial a, GXGeospatial b, String transportType, boolean requestAlternateRoutes)
     {
-        Directions directionsCalculated =  new Directions();
-        String ApiKey = ClientContext.getModelContext().getClientPreferences().getGOOGLE_API_KEY();
-        String tmode = getTransportMode(transportType);
-        String queryString = "key=" + ApiKey + "&origin=" + a.getLatitude().toString() + "," + a.getLongitude().toString();
-        queryString += "&destination=" + b.getLatitude().toString() + "," +  b.getLongitude().toString();
-        if (!tmode.equals(""))
-		{
-			queryString += "&mode=" + tmode;
-		}
-		if (requestAlternateRoutes )
-		{
-			queryString += "&alternatives=true";
-		}
-        String urlString = "https://maps.googleapis.com/maps/api/directions/json?" + queryString;
-        String response = GXGeolocation.getContentFromURL(urlString);
-        directionsCalculated = ParseResponse(response);
-        return directionsCalculated;
+       try {
+        Class<?> DirectionsParametersSDTClass = Class.forName(DIRECTIONS_PARAMETERS_SDT_CLASS_NAME);
+        Object directionsParametersSDT = DirectionsParametersSDTClass.getDeclaredConstructor().newInstance();
+       
+        DirectionsParametersSDTClass.getMethod("setgxTv_SdtDirectionsRequestParameters_Sourcelocation", GXGeospatial.class).invoke(directionsParametersSDT, a);
+        DirectionsParametersSDTClass.getMethod("setgxTv_SdtDirectionsRequestParameters_Destinationlocation", GXGeospatial.class).invoke(directionsParametersSDT, b);
+        DirectionsParametersSDTClass.getMethod("setgxTv_SdtDirectionsRequestParameters_Transporttype", String.class).invoke(directionsParametersSDT, transportType);
+        DirectionsParametersSDTClass.getMethod("setgxTv_SdtDirectionsRequestParameters_Requestalternateroutes", Boolean.TYPE).invoke(directionsParametersSDT, requestAlternateRoutes);
+        
+        return calculateDirections(directionsParametersSDT);
+    } catch (ClassNotFoundException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+    } catch (InstantiationException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+    } catch (IllegalAccessException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+    } catch (IllegalArgumentException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+    } catch (InvocationTargetException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+    } catch (NoSuchMethodException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+    } catch (SecurityException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+    }
+        return null;
     }
 
-    private static Directions ParseResponse(String response)
-	{
-		Directions directionsCalculated = new Directions();        
+    private static final String DIRECTIONS_SERVICE_INTERNAL_PROCEDURE_CLASS_NAME = "com.genexuscore.genexus.common.googlemapsdirectionsserviceinternal";
+
+    public static GXXMLSerializable calculateDirections(Object DirectionsParametersSDT) 
+    {
         try {
-            JSONObject json = new JSONObject(response);
-            if (json.has("routes")) {
-                JSONArray results = json.optJSONArray("routes");
-                for (int i = 0; i < results.length(); i++) {                    
-                    JSONObject jor = results.optJSONObject(i);
-                    // each route
-                    Double routeDistance = 0.0;
-                    Double routeDuration = 0.0;
-                    String polyLineData = "";
-                    String travelMode = "";
-                    String description = "";
-                    if (jor.has("summary")) {
-                        description = jor.getString("summary");
-                    }
-                    if (jor.has("legs")) {
-                        JSONArray legs = jor.optJSONArray("legs");
-                        for (int j = 0; j < legs.length(); j++) {
-                            JSONObject jol = legs.optJSONObject(j);
-                            // each leg
-                            if (jol.has("distance")) {
-                                routeDistance += jol.getJSONObject("distance").getDouble("value");
-                            }
-                            if (jol.has("duration")) {
-                                routeDuration += jol.getJSONObject("duration").getDouble("value");
-                            }
-                            if (jol.has("steps")) {
-                                JSONArray steps = jol.optJSONArray("steps");
-                                for (int k = 0; k < steps.length(); k++) {
-                                    JSONObject jos = steps.optJSONObject(k);
-                                        if (jos.has("polyline")) {
-                                            String encodedLine = jos.getJSONObject("polyline").getString("points");
-                                            polyLineData += " " + DecodePolyLine(encodedLine);
-                                        }
-                                        travelMode = jos.getString("travel_mode");
-                                    }       
-                              
-                            }
-                        }
-                        Route currentRoute = new Route();
-					    currentRoute.setName( description);
-					    currentRoute.setTransportType( travelMode);
-					    currentRoute.setDistance(routeDistance);
-					    currentRoute.setExpectedTravelTime(routeDuration);
-					    currentRoute.setGeoline( new GXGeospatial("LINESTRING(" + polyLineData + ")"));
-					    directionsCalculated.getRoutes().add(currentRoute);
-                    }
-                }
-            }
+            Class<?> DirectionsServiceProcedureClass = Class.forName(DIRECTIONS_SERVICE_INTERNAL_PROCEDURE_CLASS_NAME);
+            Object DirectionsServiceProcedure = DirectionsServiceProcedureClass.getDeclaredConstructor(Integer.TYPE).newInstance(-1);
+
+            return (GXXMLSerializable)DirectionsServiceProcedureClass.getMethod("executeUdp", DirectionsParametersSDT.getClass()).invoke(DirectionsServiceProcedure, DirectionsParametersSDT);
+        } catch (ClassNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (SecurityException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
-        catch(JSONException ex) {
-
-        }
-        return directionsCalculated;
+       
+        return null;
     }
-
-        
-    private static String getTransportMode(String transportType)
-	{
-		switch (transportType)
-		{
-			case "GXM_Driving":
-				return "driving";					
-			case "GXM_Walking":
-				return "walking";
-			case "GXM_Transit":
-				return "transit";
-			case "GXM_Bicycling":
-				return "bicycling";
-			 default:
-				return "";
-		}
-    }
-    
-    private static String DecodePolyLine(String encodedPolyline) 
-    {
-        int len = encodedPolyline.length();
-        final java.util.List<String> path = new java.util.ArrayList(len / 2);
-        int index = 0;
-        int lat = 0;
-        int lng = 0;
-        
-        while (index < len) {
-            int result = 1;
-            int shift = 0;
-            int b;
-            do {
-      	        b = encodedPolyline.charAt(index++) - 63 - 1;
-                result += b << shift;
-                shift += 5;
-            } while (b >= 0x1f);
-            lat += (result & 1) != 0 ? ~(result >> 1) : (result >> 1);
-            result = 1;
-            shift = 0;
-            do {
-                b = encodedPolyline.charAt(index++) - 63 - 1;
-                result += b << shift;
-                shift += 5;
-            } while (b >= 0x1f);
-            lng += (result & 1) != 0 ? ~(result >> 1) : (result >> 1);
-            path.add(String.valueOf(lng * 1e-5) + " " + String.valueOf(lat * 1e-5));
-	    }
-	    return  String.join(",", path);
-    }
-
 }

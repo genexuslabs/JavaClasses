@@ -205,14 +205,19 @@ public class BatchUpdateCursor extends UpdateCursor {
 		return mPreparedStatement.getRecordCount() > 0;
 	}
 
-	public void beforeCommitEvent() throws SQLException {
+	public boolean isValidOwner(java.lang.Object o) throws SQLException {
+		return (o == null || o == mPreparedStatement.getOnCommitInstance());
+	}
+	public boolean beforeCommitEvent() throws SQLException {
+		boolean done = false;
 		try {
 			DynamicExecute.dynamicInstaceExecute(mPreparedStatement.getOnCommitInstance(),
-					mPreparedStatement.getOnCommitMethod(), null);
+				mPreparedStatement.getOnCommitMethod(), null);
+			done = true;
 		} catch (Exception ex) {
 			throw new SQLException(ex.getMessage());
 		}
-
+		return done;
 	}
 
 	public Object[] getBlockRecords() {

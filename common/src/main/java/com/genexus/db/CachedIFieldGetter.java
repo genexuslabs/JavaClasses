@@ -1,4 +1,5 @@
 package com.genexus.db;
+import java.math.BigDecimal;
 import java.util.*;
 import java.io.Serializable;
 import java.sql.*;
@@ -14,6 +15,7 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 	private int wasNullHits;
 	private TimeZone mTimeZone;	
 	private Hashtable<Integer, Integer> realColIdx; //Introduced in order to enable getting an older column index, because wasNullHits always go forward.
+	private transient ThreadLocal<Integer> lastIndex = new ThreadLocal<>();
 	
 	public CachedIFieldGetter()
 	{
@@ -33,6 +35,7 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 		return value;
 	}
 
+	@SuppressWarnings("unchecked")
 	public <T> T getValue(int index)
 	{
 		if (value[index] instanceof ArrayList)
@@ -48,18 +51,27 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 
 	private int getColumnIndex(int colIdx)
 	{
+		int returnVal;
 		if (realColIdx.containsKey(colIdx))
-			return (int) realColIdx.get(colIdx);
+			returnVal = (int) realColIdx.get(colIdx);
 		else {
-			int returnVal = colIdx + wasNullHits - 1;
+			returnVal = colIdx + wasNullHits - 1;
 			realColIdx.put(colIdx, returnVal);
-			return returnVal;
 		}
+		if (lastIndex == null)
+			lastIndex = new ThreadLocal<>();
+		lastIndex.set(returnVal + 1);
+		return returnVal;
 	}
 
 	public boolean wasNull() throws SQLException
 	{
-		boolean result = (value == null);
+		boolean result;
+		if (value[lastIndex.get()] instanceof ArrayList)
+			result =  (boolean)((ArrayList)value[lastIndex.get()]).get(0);
+		else
+			result =  ((boolean[])value[lastIndex.get()])[0];
+
 		this.wasNullHits++;
 		return result;
 	}
@@ -70,8 +82,12 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 	}
 		
 	public String getVarchar(int columnIndex) throws SQLException
-	{	
-		return this.<String>getValue(getColumnIndex(columnIndex));
+	{
+		Object result = this.<String>getValue(getColumnIndex(columnIndex));
+		if (result.getClass().getName().equals("com.genexus.GXGeospatial"))
+			return result.toString();
+		else
+			return (String) result;
 	}
 		
 	public String getString(int columnIndex, int length) throws SQLException
@@ -82,8 +98,13 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 	public byte getByte(int columnIndex) throws SQLException
 	{
 		int index = getColumnIndex(columnIndex);
-		if (value[index] instanceof ArrayList)
-			return (Byte)CommonUtil.convertObjectTo(((ArrayList)value[index]).get(0), TypeConstants.BYTE);
+		if (value[index] instanceof ArrayList) {
+			return (Byte) CommonUtil.convertObjectTo(((ArrayList) value[index]).get(0), TypeConstants.BYTE);
+		}
+		else if (value[index] instanceof String){ //Some Cache providers encode64 bytes[]
+			byte[] decodedBytes = Base64.getDecoder().decode((String)value[index]);
+			return decodedBytes[0];
+		}
 		else 
 			return ((byte[])value[index])[0];
 	}
@@ -149,15 +170,25 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 		}
 		else
 		{
-			if (SpecificImplementation.Application.getModelContext() != null && SpecificImplementation.Application.getModelContext().getClientTimeZone() != null && mTimeZone != null)
+			if (SpecificImplementation.Application.getModelContext() != null && SpecificImplementation.Application.getModelContext().getClientTimeZone() != null && mTimeZone != null && !CommonUtil.resetTime(val).equals(CommonUtil.nullDate()))
 				val = CommonUtil.ConvertDateTime(val, mTimeZone, SpecificImplementation.Application.getModelContext().getClientTimeZone());
 		}
 		return val;
 	}
 		
-	public java.util.Date getGXDate(int columnIndex) throws SQLException
-	{
-		return this.<java.util.Date>getValue(getColumnIndex(columnIndex)); 
+	public java.util.Date getGXDate(int columnIndex) throws SQLException {
+
+		int index = getColumnIndex(columnIndex);
+		if (value[index] instanceof Long[])
+			return new java.util.Date(((Long[]) value[index])[0]);
+		if (value[index] instanceof ArrayList) {
+			ArrayList valueArray = (ArrayList) value[index];
+			if (valueArray.get(0) instanceof Long)
+				return new java.util.Date((Long) valueArray.get(0));
+			else
+				return (java.util.Date) CommonUtil.convertObjectTo(valueArray.get(0), TypeConstants.DATE);
+		} else
+			return ((java.util.Date[]) value[index])[0];
 	}
 		
 	public String getString(int columnIndex) throws SQLException
@@ -176,6 +207,8 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 		
 	public java.math.BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException
 	{
+		if (this.getValue(getColumnIndex(columnIndex)) instanceof Double)
+			return new BigDecimal((Double)this.getValue(getColumnIndex(columnIndex)));
 		return this.<java.math.BigDecimal>getValue(getColumnIndex(columnIndex));
 	}
 		
@@ -225,11 +258,20 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 
 	public String getMultimediaUri(int columnIndex) throws SQLException
 	{
+		return getMultimediaUri(columnIndex, true);
+	}
+
+	public String getMultimediaUri(int columnIndex, boolean absPath) throws SQLException
+	{
 		return getString(columnIndex);
 	}
 
 	public java.util.UUID getGUID(int columnIndex) throws SQLException
 	{
-		return this.<java.util.UUID>getValue(getColumnIndex(columnIndex));
-	}		
+		Object value = this.getValue(getColumnIndex(columnIndex));
+		if (value instanceof java.util.UUID)
+			return this.<java.util.UUID>getValue(getColumnIndex(columnIndex));
+		else
+			return (java.util.UUID) CommonUtil.convertObjectTo(value, TypeConstants.UUID);
+	}
 }

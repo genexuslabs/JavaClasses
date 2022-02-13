@@ -5,7 +5,7 @@ import java.util.Hashtable;
 import com.genexus.internet.StringCollection;
 
 
-public class GXMap extends Hashtable
+public class GXMap extends Hashtable<String, Object>
 {
 		public boolean hasKey(String key)
 		{
@@ -36,7 +36,7 @@ public class GXMap extends Hashtable
 			GXMap diffDictionary = new GXMap();
 			for(Enumeration keys = keys(); keys.hasMoreElements();)
 			{
-				Object key = keys.nextElement();
+				String key = (String)keys.nextElement();
 				if (!value.containsKey(key))
 					diffDictionary.put(key, get(key));
 			}

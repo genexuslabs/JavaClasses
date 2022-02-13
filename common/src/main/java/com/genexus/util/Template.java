@@ -8,7 +8,7 @@ public class Template
 	static String start = "<#";
 	static String end 	= "#>";
 
-	private Hashtable values = new Hashtable();
+	private Hashtable<String, String> values = new Hashtable<>();
 
 	public static void main(String arg[])
 	{

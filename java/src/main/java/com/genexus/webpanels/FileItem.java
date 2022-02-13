@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
+import com.genexus.db.driver.ResourceAccessControlList;
 import org.apache.commons.io.IOUtils;
 
 import com.genexus.Application;
@@ -13,6 +14,7 @@ import com.genexus.util.GXServices;
 public class FileItem
 { 
 	private GXFile gxFile;
+	private String sourceFileName;
 	private String fieldName;
 	private byte[] fieldByteString;
 	private boolean formField;
@@ -23,8 +25,13 @@ public class FileItem
 
   public FileItem(String name, boolean formField, String fieldName, InputStream stream)
   {
+	  this(null, name, formField, fieldName, stream);
+  }
+
+  public FileItem(String fileOriginalName, String filePathLocation, boolean formField, String fieldName, InputStream stream)
+  {
 	  this.fieldName = fieldName;
-	  this.formField = formField;  	
+	  this.formField = formField;
   	if (formField)
   	{
   		try
@@ -38,7 +45,8 @@ public class FileItem
   	}
   	else
   	{
-	  	gxFile = new GXFile(name, true);
+  		this.sourceFileName = fileOriginalName;
+	  	gxFile = new GXFile(filePathLocation, ResourceAccessControlList.Private);
 	  	gxFile.create(stream);
 	  }
   }
@@ -50,13 +58,26 @@ public class FileItem
   
   public String getName()
   {
-  	if (gxFile != null)
+  	if (sourceFileName != null)
   	{
-	  	return gxFile.getName();
-	  }
+		return sourceFileName;
+	}
+  	else if (gxFile != null)
+	{
+		return gxFile.getName();
+  	}
 	  return "";
   }
-  
+
+	public String getAbsolutePath()
+	{
+		if (gxFile != null)
+		{
+			return gxFile.getAbsolutePath();
+		}
+		return "";
+	}
+
   public String getPath()
 	{
   	if (gxFile != null)

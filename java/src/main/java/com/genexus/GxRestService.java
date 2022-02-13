@@ -4,12 +4,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.genexus.servlet.IServletContext;
+import com.genexus.servlet.http.IHttpServletRequest;
+import com.genexus.servlet.http.IHttpServletResponse;
 
 import com.genexus.diagnostics.core.ILogger;
-import com.genexus.diagnostics.core.LogManager;
 import com.genexus.internet.HttpContext;
 import com.genexus.internet.MsgList;
 import com.genexus.security.GXResult;
@@ -49,15 +48,24 @@ abstract public class GxRestService extends GXWebObjectBase
 
 	
 	protected static final int SECURITY_HIGH = 2;
-	protected static final int SECURITY_LOW  = 1;	
+	protected static final int SECURITY_LOW  = 1;
+	protected static final String POST  = "POST";
 
 	public GxRestService()
 	{
 		super();
 	}
 	
-	HttpContext restHttpContext;
-	public void init(String requestMethod, HttpServletRequest myServletRequest, HttpServletResponse myServletResponse, ServletContext myContext)
+	protected HttpContext restHttpContext;
+	protected com.genexus.ws.rs.core.IResponseBuilder builder;
+
+	protected void init(String requestMethod) {
+		initWrappedVars();
+		init( requestMethod , myServletRequestWrapper, myServletResponseWrapper, myContextWrapper);
+		ApplicationContext.getInstance().setServletEngineDefaultPath(myContextWrapper.getRealPath("/"));
+	}
+
+	public void init(String requestMethod, IHttpServletRequest myServletRequest, IHttpServletResponse myServletResponse, IServletContext myContext)
 	{
 		initLogger(myContext);
 		try
@@ -85,7 +93,7 @@ abstract public class GxRestService extends GXWebObjectBase
 		}
 	}
 
-	private void initLogger(ServletContext myContext) {
+	private void initLogger(IServletContext myContext) {
 		if (logger == null) {
 			logger = com.genexus.specific.java.LogManager.initialize(myContext.getRealPath("/"), GxRestService.class);
 		}
@@ -100,6 +108,7 @@ abstract public class GxRestService extends GXWebObjectBase
    	 GXutil.setThreadTimeZone(ModelContext.getModelContext().getClientTimeZone());
 	   super.cleanup();
 	   super.finallyCleanup();
+	   WrapperUtils.requestBodyThreadLocal.remove();
    }
 	
 	public void ErrorCheck(IGxSilentTrn trn)
@@ -133,7 +142,7 @@ abstract public class GxRestService extends GXWebObjectBase
 			logger.error("Invalid JSON", e);			
 		}
 	}
-	private boolean isAuthenticated(HttpServletRequest myServletRequest, int integratedSecurityLevel, boolean useAuthentication, String objPermissionPrefix)
+	private boolean isAuthenticated(IHttpServletRequest myServletRequest, int integratedSecurityLevel, boolean useAuthentication, String objPermissionPrefix)
 	{
 		if (!useAuthentication)
 		{
@@ -195,12 +204,12 @@ abstract public class GxRestService extends GXWebObjectBase
 		}
 	}
 	
-	public boolean isAuthenticated(HttpServletRequest myServletRequest)
+	public boolean isAuthenticated(IHttpServletRequest myServletRequest)
 	{
 		return isAuthenticated(myServletRequest, IntegratedSecurityLevel(), IntegratedSecurityEnabled(), permissionPrefix);
 	}
 
-	public boolean isAuthenticated(HttpServletRequest myServletRequest, String synchronizer)
+	public boolean isAuthenticated(IHttpServletRequest myServletRequest, String synchronizer)
 	{
 		boolean validSynchronizer = false;
 		try{
@@ -210,7 +219,7 @@ abstract public class GxRestService extends GXWebObjectBase
 				String packageName = Application.getClientContext().getClientPreferences().getPACKAGE();
 				if (!packageName.equals(""))
 					packageName += ".";
-				Class synchronizerClass = Class.forName(packageName + synchronizer);
+				Class<?> synchronizerClass = Class.forName(packageName + synchronizer);
 				GxRestService synchronizerRestService = (GxRestService) synchronizerClass.getConstructor().newInstance();
 				if (synchronizerRestService!=null && synchronizerRestService.IsSynchronizer()){
 					validSynchronizer = true;
@@ -231,20 +240,25 @@ abstract public class GxRestService extends GXWebObjectBase
 		}
 	}
 	
-	public void setWWWAuthHeader(HttpServletRequest myServletRequest, HttpServletResponse myServletResponse)
+	public void setWWWAuthHeader(IHttpServletRequest myServletRequest, IHttpServletResponse myServletResponse)
 	{
 		String OauthRealm = "OAuth realm=\"" + myServletRequest.getServerName() + "\"";
 		myServletResponse.addHeader("WWW-Authenticate", OauthRealm);
 	}
 	
-	public boolean processHeaders(String queryId, HttpServletRequest myServletRequest, HttpServletResponse myServletResponse)	
+	public boolean processHeaders(String queryId, IHttpServletRequest myServletRequest, IHttpServletResponse myServletResponse)
 	{
 		String language = myServletRequest.getHeader("GeneXus-Language");
 		if (language != null)
 		{
 			setLanguage(language);
 		}
-		String etag = myServletRequest.getHeader("If-Modified-Since");
+		String theme = myServletRequest.getHeader("GeneXus-Theme");
+		if (theme != null)
+		{
+			setTheme(theme);
+		}
+		String etag = myServletRequest.getMethod().equalsIgnoreCase(POST) ? null : myServletRequest.getHeader("If-Modified-Since");
 		Date dt = Application.getStartDateTime();
 		Date newDt = new Date();
 		GXSmartCacheProvider.DataUpdateStatus status;

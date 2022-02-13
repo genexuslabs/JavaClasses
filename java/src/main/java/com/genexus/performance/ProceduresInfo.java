@@ -8,7 +8,7 @@ import com.genexus.Application;
 
 public class ProceduresInfo
 {
-	static private Hashtable procedureInfo = new Hashtable();		
+	static private Hashtable<String, ProcedureInfo> procedureInfo = new Hashtable<>();
 	
   public ProceduresInfo()
   {
@@ -34,11 +34,11 @@ public class ProceduresInfo
 		  if (Application.isJMXEnabled())
 			ProcedureJMX.CreateProcedureJMX(pInfo);
 	  }
-	  return (ProcedureInfo) procedureInfo.get(name);
+	  return procedureInfo.get(name);
   }	
 	
   static public ProcedureInfo getProcedureInfo(String name)
   {
-	  return (ProcedureInfo) procedureInfo.get(name);
+	  return procedureInfo.get(name);
   }  
 }

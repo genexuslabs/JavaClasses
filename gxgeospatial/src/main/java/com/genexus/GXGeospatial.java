@@ -5,6 +5,7 @@ import java.text.ParseException;
 import java.io.StringWriter;
 import java.lang.Double;
 import java.util.Locale;
+import java.math.*;
 import com.genexus.internet.IGxJSONSerializable;
 import org.simpleframework.xml.*;
 import org.noggit.JSONParser.*;
@@ -18,7 +19,7 @@ import org.locationtech.spatial4j.distance.DistanceUtils;
 import org.locationtech.spatial4j.distance.GeodesicSphereDistCalc;
 import org.locationtech.spatial4j.io.*;
 import org.locationtech.spatial4j.shape.*;
-import org.locationtech.spatial4j.shape.*;
+import org.locationtech.spatial4j.shape.impl.BufferedLineString;
 import org.locationtech.spatial4j.shape.jts.*;
 
 import net.sf.geographiclib.PolygonArea;
@@ -60,6 +61,11 @@ public final class GXGeospatial implements java.io.Serializable, IGxJSONSerializ
 		{
 			this.fromGeoJSON(serialString);
 		}
+	}
+
+	public GXGeospatial( BigDecimal latitude, BigDecimal longitude)
+	{
+		this(DecimalUtil.decToDouble(latitude),  DecimalUtil.decToDouble(longitude));
 	}
 
 	public GXGeospatial(double latitude, double longitude)
@@ -225,6 +231,7 @@ public final class GXGeospatial implements java.io.Serializable, IGxJSONSerializ
 		}
 		ShapeReader rdr =  ctx.getFormats().getWktReader();
 		readShape(rdr, wkText);
+
 		if (lastErrorCode != 0 && wktString.contains(",")) {
 			String[] coords = wktString.split(",", 2);
 			double dlat = Double.parseDouble(coords[0].trim());
@@ -345,12 +352,44 @@ public final class GXGeospatial implements java.io.Serializable, IGxJSONSerializ
 			return 0;
 	}
 
+	public Shape lineStringToJTS(GXGeospatial geowith)
+	{		
+		String wText = geowith.toWKT();
+		SpatialContextFactory euclidean = new JtsSpatialContextFactory();
+		euclidean.shapeFactoryClass = org.locationtech.spatial4j.shape.jts.JtsShapeFactory.class;
+		euclidean.geo = false;
+		SpatialContext context  = euclidean.newSpatialContext();
+		ShapeReader rdr =  context.getFormats().getWktReader();
+		try{			
+			Shape cShape = rdr.read(wText);				
+			return cShape;
+		}
+		catch (Exception ex)
+		{
+			GXutil.writeLogError("Error: GXGeospatial " +  ex.toString());
+			return null;
+		}
+	}
 
 	public boolean intersect(GXGeospatial geowith)
 	{
-		if (this.innerValue() != null && geowith.innerValue() != null) {
-			SpatialRelation rel = this.innerValue().relate(geowith.innerValue());
-			return (rel.intersects());
+		if (this.innerValue() != null && geowith.innerValue() != null) {			
+			Shape cShape2 = geowith.innerValue();
+			Shape cShape = this.innerValue();
+			if (this.innerValue() instanceof BufferedLineString)	{
+				cShape = lineStringToJTS(this);
+				if (cShape == null)					
+					return false;				
+			}
+			if (geowith.innerValue() instanceof BufferedLineString)
+			{
+				cShape2 = lineStringToJTS(geowith);
+				if (cShape2 == null)								
+					return false;
+			}
+								
+			SpatialRelation rel = cShape.relate(cShape2);
+			return (rel.intersects());			
 		}
 		else {
 			return false;

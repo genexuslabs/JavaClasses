@@ -39,7 +39,11 @@ public interface IExtensionGXutil {
 
 	void checkEncoding(String encoding) throws Throwable;
 
-	String getUploadValue(String value, String uploadValue);
+	String getUploadValue(String value);
+
+	String getUploadNameValue(String value);
+
+	String getUploadExtensionValue(String value);
 
 	Date serverNow(Object context, int handle, String dataSource);
 
@@ -47,7 +51,7 @@ public interface IExtensionGXutil {
 
 	String getDatabaseName(Object context, int handle, String dataSource);
 
-	Object convertObjectTo(Class toClass, String objStr);
+	Object convertObjectTo(Class<?> toClass, String objStr);
 
 	String URLDecode(String url);
 

@@ -54,7 +54,7 @@ public class DataSource extends AbstractDataSource
 	private JDBCLogConfig jdbcLogCfg;
 
 	private IConnectionPool connectionPool;
-	private Hashtable connectionPools; 
+	private Hashtable<String, IConnectionPool> connectionPools;
 
 	private String as400Package = "";
 	private String as400DateType = "";
@@ -209,7 +209,7 @@ public class DataSource extends AbstractDataSource
 			throw new InternalError("The preference Maximum open cursors per connection has an invalid value (0)");
 		}
 		
-		connectionPools = new Hashtable();
+		connectionPools = new Hashtable<>();
 	}
 
 	public void initialize()
@@ -363,19 +363,19 @@ public class DataSource extends AbstractDataSource
 		this.connectionPool = connectionPool;
 	}
 
-	public synchronized Hashtable getConnectionPools()
+	public synchronized Hashtable<String, IConnectionPool> getConnectionPools()
 	{
 		return connectionPools;
 	}
 	
-	public void setConnectionPools(Hashtable connectionPools)
+	public void setConnectionPools(Hashtable<String, IConnectionPool> connectionPools)
 	{
 		this.connectionPools = connectionPools;
 	}	
 
 	public synchronized IConnectionPool getConnectionPool(String connectionString)
 	{
-		IConnectionPool connPool = (IConnectionPool)connectionPools.get(connectionString);
+		IConnectionPool connPool = connectionPools.get(connectionString);
 		
 		if (connPool == null)
 		{
@@ -471,6 +471,25 @@ public class DataSource extends AbstractDataSource
             }
 			//Si no esta en ninguno de los pooles anteriores entoces esta en el default
 			getConnectionPool().disconnectOnException(handle);
+		}
+	}
+
+	public void flushBuffers(int handle, java.lang.Object o) throws SQLException
+	{
+		if (connectionPools.size() == 0)
+		{
+			getConnectionPool().flushBuffers(handle, o);
+		}
+		else {
+			for (Enumeration en = connectionPools.elements(); en.hasMoreElements(); ) {
+				ConnectionPool connPool = ((ConnectionPool) en.nextElement());
+				for (Enumeration en1 = connPool.getConnections(); en1.hasMoreElements(); ) {
+					GXConnection conn = (GXConnection) en1.nextElement();
+					if (conn.getHandle() == handle) {
+						conn.flushBatchCursors(o);
+					}
+				}
+			}
 		}
 	}
 

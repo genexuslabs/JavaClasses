@@ -20,6 +20,11 @@ public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 		super( context, type);
 	}
 
+	public GxSilentTrnSdt( int remoteHandle, ModelContext context, String type)
+	{
+		super( remoteHandle, context, type);
+	}
+
 	public GxSilentTrnSdt()
 	{
 		super( SpecificImplementation.Application.getModelContext(), "");
@@ -121,7 +126,7 @@ public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 	{
 		try{
 			if(SpecificImplementation.Application.getProperty("SIMPLE_XML_SUPPORT", "0").equals("1")) {
-             	Class me = getClass();
+             	Class<?> me = getClass();
              	Object struct = me.getMethod("getStruct", new Class[]{}).invoke(this, (Object[]) null);
              	me.getMethod("setStruct", struct.getClass()).invoke(this, GXXMLSerializer.deserializeSimpleXml(struct, sXML));
 				return true;
@@ -256,7 +261,7 @@ public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 	{
 		try
 		{
-			Class me = getClass();
+			Class<?> me = getClass();
 			String methodName = "setgxTv_" + me.getSimpleName() + "_" + name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
 			for(java.lang.reflect.Method method : me.getMethods())
 			{
@@ -288,7 +293,7 @@ public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 	{
 		try
 		{
-			Class me = getClass();
+			Class<?> me = getClass();
 			String methodName = "getgxTv_" + me.getSimpleName() + "_" + name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
 
 			Object obj = me.getMethod(methodName, new Class[]{}).invoke(this, (Object[])null);
@@ -335,7 +340,7 @@ public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 		}
 		try
 		{
-			Class bcClass = Class.forName(fullName);
+			Class<?> bcClass = Class.forName(fullName);
 			Object bc = bcClass.getConstructor(new Class[] {int.class, SpecificImplementation.Application.getModelContextClass() }).newInstance(new Object[] {new Integer(remoteHandle), context});
 			return (GxSilentTrnSdt)bc;
 		}catch(Throwable e)
@@ -344,6 +349,7 @@ public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public static GXBCCollection createCollection(String name, String namespace, ModelContext context, int remoteHandle)
 	{
 		String classPackage = SpecificImplementation.Application.getPACKAGE();

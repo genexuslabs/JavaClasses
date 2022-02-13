@@ -5,9 +5,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.Vector;
 
+import com.genexus.IHttpContext;
+import com.genexus.ModelContext;
+import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.db.driver.ResourceAccessControlList;
+import com.genexus.db.driver.ExternalProvider;
+import com.genexus.webpanels.HttpContextWeb;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.io.output.FileWriterWithEncoding;
@@ -15,33 +22,48 @@ import org.apache.commons.io.output.FileWriterWithEncoding;
 import com.genexus.Application;
 import com.genexus.CommonUtil;
 import com.genexus.common.classes.AbstractGXFile;
+import org.apache.logging.log4j.Logger;
 
 public class GXFile extends AbstractGXFile {
+
+	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(HttpContextWeb.class);
 
     private IGXFileInfo FileSource;
     private int ErrCode;
     private String ErrDescription;
     private boolean ret;
     private boolean isExternal = false;
+    private String uploadFileId;
     
     public static ICleanupFile CleanUp;
     
     public GXFile() {
     }
 
-    public GXFile(String FileName) {
-        this(FileName, false);
+    public GXFile(String fileName) {
+        this(fileName, ResourceAccessControlList.Default);
+    }
+
+    //For compatibility reasons
+	public GXFile(String fileName, boolean isPrivate) {
+		this(fileName, isPrivate ? ResourceAccessControlList.Private: ResourceAccessControlList.Default, false);
+	}
+
+    public GXFile(String fileName, ResourceAccessControlList fileAcl) {
+    		this(fileName, fileAcl, false);
     }
     
-    public GXFile(String FileName, boolean isPrivate) {
-    		this(FileName, isPrivate, false);
-    }
-    
-    public GXFile(String FileName, boolean isPrivate, boolean isLocal) {
-        if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) != null && !isLocal) {
-            FileSource = new GXExternalFileInfo(FileName, Application.getExternalProvider(), true, isPrivate);            
+    public GXFile(String fileName,  ResourceAccessControlList fileAcl, boolean isLocal) {
+		if (com.genexus.CommonUtil.isUploadPrefix(fileName)) {
+			uploadFileId = fileName;
+			fileName = SpecificImplementation.GXutil.getUploadValue(fileName);
+		}
+
+    	ExternalProvider storageProvider = Application.getExternalProvider();
+        if (storageProvider != null && !isLocal) {
+            FileSource = new GXExternalFileInfo(fileName, storageProvider, true, fileAcl);
         } else {
-            FileSource = new GXFileInfo(new File(FileName));
+            FileSource = new GXFileInfo(new File(fileName));
         }
     }
 
@@ -50,7 +72,7 @@ public class GXFile extends AbstractGXFile {
     }
 
     public static String getgxFilename(String fileName) {
-        return new GXFile(fileName, false, true).getNameNoExt();
+        return new GXFile(fileName, ResourceAccessControlList.Default, true).getNameNoExt();
     }
 
     public static String getgxFileext(String fileName) {
@@ -77,18 +99,28 @@ public class GXFile extends AbstractGXFile {
     }	
 
     public void setSource(String FileName) {
-    		setSource(FileName, !isExternal);
-    }
+		boolean isUpload = com.genexus.CommonUtil.isUploadPrefix(FileName);
+		if (isUpload) {
+			uploadFileId = FileName;
+			FileName = SpecificImplementation.GXutil.getUploadValue(FileName);
+		}
 
-    public void setSource(String FileName, boolean isLocal) {
-        if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) != null && !isLocal) {
+        if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) != null && (isUpload || isExternal)) {
         		FileSource = new GXExternalFileInfo(FileName, Application.getExternalProvider());
         } else {
+                String absoluteFileName = FileName;
         		try {
-        			URI uriFile = URI.create(FileName);
+        		    if (ModelContext.getModelContext() != null && ! new File(absoluteFileName).isAbsolute())
+                    {
+                        IHttpContext webContext = ModelContext.getModelContext().getHttpContext();
+                        if((webContext != null) && (webContext instanceof HttpContextWeb) && !FileName.isEmpty()) {
+                            absoluteFileName = ModelContext.getModelContext().getHttpContext().getDefaultPath() + File.separator + FileName;
+                        }
+                    }
+        			URI uriFile = URI.create(absoluteFileName);
         			FileSource = new GXFileInfo(new File(uriFile));
         		} catch(Exception e) {
-        				FileSource = new GXFileInfo(new File(FileName));
+        				FileSource = new GXFileInfo(new File(absoluteFileName));
         		}
         }
     }
@@ -240,7 +272,7 @@ public class GXFile extends AbstractGXFile {
                     try {
                         FileSource.copy(FileSource.getFilePath(), FileName);
                     } catch (java.io.IOException e) {
-                        setUnknownError();
+                        setUnknownError(e);
                     }
                 }
             } catch (Exception e) {
@@ -257,6 +289,9 @@ public class GXFile extends AbstractGXFile {
     public String getName() {
         if (sourceSeted()) {
             resetErrors();
+			if (uploadFileId != null) {
+				return SpecificImplementation.GXutil.getUploadNameValue(uploadFileId);
+			}
             try {
                 if ((FileSource == null) || !(FileSource.isFile() && FileSource.exists())) {
                     ErrCode = 2;
@@ -281,6 +316,9 @@ public class GXFile extends AbstractGXFile {
     }
 
     public String getExt() {
+    	if (uploadFileId != null) {
+			return SpecificImplementation.GXutil.getUploadExtensionValue(uploadFileId);
+		}
         String sExtension = FileSource.getName();
         int pos = sExtension.lastIndexOf(".");
         if ((pos == -1) || (pos == sExtension.length())) {
@@ -290,7 +328,10 @@ public class GXFile extends AbstractGXFile {
     }
 
     public String getNameNoExt() {
-        String FName = FileSource.getName();
+		String FName = FileSource.getName();
+    	if (uploadFileId != null) {
+			FName = SpecificImplementation.GXutil.getUploadNameValue(uploadFileId);
+		}
         int pos = FName.lastIndexOf(".");
         if (pos < 1) {
             return FName;
@@ -373,21 +414,27 @@ public class GXFile extends AbstractGXFile {
                 if ((FileSource == null) || !(FileSource.isFile() && FileSource.exists())) {
                     ErrCode = 2;
                     ErrDescription = "File does not exist";
-                    return new Date(0, 0, 0);
+					GregorianCalendar calendar = new GregorianCalendar();
+					calendar.set(0, 0, 0);
+					return calendar.getTime();
                 } else {
                     try {
                         return FileSource.lastModified();
                     } catch (SecurityException e) {
                         ErrCode = 100;
                         ErrDescription = e.getMessage();
-                        return new Date(0, 0, 0);
+						GregorianCalendar calendar = new GregorianCalendar();
+						calendar.set(0, 0, 0);
+						return calendar.getTime();
                     }
                 }
             } catch (Exception e) {
                 setUnknownError(e);
             }
         }
-        return new Date(0, 0, 0);
+		GregorianCalendar calendar = new GregorianCalendar();
+		calendar.set(0, 0, 0);
+		return calendar.getTime();
     }
     
     public InputStream getStream() {
@@ -487,6 +534,7 @@ public class GXFile extends AbstractGXFile {
     private void setUnknownError(Exception e) {
         ErrCode = -1;
         ErrDescription = e.getMessage();
+		log.error("Unknown error", e);
     }
 
     public byte[] toBytes() {
@@ -546,20 +594,19 @@ public class GXFile extends AbstractGXFile {
                         return FileSource.readAllText(CommonUtil.normalizeEncodingName(encoding));
                     }
                 } catch (IOException e) {
-                    setUnknownError();
-                    e.printStackTrace();
+                    setUnknownError(e);
                 }
             }
         }
         return "";
     }
 
-    public Vector readAllLines() {
+    public Vector<String> readAllLines() {
         return readAllLines("");
     }
 
-    public Vector readAllLines(String encoding) {
-        Vector strColl = new Vector();
+    public Vector<String> readAllLines(String encoding) {
+        Vector<String> strColl = new Vector<>();
         if (sourceSeted()) {
             resetErrors();
             if ((FileSource == null) || !(FileSource.isFile() && FileSource.exists())) {
@@ -576,12 +623,11 @@ public class GXFile extends AbstractGXFile {
                     }
                     if (result != null) {
                         for (Iterator j = result.iterator(); j.hasNext();) {
-                            strColl.add((String) j.next());
+                            strColl.add((String)j.next());
                         }
                     }
                 } catch (IOException e) {
-                    setUnknownError();
-                    e.printStackTrace();
+                    setUnknownError(e);
                 }
             }
         }
@@ -602,8 +648,7 @@ public class GXFile extends AbstractGXFile {
                     FileSource.writeStringToFile(value, CommonUtil.normalizeEncodingName(encoding), append);
                 }
             } catch (Exception e) {
-                setUnknownError();
-                e.printStackTrace();
+                setUnknownError(e);
             }
         }
     }
@@ -622,8 +667,7 @@ public class GXFile extends AbstractGXFile {
                     FileSource.writeLines(CommonUtil.normalizeEncodingName(encoding), value, append);
                 }
             } catch (Exception e) {
-                setUnknownError();
-                e.printStackTrace();
+                setUnknownError(e);
             }
         }
     }
@@ -653,8 +697,7 @@ public class GXFile extends AbstractGXFile {
                     fileWriter = new FileWriterWithEncoding(FileSource.getFileInstance(), CommonUtil.normalizeEncodingName(encoding), true);
                 }
             } catch (Exception e) {
-                setUnknownError();
-                e.printStackTrace();
+                setUnknownError(e);
             }
         }
     }
@@ -671,8 +714,7 @@ public class GXFile extends AbstractGXFile {
                     lineIterator = FileUtils.lineIterator(FileSource.getFileInstance(), CommonUtil.normalizeEncodingName(encoding));
                 }
             } catch (Exception e) {
-                setUnknownError();
-                e.printStackTrace();
+                setUnknownError(e);
             }
         }
     }
@@ -682,8 +724,7 @@ public class GXFile extends AbstractGXFile {
             try {
                 fileWriter.append(value + com.genexus.CommonUtil.newLine());
             } catch (Exception e) {
-                setUnknownError();
-                e.printStackTrace();
+                setUnknownError(e);
             }
         } else {
             ErrCode = 1;
@@ -696,8 +737,7 @@ public class GXFile extends AbstractGXFile {
             try {
                 return lineIterator.nextLine();
             } catch (Exception e) {
-                setUnknownError();
-                e.printStackTrace();
+                setUnknownError(e);
             }
         } else {
             ErrCode = 1;
@@ -719,8 +759,7 @@ public class GXFile extends AbstractGXFile {
                 fileWriter.close();
                 fileWriter = null;
             } catch (Exception e) {
-                setUnknownError();
-                e.printStackTrace();
+                setUnknownError(e);
             }
         }
         if (lineIterator != null) {

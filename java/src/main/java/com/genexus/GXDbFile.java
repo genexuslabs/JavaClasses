@@ -1,6 +1,8 @@
 package com.genexus;
 
 import com.genexus.internet.HttpContext;
+import com.genexus.util.GXFile;
+import com.genexus.util.GXServices;
 
 import java.io.File;
 import java.util.regex.Matcher;
@@ -92,8 +94,13 @@ public class GXDbFile
 		
 		return uriString;
 	}
-
+	
 	public static String resolveUri(String uriString)
+	{
+		return resolveUri(uriString, true);
+	}
+
+	public static String resolveUri(String uriString, boolean absPath)
 	{
 		if (uriString.trim().length() == 0)
 			return "";
@@ -102,8 +109,18 @@ public class GXDbFile
 		if (matcher.matches())
 		{
 			String fileName = matcher.group(2);
-			File file = new File(Preferences.getDefaultPreferences().getMultimediaPath(), fileName);
-			return pathToUrl(file.getPath());
+			String filePath = "";
+			if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) == null)
+			{
+				String multimediaDir = Preferences.getDefaultPreferences().getMultimediaPath();
+				filePath = multimediaDir + File.separator + fileName;
+			}
+			else
+			{
+				filePath = Preferences.getDefaultPreferences().getProperty("CS_BLOB_PATH", "").trim() + "/" + GXDbFile.getMultimediaDirectory() + "/" + fileName;
+			}
+			GXFile file = new GXFile(filePath);
+			return pathToUrl(file.getAbsolutePath(), absPath);
 		}
 
 		return uriString;
@@ -113,7 +130,10 @@ public class GXDbFile
 	{
 		String name = getFileName(file);
 		String type = getFileType(file);
-		name = PrivateUtilities.encodeFileName(name);
+		if (file.toLowerCase().startsWith("http://") || file.toLowerCase().startsWith("https://"))
+		{
+			name = PrivateUtilities.encodeFileName(name);
+		}
 		name = PrivateUtilities.checkFileNameLength(file.replace(name, ""), name, type);
 				
 		if (!addScheme)
@@ -156,6 +176,9 @@ public class GXDbFile
 	{
 		if (name.length() == 0 && type.length() == 0 && path.length() != 0)
 		{
+			if (CommonUtil.isUploadPrefix(path)) {
+				return new GXFile(path).getName();
+			}
 			String fromPathType = getFileType(path);
 			if (fromPathType.length() != 0 && !fromPathType.equals("tmp"))
 			{
@@ -172,6 +195,11 @@ public class GXDbFile
 	
 	public static String pathToUrl(String path, IHttpContext webContext)
 	{
+		return pathToUrl(path, webContext, true);
+	}
+
+	public static String pathToUrl(String path, IHttpContext webContext, boolean forceAbsPath)
+	{
 		if (path.startsWith("http:") || path.startsWith("https:") || path.startsWith("data:"))
 			return path;
 
@@ -180,7 +208,7 @@ public class GXDbFile
 			try
 			{
 				File file = new File(path);
-				return file.toURL().toString();
+				return file.toURI().toURL().toString();
 			}
 			catch (Exception e)
 			{
@@ -188,15 +216,22 @@ public class GXDbFile
 			
 			return path;
 		}
-
-		return ((HttpContext)webContext).getResource(webContext.convertURL(path));
+		if (forceAbsPath)
+			return ((HttpContext)webContext).getResource(webContext.convertURL(path));
+		else
+			return ((HttpContext)webContext).getResourceRelative(webContext.convertURL(path), false);
 	}
 	
 	public static String pathToUrl(String path)
 	{
+		return pathToUrl(path, true);
+	}
+
+	public static String pathToUrl(String path, boolean forceAbsPath)
+	{
 		ModelContext context = ModelContext.getModelContext();
 		com.genexus.internet.HttpContext webContext = (HttpContext) context.getHttpContext();
-		return pathToUrl(path, webContext);
+		return pathToUrl(path, webContext, forceAbsPath);
 	}
 
 }

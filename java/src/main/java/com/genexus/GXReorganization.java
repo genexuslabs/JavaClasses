@@ -150,7 +150,7 @@ System.err.println("Sigo...");
 		{
 			if(reorgProcedure != null)
 			{
-				Class reorgClass = reorgProcedure.getClass();
+				Class<?> reorgClass = reorgProcedure.getClass();
 				Method method = reorgClass.getMethod("ExecDataInitialization", new Class[]{});
 				if(method != null)
 				{
@@ -390,7 +390,7 @@ System.err.println("Sigo...");
 	
 	//Implementaciones para la retoma
 	private static final String resumeFileName = "resumereorg.txt";
-	private static Vector executedStatements = new Vector();
+	private static Vector<String> executedStatements = new Vector<>();
 	private static boolean executingResume = false;
 	private boolean inavlidResumeVersion = false;
 	private static boolean createDataBase = false;

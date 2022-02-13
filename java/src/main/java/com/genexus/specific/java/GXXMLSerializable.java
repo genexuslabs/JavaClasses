@@ -12,16 +12,16 @@ public class GXXMLSerializable implements IExtensionGXXMLSerializable {
 
 	@Override
 	public void addExternalSoapHandler(int remoteHandle, Object context, String serviceName, Object objProvider) {
-			
-			javax.xml.ws.BindingProvider bProvider = (javax.xml.ws.BindingProvider) objProvider;
+
+			com.genexus.xml.ws.BindingProvider bProvider = new com.genexus.xml.ws.BindingProvider(objProvider);
 
 			if (PrivateUtilities.isClassPresent(externalHandlerManager))
 			{			
 				try
 				{
-					Class c = Class.forName(externalHandlerManager);
-					Method m = c.getMethod("setHandlers", new Class[]{Integer.class, ModelContext.class, String.class, javax.xml.ws.BindingProvider.class});
-					m.invoke(null, new Object[]{remoteHandle, context, serviceName, bProvider});
+					Class<?> c = Class.forName(externalHandlerManager);
+					Method m = c.getMethod("setHandlers", new Class[]{Integer.class, ModelContext.class, String.class, bProvider.getBindingClass()});
+					m.invoke(null, new Object[]{remoteHandle, context, serviceName, bProvider.getWrappedClass()});
 				}
 				catch(Exception e)
 				{

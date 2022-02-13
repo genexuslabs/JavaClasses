@@ -111,7 +111,7 @@ import java.util.Enumeration;
 public class HttpURLConnection extends java.net.HttpURLConnection
 {
     /** the cache of HTTPConnections */
-    protected static Hashtable  connections = new Hashtable();
+    protected static Hashtable<String, HTTPConnection>  connections = new Hashtable<>();
 
     /** the current connection */
     protected HTTPConnection    con;
@@ -141,7 +141,7 @@ public class HttpURLConnection extends java.net.HttpURLConnection
     private boolean           do_redir;
 
     /** the RedirectionModule class */
-    private static Class      redir_mod;
+    private static Class<?>      redir_mod;
 
     /** the output stream used for POST and PUT */
     private OutputStream      output_stream;
@@ -263,7 +263,7 @@ public class HttpURLConnection extends java.net.HttpURLConnection
 					URI.defaultPort(url.getProtocol()));
 	php = php.toLowerCase();
 
-	HTTPConnection con = (HTTPConnection) connections.get(php);
+	HTTPConnection con = connections.get(php);
 	if (con != null)  return con;
 
 

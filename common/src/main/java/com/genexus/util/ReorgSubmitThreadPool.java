@@ -9,8 +9,8 @@ public class ReorgSubmitThreadPool
 {
 	public static final String SUBMIT_THREAD = "SubmitThread-";
 	private static ReorgSubmitThread [] threadPool = null;
-	private static Vector submitQueue = new Vector();
-	private static Vector submitPrecedenceQueue = new Vector();
+	private static Vector<Object[]> submitQueue = new Vector<>();
+	private static Vector<Object[]> submitPrecedenceQueue = new Vector<>();
 	private static int remainingSubmits = 0;
 	private static Object lockObject = new Object();
 	private static boolean onlyOneThread = false;
@@ -33,7 +33,7 @@ public class ReorgSubmitThreadPool
 		{
 			if(submitQueue.size() > 0)
 			{
-				Object [] nextSubmit = (Object[])submitQueue.firstElement();
+				Object [] nextSubmit = submitQueue.firstElement();
 				submitQueue.removeElement(nextSubmit);
 
 				threadPool[i] = new ReorgSubmitThread(i);
@@ -184,14 +184,14 @@ public class ReorgSubmitThreadPool
 		}
 		if(submitQueue.size() > 0)
 		{
-			Object [] nextSubmit = (Object[])submitQueue.firstElement();
+			Object [] nextSubmit = submitQueue.firstElement();
 			submitQueue.removeElement(nextSubmit);
 			return nextSubmit;
 		}
 		return null;
 	}
 	
-	static Hashtable blocks = new Hashtable();
+	static Hashtable<String, ReorgBlock> blocks = new Hashtable<>();
 	
 	
 	public static void addBlock(String blockName)
@@ -201,13 +201,13 @@ public class ReorgSubmitThreadPool
 	
 	public static void addPrecedence(String blockName, String precedence)
 	{
-		((ReorgBlock)blocks.get(blockName)).addPrecedence(precedence);
+		blocks.get(blockName).addPrecedence(precedence);
 	}
 	
 	public static void submitReorg(String blockName, String message, final ISubmitteable proc, final int id)
 	{
-		Vector precedence = ((ReorgBlock)blocks.get(blockName)).getPrecedences();
-		((ReorgBlock)blocks.get(blockName)).setMessage(message);
+		Vector precedence = blocks.get(blockName).getPrecedences();
+		blocks.get(blockName).setMessage(message);
 
 		if (precedence == null)
 		{
@@ -222,7 +222,7 @@ public class ReorgSubmitThreadPool
 	
 	private static boolean allPrecedencesEnded(int id, String blockName)
 	{
-		Vector precedence = ((ReorgBlock)blocks.get(blockName)).getPrecedences();
+		Vector precedence = blocks.get(blockName).getPrecedences();
 		if (precedence == null)
 		{
 			return true;
@@ -233,9 +233,9 @@ public class ReorgSubmitThreadPool
 			for(Enumeration enum1 = precedence.elements(); enum1.hasMoreElements();)
 			{
 				precede = (String)enum1.nextElement();
-				if (!((ReorgBlock)blocks.get(precede)).getEnded() )
+				if (!blocks.get(precede).getEnded() )
 				{
-					String message = ((ReorgBlock)blocks.get(blockName)).getMessage() + " WAITING FOR " + ((ReorgBlock)blocks.get(precede)).getMessage();
+					String message = blocks.get(blockName).getMessage() + " WAITING FOR " + blocks.get(precede).getMessage();
 					SpecificImplementation.Application.replaceMsg( id , message);
 					return false;
 				}
@@ -296,7 +296,7 @@ class ReorgSubmitThread extends Thread
 				e.printStackTrace();
 				ReorgSubmitThreadPool.setAnError();
 				ReorgSubmitThreadPool.decRemainingSubmits();
-				String message = ((ReorgBlock)ReorgSubmitThreadPool.blocks.get(blockName)).getMessage() + " FAILED";
+				String message = ReorgSubmitThreadPool.blocks.get(blockName).getMessage() + " FAILED";
 				SpecificImplementation.Application.replaceMsg( submitId , message);
 				//this.destroy();
 				ReorgSubmitThreadPool.decRemainingSubmits();			
@@ -304,7 +304,7 @@ class ReorgSubmitThread extends Thread
 			}
 				
 			proc = null;
-			((ReorgBlock)ReorgSubmitThreadPool.blocks.get(blockName)).setEnded();
+			ReorgSubmitThreadPool.blocks.get(blockName).setEnded();
 			
 			// Veo si hay un nuevo submit para ejecutar
 			Object [] nextSubmit = ReorgSubmitThreadPool.getNextSubmit();
@@ -354,7 +354,7 @@ class ReorgSubmitThread extends Thread
 class ReorgBlock
 {
 	private boolean ended = false;
-	private Vector precedences = null;
+	private Vector<String> precedences = null;
 	private String message;
 	
 	public ReorgBlock()
@@ -375,12 +375,12 @@ class ReorgBlock
 	{
 		if (precedences == null)
 		{
-			precedences = new Vector() ;
+			precedences = new Vector<>() ;
 		}
 		precedences.addElement(precedence);
 	}
 		
-	public Vector getPrecedences()
+	public Vector<String> getPrecedences()
 	{
 		return precedences;
 	}

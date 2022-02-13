@@ -35,6 +35,11 @@ public class HttpContextNull extends HttpContext
 	{
 		return "";
 	}
+
+	public String getResourceRelative( String path, boolean includeBasePath)
+	{
+		return "";
+	}
 	
 	public String getResource( String path)
 	{
@@ -150,6 +155,10 @@ public class HttpContextNull extends HttpContext
 		return false;
 	}
 
+	@Override
+	public boolean exposeMetadata() {
+		return false;
+	}
 	public boolean isSmartDevice()
         {
             return false;
@@ -355,4 +364,7 @@ public class HttpContextNull extends HttpContext
 	{
 		return dt;
 	}
+
+	public boolean isHttpContextNull() {return true;}
+	public boolean isHttpContextWeb() {return false;}
 }

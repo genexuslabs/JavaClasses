@@ -108,7 +108,7 @@ public class CookieModule implements HTTPClientModule
 	}
     }
 
-
+	@SuppressWarnings("unchecked")
     private static void loadCookies()
     {
 	// The isFile() etc need to be protected by the catch as signed
@@ -135,7 +135,7 @@ public class CookieModule implements HTTPClientModule
 	if (cookie_jar != null  &&  (!cookie_jar.exists()  ||
 	     cookie_jar.isFile()  &&  cookie_jar.canWrite()))
 	{
-	    Hashtable cookie_list = new Hashtable();
+	    Hashtable<Cookie, Cookie> cookie_list = new Hashtable<>();
 	    Enumeration enumera = Util.getList(cookie_cntxt_list,
 					    HTTPConnection.getDefaultContext())
 				   .elements();
@@ -263,14 +263,14 @@ public class CookieModule implements HTTPClientModule
 	if (cookie_list.size() == 0)
 	    return REQ_CONTINUE;	// no need to create a lot of objects
 
-	Vector  names   = new Vector();
-	Vector  lens    = new Vector();
+	Vector<String>  names   = new Vector<>();
+	Vector<Integer>  lens    = new Vector<>();
 	int     version = 0;
 
 	synchronized (cookie_list)
 	{
 	    Enumeration list = cookie_list.elements();
-	    Vector remove_list = null;
+	    Vector<Cookie> remove_list = null;
 
 	    while (list.hasMoreElements())
 	    {
@@ -280,7 +280,7 @@ public class CookieModule implements HTTPClientModule
 		{
 		    Log.write(Log.COOKI, "CookM: cookie has expired and is " +
 					 "being removed: " + cookie);
-		    if (remove_list == null)  remove_list = new Vector();
+		    if (remove_list == null)  remove_list = new Vector<>();
 		    remove_list.addElement(cookie);
 		    continue;
 		}
@@ -293,7 +293,7 @@ public class CookieModule implements HTTPClientModule
 
 		    // insert in correct position
 		    for (idx=0; idx<lens.size(); idx++)
-			if (((Integer) lens.elementAt(idx)).intValue() < len)
+			if (lens.elementAt(idx).intValue() < len)
 			    break;
 
 		    names.insertElementAt(cookie.toExternalForm(), idx);
@@ -320,11 +320,11 @@ public class CookieModule implements HTTPClientModule
 	    if (version > 0)
 		value.append("$Version=\"" + version + "\"; ");
 
-	    value.append((String) names.elementAt(0));
+	    value.append(names.elementAt(0));
 	    for (int idx=1; idx<names.size(); idx++)
 	    {
 		value.append("; ");
-		value.append((String) names.elementAt(idx));
+		value.append(names.elementAt(idx));
 	    }
 	    hdrs = Util.resizeArray(hdrs, hdrs.length+1);
 	    hdrs[hdrs.length-1] = new NVPair("Cookie", value.toString());
@@ -411,6 +411,7 @@ public class CookieModule implements HTTPClientModule
     }
 
 
+	@SuppressWarnings("unchecked")
     private void handleCookie(String set_cookie, boolean cookie2, RoRequest req,
 			      Response resp)
 	    throws ProtocolException
@@ -540,6 +541,7 @@ public class CookieModule implements HTTPClientModule
      * @param cookie the Cookie to add
      * @since V0.3-1
      */
+	@SuppressWarnings("unchecked")
     public static void addCookie(Cookie cookie)
     {
 	Hashtable cookie_list =
@@ -558,6 +560,7 @@ public class CookieModule implements HTTPClientModule
      * @param context the context Object.
      * @since V0.3-1
      */
+	@SuppressWarnings("unchecked")
     public static void addCookie(Cookie cookie, Object context)
     {
 	Hashtable cookie_list = Util.getList(cookie_cntxt_list, context);

@@ -35,6 +35,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 	private static final boolean DEBUG = DebugFlag.DEBUG;
 
 	public static boolean longVarCharAsOracleLong = false;
+	public static boolean blankStringAsEmpty = false;
 
 	private ResultSet result;
 	private Statement stmt;
@@ -251,6 +252,11 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		}
 
 		resultRegBytes += value.length();
+
+		if (con.getDBMS() instanceof GXDBMSoracle7 && blankStringAsEmpty && GXPreparedStatement.addSpaceToEmptyVarChar && value.equals(" "))
+		{
+			value = "";
+		}
 		return value;
 	}
 
@@ -273,10 +279,10 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 			try
 			{
 				value = result.getString(columnIndex);
-				if	(result.wasNull())
+				if (result.wasNull() || value == null)
 					value = CommonUtil.replicate(" ", length);
 				else
-				 	value = CommonUtil.padr(value, length, " ");
+					value = String.format(String.format("%%-%ds", length), value);
 
 				log(GXDBDebug.LOG_MAX, "getString - value : " + value);
 			}
@@ -289,10 +295,10 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		else
 		{
 			value = result.getString(columnIndex);
-			if	(result.wasNull())
-				value = CommonUtil.replicate(" ", length);
+			if (result.wasNull() || value == null)
+				value = "";
 			else
-		   	 	value = CommonUtil.padr(value, length, " ");
+				value = String.format(String.format("%%-%ds", length), value);
 		}
 
 		resultRegBytes += value.length();
@@ -759,6 +765,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		return result.getBoolean(columnIndex);
 	}
 
+	@Deprecated
 	public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException
 	{
 		BigDecimal ret;
@@ -900,6 +907,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		return result.getAsciiStream(columnIndex);
 	}
 
+	@Deprecated
 	public java.io.InputStream getUnicodeStream(int columnIndex) throws SQLException
 	{
 		if	(DEBUG )
@@ -986,7 +994,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 			destination.close();
 
 			InputStream is = new ByteArrayInputStream(os.toByteArray());
-			GXFile gxFile = new GXFile(fileName);
+			GXFile gxFile = new GXFile(fileName, ResourceAccessControlList.Private);
 		  	gxFile.create(is);
 			
 			fileName = gxFile.getFilePath();
@@ -1012,10 +1020,10 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 			if (fileName.trim().length() != 0)
 			{
 				String filePath = "";
-				if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) == null)
+				if (Application.getExternalProvider() == null)
 				{ 
 					String multimediaDir = com.genexus.Preferences.getDefaultPreferences().getMultimediaPath();
-					filePath = multimediaDir + File.separator + fileName;
+					filePath = GXutil.getNonTraversalPath(multimediaDir, fileName);
 				}
 				else
 				{
@@ -1038,7 +1046,20 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 
 	public String getMultimediaUri(int columnIndex) throws SQLException
 	{
-		return GXDbFile.resolveUri(getVarchar(columnIndex));
+		return getMultimediaUri(columnIndex, true);
+	}
+	
+	public String getMultimediaUri(int columnIndex, boolean absPath) throws SQLException
+	{
+		ExternalProvider provider = Application.getExternalProvider();
+		String colValue = getVarchar(columnIndex);
+		if (provider != null && colValue.length() > 0 && GXutil.isAbsoluteURL(colValue)) {
+			String providerObjectName = ExternalProviderCommon.getProviderObjectName(provider, colValue);
+			if (providerObjectName != null) {
+				return new GXFile(providerObjectName).getAbsolutePath();
+			}
+		}
+		return GXDbFile.resolveUri(colValue, absPath);
 	}
 
 	private static String lastBlobsDir = "";
@@ -1046,7 +1067,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 	{
 		String blobPath = com.genexus.Preferences.getDefaultPreferences().getBLOB_PATH();
 		String fileName = com.genexus.PrivateUtilities.getTempFileName(blobPath, name, extension, true);
-		if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) == null)
+		if (Application.getExternalProvider() == null)
 		{
 			File file = new File(fileName);
 			
@@ -1169,6 +1190,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		return result.getDouble(columnName);
 	}
 
+	@Deprecated
 	public BigDecimal getBigDecimal(String columnName, int scale) throws SQLException
 	{
 		if	(DEBUG) log(GXDBDebug.LOG_MAX, "Warning: getBigDecimal/2");
@@ -1211,6 +1233,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		return result.getAsciiStream(columnName);
 	}
 
+	@Deprecated
 	public java.io.InputStream getUnicodeStream(String columnName) throws SQLException
 	{
 		if	(DEBUG) log(GXDBDebug.LOG_MAX, "Warning: getUnicodeStream/2");
@@ -1619,7 +1642,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 	}
 
 
-    public Object getObject(int i, java.util.Map map) throws SQLException
+    public Object getObject(int i, java.util.Map<java.lang.String,java.lang.Class<?>> map) throws SQLException
 	{
 		return result.getObject(i, map);
 	}
@@ -1641,7 +1664,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		return result.getArray(i);
 	}
 
-    public Object getObject(String colName, java.util.Map map) throws SQLException
+    public Object getObject(String colName, java.util.Map<java.lang.String,java.lang.Class<?>> map) throws SQLException
 	{
 		return result.getObject(colName, map);
 	}

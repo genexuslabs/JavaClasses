@@ -12,10 +12,16 @@ target/
 # Mac OS
 .DS_Store
 
+.vscode/
+
 .project
 .factorypath
 .classpath
 .settings
 *.versionsBackup
 
+*.xlsx
 
+PublicTempStorage/
+PrivateTempStorage/
+gxexternalproviders/resources/

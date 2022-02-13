@@ -1,6 +1,7 @@
 package com.artech.base.helpers;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class ReflectionAPIHelper {
@@ -72,10 +73,12 @@ public class ReflectionAPIHelper {
 			// instance = constructor.newInstance(-1);
 
 			return instance;
-		} catch (Exception ex) {
+		} catch (IllegalAccessException | IllegalArgumentException | InstantiationException
+			| InvocationTargetException | ExceptionInInitializerError | NoSuchMethodException ex) {
 			if (clazz != null)
 				System.err.println(
 						String.format("Exception creating instance of class '%s' by reflection.", clazz.getName())); //$NON-NLS-1$
+			System.err.println(ex.getMessage()); // $NON-NLS-1$
 			return null;
 		}
 	}
@@ -96,7 +99,7 @@ public class ReflectionAPIHelper {
 			}
 			Method method = clazz.getMethod(name, paramsTypes);
 			return method;
-		} catch (Exception ex) {
+		} catch (NoSuchMethodException | SecurityException ex) {
 			if (clazz != null) {
 				for (Method method : clazz.getMethods()) {
 					if (name.equals(method.getName())) {
@@ -122,15 +125,14 @@ public class ReflectionAPIHelper {
 	}
 
 	public static Object executeMethod(Object instance, Method method, Object[] params) {
-		// intance can be null., params can be null.
 		try {
 			return method.invoke(instance, params);
-		} catch (Exception e) {
-			System.err.println(String.format("Exception executing method '%s' by reflection.", method.getName())); //$NON-NLS-1$
-			System.err.println(e.getMessage()); // $NON-NLS-1$
+		} catch (InvocationTargetException e) {
+			String reason = String.format("Exception was thrown by method '%s'", method.getName());
+			throw new RuntimeException(reason, e.getCause());
+		} catch (IllegalAccessException e) {
+			String reason = String.format("An illegal access when trying to access method '%s", method.getName());
+			throw new RuntimeException(reason, e.getCause());
 		}
-		return null;
-
 	}
-
 }
