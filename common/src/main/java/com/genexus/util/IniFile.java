@@ -169,10 +169,15 @@ public class IniFile {
 				sections.put(actSection, new Section(il.section, properties));
 			} else if (il.typeLine == PROPERTY) // && actSection != null)
 			{
-				String key = getMappedProperty(actSection, il.property);
-				String envValue = EnvVarReader.getEnvironmentValue(actSection, key);
-				if (envValue != null)
-					il.value = envValue;
+				String key=il.property;
+				String mapped = getMappedProperty(actSection, key);
+				if (mapped != null && !mapped.isEmpty()) {
+					il.value = System.getenv(mapped);
+				}else {
+					String envValue = EnvVarReader.getEnvironmentValue(actSection, key);
+					if (envValue != null)
+						il.value = envValue;
+				}
 
 				properties.put(il.property.toUpperCase(), new Value(PROPERTY, il.property, il.value));
 			} else if (il.typeLine == COMMENT) {
