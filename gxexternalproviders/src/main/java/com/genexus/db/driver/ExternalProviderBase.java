@@ -90,6 +90,10 @@ public abstract class ExternalProviderBase {
 	}
 
 	private String readFromEnvVars(String propertyName, String alternativePropertyName) {
+		if (!service.getAllowOverrideWithEnvVarSettings()){
+			return null;
+		}
+
 		String value = System.getenv(resolvePropertyName(propertyName));
 		if (value == null){
 			value = System.getenv(alternativePropertyName);
