@@ -169,9 +169,8 @@ public class IniFile {
 				sections.put(actSection, new Section(il.section, properties));
 			} else if (il.typeLine == PROPERTY) // && actSection != null)
 			{
-				String key = getMappedProperty(actSection, il.property);
-				boolean addPrefix = !isMappedProperty(il.property);
-				String envValue = EnvVarReader.getEnvironmentValue(actSection, key, addPrefix);
+				String mappedKey = getMappedProperty(actSection, il.property);
+				String envValue = EnvVarReader.getEnvironmentVar(actSection, il.property, mappedKey);
 				if (envValue != null)
 					il.value = envValue;
 
@@ -294,6 +293,11 @@ public class IniFile {
 	}
 
 	private String getPropertyImpl(String section, String key) {
+		String mapped = getMappedProperty(section, key);
+		String envValue = EnvVarReader.getEnvironmentVar(section, key, mapped);
+		if (envValue!=null)
+			return envValue;
+
 		String output = null;
 		Section sec = (Section) sections.get(section.toUpperCase());
 		Hashtable prop = null;
@@ -309,11 +313,17 @@ public class IniFile {
 		}
 		return output;
 	}
-
+	private String getFullSectionKey(String section, String key){
+		if (section != null && !section.isEmpty() && section != "Client")
+			return String.format("%s:%s", section, key);
+		else
+			return key;
+	}
 	private String getMappedProperty(String section, String key){
-		if (isMappedProperty(key))
-			return getConfMapping().get(key);
-		return key;
+		String fullKey = getFullSectionKey(section, key);
+		if (isMappedProperty(fullKey))
+			return getConfMapping().get(fullKey);
+		return null;
 	}
 	private boolean isMappedProperty(String key){
 		return (getConfMapping() != null && getConfMapping().containsKey(key));
@@ -325,6 +335,9 @@ public class IniFile {
 		if (s_confMapping == null){
 			String folderPath = ApplicationContext.getInstance().getServletEngineDefaultPath() + File.separatorChar + "WEB-INF";
 			File envMapping = new File(folderPath, CONFMAPPING_FILE);
+			if (!envMapping.exists()){
+				envMapping = new File(CONFMAPPING_FILE);
+			}
 			if (envMapping.isFile()) {
 				GXFileInfo mapping = new GXFileInfo(envMapping);
 				try {
