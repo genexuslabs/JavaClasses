@@ -33,12 +33,15 @@ public interface IContext {
     IPropertiesObject runGxObjectFromProcedure(String objectToCall, IPropertiesObject parameters);
 
 	IAndroidSession getAndroidSession();
-	
+
+	IAndroidImageUtil getAndroidImageUtil();
+
 	/* path in android */
 	String getDataBaseFilePath();
 	String getDataBaseSyncFilePath();
 	String getDataBaseSyncHashesFilePath();
 
+	String getAssetsFontPath(String fontName);
 	String getApplicationDataPath();
 	String getTemporaryFilesPath();
 	String getExternalFilesPath();

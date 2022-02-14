@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.Field;
@@ -36,6 +35,7 @@ import java.util.GregorianCalendar;
 
 import com.genexus.*;
 import com.genexus.common.classes.IGXPreparedStatement;
+import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.internet.HttpContext;
 import com.genexus.util.GXFile;
 import com.genexus.util.GXServices;
@@ -949,89 +949,102 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		setGXDbFileURI(index, fileName, blobPath, length, tableName, fieldName);
 	}
 
-    public void setGXDbFileURI(int index, String fileName, String blobPath, int length, String tableName, String fieldName) throws SQLException
-    {
-		 
-    	if (blobPath==null || blobPath.trim().length() == 0)
-    	{
-    		setVarchar(index, fileName, length, false);
-    	}
-    	else
-    	{
-			String fileUri = "";
-			if (fileName.trim().length() != 0 && !(blobPath.startsWith(com.genexus.Preferences.getDefaultPreferences().getMultimediaPath()) && ((fileName.toLowerCase().startsWith("http://") || fileName.toLowerCase().startsWith("https://")))))
-				fileUri = GXDbFile.generateUri(fileName, !GXDbFile.hasToken(fileName), true);
-			else
-			{
-				if (blobPath.trim().length() != 0)
-				{
-					blobPath = com.genexus.GXutil.cutUploadPrefix(blobPath);
-					File file = new File(blobPath);
-					fileUri = GXDbFile.generateUri(file.getName(), !GXDbFile.hasToken(blobPath), true);
+    public void setGXDbFileURI(int index, String fileName, String blobPath, int length, String tableName, String fieldName) throws SQLException {
+
+		ExternalProvider storageProvider = Application.getExternalProvider();
+
+		fileName = fileName.trim();
+		blobPath = blobPath.trim();
+		String uploadNameValue = SpecificImplementation.GXutil.getUploadNameValue(blobPath);
+
+		//EMPTY BLOB
+    	if (blobPath == null || blobPath.trim().length() == 0) {
+			setVarchar(index, ExternalProviderCommon.getProviderObjectAbsoluteUriSafe(storageProvider, fileName), length, false);
+			return;
+		}
+
+		String fileUri = "";
+    	String multimediaTemporalPath = com.genexus.Preferences.getDefaultPreferences().getMultimediaPath();
+
+		if (fileName.length() > 0 && !(blobPath.startsWith(multimediaTemporalPath) && GXutil.isAbsoluteURL(fileName))) {
+			fileUri = GXDbFile.generateUri(fileName, !GXDbFile.hasToken(fileName), true);
+		}
+		else if (blobPath.trim().length() > 0)
+		{
+			blobPath = com.genexus.GXutil.cutUploadPrefix(blobPath);
+			File file = new File(blobPath);
+			fileUri = GXDbFile.generateUri(uploadNameValue.isEmpty()?file.getName(): uploadNameValue, !GXDbFile.hasToken(blobPath), true);
+		}
+
+		boolean externalStorageEnabled = storageProvider != null;
+		boolean attInExternalStorage = externalStorageEnabled && (tableName != null && fieldName != null); //Should improve this condition in order to not depend on tableName and FieldName.
+
+		if (!attInExternalStorage) {
+			setVarchar(index, fileUri, length, false);
+			return;
+		}
+
+		//External Storage is ENABLED. We have the following cases:
+		// - 1. WebUpload: The URL is an External Storage URL in the Private Temp Storage Folder.
+		// - 2. External URL: An absolute URL (outside External Storage).
+		// - 3. Transaction Update Mode (nothing changed): An Storage URL that is already in External Storage (except in private), should not be uploaded nor copied.
+		// - 4. Upload Resource from local drive to External Storage: Ex: Image.FromImage(ActionDelete)
+
+		String storageObjectName = ExternalProviderCommon.getProviderObjectName(storageProvider, blobPath);
+		boolean resourceAlreadyOnStorage = storageObjectName != null;
+		ResourceAccessControlList defaultAcl = ResourceAccessControlList.Default;
+
+		String storageTargetObjectName = blobPath;
+		boolean isPrivateTempUpload = storageTargetObjectName.startsWith(Application.getClientPreferences().getTMPMEDIA_DIR());
+		String folder = Application.getGXServices().get(GXServices.STORAGE_SERVICE).getProperties().get("FOLDER_NAME");
+		if (!resourceAlreadyOnStorage && (fileName.equals(blobPath) || GXutil.isAbsoluteURL(fileName))) {
+			// - 2. External URL: An absolute URL (outside External Storage).
+			try (InputStream is = new URL(fileName).openStream()){
+				int idx = storageTargetObjectName.lastIndexOf("/");
+				if ((idx != -1) && (idx < storageTargetObjectName.length() - 1)) {
+					storageTargetObjectName = storageTargetObjectName.substring(idx + 1);
+				}
+				storageTargetObjectName = com.genexus.PrivateUtilities.getTempFileName("", CommonUtil.getFileName(storageTargetObjectName), CommonUtil.getFileType(storageTargetObjectName), true);
+				storageTargetObjectName = folder + "/" + tableName + "/" + fieldName + "/" + storageTargetObjectName;
+				fileUri = Application.getExternalProvider().upload(storageTargetObjectName, is, defaultAcl);
+			} catch (IOException e) {
+				throw new SQLException("An error occurred while downloading data from url: " + fileName + e.getMessage());
+			}
+		} else {
+			if (resourceAlreadyOnStorage && !isPrivateTempUpload) {
+				// - 3. Transaction Update Mode (nothing changed): An Storage URL that is already in External Storage (except in private), should not be uploaded nor copied.
+				fileUri = storageObjectName;
+			} else {
+				GXFile gxFile = new GXFile(storageTargetObjectName, ResourceAccessControlList.Private); //Every temporal file is saved as private.
+				if (gxFile.exists()) {
+					// - 1. WebUpload: The URL is an External Storage URL in the Private Temp Storage Folder.
+					fileName = uploadNameValue.isEmpty()? gxFile.getName(): uploadNameValue;
+					int idx = fileName.lastIndexOf("/");
+					if ((idx != -1) && (idx < fileName.length() - 1)) {
+						fileName = fileName.substring(idx + 1);
+					}
+					fileName = com.genexus.PrivateUtilities.getTempFileName("", CommonUtil.getFileName(fileName), CommonUtil.getFileType(fileName), true);
+					fileUri = storageProvider.copy(gxFile.getAbsoluteName(), fileName, tableName, fieldName, defaultAcl);
+				} else {
+					// - 4. Upload Resource from local drive to External Storage: Ex: Image.FromImage(ActionDelete)
+					int idx = blobPath.lastIndexOf("/");
+					if ((idx != -1) && (idx < blobPath.length() - 1)) {
+						fileName = blobPath.substring(idx + 1);
+					}
+					fileName = com.genexus.PrivateUtilities.getTempFileName("", CommonUtil.getFileName(fileName), CommonUtil.getFileType(fileName), true);
+					fileName = folder + "/" + tableName + "/" + fieldName + "/" + fileName;
+					if (con.getContext() != null) {
+						com.genexus.internet.HttpContext webContext = (HttpContext) con.getContext().getHttpContext();
+						if ((webContext != null) && (webContext instanceof com.genexus.webpanels.HttpContextWeb) && (blobPath.startsWith(webContext.getContextPath()) || blobPath.startsWith(webContext.getDefaultPath()))) {
+							blobPath = ((com.genexus.webpanels.HttpContextWeb) webContext).getRealPath(blobPath);
+						}
+					}
+					fileUri = storageProvider.upload(blobPath, fileName, defaultAcl);
 				}
 			}
-			boolean attInExternalStorage = (tableName!=null && fieldName!=null);
-			if (attInExternalStorage && Application.getGXServices().get(GXServices.STORAGE_SERVICE) != null)
-			{				
-					String sourceName = blobPath;
-					String folder = Application.getGXServices().get(GXServices.STORAGE_SERVICE).getProperties().get("FOLDER_NAME");
-					if (fileName == blobPath || fileName.toLowerCase().startsWith("http"))
-					{
-						try
-						{
-							URL fileURL = new URL(fileName);
-							InputStream is = fileURL.openStream();
-							int dDelimIdx2 = sourceName.lastIndexOf("/");
-							if ( (dDelimIdx2 != -1) && (dDelimIdx2 < sourceName.length() - 1) )
-							{
-								sourceName = sourceName.substring(dDelimIdx2 + 1);
-							}							
-							sourceName = com.genexus.PrivateUtilities.getTempFileName("", CommonUtil.getFileName(sourceName), CommonUtil.getFileType(sourceName), true);
-							sourceName = folder + "/" + tableName + "/" + fieldName + "/" + sourceName;
-							fileUri = Application.getExternalProvider().upload(sourceName, is, false);
-						}
-						catch(IOException e)
-						{
-							throw new SQLException("An error occurred while downloading data from url: " + fileName + e.getMessage());
-						}						
-					}
-					else
-					{
-						GXFile gxFile = new GXFile(sourceName, true);
-						if (gxFile.exists())
-						{
-							fileName = gxFile.getName();
-							int dDelimIdx = fileName.lastIndexOf("/");
-							if ( (dDelimIdx != -1) && (dDelimIdx < fileName.length() - 1) )
-							{
-								fileName = fileName.substring(dDelimIdx + 1);
-							}										
-							fileUri = Application.getExternalProvider().copy(sourceName, fileName, tableName, fieldName, true);
-						}
-						else
-						{
-							//Cuando el blobPath no es una URL entonces tengo que hacer upload del archivo local (por ejemplo en el caso del FromImage)
-							int dDelimIdx1 = blobPath.lastIndexOf("/");
-							if ( (dDelimIdx1 != -1) && (dDelimIdx1 < blobPath.length() - 1) )
-							{
-								fileName = blobPath.substring(dDelimIdx1 + 1);
-							}
-							fileName = com.genexus.PrivateUtilities.getTempFileName("", CommonUtil.getFileName(fileName), CommonUtil.getFileType(fileName), true);
-							fileName = folder + "/" + tableName + "/" + fieldName + "/" + fileName;
-							if (con.getContext() != null)
-							{
-								com.genexus.internet.HttpContext webContext = (HttpContext) con.getContext().getHttpContext();
-								if((webContext != null) && (webContext instanceof com.genexus.webpanels.HttpContextWeb) && (blobPath.startsWith(webContext.getContextPath()) || blobPath.startsWith(webContext.getDefaultPath())))
-								{
-									blobPath = ((com.genexus.webpanels.HttpContextWeb)webContext).getRealPath(blobPath);
-								}
-							}							
-							fileUri = Application.getExternalProvider().upload(blobPath, fileName, false);
-						}
-					}
-			}
-    		setVarchar(index, fileUri, length, false);
-    	}
+		}
+
+		setVarchar(index, fileUri, length, false);
     }
 
     public void setBytes(int index, byte value[]) throws SQLException
@@ -1467,7 +1480,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		{
 			if	(fileName != null && !fileName.trim().equals("") && !fileName.toLowerCase().trim().endsWith("about:blank"))
 			{
-					if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) == null)
+					if (Application.getExternalProvider() == null)
 					{
 						try
 						{
@@ -1482,7 +1495,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 					}
 					else
 					{
-							GXFile gxFile = new GXFile(fileName, true);
+							GXFile gxFile = new GXFile(fileName, ResourceAccessControlList.Private);
 							if (gxFile.exists())
 							{							
 								InputStream is= gxFile.getStream();							

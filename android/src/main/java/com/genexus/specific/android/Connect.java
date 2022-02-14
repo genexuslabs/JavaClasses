@@ -40,6 +40,7 @@ public final class Connect {
 		SpecificImplementation.SupportPending = true;
 		SpecificImplementation.cdowMask = "EEEE";
 		SpecificImplementation.Base64Encode = "8859_1";
+		SpecificImplementation.UseUnicodeCharacterClass = false;
 		JSONObject.extension = new JSONObjectExtension();
 		
 	}

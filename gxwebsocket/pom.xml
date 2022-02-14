@@ -5,7 +5,7 @@
     <parent>
         <artifactId>parent</artifactId>
         <groupId>com.genexus</groupId>
-        <version>1.10-SNAPSHOT</version>
+        <version>2.5-SNAPSHOT</version>
     </parent>
 
     <artifactId>gxwebsocket</artifactId>
@@ -21,7 +21,7 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>3.0.1</version>
+            <version>3.1.0</version>
         </dependency>
         <dependency>
             <groupId>javax.websocket</groupId>
@@ -31,4 +31,30 @@
         </dependency>
 
     </dependencies>
+    
+	<build>
+		<finalName>GXWebSocket</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.1.1</version>				
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>false</addClasspath>
+						</manifest>
+						<manifestEntries>
+							<Build-Time>${maven.build.timestamp}</Build-Time>
+							<Build-User>GeneXus</Build-User>
+							<Build-Java>${java.version}</Build-Java>
+							<Build-OS>${os.name}</Build-OS>
+							<Build-Label>${project.version}</Build-Label>
+							<Build-Path>${basedir}</Build-Path>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>    
 </project>

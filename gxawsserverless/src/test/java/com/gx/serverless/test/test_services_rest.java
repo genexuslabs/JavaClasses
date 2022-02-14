@@ -28,10 +28,13 @@ public final  class test_services_rest extends GxRestService
    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8"})
    public Response execute( @QueryParam("Itemnumber") @DefaultValue("5") String sAV5ItemNumber )
    {
-      super.init( "GET" , myServletRequest, myServletResponse, myContext);
+   		com.genexus.servlet.http.IHttpServletRequest myServletRequestWrapper = new com.genexus.servlet.http.HttpServletRequest(myServletRequest);
+	   	com.genexus.servlet.http.IHttpServletResponse myServletResponseWrapper = new com.genexus.servlet.http.HttpServletResponse(myServletResponse);
+	   	com.genexus.servlet.IServletContext myContextWrapper = new com.genexus.servlet.ServletContext(myContext);
+      super.init( "GET" , myServletRequestWrapper, myServletResponseWrapper, myContextWrapper);
       ApplicationContext.getInstance().setServletEngineDefaultPath(myContext.getRealPath("/"));
       Response.ResponseBuilder builder = null;
-      if ( ! processHeaders("test",myServletRequest,myServletResponse) )
+      if ( ! processHeaders("test",myServletRequestWrapper,myServletResponseWrapper) )
       {
          builder = Response.notModified();
          cleanup();
@@ -69,10 +72,13 @@ public final  class test_services_rest extends GxRestService
                            @QueryParam("insertorupdate") @DefaultValue("false") boolean gxinsertorupdate ,
                            SdtItem_RESTInterface entity)
    {
-      super.init( "GET" , myServletRequest, myServletResponse, myContext);
+	   com.genexus.servlet.http.IHttpServletRequest myServletRequestWrapper = new com.genexus.servlet.http.HttpServletRequest(myServletRequest);
+	   com.genexus.servlet.http.IHttpServletResponse myServletResponseWrapper = new com.genexus.servlet.http.HttpServletResponse(myServletResponse);
+	   com.genexus.servlet.IServletContext myContextWrapper = new com.genexus.servlet.ServletContext(myContext);
+      super.init( "GET" , myServletRequestWrapper, myServletResponseWrapper, myContextWrapper);
       ApplicationContext.getInstance().setServletEngineDefaultPath(myContext.getRealPath("/"));
       Response.ResponseBuilder builder = null;
-      if ( ! processHeaders("test",myServletRequest,myServletResponse) )
+      if ( ! processHeaders("test",myServletRequestWrapper,myServletResponseWrapper) )
       {
          builder = Response.notModified();
          cleanup();
@@ -102,10 +108,13 @@ public final  class test_services_rest extends GxRestService
    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8"})
    public Response Load( @PathParam("sA1UserId") short sA1UserId )
    {
-      super.init( "GET" , myServletRequest, myServletResponse, myContext);
+	   com.genexus.servlet.http.IHttpServletRequest myServletRequestWrapper = new com.genexus.servlet.http.HttpServletRequest(myServletRequest);
+	   com.genexus.servlet.http.IHttpServletResponse myServletResponseWrapper = new com.genexus.servlet.http.HttpServletResponse(myServletResponse);
+	   com.genexus.servlet.IServletContext myContextWrapper = new com.genexus.servlet.ServletContext(myContext);
+      super.init( "GET" , myServletRequestWrapper, myServletResponseWrapper, myContextWrapper);
       ApplicationContext.getInstance().setServletEngineDefaultPath(myContext.getRealPath("/"));
       Response.ResponseBuilder builder = null;
-      if ( ! processHeaders("test",myServletRequest,myServletResponse) )
+      if ( ! processHeaders("test",myServletRequestWrapper,myServletResponseWrapper) )
       {
          builder = Response.notModified();
          cleanup();
@@ -130,6 +139,25 @@ public final  class test_services_rest extends GxRestService
          return builder.build() ;
       }
    }
+
+	@javax.ws.rs.POST
+	@javax.ws.rs.Path("gxobject")
+	@javax.ws.rs.Produces({javax.ws.rs.core.MediaType.APPLICATION_JSON + ";charset=UTF-8"})
+	public javax.ws.rs.core.Response Upload( ) throws Exception
+	{
+		super.init( "POST" );
+		try
+		{
+			builder = new com.genexus.webpanels.GXObjectUploadServices().doInternalRestExecute(restHttpContext);
+			cleanup();
+			return (javax.ws.rs.core.Response) builder.build() ;
+		}
+		catch ( Exception e )
+		{
+			cleanup();
+			throw e;
+		}
+	}
 
    protected boolean IntegratedSecurityEnabled( )
    {

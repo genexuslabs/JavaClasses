@@ -15,6 +15,7 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 	private int wasNullHits;
 	private TimeZone mTimeZone;	
 	private Hashtable<Integer, Integer> realColIdx; //Introduced in order to enable getting an older column index, because wasNullHits always go forward.
+	private transient ThreadLocal<Integer> lastIndex = new ThreadLocal<>();
 	
 	public CachedIFieldGetter()
 	{
@@ -50,18 +51,27 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 
 	private int getColumnIndex(int colIdx)
 	{
+		int returnVal;
 		if (realColIdx.containsKey(colIdx))
-			return (int) realColIdx.get(colIdx);
+			returnVal = (int) realColIdx.get(colIdx);
 		else {
-			int returnVal = colIdx + wasNullHits - 1;
+			returnVal = colIdx + wasNullHits - 1;
 			realColIdx.put(colIdx, returnVal);
-			return returnVal;
 		}
+		if (lastIndex == null)
+			lastIndex = new ThreadLocal<>();
+		lastIndex.set(returnVal + 1);
+		return returnVal;
 	}
 
 	public boolean wasNull() throws SQLException
 	{
-		boolean result = (value == null);
+		boolean result;
+		if (value[lastIndex.get()] instanceof ArrayList)
+			result =  (boolean)((ArrayList)value[lastIndex.get()]).get(0);
+		else
+			result =  ((boolean[])value[lastIndex.get()])[0];
+
 		this.wasNullHits++;
 		return result;
 	}
@@ -72,8 +82,12 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 	}
 		
 	public String getVarchar(int columnIndex) throws SQLException
-	{	
-		return this.<String>getValue(getColumnIndex(columnIndex));
+	{
+		Object result = this.<String>getValue(getColumnIndex(columnIndex));
+		if (result.getClass().getName().equals("com.genexus.GXGeospatial"))
+			return result.toString();
+		else
+			return (String) result;
 	}
 		
 	public String getString(int columnIndex, int length) throws SQLException
@@ -156,7 +170,7 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 		}
 		else
 		{
-			if (SpecificImplementation.Application.getModelContext() != null && SpecificImplementation.Application.getModelContext().getClientTimeZone() != null && mTimeZone != null)
+			if (SpecificImplementation.Application.getModelContext() != null && SpecificImplementation.Application.getModelContext().getClientTimeZone() != null && mTimeZone != null && !CommonUtil.resetTime(val).equals(CommonUtil.nullDate()))
 				val = CommonUtil.ConvertDateTime(val, mTimeZone, SpecificImplementation.Application.getModelContext().getClientTimeZone());
 		}
 		return val;
@@ -254,6 +268,10 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 
 	public java.util.UUID getGUID(int columnIndex) throws SQLException
 	{
-		return this.<java.util.UUID>getValue(getColumnIndex(columnIndex));
-	}		
+		Object value = this.getValue(getColumnIndex(columnIndex));
+		if (value instanceof java.util.UUID)
+			return this.<java.util.UUID>getValue(getColumnIndex(columnIndex));
+		else
+			return (java.util.UUID) CommonUtil.convertObjectTo(value, TypeConstants.UUID);
+	}
 }

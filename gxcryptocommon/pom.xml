@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.genexus</groupId>
 		<artifactId>parent</artifactId>
-		<version>1.10-SNAPSHOT</version>
+		<version>2.5-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>gxcryptocommon</artifactId>
@@ -22,12 +22,12 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpkix-jdk15on</artifactId>
-			<version>1.64</version>
+			<version>1.69</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.santuario</groupId>
 			<artifactId>xmlsec</artifactId>
-			<version>2.1.4</version>
+			<version>2.2.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

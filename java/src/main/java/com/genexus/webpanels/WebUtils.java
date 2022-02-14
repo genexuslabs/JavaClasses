@@ -496,6 +496,7 @@ public class WebUtils
 			}
 			input.close();
 			is.close();
+			rrcs.add(com.genexus.webpanels.GXMultiCall.class);
 		}
 		catch (Exception e)
 		{

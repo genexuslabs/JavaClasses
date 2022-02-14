@@ -388,7 +388,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			else
 			{
 				String loginObject = Application.getClientContext().getClientPreferences().getProperty("IntegratedSecurityLoginWeb", "");
-				httpContext.redirect(GXutil.getClassName(loginObject));
+				httpContext.redirect(formatLink(GXutil.getClassName(loginObject)));
 				return false;
 			}
 		}
@@ -527,7 +527,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			try
 			{
 				String pckgName = (objMessage.has("pkgName") && objMessage.getString("pkgName").length() > 0)? objMessage.getString("pkgName") + ".": "";
-				if (objMessage.getBoolean("MPage"))
+				if (objMessage.has("MPage")  && objMessage.getBoolean("MPage"))
 				{
 					if (objMessage.has("objClass"))
 					{
@@ -793,20 +793,22 @@ public abstract class GXWebPanel extends GXWebObjectBase
 				}
 				else
 				{
-					if (fieldType.isArray())
-					{
-						Object tempArray = getArrayFieldValue(fieldType, value);
-						if (tempArray != null)
-						{
-							value = tempArray;
-						}
-					}
 					try
 					{
-						if (fieldType == java.util.Date.class)
-							value = localUtil.ctot(value.toString(), 0);
-						else
-							value = GXutil.convertObjectTo(value, fieldType);
+						if (fieldType.isArray())
+						{
+							Object tempArray = getArrayFieldValue(fieldType, value);
+							if (tempArray != null)
+							{
+								value = tempArray;
+							}
+						}
+						else {
+							if (fieldType == java.util.Date.class)
+								value = localUtil.ctot(value.toString(), 0);
+							else
+								value = GXutil.convertObjectTo(value, fieldType);
+						}
 						PrivateUtilities.setFieldValue(targetObj, field.getName(), value);
 					}
 					catch (Exception e)

@@ -12,9 +12,9 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.genexus.servlet.http.ICookie;
+import com.genexus.servlet.http.IHttpServletRequest;
+import com.genexus.servlet.http.IHttpServletResponse;
 
 import com.genexus.*;
 import org.apache.commons.io.IOUtils;
@@ -25,7 +25,6 @@ import com.genexus.util.Codecs;
 import com.genexus.util.Encryption;
 import com.genexus.util.GXMap;
 import com.genexus.util.ThemeHelper;
-import com.genexus.webpanels.GXResourceProvider;
 import com.genexus.webpanels.GXWebObjectBase;
 import com.genexus.webpanels.WebSession;
 
@@ -44,7 +43,9 @@ public abstract class HttpContext
     private static String GX_SPA_REQUEST_HEADER = "X-SPA-REQUEST";
     protected static String GX_SPA_REDIRECT_URL = "X-SPA-REDIRECT-URL";
 	private static String GX_SOAP_ACTION_HEADER = "SOAPAction";
-	
+	public static String GXTheme = "GXTheme";
+	public static String GXLanguage = "GXLanguage";
+
     private static String CACHE_INVALIDATION_TOKEN;
 
     protected boolean PortletMode = false;
@@ -300,7 +301,7 @@ public abstract class HttpContext
 	public abstract void setContextPath(String context);
 	public abstract String webSessionId();
 	public abstract String getCookie(String name);
-	public abstract Cookie[] getCookies();
+	public abstract ICookie[] getCookies();
 	public abstract byte setCookie(String name, String value, String path, java.util.Date expiry, String domain, double secure, Boolean httpOnly);
 	public abstract byte setCookie(String name, String value, String path, java.util.Date expiry, String domain, double secure);
 	public abstract byte setCookieRaw(String name, String value, String path, java.util.Date expiry, String domain, double secure);
@@ -330,9 +331,9 @@ public abstract class HttpContext
 	public abstract HttpResponse getHttpResponse();
 	public abstract HttpRequest getHttpRequest();
 	public abstract void setHttpRequest(HttpRequest httprequest);
-	public abstract HttpServletRequest getRequest();
-	public abstract HttpServletResponse getResponse();
-	public abstract void setRequest(HttpServletRequest request);
+	public abstract IHttpServletRequest getRequest();
+	public abstract IHttpServletResponse getResponse();
+	public abstract void setRequest(IHttpServletRequest request);
 	public abstract Hashtable getPostData();
 	public abstract WebSession getWebSession();
 	public abstract void redirect(String url);
@@ -880,7 +881,7 @@ public abstract class HttpContext
 			if (_clientId == null || _clientId.equals(""))
 			{
 				_clientId = java.util.UUID.randomUUID().toString();
-				this.setCookie(CLIENT_ID_HEADER, _clientId, "", new Date(Long.MAX_VALUE), "", 0);
+				this.setCookie(CLIENT_ID_HEADER, _clientId, "", new Date(Long.MAX_VALUE), "", getHttpSecure());
 			}
 			this.setClientId(_clientId);
 		}            
@@ -930,7 +931,6 @@ public abstract class HttpContext
 		addNavigationHidden();    
 		AddThemeHidden(this.getTheme());
 		AddStylesheetsToLoad();
-		AddResourceProvider(GXResourceProvider.PROVIDER_NAME);
 		if (isSpaRequest())
 		{
 			writeTextNL("<script>gx.ajax.saveJsonResponse(" + getJSONResponse() + ");</script>");
@@ -979,7 +979,7 @@ public abstract class HttpContext
         }
         catch(com.genexus.util.Encryption.InvalidGXKeyException e)
         {
-            setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", 0);
+            setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", getHttpSecure());
             com.genexus.diagnostics.Log.debug("440 Invalid encryption key");
             sendResponseStatus(440, "Session timeout");
         }
@@ -995,7 +995,7 @@ public abstract class HttpContext
         }
         catch (com.genexus.util.Encryption.InvalidGXKeyException e)
         {
-            setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", 0);
+            setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", getHttpSecure());
             com.genexus.diagnostics.Log.debug( "440 Invalid encryption key");
             sendResponseStatus(440, "Session timeout");
         }
@@ -1472,7 +1472,7 @@ public abstract class HttpContext
 	{
 	    WebSession session = getWebSession();
 	    if (session!=null){
-			HashMap cThemeMap = (HashMap)session.getObjectAttribute("GXTheme");
+			HashMap cThemeMap = (HashMap)session.getObjectAttribute(GXTheme);
 			if (cThemeMap != null && cThemeMap.containsKey(theme))
 				return (String)cThemeMap.get(theme);
 		}
@@ -1494,11 +1494,11 @@ public abstract class HttpContext
 			return 0;
 		else
 		{
-			HashMap<String, String> cThemeMap = (HashMap<String, String>)session.getObjectAttribute("GXTheme");
+			HashMap<String, String> cThemeMap = (HashMap<String, String>)session.getObjectAttribute(GXTheme);
 			if (cThemeMap == null)
 				cThemeMap = new HashMap<>();
 			cThemeMap.put(theme, t);
-			session.setObjectAttribute("GXTheme", cThemeMap);
+			session.setObjectAttribute(GXTheme, cThemeMap);
 			return 1;
 		}
 	}
@@ -1630,7 +1630,7 @@ public abstract class HttpContext
 		{
 			if (currentLanguage == null) {
 				WebSession session = getWebSession();
-				String language = session != null ? session.getAttribute("GXLanguage") : null;
+				String language = session != null ? session.getAttribute(GXLanguage) : null;
 				if (language != null && !language.equals("")) {
 					currentLanguage = language;
 				} else {
@@ -1687,7 +1687,7 @@ public abstract class HttpContext
 			if (!language.isEmpty() && Application.getClientPreferences().getProperty("language|"+ language, "code", null)!=null)
 			{
 				this.currentLanguage = language;
-				getWebSession().setAttribute("GXLanguage", language);
+				getWebSession().setAttribute(GXLanguage, language);
 				ajaxRefreshAsGET = true;
 				return 0;
 			}else
@@ -1781,6 +1781,7 @@ public abstract class HttpContext
 								{"dll"	, "application/x-msdownload"},
 								{"ps"	, "application/postscript"},
 								{"pdf"	, "application/pdf"},
+								{"svg"	, "image/svg+xml"},
 								{"tgz"	, "application/x-compressed"},
 								{"zip"	, "application/x-zip-compressed"},
 								{"gz"	, "application/x-gzip"}

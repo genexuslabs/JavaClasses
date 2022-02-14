@@ -218,7 +218,7 @@ public class IniFile {
 	public void setPropertyEncrypted(String section, String key, String value) {
 		String serverKey = getServerKey();
 		if (key.equals("USER_PASSWORD")) {
-			serverKey = serverKey.substring(16, 32) + serverKey.substring(0, 16);
+			serverKey = Encryption.inverseKey(serverKey);
 		}
 		setProperty(section, key,
 				Encryption.encrypt64(value + Encryption.checksum(value, Encryption.getCheckSumLength()), serverKey));
@@ -232,7 +232,7 @@ public class IniFile {
 			if (val.length() > checkSumLength) {
 				String serverKey = getServerKey();
 				if (key.equals("USER_PASSWORD")) {
-					serverKey = serverKey.substring(16, 32) + serverKey.substring(0, 16);
+					serverKey = Encryption.inverseKey(serverKey);
 				}
 				String dec = Encryption.decrypt64(val, serverKey);
 				// Ojo, el = de aca es porque sino no me deja tener passwords vacias, dado que
