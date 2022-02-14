@@ -80,7 +80,7 @@ public abstract class ExternalProviderBase {
 			return value;
 		}
 		String resolvedPtyName = resolvePropertyName(propertyName);
-		if (this.service != null) {
+		if (service != null) {
 			value = this.service.getProperties().get(resolvedPtyName);
 			if (value == null || value.length() == 0) {
 				value = this.service.getProperties().get(alternativePropertyName);
@@ -90,7 +90,7 @@ public abstract class ExternalProviderBase {
 	}
 
 	private String readFromEnvVars(String propertyName, String alternativePropertyName) {
-		if (!service.getAllowOverrideWithEnvVarSettings()){
+		if (service != null && !service.getAllowOverrideWithEnvVarSettings()){
 			return null;
 		}
 
