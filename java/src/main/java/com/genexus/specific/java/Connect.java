@@ -2,6 +2,7 @@ package com.genexus.specific.java;
 
 import java.util.Date;
 
+import com.genexus.ApplicationContext;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.db.UserInformation;
 
@@ -28,7 +29,8 @@ public final class Connect {
 		SpecificImplementation.GXSmartCacheProvider = new GXSmartCacheProvider();
 		SpecificImplementation.GXutil = new GXutil();
 		SpecificImplementation.GXXMLSerializable = new GXXMLSerializable();
-		SpecificImplementation.GXXMLSerializer = new GXXMLserializer();
+		if (!ApplicationContext.getInstance().getReorganization())
+			SpecificImplementation.GXXMLSerializer = new GXXMLserializer();
 		SpecificImplementation.HttpClient = new HttpClient();
 		SpecificImplementation.HTTPConnection = new HTTPConnection();
 		SpecificImplementation.HttpCookie = new HttpCookie();

@@ -20,6 +20,8 @@ public class agamssorestrequesttokenanduserinfo_v20Dummy extends GXWebObjectStub
    {
       return "";
    }
+
+   protected String EncryptURLParameters() {return "NO";};
    
    protected void init(HttpContext context )
    {
