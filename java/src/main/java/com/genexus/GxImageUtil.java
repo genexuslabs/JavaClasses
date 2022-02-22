@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import com.genexus.util.GXFile;
 import org.apache.logging.log4j.Logger;
@@ -23,14 +24,16 @@ public class GxImageUtil {
 		return imageFile.startsWith(defaultPath)? imageFile : defaultPath + imageFile.replace("/", File.separator);
 	}
 
+	private static InputStream getInputStream(String imageFile) throws IOException {
+		return new GXFile(imageFile).getStream();
+	}
 	public static long getFileSize(String imageFile){
 		return new File(getImageAbsolutePath(imageFile)).length();
 	}
 
 	public static int getImageHeight(String imageFile) {
-		try {
-			BufferedImage image = ImageIO.read(new File(getImageAbsolutePath(imageFile)));
-			return image.getHeight();
+		try (InputStream is = getInputStream(imageFile)) {
+			return ImageIO.read(is).getHeight();
 		}
 		catch (IOException e) {
 			log.error("getImageHeight " + imageFile + " failed" , e);
@@ -39,9 +42,8 @@ public class GxImageUtil {
 	}
 
 	public static int getImageWidth(String imageFile) {
-		try {
-			BufferedImage image = ImageIO.read(new File(getImageAbsolutePath(imageFile)));
-			return image.getWidth();
+		try (InputStream is = getInputStream(imageFile)) {
+			return ImageIO.read(is).getWidth();
 		}
 		catch (IOException e) {
 			log.error("getImageWidth " + imageFile + " failed" , e);
