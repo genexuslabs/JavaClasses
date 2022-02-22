@@ -1982,7 +1982,7 @@ public class LocalUtil
 	{
 		GXSimpleDateFormat dateFormatter;
 
-		if	(CommonUtil.nullDate().equals(value) || CommonUtil.nullDate().equals(CommonUtil.resetTime(value)))
+		if	(CommonUtil.nullDate().equals(value))
 		{
 			if	(PictureFormatter.isTimeInPicture(picture))
 			{
