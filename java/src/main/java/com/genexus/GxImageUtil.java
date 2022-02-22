@@ -35,7 +35,7 @@ public class GxImageUtil {
 		try (InputStream is = getInputStream(imageFile)) {
 			return ImageIO.read(is).getHeight();
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			log.error("getImageHeight " + imageFile + " failed" , e);
 			return 0;
 		}
@@ -45,7 +45,7 @@ public class GxImageUtil {
 		try (InputStream is = getInputStream(imageFile)) {
 			return ImageIO.read(is).getWidth();
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			log.error("getImageWidth " + imageFile + " failed" , e);
 			return 0;
 		}
