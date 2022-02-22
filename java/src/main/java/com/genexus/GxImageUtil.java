@@ -28,7 +28,8 @@ public class GxImageUtil {
 		return new GXFile(imageFile).getStream();
 	}
 	public static long getFileSize(String imageFile){
-		return new File(getImageAbsolutePath(imageFile)).length();
+
+		return new GXFile(imageFile).getLength();
 	}
 
 	public static int getImageHeight(String imageFile) {
