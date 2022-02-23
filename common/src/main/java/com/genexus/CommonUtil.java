@@ -637,19 +637,37 @@ public final class CommonUtil
 						hour ++;
 					}
 				}
-				return nullDate();
+				hour = 0;
+				return tryNullDateOrTime(year, month, day, hour, minute, second, millisecond);
 			}
 			else
 			{
-				return nullDate();
+				return tryNullDateOrTime(year, month, day, hour, minute, second, millisecond);
 			}
 		}
 		catch (Exception e)
 		{
-			return nullDate();
+			return tryNullDateOrTime(year, month, day, hour, minute, second, millisecond);
 		}
 	}
 
+	private static Date tryNullDateOrTime(int year, int month, int day , int hour , int minute , int second, int millisecond)
+	{
+			if ((year ==1 && month == 1 && day ==1) || (hour == 0 && minute == 0 && second == 0 && millisecond == 0))
+				return nullDate();
+
+			Date tryDate = ymdhmsToT_noYL(1, 1, 1, hour, minute, second, millisecond);
+			if (!tryDate.equals(nullDate()))
+				return tryDate;
+			else
+			{
+				tryDate = ymdhmsToT_noYL(year, month, day, 0, 0, 0, 0);
+				if (!tryDate.equals(nullDate()))
+					return tryDate;
+				else
+					return nullDate();
+			}
+	}
 
 	public static Date newNullDate()
 	{
