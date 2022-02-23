@@ -13,7 +13,7 @@ import org.apache.logging.log4j.Logger;
 public class GxImageUtil {
 	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(GxImageUtil.class);
 	private static int INVALID_CODE = -1;
-	
+
 	private static InputStream getInputStream(String imageFile) throws IOException {
 		return new GXFile(imageFile).getStream();
 	}
@@ -78,7 +78,9 @@ public class GxImageUtil {
 		try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
 			ImageIO.write(croppedImage, CommonUtil.getFileType(destinationFilePathOrUrl), outStream);
 			try (ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray())) {
-				new GXFile(destinationFilePathOrUrl).create(inStream, true);
+				GXFile file = new GXFile(destinationFilePathOrUrl);
+				file.create(inStream, true);
+				file.close();
 			}
 		}
 	}
