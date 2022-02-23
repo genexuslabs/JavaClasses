@@ -76,10 +76,6 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 			awsProxyRequest.setMultiValueQueryStringParameters(qString);
 		}
 
-
-		if (awsProxyRequest.getMultiValueHeaders() == null) {
-			return;
-		}
 		// In Jersey lambda context, the Referer Header has a special meaning. So we copy it to another Header.
 		List<String> referer = awsProxyRequest.getMultiValueHeaders().get("Referer");
 		if (referer != null && !referer.isEmpty()) {
