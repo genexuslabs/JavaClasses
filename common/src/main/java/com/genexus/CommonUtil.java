@@ -1396,6 +1396,8 @@ public final class CommonUtil
 
 	public static Date dtaddms(Date date, double seconds)
 	{
+		if (seconds % 1 == 0)
+			return dtadd(date, (int)seconds);
 		GregorianCalendar appGregorianCalendar = new GregorianCalendar(defaultTimeZone, defaultLocale);
 		appGregorianCalendar.setTime(date);
 		appGregorianCalendar.add(appGregorianCalendar.MILLISECOND, (int)Math.round(seconds * 1000));
