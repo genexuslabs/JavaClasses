@@ -705,7 +705,7 @@ public final class GXutil
 	}
 	public static Date dtadd(Date date, double seconds)
 	{
-		return dtadd(date, (int)seconds);
+		return CommonUtil.dtadd(date, seconds);
 	}
 
 	public static Date dtaddms(Date date, double seconds)
