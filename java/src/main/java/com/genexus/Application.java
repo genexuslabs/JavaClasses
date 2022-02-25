@@ -177,15 +177,23 @@ public class Application
 		GXService providerService = getGXServices().get(service);
 		if (providerService != null)
 		{
+			Class providerClass;
 			try
 			{
-				Class providerClass = Class.forName(providerService.getClassName());
+				providerClass = Class.forName(providerService.getClassName());
+			}
+			catch (ClassNotFoundException e)
+			{
+				logger.fatal("Unrecognized External Provider class (ClassNotFound) : " + providerService.getName() + " / " + providerService.getClassName(), e);
+				throw new InternalError("Unrecognized External Provider class (ClassNotFound) : " + providerService.getName() + " / " + providerService.getClassName());
+			}
+			try {
 				externalProviderImpl = (ExternalProvider) providerClass.getConstructor(String.class).newInstance(service);
 			}
 			catch (Exception e)
 			{
-				logger.error("Unrecognized External Provider class : " + providerService.getName() + " / " + providerService.getClassName(), e);
-				throw new InternalError("Unrecognized External Provider class : " + providerService.getName() + " / " + providerService.getClassName());
+				logger.fatal("Unable to Initialize External Provider Class: " + providerService.getClassName(), e);
+				throw new InternalError("Unable to Initialize External Provider Class: " + providerService.getClassName(), e);
 			}
 		}
 		return externalProviderImpl;

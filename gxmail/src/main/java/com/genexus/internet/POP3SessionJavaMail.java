@@ -266,12 +266,27 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
   		handlePart(multipart.getBodyPart(i), gxmessage);
     }
   }
+
+  private boolean findContentTypeHeaderStartingWithMessage(Part part) throws MessagingException {
+	  String[] contentTypeHeader = part.getHeader("Content-Type");
+	  int i = 0;
+	  boolean foundOne = false;
+	  while (i < contentTypeHeader.length && !foundOne) {
+		  if (contentTypeHeader[i].toLowerCase().startsWith("message"))
+			  foundOne = true;
+		  else
+			  i++;
+	  }
+	  return foundOne;
+  }
   
   private void handlePart(Part part, GXMailMessage gxmessage) throws MessagingException, IOException 
   {
     String disposition = part.getDisposition();
+
+
     boolean isXForwardedFor = part.getContent() instanceof MimeMessage &&		// Para soportar attachments de mails que llegan a la casilla con el header "X-Forwarded-For"
-		Arrays.stream(part.getHeader("Content-Type")).filter(header -> header.toLowerCase().startsWith("message")).findFirst().orElse(null) != null;
+							  findContentTypeHeaderStartingWithMessage(part);
 
     if (System.getProperties().getProperty("DownloadAllMailsAttachment", null) != null && isXForwardedFor)
 		handlePart((MimeMessage) part.getContent(),gxmessage);
