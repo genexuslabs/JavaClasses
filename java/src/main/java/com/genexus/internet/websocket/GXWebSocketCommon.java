@@ -2,6 +2,8 @@ package com.genexus.internet.websocket;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+
 import json.org.json.JSONObject;
 
 import com.genexus.Application;
@@ -19,6 +21,8 @@ public class GXWebSocketCommon {
 	
 	private static GXWebSocketSessionCollection wsClients = new GXWebSocketSessionCollection();
 
+	private ConcurrentHashMap<Integer, GXWebSocketSession> sessions = new ConcurrentHashMap<Integer, GXWebSocketSession>();
+
 	public enum HandlerType {
 	    ReceivedMessage, OnOpen, OnClose, OnError
 	}
@@ -29,7 +33,7 @@ public class GXWebSocketCommon {
 	}
 
 	protected void OnOpenCommon (ISession session) {
-		GXWebSocketSession client = new GXWebSocketSession(session);
+		GXWebSocketSession client = getGXWebSocketSession(session);
 		wsClients.put(client);
 	
 		Object[] parms = new Object[1];
@@ -39,7 +43,7 @@ public class GXWebSocketCommon {
 
 	protected void OnMessageCommon (String txt, ISession session) {
 		Object[] parms = new Object[2];
-		parms[0] = new GXWebSocketSession(session).getId();
+		parms[0] = getGXWebSocketSession(session).getId();
 		
 		try {
 			
@@ -110,16 +114,17 @@ public class GXWebSocketCommon {
 	}
 
 	protected void myOnCloseCommon (ISession session) {
-		GXWebSocketSession client = new GXWebSocketSession(session);
+		GXWebSocketSession client = getGXWebSocketSession(session);
 		closedSession(client);
 		Object[] parms = new Object[1];
 		parms[0] = client.getId();	
 		ExecuteHandler(HandlerType.OnClose, parms);
+		sessions.remove(client.getSession().getHashCode());
 	}
 
 	protected void onErrorCommon(Throwable exception, ISession session) {
 		Object[] parms = new Object[2];
-		parms[0] = new GXWebSocketSession(session).getId();
+		parms[0] = getGXWebSocketSession(session).getId();
 		parms[1] = exception.getMessage();
 		ExecuteHandler(HandlerType.OnError, parms);
     }
@@ -169,7 +174,15 @@ public class GXWebSocketCommon {
 
 	public boolean start() {
 		return true;
-	}	
+	}
+
+	private GXWebSocketSession getGXWebSocketSession(ISession session) {
+		if (sessions.containsKey(session.getHashCode()))
+			return sessions.get(session.getHashCode());
+		GXWebSocketSession socketSession = new GXWebSocketSession(session);
+		sessions.put(socketSession.getSession().getHashCode(), socketSession);
+		return socketSession;
+	}
 }
 
 

@@ -2,14 +2,14 @@ package com.genexus.internet;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-
-import HTTPClient.ParseException;
-import com.genexus.servlet.http.ICookie;
+import com.genexus.ModelContext;
 import com.genexus.util.IniFile;
 import org.apache.http.*;
 import com.genexus.CommonUtil;
@@ -22,7 +22,6 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.NTCredentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.*;
-import HTTPClient.*;
 import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
@@ -48,6 +47,8 @@ import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
+import com.genexus.webpanels.HttpContextWeb;
+import java.net.URI;
 
 import javax.net.ssl.SSLContext;
 
@@ -114,7 +115,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private RequestConfig reqConfig = null;		// Atributo usado en la ejecucion del metodo (por ejemplo, httpGet, httpPost)
 	private CookieStore cookies;
 	private ByteArrayEntity entity = null;	// Para mantener el stream luego de cerrada la conexion en la lectura de la response
-	private static IniFile clientCfg = new com.genexus.ModelContext(com.genexus.ModelContext.getModelContextPackageClass()).getPreferences().getIniFile();
+	private Boolean lastAuthIsBasic = null;
+	private Boolean lastAuthProxyIsBasic = null;
+	private static IniFile clientCfg = new ModelContext(ModelContext.getModelContextPackageClass()).getPreferences().getIniFile();
+	private static final String SET_COOKIE = "Set-Cookie";
+	private static final String COOKIE = "Cookie";
 
 
 	private void resetExecParams() {
@@ -138,37 +143,76 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 	}
 
+	@Override
+	public void addAuthentication(int type, String realm, String name, String value) {	// Metodo overriden por tratarse de forma distinta el pasaje de auth Basic y el resto
+		if (type == BASIC)
+			lastAuthIsBasic = true;
+		else
+			lastAuthIsBasic = false;
+		super.addAuthentication(type,realm,name,value);
+	}
+
+	@Override
+	public void addProxyAuthentication(int type, String realm, String name, String value) {	// Metodo overriden por tratarse de forma distinta el pasaje de auth Basic y el resto
+		if (type == BASIC)
+			lastAuthProxyIsBasic = true;
+		else
+			lastAuthProxyIsBasic = false;
+		super.addProxyAuthentication(type,realm,name,value);
+	}
+
 	private void resetStateAdapted()
 	{
 		resetState();
 		getheadersToSend().clear();
 	}
 
+	@Override
+	public void setURL(String stringURL) {
+		try
+		{
+			URI url = new URI(stringURL);
+			setHost(url.getHost());
+			setPort(url.getPort());
+			setBaseURL(url.getPath());
+			setSecure(url.getScheme().equalsIgnoreCase("https") ? 1 : 0);
+		}
+		catch (URISyntaxException e)
+		{
+			System.err.println("E " + e + " " + stringURL);
+			e.printStackTrace();
+		}
+	}
+
 	private String getURLValid(String url) {
 		URI uri;
 		try
 		{
-			uri = new URI(url);		// En caso que la URL pasada por parametro no sea una URL valida (en este caso seria que no sea un URL absoluta), salta una excepcion en esta linea, y se continua haciendo todo el proceso con los datos ya guardados como atributos
-			setPrevURLhost(getHost());
-			setPrevURLbaseURL(getBaseURL());
-			setPrevURLport(getPort());
-			setPrevURLsecure(getSecure());
-			setIsURL(true);
-			setURL(url);
+			uri = new URI(url);
+			if (!uri.isAbsolute())		// En caso que la URL pasada por parametro no sea una URL valida (en este caso seria que no sea un URL absoluta), salta una excepcion en esta linea, y se continua haciendo todo el proceso con los datos ya guardados como atributos
+				return url;
+			else {
+				setPrevURLhost(getHost());
+				setPrevURLbaseURL(getBaseURL());
+				setPrevURLport(getPort());
+				setPrevURLsecure(getSecure());
+				setIsURL(true);
+				setURL(url);
 
-			StringBuilder relativeUri = new StringBuilder();
-			if (uri.getPath() != null) {
-				relativeUri.append(uri.getPath());
+				StringBuilder relativeUri = new StringBuilder();
+				if (uri.getPath() != null) {
+					relativeUri.append(uri.getPath());
+				}
+				if (uri.getQuery() != null) {
+					relativeUri.append('?').append(uri.getQuery());
+				}
+				if (uri.getFragment() != null) {
+					relativeUri.append('#').append(uri.getFragment());
+				}
+				return relativeUri.toString();
 			}
-			if (uri.getQueryString() != null) {
-				relativeUri.append('?').append(uri.getQueryString());
-			}
-			if (uri.getFragment() != null) {
-				relativeUri.append('#').append(uri.getFragment());
-			}
-			return relativeUri.toString();
 		}
-		catch (ParseException e)
+		catch (URISyntaxException e)
 		{
 			return url;
 		}
@@ -196,14 +240,12 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	private CookieStore setAllStoredCookies() {
-		ICookie[] webcookies;
-
 		CookieStore cookiesToSend = new BasicCookieStore();
-		if (!com.genexus.ModelContext.getModelContext().isNullHttpContext()) { 	// Caso de ejecucion de varias instancia de HttpClientJavaLib, por lo que se obtienen cookies desde sesion web del browser
-			webcookies = ((com.genexus.webpanels.HttpContextWeb) com.genexus.ModelContext.getModelContext().getHttpContext()).getCookies();
-			ICookie webcookie = webcookies == null ? null : Arrays.stream(webcookies).filter(cookie -> "Set-Cookie".equalsIgnoreCase(cookie.getName())).findAny().orElse(null);
-			if (webcookie != null)
-				this.addHeader("Cookie", com.genexus.webpanels.WebUtils.decodeCookie(webcookie.getValue()));
+		if (!ModelContext.getModelContext().isNullHttpContext()) { 	// Caso de ejecucion de varias instancia de HttpClientJavaLib, por lo que se obtienen cookies desde sesion web del browser
+
+			String selfWebCookie = ((HttpContextWeb) ModelContext.getModelContext().getHttpContext()).getCookie(SET_COOKIE);
+			if (!selfWebCookie.isEmpty())
+				this.addHeader(COOKIE, selfWebCookie.replace("+",";"));
 
 		} else {	// Caso se ejecucion de una misma instancia HttpClientJavaLib mediante command line
 			if (!getIncludeCookies())
@@ -222,14 +264,14 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	private void SetCookieAtr(CookieStore cookiesToSend) {
 		if (cookiesToSend != null) {
-			if (com.genexus.ModelContext.getModelContext().isNullHttpContext()) {
+			if (ModelContext.getModelContext().isNullHttpContext()) {
 				for (Cookie c : cookiesToSend.getCookies())
 					cookies.addCookie(c);
 			} else {
 				try {
-					com.genexus.webpanels.HttpContextWeb webcontext = ((com.genexus.webpanels.HttpContextWeb) com.genexus.ModelContext.getModelContext().getHttpContext());
+					HttpContextWeb webcontext = ((HttpContextWeb) ModelContext.getModelContext().getHttpContext());
 
-					Header[] headers = this.response.getHeaders("Set-Cookie");
+					Header[] headers = this.response.getHeaders(SET_COOKIE);
 					if (headers.length > 0) {
 						String webcontextCookieHeader = "";
 						for (Header header : headers) {
@@ -238,13 +280,22 @@ public class HttpClientJavaLib extends GXHttpClient {
 							webcontextCookieHeader += cookieKeyAndValue[0] + "=" + cookieKeyAndValue[1] + "; ";
 						}
 						webcontextCookieHeader = webcontextCookieHeader.trim().substring(0,webcontextCookieHeader.length()-2);	// Se quita el espacio y la coma al final
-						webcontext.setCookie("Set-Cookie",webcontextCookieHeader,"",CommonUtil.nullDate(),"",this.getSecure());
+						webcontext.setCookie(SET_COOKIE,webcontextCookieHeader,"",CommonUtil.nullDate(),"",this.getSecure());
 					}
-					com.genexus.ModelContext.getModelContext().setHttpContext(webcontext);
+					ModelContext.getModelContext().setHttpContext(webcontext);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
+		}
+	}
+
+	private void addBasicAuthHeader(String user, String password, Boolean isProxy) {
+		Boolean typeAuth = isProxy ? this.lastAuthProxyIsBasic : this.lastAuthIsBasic;
+		if (typeAuth) {
+			String auth = user + ":" + password;
+			String authHeader = "Basic " + Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.ISO_8859_1));
+			addHeader(isProxy ? HttpHeaders.PROXY_AUTHORIZATION : HttpHeaders.AUTHORIZATION, authHeader);
 		}
 	}
 
@@ -287,11 +338,9 @@ public class HttpClientJavaLib extends GXHttpClient {
 			if (getHostChanged() || getAuthorizationChanged()) { // Si el host cambio o si se agrego alguna credencial
 				this.credentialsProvider = new BasicCredentialsProvider();
 
-				for (Enumeration en = getBasicAuthorization().elements(); en.hasMoreElements(); ) {
+				for (Enumeration en = getBasicAuthorization().elements(); en.hasMoreElements(); ) {	// No se puede hacer la autorizacion del tipo Basic con el BasicCredentialsProvider porque esta funcionando bien en todos los casos
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-					this.credentialsProvider.setCredentials(
-						AuthScope.ANY,
-						new UsernamePasswordCredentials(p.user, p.password));
+					addBasicAuthHeader(p.user,p.password,false);
 				}
 
 				for (Enumeration en = getDigestAuthorization().elements(); en.hasMoreElements(); ) {
@@ -327,11 +376,9 @@ public class HttpClientJavaLib extends GXHttpClient {
 					this.credentialsProvider = new BasicCredentialsProvider();
 				}
 
-				for (Enumeration en = getBasicProxyAuthorization().elements(); en.hasMoreElements(); ) {
+				for (Enumeration en = getBasicProxyAuthorization().elements(); en.hasMoreElements(); ) { // No se puede hacer la autorizacion del tipo Basic con el BasicCredentialsProvider porque esta funcionando bien en todos los casos
 					HttpClientPrincipal p = (HttpClientPrincipal) en.nextElement();
-					this.credentialsProvider.setCredentials(
-						AuthScope.ANY,
-						new UsernamePasswordCredentials(p.user, p.password));
+					addBasicAuthHeader(p.user,p.password,true);
 				}
 
 				for (Enumeration en = getDigestProxyAuthorization().elements(); en.hasMoreElements(); ) {
@@ -366,12 +413,12 @@ public class HttpClientJavaLib extends GXHttpClient {
 			}
 
 			url = setPathUrl(url);
-			url = com.genexus.CommonUtil.escapeUnsafeChars(url);
+			url = CommonUtil.escapeUnsafeChars(url);
 
 			if (getSecure() == 1)   // Se completa con esquema y host
-				url = url.startsWith("https://") ? url : "https://" + getHost() + url;		// La lib de HttpClient agrega el port
+				url = url.startsWith("https://") ? url : "https://" + getHost()+ (getPort() != 443?":"+getPort():"")+ url;		// La lib de HttpClient agrega el port
 			else
-				url = url.startsWith("http://") ? url : "http://" + getHost() + ":" + (getPort() == -1? URI.defaultPort("http"):getPort()) + url;
+				url = url.startsWith("http://") ? url : "http://" + getHost() + ":" + (getPort() == -1? "80" :getPort()) + url;
 
 			httpClient = this.httpClientBuilder.build();
 
@@ -402,7 +449,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 				ByteArrayEntity dataToSend;
 				if (!getIsMultipart() && getVariablesToSend().size() > 0)
-					dataToSend = new ByteArrayEntity(Codecs.nv2query(hashtableToNVPair(getVariablesToSend())).getBytes());
+					dataToSend = new ByteArrayEntity(CommonUtil.hashtable2query(getVariablesToSend()).getBytes());
 				else
 					dataToSend = new ByteArrayEntity(getData());
 				httpPost.setEntity(dataToSend);
@@ -545,14 +592,13 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public void getHeader(String name, java.util.Date[] value) {
-		HTTPResponse res = (HTTPClient.HTTPResponse) response;
-		if (res == null)
+		if (response == null)
 			return;
 		try
 		{
-			value[0] = res.getHeaderAsDate(name);
+			value[0] = CommonUtil.getHeaderAsDate(response.getFirstHeader(name).getValue());
 		}
-		catch (IOException | ModuleException e)
+		catch (IOException e)
 		{
 			setExceptionsCatch(e);
 		}
@@ -580,7 +626,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			CloseableHttpClient gISHttpClient = HttpClients.createDefault();
 			return gISHttpClient.execute(gISHttpGet).getEntity().getContent();
 
-		} catch (ParseException e) {
+		} catch (URISyntaxException e) {
 			throw new IOException("Malformed URL " + e.getMessage());
 		}
 	}

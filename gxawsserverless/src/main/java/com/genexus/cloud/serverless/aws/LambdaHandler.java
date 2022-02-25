@@ -7,9 +7,10 @@ import javax.ws.rs.core.Application;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
+import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.genexus.specific.java.LogManager;
-import com.genexus.webpanels.GXObjectUploadServices;
 import com.genexus.webpanels.GXWebObjectStub;
+import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import com.amazonaws.serverless.proxy.jersey.JerseyLambdaContainerHandler;
@@ -23,12 +24,12 @@ import com.genexus.util.IniFile;
 import com.genexus.webpanels.*;
 
 import java.util.Enumeration;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
 
 public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyResponse> {
-
 	private static ILogger logger = null;
 	public static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = null;
 	private static ResourceConfig jerseyApplication = null;
@@ -36,6 +37,7 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 
 	public LambdaHandler() throws Exception {
 		if (LambdaHandler.jerseyApplication == null) {
+			JerseyLambdaContainerHandler.getContainerConfig().setDefaultContentCharset("UTF-8");
 			LambdaHandler.jerseyApplication = ResourceConfig.forApplication(initialize());
 			if (jerseyApplication.getClasses().size() == 0) {
 				String errMsg = "No endpoints found for this application";
@@ -46,13 +48,38 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 		}
 	}
 
+
+	@Override
 	public AwsProxyResponse handleRequest(AwsProxyRequest awsProxyRequest, Context context) {
+		dumpRequest(awsProxyRequest);
 		String path = awsProxyRequest.getPath();
-		if (!path.contains(BASE_REST_PATH)) {
-			return handleServletRequest(awsProxyRequest, context);
-		} else {
-			awsProxyRequest.setPath(path.replace(BASE_REST_PATH, "/"));
-			return this.handler.proxy(awsProxyRequest, context);
+		awsProxyRequest.setPath(path.replace(BASE_REST_PATH, "/"));
+		handleSpecialMethods(awsProxyRequest);
+		dumpRequest(awsProxyRequest);
+
+		logger.debug("Before handle Request");
+		AwsProxyResponse response = this.handler.proxy(awsProxyRequest, context);
+		int statusCode = response.getStatusCode();
+		logger.debug("After handle Request - Status Code: " + statusCode);
+
+		if (statusCode >= 400 && statusCode <= 599) {
+			logger.warn(String.format("Request could not be handled (%d): %s", response.getStatusCode(), path));
+		}
+		return response;
+	}
+
+	private void handleSpecialMethods(AwsProxyRequest awsProxyRequest) {
+		if (awsProxyRequest.getPath().startsWith("/gxmulticall")) { //Gxmulticall does not respect queryString standard, so we need to transform.
+			String parmValue = awsProxyRequest.getQueryString().replace("?", "").replace("=", "");
+			MultiValuedTreeMap<String, String> qString = new MultiValuedTreeMap<>();
+			qString.add("", parmValue);
+			awsProxyRequest.setMultiValueQueryStringParameters(qString);
+		}
+
+		// In Jersey lambda context, the Referer Header has a special meaning. So we copy it to another Header.
+		List<String> referer = awsProxyRequest.getMultiValueHeaders().get("Referer");
+		if (referer != null && !referer.isEmpty()) {
+			awsProxyRequest.getMultiValueHeaders().put("GX-Referer", referer);
 		}
 	}
 
@@ -134,5 +161,14 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 			logger.error("Failed to initialize App", e);
 			throw e;
 		}
+	}
+
+	private void dumpRequest(AwsProxyRequest awsProxyRequest){
+		String lineSeparator = System.lineSeparator();
+		String reqData = String.format("Path: %s", awsProxyRequest.getPath()) + lineSeparator;
+		reqData += String.format("Method: %s", awsProxyRequest.getHttpMethod()) + lineSeparator;
+		reqData += String.format("QueryString: %s", awsProxyRequest.getQueryString()) + lineSeparator;
+		reqData += String.format("Body: %sn", awsProxyRequest.getBody()) + lineSeparator;
+		logger.debug(reqData);
 	}
 }

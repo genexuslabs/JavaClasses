@@ -14,7 +14,7 @@ import org.apache.logging.log4j.Logger;
 public class WrapperUtils {
     private static Logger log = org.apache.logging.log4j.LogManager.getLogger(WrapperUtils.class);
 
-    public static String getJsonFromRestExcpetion(int[] statusCode, String reasonPhrase, boolean applicationException, Throwable ex) {
+    public static String getJsonFromRestException(int[] statusCode, String reasonPhrase, boolean applicationException, Throwable ex) {
         int localStatusCode = statusCode[0];
         if (!applicationException) {
             localStatusCode = 500;
@@ -48,7 +48,7 @@ public class WrapperUtils {
 	public static ThreadLocal<String> requestBodyThreadLocal = new ThreadLocal<String>();
 
     public static InputStream storeRestRequestBody(InputStream is) throws IOException {
-		String body = new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining("\n"));
+		String body = new BufferedReader(new InputStreamReader(is, "UTF-8")).lines().collect(Collectors.joining("\n"));
 		requestBodyThreadLocal.set(body);
 
 		return IOUtils.toInputStream(body, "UTF-8");

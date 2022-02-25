@@ -48,10 +48,13 @@ public class HttpRequestWeb extends HttpRequest
 			return messageBody;
 		}
 
-		String restRequestBody = WrapperUtils.requestBodyThreadLocal.get();
-		if (restRequestBody != null)
+		if (httpContext.isRestService())
 		{
-			return restRequestBody;
+			String restRequestBody = WrapperUtils.requestBodyThreadLocal.get();
+			if (restRequestBody != null)
+			{
+				return restRequestBody;
+			}
 		}
 		
 		try
@@ -97,7 +100,10 @@ public class HttpRequestWeb extends HttpRequest
 	{
 		if (streamByteArray == null)
 			streamByteArray = org.apache.commons.io.IOUtils.toByteArray(httpContext.getRequest().getInputStream().getInputStream());
-		
 		return new ByteArrayInputStream(streamByteArray);
+	}
+
+	public int getContentLength() {
+		return httpContext.getRequest().getContentLength();
 	}
 }

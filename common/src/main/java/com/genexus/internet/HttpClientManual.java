@@ -5,6 +5,7 @@ import com.genexus.CommonUtil;
 
 import java.io.*;
 import java.util.Enumeration;
+import java.util.Hashtable;
 
 public class HttpClientManual extends GXHttpClient {
 
@@ -58,6 +59,20 @@ public class HttpClientManual extends GXHttpClient {
 		{
 			return url;
 		}
+	}
+
+	private NVPair[] hashtableToNVPair(Hashtable hashtable)
+	{
+		NVPair[] ret = new NVPair[hashtable.size()];
+		int idx = 0;
+
+		for (Enumeration en = hashtable.keys(); en.hasMoreElements();)
+		{
+			Object key = en.nextElement();
+			ret[idx++] = new NVPair((String) key, (String) hashtable.get(key));
+		}
+
+		return ret;
 	}
 
 

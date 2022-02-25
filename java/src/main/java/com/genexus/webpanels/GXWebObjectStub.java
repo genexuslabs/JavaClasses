@@ -26,12 +26,28 @@ public abstract class GXWebObjectStub extends HttpServlet
 	protected abstract boolean IntegratedSecurityEnabled();
 	protected abstract int IntegratedSecurityLevel();
 	protected abstract String IntegratedSecurityPermissionPrefix();
+	protected abstract String EncryptURLParameters();
+
+	protected ModelContext context;
+	protected int remoteHandle = -1;
+	protected transient LocalUtil localUtil;
 
 	protected static final int SECURITY_GXOBJECT = 3;
 	protected static final int SECURITY_HIGH = 2;
 	protected static final int SECURITY_LOW  = 1;
 
 	private static final int HTTP_RESPONSE_BUFFER_SIZE  = 131072;
+
+	public GXWebObjectStub()
+	{
+	}
+
+	public GXWebObjectStub(int remoteHandle , ModelContext context)
+	{
+		this.remoteHandle = remoteHandle;
+		this.context      = context;
+		localUtil    	  = Application.getConnectionManager().createUserInformation(Namespace.getNamespace(context.getNAME_SPACE())).getLocalUtil();
+	}
 
 	private void dumpRequestInfo(HttpContext httpContext)
 	{
@@ -97,10 +113,19 @@ public abstract class GXWebObjectStub extends HttpServlet
 				boolean[] flag = new boolean[]{false};
 				boolean[] permissionFlag = new boolean[]{false};
 				String reqUrl = req.getRequestURL().toString();
-				String queryString = req.getQueryString();
-				if (queryString != null)
+				if (req.getMethod().equals("POST"))
 				{
-					reqUrl += "?"+queryString;
+					if (EncryptURLParameters().equals("SESSION"))
+						reqUrl = "";
+					else
+						reqUrl = req.getHeader("Referer");
+				}
+				else
+				{
+					String queryString = req.getQueryString();
+					if (queryString != null) {
+						reqUrl += "?" + queryString;
+					}
 				}
 				ModelContext modelContext = ModelContext.getModelContext(getClass());
 				modelContext.setHttpContext(httpContext);
