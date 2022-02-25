@@ -30,8 +30,11 @@ public class APIObjectFilter extends Filter {
             boolean isPath = false;
             for(String appBasePath : appPath)
             {                
-                if (urlString.startsWith(appBasePath))   
-                    isPath = true;                
+                if (urlString.startsWith(appBasePath))
+				{
+                    isPath = true;
+					break;					
+				}
             }     
             if(isPath)
             {
