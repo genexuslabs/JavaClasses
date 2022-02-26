@@ -1614,6 +1614,16 @@ public abstract class HttpContext
 			cachedMessages.putIfAbsent(language, msg);
 		}
 
+		public int getYearLimit()
+		{
+			return Application.getClientPreferences().getYEAR_LIMIT();
+		}
+
+		public int getStorageTimezone()
+		{
+			return Application.getClientPreferences().getStorageTimezonePty();
+		}
+
 		public String getLanguageProperty(String property)
 		{
 			String _language = getLanguage();
