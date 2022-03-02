@@ -15,7 +15,7 @@ public class GxImageUtil {
 	private static int INVALID_CODE = -1;
 
 	private static InputStream getInputStream(String imageFile) throws IOException {
-		return new GXFile(imageFile).getStream();
+		return new GXFile(imageFile.replace("/", File.separator)).getStream();
 	}
 
 	public static long getFileSize(String imageFile){
