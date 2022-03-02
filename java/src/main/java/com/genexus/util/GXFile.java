@@ -46,35 +46,54 @@ public class GXFile extends AbstractGXFile {
     }
 
     //For compatibility reasons
+	@Deprecated
 	public GXFile(String fileName, boolean isPrivate) {
-		this(fileName, isPrivate ? ResourceAccessControlList.Private: ResourceAccessControlList.Default, false);
+		this(fileName, isPrivate ? ResourceAccessControlList.Private: ResourceAccessControlList.Default, GxFileInfoSourceType.Unknown);
 	}
 
     public GXFile(String fileName, ResourceAccessControlList fileAcl) {
-    		this(fileName, fileAcl, false);
+    		this(fileName, fileAcl, GxFileInfoSourceType.Unknown);
     }
     
-    public GXFile(String fileName, ResourceAccessControlList fileAcl, boolean isLocalFilePath) {
+    public GXFile(String fileName, ResourceAccessControlList fileAcl, GxFileInfoSourceType sourceType) {
+		this("", fileName, fileAcl, sourceType);
+    }
+
+	@Deprecated
+	public GXFile(String fileName, ResourceAccessControlList fileAcl, boolean isLocalFile) {
+		this("", fileName, fileAcl, isLocalFile ? GxFileInfoSourceType.LocalFile: GxFileInfoSourceType.Unknown);
+	}
+
+	public GXFile(String baseDirectoryPath, String fileName, ResourceAccessControlList fileAcl, GxFileInfoSourceType sourceType) {
 		if (com.genexus.CommonUtil.isUploadPrefix(fileName)) {
 			uploadFileId = fileName;
 			fileName = SpecificImplementation.GXutil.getUploadValue(fileName);
 		}
 
-    	ExternalProvider storageProvider = Application.getExternalProvider();
-		isLocalFilePath =  isLocalFilePath || new java.io.File(fileName).isAbsolute();
-        if (!isLocalFilePath && storageProvider != null) {
-            FileSource = new GXExternalFileInfo(fileName, storageProvider, true, fileAcl);
-        } else {
-            FileSource = new GXFileInfo(new File(fileName));
-        }
-    }
+		switch (sourceType) {
+			case LocalFile:
+				FileSource = new GXFileInfo(Paths.get(baseDirectoryPath, fileName).toFile());
+				break;
+			case ExternalFile:
+				FileSource = new GXExternalFileInfo(fileName, Application.getExternalProvider(), true, fileAcl);
+				break;
+			case Unknown:
+				ExternalProvider storageProvider = Application.getExternalProvider();
+				if (!new File(fileName).isAbsolute() && storageProvider != null) {
+					FileSource = new GXExternalFileInfo(fileName, storageProvider, true, fileAcl);
+				} else {
+					FileSource = new GXFileInfo(Paths.get(baseDirectoryPath, fileName).toFile());
+				}
+				break;
+		}
+	}
 
     public GXFile(IGXFileInfo fileInfo) {
         FileSource = fileInfo;
     }
 
     public static String getgxFilename(String fileName) {
-        return new GXFile(fileName, ResourceAccessControlList.Default, true).getNameNoExt();
+        return new GXFile(fileName, ResourceAccessControlList.Default, GxFileInfoSourceType.LocalFile).getNameNoExt();
     }
 
     public static String getgxFileext(String fileName) {
@@ -770,3 +789,5 @@ public class GXFile extends AbstractGXFile {
         }
     }
 }
+
+

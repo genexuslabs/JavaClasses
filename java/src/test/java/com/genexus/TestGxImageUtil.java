@@ -48,7 +48,6 @@ public class TestGxImageUtil {
 			e.printStackTrace();
 		}
 
-		System.out.println(copyFileLocation.toString());
 		return copyFileLocation.toString();
 	}
 
