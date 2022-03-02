@@ -7,6 +7,8 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
+import com.genexus.db.driver.ResourceAccessControlList;
+import com.genexus.util.GxFileInfoSourceType;
 import com.genexus.util.GXFile;
 import org.apache.logging.log4j.Logger;
 
@@ -15,7 +17,12 @@ public class GxImageUtil {
 	private static int INVALID_CODE = -1;
 
 	private static InputStream getInputStream(String imageFile) throws IOException {
-		return new GXFile(imageFile).getStream();
+		return getGXFile(imageFile).getStream();
+	}
+
+	private static GXFile getGXFile(String imageFile) {
+		String basePath = (com.genexus.ModelContext.getModelContext() != null) ? com.genexus.ModelContext.getModelContext().getHttpContext().getDefaultPath(): "";
+		return new GXFile(basePath, imageFile.replace("/", File.separator), ResourceAccessControlList.Default, GxFileInfoSourceType.Unknown);
 	}
 
 	public static long getFileSize(String imageFile){
@@ -78,7 +85,7 @@ public class GxImageUtil {
 		try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
 			ImageIO.write(croppedImage, CommonUtil.getFileType(destinationFilePathOrUrl), outStream);
 			try (ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray())) {
-				GXFile file = new GXFile(destinationFilePathOrUrl);
+				GXFile file = getGXFile(destinationFilePathOrUrl);
 				file.create(inStream, true);
 				file.close();
 			}
