@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
@@ -53,14 +54,15 @@ public class GXFile extends AbstractGXFile {
     		this(fileName, fileAcl, false);
     }
     
-    public GXFile(String fileName,  ResourceAccessControlList fileAcl, boolean isLocal) {
+    public GXFile(String fileName, ResourceAccessControlList fileAcl, boolean isLocalFilePath) {
 		if (com.genexus.CommonUtil.isUploadPrefix(fileName)) {
 			uploadFileId = fileName;
 			fileName = SpecificImplementation.GXutil.getUploadValue(fileName);
 		}
 
     	ExternalProvider storageProvider = Application.getExternalProvider();
-        if (storageProvider != null && !isLocal) {
+		isLocalFilePath =  isLocalFilePath || new java.io.File(fileName).isAbsolute();
+        if (!isLocalFilePath && storageProvider != null) {
             FileSource = new GXExternalFileInfo(fileName, storageProvider, true, fileAcl);
         } else {
             FileSource = new GXFileInfo(new File(fileName));
