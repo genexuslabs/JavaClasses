@@ -79,7 +79,7 @@ public class GXFile extends AbstractGXFile {
 				break;
 			case Unknown:
 				ExternalProvider storageProvider = Application.getExternalProvider();
-				if (!new File(fileName).isAbsolute() && storageProvider != null) {
+				if (!Paths.get(fileName).isAbsolute() && storageProvider != null) {
 					FileSource = new GXExternalFileInfo(fileName, storageProvider, true, fileAcl);
 				} else {
 					FileSource = new GXFileInfo(Paths.get(baseDirectoryPath, fileName).toFile());
