@@ -6,18 +6,17 @@ import java.text.StringCharacterIterator;
 import java.util.Date;
 import java.util.Set;
 
-import com.genexus.ModelContext;
+import com.genexus.*;
 import com.genexus.internet.HttpContext;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BOMInputStream;
 
-import com.genexus.CommonUtil;
-import com.genexus.GXutil;
-import com.genexus.PrivateUtilities;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.xml.XMLReader;
 import org.apache.commons.lang.StringUtils;
+
+import static com.genexus.util.Encryption.decrypt64;
 
 
 public class WebUtils
@@ -444,24 +443,21 @@ public class WebUtils
             return getEncryptionKey(context, keySourceType);
 		}
 		
-		public static String getEncryptionKey(com.genexus.ModelContext context, String keySourceType){
-			if (keySourceType.equals(""))
-			{
-				keySourceType = com.genexus.Application.getClientPreferences().getUSE_ENCRYPTION();
-			}
+		public static String getEncryptionKey(com.genexus.ModelContext context, String keySourceType) {
+			String encryptionKey;
+			keySourceType = (keySourceType.isEmpty()) ? Application.getClientPreferences().getUSE_ENCRYPTION(): keySourceType;
 
-            String encryptionKey;
             if (keySourceType.equalsIgnoreCase("SESSION"))
 			{
-            	encryptionKey = com.genexus.util.Encryption.decrypt64(((HttpContext) context.getHttpContext()).getCookie("GX_SESSION_ID"), context.getServerKey());
+            	encryptionKey = decrypt64(((HttpContext) context.getHttpContext()).getCookie("GX_SESSION_ID"), context.getServerKey());
             }
             else
 			{            	
             	encryptionKey = context.getSiteKey();
             }
+
 			if (StringUtils.isEmpty(encryptionKey)) {
-				logger.error("Encryption Key cannot be empty");
-				logger.debug(keySourceType);
+				logger.error(String.format("Encryption Key cannot be empty - Key Source: %s", keySourceType));
 			}
             return encryptionKey;
 		}
