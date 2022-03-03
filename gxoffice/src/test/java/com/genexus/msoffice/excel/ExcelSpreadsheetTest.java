@@ -618,6 +618,36 @@ public class ExcelSpreadsheetTest {
     }
 
 	@Test
+	public void testMergeMultipleCells() {
+		ExcelSpreadsheetGXWrapper excel = create("testMergeCells-2");
+		excel.getCells(1, 1, 2, 5).mergeCells();
+		excel.getCells(1, 1, 2, 5).setText("merged cells 1");
+
+		excel.getCells(5, 1, 2, 5).mergeCells();
+		excel.getCells(5, 1, 2, 5).setText("merged cells 2");
+
+		excel.getCells(8, 1, 2, 5).mergeCells();
+		excel.getCells(8, 1, 2, 5).setText("merged cells 3");
+
+		excel.save();
+		excel.close();
+	}
+
+	@Test
+	public void testMergeMultipleCellsIntersect() {
+		ExcelSpreadsheetGXWrapper excel = create("testMergeCells-3");
+		excel.getCells(1, 1, 8, 5).mergeCells();
+		excel.getCells(1, 1, 8, 5).setText("merged cells 1");
+
+		excel.getCells(5, 1, 8, 5).mergeCells();
+		excel.getCells(5, 1, 8, 5).setText("merged cells 2");
+
+		excel.save();
+		excel.close();
+	}
+
+
+	@Test
 	public void testMergeNestedCells() {
 		ExcelSpreadsheetGXWrapper excel = create("testMergeNestedCells");
 		excel.getCells(5, 5, 4, 4).mergeCells();

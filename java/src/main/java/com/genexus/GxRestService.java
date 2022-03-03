@@ -108,6 +108,7 @@ abstract public class GxRestService extends GXWebObjectBase
    	 GXutil.setThreadTimeZone(ModelContext.getModelContext().getClientTimeZone());
 	   super.cleanup();
 	   super.finallyCleanup();
+	   WrapperUtils.requestBodyThreadLocal.remove();
    }
 	
 	public void ErrorCheck(IGxSilentTrn trn)

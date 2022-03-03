@@ -21,6 +21,8 @@ import com.genexus.ws.GXHandlerChain;
 public abstract class GXWebProcedure extends GXWebObjectBase
 {
 	private static final ILogger logger = LogManager.getLogger(GXWebProcedure.class);
+
+	public static final int IN_NEW_UTL = -2;
 	
 	protected abstract void initialize();
 
@@ -47,11 +49,19 @@ public abstract class GXWebProcedure extends GXWebObjectBase
 			logger.error("Could not initialize Web Service", e);
 		}
 	}
-	
+
 	public GXWebProcedure(int remoteHandle , ModelContext context)
 	{
+		this(false, remoteHandle ,context);
+	}
+
+	public GXWebProcedure(boolean inNewUTL, int remoteHandle , ModelContext context) {
 		super(remoteHandle ,context);
-	}	
+
+		if(inNewUTL) {
+			this.remoteHandle = IN_NEW_UTL;
+		}
+	}
 
 	protected void initState(ModelContext context, UserInformation ui)
 	{
