@@ -4,6 +4,7 @@ import java.io.*;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Set;
 
 import com.genexus.*;
@@ -419,7 +420,7 @@ public class WebUtils
         public static String decryptParm(Object parm, String encryptionKey) {
             String value = parm.toString();
             try {
-                if (!encryptionKey.equals("")) {
+                if (!encryptionKey.isEmpty()) {
                     String strValue = value.toString();
                     strValue = com.genexus.util.Encryption.uridecrypt64(strValue,
                             encryptionKey);
@@ -438,27 +439,29 @@ public class WebUtils
 		public static String parmsEncryptionKey(com.genexus.ModelContext context)
 		{
             String keySourceType = com.genexus.Application.getClientPreferences().getUSE_ENCRYPTION();
-            if (keySourceType.equals(""))
-            	return "";
+            if (keySourceType.isEmpty()) {
+				return "";
+			}
             return getEncryptionKey(context, keySourceType);
 		}
 		
 		public static String getEncryptionKey(com.genexus.ModelContext context, String keySourceType) {
-			String encryptionKey;
 			keySourceType = (keySourceType.isEmpty()) ? Application.getClientPreferences().getUSE_ENCRYPTION(): keySourceType;
+			String encryptionKey;
 
-            if (keySourceType.equalsIgnoreCase("SESSION"))
-			{
-            	encryptionKey = decrypt64(((HttpContext) context.getHttpContext()).getCookie("GX_SESSION_ID"), context.getServerKey());
-            }
-            else
-			{            	
-            	encryptionKey = context.getSiteKey();
-            }
+			switch (keySourceType.toUpperCase(Locale.ROOT)) {
+				case "SESSION":
+					encryptionKey = decrypt64(((HttpContext) context.getHttpContext()).getCookie("GX_SESSION_ID"), context.getServerKey());
+					break;
+				default:
+					encryptionKey = context.getSiteKey();
+					break;
+			}
 
-			if (StringUtils.isEmpty(encryptionKey)) {
+			if (encryptionKey.isEmpty()) {
 				logger.error(String.format("Encryption Key cannot be empty - Key Source: %s", keySourceType));
 			}
+
             return encryptionKey;
 		}
 		
