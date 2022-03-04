@@ -50,6 +50,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 	
 	private String lastLineRead;
 	private boolean lastFieldRead;
+	private boolean isCsv;
 
 	public String getEncoding()
 	{
@@ -103,6 +104,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 			fdel=pfdel;
 
 			sdel = psdel;
+			this.isCsv = pfilename.toUpperCase().endsWith(".CSV");
 
 			try
 			{
@@ -369,7 +371,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
                                 System.err.println("Error ADF0004 o ADF0006");
                 }
 
-								if ((sdel.equals("") || sdel.equals("\"")) && (retstr.contains("\"\"") || (!fdel.equals("") && retstr.contains(fdel))))
+								if (isCsv && ((sdel.equals("") || sdel.equals("\"")) && (retstr.contains("\"\"") || (!fdel.equals("") && retstr.contains(fdel)))))
 								{
 									retstr = retstr.replace("\"\"", "\"");
 									if (sdel.equals(""))
@@ -630,6 +632,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 			this.fdel = fdel;
 			this.filename = filename;
 			this.encoding = enc;
+			this.isCsv = filename.toUpperCase().endsWith(".CSV");
 
 			try
 			{
@@ -957,7 +960,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		for(int i = 0; i < lenDiff; i++)
 			currToken = currToken.concat(" ");
 
-		if ((sdel.equals("") || sdel.equals("\"")) && (currToken.contains("\"") || (!fdel.equals("") && currToken.contains(fdel)) || currToken.contains(CRLF)))
+		if (isCsv && ((sdel.equals("") || sdel.equals("\"")) && (currToken.contains("\"") || (!fdel.equals("") && currToken.contains(fdel)) || currToken.contains(CRLF))))
 		{
 			currToken = currToken.replace("\"", "\"\"");
 			if (sdel.equals(""))
