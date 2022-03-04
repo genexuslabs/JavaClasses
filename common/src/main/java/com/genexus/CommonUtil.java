@@ -1381,12 +1381,21 @@ public final class CommonUtil
 		return (appGregorianCalendar.getTime());
 	}
 
+	public static Date dtadd(Date date, double seconds)
+	{
+		if (seconds % 1 != 0)
+			return dtaddms(date, seconds);
+
+		return dtadd(date, (int)seconds);
+	}
+
 	public static Date dtadd(Date date, int seconds)
 	{
 		if (seconds % SECONDS_IN_DAY == 0)
 		{
 			return dadd(date, seconds / SECONDS_IN_DAY);
 		}
+
 		GregorianCalendar appGregorianCalendar = new GregorianCalendar(defaultTimeZone, defaultLocale);
 		appGregorianCalendar.setTime(date);
 		appGregorianCalendar.add(appGregorianCalendar.SECOND, seconds);

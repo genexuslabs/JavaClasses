@@ -1,5 +1,6 @@
 package com.genexus.db.driver;
 
+import com.genexus.specific.java.Connect;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,6 +37,8 @@ public abstract class TestExternalProvider {
 
 	@Before
 	public void beforeEachTestMethod() {
+
+		Connect.init();
 
 		boolean testEnabled = false;
 		try {

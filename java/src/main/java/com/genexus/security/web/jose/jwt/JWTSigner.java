@@ -19,10 +19,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.Validate;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,6 +52,7 @@ public class JWTSigner {
 
     private byte[] secret;
     private PrivateKey privateKey;
+	private static Logger logger = LogManager.getLogger(JWTSigner.class);
 
     // Default algorithm HMAC SHA-256 ("HS256")
     protected final static Algorithm DEFAULT_ALGORITHM = Algorithm.HS256;
@@ -55,7 +61,8 @@ public class JWTSigner {
         this(secret.getBytes());
     }
 
-    public JWTSigner(final byte[] secret) {        
+    public JWTSigner(final byte[] secret) {
+        Validate.notNull(secret);
         this.secret = secret;
     }
 
@@ -78,7 +85,8 @@ public class JWTSigner {
      *                the "options" parameter override claims in this map.
      * @param options Allow choosing the signing algorithm, and automatic setting of some registered claims.
      */
-    public String sign(final Map<String, Object> claims, final Options options) {        
+    public String sign(final Map<String, Object> claims, final Options options) {
+		Validate.notNull(claims, "JWT claims cannot be null");
         final Algorithm algorithm = (options != null && options.algorithm != null) ? options.algorithm : DEFAULT_ALGORITHM;
         final List<String> segments = new ArrayList<String>();
         try {
@@ -87,6 +95,7 @@ public class JWTSigner {
             segments.add(encodedSignature(join(segments, "."), algorithm));
             return join(segments, ".");
         } catch (Exception e) {
+        	logger.error("JWT Sign error", e);
             throw new RuntimeException(e.getCause());
         }
     }
@@ -95,14 +104,17 @@ public class JWTSigner {
      * Generate a JSON Web Token using the default algorithm HMAC SHA-256 ("HS256")
      * and no claims automatically set.
      */
-    public String sign(final Map<String, Object> claims) {        
+    public String sign(final Map<String, Object> claims) {
+        Validate.notNull(claims);
         return sign(claims, null);
     }
 
     /**
      * Generate the header part of a JSON web token.
      */
-    private String encodedHeader(final Algorithm algorithm) throws UnsupportedEncodingException {        
+    private String encodedHeader(final Algorithm algorithm) throws UnsupportedEncodingException {
+        Validate.notNull(algorithm);
+        // create the header
         final ObjectNode header = JsonNodeFactory.instance.objectNode();
         header.put("typ", "JWT");
         header.put("alg", algorithm.name());
@@ -131,6 +143,8 @@ public class JWTSigner {
     }
 
     private void processPayloadOptions(final Map<String, Object> claims, final Options options) {
+        Validate.notNull(claims);
+        Validate.notNull(options);
         final long now = System.currentTimeMillis() / 1000l;
         if (options.expirySeconds != null)
             claims.put("exp", now + options.expirySeconds);
@@ -144,6 +158,8 @@ public class JWTSigner {
 
     // consider cleanup
     private void enforceIntDate(final Map<String, Object> claims, final String claimName) {
+        Validate.notNull(claims);
+        Validate.notNull(claimName);
         final Object value = handleNullValue(claims, claimName);
         if (value == null)
             return;
@@ -226,6 +242,8 @@ public class JWTSigner {
      */
     private String encodedSignature(final String signingInput, final Algorithm algorithm) throws NoSuchAlgorithmException, InvalidKeyException,
             NoSuchProviderException, SignatureException, JWTAlgorithmException {
+        Validate.notNull(signingInput);
+        Validate.notNull(algorithm);
         switch (algorithm) {
             case HS256:
             case HS384:
@@ -244,6 +262,7 @@ public class JWTSigner {
      * Safe URL encode a byte array to a String
      */
     private String base64UrlEncode(final byte[] str) {
+        Validate.notNull(str);
         return new String(Base64.encodeBase64URLSafe(str));
     }
 
@@ -251,6 +270,9 @@ public class JWTSigner {
      * Sign an input string using HMAC and return the encrypted bytes
      */
     private static byte[] signHmac(final Algorithm algorithm, final String msg, final byte[] secret) throws NoSuchAlgorithmException, InvalidKeyException {
+        Validate.notNull(algorithm);
+        Validate.notNull(msg);
+        Validate.notNull(secret);
         final Mac mac = Mac.getInstance(algorithm.getValue());
         mac.init(new SecretKeySpec(secret, algorithm.getValue()));
         return mac.doFinal(msg.getBytes());
@@ -261,6 +283,9 @@ public class JWTSigner {
      */
     private static byte[] signRs(final Algorithm algorithm, final String msg, final PrivateKey privateKey) throws NoSuchProviderException,
             NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        Validate.notNull(algorithm);
+        Validate.notNull(msg);
+        Validate.notNull(privateKey);
         final byte[] messageBytes = msg.getBytes();
         final Signature signature = Signature.getInstance(algorithm.getValue(), "BC");
         signature.initSign(privateKey);
@@ -268,8 +293,10 @@ public class JWTSigner {
         return signature.sign();
     }
 
-    private String join(final List<String> input, final String separator) {    	
-        return org.apache.commons.lang.StringUtils.join(input.iterator(), separator);
+    private String join(final List<String> input, final String separator) {
+        Validate.notNull(input);
+        Validate.notNull(separator);
+        return StringUtils.join(input.iterator(), separator);
     }
 
     /**
