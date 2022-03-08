@@ -2,6 +2,7 @@ package com.genexus.webpanels;
 
 import java.util.Enumeration;
 
+import com.genexus.db.UserInformation;
 import com.genexus.servlet.ServletException;
 import com.genexus.servlet.http.ICookie;
 import com.genexus.servlet.http.HttpServlet;
@@ -46,7 +47,11 @@ public abstract class GXWebObjectStub extends HttpServlet
 	{
 		this.remoteHandle = remoteHandle;
 		this.context      = context;
-		localUtil    	  = Application.getConnectionManager().createUserInformation(Namespace.getNamespace(context.getNAME_SPACE())).getLocalUtil();
+		UserInformation ui = Application.getConnectionManager().getUserInformationNoException(remoteHandle);
+		if (ui == null)
+			localUtil    	  = Application.getConnectionManager().createUserInformation(Namespace.getNamespace(context.getNAME_SPACE())).getLocalUtil();
+		else
+			localUtil = ui.getLocalUtil();
 	}
 
 	private void dumpRequestInfo(HttpContext httpContext)
