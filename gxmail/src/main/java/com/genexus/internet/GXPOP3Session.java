@@ -25,7 +25,7 @@ public class GXPOP3Session implements GXInternetConstants
 	{
 		try
 		{		
-			Class c = Class.forName("javax.mail.Session");
+			Class c = Class.forName("jakarta.mail.Session");
 			session = new POP3SessionJavaMail();
 		}
 		catch(Throwable e)
