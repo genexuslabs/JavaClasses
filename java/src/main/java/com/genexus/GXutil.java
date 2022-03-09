@@ -1098,6 +1098,11 @@ public final class GXutil
 
 	public static byte shell(String cmd, int modal)
 	{
+		return GXutil.shell(cmd, modal, 0);
+	}
+
+	public static byte shell(String cmd, int modal, int redirectOutput)
+	{
 		try
 		{
 			if (modal == 0)
@@ -1109,9 +1114,12 @@ public final class GXutil
 			{
 				List<String> al = Arrays.asList(cmd.split(" "));
 				ProcessBuilder pb = new ProcessBuilder(al);
-				pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-				pb.redirectError(ProcessBuilder.Redirect.INHERIT);
-				pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
+				if (redirectOutput == 1)
+				{
+					pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+					pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+					pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
+				}
 				Process p = pb.start();
 
 				byte exitCode = (byte) p.waitFor();
