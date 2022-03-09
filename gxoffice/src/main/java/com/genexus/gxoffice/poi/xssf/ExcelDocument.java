@@ -36,7 +36,8 @@ public class ExcelDocument implements IGxError, IExcelDocument {
 					return errCod;
 				}
 			} else {
-				GXFile file = new GXFile(fileName, Constants.EXTERNAL_PRIVATE_UPLOAD);
+				boolean isAbsolute = new java.io.File(fileName).isAbsolute();
+				GXFile file = new GXFile(fileName, Constants.EXTERNAL_UPLOAD_ACL, isAbsolute);
 				if (file.exists()) {
 					// System.out.println("Opening..");
 					workBook = new XSSFWorkbook(file.getStream());
@@ -74,7 +75,8 @@ public class ExcelDocument implements IGxError, IExcelDocument {
 			workBook.write(fs);
 			ByteArrayInputStream in = new ByteArrayInputStream(fs.toByteArray());
 			fs.close();
-			GXFile file = new GXFile(xlsFileName, Constants.EXTERNAL_PRIVATE_UPLOAD);
+			boolean isAbsolute = new java.io.File(xlsFileName).isAbsolute();
+			GXFile file = new GXFile(xlsFileName, Constants.EXTERNAL_UPLOAD_ACL, isAbsolute);
 			file.create(in, true);
 			saved = true;
 		} catch (Exception e) {

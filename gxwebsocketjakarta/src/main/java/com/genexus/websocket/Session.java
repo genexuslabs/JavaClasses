@@ -10,6 +10,10 @@ public class Session implements ISession{
 		this.session = session;
 	}
 
+	public Integer getHashCode() {
+		return new Integer(session.hashCode());
+	}
+
 	public String getQueryString() {
 		return session.getQueryString();
 	}

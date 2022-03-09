@@ -56,10 +56,5 @@ public class WebSecurityHelper {
 		 }
 		 return ret;
      }
-    		 
-     /*public static boolean verify(String pgmName, String issuer, String value, String jwtToken, WebSecureToken token)
-     {     	 
-         boolean ok = SecureTokenHelper.Verify(jwtToken, token, GetSecretKey());            
-         return ok && !string.IsNullOrEmpty(pgmName) && token.ProgramName == pgmName && issuer == token.Issuer &&
-         */
+
 }
