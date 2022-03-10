@@ -19,6 +19,8 @@ import java.io.PushbackInputStream;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.Random;
 import java.util.zip.DeflaterOutputStream;
@@ -606,6 +608,20 @@ public final class PrivateUtilities
 			else return new File(System.getProperty("user.dir"));
 		}
 		return new File(dirname);
+	}
+
+	/**
+	 * <pre>
+	 * Checks if a string is an absolute path to local file system.
+	 * Null safe.
+	 * </pre>
+	 */
+	public static boolean isAbsoluteFilePath(String path) {
+		try {
+			return Paths.get(path).isAbsolute();
+		} catch (InvalidPathException | NullPointerException ex) {
+			return false;
+		}
 	}
 
 	public static String addLastPathSeparator(String dir)

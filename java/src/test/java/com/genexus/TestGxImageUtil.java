@@ -1,7 +1,6 @@
 package com.genexus;
 
 import com.genexus.specific.java.Connect;
-import com.genexus.specific.java.ImagesPath;
 import com.genexus.specific.java.LogManager;
 import org.junit.Assert;
 import org.junit.Rule;
