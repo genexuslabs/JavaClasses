@@ -10,8 +10,7 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.Vector;
 
-import com.genexus.IHttpContext;
-import com.genexus.ModelContext;
+import com.genexus.*;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.db.driver.ResourceAccessControlList;
 import com.genexus.db.driver.ExternalProvider;
@@ -20,8 +19,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.io.output.FileWriterWithEncoding;
 
-import com.genexus.Application;
-import com.genexus.CommonUtil;
 import com.genexus.common.classes.AbstractGXFile;
 import org.apache.logging.log4j.Logger;
 
@@ -79,10 +76,11 @@ public class GXFile extends AbstractGXFile {
 				break;
 			case Unknown:
 				ExternalProvider storageProvider = Application.getExternalProvider();
-				if (!Paths.get(fileName).isAbsolute() && storageProvider != null) {
-					FileSource = new GXExternalFileInfo(fileName, storageProvider, true, fileAcl);
-				} else {
+				if (storageProvider == null || PrivateUtilities.isAbsoluteFilePath(fileName)) {
 					FileSource = new GXFileInfo(Paths.get(baseDirectoryPath, fileName).toFile());
+				}
+				else {
+					FileSource = new GXExternalFileInfo(fileName, storageProvider, true, fileAcl);
 				}
 				break;
 		}
