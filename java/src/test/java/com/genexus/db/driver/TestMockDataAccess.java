@@ -26,9 +26,9 @@ public class TestMockDataAccess {
 		Application.realMainProgram = pgm;
 		pgm.execute();
 
-		assertEquals("Executing Update sentence\r\n" +
-			"Executing Update sentence\r\n" +
-			"Executing SQL sentence\r\n" +
-			"Executing Update sentence\r\n", outContent.toString());
+		assertEquals("Executing Update sentence" +
+			"Executing Update sentence" +
+			"Executing SQL sentence" +
+			"Executing Update sentence", outContent.toString());
 	}
 }
