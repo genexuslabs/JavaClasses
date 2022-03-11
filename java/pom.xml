@@ -254,6 +254,11 @@
     	<artifactId>jakarta.ws.rs-api</artifactId>
     	<version>3.0.0</version>
 		</dependency>
+		<dependency>
+    	<groupId>org.xerial</groupId>
+    	<artifactId>sqlite-jdbc</artifactId>
+    	<version>3.36.0.3</version>
+		</dependency>
     </dependencies>
 	
 	<build>
