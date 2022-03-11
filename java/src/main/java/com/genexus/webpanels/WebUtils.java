@@ -4,18 +4,19 @@ import java.io.*;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Set;
 
-import com.genexus.ModelContext;
+import com.genexus.*;
 import com.genexus.internet.HttpContext;
 import org.apache.commons.io.IOUtils;
 
-import com.genexus.CommonUtil;
-import com.genexus.GXutil;
-import com.genexus.PrivateUtilities;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.xml.XMLReader;
+import org.apache.commons.lang.StringUtils;
+
+import static com.genexus.util.Encryption.decrypt64;
 
 
 public class WebUtils
@@ -418,7 +419,7 @@ public class WebUtils
         public static String decryptParm(Object parm, String encryptionKey) {
             String value = parm.toString();
             try {
-                if (!encryptionKey.equals("")) {
+                if (!encryptionKey.isEmpty()) {
                     String strValue = value.toString();
                     strValue = com.genexus.util.Encryption.uridecrypt64(strValue,
                             encryptionKey);
@@ -436,29 +437,31 @@ public class WebUtils
 		
 		public static String parmsEncryptionKey(com.genexus.ModelContext context)
 		{
-			String GXKey = "";
             String keySourceType = com.genexus.Application.getClientPreferences().getUSE_ENCRYPTION();
-            if (!keySourceType.equals("")) {
-                GXKey = getEncryptionKey(context, keySourceType);
-            }
-            return GXKey;
+            if (keySourceType.isEmpty()) {
+				return "";
+			}
+            return getEncryptionKey(context, keySourceType);
 		}
 		
-		public static String getEncryptionKey(com.genexus.ModelContext context, String keySourceType){
-			if (keySourceType.equals(""))
-			{
-				keySourceType = com.genexus.Application.getClientPreferences().getUSE_ENCRYPTION();
+		public static String getEncryptionKey(com.genexus.ModelContext context, String keySourceType) {
+			keySourceType = (keySourceType.isEmpty()) ? Application.getClientPreferences().getUSE_ENCRYPTION(): keySourceType;
+			String encryptionKey;
+
+			switch (keySourceType.toUpperCase(Locale.ROOT)) {
+				case "SESSION":
+					encryptionKey = decrypt64(((HttpContext) context.getHttpContext()).getCookie("GX_SESSION_ID"), context.getServerKey());
+					break;
+				default:
+					encryptionKey = context.getSiteKey();
+					break;
 			}
-            String GXKey = "";
-            if (keySourceType.equalsIgnoreCase("SESSION"))
-			{
-            	GXKey = com.genexus.util.Encryption.decrypt64(((HttpContext) context.getHttpContext()).getCookie("GX_SESSION_ID"), context.getServerKey());
-            }
-            else
-			{            	
-            	GXKey = context.getSiteKey();                
-            }                                                                                     
-            return GXKey;			
+
+			if (encryptionKey.isEmpty()) {
+				logger.error(String.format("Encryption Key cannot be empty - Key Source: %s", keySourceType));
+			}
+
+            return encryptionKey;
 		}
 		
 	private static final String gxApplicationClassesFileName = "GXApplicationClasses.txt";
