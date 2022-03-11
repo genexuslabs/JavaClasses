@@ -20,13 +20,13 @@ public class GXDBMSGxTest implements GXDBMS
 
 	public ResultSet executeQuery(PreparedStatement stmt, boolean hold) throws SQLException
 	{
-		System.out.println("Executing SQL sentence");
+		System.out.print("Executing SQL sentence");
 		return GXDBMSImpl.executeQuery(stmt, hold);
 	}
 
 	public int executeUpdate(PreparedStatement stmt) throws SQLException
 	{
-		System.out.println("Executing Update sentence");
+		System.out.print("Executing Update sentence");
 		return GXDBMSImpl.executeUpdate(stmt);
 	}
 
