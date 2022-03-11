@@ -1,6 +1,10 @@
 package com.genexus.db.service;
 
-import java.util.Collections;
+import com.genexus.util.NameValuePair;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 
 public class Query implements IQuery {
 	private static final String [] EMPTY_ARR_STRING = new String [0];
@@ -10,20 +14,19 @@ public class Query implements IQuery {
 		this.dataStoreHelper = dataStoreHelper;
 	}
 
-	private String tableName;
+	public String tableName;
 	public String[] projection = EMPTY_ARR_STRING;
-/*
-	public string[] OrderBys { get; set; } = Array.Empty<string>();
-	public string[] Filters { get; set; } = Array.Empty<string>();
-	private List<KeyValuePair<string, string>> mAssignAtts;
-	public IEnumerable<KeyValuePair<string, string>> AssignAtts { get { return mAssignAtts ?? Array.Empty<KeyValuePair<string, string>>() as IEnumerable<KeyValuePair<string, string>>; } }
-*/
+	public String[] orderBys = EMPTY_ARR_STRING;
+	public String[] filters = EMPTY_ARR_STRING;
+
+	private final ArrayList<NameValuePair> mAssignAtts = new ArrayList<>();
+	public Iterator<NameValuePair> getAssignAtts() { return mAssignAtts.iterator(); }
+
 	public IODataMap[] selectList = new IODataMap[0];
-/*
-	private List<VarValue> mVarValues;
-	public IEnumerable<VarValue> Vars { get { return (mVarValues ?? Array.Empty<VarValue>() as IEnumerable<VarValue>); } }
-	public CursorType CursorType { get; set; } = CursorType.Select;
- */
+	private final HashMap<String, VarValue> mVarValues = new HashMap<>();
+	public Iterator<VarValue> getVars() { return mVarValues.values().iterator(); }
+
+	protected final HashMap<Integer, GXType> parmTypes = new HashMap<>();
 
 	public Query For(String tableName)
 	{
@@ -36,49 +39,68 @@ public class Query implements IQuery {
 		this.projection = columns;
 		return this;
 	}
-/*
-	public Query OrderBy(string[] orders)
+
+	public Query orderBy(String []orders)
 	{
-		OrderBys = orders;
+		orderBys = orders;
 		return this;
 	}
 
-	public Query Filter(string[] filters)
+	public Query orderBy(String order)
 	{
-		Filters = filters;
+		return orderBy(new String[]{ order });
+	}
+
+	public Query filter(String[] filters)
+	{
+		this.filters = filters;
 		return this;
 	}
 
-	public Query Set(string name, string value)
+	public Query set(String name, String value)
 	{
-		mAssignAtts = mAssignAtts ?? new List<KeyValuePair<string, string>>();
-		mAssignAtts.Add(new KeyValuePair<string, string>(name, value));
+		mAssignAtts.add(new NameValuePair(name, value));
 		return this;
 	}
-*/
+
 	public Query setMaps(IODataMap[] selectList)
 	{
 		this.selectList = selectList;
 		return this;
 	}
 
+	protected QueryType queryType = QueryType.QUERY;
 	@Override
-	public QueryType getQueryType() {
-		return QueryType.QUERY;
-	}
-/*
-
-	public Query SetType(CursorType cType)
+	public QueryType getQueryType()
 	{
-		CursorType = cType;
+		return queryType;
+	}
+
+	public Query setType(QueryType queryType)
+	{
+		this.queryType = queryType;
 		return this;
 	}
 
-	public Query AddParm(GXType gxType, object parm)
+	public Query addConst(GXType gxType, Object parm)
 	{
-		mVarValues = mVarValues ?? new List<VarValue>();
-		mVarValues.Add(new VarValue($":parm{ mVarValues.Count + 1 }", gxType, parm));
+		String parmName = String.format(":const%d", mVarValues.size() + 1);
+		mVarValues.put(parmName, new VarValue(parmName, gxType, parm));
 		return this;
 	}
-*/
+
+	public Query setParmType(int parmId, GXType gxType)
+	{
+		parmTypes.put(parmId, gxType);
+		return this;
+	}
+
+	public void initializeParms(Object[] parms)
+	{
+		for(int idx : parmTypes.keySet())
+		{
+			String parmName = String.format(":parm%d", idx);
+			mVarValues.put(parmName, new VarValue(parmName, parmTypes.get(idx), parms[idx]));
+		}
+	}
 }

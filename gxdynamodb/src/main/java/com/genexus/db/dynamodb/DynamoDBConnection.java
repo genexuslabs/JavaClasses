@@ -1,10 +1,17 @@
 package com.genexus.db.dynamodb;
 
 import com.genexus.db.service.ServiceConnection;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClientBuilder;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+
+import java.net.URI;
 import java.util.HashMap;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 import software.amazon.awssdk.regions.Region;import java.nio.charset.StandardCharsets;
@@ -17,33 +24,47 @@ public class DynamoDBConnection extends ServiceConnection
 {
 	private static final String GXDYNAMODB_VERSION = "1.0";
 
-	DynamoDbClient mDynamoDB;
+	private static final String CLIENT_ID = "user";
+	private static final String CLIENT_SECRET = "password";
+	private static final String REGION = "region";
+	private static final String LOCAL_URL = "localurl";
+
+
+	DynamoDbClient mDynamoDB; //mDynamoDB
+	Region mRegion = Region.US_EAST_1;
 
 	public DynamoDBConnection(String connUrl, Properties initialConnProps) throws SQLException
 	{
-		super(connUrl, initialConnProps); /// Luego de la inicialización usar props de la clase base para obtener las propiedades
-		initializeModel(connUrl);
+		super(connUrl, initialConnProps); // After initialization use props variable from super class to manage properties
+		initializeDBConnection(connUrl);
 	}
 
-	private void initializeModel(String connUrl)
+	private void initializeDBConnection(String connUrl)
 	{
+		String mLocalUrl = null, mClientId = null, mClientSecret = null;
 		for(Enumeration keys = props.keys(); keys.hasMoreElements(); )
 		{
 			String key = ((String)keys.nextElement());
 			String value = props.getProperty(key, key);
 			switch(key.toLowerCase())
 			{
+				case LOCAL_URL: mLocalUrl = value; break;
+				case CLIENT_ID: mClientId = value; break;
+				case CLIENT_SECRET: mClientSecret = value; break;
+				case REGION: mRegion = Region.of(value); break;
 				default: break;
 			}
 		}
-/*		try
+		DynamoDbClientBuilder builder = DynamoDbClient.builder().region(mRegion);
+		if(mLocalUrl != null)
+			builder = builder.endpointOverride(URI.create(mLocalUrl));
+		if(mClientId != null && mClientSecret != null)
 		{
-		}catch(URISyntaxException | IOException ex)
-		{
-			LogManager.getLogger(ODataConnection.class).warn(String.format("Could not load metadata file: %s%s", metadataLocation, metadataDocName), ex);
+			AwsBasicCredentials mCredentials = AwsBasicCredentials.create(mClientId, mClientSecret);
+			builder = builder.credentialsProvider(StaticCredentialsProvider.create(mCredentials));
 		}
- */
 
+		mDynamoDB = builder.build();
 	}
 
 /*	ServiceError getServiceError(String errorCode)

@@ -13,11 +13,31 @@
     <artifactId>gxdynamodb</artifactId>
 		<name>GeneXus DynamoDB</name>
 
-	<dependencies>
-        <dependency>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>2.17.136</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <dependencies>
+        <!--dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>dynamodb</artifactId>
             <version>2.17.103</version>
+        </dependency-->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>dynamodb-enhanced</artifactId>
+            <version>2.17.136</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>dynamodb</artifactId>
         </dependency>
         <dependency>
 			<groupId>${project.groupId}</groupId>

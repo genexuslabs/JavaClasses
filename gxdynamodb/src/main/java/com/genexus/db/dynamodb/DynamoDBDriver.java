@@ -13,7 +13,7 @@ public class DynamoDBDriver implements Driver
 	private static final DynamoDBDriver DYNAMODB_DRIVER;
 	static
 	{
-		DYNAMODB_DRIVER = new ODataDriver();
+		DYNAMODB_DRIVER = new DynamoDBDriver();
 		try
 		{
 			DriverManager.registerDriver(DYNAMODB_DRIVER);
