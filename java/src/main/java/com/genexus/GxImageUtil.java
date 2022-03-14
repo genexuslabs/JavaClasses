@@ -16,13 +16,24 @@ public class GxImageUtil {
 	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(GxImageUtil.class);
 	private static int INVALID_CODE = -1;
 
-	private static InputStream getInputStream(String imageFile) throws IOException {
-		return getGXFile(imageFile).getStream();
+	private static InputStream getInputStream(String filePathOrUrl) throws IOException {
+		return getGXFile(filePathOrUrl).getStream();
 	}
 
-	private static GXFile getGXFile(String imageFile) {
+	private static BufferedImage createBufferedImageFromURI(String filePathOrUrl) throws IOException
+	{
+		try (InputStream is = getGXFile(filePathOrUrl).getStream()) {
+			return ImageIO.read(is);
+		}
+		catch (IOException e) {
+			log.error("Failed to read image stream: " + filePathOrUrl);
+			throw e;
+		}
+	}
+
+	private static GXFile getGXFile(String filePathOrUrl) {
 		String basePath = (com.genexus.ModelContext.getModelContext() != null) ? com.genexus.ModelContext.getModelContext().getHttpContext().getDefaultPath(): "";
-		return new GXFile(basePath, imageFile.replace("/", File.separator), ResourceAccessControlList.Default, GxFileInfoSourceType.Unknown);
+		return new GXFile(basePath, filePathOrUrl, ResourceAccessControlList.Default, GxFileInfoSourceType.Unknown);
 	}
 
 	public static long getFileSize(String imageFile){
@@ -36,8 +47,8 @@ public class GxImageUtil {
 		if (!isValidInput(imageFile))
 			return INVALID_CODE;
 
-		try (InputStream is = getInputStream(imageFile)) {
-			return ImageIO.read(is).getHeight();
+		try {
+			return createBufferedImageFromURI(imageFile).getHeight();
 		}
 		catch (Exception e) {
 			log.error("getImageHeight " + imageFile + " failed" , e);
@@ -57,8 +68,8 @@ public class GxImageUtil {
 		if (!isValidInput(imageFile))
 			return INVALID_CODE;
 
-		try (InputStream is = getInputStream(imageFile)) {
-			return ImageIO.read(is).getWidth();
+		try {
+			return createBufferedImageFromURI(imageFile).getWidth();
 		}
 		catch (Exception e) {
 			log.error("getImageWidth " + imageFile + " failed" , e);
@@ -70,8 +81,8 @@ public class GxImageUtil {
 		if (!isValidInput(imageFile))
 			return "";
 
-		try (InputStream is = getInputStream(imageFile)) {
-			BufferedImage image = ImageIO.read(is);
+		try {
+			BufferedImage image = createBufferedImageFromURI(imageFile);
 			BufferedImage croppedImage = image.getSubimage(x, y, width, height);
 			writeImage(croppedImage, imageFile);
 		}
@@ -96,8 +107,8 @@ public class GxImageUtil {
 		if (!isValidInput(imageFile))
 			return "";
 
-		try (InputStream is = getInputStream(imageFile)) {
-			BufferedImage image = ImageIO.read(is);
+		try {
+			BufferedImage image = createBufferedImageFromURI(imageFile);
 			AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
 			tx.translate(-image.getWidth(null), 0);
 			AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
@@ -114,8 +125,8 @@ public class GxImageUtil {
 		if (!isValidInput(imageFile))
 			return "";
 
-		try (InputStream is = getInputStream(imageFile)) {
-			BufferedImage image = ImageIO.read(is);
+		try {
+			BufferedImage image = createBufferedImageFromURI(imageFile);
 			AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
 			tx.translate(0, -image.getHeight(null));
 			AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
@@ -132,8 +143,8 @@ public class GxImageUtil {
 		if (!isValidInput(imageFile))
 			return "";
 
-		try (InputStream is = getInputStream(imageFile)) {
-			BufferedImage image = ImageIO.read(is);
+		try {
+			BufferedImage image = createBufferedImageFromURI(imageFile);
 			if (keepAspectRatio) {
 				double imageHeight = image.getHeight();
 				double imageWidth = image.getWidth();
@@ -160,8 +171,8 @@ public class GxImageUtil {
 		if (!isValidInput(imageFile))
 			return "";
 
-		try (InputStream is = getInputStream(imageFile)) {
-			BufferedImage image = ImageIO.read(is);
+		try {
+			BufferedImage image = createBufferedImageFromURI(imageFile);
 			imageFile = resize(imageFile, image.getWidth() * percent / 100, image.getHeight() * percent / 100,true);
 		}
 		catch (Exception e) {
@@ -173,8 +184,8 @@ public class GxImageUtil {
 	public static String rotate(String imageFile, short angle) {
 		if (!isValidInput(imageFile))
 			return "";
-		try (InputStream is = getInputStream(imageFile)) {
-			BufferedImage image = ImageIO.read(is);
+		try {
+			BufferedImage image = createBufferedImageFromURI(imageFile);
 			BufferedImage rotatedImage = rotateImage(image, angle);
 			writeImage(rotatedImage, imageFile);
 		}
