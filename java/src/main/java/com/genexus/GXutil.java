@@ -705,7 +705,7 @@ public final class GXutil
 	}
 	public static Date dtadd(Date date, double seconds)
 	{
-		return dtadd(date, (int)seconds);
+		return CommonUtil.dtadd(date, seconds);
 	}
 
 	public static Date dtaddms(Date date, double seconds)
@@ -1098,19 +1098,35 @@ public final class GXutil
 
 	public static byte shell(String cmd, int modal)
 	{
+		return GXutil.shell(cmd, modal, 0);
+	}
+
+	public static byte shell(String cmd, int modal, int redirectOutput)
+	{
 		try
 		{
-			List<String> al = Arrays.asList(cmd.split(" "));
-			ProcessBuilder pb = new ProcessBuilder(al);
-			pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-			pb.redirectError(ProcessBuilder.Redirect.INHERIT);
-			pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
-			Process p = pb.start();
+			if (modal == 0)
+			{
+				Runtime.getRuntime().exec(cmd);
+				return 0;
+			}
+			else
+			{
+				List<String> al = Arrays.asList(cmd.split(" "));
+				ProcessBuilder pb = new ProcessBuilder(al);
+				if (redirectOutput == 1)
+				{
+					pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+					pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+					pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
+				}
+				Process p = pb.start();
 
-			byte exitCode = (byte)p.waitFor();
+				byte exitCode = (byte) p.waitFor();
 
-			p.destroy();
-			return exitCode;
+				p.destroy();
+				return exitCode;
+			}
 		}
 		catch (Exception e)
         {
