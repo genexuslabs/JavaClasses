@@ -1,5 +1,6 @@
 package com.genexus.db.driver;
 
+import com.genexus.specific.java.Connect;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,6 +38,8 @@ public abstract class TestExternalProvider {
 	@Before
 	public void beforeEachTestMethod() {
 
+		Connect.init();
+
 		boolean testEnabled = false;
 		try {
 			testEnabled = ExternalProviderHelper.getEnvironmentVariable(getProviderName() + "_TEST_ENABLED", false).equals("true");
@@ -53,7 +56,7 @@ public abstract class TestExternalProvider {
 		assertTrue(provider != null);
 
 
-		uniqueId = Integer.toString(new Random().nextInt(10000));
+		uniqueId = Integer.toString(new Random().nextInt(5000));
 		testSampleFileName = String.format("text-%s.txt", uniqueId);
 		testSampleFilePath = Paths.get("resources", testSampleFileName).toString();
 
@@ -134,6 +137,19 @@ public abstract class TestExternalProvider {
 	public void testCopyMethod(){
 		String copyFileName = buildRandomTextFileName("copy-text");
 		copy(copyFileName, ResourceAccessControlList.PublicRead);
+	}
+
+	@Test
+	public void testExistsDirectory(){
+		String copyFileName = buildRandomTextFileName("tempFolder/f1/f2/test-upload-and-copy");
+		String upload = provider.upload(testSampleFilePath, copyFileName, ResourceAccessControlList.Default);
+		assertTrue("Not found URL: " + upload, urlExists(upload));
+		String folder = "tempFolder";
+		boolean existsDir = provider.existsDirectory(folder);
+		assertTrue("Directory does not exists " + folder + " - " + upload, existsDir);
+		String folderNotExists = "tempFolderNotExists";
+		existsDir = provider.existsDirectory(folder);
+		assertTrue("Directory does not exists " + folderNotExists, existsDir);
 	}
 
 	@Test

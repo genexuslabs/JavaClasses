@@ -5,6 +5,8 @@ import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
 import java.nio.charset.StandardCharsets;
 
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.crypto.BlockCipher;
 import org.bouncycastle.crypto.BufferedBlockCipher;
@@ -23,6 +25,7 @@ import java.security.SecureRandom;
 
 public class Encryption
 {
+	public static final ILogger logger = LogManager.getLogger(Encryption.class);
     public static String AJAX_ENCRYPTION_KEY = "GX_AJAX_KEY";
 	public static String AJAX_ENCRYPTION_IV = "GX_AJAX_IV";
 	public static String AJAX_SECURITY_TOKEN = "AJAX_SECURITY_TOKEN";
@@ -148,10 +151,40 @@ public class Encryption
 		return "";
 	}
         
-        public static String decrypt64(String value){
-            value= decrypt64(value,  SpecificImplementation.Application.getModelContext().getServerKey());
-            return value.substring(0, value.length()-CHECKSUM_LENGTH);
-        }
+	public static String decrypt64(String value){
+		value = decrypt64(value,  SpecificImplementation.Application.getModelContext().getServerKey());
+		return value.substring(0, value.length()-CHECKSUM_LENGTH);
+	}
+
+	/**
+	 *  Returns decrpyted value if the checksum verification succedes. Otherwise, original value is returned
+	 * @param encryptedOrDecryptedValue
+	 * @return Decrypted Value
+	 */
+	public static String tryDecrypt64(String encryptedOrDecryptedValue) {
+		return tryDecrypt64(encryptedOrDecryptedValue, SpecificImplementation.Application.getModelContext().getServerKey());
+	}
+
+	public static String tryDecrypt64(String encryptedOrDecryptedValue, String key) {
+		if (encryptedOrDecryptedValue == null) {
+			return null;
+		}
+
+		int checkSumLength = Encryption.getCheckSumLength();
+		if (encryptedOrDecryptedValue.length() > checkSumLength) {
+			String dec = Encryption.decrypt64(encryptedOrDecryptedValue, key);
+			// Ojo, el = de aca es porque sino no me deja tener passwords vacias, dado que el length queda igual al length del checksum
+			if (dec.length() >= checkSumLength) {
+				String checksum = CommonUtil.right(dec, checkSumLength);
+				String decryptedValue = CommonUtil.left(dec, dec.length() - checkSumLength);
+				if (checksum.equals(Encryption.checksum(decryptedValue, Encryption.getCheckSumLength()))) {
+					return decryptedValue;
+				}
+			}
+		}
+		return encryptedOrDecryptedValue;
+	}
+
 
 	public static String decrypt64(String value, String key)
 	{
@@ -180,12 +213,12 @@ public class Encryption
 		}
 		catch (InvalidKeyException e)
 		{
-			System.err.println(e);
+			logger.error("decrypt64 error", e);
 			throw new InvalidGXKeyException(e.getMessage());
 		}
 		catch(UnsupportedEncodingException e)
 		{
-			System.err.println(e);
+			logger.error("decrypt64 error", e);
 			throw new RuntimeException(e.getMessage());
 		}
 		catch (ArrayIndexOutOfBoundsException e)
@@ -193,7 +226,9 @@ public class Encryption
 			return "";
 		}
 	}
-	
+
+
+
 	private static final int CHECKSUM_LENGTH = 6;
 
 	public static int getCheckSumLength()
@@ -374,7 +409,7 @@ public class Encryption
 		try {
 			outputBytes = aesCipher(inputBytes, true, key, GX_AJAX_PRIVATE_IV);
 		} catch (DataLengthException | IllegalStateException | InvalidCipherTextException e) {
-			e.printStackTrace();
+			logger.error("encryptRijndael error", e);
 			return "";
 		}
 		return Hex.toHexString(outputBytes);

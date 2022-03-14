@@ -2,6 +2,7 @@ package com.genexus.webpanels;
 
 import java.util.Enumeration;
 
+import com.genexus.db.UserInformation;
 import com.genexus.servlet.ServletException;
 import com.genexus.servlet.http.ICookie;
 import com.genexus.servlet.http.HttpServlet;
@@ -28,11 +29,30 @@ public abstract class GXWebObjectStub extends HttpServlet
 	protected abstract String IntegratedSecurityPermissionPrefix();
 	protected abstract String EncryptURLParameters();
 
+	protected ModelContext context;
+	protected int remoteHandle = -1;
+	protected transient LocalUtil localUtil;
+
 	protected static final int SECURITY_GXOBJECT = 3;
 	protected static final int SECURITY_HIGH = 2;
 	protected static final int SECURITY_LOW  = 1;
 
 	private static final int HTTP_RESPONSE_BUFFER_SIZE  = 131072;
+
+	public GXWebObjectStub()
+	{
+	}
+
+	public GXWebObjectStub(int remoteHandle , ModelContext context)
+	{
+		this.remoteHandle = remoteHandle;
+		this.context      = context;
+		UserInformation ui = Application.getConnectionManager().getUserInformationNoException(remoteHandle);
+		if (ui == null)
+			localUtil    	  = Application.getConnectionManager().createUserInformation(Namespace.getNamespace(context.getNAME_SPACE())).getLocalUtil();
+		else
+			localUtil = ui.getLocalUtil();
+	}
 
 	private void dumpRequestInfo(HttpContext httpContext)
 	{
