@@ -515,60 +515,52 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		boolean anyError;
 
 		private void parseInputJSonMessage(JSONObject objMessage, GXWebPanel targetObj) throws JSONException {
-			if (objMessage.has("parms"))
-				inParmsValues = objMessage.getJSONArray("parms");
-			if (objMessage.has("hsh"))
-				inHashValues = objMessage.getJSONArray("hsh");
-			if (objMessage.has("events"))
-				events = objMessage.getJSONArray("events");
-			if (objMessage.has("cmpCtx"))
-				cmpContext = objMessage.getString("cmpCtx");
-			this.targetObj = targetObj;
-			try
-			{
-				String pckgName = (objMessage.has("pkgName") && objMessage.getString("pkgName").length() > 0)? objMessage.getString("pkgName") + ".": "";
-				if (objMessage.has("MPage")  && objMessage.getBoolean("MPage"))
-				{
-					if (objMessage.has("objClass"))
-					{
+			try {
+				if (objMessage.has("parms"))
+					inParmsValues = objMessage.getJSONArray("parms");
+				if (objMessage.has("hsh"))
+					inHashValues = objMessage.getJSONArray("hsh");
+				if (objMessage.has("events"))
+					events = objMessage.getJSONArray("events");
+				if (objMessage.has("cmpCtx"))
+					cmpContext = objMessage.getString("cmpCtx");
+				this.targetObj = targetObj;
+				String pckgName = (objMessage.has("pkgName") && objMessage.getString("pkgName").length() > 0) ? objMessage.getString("pkgName") + "." : "";
+				if (objMessage.has("MPage") && objMessage.getBoolean("MPage")) {
+					if (objMessage.has("objClass")) {
 						String fullClassName = pckgName + objMessage.getString("objClass") + "_impl";
 						Class<?> webComponentClass = targetObj.getClass().forName(fullClassName);
-						GXWebPanel webComponent = (GXWebPanel) webComponentClass.getConstructor(new Class<?>[] { int.class, ModelContext.class }).newInstance(new Object[] {new Integer(remoteHandle), context});
+						GXWebPanel webComponent = (GXWebPanel) webComponentClass.getConstructor(new Class<?>[]{int.class, ModelContext.class}).newInstance(new Object[]{new Integer(remoteHandle), context});
 						this.targetObj = webComponent;
 					}
-				}
-				else
-				{
-					if (!cmpContext.equals("") && objMessage.has("objClass"))
-					{
+				} else {
+					if (!cmpContext.equals("") && objMessage.has("objClass")) {
 						String fullClassName = pckgName + objMessage.getString("objClass") + "_impl";
 						GXWebComponent webComponent = WebUtils.getWebComponent(getClass(), fullClassName, remoteHandle, context);
 						this.targetObj = webComponent;
 					}
 				}
-			}
-			catch (Exception e)
-			{
+				if (objMessage.has("grids"))
+					parseGridsDataParms((JSONObject) objMessage.get("grids"));
+				if (objMessage.has("grid"))
+					grid = objMessage.getInt("grid");
+				else
+					grid = 0;
+				if (objMessage.has("row"))
+					row = objMessage.getString("row");
+				else
+					row = "";
+				if (objMessage.has("pRow"))
+					pRow = objMessage.getString("pRow");
+				if (objMessage.has("gxstate")) {
+					parseGXStateParms(objMessage.getJSONObject("gxstate"));
+				}
+				if (objMessage.has("fullPost")) {
+					parseGXStateParms(objMessage.getJSONObject("fullPost"));
+				}
+			} catch (Exception e) {
 				e.printStackTrace();
 				this.targetObj = new GXWebComponentNull(remoteHandle, context);
-			}
-			if (objMessage.has("grids"))
-				parseGridsDataParms((JSONObject)objMessage.get("grids"));
-			if (objMessage.has("grid"))
-				grid = objMessage.getInt("grid");
-			else
-				grid = 0;
-			if (objMessage.has("row"))
-				row = objMessage.getString("row");
-			else
-				row = "";
-			if (objMessage.has("pRow"))
-							pRow = objMessage.getString("pRow");
-			if (objMessage.has("gxstate")) {
-				parseGXStateParms(objMessage.getJSONObject("gxstate"));
-			}
-			if (objMessage.has("fullPost")) {
-				parseGXStateParms(objMessage.getJSONObject("fullPost"));
 			}
 		}
 
