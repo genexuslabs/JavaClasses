@@ -10,6 +10,7 @@ public class GXPOP3Session implements GXInternetConstants
 	private String userName;
 	private String password;
 	private short timeout;
+	private String authenticationProtocol;
 
 	private String attachDir;
 	private short newMessages ;
@@ -40,6 +41,7 @@ public class GXPOP3Session implements GXInternetConstants
 		setUserName("");
 		setPassword("");
 		setTimeout(30);
+		setAuthenticationMethod("");
 
 		errDescription = "";
 	}
@@ -82,6 +84,16 @@ public class GXPOP3Session implements GXInternetConstants
 	public String getPassword()
 	{
 		return password;
+	}
+
+	public void setAuthenticationMethod(String authenticationProtocol)
+	{
+		this.authenticationProtocol = authenticationProtocol;
+	}
+
+	public String getAuthenticationMethod()
+	{
+		return this.authenticationProtocol;
 	}
 
     public void setSecure(short secure)
