@@ -24,11 +24,10 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 	public DynamoDBResultSet(DynamoDBPreparedStatement stmt) throws SQLException
 	{
 		this.stmt = stmt;
-		execute(stmt.query, stmt.parms);
+//		execute(stmt.query, stmt.parms);
 	}
-
+/*
 	private static final Pattern FILTER_PATTERN = Pattern.compile("\\((.*) = :(.*)\\)");
-//	private DynamoDbRequest req = null;
 	private void execute(DynamoQuery query, Object[] parms) throws SQLException
 	{
 		DynamoDbClient client = stmt.getClient();
@@ -133,6 +132,7 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 	{
 		return name.startsWith("#") ? name.substring(1) : name;
 	}
+	*/
 
 	@Override
 	public boolean next() throws SQLException
@@ -163,30 +163,31 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 	private long getNumeric(int columnIndex)
 	{
 		AttributeValue value = getAttValue(columnIndex);
-		String sNumber = value.n();
-		lastWasNull = false;
-		if(sNumber != null)
-			return Long.parseLong(sNumber);
-		else if(value.bool() != null)
-			return value.bool().booleanValue() ? 1 : 0;
-		else
+		if(value != null)
 		{
-			lastWasNull = true;
-			return 0;
+			lastWasNull = false;
+			String sNumber = value.n();
+			if (sNumber != null)
+				return Long.parseLong(sNumber);
+			else if (value.bool() != null)
+				return value.bool().booleanValue() ? 1 : 0;
 		}
+		lastWasNull = true;
+		return 0;
 	}
 
 	private double getDecimal(int columnIndex)
 	{
 		AttributeValue value = getAttValue(columnIndex);
-		String sNumber = value.n();
-		if(sNumber == null)
+		if(value != null)
 		{
-			lastWasNull = true;
-			return 0;
+			lastWasNull = false;
+			String sNumber = value.n();
+			if (sNumber != null)
+				return Double.parseDouble(sNumber);
 		}
-		lastWasNull = false;
-		return Double.parseDouble(sNumber);
+		lastWasNull = true;
+		return 0;
 	}
 
 	private Instant getInstant(int columnIndex) throws SQLException
@@ -217,9 +218,18 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 	@Override
 	public boolean getBoolean(int columnIndex) throws SQLException
 	{
-		Boolean value = getAttValue(columnIndex).bool();
-		lastWasNull = value == null;
-		return !lastWasNull && value.booleanValue();
+		AttributeValue value = getAttValue(columnIndex);
+		if(value != null)
+		{
+			Boolean boolValue = value.bool();
+			if(boolValue != null)
+			{
+				lastWasNull = false;
+				return boolValue.booleanValue();
+			}
+		}
+		lastWasNull = true;
+		return false;
 	}
 
 	@Override
@@ -269,14 +279,17 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 	public BigDecimal getBigDecimal(int columnIndex) throws SQLException
 	{
 		AttributeValue value = getAttValue(columnIndex);
-		String sNumber = value.n();
-		if(sNumber == null)
+		if(value != null)
 		{
-			lastWasNull = true;
-			return BigDecimal.ZERO;
+			String sNumber = value.n();
+			if (sNumber != null)
+			{
+				lastWasNull = false;
+				return new BigDecimal(sNumber);
+			}
 		}
-		lastWasNull = false;
-		return new BigDecimal(sNumber);
+		lastWasNull = true;
+		return BigDecimal.ZERO;
 	}
 
 	@Override

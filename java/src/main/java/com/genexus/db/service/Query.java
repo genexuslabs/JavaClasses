@@ -26,6 +26,11 @@ public class Query implements IQuery {
 	private final HashMap<String, VarValue> mVarValues = new HashMap<>();
 	public Iterator<VarValue> getVars() { return mVarValues.values().iterator(); }
 
+	public VarValue getParm(String parmName)
+	{
+		return mVarValues.get(parmName);
+	}
+
 	protected final HashMap<Integer, GXType> parmTypes = new HashMap<>();
 
 	public Query For(String tableName)

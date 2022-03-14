@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 public class DynamoDBHelper
 {
-    public static AttributeValue ToAttributeValue(VarValue var) throws SQLException
+    public static AttributeValue toAttributeValue(VarValue var) throws SQLException
     {
 		Object value = var.value;
 		AttributeValue.Builder builder = AttributeValue.builder();
@@ -55,7 +55,7 @@ public class DynamoDBHelper
 			case Image:
 			case DateAsChar:
 			default:
-				throw new SQLException(String.format("DynamoDB unsupported type (%s)", var.type.toString()));
+				throw new SQLException(String.format("DynamoDB unsupported type (%s)", var.type));
 		}
     }
 
@@ -73,7 +73,7 @@ public class DynamoDBHelper
 		else if (attValue.hasM())
 			return new JSONObject(convertToDictionary(attValue.m())).toString();
 		else if (attValue.hasL())
-			return new JSONArray(attValue.l().stream().map(item -> getString(item)).collect(Collectors.toList())).toString();
+			return new JSONArray(attValue.l().stream().map(DynamoDBHelper::getString).collect(Collectors.toList())).toString();
 		return null;
 	}
 
@@ -92,4 +92,17 @@ public class DynamoDBHelper
 		return String.format("[ %s ]", String.join(", ", nS));
 	}
 
+    public static boolean addAttributeValue(String parmName, HashMap<String, AttributeValue> values, VarValue parm) throws SQLException
+    {
+		if(parm == null)
+			return false;
+		AttributeValue value = toAttributeValue(parm);
+		if (value != null)
+		{
+			values.put(parmName, value);
+			return true;
+		}
+		return false;
+
+    }
 }

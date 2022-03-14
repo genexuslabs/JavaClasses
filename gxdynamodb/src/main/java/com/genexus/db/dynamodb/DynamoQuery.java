@@ -15,7 +15,7 @@ public class DynamoQuery extends Query{
 		if(index.startsWith("(") && index.endsWith(")"))
 		{
 			scanIndexForward = false;
-			index = index.substring(1, index.length()-2);
+			index = index.substring(1, index.length()-1);
 		}
 		if (!RANGE_KEY_INDEX.equals(index))
 			setIndex(index);
