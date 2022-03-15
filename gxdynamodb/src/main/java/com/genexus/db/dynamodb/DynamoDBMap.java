@@ -3,7 +3,6 @@ package com.genexus.db.dynamodb;
 import com.genexus.db.service.*;
 
 public class DynamoDBMap extends IODataMapName{
-//ver DynamoDBMaps.cs
 	public DynamoDBMap(String name) {
 		super(mapAttributeMap(name));
 		needsAttributeMap = _needsAttributeMap(name);

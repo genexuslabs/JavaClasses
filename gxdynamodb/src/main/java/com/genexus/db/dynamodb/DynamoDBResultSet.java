@@ -6,6 +6,7 @@ import com.genexus.db.service.VarValue;
 import com.genexus.util.NameValuePair;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
 
@@ -24,123 +25,22 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 	public DynamoDBResultSet(DynamoDBPreparedStatement stmt) throws SQLException
 	{
 		this.stmt = stmt;
-//		execute(stmt.query, stmt.parms);
 	}
-/*
-	private static final Pattern FILTER_PATTERN = Pattern.compile("\\((.*) = :(.*)\\)");
-	private void execute(DynamoQuery query, Object[] parms) throws SQLException
-	{
-		DynamoDbClient client = stmt.getClient();
-
-		HashMap<String, AttributeValue> values = new HashMap<String, AttributeValue>();
-
-		for(Iterator<VarValue> it = query.getVars(); it.hasNext();)
-		{
-			VarValue var = it.next();
-			values.put(var.name, DynamoDBHelper.ToAttributeValue(var));
-		}
-
-		for (Iterator<NameValuePair> it = query.getAssignAtts(); it.hasNext(); )
-		{
-			NameValuePair asg = it.next();
-			String name = trimSharp(asg.name);
-			String parmName = asg.value.substring(1);
-//@todo
-//			if(!DynamoDBHelper.addAttributeValue(name, values, parms, parmName))
-//				throw new SQLException(String.format("Cannot assign attribute value (name: %s)", parmName);
-		}
-		String pattern = "\\((.*) = :(.*)\\)";
-		HashMap<String, AttributeValue> keyCondition = new HashMap<>();
-		ArrayList<String> filters = new ArrayList<String>();
-
-		HashMap<String, String> expressionAttributeNames = null;
-
-		for (Iterator<String> it = Arrays.stream(query.selectList)
-			.filter(selItem -> ((DynamoDBMap) selItem).needsAttributeMap())
-			.map(selItem -> selItem.getName()).iterator(); it.hasNext(); )
-		{
-			if(expressionAttributeNames == null)
-				expressionAttributeNames = new HashMap<>();
-			String mappedName = it.next();
-			String key = "#" + mappedName;
-			String value = mappedName;
-			expressionAttributeNames.put(key, value);
-		}
-
-		for(String keyFilter : query.filters)
-		{
-			Matcher match = FILTER_PATTERN.matcher(keyFilter);
-			if(match.matches() && match.groupCount() > 1)
-			{
-				String varName = match.group(2);
-				String name = trimSharp(match.group(1));
-//@todo
-//				if(!DynamoDBHelper.addAttributeValue(name, values, parms[varName]as ServiceParameter);
-//					throw new SQLException(String.format("Cannot assign attribute value (name: %s)", parmName);
-				keyCondition.put(name, values.get(name));
-			}
-		}
-
-		switch (query.getQueryType())
-		{
-			case QUERY:
-			{
-				if(query instanceof DynamoScan)
-				{
-					ScanRequest.Builder builder = ScanRequest.builder()
-						.tableName(query.tableName)
-						.projectionExpression(String.join(",", query.projection));
-					if(query.filters.length > 0)
-					{
-						builder.filterExpression(String.join(" AND ", query.filters)).expressionAttributeValues(values);
-					}
-					if(expressionAttributeNames != null)
-						builder.expressionAttributeNames(expressionAttributeNames);
-
-					iterator = client.scanPaginator(builder.build())
-						.stream()
-						.flatMap(response -> response.items()
-							.stream()
-							.map(map -> new HashMap<String, Object>(map)))
-						.iterator();
-				}else
-				{
-					QueryRequest.Builder builder = QueryRequest.builder()
-						.tableName(query.tableName)
-						.keyConditionExpression(String.join(" AND ", query.filters))
-						.expressionAttributeValues(values)
-						.projectionExpression(String.join(", ", query.projection))
-						.indexName(query.getIndex())
-						.scanIndexForward(query.isScanIndexForward());
-					if(expressionAttributeNames != null)
-						builder.expressionAttributeNames(expressionAttributeNames);
-
-					iterator = client.queryPaginator(builder.build())
-						.stream()
-						.flatMap(response -> response.items()
-							.stream()
-							.map(map -> new HashMap<String, Object>(map)))
-						.iterator();
-				}
-				break;
-			}
-			default: throw new UnsupportedOperationException(String.format("Work in progress: %s", query.getQueryType()));
-		}
-	}
-
-	private static String trimSharp(String name)
-	{
-		return name.startsWith("#") ? name.substring(1) : name;
-	}
-	*/
 
 	@Override
 	public boolean next() throws SQLException
 	{
-		if(iterator.hasNext())
+		try
 		{
-			currentEntry = (HashMap<String, Object>) iterator.next();
-			return true;
+			if (iterator.hasNext())
+			{
+				currentEntry = (HashMap<String, Object>) iterator.next();
+				return true;
+			}
+		}
+		catch(DynamoDbException ex)
+		{
+			throw ex;
 		}
 		return false;
 	}

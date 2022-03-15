@@ -111,7 +111,8 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 						.projectionExpression(String.join(",", query.projection));
 					if(query.filters.length > 0)
 					{
-						builder.filterExpression(String.join(" AND ", query.filters)).expressionAttributeValues(values);
+						builder.filterExpression(String.join(" AND ", query.filters))
+							.expressionAttributeValues(values);
 					}
 					if(expressionAttributeNames != null)
 						builder.expressionAttributeNames(expressionAttributeNames);

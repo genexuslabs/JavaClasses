@@ -30,7 +30,7 @@ public class DynamoDBConnection extends ServiceConnection
 	private static final String LOCAL_URL = "localurl";
 
 
-	DynamoDbClient mDynamoDB; //mDynamoDB
+	DynamoDbClient mDynamoDB;
 	Region mRegion = Region.US_EAST_1;
 
 	public DynamoDBConnection(String connUrl, Properties initialConnProps) throws SQLException
@@ -63,78 +63,9 @@ public class DynamoDBConnection extends ServiceConnection
 			AwsBasicCredentials mCredentials = AwsBasicCredentials.create(mClientId, mClientSecret);
 			builder = builder.credentialsProvider(StaticCredentialsProvider.create(mCredentials));
 		}
-
 		mDynamoDB = builder.build();
 	}
 
-/*	ServiceError getServiceError(String errorCode)
-	{
-		if(errorCode != null)
-		{
-			if (modelInfo.recordNotFoundServiceCodes != null && modelInfo.recordNotFoundServiceCodes.contains(errorCode))
-				return ServiceError.OBJECT_NOT_FOUND;
-			if (modelInfo.recordAlreadyExistsServiceCodes != null && modelInfo.recordAlreadyExistsServiceCodes.contains(errorCode))
-				return ServiceError.DUPLICATE_KEY;
-		}
-		return ServiceError.INVALID_QUERY;
-	}*/
-
-/*	private boolean getBoolean(String value)
-	{
-		return value.equalsIgnoreCase("y") || value.equalsIgnoreCase("true") || value.equalsIgnoreCase("yes");
-	}
-
-	boolean needsCheckOptimisticConcurrency(URI updURI)
-	{
-		return modelInfo.needsCheckOptimisticConcurrency(updURI);
-	}
-
-	public int getEnumValue(ClientEnumValue enumValue)
-	{
-		String typeName = enumValue.getTypeName();
-		return Integer.parseInt(modelInfo.getModel().getEnumType(new FullQualifiedName(typeName)).getMember(enumValue.getValue()).getValue());
-	}
-
-	public String toEnumValue(EdmEnumType type, int value)
-	{
-		String sValue = Integer.toString(value);
-		for(String memberName:type.getMemberNames())
-		{
-			EdmMember member = type.getMember(memberName);
-			if(member.getValue().equals(sValue))
-				return member.getName();
-		}
-		throw new RuntimeException(String.format("Cannot parse enum value %s - %d", type.toString(), value));
-	}
-
-	private String entity(String name)
-	{
-		return modelInfo.entity(name);
-	}
-
-	public String entity(EdmEntityType [] fromEntity, String name)
-	{
-		if(fromEntity == null || fromEntity[0] == null)
-			return entity((EdmEntityType)null, name);
-		String entityName = entity(fromEntity[0], name);
-		if(entityName == null)
-			return entity(name);
-		EdmNavigationProperty navProp = fromEntity[0].getNavigationProperty(entityName);
-		if(navProp != null)
-			fromEntity[0] = navProp.getType();
-		return entityName;
-	}
-
-	public String entity(EdmEntityType fromEntity, String name)
-	{
-		return modelInfo.entity(fromEntity, name);
-	}
-
-	Edm getModel()
-	{
-		return modelInfo.getModel();
-	}
-*/
 //----------------------------------------------------------------------------------------------------
 
 	@Override

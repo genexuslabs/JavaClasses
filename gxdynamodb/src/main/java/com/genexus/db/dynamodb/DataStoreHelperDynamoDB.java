@@ -4,8 +4,9 @@ import com.genexus.CommonUtil;
 import com.genexus.db.ServiceCursorBase;
 import com.genexus.db.driver.GXConnection;
 import com.genexus.db.driver.GXPreparedStatement;
-import com.genexus.db.service.*;
-import java.util.function.*;
+import com.genexus.db.service.GXType;
+import com.genexus.db.service.IQuery;
+import com.genexus.db.service.ServiceDataStoreHelper;
 
 public class DataStoreHelperDynamoDB extends ServiceDataStoreHelper
 {
