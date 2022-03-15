@@ -6,7 +6,6 @@ import com.genexus.db.service.VarValue;
 import com.genexus.util.NameValuePair;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
 
@@ -30,17 +29,10 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 	@Override
 	public boolean next() throws SQLException
 	{
-		try
+		if(iterator.hasNext())
 		{
-			if (iterator.hasNext())
-			{
-				currentEntry = (HashMap<String, Object>) iterator.next();
-				return true;
-			}
-		}
-		catch(DynamoDbException ex)
-		{
-			throw ex;
+			currentEntry = (HashMap<String, Object>) iterator.next();
+			return true;
 		}
 		return false;
 	}
