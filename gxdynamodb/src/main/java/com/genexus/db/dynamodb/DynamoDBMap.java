@@ -1,6 +1,6 @@
 package com.genexus.db.dynamodb;
 
-import com.genexus.db.service.*;
+import com.genexus.db.service.IODataMapName;
 
 public class DynamoDBMap extends IODataMapName{
 	public DynamoDBMap(String name) {

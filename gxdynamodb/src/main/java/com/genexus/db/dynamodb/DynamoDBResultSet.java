@@ -2,21 +2,14 @@ package com.genexus.db.dynamodb;
 
 import com.genexus.db.service.IOServiceContext;
 import com.genexus.db.service.ServiceResultSet;
-import com.genexus.db.service.VarValue;
-import com.genexus.util.NameValuePair;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
-import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.HashMap;
 
 public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 {
