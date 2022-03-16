@@ -1282,7 +1282,9 @@ public class PDFReportItext implements IReportHandler
             topAux = (float)convertScale(top);
 
             ColumnText Col = new ColumnText(cb);
-            Col.setAlignment(columnAlignment((alignment)));
+			int colAlignment = columnAlignment(alignment);
+			if (colAlignment!=0)
+				Col.setAlignment(colAlignment);
 			ColumnText simulationCol = new ColumnText(null);
 			float drawingPageHeight = (float)this.pageSize.getTop() - topMargin - bottomMargin;
             //Col.setSimpleColumn(llx, lly, urx, ury);
@@ -1308,14 +1310,15 @@ public class PDFReportItext implements IReportHandler
 								simulationCol.addElement((Element)objects.get(k));
 
 								Col = new ColumnText(cb);
-								Col.setAlignment(columnAlignment((alignment)));
+								if (colAlignment!=0)
+									Col.setAlignment(colAlignment);
 								Col.setSimpleColumn(leftAux + leftMargin,drawingPageHeight - bottomAux,rightAux + leftMargin,drawingPageHeight - topAux);
 
 								bottomAux = bottomAux - drawingPageHeight;
 							}
 						}
-						if (objects.get(k) instanceof Paragraph)
-							((Paragraph)objects.get(k)).setAlignment(columnAlignment(alignment));
+						if (objects.get(k) instanceof Paragraph && colAlignment!=0)
+							((Paragraph)objects.get(k)).setAlignment(colAlignment);
 
 						Col.addElement((Element)objects.get(k));
 						Col.go();

@@ -22,7 +22,7 @@ public class GXSMTPSession
 	{
 		try
 		{		
-			Class c = Class.forName("javax.mail.Session");
+			Class c = Class.forName("jakarta.mail.Session");
 			session = new SMTPSessionJavaMail();
 		}
 		catch(Throwable e)

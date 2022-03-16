@@ -220,7 +220,7 @@ public class Namespace extends AbstractNamespace
 
 	public boolean isRemoteGXDB()
 	{
-		return !gxdbLocation.equals(ApplicationContext.getInstance().getCurrentLocation());
+		return (gxdbLocation == null) ? false: !gxdbLocation.equals(ApplicationContext.getInstance().getCurrentLocation());
 	}
 
 	public boolean isClientGXDB()

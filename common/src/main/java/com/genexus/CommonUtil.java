@@ -637,19 +637,37 @@ public final class CommonUtil
 						hour ++;
 					}
 				}
-				return nullDate();
+				hour = 0;
+				return tryNullDateOrTime(year, month, day, hour, minute, second, millisecond);
 			}
 			else
 			{
-				return nullDate();
+				return tryNullDateOrTime(year, month, day, hour, minute, second, millisecond);
 			}
 		}
 		catch (Exception e)
 		{
-			return nullDate();
+			return tryNullDateOrTime(year, month, day, hour, minute, second, millisecond);
 		}
 	}
 
+	private static Date tryNullDateOrTime(int year, int month, int day , int hour , int minute , int second, int millisecond)
+	{
+			if ((year ==1 && month == 1 && day ==1) || (hour == 0 && minute == 0 && second == 0 && millisecond == 0))
+				return nullDate();
+
+			Date tryDate = ymdhmsToT_noYL(1, 1, 1, hour, minute, second, millisecond);
+			if (!tryDate.equals(nullDate()))
+				return tryDate;
+			else
+			{
+				tryDate = ymdhmsToT_noYL(year, month, day, 0, 0, 0, 0);
+				if (!tryDate.equals(nullDate()))
+					return tryDate;
+				else
+					return nullDate();
+			}
+	}
 
 	public static Date newNullDate()
 	{
@@ -1363,12 +1381,21 @@ public final class CommonUtil
 		return (appGregorianCalendar.getTime());
 	}
 
+	public static Date dtadd(Date date, double seconds)
+	{
+		if (seconds % 1 != 0)
+			return dtaddms(date, seconds);
+
+		return dtadd(date, (int)seconds);
+	}
+
 	public static Date dtadd(Date date, int seconds)
 	{
 		if (seconds % SECONDS_IN_DAY == 0)
 		{
 			return dadd(date, seconds / SECONDS_IN_DAY);
 		}
+
 		GregorianCalendar appGregorianCalendar = new GregorianCalendar(defaultTimeZone, defaultLocale);
 		appGregorianCalendar.setTime(date);
 		appGregorianCalendar.add(appGregorianCalendar.SECOND, seconds);
@@ -1564,52 +1591,48 @@ public final class CommonUtil
 		int age = 0;
 		int	multiplier = 1;
 
-		if (!fn.equals(nullDate()) && !today.equals(nullDate()))
+		Calendar calendar = GregorianCalendar.getInstance();
+		calendar.setTime(fn);
+		Calendar todayCalendar = GregorianCalendar.getInstance();
+		todayCalendar.setTime(today);
+		int fnTime 		= calendar.get(Calendar.HOUR)    * 10000 + calendar.get(Calendar.MINUTE)    * 100 + calendar.get(Calendar.SECOND);
+		int todayTime 	= todayCalendar.get(Calendar.HOUR) * 10000 + todayCalendar.get(Calendar.MINUTE) * 100 + todayCalendar.get(Calendar.SECOND);
+
+		GregorianCalendar gage1, gage2;
+		gage1 = new GregorianCalendar(defaultLocale);
+		gage2 = new GregorianCalendar(defaultLocale);
+		gage1.setTimeZone(defaultTimeZone);
+		gage2.setTimeZone(defaultTimeZone);
+
+		if	(!fnDate.before(todayDate))
 		{
-			Calendar calendar = GregorianCalendar.getInstance();
-			calendar.setTime(fn);
-			Calendar todayCalendar = GregorianCalendar.getInstance();
-			calendar.setTime(today);
-			int fnTime 		= calendar.get(Calendar.HOUR)    * 10000 + calendar.get(Calendar.MINUTE)    * 100 + calendar.get(Calendar.SECOND);
-			int todayTime 	= todayCalendar.get(Calendar.HOUR) * 10000 + todayCalendar.get(Calendar.MINUTE) * 100 + todayCalendar.get(Calendar.SECOND);
+			multiplier = -1;
+			Date aux = fn;
+			fn = today;
+			today = aux;
+		}
 
-			GregorianCalendar gage1, gage2;
-			gage1 = new GregorianCalendar(defaultLocale);
-			gage2 = new GregorianCalendar(defaultLocale);
-			gage1.setTimeZone(defaultTimeZone);
-			gage2.setTimeZone(defaultTimeZone);
+		gage1.setTime(fn);
+		gage2.setTime(today);
 
-			if	(!fnDate.before(todayDate))
+		int m = gage1.get(gage1.MONTH);
+		int d = gage1.get(gage1.DATE);
+		int y = gage1.get(gage1.YEAR);
+
+		int m1 = gage2.get(gage2.MONTH);
+		int d1 = gage2.get(gage2.DATE);
+		int y1 = gage2.get(gage2.YEAR);
+
+		age = (y1 - y);
+
+		if (age > 0)
+		{
+			if ((m > m1) ||
+				 (m == m1 && d > d1) ||
+				 (m == m1 && d == d1 && fnTime > todayTime))
 			{
-				multiplier = -1;
-				Date aux = fn;
-				fn = today;
-				today = aux;
+				age--;
 			}
-
-			gage1.setTime(fn);
-			gage2.setTime(today);
-
-			int m = gage1.get(gage1.MONTH);
-			int d = gage1.get(gage1.DATE);
-			int y = gage1.get(gage1.YEAR);
-
-			int m1 = gage2.get(gage2.MONTH);
-			int d1 = gage2.get(gage2.DATE);
-			int y1 = gage2.get(gage2.YEAR);
-
-			age = (y1 - y);
-
-			if (age > 0)
-			{
-				if ((m > m1) ||
-					 (m == m1 && d > d1) ||
-					 (m == m1 && d == d1 && fnTime > todayTime))
-				{
-					age--;
-				}
-			}
-
 		}
 
 		return multiplier * age;
@@ -2694,68 +2717,50 @@ public final class CommonUtil
         }
         //Parameters in URL are always in Invariant Format
 
-        if (className.equals("short") || className.equals("java.lang.Short") || className.equals("[S"))
-        {
-            try
+        if (className.equals("short") || className.equals("java.lang.Short") || className.equals("[S") ||
+			className.equals("byte") || className.equals("java.lang.Byte") || className.equals("[B") ||
+			className.equals("int") || className.equals("java.lang.Integer") || className.equals("[I") ||
+			className.equals("long") || className.equals("java.lang.Long") || className.equals("[J"))
+		{
+			try
             {
-           		if (objStr.isEmpty())
-					objStr = "0";
-				else 
-				{
-					int i = objStr.indexOf(".");
-					if (i >= 0)
-            			objStr =  objStr.substring(0, i);  
-				}         	
-                return Short.valueOf(objStr);
-            }
-            catch(Exception e)
-            {
-                if (fail)
-                    throw e;
-                return new Short((short)0);
-            }
-        }
-        if (className.equals("byte") || className.equals("java.lang.Byte") || className.equals("[B"))
-        {
-            try
-            {
+            	
 				if (objStr.isEmpty())
 					objStr ="0";
 				else 
 				{
-					int i = objStr.indexOf(".");
+					int i = objStr.indexOf(".") ;
 					if	(i >= 0)
-            			objStr =  objStr.substring(0, i);  
-				}               	              	
+					{
+						if (objStr.indexOf('E') == -1 && objStr.indexOf('e') == -1)
+	            			objStr =  objStr.substring(0, i);  
+						else
+							objStr = CommonUtil.strUnexponentString(objStr);
+					}
+				}
+            }
+            catch(Exception e)
+            {
+                if (fail)
+                    throw e;
+				objStr = "0";                
+            }
+			if (className.equals("short") || className.equals("java.lang.Short") || className.equals("[S"))		   
+    	    {
+        	    return Short.valueOf(objStr);        
+        	}
+        	else if (className.equals("byte") || className.equals("java.lang.Byte") || className.equals("[B"))
+        	{
                 return Byte.valueOf(objStr);
             }
-            catch(Exception e)
-            {
-                if (fail)
-                    throw e;
-                return new Byte((byte)0);
-            }
-        }
-        else if (className.equals("int") || className.equals("java.lang.Integer") || className.equals("[I"))
-        {
-            try
-            {
-            	if (objStr.isEmpty())
-					objStr ="0";
-				else 
-				{
-					int i = objStr.indexOf(".");
-					if	(i >= 0)
-            			objStr =  objStr.substring(0, i);  
-				}       	
-                return new Integer(objStr);
-            }
-            catch(Exception e)
-            {
-                if (fail)
-                    throw e;
-                return new Integer(0);
-            }
+			else if (className.equals("int") || className.equals("java.lang.Integer") || className.equals("[I"))
+			{
+				return  Integer.valueOf(objStr);
+			}    
+			else if (className.equals("long") || className.equals("java.lang.Long") || className.equals("[J"))
+			{
+				return Long.valueOf(objStr);
+			}
         }
         else if (className.equals("string") || className.indexOf("java.lang.String") != -1)
         {
@@ -2773,7 +2778,7 @@ public final class CommonUtil
             {
                 if (fail)
                     throw e;
-                return new Double(0);
+                return Double.valueOf("0");
             }
         }
         else if (className.equals("float") || className.equals("java.lang.Float") || className.equals("[F"))
@@ -2788,30 +2793,7 @@ public final class CommonUtil
             {
                 if (fail)
                     throw e;
-                return new Float(0);
-            }
-        }
-        else if (className.equals("long") || className.equals("java.lang.Long") || className.equals("[J"))
-        {
-            try
-            {
-            	
-				if (objStr.isEmpty())
-					objStr ="0";
-				else 
-				{
-					int i = objStr.indexOf(".");
-					if	(i >= 0)
-            			objStr =  objStr.substring(0, i);  
-				}
-                return Long.valueOf(CommonUtil.strUnexponentString(objStr));
-
-            }
-            catch(Exception e)
-            {
-                if (fail)
-                    throw e;
-                return new Long(0);
+                return Float.valueOf("0");
             }
         }
         else if (className.equals("boolean") || className.equals("java.lang.Boolean") || className.equals("[Z"))
@@ -2824,14 +2806,14 @@ public final class CommonUtil
             {
                 if (fail)
                     throw e;
-                return new Boolean(false);
+                return Boolean.valueOf("false");
             }
         }
         else if (className.indexOf("java.math.BigDecimal") != -1)
         {
             try
             {
-            		if (objStr.isEmpty())
+            	if (objStr.isEmpty())
             			objStr = "0";                	
                 return DecimalUtil.stringToDec(objStr);
             }

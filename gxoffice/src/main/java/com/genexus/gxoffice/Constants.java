@@ -1,5 +1,7 @@
 package com.genexus.gxoffice;
 
+import com.genexus.db.driver.ResourceAccessControlList;
+
 public class Constants {
-	public static boolean EXTERNAL_PRIVATE_UPLOAD = true;	
+	public static ResourceAccessControlList EXTERNAL_UPLOAD_ACL = ResourceAccessControlList.Private;
 }
