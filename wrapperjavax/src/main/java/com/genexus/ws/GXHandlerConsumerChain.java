@@ -151,6 +151,12 @@ public class GXHandlerConsumerChain implements SOAPHandler<SOAPMessageContext>
 					WSSecSignature sign = new WSSecSignature();
 					sign.setKeyIdentifierType(wsSignature.getKeyIdentifierType());
 					sign.setUserInfo(wsSignature.getAlias(), wsSignature.getKeystore().getPassword());
+					if (wsSignature.getCanonicalizationalgorithm() != null)
+						sign.setSigCanonicalization(wsSignature.getCanonicalizationalgorithm());
+					if (wsSignature.getDigest() != null)
+						sign.setDigestAlgo(wsSignature.getDigest());
+					if (wsSignature.getSignaturealgorithm() != null)
+						sign.setSignatureAlgorithm(wsSignature.getSignaturealgorithm());
 					signedDoc = sign.build(doc, signatureCrypto, secHeader);
 
 					if (expirationTimeout > 0)
