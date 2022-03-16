@@ -58,10 +58,9 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 		dumpRequest(awsProxyRequest);
 
 		logger.debug("Before handle Request");
-		AwsProxyResponse response = null;
-
+		
 		awsProxyRequest.setPath(path.replace(BASE_REST_PATH, "/"));
-		response = this.handler.proxy(awsProxyRequest, context);
+		AwsProxyResponse response = this.handler.proxy(awsProxyRequest, context);
 
 		//This code should be removed when GAM services get implemented via API Object.
 		if (response.getStatusCode() == 404) {
