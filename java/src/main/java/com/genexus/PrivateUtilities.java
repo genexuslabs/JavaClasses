@@ -25,6 +25,7 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.internet.GXInternetConstants;
 import com.genexus.platform.NativeFunctions;
 import com.genexus.util.Codecs;
 import com.genexus.util.IniFile;
@@ -767,38 +768,64 @@ public final class PrivateUtilities
                 try { destination.close(); } catch (IOException e) { ; }
 	    }
 	}
-
+	public static String BOMInputStreamToStringUTF8(InputStream istream) {
+		if (istream == null) {
+			throw new IllegalArgumentException("BOMInputStreamToStringUTF8 -> Input stream can't be null");
+		}
+		boolean firstLine = true;
+		StringBuilder stringBuilder = new StringBuilder();
+		try (BufferedReader r = new BufferedReader(new InputStreamReader(istream, "UTF8"))) {
+			for (String s = ""; (s = r.readLine()) != null; ) {
+				if (firstLine) {
+					s = removeUTF8BOM(s);
+					firstLine = false;
+				}
+				stringBuilder.append(s + GXInternetConstants.CRLFString);
+			}
+			return stringBuilder.toString();
+		} catch (Exception e) {
+			System.err.println("Error reading stream:" + e.getMessage());
+			return "";
+		}
+	}
+	static final String UTF8_BOM = "\uFEFF";
+	private static String removeUTF8BOM(String s) {
+		if (s.startsWith(UTF8_BOM)) {
+			s = s.substring(1);
+		}
+		return s;
+	}
 
 	public static void InputStreamToFile(InputStream source, String fileName)
-	{
-		if	(source == null)
-		{
-			throw new IllegalArgumentException("InputStreamToFile -> Input stream can't be null");
-		}
+					{
+						if	(source == null)
+						{
+							throw new IllegalArgumentException("InputStreamToFile -> Input stream can't be null");
+						}
 
-		byte[] buffer;
-		int bytes_read;
-		OutputStream destination = null;
-		try 
-		{
-			destination = new BufferedOutputStream(new FileOutputStream(fileName));
-			buffer = new byte[1024];
-		 
-			while (true) 
-			{
-				bytes_read = source.read(buffer);
-				if (bytes_read == -1) break;
-				destination.write(buffer, 0, bytes_read);
-			}
-		}
-		catch (IOException e)
-		{
-			System.err.println("Error writing file " + fileName + ":" + e.getMessage());
-		}
-		finally 
-		{
-			if (source != null) 
-				try { source.close(); } catch (IOException e) { ; }
+						byte[] buffer;
+						int bytes_read;
+						OutputStream destination = null;
+						try
+						{
+							destination = new BufferedOutputStream(new FileOutputStream(fileName));
+							buffer = new byte[1024];
+
+							while (true)
+							{
+								bytes_read = source.read(buffer);
+								if (bytes_read == -1) break;
+								destination.write(buffer, 0, bytes_read);
+							}
+						}
+						catch (IOException e)
+						{
+							System.err.println("Error writing file " + fileName + ":" + e.getMessage());
+						}
+						finally
+						{
+							if (source != null)
+								try { source.close(); } catch (IOException e) { ; }
 			if (destination != null) 
 				try {destination.close(); } catch (IOException e) { ; }
 		}
