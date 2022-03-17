@@ -51,7 +51,7 @@ public class DataStoreHelperDynamoDB extends ServiceDataStoreHelper
 			case Text:
 			case Image:
 			case UniqueIdentifier:
-			case Xml: return "";
+			case Xml:
 			case DateAsChar: return "";
 
 			case Geography:

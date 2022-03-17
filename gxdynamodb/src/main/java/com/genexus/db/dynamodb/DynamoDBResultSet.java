@@ -13,18 +13,18 @@ import java.util.HashMap;
 
 public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 {
-	private DynamoDBPreparedStatement stmt;
+	private final DynamoDBPreparedStatement stmt;
 	public DynamoDBResultSet(DynamoDBPreparedStatement stmt) throws SQLException
 	{
 		this.stmt = stmt;
 	}
 
 	@Override
-	public boolean next() throws SQLException
+	public boolean next()
 	{
 		if(iterator.hasNext())
 		{
-			currentEntry = (HashMap<String, Object>) iterator.next();
+			currentEntry = iterator.next();
 			return true;
 		}
 		return false;
@@ -34,7 +34,7 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 
 	private boolean lastWasNull;
 	@Override
-	public boolean wasNull() throws SQLException
+	public boolean wasNull()
 	{
 		return value == null || lastWasNull;
 	}
@@ -55,7 +55,7 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 			if (sNumber != null)
 				return Long.parseLong(sNumber);
 			else if (value.bool() != null)
-				return value.bool().booleanValue() ? 1 : 0;
+				return value.bool() ? 1 : 0;
 		}
 		lastWasNull = true;
 		return 0;
@@ -87,13 +87,13 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 	}
 
 	@Override
-	public <T> T getAs(Class<T> reference, int columnIndex, T defaultValue) throws SQLException
+	public <T> T getAs(Class<T> reference, int columnIndex, T defaultValue)
 	{
 		throw new UnsupportedOperationException(String.format("Data Type: %s", reference.getName()));
 	}
 
 	@Override
-	public String getString(int columnIndex) throws SQLException
+	public String getString(int columnIndex)
 	{
 		String value = DynamoDBHelper.getString(getAttValue(columnIndex));
 		lastWasNull = value == null;
@@ -101,7 +101,7 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 	}
 
 	@Override
-	public boolean getBoolean(int columnIndex) throws SQLException
+	public boolean getBoolean(int columnIndex)
 	{
 		AttributeValue value = getAttValue(columnIndex);
 		if(value != null)
@@ -110,7 +110,7 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 			if(boolValue != null)
 			{
 				lastWasNull = false;
-				return boolValue.booleanValue();
+				return boolValue;
 			}
 		}
 		lastWasNull = true;
@@ -118,50 +118,43 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 	}
 
 	@Override
-	public byte getByte(int columnIndex) throws SQLException
+	public byte getByte(int columnIndex)
 	{
 		return (byte)getNumeric(columnIndex);
 	}
 
 	@Override
-	public short getShort(int columnIndex) throws SQLException
+	public short getShort(int columnIndex)
 	{
 		return (short)getNumeric(columnIndex);
 	}
 
 	@Override
-	public int getInt(int columnIndex) throws SQLException
+	public int getInt(int columnIndex)
 	{
 		return (int)getNumeric(columnIndex);
 	}
 
 	@Override
-	public long getLong(int columnIndex) throws SQLException
+	public long getLong(int columnIndex)
 	{
-		return (long)getNumeric(columnIndex);
+		return getNumeric(columnIndex);
 	}
 
 	@Override
-	public float getFloat(int columnIndex) throws SQLException
+	public float getFloat(int columnIndex)
 	{
 		return (float)getDecimal(columnIndex);
 	}
 
 	@Override
-	public double getDouble(int columnIndex) throws SQLException
+	public double getDouble(int columnIndex)
 	{
-		return (double)getDecimal(columnIndex);
+		return getDecimal(columnIndex);
 	}
 
 	@Override
-	@Deprecated
-	public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException
-	{
-		return getBigDecimal(columnIndex).setScale(scale);
-	}
-
-	@Override
-	public BigDecimal getBigDecimal(int columnIndex) throws SQLException
+	public BigDecimal getBigDecimal(int columnIndex)
 	{
 		AttributeValue value = getAttValue(columnIndex);
 		if(value != null)

@@ -9,7 +9,6 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClientBuilder;
 
 import java.net.URI;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.concurrent.Executor;
@@ -27,7 +26,7 @@ public class DynamoDBConnection extends ServiceConnection
 	DynamoDbClient mDynamoDB;
 	Region mRegion = Region.US_EAST_1;
 
-	public DynamoDBConnection(String connUrl, Properties initialConnProps) throws SQLException
+	public DynamoDBConnection(String connUrl, Properties initialConnProps)
 	{
 		super(connUrl, initialConnProps); // After initialization use props variable from super class to manage properties
 		initializeDBConnection(connUrl);
@@ -36,9 +35,9 @@ public class DynamoDBConnection extends ServiceConnection
 	private void initializeDBConnection(String connUrl)
 	{
 		String mLocalUrl = null, mClientId = null, mClientSecret = null;
-		for(Enumeration keys = props.keys(); keys.hasMoreElements(); )
+		for(Enumeration<Object> keys = props.keys(); keys.hasMoreElements(); )
 		{
-			String key = ((String)keys.nextElement());
+			String key = (String)keys.nextElement();
 			String value = props.getProperty(key, key);
 			switch(key.toLowerCase())
 			{
@@ -52,7 +51,8 @@ public class DynamoDBConnection extends ServiceConnection
 		DynamoDbClientBuilder builder = DynamoDbClient.builder().region(mRegion);
 		if(mLocalUrl != null)
 			builder = builder.endpointOverride(URI.create(mLocalUrl));
-		if(mClientId != null && mClientSecret != null)
+		if(mClientId != null && !mClientId.equals("") &&
+			mClientSecret != null && !mClientSecret.equals(""))
 		{
 			AwsBasicCredentials mCredentials = AwsBasicCredentials.create(mClientId, mClientSecret);
 			builder = builder.credentialsProvider(StaticCredentialsProvider.create(mCredentials));

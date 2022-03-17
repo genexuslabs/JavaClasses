@@ -104,7 +104,7 @@ public abstract class ServiceResultSet<ValueType> implements ResultSet
 	@Deprecated
     public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException
     {
-        return getAs(BigDecimal.class, columnIndex, BigDecimal.ZERO);
+		return getBigDecimal(columnIndex).setScale(scale);
     }
 
     @Override
