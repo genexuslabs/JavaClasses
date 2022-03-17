@@ -514,8 +514,9 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		HashSet<String> inParmsMetadataHash;
 		boolean anyError;
 
-		private void parseInputJSonMessage(JSONObject objMessage, GXWebPanel targetObj) throws JSONException {
+		private void parseInputJSonMessage(String jsonMessage, GXWebPanel targetObj) throws JSONException {
 			try {
+				JSONObject objMessage = new JSONObject(jsonMessage);
 				if (objMessage.has("parms"))
 					inParmsValues = objMessage.getJSONArray("parms");
 				if (objMessage.has("hsh"))
@@ -1093,8 +1094,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 
 		public String invoke(String JsonMessage, GXWebPanel targetObj)
 				throws Exception {
-			JSONObject objMessage = new JSONObject(JsonMessage);
-			parseInputJSonMessage(objMessage, targetObj);
+			parseInputJSonMessage(JsonMessage, targetObj);
   			this.targetObj.setFullAjaxMode();
 			this.targetObj.createObjects();
 			this.targetObj.initialize();
