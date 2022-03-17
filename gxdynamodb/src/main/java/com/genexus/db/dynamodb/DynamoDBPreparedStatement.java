@@ -65,10 +65,7 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 			if(!DynamoDBHelper.addAttributeValue(name, values, query.getParm(parmName)))
 				throw new SQLException(String.format("Cannot assign attribute value (name: %s)", parmName));
 		}
-		String pattern = "\\((.*) = :(.*)\\)";
 		HashMap<String, AttributeValue> keyCondition = new HashMap<>();
-		ArrayList<String> filters = new ArrayList<>();
-
 		HashMap<String, String> expressionAttributeNames = null;
 
 		for (Iterator<String> it = Arrays.stream(query.selectList)
