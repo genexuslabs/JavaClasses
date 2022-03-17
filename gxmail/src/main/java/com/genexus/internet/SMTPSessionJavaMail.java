@@ -2,15 +2,15 @@ package com.genexus.internet;
 
 import java.io.*;
 import java.util.*;
-import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
+import jakarta.mail.*;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 
 import com.genexus.CommonUtil;
 
-import javax.mail.internet.MimeBodyPart;
-import javax.activation.*;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.activation.*;
 
 public final class SMTPSessionJavaMail implements GXInternetConstants,ISMTPSession
 {
