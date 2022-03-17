@@ -39,7 +39,8 @@ public class DynamoDBHelper
 			case NChar:
 			case NVarChar:
 			case NText:
-				return builder.s(value.toString()).build();
+
+			// Unused datatypes
 			case UniqueIdentifier:
 			case Xml:
 			case Geography:

@@ -1,5 +1,6 @@
 package com.genexus.db.dynamodb;
-import com.genexus.db.service.*;
+
+import com.genexus.db.service.Query;
 
 public class DynamoQuery extends Query{
 	private String index;

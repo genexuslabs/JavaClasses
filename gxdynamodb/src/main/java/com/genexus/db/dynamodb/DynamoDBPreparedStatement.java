@@ -79,8 +79,7 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 				expressionAttributeNames = new HashMap<>();
 			String mappedName = it.next();
 			String key = "#" + mappedName;
-			String value = mappedName;
-			expressionAttributeNames.put(key, value);
+			expressionAttributeNames.put(key, mappedName);
 		}
 
 		if(query.getQueryType() != QueryType.QUERY)
@@ -173,7 +172,7 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 				client.deleteItem(request);
 				break;
 			}
-			default: throw new UnsupportedOperationException(String.format("Work in progress: %s", query.getQueryType()));
+			default: throw new UnsupportedOperationException(String.format("Invalid query type: %s", query.getQueryType()));
 		}
 		return 0;
 	}
