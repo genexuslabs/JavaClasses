@@ -44,15 +44,15 @@ public class DataStoreHelperDynamoDB extends ServiceDataStoreHelper
 			case Clob:
 			case VarChar:
 			case Raw:
-			case Blob: return "";
-			case Boolean: return false;
-			case Decimal: return 0f;
+			case Blob:
 			case NText:
 			case Text:
 			case Image:
 			case UniqueIdentifier:
 			case Xml:
 			case DateAsChar: return "";
+			case Boolean: return false;
+			case Decimal: return 0f;
 
 			case Geography:
 			case Geopoint:

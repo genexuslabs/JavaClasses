@@ -1,6 +1,7 @@
 package com.genexus.db.dynamodb;
 
 import com.genexus.db.service.ServiceConnection;
+import org.apache.commons.lang.StringUtils;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -16,6 +17,7 @@ import java.util.concurrent.Executor;
 public class DynamoDBConnection extends ServiceConnection
 {
 	private static final String GXDYNAMODB_VERSION = "1.0";
+	private static final String GXDYNAMODB_PRODUCT_NAME = "DynamoDB";
 
 	private static final String CLIENT_ID = "user";
 	private static final String CLIENT_SECRET = "password";
@@ -51,8 +53,8 @@ public class DynamoDBConnection extends ServiceConnection
 		DynamoDbClientBuilder builder = DynamoDbClient.builder().region(mRegion);
 		if(mLocalUrl != null)
 			builder = builder.endpointOverride(URI.create(mLocalUrl));
-		if(mClientId != null && !mClientId.equals("") &&
-			mClientSecret != null && !mClientSecret.equals(""))
+		if(StringUtils.isNotEmpty(mClientId) &&
+			StringUtils.isNotEmpty(mClientSecret))
 		{
 			AwsBasicCredentials mCredentials = AwsBasicCredentials.create(mClientId, mClientSecret);
 			builder = builder.credentialsProvider(StaticCredentialsProvider.create(mCredentials));
@@ -79,7 +81,7 @@ public class DynamoDBConnection extends ServiceConnection
 	@Override
 	public String getDatabaseProductName()
 	{
-		return "DynamoDB";
+		return GXDYNAMODB_PRODUCT_NAME;
 	}
 
 	@Override

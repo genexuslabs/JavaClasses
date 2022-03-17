@@ -7,7 +7,6 @@ public class DynamoQuery extends Query{
 
 	private boolean scanIndexForward = true;
 	private static final String RANGE_KEY_INDEX = "RangeKey";
-	private static final char[] indexTrimChars = new char[] { '(', ')' };
 
 	@Override
 	public DynamoQuery orderBy(String index)

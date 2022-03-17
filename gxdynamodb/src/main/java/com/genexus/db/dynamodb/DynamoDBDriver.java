@@ -28,7 +28,7 @@ public class DynamoDBDriver implements Driver
 	}
 
 	@Override
-	public Connection connect(String url, Properties info) throws SQLException
+	public Connection connect(String url, Properties info)
 	{
 		if(!acceptsURL(url))
 			return null;

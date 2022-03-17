@@ -9,7 +9,6 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.HashMap;
 
 public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 {
@@ -75,7 +74,7 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 		return 0;
 	}
 
-	private Instant getInstant(int columnIndex) throws SQLException
+	private Instant getInstant(int columnIndex)
 	{
 		String value = getString(columnIndex);
 		if(value == null)
@@ -171,13 +170,13 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 	}
 
 	@Override
-	public java.sql.Date getDate(int columnIndex) throws SQLException
+	public java.sql.Date getDate(int columnIndex)
 	{
 		return getAs(java.sql.Date.class, columnIndex, new java.sql.Date(0));
 	}
 
 	@Override
-	public Time getTime(int columnIndex) throws SQLException
+	public Time getTime(int columnIndex)
 	{
 		return getAs(Time.class, columnIndex, new Time(0));
 	}
