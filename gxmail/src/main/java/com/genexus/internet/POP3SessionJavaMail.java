@@ -12,18 +12,18 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Properties;
 
-import javax.mail.Flags;
-import javax.mail.Folder;
-import javax.mail.Header;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.NoSuchProviderException;
-import javax.mail.Part;
-import javax.mail.Session;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeUtility;
+import jakarta.mail.Flags;
+import jakarta.mail.Folder;
+import jakarta.mail.Header;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.NoSuchProviderException;
+import jakarta.mail.Part;
+import jakarta.mail.Session;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeUtility;
 
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.sun.mail.pop3.POP3Folder;
@@ -92,7 +92,12 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
 		props.setProperty("mail.pop3.host", pop3Host);
 		props.setProperty("mail.pop3.port", String.valueOf(pop3Port));	
 		props.setProperty("mail.pop3.connectiontimeout", String.valueOf(timeout));
-		props.setProperty("mail.pop3.timeout", String.valueOf(timeout));		
+		props.setProperty("mail.pop3.timeout", String.valueOf(timeout));
+
+		if (sessionInfo.getAuthenticationMethod().length() > 0) {
+			props.setProperty("mail.pop3.auth.mechanisms", sessionInfo.getAuthenticationMethod().toUpperCase());
+		}
+
 		props.setProperty("mail.pop3.ssl.enable", String.valueOf(secureConnection));
 		
 		session = Session.getInstance(props);
