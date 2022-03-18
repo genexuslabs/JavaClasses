@@ -1,5 +1,6 @@
 package com.genexus.db.dynamodb;
 
+import com.genexus.CommonUtil;
 import com.genexus.db.service.IOServiceContext;
 import com.genexus.db.service.ServiceResultSet;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -9,6 +10,12 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.TemporalAccessor;
 
 public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 {
@@ -74,15 +81,33 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 		return 0;
 	}
 
+	private static final DateTimeFormatter ISO_DATE_TIME_OR_DATE = new DateTimeFormatterBuilder()
+		.parseCaseInsensitive()
+		.append(DateTimeFormatter.ISO_LOCAL_DATE)
+		.optionalStart()
+		.appendLiteral('T')
+		.append(DateTimeFormatter.ISO_LOCAL_TIME)
+		.optionalStart()
+		.appendOffsetId()
+		.optionalStart()
+		.appendLiteral('[')
+		.parseCaseSensitive()
+		.appendZoneRegionId()
+		.appendLiteral(']').toFormatter();
+
 	private Instant getInstant(int columnIndex)
 	{
 		String value = getString(columnIndex);
 		if(value == null)
 		{
 			lastWasNull = true;
-			return Instant.EPOCH;
+			return CommonUtil.nullDate().toInstant();
 		}
-		return Instant.parse(value);
+
+		TemporalAccessor accessor = ISO_DATE_TIME_OR_DATE.parseBest(value, LocalDateTime::from, LocalDate::from);
+		if(accessor instanceof  LocalDateTime)
+			return ((LocalDateTime) accessor).toInstant(ZoneOffset.UTC);
+		else return LocalDate.from(accessor).atStartOfDay().toInstant(ZoneOffset.UTC);
 	}
 
 	@Override
@@ -182,7 +207,7 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 	}
 
 	@Override
-	public Timestamp getTimestamp(int columnIndex) throws SQLException
+	public Timestamp getTimestamp(int columnIndex)
 	{
 		return java.sql.Timestamp.from(getInstant(columnIndex));
 	}
