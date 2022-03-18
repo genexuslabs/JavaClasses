@@ -8,6 +8,9 @@ public class GXWSSignature implements IGXWSSignature
 	private IGXWSSecurityKeyStore keystore;
 	private String alias;
 	private int keyIdentifierType;
+	private String canonicalizationAlgorithm;
+	private String digest;
+	private String signatureAlgorithm;
 
 	public GXWSSignature()
 	{
@@ -44,5 +47,17 @@ public class GXWSSignature implements IGXWSSignature
 	{
 		this.keyIdentifierType = keyIdentifierType;
 	}
+
+	public String getCanonicalizationalgorithm() {return canonicalizationAlgorithm;}
+
+	public void setCanonicalizationalgorithm(String algorithm) {this.canonicalizationAlgorithm = algorithm;}
+
+	public String getDigest() {return digest;}
+
+	public void setDigest(String digest) {this.digest = digest;}
+
+	public String getSignaturealgorithm() { return signatureAlgorithm;}
+
+	public void setSignaturealgorithm(String algorithm) {this.signatureAlgorithm = algorithm;}
 }
 
