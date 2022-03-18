@@ -3,6 +3,7 @@ package com.genexus.db.dynamodb;
 import com.genexus.CommonUtil;
 import com.genexus.db.service.IOServiceContext;
 import com.genexus.db.service.ServiceResultSet;
+import org.apache.commons.lang.time.DateUtils;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.math.BigDecimal;
@@ -197,7 +198,7 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 	@Override
 	public java.sql.Date getDate(int columnIndex)
 	{
-		return getAs(java.sql.Date.class, columnIndex, new java.sql.Date(0));
+		return java.sql.Date.valueOf(getTimestamp(columnIndex).toLocalDateTime().toLocalDate());
 	}
 
 	@Override
