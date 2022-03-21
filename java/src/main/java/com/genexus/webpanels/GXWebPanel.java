@@ -1127,8 +1127,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		}
 
 		public String invoke(String JsonMessage, GXWebPanel targetObj) throws Exception {
-			JSONObject objMessage = new JSONObject(JsonMessage);
-			parseInputJSonMessage(objMessage, targetObj);
+			parseInputJSonMessage(JsonMessage, targetObj);
 			this.targetObj.setFullAjaxMode();
 			this.targetObj.createObjects();
 			this.targetObj.initialize();
