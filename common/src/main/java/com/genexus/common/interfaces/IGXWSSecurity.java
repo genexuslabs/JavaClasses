@@ -6,5 +6,7 @@ public interface IGXWSSecurity
 	void setSignature(IGXWSSignature signature);
 	IGXWSEncryption getEncryption();
 	void setEncryption(IGXWSEncryption encryption);
+	int getExpirationTimeout();
+	void setExpirationTimeout(int expiresTimeout);
 }
 

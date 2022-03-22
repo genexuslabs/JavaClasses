@@ -17,6 +17,7 @@ import org.apache.ws.security.components.crypto.CryptoFactory;
 import org.apache.ws.security.message.WSSecEncrypt;
 import org.apache.ws.security.message.WSSecHeader;
 import org.apache.ws.security.message.WSSecSignature;
+import org.apache.ws.security.message.WSSecTimestamp;
 import org.w3c.dom.*;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
@@ -123,9 +124,11 @@ public class GXHandlerConsumerChain implements SOAPHandler<SOAPMessageContext>
 			//ws-security
 			IGXWSSignature wsSignature = null;
 			IGXWSEncryption wsEncryption = null;
+			int expirationTimeout = 0;
 			if (location.getWSSecurity() != null) {
 				wsSignature = location.getWSSecurity().getSignature();
 				wsEncryption = location.getWSSecurity().getEncryption();
+				expirationTimeout = location.getWSSecurity().getExpirationTimeout();
 			}
 
 			if (Boolean.TRUE.equals(outboundProperty) && soapHeaderRaw == null && ((wsSignature != null && !wsSignature.getAlias().isEmpty()) || (wsEncryption != null && !wsEncryption.getAlias().isEmpty())))
@@ -148,7 +151,20 @@ public class GXHandlerConsumerChain implements SOAPHandler<SOAPMessageContext>
 					WSSecSignature sign = new WSSecSignature();
 					sign.setKeyIdentifierType(wsSignature.getKeyIdentifierType());
 					sign.setUserInfo(wsSignature.getAlias(), wsSignature.getKeystore().getPassword());
+					if (wsSignature.getCanonicalizationalgorithm() != null)
+						sign.setSigCanonicalization(wsSignature.getCanonicalizationalgorithm());
+					if (wsSignature.getDigest() != null)
+						sign.setDigestAlgo(wsSignature.getDigest());
+					if (wsSignature.getSignaturealgorithm() != null)
+						sign.setSignatureAlgorithm(wsSignature.getSignaturealgorithm());
 					signedDoc = sign.build(doc, signatureCrypto, secHeader);
+
+					if (expirationTimeout > 0)
+					{
+						WSSecTimestamp timestamp = new WSSecTimestamp();
+						timestamp.setTimeToLive(expirationTimeout);
+						signedDoc = timestamp.build(signedDoc, secHeader);
+					}
 				}
 
 				//Encryption
