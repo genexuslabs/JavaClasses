@@ -2,9 +2,13 @@ package com.genexus.db.dynamodb;
 
 import com.genexus.CommonUtil;
 import com.genexus.db.service.IOServiceContext;
+import com.genexus.db.service.ServiceError;
+import com.genexus.db.service.ServiceException;
 import com.genexus.db.service.ServiceResultSet;
 import org.apache.commons.lang.time.DateUtils;
+import software.amazon.awssdk.awscore.exception.AwsErrorDetails;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -27,14 +31,24 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 	}
 
 	@Override
-	public boolean next()
+	public boolean next() throws SQLException
 	{
-		if(iterator.hasNext())
+		try
 		{
-			currentEntry = iterator.next();
-			return true;
+			if(iterator.hasNext())
+			{
+				currentEntry = iterator.next();
+				return true;
+			}
+			return false;
+		}catch(DynamoDbException e)
+		{
+			AwsErrorDetails details = e.awsErrorDetails();
+			if(details != null && details.errorCode().equals(DynamoDBErrors.ValidationException) &&
+			  details.errorMessage().contains(DynamoDBErrors.ValidationExceptionMessageKey))
+				return false; // Handles special case where a string key attribute is filtered with an empty value which is not supported on DynamoDB but should yield a not record found in GX
+			throw e;
 		}
-		return false;
 	}
 
 	private static final IOServiceContext SERVICE_CONTEXT = null;
