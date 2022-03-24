@@ -530,7 +530,7 @@ public abstract class HttpContext
 			}
 			else
 			{
-				if (!isGxThemeHidden) this.StylesheetsToLoad.put(styleSheet);
+				if (!isGxThemeHidden) this.StylesheetsToLoad.put(oldConvertURL(styleSheet) + urlBuildNumber);
 			}
 		}
 	}
