@@ -468,6 +468,12 @@ public abstract class HttpAjaxContext
           }
         }
 
+		public void ajax_rsp_assign_grid(String gridName, com.genexus.webpanels.GXWebGrid gridObj)
+		{
+			Object jsonObj = ((IGxJSONAble) gridObj).GetJSONObject();
+			Grids.add(jsonObj);
+		}
+
         public void ajax_rsp_assign_grid(String gridName, com.genexus.webpanels.GXWebGrid gridObj, String Control)
         {
 			Object jsonObj = ((IGxJSONAble) gridObj).GetJSONObject();
