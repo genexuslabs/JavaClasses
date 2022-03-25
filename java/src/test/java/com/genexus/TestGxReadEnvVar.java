@@ -15,8 +15,8 @@ public class TestGxReadEnvVar {
 
 	private static final String GX_PROP = "DB_URL";
 	private static final String GX_DATASTORE = "COM.MOCKDB|DEFAULT";
-	private static final String FIRST_ENV_VAR = "GX_COM_MOCKDB_DEFAULT_DB_URL";
-	private static final String SECOND_ENV_VAR = "GX_DEFAULT_DB_URL";
+	private static final String FIRST_ENV_VAR = "GX_DEFAULT_DB_URL";
+	private static final String SECOND_ENV_VAR = "GX_COM_MOCKDB_DEFAULT_DB_URL";
 	private static final String FIRST_VALUE = "FirstDB_URL";
 	private static final String SECOND_VALUE = "SecondDB_URL";
 
