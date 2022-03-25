@@ -14,17 +14,18 @@ public class EnvVarReader {
 		}else{
 			String prefix = ENVVAR_PREFIX;
 			if (section != null && !section.isEmpty() && section != "Client") {
-				String realKey = key;
 				section = replaceInvalidChars(section);
-				String sectionWithNamespce = section;
+				String realKey = key;
+				key = String.format("%s%s_%s", prefix, section.toUpperCase(), key.toUpperCase());
+				String envVar = System.getenv(key);
+				if (envVar != null)
+					return envVar;
 				if (ModelContext.getModelContext() != null) {
 					section = section.replace(replaceInvalidChars(ModelContext.getModelContext().getPackageName() + "|").toUpperCase(), "");
-					key = String.format("%s%s_%s", prefix, section.toUpperCase(), key.toUpperCase());
-					String envVar = System.getenv(key);
-					if (envVar != null)
-						return envVar;
+					key = String.format("%s%s_%s", prefix, section.toUpperCase(), realKey.toUpperCase());
 				}
-				key = String.format("%s%s_%s", prefix, sectionWithNamespce.toUpperCase(), realKey.toUpperCase());
+				else
+					return null;
 			} else
 				key = String.format("%s%s", prefix, key.toUpperCase());
 			return System.getenv(key);
