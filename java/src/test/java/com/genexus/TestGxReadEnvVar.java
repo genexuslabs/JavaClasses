@@ -36,6 +36,10 @@ public class TestGxReadEnvVar {
 			setEnvVar(newenv);
 			envVarValue = EnvVarReader.getEnvironmentVar(GX_DATASTORE, GX_PROP, null);
 			Assert.assertEquals(SECOND_VALUE, envVarValue);
+			newenv.put(FIRST_ENV_VAR, null);
+			setEnvVar(newenv);
+			newenv.put(SECOND_ENV_VAR, null);
+			setEnvVar(newenv);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
