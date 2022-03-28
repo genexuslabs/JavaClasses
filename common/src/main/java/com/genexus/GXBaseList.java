@@ -14,11 +14,6 @@ public abstract class GXBaseList<T> extends Vector<T> implements Serializable, I
 		IsAssigned = true;
 	}
 
-	public void clear() {
-		super.clear();
-		IsAssigned = true;
-	}
-
 	public boolean getIsAssigned()
 	{
 		return this.IsAssigned;
@@ -29,7 +24,8 @@ public abstract class GXBaseList<T> extends Vector<T> implements Serializable, I
 	}
 	public void removeAllItems()
 	{
-		clear();
+		super.clear();
+		IsAssigned = true;
 	}
 	public byte removeItem(int index)
 	{
