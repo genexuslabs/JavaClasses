@@ -69,7 +69,7 @@ public class GXFile extends AbstractGXFile {
 
 		switch (sourceType) {
 			case LocalFile:
-				FileSource = new GXFileInfo(Paths.get(baseDirectoryPath, fileName).toFile());
+				createFileSourceLocal(baseDirectoryPath, fileName);
 				break;
 			case ExternalFile:
 				FileSource = new GXExternalFileInfo(fileName, Application.getExternalProvider(), true, fileAcl);
@@ -77,7 +77,7 @@ public class GXFile extends AbstractGXFile {
 			case Unknown:
 				ExternalProvider storageProvider = Application.getExternalProvider();
 				if (storageProvider == null || PrivateUtilities.isAbsoluteFilePath(fileName)) {
-					FileSource = new GXFileInfo(Paths.get(baseDirectoryPath, fileName).toFile());
+					createFileSourceLocal(baseDirectoryPath, fileName);
 				}
 				else {
 					FileSource = new GXExternalFileInfo(fileName, storageProvider, true, fileAcl);
@@ -86,7 +86,13 @@ public class GXFile extends AbstractGXFile {
 		}
 	}
 
-    public GXFile(IGXFileInfo fileInfo) {
+	private void createFileSourceLocal(String baseDirectoryPath, String fileName) {
+		boolean isAbsolutePath = PrivateUtilities.isAbsoluteFilePath(fileName);
+		String absoluteOrRelativePath = (isAbsolutePath)? fileName: Paths.get(baseDirectoryPath, fileName).toString(); //BaseDirectory could be empty.
+		FileSource = new GXFileInfo(new File(absoluteOrRelativePath));
+	}
+
+	public GXFile(IGXFileInfo fileInfo) {
         FileSource = fileInfo;
     }
 
