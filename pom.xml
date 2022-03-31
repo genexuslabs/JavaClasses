@@ -18,6 +18,7 @@
         <jersey.javax.version>2.34</jersey.javax.version>
         <jersey.jakarta.version>3.0.1</jersey.jakarta.version>
         <jackson.version>2.13.2</jackson.version>
+        <poi.version>5.2.2</poi.version>
         <junit.version>4.13.2</junit.version>
 	</properties>
 
@@ -29,7 +30,6 @@
 		<module>java</module>
 		<module>gxandroidpublisher</module>
 		<module>gxcryptocommon</module>
-		<module>gxdynamiccall</module>
 		<module>gxmail</module>
 		<module>gxmaps</module>
 		<module>gxoffice</module>
@@ -39,7 +39,6 @@
 		<module>android</module>
 		<module>gxgeospatial</module>
 		<module>gxodata</module>
-		<module>gxdynamodb</module>
 		<module>gxexternalproviders</module>
 		<module>gxwebsocket</module>
 		<module>gxwebsocketjakarta</module>
