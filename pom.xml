@@ -18,6 +18,7 @@
         <jersey.javax.version>2.34</jersey.javax.version>
         <jersey.jakarta.version>3.0.1</jersey.jakarta.version>
         <jackson.version>2.12.5</jackson.version>
+        <poi.version>5.2.2</poi.version>
         <junit.version>4.13.2</junit.version>
 	</properties>
 
