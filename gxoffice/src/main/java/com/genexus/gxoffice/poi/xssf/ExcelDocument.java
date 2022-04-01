@@ -3,6 +3,7 @@ package com.genexus.gxoffice.poi.xssf;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
+import com.genexus.util.GxFileInfoSourceType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -36,7 +37,7 @@ public class ExcelDocument implements IGxError, IExcelDocument {
 					return errCod;
 				}
 			} else {
-				GXFile file = new GXFile(fileName, Constants.EXTERNAL_PRIVATE_UPLOAD);
+				GXFile file = new GXFile("", fileName, Constants.EXTERNAL_UPLOAD_ACL, GxFileInfoSourceType.Unknown);
 				if (file.exists()) {
 					// System.out.println("Opening..");
 					workBook = new XSSFWorkbook(file.getStream());
@@ -74,7 +75,8 @@ public class ExcelDocument implements IGxError, IExcelDocument {
 			workBook.write(fs);
 			ByteArrayInputStream in = new ByteArrayInputStream(fs.toByteArray());
 			fs.close();
-			GXFile file = new GXFile(xlsFileName, Constants.EXTERNAL_PRIVATE_UPLOAD);
+			boolean isAbsolute = new java.io.File(xlsFileName).isAbsolute();
+			GXFile file = new GXFile(xlsFileName, Constants.EXTERNAL_UPLOAD_ACL, isAbsolute);
 			file.create(in, true);
 			saved = true;
 		} catch (Exception e) {

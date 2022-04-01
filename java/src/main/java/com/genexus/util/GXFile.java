@@ -4,13 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.Vector;
 
-import com.genexus.IHttpContext;
-import com.genexus.ModelContext;
+import com.genexus.*;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.db.driver.ResourceAccessControlList;
 import com.genexus.db.driver.ExternalProvider;
@@ -19,8 +19,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.io.output.FileWriterWithEncoding;
 
-import com.genexus.Application;
-import com.genexus.CommonUtil;
 import com.genexus.common.classes.AbstractGXFile;
 import org.apache.logging.log4j.Logger;
 
@@ -45,34 +43,61 @@ public class GXFile extends AbstractGXFile {
     }
 
     //For compatibility reasons
+	@Deprecated
 	public GXFile(String fileName, boolean isPrivate) {
-		this(fileName, isPrivate ? ResourceAccessControlList.Private: ResourceAccessControlList.Default, false);
+		this(fileName, isPrivate ? ResourceAccessControlList.Private: ResourceAccessControlList.Default, GxFileInfoSourceType.Unknown);
 	}
 
     public GXFile(String fileName, ResourceAccessControlList fileAcl) {
-    		this(fileName, fileAcl, false);
+    		this(fileName, fileAcl, GxFileInfoSourceType.Unknown);
     }
     
-    public GXFile(String fileName,  ResourceAccessControlList fileAcl, boolean isLocal) {
+    public GXFile(String fileName, ResourceAccessControlList fileAcl, GxFileInfoSourceType sourceType) {
+		this("", fileName, fileAcl, sourceType);
+    }
+
+	@Deprecated
+	public GXFile(String fileName, ResourceAccessControlList fileAcl, boolean isLocalFile) {
+		this("", fileName, fileAcl, isLocalFile ? GxFileInfoSourceType.LocalFile: GxFileInfoSourceType.Unknown);
+	}
+
+	public GXFile(String baseDirectoryPath, String fileName, ResourceAccessControlList fileAcl, GxFileInfoSourceType sourceType) {
 		if (com.genexus.CommonUtil.isUploadPrefix(fileName)) {
 			uploadFileId = fileName;
 			fileName = SpecificImplementation.GXutil.getUploadValue(fileName);
 		}
 
-    	ExternalProvider storageProvider = Application.getExternalProvider();
-        if (storageProvider != null && !isLocal) {
-            FileSource = new GXExternalFileInfo(fileName, storageProvider, true, fileAcl);
-        } else {
-            FileSource = new GXFileInfo(new File(fileName));
-        }
-    }
+		switch (sourceType) {
+			case LocalFile:
+				createFileSourceLocal(baseDirectoryPath, fileName);
+				break;
+			case ExternalFile:
+				FileSource = new GXExternalFileInfo(fileName, Application.getExternalProvider(), true, fileAcl);
+				break;
+			case Unknown:
+				ExternalProvider storageProvider = Application.getExternalProvider();
+				if (storageProvider == null || PrivateUtilities.isAbsoluteFilePath(fileName)) {
+					createFileSourceLocal(baseDirectoryPath, fileName);
+				}
+				else {
+					FileSource = new GXExternalFileInfo(fileName, storageProvider, true, fileAcl);
+				}
+				break;
+		}
+	}
 
-    public GXFile(IGXFileInfo fileInfo) {
+	private void createFileSourceLocal(String baseDirectoryPath, String fileName) {
+		boolean isAbsolutePath = PrivateUtilities.isAbsoluteFilePath(fileName);
+		String absoluteOrRelativePath = (isAbsolutePath)? fileName: Paths.get(baseDirectoryPath, fileName).toString(); //BaseDirectory could be empty.
+		FileSource = new GXFileInfo(new File(absoluteOrRelativePath));
+	}
+
+	public GXFile(IGXFileInfo fileInfo) {
         FileSource = fileInfo;
     }
 
     public static String getgxFilename(String fileName) {
-        return new GXFile(fileName, ResourceAccessControlList.Default, true).getNameNoExt();
+        return new GXFile(fileName, ResourceAccessControlList.Default, GxFileInfoSourceType.LocalFile).getNameNoExt();
     }
 
     public static String getgxFileext(String fileName) {
@@ -768,3 +793,5 @@ public class GXFile extends AbstractGXFile {
         }
     }
 }
+
+

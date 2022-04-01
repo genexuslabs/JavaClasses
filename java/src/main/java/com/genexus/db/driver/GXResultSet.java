@@ -29,6 +29,7 @@ import com.genexus.db.IGXResultSet;
 import com.genexus.internet.HttpContext;
 import com.genexus.util.GXFile;
 import com.genexus.util.GXServices;
+import com.genexus.db.driver.ResourceAccessControlList;
 
 public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter, IGXResultSet
 {
