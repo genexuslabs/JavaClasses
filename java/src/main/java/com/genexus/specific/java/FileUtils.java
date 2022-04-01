@@ -1,8 +1,9 @@
 package com.genexus.specific.java;
 
 import com.genexus.common.classes.AbstractGXFile;
-import com.genexus.util.GXFile;
 import com.genexus.db.driver.ResourceAccessControlList;
+import com.genexus.util.GXFile;
+import com.genexus.util.GxFileInfoSourceType;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +48,7 @@ public class FileUtils implements com.genexus.common.interfaces.IExtensionFileUt
 
 	@Override
 	public AbstractGXFile createFile(String file, ResourceAccessControlList acl, boolean local) {
-		return new GXFile(file, acl, local);
+		return new GXFile(file, acl, local ? GxFileInfoSourceType.LocalFile: GxFileInfoSourceType.Unknown);
 	}
 
 }
