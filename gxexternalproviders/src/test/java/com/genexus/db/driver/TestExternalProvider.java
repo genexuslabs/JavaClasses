@@ -1,5 +1,6 @@
 package com.genexus.db.driver;
 
+import com.genexus.specific.java.Connect;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import com.genexus.db.driver.ResourceAccessControlList;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
@@ -36,7 +38,7 @@ public abstract class TestExternalProvider {
 
 	@Before
 	public void beforeEachTestMethod() {
-
+		Connect.init();
 		boolean testEnabled = false;
 		try {
 			testEnabled = ExternalProviderHelper.getEnvironmentVariable(getProviderName() + "_TEST_ENABLED", false).equals("true");
