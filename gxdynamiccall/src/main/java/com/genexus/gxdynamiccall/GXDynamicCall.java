@@ -25,11 +25,12 @@ public class GXDynamicCall {
 
 		namespace = null;
 		properties = null;
-		externalName = "execute";
+		externalName = null;
 		object = null;
+		defaultMethod = "execute";
 	}
 
-	public GXXMLSerializable getProperties() {
+	public Object getProperties() {
 		return properties;
 	}
 
@@ -51,6 +52,14 @@ public class GXDynamicCall {
 		}
 	}
 
+	public String getObjectName(){
+		return ObjectName;
+	}
+
+	public void setObjectName(String name){
+		this.ObjectName=name;
+	}
+
 	private void VerifyDefaultProperties() {
 		if (packageName.isEmpty()) {
 			packageName = SpecificImplementation.Application.getPACKAGE();
@@ -62,12 +71,12 @@ public class GXDynamicCall {
 	}
 
 	public void Execute(Object[] parametersArray, Object[] errorsArray) {
-		// Take  the collection of Message from  de array
-		GXBaseCollection<SdtMessages_Message> errors = (GXBaseCollection<SdtMessages_Message>) errorsArray[0]; 
 		// Take the collection of parameters from de array
 	    GXSimpleCollection<Object> parameters = (GXSimpleCollection<Object>) parametersArray[0]; 
 
-		Create(null, errors);
+		Create(null, errorsArray);
+		// Take  the collection of Message from  de array
+		GXBaseCollection<SdtMessages_Message> errors = (GXBaseCollection<SdtMessages_Message>) errorsArray[0]; 
 		if (errors.size() == 0) {
 			try {
 				this.ExecuteMethod(this.object, this.defaultMethod, parameters, errors,false);
@@ -133,9 +142,10 @@ public class GXDynamicCall {
 		return result;
 	}
 
-	public void Create(GXSimpleCollection<Object> constructParameters, GXBaseCollection<SdtMessages_Message> errors) {
+	public void Create(GXSimpleCollection<Object> constructParameters, Object[] errors) {
 		if (errors == null) {
-			errors = new GXBaseCollection<SdtMessages_Message>();
+			errors = (Object[]) Array.newInstance(Object.class, 1); 
+			errors[0]=new GXBaseCollection<SdtMessages_Message>();
 		}
 		String objectNameToInvoke;
 
@@ -166,11 +176,11 @@ public class GXDynamicCall {
 				}
 				object = objClass.getConstructor(auxConstructorTypes).newInstance(auxConstParameters);
 			} catch (Exception e) {
-				CommonUtil.ErrorToMessages("CreateInstance Error", e.getMessage(), (GXBaseCollection<SdtMessages_Message>) errors);
+				CommonUtil.ErrorToMessages("CreateInstance Error", e.getMessage(), (GXBaseCollection<SdtMessages_Message>) errors[0]);
 			}
 		}
 		else{
-			CommonUtil.ErrorToMessages("CreateInstance Error", "Object name not set", (GXBaseCollection<SdtMessages_Message>) errors);
+			CommonUtil.ErrorToMessages("CreateInstance Error", "Object name not set", (GXBaseCollection<SdtMessages_Message>) errors[0]);
 		}
 	}
 
