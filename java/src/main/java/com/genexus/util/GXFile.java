@@ -717,9 +717,9 @@ public class GXFile extends AbstractGXFile {
             resetErrors();
             try {
                 if (encoding.equals("")) {
-                    fileWriter = new FileWriterWithEncoding(FileSource.getFileInstance(), "UTF8", true);
+                    fileWriter = new FileWriterWithEncoding(FileSource.getFileInstance(), "UTF8", FileSource.exists());
                 } else {
-                    fileWriter = new FileWriterWithEncoding(FileSource.getFileInstance(), CommonUtil.normalizeEncodingName(encoding), true);
+                    fileWriter = new FileWriterWithEncoding(FileSource.getFileInstance(), CommonUtil.normalizeEncodingName(encoding), FileSource.exists());
                 }
             } catch (Exception e) {
                 setUnknownError(e);
