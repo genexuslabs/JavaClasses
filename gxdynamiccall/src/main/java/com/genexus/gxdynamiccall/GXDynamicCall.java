@@ -1,11 +1,13 @@
 package com.genexus.gxdynamiccall;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 import com.genexus.CommonUtil;
 import com.genexus.GXBaseCollection;
 import com.genexus.GXSimpleCollection;
+import com.genexus.ModelContext;
 import com.genexus.SdtMessages_Message;
 import com.genexus.common.interfaces.SpecificImplementation;
 
@@ -24,8 +26,8 @@ public class GXDynamicCall {
 
 	public void setProperties(GXDynCallProperties properties) {
 		this.properties = properties;
-		packageName = properties.getPackageName()==null?SpecificImplementation.Application.getPACKAGE():packageName;
-		externalName = properties.getExternalName();
+		packageName = properties.getPackageName()==null?SpecificImplementation.Application.getPACKAGE():properties.getPackageName();
+		externalName = properties.getExternalName()==null?objectName:properties.getExternalName();
 	}
 
 	public String getObjectName(){
@@ -40,9 +42,11 @@ public class GXDynamicCall {
 		//Create the instance with default constructor
 		create(null, errorsArray);
 		//Create methodconfiguration
-		GXDynCallMethodConf method = new GXDynCallMethodConf();
-		//Execute with thefault method configuration  
-		execute(parametersArray, method, errorsArray);
+		if(errorsArray.length>0){
+			GXDynCallMethodConf method = new GXDynCallMethodConf();
+			//Execute with default method configuration  
+			execute(parametersArray, method, errorsArray);
+		}
 	}
 
 	public Object execute(Object[] parametersArray, GXDynCallMethodConf methodConfiguration, Object[] errorsArray) {
@@ -86,6 +90,7 @@ public class GXDynamicCall {
 	public void create(GXSimpleCollection<Object> constructParameters, Object[] errors) {
 		GXBaseCollection<SdtMessages_Message> error =new GXBaseCollection<SdtMessages_Message>();
 		String objectNameToInvoke;
+		Constructor<?> constructor=null;
 		objectNameToInvoke = constructParameters==null?objectName:externalName;
 		if (!objectNameToInvoke.isEmpty()) {
 			try {
@@ -97,23 +102,45 @@ public class GXDynamicCall {
 					auxConstParameters = constructParameters.toArray();
 					int i = 0;
 					for (Object obj : constructParameters) {
-						auxConstructorTypes[i] = obj.getClass();
+						auxConstructorTypes[i] = obj.getClass(); 
 						i++;
 					}
-				} else {
-					auxConstParameters = (Object[]) Array.newInstance(Object.class, 0);
-					auxConstructorTypes = new Class[] { int.class,
-							SpecificImplementation.Application.getModelContextClass() };
+				} else {								
+					auxConstParameters = new Object[] {Integer.valueOf(-1)};
+					auxConstructorTypes = new Class[] {int.class};
 				}
-				instanceObject = objClass.getConstructor(auxConstructorTypes).newInstance(auxConstParameters);
+				try{
+				 	constructor =  objClass.getConstructor(auxConstructorTypes);
+				}catch(Exception e1){
+					Constructor<?> [] constructors = objClass.getConstructors();
+					for (Constructor<?> acutualCons : constructors) {
+						if(acutualCons.getParameterCount() == Array.getLength(auxConstParameters)){
+							constructor=acutualCons;
+							
+						}
+					}
+				}
+				if(constructor != null){
+					instanceObject=constructor.newInstance(auxConstParameters);
+				}
+				else{
+					CommonUtil.ErrorToMessages("CreateInstance Error", "None constructor found", error);
+					errors[0]=error;
+					return;
+				}
 			} catch (Exception e) {
-				CommonUtil.ErrorToMessages("CreateInstance Error", e.getMessage(), (GXBaseCollection<SdtMessages_Message>) error);
+				CommonUtil.ErrorToMessages("CreateInstance Error", e.getMessage(), error);
+				e.printStackTrace();
+				errors[0]=error;
+				return;
 			}
 		}
 		else{
-			CommonUtil.ErrorToMessages("CreateInstance Error", "Object name not set", (GXBaseCollection<SdtMessages_Message>) error);
+			CommonUtil.ErrorToMessages("CreateInstance Error", "Object name not set", error);
+			errors[0]=error;
+			return;
 		}
-		errors[0]=error;
+		
 	}
 
 	private Object executeMethod(Object objectToInvoke, String method, GXSimpleCollection<Object> params, GXBaseCollection<SdtMessages_Message> errors, boolean isStatic) {
@@ -232,10 +259,11 @@ public class GXDynamicCall {
 	}
 
 	private Class<?> loadClass(String className, String sPackage) throws ClassNotFoundException {
-		String classPackage = sPackage + "." + className;
+		String classPackage="";
+		if(sPackage != null)
+		 classPackage+=  sPackage + ".";
+		classPackage+= className;
 		Class<?> c = Class.forName(classPackage);;
 		return c;
 	}
-//usar .size
-//returns y no preguntar por los null
 }
