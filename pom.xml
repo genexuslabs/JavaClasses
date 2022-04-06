@@ -30,6 +30,7 @@
 		<module>java</module>
 		<module>gxandroidpublisher</module>
 		<module>gxcryptocommon</module>
+		<module>gxdynamiccall</module>
 		<module>gxmail</module>
 		<module>gxmaps</module>
 		<module>gxoffice</module>
@@ -39,6 +40,7 @@
 		<module>android</module>
 		<module>gxgeospatial</module>
 		<module>gxodata</module>
+		<module>gxdynamodb</module>
 		<module>gxexternalproviders</module>
 		<module>gxwebsocket</module>
 		<module>gxwebsocketjakarta</module>
