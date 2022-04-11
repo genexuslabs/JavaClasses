@@ -3,11 +3,10 @@ package com.genexus.gxdynamiccall;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Vector;
 
 import com.genexus.CommonUtil;
 import com.genexus.GXBaseCollection;
-import com.genexus.GXSimpleCollection;
-import com.genexus.ModelContext;
 import com.genexus.SdtMessages_Message;
 import com.genexus.common.interfaces.SpecificImplementation;
 
@@ -38,22 +37,20 @@ public class GXDynamicCall {
 		objectName=name;
 	}
 
-	public void execute(Object[] parametersArray, Object[] errorsArray) {
+	public void execute(Vector<Object> parameters, Vector<SdtMessages_Message> errorsArray) {
 		//Create the instance with default constructor
 		create(null, errorsArray);
 		//Create methodconfiguration
-		if(errorsArray.length>0){
+		if(errorsArray.size()==0){
 			GXDynCallMethodConf method = new GXDynCallMethodConf();
 			//Execute with default method configuration  
-			execute(parametersArray, method, errorsArray);
+			execute(parameters, method, errorsArray);
 		}
 	}
 
-	public Object execute(Object[] parametersArray, GXDynCallMethodConf methodConfiguration, Object[] errorsArray) {
+	public Object execute(Vector<Object> parameters, GXDynCallMethodConf methodConfiguration, Vector<SdtMessages_Message> errorsArray) {
 		
 		GXBaseCollection<SdtMessages_Message> errors =new GXBaseCollection<SdtMessages_Message>();
-		// Take the collection of parameters from de array
-		GXSimpleCollection<Object> parameters = (GXSimpleCollection<Object>) parametersArray[0]; 
 		Object result=null;
 		Object objectToInvoke;
 		if (!methodConfiguration.getIsStatic())
@@ -66,6 +63,7 @@ public class GXDynamicCall {
 			{
 				objectToInvoke=null;
 				CommonUtil.ErrorToMessages("NullInstance Error", "You must invoke create method before execute a non static one", errors);
+				errorsArray.addAll(errors.getStruct());
 				return null;
 			}
 		}
@@ -76,18 +74,17 @@ public class GXDynamicCall {
 				auxClass = loadClass(externalName, packageName);
 			} catch (ClassNotFoundException e) {
 				CommonUtil.ErrorToMessages("Load class Error", e.getMessage(), errors);
-				errorsArray[0]=errors;
+				errorsArray.addAll(errors.getStruct());
 				return null;
 			}
 			objectToInvoke=auxClass;
 		}
 		result = executeMethod(objectToInvoke,methodConfiguration.getMethodName(), parameters, errors, methodConfiguration.getIsStatic());
-		errorsArray[0]=errors;
-		parametersArray[0] = parameters;
+		errorsArray.addAll(errors.getStruct());
 		return result;
 	}
 
-	public void create(GXSimpleCollection<Object> constructParameters, Object[] errors) {
+	public void create(Vector<Object> constructParameters, Vector<SdtMessages_Message> errors) {
 		GXBaseCollection<SdtMessages_Message> error =new GXBaseCollection<SdtMessages_Message>();
 		String objectNameToInvoke;
 		Constructor<?> constructor=null;
@@ -125,25 +122,25 @@ public class GXDynamicCall {
 				}
 				else{
 					CommonUtil.ErrorToMessages("CreateInstance Error", "None constructor found", error);
-					errors[0]=error;
+					errors.addAll(error.getStruct());
 					return;
 				}
 			} catch (Exception e) {
 				CommonUtil.ErrorToMessages("CreateInstance Error", e.getMessage(), error);
 				e.printStackTrace();
-				errors[0]=error;
+				errors.addAll(error.getStruct());
 				return;
 			}
 		}
 		else{
 			CommonUtil.ErrorToMessages("CreateInstance Error", "Object name not set", error);
-			errors[0]=error;
+			errors.addAll(error.getStruct());
 			return;
 		}
 		
 	}
 
-	private Object executeMethod(Object objectToInvoke, String method, GXSimpleCollection<Object> params, GXBaseCollection<SdtMessages_Message> errors, boolean isStatic) {
+	private Object executeMethod(Object objectToInvoke, String method, Vector<Object> params, GXBaseCollection<SdtMessages_Message> errors, boolean isStatic) {
 		
 		Object returnObject = null;
 		Method[] methods;
@@ -234,7 +231,7 @@ public class GXDynamicCall {
 		return returnObject;
 	}
 
-	private static void updateParams(GXSimpleCollection<Object> originalParameter, Object[] callingParams)
+	private static void updateParams(Vector<Object> originalParameter, Object[] callingParams)
 			throws Exception {
 
 		for (int i = 0; i < callingParams.length; i++) {
