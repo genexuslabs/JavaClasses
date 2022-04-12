@@ -149,7 +149,7 @@ public class GXDynamicCall {
 		Object[] callingParams = new Object[params.size()]; // Array to pass to method.invoke
 		try{
 			for (int i=0; i < params.size(); i++) {
-				paramsType[0]=params.get(i).getClass();	
+				paramsType[i]=params.get(i).getClass();	
 			}
 			if(isStatic){
 				methodToExecute = ((Class<?>)objectToInvoke).getDeclaredMethod(method,paramsType);
@@ -194,10 +194,9 @@ public class GXDynamicCall {
 							}
 							callingParams[i] = array;
 						} else {
-							destClass = parmType.getClass();
-							if (parm.getClass() != destClass) {
+							if (parm.getClass() != parmType) {
 								if (parm.getClass() != String.class) { // To avoid convert from string
-									callingParams[i] = CommonUtil.convertObjectTo(parm, destClass);
+									callingParams[i] = CommonUtil.convertObjectTo(parm,parmType);
 								} else {
 									CommonUtil.ErrorToMessages("CallMethod Error", "IllegalArgumentException - Type does not match", errors);
 									return null;
