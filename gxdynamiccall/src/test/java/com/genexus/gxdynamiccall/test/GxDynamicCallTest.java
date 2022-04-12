@@ -20,7 +20,7 @@ public class GxDynamicCallTest  {
         GXDynamicCall call = new GXDynamicCall();
         call.setObjectName("com.genexus.gxdynamiccall.test.DynamicCallTestProcedure");
         Vector<Object> paramArray = new Vector<>();
-        paramArray.add((short)3);
+        paramArray.add(Double.parseDouble("3"));
         paramArray.add((short)4);
         paramArray.add(new String());
         Vector<SdtMessages_Message> errorsArray= new Vector<>();
