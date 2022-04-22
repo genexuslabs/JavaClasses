@@ -7,6 +7,7 @@ import com.genexus.db.service.ServiceException;
 import com.genexus.db.service.ServiceResultSet;
 import org.apache.commons.lang.time.DateUtils;
 import software.amazon.awssdk.awscore.exception.AwsErrorDetails;
+import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 
@@ -234,7 +235,11 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 	{
 		AttributeValue value = getAttValue(columnIndex);
 		if(value != null)
-			return value.b().asInputStream();
+		{
+			SdkBytes bytes = value.b();
+			if(bytes != null)
+				return bytes.asInputStream();
+		}
 		lastWasNull = true;
 		return null;
 	}
