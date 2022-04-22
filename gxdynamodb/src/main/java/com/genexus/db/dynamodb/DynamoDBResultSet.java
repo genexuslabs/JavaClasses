@@ -10,6 +10,8 @@ import software.amazon.awssdk.awscore.exception.AwsErrorDetails;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Time;
@@ -225,6 +227,16 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 	public Timestamp getTimestamp(int columnIndex)
 	{
 		return java.sql.Timestamp.from(getInstant(columnIndex));
+	}
+
+	@Override
+	public InputStream getBinaryStream(int columnIndex) throws SQLException
+	{
+		AttributeValue value = getAttValue(columnIndex);
+		if(value != null)
+			return value.b().asInputStream();
+		lastWasNull = true;
+		return null;
 	}
 
 	// JDK8
