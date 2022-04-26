@@ -3,6 +3,7 @@ package com.genexus.db.dynamodb;
 import com.genexus.db.service.VarValue;
 import json.org.json.JSONArray;
 import json.org.json.JSONObject;
+import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.sql.SQLException;
@@ -52,6 +53,7 @@ public class DynamoDBHelper
 			case Clob:
 			case Raw:
 			case Blob:
+				return value != null ? builder.b((SdkBytes) value).build() : builder.nul(true).build();
 			case Undefined:
 			case Image:
 			case DateAsChar:
@@ -75,6 +77,8 @@ public class DynamoDBHelper
 			return new JSONObject(convertToDictionary(attValue.m())).toString();
 		else if (attValue.hasL())
 			return new JSONArray(attValue.l().stream().map(DynamoDBHelper::getString).collect(Collectors.toList())).toString();
+		else if(attValue.bool() != null)
+			return attValue.bool().toString();
 		return null;
 	}
 

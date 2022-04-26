@@ -7,6 +7,7 @@ public class DynamoQuery extends Query{
 
 	private boolean scanIndexForward = true;
 	private static final String RANGE_KEY_INDEX = "RangeKey";
+	private String partitionKey;
 
 	@Override
 	public DynamoQuery orderBy(String index)
@@ -21,6 +22,14 @@ public class DynamoQuery extends Query{
 			setIndex(index);
 		return this;
 	}
+
+	public DynamoQuery setKey(String partitionKey)
+	{
+		this.partitionKey = partitionKey;
+		return this;
+	}
+
+	public String getPartitionKey(){ return partitionKey; }
 
 	public DynamoQuery(DataStoreHelperDynamoDB dataStoreHelper)
 	{
@@ -37,9 +46,5 @@ public class DynamoQuery extends Query{
 
 	public boolean isScanIndexForward() {
 		return scanIndexForward;
-	}
-
-	public void setScanIndexForward(boolean scanIndexForward) {
-		this.scanIndexForward = scanIndexForward;
 	}
 }

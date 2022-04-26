@@ -7,9 +7,12 @@ import com.genexus.db.service.ServiceException;
 import com.genexus.db.service.ServiceResultSet;
 import org.apache.commons.lang.time.DateUtils;
 import software.amazon.awssdk.awscore.exception.AwsErrorDetails;
+import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Time;
@@ -20,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
 
 public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
@@ -110,6 +114,8 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 		.appendZoneRegionId()
 		.appendLiteral(']').toFormatter();
 
+	private static DateTimeFormatter US_DATE_TIME_OR_DATE = DateTimeFormatter.ofPattern("M/d/yyyy[ HH:mm:ss]");
+
 	private Instant getInstant(int columnIndex)
 	{
 		String value = getString(columnIndex);
@@ -118,8 +124,22 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 			lastWasNull = true;
 			return CommonUtil.nullDate().toInstant();
 		}
+		TemporalAccessor accessor;
 
-		TemporalAccessor accessor = ISO_DATE_TIME_OR_DATE.parseBest(value, LocalDateTime::from, LocalDate::from);
+		try
+		{
+			accessor = ISO_DATE_TIME_OR_DATE.parseBest(value, LocalDateTime::from, LocalDate::from);
+		}catch(DateTimeParseException dtpe)
+		{
+			try
+			{
+				accessor = US_DATE_TIME_OR_DATE.parseBest(value, LocalDateTime::from, LocalDate::from);
+			}catch(Exception e)
+			{
+				throw dtpe;
+			}
+		}
+
 		if(accessor instanceof  LocalDateTime)
 			return ((LocalDateTime) accessor).toInstant(ZoneOffset.UTC);
 		else return LocalDate.from(accessor).atStartOfDay().toInstant(ZoneOffset.UTC);
@@ -212,7 +232,7 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 	@Override
 	public java.sql.Date getDate(int columnIndex)
 	{
-		return java.sql.Date.valueOf(getTimestamp(columnIndex).toLocalDateTime().toLocalDate());
+		return java.sql.Date.valueOf(getTimestamp(columnIndex).toInstant().atOffset(ZoneOffset.UTC).toLocalDate());
 	}
 
 	@Override
@@ -225,6 +245,20 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 	public Timestamp getTimestamp(int columnIndex)
 	{
 		return java.sql.Timestamp.from(getInstant(columnIndex));
+	}
+
+	@Override
+	public InputStream getBinaryStream(int columnIndex) throws SQLException
+	{
+		AttributeValue value = getAttValue(columnIndex);
+		if(value != null)
+		{
+			SdkBytes bytes = value.b();
+			if(bytes != null)
+				return bytes.asInputStream();
+		}
+		lastWasNull = true;
+		return null;
 	}
 
 	// JDK8
