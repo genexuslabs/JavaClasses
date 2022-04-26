@@ -246,7 +246,7 @@ System.err.println("Sigo...");
 					else
 						addMsg(msg.getMessage("GXM_reorgnotsuccess"));
 				}
-				Application.commit(context, getHandle(), "DEFAULT", null, "GXReorganization");
+				Application.commit(context, getHandle(),"GXReorganization");
 				if (!isOK)
 					System.exit(2);
 			}
