@@ -8,7 +8,7 @@ import java.util.Iterator;
 
 public class Query implements IQuery {
 	private static final String [] EMPTY_ARR_STRING = new String [0];
-	ServiceDataStoreHelper dataStoreHelper;
+	final ServiceDataStoreHelper dataStoreHelper;
 	public Query(ServiceDataStoreHelper dataStoreHelper)
 	{
 		this.dataStoreHelper = dataStoreHelper;
@@ -24,7 +24,7 @@ public class Query implements IQuery {
 
 	public IODataMap[] selectList = new IODataMap[0];
 	private final HashMap<String, VarValue> mVarValues = new HashMap<>();
-	public Iterator<VarValue> getVars() { return mVarValues.values().iterator(); }
+	public HashMap<String, VarValue> getVars() { return mVarValues; }
 
 	public VarValue getParm(String parmName)
 	{
@@ -98,6 +98,10 @@ public class Query implements IQuery {
 	{
 		parmTypes.put(parmId, gxType);
 		return this;
+	}
+	public <T extends Query> T as(Class<T> reference)
+	{
+		return reference.cast(this);
 	}
 
 	public void initializeParms(Object[] parms)
