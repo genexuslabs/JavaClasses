@@ -460,7 +460,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 	public void webAjaxEvent() throws Exception {
 		httpContext.setAjaxCallMode();
 		httpContext.setFullAjaxMode();
-		DynAjaxEvent dynAjaxEvent = new DynAjaxEvent();
+		DynAjaxEvent dynAjaxEvent = new DynAjaxEvent(httpContext.getDynAjaxEventContext());
 		String jsonRequest;
 		if (httpContext.isMultipartContent())
 			jsonRequest = httpContext.cgiGet(GX_AJAX_MULTIPART_ID);
@@ -499,9 +499,17 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		return false;
 	}
 
+	public interface IDynAjaxEventContext
+	{
+		void Clear();
+		void ClearParmsMetadata();
+		boolean isInputParm(String key);
+		void SetParmHash(String fieldName, Object value);
+		boolean isParmModified(String fieldName, Object value);
+
+	}
+
 	protected class DynAjaxEvent {
-		JSONArray inParmsValues = new JSONArray();
-		JSONArray inHashValues = new JSONArray();
 		JSONArray events = new JSONArray();
 		GXWebPanel targetObj;
 		String[] eventHandlers;
@@ -510,9 +518,14 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		int grid;
 		String row;
 		String pRow = "";
-		JSONArray inParmsMetadata;
-		HashSet<String> inParmsMetadataHash;
 		boolean anyError;
+		JSONArray inParmsValues = new JSONArray();
+		JSONArray inHashValues = new JSONArray();
+		DynAjaxEventContext dynAjaxEventContext;
+		DynAjaxEvent( DynAjaxEventContext dynAjaxEventContext)
+		{
+			this.dynAjaxEventContext = dynAjaxEventContext;
+		}
 
 		private void parseInputJSonMessage(String jsonMessage, GXWebPanel targetObj) throws JSONException {
 			try {
@@ -615,19 +628,13 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		private String buildOutputJSonMessage() {
 			return targetObj.httpContext.getJSONResponse(cmpContext);
 		}
-		private void clearInputParmsMetadata()
-		{
-			inParmsMetadata = new JSONArray();
-			inParmsMetadataHash = new HashSet<String>();
-		}
 
         private boolean IsInternalParm(JSONObject parm)
         {
             return parm.has("sPrefix") || parm.has("sSFPrefix") || parm.has("sCompEvt");
         }
 
-		private void addInputParmsMetadata(JSONObject inputParm) throws JSONException
-		{
+		private void addParmsMetadata(JSONObject inputParm, JSONArray ParmsList, HashSet<String> ParmsListHash) throws JSONException {
 			String key = "";
 			if (inputParm.has("av") && inputParm.has("ctrl") && inputParm.has("prop"))
 			{
@@ -645,18 +652,17 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			{
 				key = inputParm.getString("ctrl");
 			}
-			if (key==null || key.equals("") || !inParmsMetadataHash.contains(key))
-			{
-				inParmsMetadata.put(inputParm);
-				if (key!=null && !key.equals(""))
-				{
-					inParmsMetadataHash.add(key);
+			if (key==null || key.equals("") || !ParmsListHash.contains(key)) {
+				ParmsList.put(inputParm);
+				if (key!=null && !key.equals("")) {
+					ParmsListHash.add(key);
 				}
 			}
 		}
+
 		private void parseMetadata() {
 			try {
-				clearInputParmsMetadata();
+				dynAjaxEventContext.ClearParmsMetadata();
 				eventHandlers = new String[events.length()];
                 eventUseInternalParms = new boolean[events.length()];
 				int eventCount = 0;
@@ -668,8 +674,12 @@ public abstract class GXWebPanel extends GXWebObjectBase
 					JSONArray eventInputParms = eventMetadata.getJSONArray("iparms");
 					for (int j=0; j< eventInputParms.length(); j++ )
 					{
-						addInputParmsMetadata(eventInputParms.getJSONObject(j));
+						addParmsMetadata(eventInputParms.getJSONObject(j), dynAjaxEventContext.inParmsMetadata, dynAjaxEventContext.inParmsMetadataHash);
                         eventUseInternalParms[eventCount] = eventUseInternalParms[eventCount] || IsInternalParm(eventInputParms.getJSONObject(j));
+					}
+					JSONArray eventOutputParms = eventMetadata.getJSONArray("oparms");
+					for (int j = 0; j < eventOutputParms.length(); j++) {
+						addParmsMetadata(eventOutputParms.getJSONObject(j), dynAjaxEventContext.outParmsMetadata, dynAjaxEventContext.outParmsMetadataHash);
 					}
 					eventCount++;
 				}
@@ -839,17 +849,40 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			return null;
 		}
 
-		private Object [] beforeInvoke() throws JSONException, Exception {
+		private void initializeOutParms() throws JSONException {
+			dynAjaxEventContext.Clear();
+			for (int j = 0; j < dynAjaxEventContext.outParmsMetadata.length(); j++) {
+				JSONObject parm = dynAjaxEventContext.outParmsMetadata.getJSONObject(j);
+				String parmName = "";
+				if (parm.has("av")) {
+					parmName = parm.getString("av");
+					if (!parmName.isEmpty()) {
+						Object TypedValue = null;
+						try {
+							TypedValue = getFieldValue(parmName, parmName);
+							dynAjaxEventContext.SetParmHash(parmName, TypedValue);
+							if (!dynAjaxEventContext.isInputParm(parmName) && TypedValue instanceof IGXAssigned) {
+								((IGXAssigned) TypedValue).setIsAssigned(false);
+							}
+						} catch (java.lang.Exception e) {
+							logger.error(String.format("initializeOutParms param:'%s'", parmName, e));
+						}
+					}
+				}
+			}
+		}
+
+		private Object[] beforeInvoke() throws JSONException, Exception {
 			ArrayList<Object> MethodParms = new ArrayList<Object>();
 			int hash_i = 0;
             int parm_i = 0;
 			int hashValuesLen = inHashValues.length();
 			if (!anyError) {
 				int nParm = 0;
-				int len = inParmsMetadata.length();
+				int len = dynAjaxEventContext.inParmsMetadata.length();
 				boolean multipart = targetObj.httpContext.isMultipartContent();
 				for (int i = 0; i < len; i++) {
-					JSONObject parm = (JSONObject) inParmsMetadata.getJSONObject(i);
+					JSONObject parm = (JSONObject) dynAjaxEventContext.inParmsMetadata.getJSONObject(i);
 					try{
 						if (parm.has("postForm"))
 						{
@@ -926,7 +959,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 													if (httpContext.useSecurityTokenValidation()) {
 														SetScalarOrCollectionValue(parm.has("av") ? parm.getString("av") : null, parm.has("prop") ? parm.getString("prop") : null, columnValues.get(j), columnValues);
 													    Object TypedValue = getFieldValue(parm.has("av") ? parm.getString("av") : null, parm.has("prop") ? parm.getString("prop") : null);
-														checkParmIntegrity( TypedValue, columnHash, sRow, inParmsMetadata.get(parm_i), hash_i, picture);
+														checkParmIntegrity(TypedValue, columnHash, sRow, dynAjaxEventContext.inParmsMetadata.get(parm_i), hash_i, picture);
 													}
 													rowIdx++;
 												}
@@ -996,7 +1029,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 											}
 											SetScalarOrCollectionValue(parm.has("av") ? parm.getString("av") : null, parm.has("prop") ? parm.getString("prop") : null, value, columnValues);
 											Object TypedValue = getFieldValue(parm.has("av") ? parm.getString("av") : null, parm.has("prop") ? parm.getString("prop") : null);
-											checkParmIntegrity( TypedValue, hash, sRow, inParmsMetadata.get(parm_i), hash_i, picture);
+											checkParmIntegrity(TypedValue, hash, sRow, dynAjaxEventContext.inParmsMetadata.get(parm_i), hash_i, picture);
 										}
                                         catch (Exception ex)
                                         {
@@ -1046,6 +1079,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 				}
 				SetFieldValue("wbLoad", true);
 			}
+			initializeOutParms();
 			return MethodParms.toArray();
 		}
 
