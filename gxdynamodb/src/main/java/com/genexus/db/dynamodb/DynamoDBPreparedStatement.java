@@ -1,15 +1,17 @@
 package com.genexus.db.dynamodb;
 
+import com.genexus.db.Cursor;
 import com.genexus.db.ServiceCursorBase;
 import com.genexus.db.driver.GXConnection;
-import com.genexus.db.service.IODataMap;
-import com.genexus.db.service.QueryType;
-import com.genexus.db.service.ServicePreparedStatement;
-import com.genexus.db.service.VarValue;
+import com.genexus.db.service.*;
 import com.genexus.util.NameValuePair;
+import com.genexus.xml.ws.Service;
+import jdk.internal.org.objectweb.asm.tree.TryCatchBlockNode;
+import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -27,7 +29,6 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 		super(con, parms, gxCon);
 		this.query = query;
 		this.cursor = cursor;
-		query.initializeParms(parms);
 	}
 
 	@Override
@@ -44,17 +45,21 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 		return _executeQuery(null);
 	}
 
-	private static final Pattern FILTER_PATTERN = Pattern.compile("\\((.*) = (:.*)\\)");
+	private static final Pattern FILTER_PATTERN = Pattern.compile("\\((.*) = :(.*)\\)");
 	private int _executeQuery(DynamoDBResultSet resultSet) throws SQLException
 	{
+		query.initializeParms(parms);
 		DynamoDbClient client = getClient();
 
 		HashMap<String, AttributeValue> values = new HashMap<>();
 
-		for(Iterator<VarValue> it = query.getVars(); it.hasNext();)
+		if(query.getQueryType() == QueryType.QUERY)
 		{
-			VarValue var = it.next();
-			values.put(var.name, DynamoDBHelper.toAttributeValue(var));
+			for (Iterator<VarValue> it = query.getVars().values().iterator(); it.hasNext(); )
+			{
+				VarValue var = it.next();
+				values.put(var.name, DynamoDBHelper.toAttributeValue(var));
+			}
 		}
 
 		for (Iterator<NameValuePair> it = query.getAssignAtts(); it.hasNext(); )
@@ -67,6 +72,13 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 		}
 		HashMap<String, AttributeValue> keyCondition = new HashMap<>();
 		HashMap<String, String> expressionAttributeNames = null;
+
+		String keyItemForUpd = query.getPartitionKey();
+		if(keyItemForUpd != null && keyItemForUpd.startsWith("#"))
+		{
+			expressionAttributeNames = new HashMap<>();
+			expressionAttributeNames.put(keyItemForUpd, keyItemForUpd.substring(1));
+		}
 
 		for (Iterator<String> it = Arrays.stream(query.selectList)
 			.filter(selItem -> ((DynamoDBMap) selItem).needsAttributeMap())
@@ -86,7 +98,7 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 				Matcher match = FILTER_PATTERN.matcher(keyFilter);
 				if (match.matches() && match.groupCount() > 1)
 				{
-					String varName = match.group(2);
+					String varName = String.format(":%s", match.group(2));
 					String name = trimSharp(match.group(1));
 					if (!DynamoDBHelper.addAttributeValue(name, values, query.getParm(varName)))
 						throw new SQLException(String.format("Cannot assign attribute value (name: %s)", varName));
@@ -143,12 +155,21 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 			}
 			case INS:
 			{
-				PutItemRequest request = PutItemRequest.builder()
+				PutItemRequest.Builder builder =  PutItemRequest.builder()
 					.tableName(query.tableName)
 					.item(values)
-					.build();
-				 client.putItem(request);
-				 break;
+					.conditionExpression(String.format("attribute_not_exists(%s)", keyItemForUpd));
+				if(expressionAttributeNames != null)
+					builder.expressionAttributeNames(expressionAttributeNames);
+				PutItemRequest request = builder.build();
+				try
+				{
+					client.putItem(request);
+				}catch(ConditionalCheckFailedException recordAlreadyExists)
+				{
+					return Cursor.DUPLICATE;
+				}
+				break;
 			}
 			case UPD:
 			{
@@ -162,11 +183,21 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 			}
 			case DLT:
 			{
-				DeleteItemRequest request = DeleteItemRequest.builder()
+				DeleteItemRequest.Builder builder = DeleteItemRequest.builder()
 					.tableName(query.tableName)
 					.key(keyCondition)
-					.build();
-				client.deleteItem(request);
+					.conditionExpression(String.format("attribute_exists(%s)", keyItemForUpd));
+				if(expressionAttributeNames != null)
+					builder.expressionAttributeNames(expressionAttributeNames);
+
+				DeleteItemRequest request = builder.build();
+				try
+				{
+					client.deleteItem(request);
+				}catch(ConditionalCheckFailedException recordNotFound)
+				{
+					return Cursor.EOF;
+				}
 				break;
 			}
 			default: throw new UnsupportedOperationException(String.format("Invalid query type: %s", query.getQueryType()));
@@ -198,6 +229,12 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 	DynamoDbClient getClient() throws SQLException
 	{
 		return ((DynamoDBConnection)getConnection()).mDynamoDB;
+	}
+
+	@Override
+	public void setBinaryStream(int parameterIndex, InputStream x, int length) throws SQLException
+	{
+		parms[parameterIndex-1] = SdkBytes.fromInputStream(x);
 	}
 
 	/// JDK8
