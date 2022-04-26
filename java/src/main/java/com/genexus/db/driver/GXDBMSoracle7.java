@@ -61,10 +61,6 @@ public class GXDBMSoracle7 implements GXDBMS
 	public void setDataSource(DataSource dataSource)
 	{
 		this.dataSource = dataSource;
-		if(!dataSource.jdbcDriver.startsWith("oracle"))
-		{
-			isOracleDriver = false;
-		}
 	}
 
 	public boolean useReadOnlyConnections()
@@ -219,7 +215,6 @@ public class GXDBMSoracle7 implements GXDBMS
 	}
 
 	private static java.lang.reflect.Method PUTBYTES;
-	private boolean isOracleDriver = true;
 	
 	/** Setea los datos de un blob
 	 * El parametro blob debe ser una instancia de java.sql.Blob o descendiente
