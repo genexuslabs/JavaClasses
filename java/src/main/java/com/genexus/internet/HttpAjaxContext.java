@@ -9,8 +9,11 @@ import java.util.Stack;
 import java.util.Collections;
 import java.util.Arrays;
 
+import com.genexus.IGXAssigned;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
+import com.genexus.webpanels.DynAjaxEventContext;
+import com.genexus.webpanels.GXWebPanel;
 import com.genexus.webpanels.GXWebRow;
 
 import json.org.json.IJsonFormattable;
@@ -47,8 +50,13 @@ public abstract class HttpAjaxContext
 		public void setAjaxOnSessionTimeout( String ajaxOnSessionTimeout){ this._ajaxOnSessionTimeout = ajaxOnSessionTimeout;}
 		public String ajaxOnSessionTimeout(){ return _ajaxOnSessionTimeout;}
 
+		DynAjaxEventContext dynAjaxEventContext = new DynAjaxEventContext();
 
-	public abstract boolean isMultipartContent();
+		public DynAjaxEventContext getDynAjaxEventContext() {
+			return dynAjaxEventContext;
+		}
+
+		public abstract boolean isMultipartContent();
 		public abstract void ajax_rsp_assign_prop_as_hidden(String Control, String Property, String Value);
 
 		public abstract boolean isSpaRequest();
@@ -322,7 +330,19 @@ public abstract class HttpAjaxContext
             }
         }
 
-        public void ajax_rsp_assign_sdt_attri( String CmpContext, boolean IsMasterPage, String AttName, Object SdtObj)
+	private boolean isUndefinedOutParam(String key, Object SdtObj) {
+		if (!dynAjaxEventContext.isInputParm(key))
+		{
+			if (SdtObj instanceof IGXAssigned)
+			{
+				return !((IGXAssigned)SdtObj).getIsAssigned();
+			}
+		}
+		return false;
+	}
+
+
+	public void ajax_rsp_assign_sdt_attri( String CmpContext, boolean IsMasterPage, String AttName, Object SdtObj)
         {
             if (isJsOutputEnabled)
             {
@@ -330,8 +350,8 @@ public abstract class HttpAjaxContext
                 {
                   try {
                       JSONObject obj = getGxObject(AttValues, CmpContext, IsMasterPage);
-                      if (obj != null)
-                      {
+					  if (obj != null && (dynAjaxEventContext.isParmModified(AttName, SdtObj) || !isUndefinedOutParam( AttName, SdtObj)))
+					  {
                         if (SdtObj instanceof IGxJSONAble)
                             obj.put(AttName, ((IGxJSONAble)SdtObj).GetJSONObject());
                         else
