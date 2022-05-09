@@ -2,16 +2,12 @@ package com.genexus.db.dynamodb;
 
 import com.genexus.CommonUtil;
 import com.genexus.db.service.IOServiceContext;
-import com.genexus.db.service.ServiceError;
-import com.genexus.db.service.ServiceException;
 import com.genexus.db.service.ServiceResultSet;
-import org.apache.commons.lang.time.DateUtils;
 import software.amazon.awssdk.awscore.exception.AwsErrorDetails;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -114,7 +110,7 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 		.appendZoneRegionId()
 		.appendLiteral(']').toFormatter();
 
-	private static DateTimeFormatter US_DATE_TIME_OR_DATE = DateTimeFormatter.ofPattern("M/d/yyyy[ HH:mm:ss]");
+	private static final DateTimeFormatter US_DATE_TIME_OR_DATE = DateTimeFormatter.ofPattern("M/d/yyyy[ HH:mm:ss]");
 
 	private Instant getInstant(int columnIndex)
 	{
