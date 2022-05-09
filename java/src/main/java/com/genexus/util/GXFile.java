@@ -138,7 +138,7 @@ public class GXFile extends AbstractGXFile {
         		    if (ModelContext.getModelContext() != null && ! new File(absoluteFileName).isAbsolute())
                     {
                         IHttpContext webContext = ModelContext.getModelContext().getHttpContext();
-                        if((webContext != null) && (webContext instanceof HttpContextWeb) && !FileName.isEmpty()) {
+                        if((webContext != null) && (webContext instanceof HttpContextWeb || !webContext.getDefaultPath().isEmpty()) && !FileName.isEmpty()) {
                             absoluteFileName = ModelContext.getModelContext().getHttpContext().getDefaultPath() + File.separator + FileName;
                         }
                     }
