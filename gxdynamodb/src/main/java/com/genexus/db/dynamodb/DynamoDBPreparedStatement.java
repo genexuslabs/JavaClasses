@@ -16,12 +16,10 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class DynamoDBPreparedStatement extends ServicePreparedStatement
 {
@@ -50,6 +48,7 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 	}
 
 	private static final Pattern FILTER_PATTERN = Pattern.compile("\\((.*) = :(.*)\\)");
+	private static final Pattern VAR_PATTERN = Pattern.compile(".*(:.*)\\).*");
 	private int _executeQuery(DynamoDBResultSet resultSet) throws SQLException
 	{
 		query.initializeParms(parms);
@@ -59,9 +58,8 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 
 		if(query.getQueryType() == QueryType.QUERY)
 		{
-			for (Iterator<VarValue> it = query.getVars().values().iterator(); it.hasNext(); )
+			for (VarValue var : query.getVars().values())
 			{
-				VarValue var = it.next();
 				values.put(var.name, DynamoDBHelper.toAttributeValue(var));
 			}
 		}
@@ -97,7 +95,7 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 
 		if(query.getQueryType() != QueryType.QUERY)
 		{
-			for (String keyFilter : query.filters)
+			for (String keyFilter : query.getAllFilters().collect(Collectors.toList()))
 			{
 				Matcher match = FILTER_PATTERN.matcher(keyFilter);
 				if (match.matches() && match.groupCount() > 1)
@@ -115,17 +113,34 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 		{
 			case QUERY:
 			{
+				boolean issueScan = query instanceof DynamoScan;
+				if (!issueScan)
+				{ // Check whether a query has to be demoted to scan due to empty parameters
+					for (String keyFilter : query.keyFilters)
+					{
+						Matcher match = VAR_PATTERN.matcher(keyFilter);
+						if (match.matches())
+						{
+							String varName = match.group(1);
+							VarValue varValue = query.getParm(varName);
+							if (varValue != null && varValue.value.toString().isEmpty())
+							{
+								issueScan = true;
+								break;
+							}
+						}
+					}
+				}
+
 				Iterator<HashMap<String, Object>> iterator;
-				if(query instanceof DynamoScan)
+				if(issueScan)
 				{
 					ScanRequest.Builder builder = ScanRequest.builder()
 						.tableName(query.tableName)
 						.projectionExpression(String.join(",", query.projection));
-					if(query.filters.length > 0)
-					{
-						builder.filterExpression(String.join(" AND ", query.filters))
-							.expressionAttributeValues(values);
-					}
+					String filterString = query.getAllFilters().collect(Collectors.joining(" AND "));
+					if(!filterString.isEmpty())
+						builder.filterExpression(filterString).expressionAttributeValues(values);
 					if(expressionAttributeNames != null)
 						builder.expressionAttributeNames(expressionAttributeNames);
 
@@ -139,11 +154,13 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 				{
 					QueryRequest.Builder builder = QueryRequest.builder()
 						.tableName(query.tableName)
-						.keyConditionExpression(String.join(" AND ", query.filters))
+						.keyConditionExpression(String.join(" AND ", query.keyFilters))
 						.expressionAttributeValues(values)
 						.projectionExpression(String.join(", ", query.projection))
 						.indexName(query.getIndex())
 						.scanIndexForward(query.isScanIndexForward());
+					if(query.filters.length > 0)
+						builder.filterExpression(String.join(" AND ", query.filters));
 					if(expressionAttributeNames != null)
 						builder.expressionAttributeNames(expressionAttributeNames);
 
@@ -236,7 +253,7 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 	}
 
 	@Override
-	public void setBinaryStream(int parameterIndex, InputStream x, int length) throws SQLException
+	public void setBinaryStream(int parameterIndex, InputStream x, int length)
 	{
 		parms[parameterIndex-1] = SdkBytes.fromInputStream(x);
 	}

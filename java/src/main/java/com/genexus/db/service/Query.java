@@ -3,11 +3,13 @@ package com.genexus.db.service;
 import com.genexus.util.NameValuePair;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.stream.Stream;
 
 public class Query implements IQuery {
-	private static final String [] EMPTY_ARR_STRING = new String [0];
+	protected static final String [] EMPTY_ARR_STRING = new String [0];
 	final ServiceDataStoreHelper dataStoreHelper;
 	public Query(ServiceDataStoreHelper dataStoreHelper)
 	{
