@@ -3,11 +3,9 @@ package com.genexus.internet;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -18,6 +16,8 @@ import java.util.TimeZone;
 
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 import com.genexus.platform.INativeFunctions;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.protocol.BasicHttpContext;
@@ -28,8 +28,7 @@ public class POP3Session  implements GXInternetConstants,IPOP3Session
 	private final int CONN_TLS = 1;
 	private final int CONN_SSL = 2;
 
-	private boolean DEBUG = GXInternetConstants.DEBUG;
-	private PrintStream logOutput;
+	private static final ILogger logger = LogManager.getLogger(POP3Session.class);
 
 	private String user;
 	private String password;
@@ -58,17 +57,6 @@ public class POP3Session  implements GXInternetConstants,IPOP3Session
 	
 	public POP3Session()
 	{
-		if	(DEBUG)
-		{
-			try
-			{
-				logOutput = new PrintStream(new FileOutputStream(new File("_gx_pop3.log")));
-			}
-			catch (IOException e)
-			{
-				System.out.println("Can't open POP3 log file pop3.log");
-			}
-		}
 	}
 
 	public int error()
@@ -394,7 +382,7 @@ public class POP3Session  implements GXInternetConstants,IPOP3Session
 	private MailMessage retr(int i, String attachmentPath) throws GXMailException
 	{
 		doCommand("RETR " + i);
-		return new MailMessage(new RFC822Reader(new RFC822EndReader(in, logOutput)), attachmentPath, this.downloadAttachments);
+		return new MailMessage(new RFC822Reader(new RFC822EndReader(in)), attachmentPath, this.downloadAttachments);
 	}
 
 	private int getValue(String command) throws GXMailException
@@ -431,9 +419,7 @@ public class POP3Session  implements GXInternetConstants,IPOP3Session
 
 	private void log(String text)
 	{
-		if	(DEBUG)
-			if (logOutput != null)
-				logOutput.println(text);
+		logger.debug(text);
 	}
 
 	protected String doCommand(String commandString) throws GXMailException
@@ -442,11 +428,10 @@ public class POP3Session  implements GXInternetConstants,IPOP3Session
 		{
 			if	(commandString != null)
 			{
-				if	(DEBUG)
-					if	(!commandString.startsWith("PASS"))
-						log("OUT : " + commandString);
-					else
-						log("OUT : PASS *****");
+				if	(!commandString.startsWith("PASS"))
+					log("OUT : " + commandString);
+				else
+					log("OUT : PASS *****");
 
 				out.print(commandString);
 				out.print(CRLF);
@@ -465,8 +450,7 @@ public class POP3Session  implements GXInternetConstants,IPOP3Session
                           if (otherLine != null) { reply = otherLine.trim(); }
                         }
 
-			if	(DEBUG)
-				log("IN : " + reply);
+			log("IN : " + reply);
 		  
 		  	// code change for ver 2.0 wherein there need not 
 		  	// be any error message along with the error reply
