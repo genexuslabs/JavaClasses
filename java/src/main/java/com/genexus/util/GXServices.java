@@ -5,12 +5,14 @@ import java.util.Hashtable;
 
 import com.genexus.ApplicationContext;
 import com.genexus.ModelContext;
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 import com.genexus.internet.HttpContext;
 import com.genexus.webpanels.HttpContextWeb;
 import com.genexus.xml.XMLReader;
 
 public class GXServices {
-	private static final boolean DEBUG = com.genexus.DebugFlag.DEBUG;
+	private static final ILogger logger = LogManager.getLogger(GXServices.class);
 	public static final String WEBNOTIFICATIONS_SERVICE = "WebNotifications";
 	public static final String STORAGE_SERVICE = "Storage";
 	public static final String STORAGE_APISERVICE = "StorageAPI";
@@ -64,9 +66,9 @@ public class GXServices {
 		}
 		else
 		{
-			if (!ApplicationContext.getInstance().getReorganization() && DEBUG)
+			if (!ApplicationContext.getInstance().getReorganization())
 			{
-				System.out.println("GXServices - Could not load Services Config: " + fullPath + " - " + reader.getErrDescription());
+				logger.debug("GXServices - Could not load Services Config: " + fullPath + " - " + reader.getErrDescription());
 			}
 		}
 	}

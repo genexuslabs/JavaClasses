@@ -219,5 +219,9 @@ public class Log4J2Logger implements ILogger {
 	public boolean isDebugEnabled() {
 		return log.isDebugEnabled();
 	}
+
+	public boolean isErrorEnabled() {
+		return log.isErrorEnabled();
+	}
 	
 }
