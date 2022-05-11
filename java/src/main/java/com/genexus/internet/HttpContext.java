@@ -1,31 +1,24 @@
 package com.genexus.internet;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.Date;
 import java.util.Enumeration;
-import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.genexus.servlet.http.ICookie;
+import com.genexus.servlet.http.IHttpServletRequest;
+import com.genexus.servlet.http.IHttpServletResponse;
 
 import com.genexus.*;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.BOMInputStream;
 
 import com.genexus.usercontrols.UserControlFactoryImpl;
 import com.genexus.util.Codecs;
 import com.genexus.util.Encryption;
 import com.genexus.util.GXMap;
 import com.genexus.util.ThemeHelper;
-import com.genexus.webpanels.GXResourceProvider;
 import com.genexus.webpanels.GXWebObjectBase;
 import com.genexus.webpanels.WebSession;
 
@@ -44,7 +37,9 @@ public abstract class HttpContext
     private static String GX_SPA_REQUEST_HEADER = "X-SPA-REQUEST";
     protected static String GX_SPA_REDIRECT_URL = "X-SPA-REDIRECT-URL";
 	private static String GX_SOAP_ACTION_HEADER = "SOAPAction";
-	
+	public static String GXTheme = "GXTheme";
+	public static String GXLanguage = "GXLanguage";
+
     private static String CACHE_INVALIDATION_TOKEN;
 
     protected boolean PortletMode = false;
@@ -264,6 +259,8 @@ public abstract class HttpContext
 	public abstract String getResourceRelative(String path, boolean includeBasePath);
 	public abstract String getResource(String path);
 	public abstract String GetNextPar();
+	public abstract String GetPar(String parameter);
+	public abstract String GetFirstPar(String parameter);
 	public abstract HttpContext copy();
 	public abstract byte setHeader(String header, String value);
 	public abstract void setDateHeader(String header, int value);
@@ -298,7 +295,7 @@ public abstract class HttpContext
 	public abstract void setContextPath(String context);
 	public abstract String webSessionId();
 	public abstract String getCookie(String name);
-	public abstract Cookie[] getCookies();
+	public abstract ICookie[] getCookies();
 	public abstract byte setCookie(String name, String value, String path, java.util.Date expiry, String domain, double secure, Boolean httpOnly);
 	public abstract byte setCookie(String name, String value, String path, java.util.Date expiry, String domain, double secure);
 	public abstract byte setCookieRaw(String name, String value, String path, java.util.Date expiry, String domain, double secure);
@@ -328,9 +325,9 @@ public abstract class HttpContext
 	public abstract HttpResponse getHttpResponse();
 	public abstract HttpRequest getHttpRequest();
 	public abstract void setHttpRequest(HttpRequest httprequest);
-	public abstract HttpServletRequest getRequest();
-	public abstract HttpServletResponse getResponse();
-	public abstract void setRequest(HttpServletRequest request);
+	public abstract IHttpServletRequest getRequest();
+	public abstract IHttpServletResponse getResponse();
+	public abstract void setRequest(IHttpServletRequest request);
 	public abstract Hashtable getPostData();
 	public abstract WebSession getWebSession();
 	public abstract void redirect(String url);
@@ -439,21 +436,20 @@ public abstract class HttpContext
 		if (cssContent == null)
 		{
 			String path = getRequest().getServletPath().replaceAll(".*/", "") + ".css";
-			try 
+			try(InputStream istream = context.packageClass.getResourceAsStream(path))
 			{
-				InputStream istream = context.packageClass.getResourceAsStream(path);
+
 				if (istream == null)
 				{
 					cssContent = "";
 				}
-				else
-				{
-					BOMInputStream bomInputStream = new BOMInputStream(istream);
-					cssContent = IOUtils.toString(bomInputStream, "UTF-8");
+				else {
+					//BOMInputStream bomInputStream = new BOMInputStream(istream);// Avoid using BOMInputStream because of runtime error (java.lang.NoSuchMethodError: org.apache.commons.io.IOUtils.length([Ljava/lang/Object;)I) issue 94611
+					//cssContent = IOUtils.toString(bomInputStream, "UTF-8");
+					cssContent = PrivateUtilities.BOMInputStreamToStringUTF8(istream);
 				}
 			}
-			catch ( Exception e)
-			{
+			catch ( Exception e) {
 				cssContent = "";
 			}
 			ApplicationContext.getcustomCSSContent().put(getRequest().getServletPath(), cssContent);
@@ -495,15 +491,16 @@ public abstract class HttpContext
 	{
 		AddStyleSheetFile(styleSheet, "");
 	}
+
 	public void AddStyleSheetFile(String styleSheet, String urlBuildNumber)
 	{
 		urlBuildNumber = getURLBuildNumber(styleSheet, urlBuildNumber);
 		AddStyleSheetFile(styleSheet, urlBuildNumber, false);
 	}
 
-	private String getURLBuildNumber(String styleSheet, String urlBuildNumber)
+	private String getURLBuildNumber(String resourcePath, String urlBuildNumber)
 	{
-		if(urlBuildNumber.isEmpty() && !GXutil.isAbsoluteURL(styleSheet))
+		if(urlBuildNumber.isEmpty() && !GXutil.isAbsoluteURL(resourcePath) && !GXutil.hasUrlQueryString(resourcePath))
 		{
 			return "?" + getCacheInvalidationToken();
 		}
@@ -871,13 +868,13 @@ public abstract class HttpContext
 	
 	public void initClientId()
 	{			
-		if (getWebSession() != null && this.getClientId().equals(""))
+		if (!isSoapRequest() && getWebSession() != null && this.getClientId().equals(""))
 		{                    
 			String _clientId = this.getCookie(CLIENT_ID_HEADER);
 			if (_clientId == null || _clientId.equals(""))
 			{
 				_clientId = java.util.UUID.randomUUID().toString();
-				this.setCookie(CLIENT_ID_HEADER, _clientId, "", new Date(Long.MAX_VALUE), "", 0);
+				this.setCookie(CLIENT_ID_HEADER, _clientId, "/", new Date(Long.MAX_VALUE), "", getHttpSecure());
 			}
 			this.setClientId(_clientId);
 		}            
@@ -927,7 +924,6 @@ public abstract class HttpContext
 		addNavigationHidden();    
 		AddThemeHidden(this.getTheme());
 		AddStylesheetsToLoad();
-		AddResourceProvider(GXResourceProvider.PROVIDER_NAME);
 		if (isSpaRequest())
 		{
 			writeTextNL("<script>gx.ajax.saveJsonResponse(" + getJSONResponse() + ");</script>");
@@ -976,7 +972,7 @@ public abstract class HttpContext
         }
         catch(com.genexus.util.Encryption.InvalidGXKeyException e)
         {
-            setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", 0);
+            setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", getHttpSecure());
             com.genexus.diagnostics.Log.debug("440 Invalid encryption key");
             sendResponseStatus(440, "Session timeout");
         }
@@ -992,7 +988,7 @@ public abstract class HttpContext
         }
         catch (com.genexus.util.Encryption.InvalidGXKeyException e)
         {
-            setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", 0);
+            setCookie("GX_SESSION_ID", "", "", new Date(Long.MIN_VALUE), "", getHttpSecure());
             com.genexus.diagnostics.Log.debug( "440 Invalid encryption key");
             sendResponseStatus(440, "Session timeout");
         }
@@ -1469,7 +1465,7 @@ public abstract class HttpContext
 	{
 	    WebSession session = getWebSession();
 	    if (session!=null){
-			HashMap cThemeMap = (HashMap)session.getObjectAttribute("GXTheme");
+			HashMap cThemeMap = (HashMap)session.getObjectAttribute(GXTheme);
 			if (cThemeMap != null && cThemeMap.containsKey(theme))
 				return (String)cThemeMap.get(theme);
 		}
@@ -1491,11 +1487,11 @@ public abstract class HttpContext
 			return 0;
 		else
 		{
-			HashMap<String, String> cThemeMap = (HashMap<String, String>)session.getObjectAttribute("GXTheme");
+			HashMap<String, String> cThemeMap = (HashMap<String, String>)session.getObjectAttribute(GXTheme);
 			if (cThemeMap == null)
 				cThemeMap = new HashMap<>();
 			cThemeMap.put(theme, t);
-			session.setObjectAttribute("GXTheme", cThemeMap);
+			session.setObjectAttribute(GXTheme, cThemeMap);
 			return 1;
 		}
 	}
@@ -1618,6 +1614,16 @@ public abstract class HttpContext
 			cachedMessages.putIfAbsent(language, msg);
 		}
 
+		public int getYearLimit()
+		{
+			return Application.getClientPreferences().getYEAR_LIMIT();
+		}
+
+		public int getStorageTimezone()
+		{
+			return Application.getClientPreferences().getStorageTimezonePty();
+		}
+
 		public String getLanguageProperty(String property)
 		{
 			String _language = getLanguage();
@@ -1627,7 +1633,7 @@ public abstract class HttpContext
 		{
 			if (currentLanguage == null) {
 				WebSession session = getWebSession();
-				String language = session != null ? session.getAttribute("GXLanguage") : null;
+				String language = session != null ? session.getAttribute(GXLanguage) : null;
 				if (language != null && !language.equals("")) {
 					currentLanguage = language;
 				} else {
@@ -1684,7 +1690,7 @@ public abstract class HttpContext
 			if (!language.isEmpty() && Application.getClientPreferences().getProperty("language|"+ language, "code", null)!=null)
 			{
 				this.currentLanguage = language;
-				getWebSession().setAttribute("GXLanguage", language);
+				getWebSession().setAttribute(GXLanguage, language);
 				ajaxRefreshAsGET = true;
 				return 0;
 			}else
@@ -1778,6 +1784,7 @@ public abstract class HttpContext
 								{"dll"	, "application/x-msdownload"},
 								{"ps"	, "application/postscript"},
 								{"pdf"	, "application/pdf"},
+								{"svg"	, "image/svg+xml"},
 								{"tgz"	, "application/x-compressed"},
 								{"zip"	, "application/x-zip-compressed"},
 								{"gz"	, "application/x-gzip"}

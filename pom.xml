@@ -6,7 +6,7 @@
 
 	<groupId>com.genexus</groupId>
 	<artifactId>parent</artifactId>
-	<version>1.7-SNAPSHOT</version>
+	<version>2.6-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>GeneXus Standard Classes (Parent)</name>
@@ -15,10 +15,17 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <jersey.javax.version>2.34</jersey.javax.version>
+        <jersey.jakarta.version>3.0.1</jersey.jakarta.version>
+        <jackson.version>2.12.5</jackson.version>
+        <junit.version>4.13.2</junit.version>
 	</properties>
 
-	<modules>
+    <modules>
 		<module>common</module>
+		<module>wrapperjavax</module>
+		<module>wrapperjakarta</module>
+		<module>wrappercommon</module>
 		<module>java</module>
 		<module>gxandroidpublisher</module>
 		<module>gxcryptocommon</module>
@@ -32,18 +39,11 @@
 		<module>gxgeospatial</module>
 		<module>gxodata</module>
 		<module>gxexternalproviders</module>
-        <module>gxwebsocket</module>
-        <module>gxawsserverless</module>
+		<module>gxwebsocket</module>
+		<module>gxwebsocketjakarta</module>
+		<module>gxawsserverless</module>
 		<module>androidreports</module>
     </modules>
-
-	<repositories>
-		<repository>
-			<id>mit-public</id>
-			<name>MIT Public</name>
-			<url>http://maven.mit.edu/nexus/content/repositories/public</url>
-		</repository>
-	</repositories>
 
 	<licenses>
 		<license>
@@ -51,6 +51,15 @@
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
 		</license>
 	</licenses>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 	<build>
 		<pluginManagement>

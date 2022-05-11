@@ -324,6 +324,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 
 //@iroqueta
 	private boolean tcpNoDelay = false;
+	private boolean includeCookies = true;
 
     /** IAIK's SSL context */
 //    private SSLContext           ssl_ctxt;
@@ -3672,7 +3673,7 @@ static
 
 	// Generate request line and Host header
 
-	String file = Util.escapeUnsafeChars(req.getRequestURI());
+	String file = com.genexus.CommonUtil.escapeUnsafeChars(req.getRequestURI());
 	if (Proxy_Host != null  &&  Protocol != HTTPS  &&  !file.equals("*"))
 	    dataout.writeBytes(req.getMethod() + " http://" + Host + ":" + Port+
 			       file + " " + RequestProtocolVersion + "\r\n");
@@ -4022,6 +4023,15 @@ static
 		this.tcpNoDelay = tcpNoDelay;
 	}
 
+//@iroqueta
+	public void setIncludeCookies(boolean includeCookies)
+	{
+		this.includeCookies = includeCookies;
+	}
+	public boolean getIncludeCookies()
+	{
+		return includeCookies;
+	}
 
     private class EstablishConnection extends Thread
     {

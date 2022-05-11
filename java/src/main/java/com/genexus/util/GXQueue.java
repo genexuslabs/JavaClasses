@@ -418,7 +418,7 @@ public class GXQueue implements MessageListener{
     {
       if (type.equals(QUEUE))
       {
-        message= reciver.receive(1);
+        message= reciver.receiveNoWait();
         if (message != null)
         {
           if (message instanceof TextMessage)

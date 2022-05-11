@@ -175,7 +175,7 @@ public class GXDBMSpostgresql implements GXDBMS
 	
 	public String serverVersion(GXConnection con) throws SQLException
 	{
-		ResultSet rslt = con.getStatement("_ServerVERSION_", "SHOW server_version", false).executeQuery();
+		ResultSet rslt = con.getStatement("_ServerVERSION_", "select character_value from information_schema.sql_implementation_info where implementation_info_name = 'DBMS VERSION'", false).executeQuery();
 		
 		rslt.next();
 		String value = rslt.getString(1);

@@ -51,6 +51,7 @@ public class GXOAuthAccessToken extends GXWebObjectStub
 						if (!nativeToken.equals(""))
 						{
 							isExternalSDAuth = true;
+							additional_parameters = context.getHttpRequest().getVariable("additional_parameters");
 						}
 						else
 						{
@@ -106,10 +107,17 @@ public class GXOAuthAccessToken extends GXWebObjectStub
 				if(!flag[0])
 				{
 					context.getResponse().setContentType("application/json");
-				
-					context.getResponse().setStatus(401);
-				
 					String gamError = result.getCode();
+
+					if (gamError.equals("400") || gamError.equals("410"))
+					{
+						context.getResponse().setStatus(202);
+					}
+					else
+					{
+						context.getResponse().setStatus(401);
+					}
+
 					String messagePermission = result.getDescription();
 					String messagePermissionEncoded = messagePermission;
 					if (PrivateUtilities.containsNoAsciiCharacter(messagePermission))
@@ -190,6 +198,8 @@ public class GXOAuthAccessToken extends GXWebObjectStub
    	{
       return "";
    }
+
+	protected String EncryptURLParameters() {return "NO";};
    
    protected void init(HttpContext context )
    {

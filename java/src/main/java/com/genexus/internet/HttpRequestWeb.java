@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.Reader;
 
 import com.genexus.PrivateUtilities;
+import com.genexus.WrapperUtils;
 import com.genexus.webpanels.HttpContextWeb;
 
 public class HttpRequestWeb extends HttpRequest
@@ -45,6 +46,15 @@ public class HttpRequestWeb extends HttpRequest
 		if (messageBody != null)
 		{
 			return messageBody;
+		}
+
+		if (httpContext.isRestService())
+		{
+			String restRequestBody = WrapperUtils.requestBodyThreadLocal.get();
+			if (restRequestBody != null)
+			{
+				return restRequestBody;
+			}
 		}
 		
 		try
@@ -89,8 +99,11 @@ public class HttpRequestWeb extends HttpRequest
 	public InputStream getInputStream() throws IOException
 	{
 		if (streamByteArray == null)
-			streamByteArray = org.apache.commons.io.IOUtils.toByteArray(httpContext.getRequest().getInputStream());
-		
+			streamByteArray = org.apache.commons.io.IOUtils.toByteArray(httpContext.getRequest().getInputStream().getInputStream());
 		return new ByteArrayInputStream(streamByteArray);
+	}
+
+	public int getContentLength() {
+		return httpContext.getRequest().getContentLength();
 	}
 }

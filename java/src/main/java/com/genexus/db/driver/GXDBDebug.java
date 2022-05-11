@@ -8,6 +8,7 @@ import java.io.Writer;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 
 import com.genexus.CommonUtil;
@@ -48,17 +49,23 @@ public final class GXDBDebug implements ICleanedup
 
 				try
 				{
-					Writer baseWriter = new FileWriter(fileName);
-					if	(cfg.buffered)
-					{
-						baseWriter = new BufferedWriter(baseWriter);
-					}
-
-				 	log = new PrintWriter(baseWriter);
+				 	log =createWriter(fileName);
 				}
-				catch (IOException e)
-				{	
-					logEnabled = false;
+				catch (IOException e) {
+					try {
+						String fileNameWithoutExtension = fileName;
+						String fileExtension = "";
+						int tempIndex = fileName.lastIndexOf('.');
+						if(tempIndex != -1)
+						{
+							fileNameWithoutExtension = fileName.substring(0, tempIndex);
+							fileExtension = fileName.substring(tempIndex);
+						}
+						fileName = fileNameWithoutExtension + "_" + CommonUtil.getYYYYMMDDHHMMSSmmm_nosep(new Date()) + fileExtension;
+						log =createWriter(fileName);
+					} catch (IOException ioe) {
+						logEnabled = false;
+					}
 					/*System.err.println("Can't create log file " + fileName + " " + e.toString()); Do not write to output console*/
 				}
 
@@ -77,6 +84,14 @@ public final class GXDBDebug implements ICleanedup
 				}
 			}
 		}
+	}
+	private PrintWriter createWriter(String filename) throws IOException {
+		Writer baseWriter = new FileWriter(fileName);
+		if	(cfg.buffered)
+		{
+			baseWriter = new BufferedWriter(baseWriter);
+		}
+		return new PrintWriter(baseWriter);
 	}
 
 	public void closeLog()

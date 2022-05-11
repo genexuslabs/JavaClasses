@@ -4,21 +4,21 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.Vector;
 
-import com.genexus.IHttpContext;
-import com.genexus.ModelContext;
-import com.genexus.internet.HttpContext;
+import com.genexus.*;
+import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.db.driver.ResourceAccessControlList;
+import com.genexus.db.driver.ExternalProvider;
 import com.genexus.webpanels.HttpContextWeb;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.io.output.FileWriterWithEncoding;
 
-import com.genexus.Application;
-import com.genexus.CommonUtil;
 import com.genexus.common.classes.AbstractGXFile;
 import org.apache.logging.log4j.Logger;
 
@@ -31,34 +31,73 @@ public class GXFile extends AbstractGXFile {
     private String ErrDescription;
     private boolean ret;
     private boolean isExternal = false;
+    private String uploadFileId;
     
     public static ICleanupFile CleanUp;
     
     public GXFile() {
     }
 
-    public GXFile(String FileName) {
-        this(FileName, false);
-    }
-    
-    public GXFile(String FileName, boolean isPrivate) {
-    		this(FileName, isPrivate, false);
-    }
-    
-    public GXFile(String FileName, boolean isPrivate, boolean isLocal) {
-        if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) != null && !isLocal) {
-            FileSource = new GXExternalFileInfo(FileName, Application.getExternalProvider(), true, isPrivate);            
-        } else {
-            FileSource = new GXFileInfo(new File(FileName));
-        }
+    public GXFile(String fileName) {
+        this(fileName, ResourceAccessControlList.Default);
     }
 
-    public GXFile(IGXFileInfo fileInfo) {
+    //For compatibility reasons
+	@Deprecated
+	public GXFile(String fileName, boolean isPrivate) {
+		this(fileName, isPrivate ? ResourceAccessControlList.Private: ResourceAccessControlList.Default, GxFileInfoSourceType.Unknown);
+	}
+
+    public GXFile(String fileName, ResourceAccessControlList fileAcl) {
+    		this(fileName, fileAcl, GxFileInfoSourceType.Unknown);
+    }
+    
+    public GXFile(String fileName, ResourceAccessControlList fileAcl, GxFileInfoSourceType sourceType) {
+		this("", fileName, fileAcl, sourceType);
+    }
+
+	@Deprecated
+	public GXFile(String fileName, ResourceAccessControlList fileAcl, boolean isLocalFile) {
+		this("", fileName, fileAcl, isLocalFile ? GxFileInfoSourceType.LocalFile: GxFileInfoSourceType.Unknown);
+	}
+
+	public GXFile(String baseDirectoryPath, String fileName, ResourceAccessControlList fileAcl, GxFileInfoSourceType sourceType) {
+		if (com.genexus.CommonUtil.isUploadPrefix(fileName)) {
+			uploadFileId = fileName;
+			fileName = SpecificImplementation.GXutil.getUploadValue(fileName);
+		}
+
+		switch (sourceType) {
+			case LocalFile:
+				createFileSourceLocal(baseDirectoryPath, fileName);
+				break;
+			case ExternalFile:
+				FileSource = new GXExternalFileInfo(fileName, Application.getExternalProvider(), true, fileAcl);
+				break;
+			case Unknown:
+				ExternalProvider storageProvider = Application.getExternalProvider();
+				if (storageProvider == null || PrivateUtilities.isAbsoluteFilePath(fileName)) {
+					createFileSourceLocal(baseDirectoryPath, fileName);
+				}
+				else {
+					FileSource = new GXExternalFileInfo(fileName, storageProvider, true, fileAcl);
+				}
+				break;
+		}
+	}
+
+	private void createFileSourceLocal(String baseDirectoryPath, String fileName) {
+		boolean isAbsolutePath = PrivateUtilities.isAbsoluteFilePath(fileName);
+		String absoluteOrRelativePath = (isAbsolutePath)? fileName: Paths.get(baseDirectoryPath, fileName).toString(); //BaseDirectory could be empty.
+		FileSource = new GXFileInfo(new File(absoluteOrRelativePath));
+	}
+
+	public GXFile(IGXFileInfo fileInfo) {
         FileSource = fileInfo;
     }
 
     public static String getgxFilename(String fileName) {
-        return new GXFile(fileName, false, true).getNameNoExt();
+        return new GXFile(fileName, ResourceAccessControlList.Default, GxFileInfoSourceType.LocalFile).getNameNoExt();
     }
 
     public static String getgxFileext(String fileName) {
@@ -85,11 +124,13 @@ public class GXFile extends AbstractGXFile {
     }	
 
     public void setSource(String FileName) {
-    		setSource(FileName, !isExternal);
-    }
+		boolean isUpload = com.genexus.CommonUtil.isUploadPrefix(FileName);
+		if (isUpload) {
+			uploadFileId = FileName;
+			FileName = SpecificImplementation.GXutil.getUploadValue(FileName);
+		}
 
-    public void setSource(String FileName, boolean isLocal) {
-        if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) != null && !isLocal) {
+        if (Application.getGXServices().get(GXServices.STORAGE_SERVICE) != null && (isUpload || isExternal)) {
         		FileSource = new GXExternalFileInfo(FileName, Application.getExternalProvider());
         } else {
                 String absoluteFileName = FileName;
@@ -97,7 +138,7 @@ public class GXFile extends AbstractGXFile {
         		    if (ModelContext.getModelContext() != null && ! new File(absoluteFileName).isAbsolute())
                     {
                         IHttpContext webContext = ModelContext.getModelContext().getHttpContext();
-                        if((webContext != null) && (webContext instanceof HttpContextWeb) && !FileName.isEmpty()) {
+                        if((webContext != null) && (webContext instanceof HttpContextWeb || !webContext.getDefaultPath().isEmpty()) && !FileName.isEmpty()) {
                             absoluteFileName = ModelContext.getModelContext().getHttpContext().getDefaultPath() + File.separator + FileName;
                         }
                     }
@@ -273,6 +314,9 @@ public class GXFile extends AbstractGXFile {
     public String getName() {
         if (sourceSeted()) {
             resetErrors();
+			if (uploadFileId != null) {
+				return SpecificImplementation.GXutil.getUploadNameValue(uploadFileId);
+			}
             try {
                 if ((FileSource == null) || !(FileSource.isFile() && FileSource.exists())) {
                     ErrCode = 2;
@@ -297,6 +341,9 @@ public class GXFile extends AbstractGXFile {
     }
 
     public String getExt() {
+    	if (uploadFileId != null) {
+			return SpecificImplementation.GXutil.getUploadExtensionValue(uploadFileId);
+		}
         String sExtension = FileSource.getName();
         int pos = sExtension.lastIndexOf(".");
         if ((pos == -1) || (pos == sExtension.length())) {
@@ -306,7 +353,10 @@ public class GXFile extends AbstractGXFile {
     }
 
     public String getNameNoExt() {
-        String FName = FileSource.getName();
+		String FName = FileSource.getName();
+    	if (uploadFileId != null) {
+			FName = SpecificImplementation.GXutil.getUploadNameValue(uploadFileId);
+		}
         int pos = FName.lastIndexOf(".");
         if (pos < 1) {
             return FName;
@@ -667,9 +717,9 @@ public class GXFile extends AbstractGXFile {
             resetErrors();
             try {
                 if (encoding.equals("")) {
-                    fileWriter = new FileWriterWithEncoding(FileSource.getFileInstance(), "UTF8", true);
+                    fileWriter = new FileWriterWithEncoding(FileSource.getFileInstance(), "UTF8", FileSource.exists());
                 } else {
-                    fileWriter = new FileWriterWithEncoding(FileSource.getFileInstance(), CommonUtil.normalizeEncodingName(encoding), true);
+                    fileWriter = new FileWriterWithEncoding(FileSource.getFileInstance(), CommonUtil.normalizeEncodingName(encoding), FileSource.exists());
                 }
             } catch (Exception e) {
                 setUnknownError(e);
@@ -738,8 +788,16 @@ public class GXFile extends AbstractGXFile {
             }
         }
         if (lineIterator != null) {
-            lineIterator.close();
-            lineIterator = null;
+           	try {
+				lineIterator.close();
+				lineIterator = null;
+			}
+			catch (java.io.IOException e) {
+				setUnknownError();
+				e.printStackTrace();
+			}
         }
     }
 }
+
+

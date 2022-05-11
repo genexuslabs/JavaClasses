@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.genexus</groupId>
 		<artifactId>parent</artifactId>
-		<version>1.7-SNAPSHOT</version>
+		<version>2.6-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>gxcommon</artifactId>
@@ -27,12 +27,12 @@
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
-			<version>2.4</version>
+			<version>2.6</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.2</version>
+			<version>2.11.0</version>
 		</dependency>		
 		<dependency>
 			<groupId>org.simpleframework</groupId>
@@ -42,7 +42,7 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpkix-jdk15on</artifactId>
-			<version>1.64</version>
+			<version>1.69</version>
 		</dependency>
 	</dependencies>
 

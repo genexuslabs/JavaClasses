@@ -1,16 +1,11 @@
 package com.genexus;
 
-import java.io.File;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.math.BigDecimal;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Random;
-import java.util.TimeZone;
-import java.util.Vector;
+import java.util.*;
 
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.internet.HttpContext;
@@ -163,6 +158,11 @@ public final class GXutil
     public static String formatDateTimeParm(Date date)
     {
         return CommonUtil.formatDateTimeParm(date);
+	}
+	
+	public static String formatDateTimeParmMS(Date date)
+    {
+        return CommonUtil.formatDateTimeParmMS(date);
     }
 
     public static String formatDateParm(Date date)
@@ -705,7 +705,7 @@ public final class GXutil
 	}
 	public static Date dtadd(Date date, double seconds)
 	{
-		return dtadd(date, (int)seconds);
+		return CommonUtil.dtadd(date, seconds);
 	}
 
 	public static Date dtaddms(Date date, double seconds)
@@ -1096,31 +1096,43 @@ public final class GXutil
 		return (byte) NativeFunctions.getInstance().shellExecute(document, "print");
 	}
 
-    /** Hace un Shell modal. Ejecuta en la misma 'consola' que su parent
-     * @param command Comando a ejecutar
-     * @return true si el comando se pudo ejecutar
-     */
-    public static boolean shellModal(String command)
-    {
-        return NativeFunctions.getInstance().executeModal(command, true);
-    }
-
 	public static byte shell(String cmd, int modal)
 	{
-		if	(modal == 1)
-			return shellModal(cmd)? 0 : (byte) 1;
+		return GXutil.shell(cmd, modal, 0);
+	}
 
+	public static byte shell(String cmd, int modal, int redirectOutput)
+	{
 		try
 		{
-			Runtime.getRuntime().exec(cmd);
+			if (modal == 0)
+			{
+				Runtime.getRuntime().exec(cmd);
+				return 0;
+			}
+			else
+			{
+				List<String> al = Arrays.asList(cmd.split(" "));
+				ProcessBuilder pb = new ProcessBuilder(al);
+				if (redirectOutput == 1)
+				{
+					pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+					pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+					pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
+				}
+				Process p = pb.start();
+
+				byte exitCode = (byte) p.waitFor();
+
+				p.destroy();
+				return exitCode;
+			}
 		}
 		catch (Exception e)
         {
         	System.err.println("e " + e);
 			return 1;
 		}
-
-		return 0;
 	}
 
 	public static byte shell(String cmd)
@@ -1342,13 +1354,11 @@ public final class GXutil
 		return com.genexus.Preferences.getDefaultPreferences().getBLOB_PATH() + blobPath;
 	}
 	public static final String FORMDATA_REFERENCE = "gxformdataref:";
-	public static final String UPLOADPREFIX = "gxupload:";	
 	public static final int UPLOAD_TIMEOUT = 10;	
 	
 	public static String cutUploadPrefix(String value)
 	{
-		String uploadValue = value.replace(UPLOADPREFIX, "");
-		uploadValue = SpecificImplementation.GXutil.getUploadValue(value, uploadValue);
+		String uploadValue = SpecificImplementation.GXutil.getUploadValue(value);
 	
 		//hack para salvar el caso de gxooflineeventreplicator que llegan los path de los blobs sin \ porque fueron sacadas por el FromJsonString
 		String blobPath = com.genexus.Preferences.getDefaultPreferences().getProperty("CS_BLOB_PATH", "");
@@ -1367,6 +1377,21 @@ public final class GXutil
 	public static boolean isUploadPrefix(String value)
 	{
 		return CommonUtil.isUploadPrefix(value);
+	}
+
+	public static String getNonTraversalPath(String path, String fileName) {
+		String nonTraversalPath =  Paths.get(path, fileName).toString();
+		try {
+			File nonTraversalFile = new File(nonTraversalPath);
+			String canonicalPath = nonTraversalFile.getCanonicalPath();
+			if (canonicalPath.startsWith(path) || ! nonTraversalFile.isAbsolute())
+				return nonTraversalPath;
+			else
+				return path + File.separator +  new File( fileName).getName();
+		}
+		catch(IOException ex) {
+			return path + File.separator +  new File( fileName).getName();
+		}
 	}
 	
 	public static String dateToCharREST(Date value)
@@ -1637,6 +1662,11 @@ public final class GXutil
 		return CommonUtil.isAbsoluteURL(url);
 	}
 
+	public static boolean hasUrlQueryString(String url)
+	{
+		return CommonUtil.hasUrlQueryString(url);
+	}
+
 	public static void ErrorToMessages(String errorId, String errorDescription, GXBaseCollection<SdtMessages_Message> messages)
 	{
 		if (messages != null)
@@ -1701,7 +1731,7 @@ public final class GXutil
 		}
 	}
 
-	public static String buildURLFromHttpClient(com.genexus.internet.HttpClient GXSoapHTTPClient, String serviceName, javax.xml.ws.BindingProvider bProvider)
+	public static String buildURLFromHttpClient(com.genexus.internet.HttpClient GXSoapHTTPClient, String serviceName, com.genexus.xml.ws.BindingProvider bProvider)
 	{
 		if (!GXSoapHTTPClient.getProxyServerHost().equals(""))
 		{

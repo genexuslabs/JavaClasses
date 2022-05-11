@@ -3,6 +3,7 @@ package com.genexus.gxoffice;
 import java.io.BufferedInputStream;
 import java.io.File;
 
+import com.genexus.db.driver.ResourceAccessControlList;
 import org.apache.poi.poifs.filesystem.FileMagic;
 
 import com.genexus.Application;
@@ -131,7 +132,7 @@ public class ExcelDoc {
 				p1 = path.getName().toString();
 			GXFile template = new GXFile(p1);
 			if (!template.exists()) {
-				Application.getExternalProvider().upload(localTemplate, p1, false);
+				Application.getExternalProvider().upload(localTemplate, p1, ResourceAccessControlList.Default);
 			}
 		}
 		template = p1;

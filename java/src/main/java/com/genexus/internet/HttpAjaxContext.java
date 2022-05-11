@@ -6,9 +6,14 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Stack;
+import java.util.Collections;
+import java.util.Arrays;
 
+import com.genexus.IGXAssigned;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
+import com.genexus.webpanels.DynAjaxEventContext;
+import com.genexus.webpanels.GXWebPanel;
 import com.genexus.webpanels.GXWebRow;
 
 import json.org.json.IJsonFormattable;
@@ -25,7 +30,8 @@ public abstract class HttpAjaxContext
         protected JSONObject Messages = new JSONObject();
         private JSONObject WebComponents = new JSONObject();
         private Hashtable<Integer, JSONObject> LoadCommands = new Hashtable<>();
-        private JSONArray Grids = new JSONArray();
+        private ArrayList Grids = new ArrayList();
+		private Hashtable<String, Integer> DicGrids = new Hashtable<String, Integer>();
         private JSONObject ComponentObjects = new JSONObject();
         protected GXAjaxCommandCollection commands = new GXAjaxCommandCollection();
         protected GXWebRow _currentGridRow = null;
@@ -44,8 +50,13 @@ public abstract class HttpAjaxContext
 		public void setAjaxOnSessionTimeout( String ajaxOnSessionTimeout){ this._ajaxOnSessionTimeout = ajaxOnSessionTimeout;}
 		public String ajaxOnSessionTimeout(){ return _ajaxOnSessionTimeout;}
 
+		DynAjaxEventContext dynAjaxEventContext = new DynAjaxEventContext();
 
-	public abstract boolean isMultipartContent();
+		public DynAjaxEventContext getDynAjaxEventContext() {
+			return dynAjaxEventContext;
+		}
+
+		public abstract boolean isMultipartContent();
 		public abstract void ajax_rsp_assign_prop_as_hidden(String Control, String Property, String Value);
 
 		public abstract boolean isSpaRequest();
@@ -319,7 +330,19 @@ public abstract class HttpAjaxContext
             }
         }
 
-        public void ajax_rsp_assign_sdt_attri( String CmpContext, boolean IsMasterPage, String AttName, Object SdtObj)
+	private boolean isUndefinedOutParam(String key, Object SdtObj) {
+		if (!dynAjaxEventContext.isInputParm(key))
+		{
+			if (SdtObj instanceof IGXAssigned)
+			{
+				return !((IGXAssigned)SdtObj).getIsAssigned();
+			}
+		}
+		return false;
+	}
+
+
+	public void ajax_rsp_assign_sdt_attri( String CmpContext, boolean IsMasterPage, String AttName, Object SdtObj)
         {
             if (isJsOutputEnabled)
             {
@@ -327,8 +350,8 @@ public abstract class HttpAjaxContext
                 {
                   try {
                       JSONObject obj = getGxObject(AttValues, CmpContext, IsMasterPage);
-                      if (obj != null)
-                      {
+					  if (obj != null && (dynAjaxEventContext.isParmModified(AttName, SdtObj) || !isUndefinedOutParam( AttName, SdtObj)))
+					  {
                         if (SdtObj instanceof IGxJSONAble)
                             obj.put(AttName, ((IGxJSONAble)SdtObj).GetJSONObject());
                         else
@@ -465,13 +488,23 @@ public abstract class HttpAjaxContext
           }
         }
 
-        public void ajax_rsp_assign_grid(String gridName, com.genexus.webpanels.GXWebGrid gridObj)
+		public void ajax_rsp_assign_grid(String gridName, com.genexus.webpanels.GXWebGrid gridObj)
+		{
+			Object jsonObj = ((IGxJSONAble) gridObj).GetJSONObject();
+			Grids.add(jsonObj);
+		}
+
+        public void ajax_rsp_assign_grid(String gridName, com.genexus.webpanels.GXWebGrid gridObj, String Control)
         {
-            try {
-                Grids.putIndex(0, gridObj.GetJSONObject());
-          }
-          catch (JSONException e) {
-          }
+			Object jsonObj = ((IGxJSONAble) gridObj).GetJSONObject();
+			if (DicGrids.containsKey(Control)) {
+				Grids.set(DicGrids.get(Control), jsonObj);
+			}
+			else
+			{
+				Grids.add(jsonObj);
+				DicGrids.put(Control, Grids.size() - 1);
+			}
         }
 
         public void ajax_rsp_clear(){
@@ -495,7 +528,12 @@ public abstract class HttpAjaxContext
                 com.genexus.internet.HttpContext webContext = (HttpContext) com.genexus.ModelContext.getModelContext().getHttpContext();
 				if (justCreated)
 				{
-					webContext.DeletePostValuePrefix(cmpCtx);
+					try {
+						webContext.DeletePostValuePrefix(cmpCtx);
+					}
+					catch (Exception e) {
+						logger.error("Could not delete post value prefix", e);
+					}
 				}
                 ComponentObjects.put(cmpCtx, objName);
             }
@@ -507,15 +545,6 @@ public abstract class HttpAjaxContext
         {
             try {
             HiddenValues.put("GX_CMP_OBJS", ComponentObjects);
-          }
-          catch (JSONException e) {
-          }
-        }
-
-        protected void AddResourceProvider(String provider)
-        {
-            try {
-            HiddenValues.put("GX_RES_PROVIDER", provider);
           }
           catch (JSONException e) {
           }
@@ -570,6 +599,8 @@ public abstract class HttpAjaxContext
                 GXJSONObject jsonCmdWrapper = new GXJSONObject(isMultipartContent());
                 try
                 {
+						Collections.reverse(Arrays.asList(Grids));
+						JSONArray JSONGrids = new JSONArray(Grids);
                         if (commands.AllowUIRefresh())
                         {
 							if (cmpContext  == null || cmpContext.equals(""))
@@ -582,7 +613,7 @@ public abstract class HttpAjaxContext
                             jsonCmdWrapper.put("gxValues", AttValues);
                             jsonCmdWrapper.put("gxMessages", Messages);
                             jsonCmdWrapper.put("gxComponents", WebComponents);
-                            jsonCmdWrapper.put("gxGrids", Grids);
+                            jsonCmdWrapper.put("gxGrids", JSONGrids);
                         }
                         for(Enumeration loadCmds = LoadCommands.keys(); loadCmds.hasMoreElements();)
                         {

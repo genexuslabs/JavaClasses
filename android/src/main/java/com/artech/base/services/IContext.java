@@ -26,17 +26,22 @@ public interface IContext {
 	IPropertiesObject getEmptyPropertiesObject();
 
 	IEntity createEntity(String module, String name, IEntity parent);
+	IEntity createEntity(String module, String name, IEntity parent, IEntityList collection);
+	IEntityList createEntityList();
 	
-        IPropertiesObject createPropertyObject();
-        IPropertiesObject runGxObjectFromProcedure(String objectToCall, IPropertiesObject parameters);
+    IPropertiesObject createPropertyObject();
+    IPropertiesObject runGxObjectFromProcedure(String objectToCall, IPropertiesObject parameters);
 
 	IAndroidSession getAndroidSession();
-	
+
+	IAndroidImageUtil getAndroidImageUtil();
+
 	/* path in android */
 	String getDataBaseFilePath();
 	String getDataBaseSyncFilePath();
 	String getDataBaseSyncHashesFilePath();
 
+	String getAssetsFontPath(String fontName);
 	String getApplicationDataPath();
 	String getTemporaryFilesPath();
 	String getExternalFilesPath();

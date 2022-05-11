@@ -19,12 +19,15 @@ import java.io.PushbackInputStream;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.Random;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.internet.GXInternetConstants;
 import com.genexus.platform.NativeFunctions;
 import com.genexus.util.Codecs;
 import com.genexus.util.IniFile;
@@ -255,12 +258,13 @@ public final class PrivateUtilities
 	{
 		extension = getTempFileName(extension.trim());
 		name = name.trim().toLowerCase();
+		String separator = name.length() > 0 ? "_": "";
 		if (encodeName)
 		{
 			name = encodeFileName(name);
 		}
-		name = checkFileNameLength(baseDir, name, extension);						
-		return baseDir + name + extension;
+		name = checkFileNameLength(baseDir, name, extension);
+		return GXutil.getNonTraversalPath(baseDir, String.format("%s%s%s", name, separator, extension));
 	}
 	
 	public static String checkFileNameLength(String baseDir, String fileName, String extension ) 
@@ -519,6 +523,10 @@ public final class PrivateUtilities
 					}
 				}
 				c = c.getSuperclass();
+
+				if (c.getSimpleName().equals("GXRestServiceWrapper")) {
+					return null;
+				}
 			}
 		}
 		return null;
@@ -549,6 +557,10 @@ public final class PrivateUtilities
 				}
 			}
 			c = c.getSuperclass();
+
+			if (c.getSimpleName().equals("GXRestServiceWrapper")) {
+				return null;
+			}
 		}
 		return null;
 	}
@@ -597,6 +609,20 @@ public final class PrivateUtilities
 			else return new File(System.getProperty("user.dir"));
 		}
 		return new File(dirname);
+	}
+
+	/**
+	 * <pre>
+	 * Checks if a string is an absolute path to local file system.
+	 * Null safe.
+	 * </pre>
+	 */
+	public static boolean isAbsoluteFilePath(String path) {
+		try {
+			return Paths.get(path).isAbsolute();
+		} catch (InvalidPathException | NullPointerException ex) {
+			return false;
+		}
 	}
 
 	public static String addLastPathSeparator(String dir)
@@ -758,38 +784,64 @@ public final class PrivateUtilities
                 try { destination.close(); } catch (IOException e) { ; }
 	    }
 	}
-
+	public static String BOMInputStreamToStringUTF8(InputStream istream) {
+		if (istream == null) {
+			throw new IllegalArgumentException("BOMInputStreamToStringUTF8 -> Input stream can't be null");
+		}
+		boolean firstLine = true;
+		StringBuilder stringBuilder = new StringBuilder();
+		try (BufferedReader r = new BufferedReader(new InputStreamReader(istream, "UTF8"))) {
+			for (String s = ""; (s = r.readLine()) != null; ) {
+				if (firstLine) {
+					s = removeUTF8BOM(s);
+					firstLine = false;
+				}
+				stringBuilder.append(s + GXInternetConstants.CRLFString);
+			}
+			return stringBuilder.toString();
+		} catch (Exception e) {
+			System.err.println("Error reading stream:" + e.getMessage());
+			return "";
+		}
+	}
+	static final String UTF8_BOM = "\uFEFF";
+	private static String removeUTF8BOM(String s) {
+		if (s.startsWith(UTF8_BOM)) {
+			s = s.substring(1);
+		}
+		return s;
+	}
 
 	public static void InputStreamToFile(InputStream source, String fileName)
-	{
-		if	(source == null)
-		{
-			throw new IllegalArgumentException("InputStreamToFile -> Input stream can't be null");
-		}
+					{
+						if	(source == null)
+						{
+							throw new IllegalArgumentException("InputStreamToFile -> Input stream can't be null");
+						}
 
-		byte[] buffer;
-		int bytes_read;
-		OutputStream destination = null;
-		try 
-		{
-			destination = new BufferedOutputStream(new FileOutputStream(fileName));
-			buffer = new byte[1024];
-		 
-			while (true) 
-			{
-				bytes_read = source.read(buffer);
-				if (bytes_read == -1) break;
-				destination.write(buffer, 0, bytes_read);
-			}
-		}
-		catch (IOException e)
-		{
-			System.err.println("Error writing file " + fileName + ":" + e.getMessage());
-		}
-		finally 
-		{
-			if (source != null) 
-				try { source.close(); } catch (IOException e) { ; }
+						byte[] buffer;
+						int bytes_read;
+						OutputStream destination = null;
+						try
+						{
+							destination = new BufferedOutputStream(new FileOutputStream(fileName));
+							buffer = new byte[1024];
+
+							while (true)
+							{
+								bytes_read = source.read(buffer);
+								if (bytes_read == -1) break;
+								destination.write(buffer, 0, bytes_read);
+							}
+						}
+						catch (IOException e)
+						{
+							System.err.println("Error writing file " + fileName + ":" + e.getMessage());
+						}
+						finally
+						{
+							if (source != null)
+								try { source.close(); } catch (IOException e) { ; }
 			if (destination != null) 
 				try {destination.close(); } catch (IOException e) { ; }
 		}
@@ -862,7 +914,7 @@ public final class PrivateUtilities
 		if	(fileName.indexOf('.') == -1)
 			return fileName;
 
-		return fileName.substring(0, fileName.indexOf('.'));
+		return fileName.substring(0, fileName.lastIndexOf('.'));
 	}
 
     public static final String readLine(InputStream in) throws IOException 
