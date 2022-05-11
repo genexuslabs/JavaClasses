@@ -163,7 +163,7 @@ public class AndroidLogger implements ILogger {
 		return true;
 	}
 
-	boolean isErrorEnabled()  {
+	public boolean isErrorEnabled()  {
 		return true;
 	};
 }
