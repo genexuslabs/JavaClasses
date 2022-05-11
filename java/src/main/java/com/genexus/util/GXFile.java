@@ -138,7 +138,7 @@ public class GXFile extends AbstractGXFile {
         		    if (ModelContext.getModelContext() != null && ! new File(absoluteFileName).isAbsolute())
                     {
                         IHttpContext webContext = ModelContext.getModelContext().getHttpContext();
-                        if((webContext != null) && (webContext instanceof HttpContextWeb) && !FileName.isEmpty()) {
+                        if((webContext != null) && (webContext instanceof HttpContextWeb || !webContext.getDefaultPath().isEmpty()) && !FileName.isEmpty()) {
                             absoluteFileName = ModelContext.getModelContext().getHttpContext().getDefaultPath() + File.separator + FileName;
                         }
                     }
@@ -717,9 +717,9 @@ public class GXFile extends AbstractGXFile {
             resetErrors();
             try {
                 if (encoding.equals("")) {
-                    fileWriter = new FileWriterWithEncoding(FileSource.getFileInstance(), "UTF8", true);
+                    fileWriter = new FileWriterWithEncoding(FileSource.getFileInstance(), "UTF8", FileSource.exists());
                 } else {
-                    fileWriter = new FileWriterWithEncoding(FileSource.getFileInstance(), CommonUtil.normalizeEncodingName(encoding), true);
+                    fileWriter = new FileWriterWithEncoding(FileSource.getFileInstance(), CommonUtil.normalizeEncodingName(encoding), FileSource.exists());
                 }
             } catch (Exception e) {
                 setUnknownError(e);
