@@ -11,7 +11,6 @@ on:
       - 'master'
       - 'beta'
       - 'release-*'
-      - 'beta-corona'
 
 jobs:
  test-redis:
@@ -53,5 +52,5 @@ jobs:
 
     - name: Test Redis
       run: |
-        export REDIS_HOST_NAME=redis        
+        export REDIS_HOST_NAME=localhost        
         mvn -B -pl java test --file $POM_PATH
