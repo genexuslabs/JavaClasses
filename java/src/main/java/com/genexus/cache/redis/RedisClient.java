@@ -30,11 +30,9 @@ import redis.clients.jedis.Pipeline;
 public class RedisClient implements ICacheService2, Closeable {
 	public static final ILogger logger = LogManager.getLogger(RedisClient.class);
 	private String keyPattern = "%s_%s_%s"; //Namespace_KEY
-	private static int UNDEFINED_PORT = -1;
 	private static int REDIS_DEFAULT_PORT = 6379;
 	private JedisPool pool;
 	private ObjectMapper objMapper;
-
 
 	public RedisClient() throws Exception {
 		initCache();

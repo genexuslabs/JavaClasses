@@ -52,5 +52,5 @@ jobs:
 
     - name: Test Redis
       run: |
-        export REDIS_HOST_NAME=localhost        
+        export EXECUTE_REDIS_TESTS=true        
         mvn -B -pl java test --file $POM_PATH
