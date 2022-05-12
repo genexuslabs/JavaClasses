@@ -42,13 +42,13 @@ jobs:
         repositories: '[{ "id": "github-genexuslabs", "url": "https://maven.pkg.github.com/genexuslabs/Private-Maven-for-GX",  "releases": { "enabled": "true" }, "snapshots": { "enabled": "true" } }]'
         servers: '[{ "id": "github-genexuslabs", "username": "genexusbot", "password": "${{ secrets.SECURE_TOKEN }}" }]'
 
+    - name: Install
+      run: mvn -B install --file $POM_PATH
+
     - name: Start Redis
       uses: supercharge/redis-github-action@1.4.0
       with:
         redis-version: ${{ matrix.redis-version }}
-
-    - name: Install
-      run: mvn -B install --file $POM_PATH
 
     - name: Test Redis
       run: |
