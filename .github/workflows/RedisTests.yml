@@ -1,4 +1,4 @@
-name: External Storage Tests
+name: Redis Cache Tests
 
 on:
   workflow_dispatch:
@@ -17,7 +17,7 @@ on:
 
 jobs:
  test-redis:
-    name: Test Redis Client
+    name: Test Redis Cache
     env:
       GIT_REF: ${{ github.ref }}
       GIT_SHA: ${{ github.sha }}
