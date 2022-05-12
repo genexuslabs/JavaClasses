@@ -8,10 +8,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class TestRedisCacheClient {
-	public static final Logger logger = LogManager.getLogger(TestRedisCacheClient.class);
+	private static final Logger logger = LogManager.getLogger(TestRedisCacheClient.class);
+	private String redisHostName = "localhost";
 
 	@Before
 	public void beforeTest() {
+		String envRedisHostName = System.getenv("REDIS_HOST_NAME");
+		if (envRedisHostName != null && !envRedisHostName.isEmpty()) {
+			redisHostName = envRedisHostName.toString();
+		}
 		Connect.init();
 		com.genexus.specific.java.LogManager.initialize(".");
 	}
@@ -63,6 +68,8 @@ public class TestRedisCacheClient {
 	private RedisClient getRedisClient(String hostOrUrl, String password) {
 		RedisClient redis = null;
 
+		hostOrUrl = hostOrUrl.replace("localhost", redisHostName);
+		
 		try {
 			redis = new RedisClient(hostOrUrl, password, "UNIT");
 		} catch (Exception e) {
