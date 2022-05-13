@@ -226,7 +226,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			log(GXDBDebug.LOG_MAX, "Warning: execute");
 			try
 			{
-				ret = stmt.execute();
+				ret = con.getDBMS().execute(stmt);
 				return ret;
 			}
 			catch (SQLException sqlException)
@@ -243,7 +243,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		{
 			try
 			{
-				ret = stmt.execute();
+				ret = con.getDBMS().execute(stmt);
 				return ret;
 			}
 			catch (SQLException sqlException)
@@ -341,11 +341,11 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			if	(DEBUG)
 			{
 				log(GXDBDebug.LOG_MIN, "executeUpdate");
-				ret = stmt.executeUpdate();
+				ret = con.getDBMS().executeUpdate(stmt);
 			}
 			else
 			{
-				ret = stmt.executeUpdate();
+				ret = con.getDBMS().executeUpdate(stmt);
 			}
 		}
 		catch (SQLException e)
