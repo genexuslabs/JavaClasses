@@ -866,7 +866,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 				calendar.setTime(date);
 				day   =  CommonUtil.padl(Integer.toString(calendar.get(Calendar.DAY_OF_MONTH)), 2, "0");
 				month =  CommonUtil.padl(Integer.toString(calendar.get(Calendar.MONTH) + 1), 2, "0");
-				year  =  CommonUtil.padl(Integer.toString(calendar.get(Calendar.YEAR) + 1900), 4, "0");
+				year  =  CommonUtil.padl(Integer.toString(calendar.get(Calendar.YEAR)), 4, "0");
 			}
 
 			if	(toWrite == null)
