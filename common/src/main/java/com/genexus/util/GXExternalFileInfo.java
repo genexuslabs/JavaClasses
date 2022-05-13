@@ -8,6 +8,7 @@ import java.util.Vector;
 import com.genexus.CommonUtil;
 import com.genexus.db.driver.*;
 import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.db.driver.ResourceAccessControlList;
 
 import java.util.Date;
 

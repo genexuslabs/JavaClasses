@@ -770,7 +770,7 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 		reset();
 		try
 		{
-			inputSource = new XMLInputSource(null, url, null);
+			inputSource = new XMLInputSource(null, url, null, new FileInputStream(new File(url)), null);
 			if (documentEncoding.length() > 0)
 				inputSource.setEncoding(CommonUtil.normalizeEncodingName(documentEncoding));
 			parserConfiguration.setInputSource(inputSource);
