@@ -70,7 +70,7 @@ public class RedisClient implements ICacheService2, Closeable {
 				port = redisURI.getPort();
 			}
 		} catch (URISyntaxException e) {
-			logger.error(String.format("Could not parse Redis URL. Check for supported URLs: %s" + sRedisURI), e);
+			logger.error(String.format("Could not parse Redis URL. Check for supported URLs: %s" , sRedisURI), e);
 			throw e;
 		}
 
