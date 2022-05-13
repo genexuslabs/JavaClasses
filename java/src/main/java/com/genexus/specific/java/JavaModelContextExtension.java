@@ -120,9 +120,9 @@ public class JavaModelContextExtension implements IExtensionModelContext {
     @Override
     public void afterGetConnection(ModelContext modelContext, int handle, AbstractDataSource dataSource) {
         String proc = modelContext.getPreferences().getEvent("after_connect");
+		ModelContext.getModelContext().setAfterConnectHandle(handle);
         if (!proc.equals(""))
         {
-            modelContext.setAfterConnectHandle(handle);
             try
             {
                 if (ApplicationContext.getInstance().isApplicationServer())
