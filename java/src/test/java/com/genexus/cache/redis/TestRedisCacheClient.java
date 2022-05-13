@@ -6,6 +6,10 @@ import com.genexus.specific.java.Connect;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+
+import java.net.URISyntaxException;
 
 import static org.junit.Assume.assumeTrue;
 
@@ -66,13 +70,18 @@ public class TestRedisCacheClient {
 
 	private RedisClient getRedisClient(String hostOrUrl, String password) {
 		RedisClient redis = null;
-
 		try {
 			redis = new RedisClient(hostOrUrl, password, "UNIT");
-		} catch (Exception e) {
+		} catch (URISyntaxException e) {
 			logger.debug("failed to create redis client", e);
 		}
 
+		try (Jedis p = redis.getConnection().getResource()) {
+		}
+		catch (Exception e) {
+			logger.debug("failed to get redis resource", e);
+			redis = null;
+		}
 		return redis;
 	}
 
