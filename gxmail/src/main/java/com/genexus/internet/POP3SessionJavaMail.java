@@ -6,12 +6,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Properties;
 
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 import jakarta.mail.Flags;
 import jakarta.mail.Folder;
 import jakarta.mail.Header;
@@ -31,9 +31,7 @@ import com.sun.mail.pop3.POP3Store;
 
 public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
 {
-
-	static private boolean DEBUG = GXInternetConstants.DEBUG;
-	static private PrintStream logOutput;
+	public static final ILogger logger = LogManager.getLogger(POP3SessionJavaMail.class);
 
 	private String user;
 	private String password;
@@ -56,21 +54,6 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
 	
 	Message[] messages;
 	POP3Folder emailFolder;
-
-	static
-	{
-		if	(DEBUG)
-		{
-			try
-			{
-				logOutput = new PrintStream(new FileOutputStream(new File("_gx_pop3.log"), true));
-			}
-			catch (IOException e)
-			{
-				System.out.println("Can't open POP3 log file pop3.log");
-			}
-		}		
-	}
 
 	public POP3SessionJavaMail()
 	{
@@ -101,10 +84,9 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
 		props.setProperty("mail.pop3.ssl.enable", String.valueOf(secureConnection));
 		
 		session = Session.getInstance(props);
-		if	(DEBUG)
+		if	(logger.isDebugEnabled())
 		{
 			session.setDebug(true);
-			session.setDebugOut(logOutput);
 		}		
 		try
 		{
@@ -407,8 +389,6 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
 	
 	private void log(String text)
 	{
-		if	(DEBUG)
-			if (logOutput != null)
-				logOutput.println(text);
+		logger.debug(text);
 	}
 }
