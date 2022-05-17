@@ -30,21 +30,23 @@ import redis.clients.jedis.Pipeline;
 public class RedisClient implements ICacheService2, Closeable {
 	public static final ILogger logger = LogManager.getLogger(RedisClient.class);
 	private String keyPattern = "%s_%s_%s"; //Namespace_KEY
-	private static int UNDEFINED_PORT = -1;
 	private static int REDIS_DEFAULT_PORT = 6379;
 	private JedisPool pool;
 	private ObjectMapper objMapper;
 
-
-	public RedisClient() throws Exception {
+	public RedisClient() throws URISyntaxException {
 		initCache();
 	}
 
-	public RedisClient(String hostOrRedisURL, String password, String cacheKeyPattern) throws Exception {
+	public RedisClient(String hostOrRedisURL, String password, String cacheKeyPattern) throws URISyntaxException {
 		initCache(hostOrRedisURL, password, cacheKeyPattern);
 	}
 
-	private void initCache() throws Exception {
+	public JedisPool getConnection() {
+		return pool;
+	}
+
+	private void initCache() throws URISyntaxException {
 		GXService providerService = Application.getGXServices().get(GXServices.CACHE_SERVICE);
 		String addresses = providerService.getProperties().get("CACHE_PROVIDER_ADDRESS");
 		String cacheKeyPattern = providerService.getProperties().get("CACHE_PROVIDER_KEYPATTERN");
@@ -52,7 +54,7 @@ public class RedisClient implements ICacheService2, Closeable {
 		initCache(addresses, password, cacheKeyPattern);
 	}
 
-	private void initCache(String hostOrRedisURL, String password, String cacheKeyPattern) throws Exception {
+	private void initCache(String hostOrRedisURL, String password, String cacheKeyPattern) throws URISyntaxException {
 		keyPattern = isNullOrEmpty(cacheKeyPattern) ? keyPattern : cacheKeyPattern;
 		String host = "127.0.0.1";
 		hostOrRedisURL = isNullOrEmpty(hostOrRedisURL) ? host: hostOrRedisURL;
@@ -68,16 +70,13 @@ public class RedisClient implements ICacheService2, Closeable {
 				port = redisURI.getPort();
 			}
 		} catch (URISyntaxException e) {
-			logger.error(String.format("Could not parse Redis URL. Check for supported URLs: %s" + sRedisURI), e);
+			logger.error(String.format("Could not parse Redis URL. Check for supported URLs: %s" , sRedisURI), e);
 			throw e;
 		}
 
 		password = (!isNullOrEmpty(password)) ? password : null;
 
 		pool = new JedisPool(new JedisPoolConfig(), host, port, redis.clients.jedis.Protocol.DEFAULT_TIMEOUT, password);
-		try (Jedis j = pool.getResource()) {
-			//Test connection
-		}
 
 		objMapper = new ObjectMapper();
 		objMapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
