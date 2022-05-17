@@ -12,29 +12,31 @@ import com.genexus.common.interfaces.SpecificImplementation;
 
 public class GXDynamicCall {
 
-	private String externalName;
-	private String packageName;
 	private GXDynCallProperties properties;
 	private Object instanceObject;
 	private String objectName;
 
-	
+	public GXDynamicCall(){
+		properties = new GXDynCallProperties();
+		properties.setPackageName(SpecificImplementation.Application.getPACKAGE());
+	}
+
 	public GXDynCallProperties getProperties() {
 		return properties;
 	}
 
 	public void setProperties(GXDynCallProperties properties) {
 		this.properties = properties;
-		packageName = properties.getPackageName()==null?SpecificImplementation.Application.getPACKAGE():properties.getPackageName();
-		externalName = properties.getExternalName()==null?objectName:properties.getExternalName();
 	}
 
 	public String getObjectName(){
 		return objectName;
+		
 	}
 
 	public void setObjectName(String name){
 		objectName=name;
+		properties.setExternalName(name);
 	}
 
 	public void execute(Vector<Object> parameters, Vector<SdtMessages_Message> errorsArray) {
@@ -71,7 +73,7 @@ public class GXDynamicCall {
 		{
 			Class<?> auxClass=null;
 			try {
-				auxClass = loadClass(externalName, packageName);
+				auxClass = loadClass(properties.getExternalName(),properties.getPackageName());
 			} catch (ClassNotFoundException e) {
 				CommonUtil.ErrorToMessages("Load class Error", e.getMessage(), errors);
 				errorsArray.addAll(errors.getStruct());
@@ -88,10 +90,10 @@ public class GXDynamicCall {
 		GXBaseCollection<SdtMessages_Message> error =new GXBaseCollection<SdtMessages_Message>();
 		String objectNameToInvoke;
 		Constructor<?> constructor=null;
-		objectNameToInvoke = constructParameters==null?objectName:externalName;
+		objectNameToInvoke = constructParameters==null?objectName:properties.getExternalName();
 		if (!objectNameToInvoke.isEmpty()) {
 			try {
-				Class<?> objClass = loadClass(objectNameToInvoke, packageName);
+				Class<?> objClass = loadClass(objectNameToInvoke, properties.getPackageName());
 				Object[] auxConstParameters;
 				Class<?>[] auxConstructorTypes;
 				if (constructParameters != null && constructParameters.size() > 0) {

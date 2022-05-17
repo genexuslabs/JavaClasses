@@ -34,11 +34,9 @@ public class GxDynamicCallTest  {
     public void callExternalClass(){
         Connect.init();
         GXDynamicCall call = new GXDynamicCall();
-        GXDynCallProperties props = new GXDynCallProperties();
 		Vector<SdtMessages_Message> errorsArray= new Vector<>();
-        props.setExternalName("DynamicCallExternalTestProcedure");
-        props.setPackageName("com.genexus.gxdynamiccall.test");
-        call.setProperties(props);
+        call.getProperties().setExternalName("DynamicCallExternalTestProcedure");
+        call.getProperties().setPackageName("com.genexus.gxdynamiccall.test");
         //Constructor 
         Vector<Object> constructParamArray = new Vector<>();
         constructParamArray.add((int)3); 
