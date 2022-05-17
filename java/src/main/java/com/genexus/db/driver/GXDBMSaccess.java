@@ -1,9 +1,6 @@
 package com.genexus.db.driver;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Date;
 
 import com.genexus.CommonUtil;
@@ -13,6 +10,21 @@ public class GXDBMSaccess implements GXDBMS
 	public ResultSet executeQuery(PreparedStatement stmt, boolean hold) throws SQLException
 	{
 		return stmt.executeQuery();
+	}
+
+	public int executeUpdate(PreparedStatement stmt) throws SQLException
+	{
+		return stmt.executeUpdate();
+	}
+
+	public boolean execute(PreparedStatement stmt) throws SQLException
+	{
+		return stmt.execute();
+	}
+
+	public int[] executeBatch(Statement stmt) throws SQLException
+	{
+		return stmt.executeBatch();
 	}
 
 	public void setDatabaseName(String dbName)
