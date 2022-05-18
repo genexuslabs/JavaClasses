@@ -7,6 +7,8 @@ import java.util.Date;
 import java.io.*;
 
 import com.genexus.*;
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 import com.genexus.platform.INativeFunctions;
 import com.genexus.common.interfaces.SpecificImplementation;
 
@@ -15,6 +17,7 @@ import java.math.BigDecimal;
 public class DelimitedFilesSafe implements IDelimitedFilesSafe
 {
 	// variables
+	private static final ILogger logger = LogManager.getLogger(DelimitedFilesSafe.class);
 
 	private static final byte GX_ASCDEL_SUCCESS			=  0;
 	private static final byte GX_ASCDEL_INVALIDSEQUENCE	= -1;
@@ -36,7 +39,6 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 	private String sdel;
 	protected boolean dfropen_in_use = false;
 	protected boolean dfwopen_in_use = false;
-	protected boolean trace_on = DebugFlag.DEBUG;
 	protected BufferedReader bufread;
 	protected BufferedWriter bufwrite;
 	private StringTokenizer actline;
@@ -59,8 +61,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 
 	public byte dftrace(int trace)
 	{
-		byte lastTrace = (byte)(trace_on ? 1 : 0);
-		this.trace_on = (trace != 0);
+		byte lastTrace = 1;
 		return lastTrace;
 	}	
 	
@@ -143,16 +144,14 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 			{
 				retval = GX_ASCDEL_OPENERROR;
 				dfropen_in_use = false;
-				if (trace_on)
-					System.err.println("Error ADF0001: " + e);
+				logger.error("Error ADF0001: " + e);
 			}
 
 		}
 		else
 		{
 			retval = GX_ASCDEL_INVALIDSEQUENCE;
-			if (trace_on)
-				System.err.println("Error ADF0005: open function in use");
+			logger.error("Error ADF0005: open function in use");
 		}
 
 		return retval;
@@ -181,8 +180,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 			catch (IOException e)
 			{
 				retval = GX_ASCDEL_READERROR;
-				if (trace_on)
-					System.err.println("Error ADF0002: " + e);
+				logger.error("Error ADF0002: " + e);
 			}
 
 		}else{
@@ -214,15 +212,13 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 			catch (Exception e)
 			{
 				retval = GX_ASCDEL_INVALIDFORMAT;
-				if 	(trace_on)
-					System.err.println("Error ADF0008: " + e);
+				logger.error("Error ADF0008: " + e);
 			}
 		}
 		else
 		{
 			retval = GX_ASCDEL_INVALIDSEQUENCE;
-			if 	(trace_on)
-				System.err.println("Error ADF0004 o ADF0006");
+			logger.error("Error ADF0004 o ADF0006");
 		}
 
 		num[0] = retnum.doubleValue();
@@ -258,15 +254,13 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 			catch (Exception e)
 			{
 				retval = GX_ASCDEL_INVALIDFORMAT;
-				if 	(trace_on)
-					System.err.println("Error ADF0008: " + e);
+				logger.error("Error ADF0008: " + e);
 			}
 		}
 		else
 		{
 			retval = GX_ASCDEL_INVALIDSEQUENCE;
-			if 	(trace_on)
-				System.err.println("Error ADF0004 o ADF0006");
+			logger.error("Error ADF0004 o ADF0006");
 		}
 
 		num[0] = retnum;
@@ -360,15 +354,13 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
                         catch (Exception e)
                         {
                                 retval = GX_ASCDEL_INVALIDFORMAT;
-                                if (trace_on)
-                                        System.err.println("Error ADF0009: " + e);
+								logger.error("Error ADF0009: " + e);
                         }
                 }
                 else
                 {
                         retval = GX_ASCDEL_INVALIDSEQUENCE;
-                        if (trace_on)
-                                System.err.println("Error ADF0004 o ADF0006");
+						logger.error("Error ADF0004 o ADF0006");
                 }
 
 								if (isCsv && ((sdel.equals("") || sdel.equals("\"")) && (retstr.contains("\"\"") || (!fdel.equals("") && retstr.contains(fdel)))))
@@ -534,8 +526,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 				else if (month < 1 || month > 12 || day < 1 || day > 31)
 				{
 					retval = GX_ASCDEL_INVALIDDATE;
-					if (trace_on)
-						System.err.println("Error ADF0010");
+					logger.error("Error ADF0010");
 				}
 				else
 				{
@@ -553,8 +544,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		else
 		{
 			retval = GX_ASCDEL_INVALIDSEQUENCE;
-			if (trace_on)
-				System.err.println("Error ADF0004 o ADF0006");
+			logger.error("Error ADF0004 o ADF0006");
 		}
 
 		date[0] = retdate;
@@ -666,16 +656,14 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 			{
 				retval = GX_ASCDEL_OPENERROR;
 				dfwopen_in_use = false;
-				if (trace_on)
-					System.err.println("Error ADF0001: " + e);
+				logger.error("Error ADF0001: " + e);
 			}
 
 		}
 		else
 		{
 			retval = GX_ASCDEL_INVALIDSEQUENCE;
-			if (trace_on)
-				System.err.println("Error ADF0005: open function in use");
+			logger.error("Error ADF0005: open function in use");
 		}
 
 		return retval;
@@ -737,8 +725,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 			catch (IOException e)
 			{
 				retval = GX_ASCDEL_WRITEERROR;
-				if (trace_on)
-					System.err.println("Error ADF0003: " + e);
+				logger.error("Error ADF0003: " + e);
 			}
 		}
 		else
@@ -795,8 +782,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		else
 		{
 			retval = GX_ASCDEL_INVALIDSEQUENCE;
-			if (trace_on)
-				System.err.println("ADF0004");
+			logger.error("ADF0004");
 		}
 		return retval;
 	}
@@ -829,8 +815,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		else
 		{
 			retval = GX_ASCDEL_INVALIDSEQUENCE;
-			if (trace_on)
-				System.err.println("ADF0004");
+			logger.error("ADF0004");
 		}
 		return retval;
 	}
@@ -888,8 +873,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 						toWrite += day   + (i == 2?"":sep);
 						break;
 					default:
-						 if (trace_on)
-							System.err.println("ADF0012");
+						logger.error("ADF0012");
 
 						 return GX_ASCDEL_BADFMTSTR;
 				}
@@ -898,8 +882,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		else
 		{
 			retval = GX_ASCDEL_INVALIDSEQUENCE;
-			if (trace_on)
-				System.err.println("ADF0004");
+			logger.error("ADF0004");
 		}
 		return retval;
 	}

@@ -14,7 +14,6 @@ public class CacheFactory {
     private static Object syncRoot = new Object();
 	private static boolean forceHighestTimetoLive = false;
 	public static String FORCE_HIGHEST_TIME_TO_LIVE = "FORCE_HIGHEST_TIME_TO_LIVE";
-	private static final boolean DEBUG = com.genexus.DebugFlag.DEBUG;
 
 	public static String CACHE_SD = "SD";
 	public static String CACHE_DB = "DB";
@@ -89,9 +88,7 @@ public class CacheFactory {
 
 	public static void restartCache() {
 		if (instance != null) {
-			if (DEBUG) {
-				System.err.println("Restarting cache...");
-			}
+			logger.debug("Restarting cache...");
 			instance.clearAllCaches();
 		}
 	}

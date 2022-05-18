@@ -56,6 +56,8 @@ public interface ILogger {
 	
 	boolean isDebugEnabled();
 
+	boolean isErrorEnabled();
+
 	// Lambda Functions not supported JAVA 7. Only Java 8.
 	/*
 	 * public static void debug(Logger log, String startMsg, Func<String> buildMsg)
