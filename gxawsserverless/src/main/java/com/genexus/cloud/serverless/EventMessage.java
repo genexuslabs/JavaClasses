@@ -21,7 +21,7 @@ public class EventMessage {
 	@JsonProperty("EventMessageVersion")
 	private String messageVersion = "1.0";
 
-	@JsonProperty("EventMessageCustomPayload")
+	@JsonProperty("EventMessageProperties")
 	private List<EventMessageProperty> messageProperties = new ArrayList<>();
 
 	public String getMessageId() {
