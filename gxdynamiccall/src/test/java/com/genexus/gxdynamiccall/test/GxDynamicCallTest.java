@@ -1,4 +1,5 @@
 package com.genexus.gxdynamiccall.test;
+import com.genexus.Application;
 import com.genexus.GXBaseCollection;
 import com.genexus.GXSimpleCollection;
 import com.genexus.SdtMessages_Message;
@@ -16,9 +17,9 @@ public class GxDynamicCallTest  {
 
     @Test
     public void callGxNativeObject(){
-        Connect.init();
+        Application.init(com.genexus.gxdynamiccall.test.GXcfg.class);
         GXDynamicCall call = new GXDynamicCall();
-        call.setObjectName("com.genexus.gxdynamiccall.test.DynamicCallTestProcedure");
+        call.setObjectName("DynamicCallTestProcedure");
         Vector<Object> paramArray = new Vector<>();
         paramArray.add(Double.parseDouble("3"));
         paramArray.add((short)4);
@@ -32,7 +33,7 @@ public class GxDynamicCallTest  {
 
     @Test
     public void callExternalClass(){
-        Connect.init();
+        Application.init(com.genexus.gxdynamiccall.test.GXcfg.class);
         GXDynamicCall call = new GXDynamicCall();
 		Vector<SdtMessages_Message> errorsArray= new Vector<>();
         call.getProperties().setExternalName("DynamicCallExternalTestProcedure");
@@ -62,13 +63,11 @@ public class GxDynamicCallTest  {
 
     @Test
     public void callExternalClassWithStaticMethod(){
-        Connect.init();
+        Application.init(com.genexus.gxdynamiccall.test.GXcfg.class);
         GXDynamicCall call = new GXDynamicCall();
-        GXDynCallProperties props = new GXDynCallProperties();
+        call.getProperties().setExternalName("DynamicCallExternalTestProcedure");
+        call.getProperties().setPackageName("com.genexus.gxdynamiccall.test");
 		Vector<SdtMessages_Message> errorsArray= new Vector<>();
-        props.setExternalName("DynamicCallExternalTestProcedure");
-        props.setPackageName("com.genexus.gxdynamiccall.test");
-        call.setProperties(props);
         //Parameters
 		Vector<Object> paramArray = new Vector<>();
         paramArray.add((short)3);
