@@ -1,4 +1,4 @@
-package com.genexus.cloud.serverless;
+package com.genexus.cloud.serverless.aws.handler;
 
 import com.genexus.GXProcedure;
 import com.genexus.GxUserType;

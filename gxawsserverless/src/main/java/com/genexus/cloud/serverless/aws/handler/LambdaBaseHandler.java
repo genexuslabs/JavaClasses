@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genexus.GxUserType;
 import com.genexus.ModelContext;
 import com.genexus.cloud.serverless.*;
+import com.genexus.cloud.serverless.model.EventMessageResponse;
+import com.genexus.cloud.serverless.model.EventMessages;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.specific.java.Connect;
 import com.genexus.specific.java.LogManager;

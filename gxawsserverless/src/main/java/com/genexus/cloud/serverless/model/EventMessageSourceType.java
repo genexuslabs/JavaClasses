@@ -1,4 +1,4 @@
-package com.genexus.cloud.serverless;
+package com.genexus.cloud.serverless.model;
 
 public class EventMessageSourceType {
 	public static String QueueMessage = "QueueMessage";

@@ -1,4 +1,4 @@
-package com.genexus.cloud.serverless;
+package com.genexus.cloud.serverless.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

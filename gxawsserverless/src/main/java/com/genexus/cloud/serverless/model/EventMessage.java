@@ -1,7 +1,6 @@
-package com.genexus.cloud.serverless;
+package com.genexus.cloud.serverless.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.genexus.cloud.serverless.aws.EventMessageProperty;
 
 import java.util.*;
 
