@@ -874,7 +874,7 @@ public abstract class HttpContext
 			if (_clientId == null || _clientId.equals(""))
 			{
 				_clientId = java.util.UUID.randomUUID().toString();
-				this.setCookie(CLIENT_ID_HEADER, _clientId, "", new Date(Long.MAX_VALUE), "", getHttpSecure());
+				this.setCookie(CLIENT_ID_HEADER, _clientId, "/", new Date(Long.MAX_VALUE), "", getHttpSecure());
 			}
 			this.setClientId(_clientId);
 		}            
