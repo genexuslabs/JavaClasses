@@ -9,6 +9,7 @@ import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
 import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
+import com.genexus.cloud.serverless.aws.handler.AwsGxServletResponse;
 import com.genexus.specific.java.Connect;
 import com.genexus.specific.java.LogManager;
 import com.genexus.webpanels.GXWebObjectStub;
@@ -35,7 +36,7 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 	public static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = null;
 	private static ResourceConfig jerseyApplication = null;
 	private static final String BASE_REST_PATH = "/rest/";
-	private static  final String GX_APPLICATION_CLASS = "GXApplication";
+	private static final String GX_APPLICATION_CLASS = "GXApplication";
 
 	public LambdaHandler() throws Exception {
 		if (LambdaHandler.jerseyApplication == null) {

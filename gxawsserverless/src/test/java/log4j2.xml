@@ -10,10 +10,10 @@
 	
   </Appenders>
   <Loggers>
-    <Root level="OFF">
+    <Root level="DEBUG">
     </Root>
 	<!-- For compatibility reasons. All GeneXus Standard Classes log goes to standard output unless Logging Property is enabled -->
-	<logger name="com.genexus" level="WARN" additivity="false">
+	<logger name="com.genexus" level="DEBUG" additivity="false">
 		<AppenderRef ref="GeneXusDefaultLogger"/>
 	</logger>
     
