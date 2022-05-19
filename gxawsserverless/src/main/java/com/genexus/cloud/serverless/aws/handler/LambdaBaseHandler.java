@@ -17,22 +17,20 @@ import java.util.List;
 
 public class LambdaBaseHandler {
 	protected static ILogger logger = null;
-	protected static Class<?> entryPointClass = null;
-	private static String entryPointClassName;
+	protected static Class entryPointClass = null;
+	private static LambdaFunctionConfiguration functionConfiguration;
 	private static final String GX_APPLICATION_CLASS = "GXcfg";
-	public static String ENTRY_POINT_CLASS_NAME_VAR = "GX_MAIN_CLASS_NAME";
 	private static String packageName = null;
 	protected static final String MESSAGE_COLLECTION_INPUT_CLASS_NAME = "com.genexus.genexusserverlessapi.SdtEventMessages";
 	protected static final String MESSAGE_OUTPUT_COLLECTION_CLASS_NAME = "com.genexus.genexusserverlessapi.SdtEventMessageResponse";
 	private static List<GXProcedureDynamicExecuteStrategy> strategies = new ArrayList<>();
-
 
 	public LambdaBaseHandler() throws Exception {
 		initialize();
 	}
 
 	public LambdaBaseHandler(String className) throws Exception {
-		entryPointClassName = className;
+		functionConfiguration = new LambdaFunctionConfiguration(className);
 		initialize();
 	}
 
@@ -40,34 +38,35 @@ public class LambdaBaseHandler {
 		logger = LogManager.initialize(".", LambdaBaseHandler.class);
 		Connect.init();
 
-		if (entryPointClassName == null) {
-			entryPointClassName = System.getenv(ENTRY_POINT_CLASS_NAME_VAR);
-		}
-		if (entryPointClassName == null) {
-			throw new Exception(String.format("'%s' Environment Variable must be defined", ENTRY_POINT_CLASS_NAME_VAR));
-		}
-
 		IniFile config = com.genexus.ConfigFileFinder.getConfigFile(null, "client.cfg", null);
 		packageName = config.getProperty("Client", "PACKAGE", null);
-		Class<?> cfgClass;
+		Class cfgClass;
+
+		String cfgClassName = packageName.isEmpty() ? GX_APPLICATION_CLASS : String.format("%s.%s", packageName, GX_APPLICATION_CLASS);
 		try {
-			cfgClass = Class.forName(packageName.isEmpty() ? GX_APPLICATION_CLASS : String.format("%s.%s", packageName, GX_APPLICATION_CLASS));
+			cfgClass = Class.forName(cfgClassName);
 			com.genexus.Application.init(cfgClass);
-			entryPointClassName = entryPointClassName;
-			logger.debug("Initializing entry Point ClassName: " + entryPointClassName);
-			entryPointClass = Class.forName(entryPointClassName);
+		} catch (ClassNotFoundException e) {
+			logger.error(String.format("Failed to initialize GX AppConfig Class: %s", cfgClassName), e);
+			throw e;
+		}
+
+		logger.debug("Initializing Function configuration");
+		try {
+			if (functionConfiguration == null) {
+				functionConfiguration = LambdaFunctionConfigurationHelper.getFunctionConfiguration();
+			}
+			entryPointClass = Class.forName(functionConfiguration.getEntryPointClassName());
 		} catch (Exception e) {
-			logger.error(String.format("Failed to initialize Application for className: %s", entryPointClassName), e);
+			logger.error(String.format("Failed to initialize Application for className: %s", functionConfiguration.getEntryPointClassName()), e);
 			throw e;
 		}
 
 		if (entryPointClass == null) {
-			throw new Exception(String.format("GeneXus Procedure '%s' was not found. Check deployment package ", entryPointClassName));
+			throw new ClassNotFoundException(String.format("GeneXus Procedure '%s' was not found. Check deployment package ", functionConfiguration.getEntryPointClassName()));
 		}
 		loadStrategies();
-
 	}
-
 
 	protected EventMessageResponse dispatchEventMessages(EventMessages eventMessages, String lambdaRawMessageBody) throws Exception {
 		try {
@@ -77,23 +76,25 @@ public class LambdaBaseHandler {
 			String jsonStringMessages = Helper.toJSONString(eventMessages);
 			ModelContext modelContext = new ModelContext(entryPointClass);
 
-			logger.debug(String.format("dispatchEventMessages (%s) - serialized messages: %s", entryPointClassName,  jsonStringMessages));
-			for (GXProcedureDynamicExecuteStrategy stg: strategies) {
+			if (logger.isDebugEnabled()) {
+				logger.debug(String.format("dispatchEventMessages (%s) - serialized messages: %s", functionConfiguration.getEntryPointClassName(), jsonStringMessages));
+			}
+			for (GXProcedureDynamicExecuteStrategy stg : strategies) {
 				if (outResponse == null && stg.isValid()) {
 					handled = true;
-					switch (stg.getId()){
+					switch (stg.getId()) {
 						case 1:
-							outResponse = stg.execute(modelContext, new String[]{ jsonStringMessages });
+							outResponse = stg.execute(modelContext, new String[]{jsonStringMessages});
 							break;
 						case 2:
-							outResponse = stg.execute(modelContext, new String[]{ lambdaRawMessageBody });
+							outResponse = stg.execute(modelContext, new String[]{lambdaRawMessageBody});
 							break;
 					}
 				}
 			}
 
 			if (!handled) {
-				throw new Exception(String.format("GeneXus Procedure '%s' does not comply with the required method signature required by Event Handlers. ", entryPointClassName));
+				throw new Exception(String.format("GeneXus Procedure '%s' does not comply with the required method signature required by Event Handlers. ", functionConfiguration.getEntryPointClassName()));
 			}
 
 			GxUserType handlerOutput = (GxUserType) outResponse[0];
@@ -115,12 +116,12 @@ public class LambdaBaseHandler {
 
 
 	private void loadStrategies() throws ClassNotFoundException {
-		GXProcedureDynamicExecuteStrategy strategy = new GXProcedureDynamicExecuteStrategy(1 ,entryPointClassName);
+		GXProcedureDynamicExecuteStrategy strategy = new GXProcedureDynamicExecuteStrategy(1, functionConfiguration.getEntryPointClassName());
 		strategy.addInputParameter(MESSAGE_COLLECTION_INPUT_CLASS_NAME);
 		strategy.addOutputParameter(MESSAGE_OUTPUT_COLLECTION_CLASS_NAME);
 		strategies.add(strategy);
 
-		strategy = new GXProcedureDynamicExecuteStrategy(2, entryPointClassName);
+		strategy = new GXProcedureDynamicExecuteStrategy(2, functionConfiguration.getEntryPointClassName());
 		strategy.addInputParameter(String.class.getName());
 		strategy.addOutputParameter(MESSAGE_OUTPUT_COLLECTION_CLASS_NAME);
 		strategies.add(strategy);
