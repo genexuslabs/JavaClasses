@@ -5,11 +5,9 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.PushbackInputStream;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -22,6 +20,8 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
 
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.lang.StringUtils;
 
@@ -34,13 +34,11 @@ final class SMTPSession implements GXInternetConstants,ISMTPSession
 	private final int CONN_NORMAL = 0;
 	private final int CONN_TLS = 1;
 	private final int CONN_SSL = 2;
-	
-	private boolean DEBUG = GXInternetConstants.DEBUG;
+
+	private static final ILogger logger = LogManager.getLogger(SMTPSession.class);
 
     protected String host;
     protected int port;
-
-	private PrintStream logOutput;
 
 	private String recipient;
     private String senderAddress;
@@ -81,17 +79,6 @@ final class SMTPSession implements GXInternetConstants,ISMTPSession
 
 	public SMTPSession()
     {
-		if	(DEBUG)
-		{
-			try
-			{
-				logOutput = new PrintStream(new FileOutputStream(new File("_gx_smtp.log")));
-			}
-			catch (IOException e)
-			{
-				System.out.println("Can't open SMTP log file smtp.log");
-			}
-		}
     }
 
 	public SMTPSession(String host, String senderAddress, String message) throws GXMailException
@@ -776,22 +763,12 @@ final class SMTPSession implements GXInternetConstants,ISMTPSession
 
 	protected void log(String text)
 	{
-		if	(DEBUG)
-			if (logOutput != null)
-			{
-				logOutput.println(text);
-				logOutput.flush();
-			}
+		logger.debug(text);
 	}
 
 	private void logChar(int text)
 	{
-		if	(DEBUG)
-			if (logOutput != null)
-			{
-				logOutput.print((char) text);
-				logOutput.flush();
-			}
+		logger.debug(Character.toString((char) text));
 	}
 
 }
