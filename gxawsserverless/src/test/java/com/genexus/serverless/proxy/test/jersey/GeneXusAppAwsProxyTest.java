@@ -37,59 +37,59 @@ import static org.junit.Assert.*;
  * Unit test class for the Jersey AWS_PROXY default implementation
  */
 public class GeneXusAppAwsProxyTest {
-    private static final String CUSTOM_HEADER_KEY = "x-custom-header";
-    private static final String CUSTOM_HEADER_VALUE = "my-custom-value";
+	private static final String CUSTOM_HEADER_KEY = "x-custom-header";
+	private static final String CUSTOM_HEADER_VALUE = "my-custom-value";
 
-    private ResourceConfig app;
-    private LambdaHandler l;
+	private ResourceConfig app;
+	private LambdaHandler l;
 
-    @Before
-    public void setUpStreams() {
-        try {
-            System.setProperty("LAMBDA_TASK_ROOT", ".");
-            l = new LambdaHandler();
-            handler = LambdaHandler.handler;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+	@Before
+	public void setUpStreams() {
+		try {
+			System.setProperty("LAMBDA_TASK_ROOT", ".");
+			l = new LambdaHandler();
+			handler = LambdaHandler.handler;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-    public GeneXusAppAwsProxyTest() {
+	public GeneXusAppAwsProxyTest() {
 
-    }
+	}
 
-    private JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = null;
+	private JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = null;
 
-    private static ObjectMapper objectMapper = new ObjectMapper();
+	private static ObjectMapper objectMapper = new ObjectMapper();
 
-    private static Context lambdaContext = new MockLambdaContext();
+	private static Context lambdaContext = new MockLambdaContext();
 
 
-    @Test
-    public void testGXDataProvider() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/Test", "GET")
-                .queryString("Itemnumber", "9")
-                .json()
-                .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
-                .build();
+	@Test
+	public void testGXDataProvider() {
+		AwsProxyRequest request = new AwsProxyRequestBuilder("/Test", "GET")
+			.queryString("Itemnumber", "9")
+			.json()
+			.header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
+			.build();
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
-        assertEquals(200, output.getStatusCode());
-        assertEquals("{\"ItemId\":9,\"ItemName\":\"9 Item\"}", output.getBody());
-    }
+		AwsProxyResponse output = handler.proxy(request, lambdaContext);
+		assertEquals(200, output.getStatusCode());
+		assertEquals("{\"ItemId\":9,\"ItemName\":\"9 Item\"}", output.getBody());
+	}
 
-    @Test
-    public void testGXDataProviderWithParams() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/Test/12", "GET")
-                .queryString("Itemnumber", "9")
-                .json()
-                .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
-                .build();
+	@Test
+	public void testGXDataProviderWithParams() {
+		AwsProxyRequest request = new AwsProxyRequestBuilder("/Test/12", "GET")
+			.queryString("Itemnumber", "9")
+			.json()
+			.header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
+			.build();
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
-        assertEquals(200, output.getStatusCode());
-        assertEquals("{\"ItemId\":12,\"ItemName\":\"12 Item\"}", output.getBody());
-    }
+		AwsProxyResponse output = handler.proxy(request, lambdaContext);
+		assertEquals(200, output.getStatusCode());
+		assertEquals("{\"ItemId\":12,\"ItemName\":\"12 Item\"}", output.getBody());
+	}
 
 	@Test
 	public void testGxMultiCall() {
@@ -119,18 +119,18 @@ public class GeneXusAppAwsProxyTest {
 
 	@Test
 	@Ignore
-    public void gxTestOAuthAccessToken() {
+	public void gxTestOAuthAccessToken() {
 
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/oauth/access_token", "POST")
-                .body("client_id=b0be5400435f42e588480fa06330f5ff&grant_type=password&username=ggallotti&password=gonzalo&scope=FullControl")
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                //.header("Content-Length", "116")
-                .build();
+		AwsProxyRequest request = new AwsProxyRequestBuilder("/oauth/access_token", "POST")
+			.body("client_id=b0be5400435f42e588480fa06330f5ff&grant_type=password&username=ggallotti&password=gonzalo&scope=FullControl")
+			.header("Content-Type", "application/x-www-form-urlencoded")
+			//.header("Content-Length", "116")
+			.build();
 
-        AwsProxyResponse output = l.handleRequest(request, lambdaContext);
-        System.out.println(output);
-        //assertEquals(200, output.getStatusCode());
+		AwsProxyResponse output = l.handleRequest(request, lambdaContext);
+		System.out.println(output);
+		//assertEquals(200, output.getStatusCode());
 
-    }
+	}
 
 }

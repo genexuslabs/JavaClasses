@@ -7,19 +7,16 @@ public final class handlesimplerawsqsevent extends GXProcedure {
 		super(remoteHandle, new ModelContext(handlesimplerawsqsevent.class), "");
 	}
 
-	public handlesimplerawsqsevent(int remoteHandle,
-								   ModelContext context) {
+	public handlesimplerawsqsevent(int remoteHandle, ModelContext context) {
 		super(remoteHandle, context, "");
 	}
 
 
-	public void execute(String aP0,
-						com.genexus.genexusserverlessapi.SdtEventMessageResponse[] aP1) {
+	public void execute(String aP0, com.genexus.genexusserverlessapi.SdtEventMessageResponse[] aP1) {
 		execute_int(aP0, aP1);
 	}
 
-	private void execute_int(String aP0,
-							 com.genexus.genexusserverlessapi.SdtEventMessageResponse[] aP1) {
+	private void execute_int(String aP0, com.genexus.genexusserverlessapi.SdtEventMessageResponse[] aP1) {
 		handlesimplerawsqsevent.this.AV13RAWMessage = aP0;
 		handlesimplerawsqsevent.this.aP1 = aP1;
 		initialize();
@@ -30,11 +27,10 @@ public final class handlesimplerawsqsevent extends GXProcedure {
 
 	private void privateExecute() {
 		System.out.println("START Queue Event received");
-		;
 		System.out.println(AV13RAWMessage);
 		System.out.println("END Queue Event received");
 		System.out.println((boolean) ((GXutil.len(AV13RAWMessage) > 0)));
-		AV9EventMessageResponse.setgxTv_SdtEventMessageResponse_Handled( AV13RAWMessage.startsWith("{\"records\":[{\"messageId\":\"1\",\"receiptHandle\":\"123123\",\"body\":\"") );
+		AV9EventMessageResponse.setgxTv_SdtEventMessageResponse_Handled(AV13RAWMessage.startsWith("{\"records\":[{\"messageId\":\"1\",\"receiptHandle\":\"123123\",\"body\":\""));
 		cleanup();
 	}
 

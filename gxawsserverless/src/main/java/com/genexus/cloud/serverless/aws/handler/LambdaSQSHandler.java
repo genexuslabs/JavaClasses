@@ -28,12 +28,11 @@ public class LambdaSQSHandler extends LambdaBaseHandler implements RequestHandle
 		super(className);
 	}
 
-	//https://docs.aws.amazon.com/en_gb/lambda/latest/dg/with-sqs.html
 	@Override
 	public SQSBatchResponse handleRequest(SQSEvent sqsEvent, Context context) {
-		int msgCount = (int) sqsEvent.getRecords().stream().count();
-
-		logger.debug("handleRequest started with #sqsItems: " + msgCount);
+		if (logger.isDebugEnabled()) {
+			logger.debug("handleRequest started with #sqsItems: " + (int) sqsEvent.getRecords().size());
+		}
 
 		EventMessages msgs = new EventMessages();
 
@@ -76,7 +75,7 @@ public class LambdaSQSHandler extends LambdaBaseHandler implements RequestHandle
 		if (!wasHandled) {
 			logger.error(String.format("Messages were not handled. Marking all SQS Events as failed: %s", errorMessage));
 			List<SQSBatchResponse.BatchItemFailure> failures = new ArrayList<>();
-			//Assume all batch failed
+			//Assume all batch has failed.
 			for (SQSMessage sqsItem : sqsEvent.getRecords()) {
 				failures.add(new SQSBatchResponse.BatchItemFailure(sqsItem.getMessageId()));
 			}

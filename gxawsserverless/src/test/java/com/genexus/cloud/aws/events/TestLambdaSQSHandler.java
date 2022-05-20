@@ -15,7 +15,6 @@ import org.junit.Test;
 
 import java.util.*;
 
-
 public class TestLambdaSQSHandler {
 	private static String SIMPLE_HANDLER = "com.unittest.eventdriven.queue.handlesimpleuserqueueevent";
 	private static String SIMPLE_RAW_HANDLER = "com.unittest.eventdriven.queue.handlesimplerawsqsevent";
