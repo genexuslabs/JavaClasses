@@ -1,23 +1,18 @@
 package com.genexus.cloud.aws.events;
 
-import com.amazonaws.services.lambda.runtime.ClientContext;
-import com.amazonaws.services.lambda.runtime.CognitoIdentity;
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
-import com.genexus.cloud.serverless.aws.handler.LambdaBaseHandler;
 import com.genexus.cloud.serverless.aws.handler.LambdaSQSHandler;
+import com.unittest.eventdriven.queue.handlesimplesqsevent;
+import com.unittest.eventdriven.queue.handlesimplesqsevent2;
 import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.*;
 
 public class TestLambdaSQSHandler {
-	private static String SIMPLE_HANDLER = "com.unittest.eventdriven.queue.handlesimpleuserqueueevent";
-	private static String SIMPLE_RAW_HANDLER = "com.unittest.eventdriven.queue.handlesimplerawsqsevent";
+	private static String SIMPLE_HANDLER = handlesimplesqsevent2.class.getName();
+	private static String SIMPLE_RAW_HANDLER = handlesimplesqsevent.class.getName();
 
 	@Test
 	public void TestSQSSimpleEvent() throws Exception {

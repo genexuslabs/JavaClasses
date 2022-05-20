@@ -2,19 +2,19 @@ package com.unittest.eventdriven.queue;
 
 import com.genexus.*;
 
-public final class handlesimpleuserqueueevent extends GXProcedure {
-	public handlesimpleuserqueueevent(int remoteHandle) {
-		super(remoteHandle, new ModelContext(handlesimpleuserqueueevent.class), "");
+public final class handlesimplesqsevent2 extends GXProcedure {
+	public handlesimplesqsevent2(int remoteHandle) {
+		super(remoteHandle, new ModelContext(handlesimplesqsevent2.class), "");
 	}
 
-	public handlesimpleuserqueueevent(int remoteHandle,
-									  ModelContext context) {
+	public handlesimplesqsevent2(int remoteHandle,
+								 ModelContext context) {
 		super(remoteHandle, context, "");
 	}
 
 	@SuppressWarnings("unchecked")
 	public com.genexus.genexusserverlessapi.SdtEventMessageResponse executeUdp(com.genexus.genexusserverlessapi.SdtEventMessages aP0) {
-		handlesimpleuserqueueevent.this.aP1 = new com.genexus.genexusserverlessapi.SdtEventMessageResponse[]{new com.genexus.genexusserverlessapi.SdtEventMessageResponse()};
+		handlesimplesqsevent2.this.aP1 = new com.genexus.genexusserverlessapi.SdtEventMessageResponse[]{new com.genexus.genexusserverlessapi.SdtEventMessageResponse()};
 		execute_int(aP0, aP1);
 		return aP1[0];
 	}
@@ -26,8 +26,8 @@ public final class handlesimpleuserqueueevent extends GXProcedure {
 
 	private void execute_int(com.genexus.genexusserverlessapi.SdtEventMessages aP0,
 							 com.genexus.genexusserverlessapi.SdtEventMessageResponse[] aP1) {
-		handlesimpleuserqueueevent.this.AV8EventMessages = aP0;
-		handlesimpleuserqueueevent.this.aP1 = aP1;
+		handlesimplesqsevent2.this.AV8EventMessages = aP0;
+		handlesimplesqsevent2.this.aP1 = aP1;
 		initialize();
 		/* GeneXus formulas */
 		/* Output device settings */
@@ -60,7 +60,7 @@ public final class handlesimpleuserqueueevent extends GXProcedure {
 	}
 
 	protected void cleanup() {
-		this.aP1[0] = handlesimpleuserqueueevent.this.AV9EventMessageResponse;
+		this.aP1[0] = handlesimplesqsevent2.this.AV9EventMessageResponse;
 		CloseOpenCursors();
 		exitApp();
 	}

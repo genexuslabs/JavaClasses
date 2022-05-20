@@ -2,12 +2,12 @@ package com.unittest.eventdriven.queue;
 
 import com.genexus.*;
 
-public final class handlesimplerawsqsevent extends GXProcedure {
-	public handlesimplerawsqsevent(int remoteHandle) {
-		super(remoteHandle, new ModelContext(handlesimplerawsqsevent.class), "");
+public final class handlesimplesqsevent extends GXProcedure {
+	public handlesimplesqsevent(int remoteHandle) {
+		super(remoteHandle, new ModelContext(handlesimplesqsevent.class), "");
 	}
 
-	public handlesimplerawsqsevent(int remoteHandle, ModelContext context) {
+	public handlesimplesqsevent(int remoteHandle, ModelContext context) {
 		super(remoteHandle, context, "");
 	}
 
@@ -17,8 +17,8 @@ public final class handlesimplerawsqsevent extends GXProcedure {
 	}
 
 	private void execute_int(String aP0, com.genexus.genexusserverlessapi.SdtEventMessageResponse[] aP1) {
-		handlesimplerawsqsevent.this.AV13RAWMessage = aP0;
-		handlesimplerawsqsevent.this.aP1 = aP1;
+		handlesimplesqsevent.this.AV13RAWMessage = aP0;
+		handlesimplesqsevent.this.aP1 = aP1;
 		initialize();
 		/* GeneXus formulas */
 		/* Output device settings */
@@ -35,7 +35,7 @@ public final class handlesimplerawsqsevent extends GXProcedure {
 	}
 
 	protected void cleanup() {
-		this.aP1[0] = handlesimplerawsqsevent.this.AV9EventMessageResponse;
+		this.aP1[0] = handlesimplesqsevent.this.AV9EventMessageResponse;
 		CloseOpenCursors();
 		exitApp();
 	}
