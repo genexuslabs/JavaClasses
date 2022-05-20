@@ -145,36 +145,39 @@ public class ExcelCells implements IExcelCellRange {
 
     }
 
-    public boolean setDate(Date value) throws ExcelException {
-        CheckReadonlyDocument();
-        try {
-            if (!CommonUtil.nullDate().equals(value)) {
-				String dformat = ""; //this.doc.getDateFormat().toLowerCase();
+	public boolean setDate(Date value) throws ExcelException {
+		CheckReadonlyDocument();
+		try {
+			if (!CommonUtil.nullDate().equals(value)) {
+				String dformat = "m/d/yy h:mm";//this.doc.getDateFormat().toLowerCase();
 				Calendar calendar = GregorianCalendar.getInstance(); // creates a new calendar instance
 				calendar.setTime(value);
 				if (calendar.get(Calendar.MINUTE) == 0 && calendar.get(Calendar.HOUR) == 0
-						&& calendar.get(Calendar.SECOND) == 0 && dformat.indexOf(' ') > 0) {
+					&& calendar.get(Calendar.SECOND) == 0 && dformat.indexOf(' ') > 0) {
 					dformat = dformat.substring(0, dformat.indexOf(' '));
 				}
-
 				DataFormat df = pWorkbook.createDataFormat();
-				XSSFCellStyle newStyle = stylesCache.getCellStyle(df.getFormat(dformat));
 
 				for (int i = 1; i <= cellCount; i++) {
 					XSSFCellStyle cellStyle = pCells[i].getCellStyle();
-					copyPropertiesStyle(newStyle, cellStyle);
-					newStyle.setDataFormat(df.getFormat(dformat));
+					if (! DateUtil.isCellDateFormatted(pCells[i])) {
+						XSSFCellStyle newStyle = pWorkbook.createCellStyle();
+						copyPropertiesStyle(newStyle, cellStyle);
+						newStyle.setDataFormat(df.getFormat(dformat));
+						pCells[i].setCellStyle(newStyle);
+						fitColumnWidth(i, dformat.length() + 4);
+					}else {
+						fitColumnWidth(i, cellStyle.getDataFormatString().length() + 4);
+					}
 					pCells[i].setCellValue(value);
-					pCells[i].setCellStyle(newStyle);
-					fitColumnWidth(i, dformat.length() + 4);
 				}
-                return true;
-            }
-        } catch (Exception e) {
-            throw new ExcelException(7, "Invalid cell value");
-        }
-        return false;
-    }
+				return true;
+			}
+		} catch (Exception e) {
+			throw new ExcelException(7, "Invalid cell value");
+		}
+		return false;
+	}
 
     public Date getDate() throws ExcelException {
         Date returnValue = null;
