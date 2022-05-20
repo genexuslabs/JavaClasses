@@ -1,37 +1,30 @@
 package com.genexus.internet;
 
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
+
 import java.io.*;
 
-class RFC822EndReader extends BufferedReader implements GXInternetConstants
+public class RFC822EndReader extends BufferedReader implements GXInternetConstants
 {
 	private String lastLine;
 	private boolean isEndOfMessage = false;
-	private PrintStream logOutput;
+	private static final ILogger logger = LogManager.getLogger(RFC822EndReader.class);
 
-	public RFC822EndReader(Reader reader, PrintStream logOutput)
+	public RFC822EndReader(Reader reader)
 	{
 		super(reader);
-		this.logOutput = logOutput;
 	}
 
 	private int log(int line)
 	{
-		if	(DEBUG)
-		{
-			if (logOutput != null) 
-				logOutput.println("byte: " + line);
-		}
-
+		logger.debug("byte: " + line);
 		return line;
 	}
 
 	private String log(String line)
 	{
-		if	(DEBUG)
-		{
-			if (logOutput != null) 
-				logOutput.println("Line: " + line);
-		}
+		logger.debug("Line: " + line);
 
 		return line;
 	}
