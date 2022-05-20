@@ -6,46 +6,39 @@ import java.util.Date;
 
 import com.genexus.CommonUtil;
 
-public class GXDBMSdameng implements GXDBMS
-{	
-	public void setDatabaseName(String dbName)
-	{
+public class GXDBMSdameng implements GXDBMS {
+
+	public void setDatabaseName(String dbName) {
 	}
-	public String getDatabaseName()
-	{
+
+	public String getDatabaseName() {
 		return "";
-	}	
-	public void setInReorg()
-	{
 	}
-	public ResultSet executeQuery(PreparedStatement stmt, boolean hold) throws SQLException
-	{
+
+	public void setInReorg() {
+	}
+
+	public ResultSet executeQuery(PreparedStatement stmt, boolean hold) throws SQLException {
 		return stmt.executeQuery();
 	}
 
-	public int executeUpdate(PreparedStatement stmt) throws SQLException
-	{
+	public int executeUpdate(PreparedStatement stmt) throws SQLException {
 		return stmt.executeUpdate();
 	}
 
-	public boolean execute(PreparedStatement stmt) throws SQLException
-	{
+	public boolean execute(PreparedStatement stmt) throws SQLException {
 		return stmt.execute();
 	}
 
-	public int[] executeBatch(Statement stmt) throws SQLException
-	{
+	public int[] executeBatch(Statement stmt) throws SQLException {
 		return stmt.executeBatch();
 	}
 
-	public boolean isAlive(GXConnection con)
-	{
-		try
-		{
+	public boolean isAlive(GXConnection con) {
+		try {
 			serverDateTime(con);
 		}
-		catch (SQLException e)
-		{	
+		catch (SQLException e) {
 			return false;
 		}
 
@@ -53,79 +46,66 @@ public class GXDBMSdameng implements GXDBMS
 	}
 
 
-	public boolean DataTruncation(SQLException e)
-	{
+	public boolean DataTruncation(SQLException e) {
 		return false;
 	}
+
 	private DataSource dataSource;
-	public void setDataSource(DataSource dataSource)
-	{
+
+	public void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
 	}
 
-	public boolean useReadOnlyConnections()
-	{
+	public boolean useReadOnlyConnections() {
 		return true;
 	}
 
-	public boolean EndOfFile(SQLException e)
-	{
-		return	(	e.getErrorCode() == 1403 || 
-					e.getErrorCode() == 100
-				);
+	public boolean EndOfFile(SQLException e) {
+		return	(e.getErrorCode() == 1403 || e.getErrorCode() == 100);
 	}
 	
-	public boolean ReferentialIntegrity(SQLException e)
-	{
+	public boolean ReferentialIntegrity(SQLException e) {
 		return (e.getErrorCode() == 2291);
 	}
 	
-	public boolean DuplicateKeyValue(SQLException e)
-	{
+	public boolean DuplicateKeyValue(SQLException e) {
 		return	(e.getErrorCode() == -6602);
 	}
-	public boolean ObjectLocked(SQLException e)
-	{
-		return	(	e.getErrorCode() == 54
-				);
+
+	public boolean ObjectLocked(SQLException e) {
+		return	(	e.getErrorCode() == 54);
 	}
-	public boolean ObjectNotFound(SQLException e)
-	{
+
+	public boolean ObjectNotFound(SQLException e) {
 		return	(	e.getErrorCode() == 942	 || 
 					e.getErrorCode() == 950	 ||
 					e.getErrorCode() == 1418 ||
 					e.getErrorCode() == 1432 ||
 					e.getErrorCode() == 2289 ||
 					e.getErrorCode() == 2443 ||
-					e.getErrorCode() == 4080
-				);
+					e.getErrorCode() == 4080);
 	}
-	public java.util.Date nullDate()
-	{
+
+	public java.util.Date nullDate() {
 		return CommonUtil.ymdhmsToT_noYL(1, 1, 1, 0, 0, 0);
 	}
 
-	public boolean useDateTimeInDate()
-	{
+	public boolean useDateTimeInDate() {
 		return false;
 	}
-	public boolean useCharInDate()
-	{
-		return false;
-	}
-	
 
-	public void setConnectionProperties(java.util.Properties props)
-	{
+	public boolean useCharInDate() {
+		return false;
+	}
+
+	public void setConnectionProperties(java.util.Properties props) {
 		props.put("fixedString", "true");
 	}
 
-	public void onConnection(GXConnection con)
-	{
+	public void onConnection(GXConnection con) {
 	}
 	
-	public java.util.Date serverDateTime(GXConnection con) throws SQLException
-	{
+	public java.util.Date serverDateTime(GXConnection con) throws SQLException {
 		ResultSet rslt = con.getStatement("_ServerDT_", "SELECT LOCALTIMESTAMP()", false).executeQuery();
 		
 		rslt.next();
@@ -135,16 +115,12 @@ public class GXDBMSdameng implements GXDBMS
 		return value;
 	}
 	
-	public String serverVersion(GXConnection con) throws SQLException
-	{
+	public String serverVersion(GXConnection con) throws SQLException {
 		return "";
 	}	
 	
-	public String connectionPhysicalId(GXConnection con)
-	{
-		try
-		{
-			
+	public String connectionPhysicalId(GXConnection con) {
+		try {
 			ResultSet rslt = con.getStatement("_ConnectionID_", "SELECT SESSID() AS S", false).executeQuery();
 		
 			rslt.next();
@@ -153,57 +129,46 @@ public class GXDBMSdameng implements GXDBMS
 
 			return String.valueOf(value);
 		}
-		catch (SQLException e)
-		{
+		catch (SQLException e) {
 			return "";
 		}
 	}
 
-	public boolean getSupportsAutocommit()
-	{
+	public boolean getSupportsAutocommit() {
 		return true;
 	}
 
-	public void commit(Connection con) throws SQLException
-	{
+	public void commit(Connection con) throws SQLException {
 		//Las reorgs corren en modo autocommit con lo cual no se debe hacer commit ni rollback implicitos.
-		if	(!com.genexus.ApplicationContext.getInstance().getReorganization())
-		{
+		if	(!com.genexus.ApplicationContext.getInstance().getReorganization()) {
 			con.commit();
 		}
 	}
 
-	public void rollback(Connection con) throws SQLException
-	{
+	public void rollback(Connection con) throws SQLException {
 		//Las reorgs corren en modo autocommit con lo cual no se debe hacer commit ni rollback implicitos.
-		if	(!com.genexus.ApplicationContext.getInstance().getReorganization())
-		{		
+		if	(!com.genexus.ApplicationContext.getInstance().getReorganization()) {
 			con.rollback();
 		}
 	}
-	public boolean ignoreConnectionError(SQLException e)
-	{
-		return false;
-	}
-        
-        public boolean rePrepareStatement(SQLException e)
-        {
+
+	public boolean ignoreConnectionError(SQLException e) {
 		return false;
 	}
 
-	public boolean getSupportsQueryTimeout()
-	{
+	public boolean rePrepareStatement(SQLException e) {
+		return false;
+	}
+
+	public boolean getSupportsQueryTimeout() {
 		return true;
-
 	}
 
-	public boolean useStreamsInNullLongVarchar()
-	{
+	public boolean useStreamsInNullLongVarchar() {
 		return false;
 	}
 
-	public boolean useStreamsInLongVarchar()
-	{
+	public boolean useStreamsInLongVarchar() {
 		return true;
 	}
 
@@ -213,34 +178,30 @@ public class GXDBMSdameng implements GXDBMS
 	 * El parametro blob debe ser una instancia de java.sql.Blob o descendiente
 	 * Esta puesto como Object para que compile sin problemas en JSharp
 	 */
-	public void setBlobData(Object blob, InputStream stream, int length)throws Exception
-	{
-		try
-		{
+	public void setBlobData(Object blob, InputStream stream, int length)throws Exception {
+		try {
 			byte [] bytes = new byte[length];
 			com.genexus.PrivateUtilities.readFully(stream, bytes, 0, length);
-			if(PUTBYTES == null)
-			{
+			if(PUTBYTES == null) {
 				PUTBYTES = Class.forName("java.sql.Blob").getMethod("setBytes", new Class[]{long.class, byte[].class});
 			}
 			PUTBYTES.invoke(blob, new Object[]{new Long(1), bytes});
-		}catch(Exception e)
-		{
-				System.err.println(e.toString());
-				throw e;
+		}
+		catch(Exception e) {
+			System.err.println(e.toString());
+			throw e;
 		}
 	}
 	
-	public int getId()
-	{
+	public int getId() {
 		return DBMS_ORACLE;
 	}
-        public int getLockRetryCount(int lockRetryCount, int waitRecord){
+
+	public int getLockRetryCount(int lockRetryCount, int waitRecord){
           return lockRetryCount * waitRecord * 2;
-        }
+	}
 		
-	public boolean connectionClosed(SQLException e)
-	{
+	public boolean connectionClosed(SQLException e) {
 		return (e.getErrorCode() == 17002);
 	}
 }
