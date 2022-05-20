@@ -890,7 +890,7 @@ public class ExcelSpreadsheetTest {
 		excel.save();
 		excel.close();
 		// Verify previous Excel Document
-		excel = open("testHideRow");
+		excel = open("testHideRow2");
 
 		assertEquals(1, excel.getCell(1, 1).getNumericValue().intValue());
 		excel.save();
@@ -909,7 +909,7 @@ public class ExcelSpreadsheetTest {
 		excel.save();
 		excel.close();
 		// Verify previous Excel Document
-		excel = open("testHideRow");
+		excel = open("testHideRow3");
 
 		assertEquals(1, excel.getCell(1, 1).getNumericValue().intValue());
 		excel.save();
