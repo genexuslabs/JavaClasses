@@ -273,33 +273,18 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		
 		String value;
 
-		if	(DEBUG)
-		{
+		if	(DEBUG) {
 			log(GXDBDebug.LOG_MAX, "getString - index : " + columnIndex + " length : " + length);
-
-			try
-			{
-				value = result.getString(columnIndex);
-				if (result.wasNull() || value == null)
-					value = CommonUtil.replicate(" ", length);
-				else
-					value = String.format(String.format("%%-%ds", length), value);
-
-				log(GXDBDebug.LOG_MAX, "getString - value : " + value);
-			}
-			catch (SQLException sqlException)
-			{
-				if	(con.isLogEnabled()) con.logSQLException(handle, sqlException);
-				throw sqlException;
-			}
 		}
+
+		value = result.getString(columnIndex);
+		if (result.wasNull() || value == null)
+			value = "";
 		else
-		{
-			value = result.getString(columnIndex);
-			if (result.wasNull() || value == null)
-				value = "";
-			else
-				value = String.format(String.format("%%-%ds", length), value);
+			value = String.format(String.format("%%-%ds", length), value);
+
+		if	(DEBUG) {
+			log(GXDBDebug.LOG_MAX, "getString - value : " + value);
 		}
 
 		resultRegBytes += value.length();
