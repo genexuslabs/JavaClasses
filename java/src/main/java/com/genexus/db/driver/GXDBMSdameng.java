@@ -194,7 +194,7 @@ public class GXDBMSdameng implements GXDBMS {
 	}
 	
 	public int getId() {
-		return DBMS_ORACLE;
+		return DBMS_DAMENG;
 	}
 
 	public int getLockRetryCount(int lockRetryCount, int waitRecord){

@@ -589,6 +589,7 @@ public class DataSource extends AbstractDataSource
 			case GXDBMS.DBMS_DB2:
 				return new String[]{"", " CONCAT ", ""};
 			case GXDBMS.DBMS_ORACLE:
+			case GXDBMS.DBMS_DAMENG:
 			case GXDBMS.DBMS_HANA:
 			case GXDBMS.DBMS_POSTGRESQL:
 			case GXDBMS.DBMS_SQLITE:

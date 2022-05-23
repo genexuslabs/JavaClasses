@@ -20,6 +20,7 @@ public interface GXDBMS
 	public static final int DBMS_SQLITE = 9;
 	public static final int DBMS_HANA = 10;
 	public static final int DBMS_SERVICE = 11;
+	public static final int DBMS_DAMENG = 12;
 
 	boolean DataTruncation(SQLException e);
 	boolean useReadOnlyConnections();
