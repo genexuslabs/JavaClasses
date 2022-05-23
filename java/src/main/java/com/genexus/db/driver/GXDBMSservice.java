@@ -1,9 +1,6 @@
 package com.genexus.db.driver;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 import com.genexus.CommonUtil;
 import com.genexus.db.service.ServiceError;
@@ -33,6 +30,21 @@ public class GXDBMSservice implements GXDBMS
             throw new SQLException(e.getMessage(), e.getSQLState(), e.getVendorCode(), e);
         }
     }
+
+	public int executeUpdate(PreparedStatement stmt) throws SQLException
+	{
+		return stmt.executeUpdate();
+	}
+
+	public boolean execute(PreparedStatement stmt) throws SQLException
+	{
+		return stmt.execute();
+	}
+
+	public int[] executeBatch(Statement stmt) throws SQLException
+	{
+		return stmt.executeBatch();
+	}
 
     @Override
     public void setInReorg()

@@ -40,6 +40,21 @@ public class GXDBMSas400 implements GXDBMS
 		return stmt.executeQuery();
 	}
 
+	public int executeUpdate(PreparedStatement stmt) throws SQLException
+	{
+		return stmt.executeUpdate();
+	}
+
+	public boolean execute(PreparedStatement stmt) throws SQLException
+	{
+		return stmt.execute();
+	}
+
+	public int[] executeBatch(Statement stmt) throws SQLException
+	{
+		return stmt.executeBatch();
+	}
+
 	public boolean DataTruncation(SQLException e)
 	{
 		return (e.getErrorCode() == 01004 );

@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Stack;
+import java.util.Collections;
+import java.util.Arrays;
 
 import com.genexus.IGXAssigned;
 import com.genexus.diagnostics.core.ILogger;
@@ -28,7 +30,8 @@ public abstract class HttpAjaxContext
         protected JSONObject Messages = new JSONObject();
         private JSONObject WebComponents = new JSONObject();
         private Hashtable<Integer, JSONObject> LoadCommands = new Hashtable<>();
-        private JSONArray Grids = new JSONArray();
+        private ArrayList Grids = new ArrayList();
+		private Hashtable<String, Integer> DicGrids = new Hashtable<String, Integer>();
         private JSONObject ComponentObjects = new JSONObject();
         protected GXAjaxCommandCollection commands = new GXAjaxCommandCollection();
         protected GXWebRow _currentGridRow = null;
@@ -485,13 +488,23 @@ public abstract class HttpAjaxContext
           }
         }
 
-        public void ajax_rsp_assign_grid(String gridName, com.genexus.webpanels.GXWebGrid gridObj)
+		public void ajax_rsp_assign_grid(String gridName, com.genexus.webpanels.GXWebGrid gridObj)
+		{
+			Object jsonObj = ((IGxJSONAble) gridObj).GetJSONObject();
+			Grids.add(jsonObj);
+		}
+
+        public void ajax_rsp_assign_grid(String gridName, com.genexus.webpanels.GXWebGrid gridObj, String Control)
         {
-            try {
-                Grids.putIndex(0, gridObj.GetJSONObject());
-          }
-          catch (JSONException e) {
-          }
+			Object jsonObj = ((IGxJSONAble) gridObj).GetJSONObject();
+			if (DicGrids.containsKey(Control)) {
+				Grids.set(DicGrids.get(Control), jsonObj);
+			}
+			else
+			{
+				Grids.add(jsonObj);
+				DicGrids.put(Control, Grids.size() - 1);
+			}
         }
 
         public void ajax_rsp_clear(){
@@ -586,6 +599,8 @@ public abstract class HttpAjaxContext
                 GXJSONObject jsonCmdWrapper = new GXJSONObject(isMultipartContent());
                 try
                 {
+						Collections.reverse(Arrays.asList(Grids));
+						JSONArray JSONGrids = new JSONArray(Grids);
                         if (commands.AllowUIRefresh())
                         {
 							if (cmpContext  == null || cmpContext.equals(""))
@@ -598,7 +613,7 @@ public abstract class HttpAjaxContext
                             jsonCmdWrapper.put("gxValues", AttValues);
                             jsonCmdWrapper.put("gxMessages", Messages);
                             jsonCmdWrapper.put("gxComponents", WebComponents);
-                            jsonCmdWrapper.put("gxGrids", Grids);
+                            jsonCmdWrapper.put("gxGrids", JSONGrids);
                         }
                         for(Enumeration loadCmds = LoadCommands.keys(); loadCmds.hasMoreElements();)
                         {

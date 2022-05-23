@@ -54,7 +54,7 @@ public final class GXCallableStatement extends GXPreparedStatement implements Ca
 			log(GXDBDebug.LOG_MIN, "Executing callable statement");
 			try
 			{
-				ret = stmt.execute();
+				ret = con.getDBMS().execute(stmt);
 				log(GXDBDebug.LOG_MIN, "succesfully executed");
 			}
 			catch (SQLException sqlException)
@@ -65,7 +65,7 @@ public final class GXCallableStatement extends GXPreparedStatement implements Ca
 		}
 		else
 		{
-			ret = stmt.execute();
+			ret = con.getDBMS().execute(stmt);
 		}
 
 		//con.setNotInUse(this);
