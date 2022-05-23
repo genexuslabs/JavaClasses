@@ -65,7 +65,7 @@ public class GXDBMSdameng implements GXDBMS {
 	}
 	
 	public boolean ReferentialIntegrity(SQLException e) {
-		return (e.getErrorCode() == 2291);
+		return (e.getErrorCode() == -6607);
 	}
 	
 	public boolean DuplicateKeyValue(SQLException e) {
