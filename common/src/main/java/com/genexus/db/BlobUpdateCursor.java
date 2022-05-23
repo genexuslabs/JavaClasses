@@ -82,7 +82,7 @@ public class BlobUpdateCursor extends UpdateCursor
 		IGXPreparedStatement selStmt = SentenceProvider.getPreparedStatement(connectionProvider, mCursorId + BLOB_SEL_ID, blobStmt2, false);
 		
 		// Seteo el argumento (el rowId) y ejecuto el select
-		String rowId = ((IGXCallableStatement)mPreparedStatement).getString(cantNoBlobParms + 1);
+		String rowId = ((IGXCallableStatement)mPreparedStatement).getString(cantNoBlobParms + 1).trim();
 		selStmt.setString(1, rowId);
 		IGXResultSet resultSet = (IGXResultSet)selStmt.executeQuery();
 		resultSet.next();
