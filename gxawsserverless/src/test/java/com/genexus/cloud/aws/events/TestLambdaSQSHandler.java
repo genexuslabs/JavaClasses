@@ -6,7 +6,6 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
-import com.genexus.cloud.serverless.aws.handler.LambdaBaseHandler;
 import com.genexus.cloud.serverless.aws.handler.LambdaSQSHandler;
 import org.junit.Assert;
 import org.junit.Assume;
