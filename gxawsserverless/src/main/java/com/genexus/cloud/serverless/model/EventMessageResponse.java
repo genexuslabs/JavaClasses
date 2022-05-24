@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class EventMessageResponse {
 	@JsonProperty("Handled")
-	private boolean handled;
+	private boolean handled = false;
 
 	@JsonProperty("ErrorMessage")
-	private String errorMessage;
+	private String errorMessage = "";
 
 	public boolean isHandled() {
 		return handled;
@@ -24,4 +24,5 @@ public class EventMessageResponse {
 	public void setErrorMessage(String errorMessage) {
 		this.errorMessage = errorMessage;
 	}
+
 }

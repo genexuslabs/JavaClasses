@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class LambdaSQSHandler extends LambdaBaseHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
+public class LambdaSQSHandler extends LambdaBaseEventHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
 
 	public LambdaSQSHandler() throws Exception {
 		super();
@@ -64,7 +64,7 @@ public class LambdaSQSHandler extends LambdaBaseHandler implements RequestHandle
 		String errorMessage;
 
 		try {
-			EventMessageResponse response = dispatchEventMessages(msgs, Helper.toJSONString(sqsEvent));
+			EventMessageResponse response = dispatchEvent(msgs, Helper.toJSONString(sqsEvent));
 			wasHandled = response.isHandled();
 			errorMessage = response.getErrorMessage();
 		} catch (Exception e) {
