@@ -631,7 +631,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			String key = "";
 			if (inputParm.has("av") && inputParm.has("ctrl") && inputParm.has("prop"))
 			{
-				key = inputParm.has("av") + inputParm.getString("ctrl") + inputParm.getString("prop");
+				key = inputParm.getString("av") + inputParm.getString("ctrl") + inputParm.getString("prop");
 			}
 			else if (inputParm.has("av"))
 			{
