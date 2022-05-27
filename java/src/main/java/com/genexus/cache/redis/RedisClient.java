@@ -81,6 +81,7 @@ public class RedisClient implements ICacheService2, Closeable {
 		objMapper = new ObjectMapper();
 		objMapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
 		objMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+		objMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 		objMapper.enable(SerializationFeature.INDENT_OUTPUT);
 	}
 
