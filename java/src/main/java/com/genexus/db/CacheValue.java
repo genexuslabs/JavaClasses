@@ -1,4 +1,6 @@
 package com.genexus.db;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.TimeZone;
@@ -173,8 +175,9 @@ public class CacheValue implements Serializable
 	public long getTimestamp()
 	{
 		return timestamp;
-	}	
-	//IFieldGetter iterator
+	}
+
+	@JsonIgnore
 	public Enumeration getIterator()
 	{
 		return items.elements();
