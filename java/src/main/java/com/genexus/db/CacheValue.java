@@ -55,7 +55,7 @@ public class CacheValue implements Serializable
 	}
 
 	public long getExpiryTimeMilliseconds()
-        {
+	{
 		return expiryTime*1000;
 	}
 	public int getExpiryTimeSeconds()
@@ -80,8 +80,8 @@ public class CacheValue implements Serializable
 	 */
 	public boolean hasExpired()
 	{
-            return (expiryHits > 0 && hits >= expiryHits) ||
-			   (expiryTime > 0 && (timestamp + (getExpiryTimeMilliseconds())) < System.currentTimeMillis());
+		return (expiryHits > 0 && hits >= expiryHits) ||
+			(expiryTime > 0 && (timestamp + (getExpiryTimeMilliseconds())) < System.currentTimeMillis());
 	}
 
 	private int []resultSetTypes;
@@ -155,8 +155,8 @@ public class CacheValue implements Serializable
 				case DynamicExecute.TYPE_DOUBLE: copy[i] = ((double[])resultSet[i]).clone(); break;
 				case DynamicExecute.TYPE_BOOLEAN: copy[i] = ((boolean[])resultSet[i]).clone(); break;
 				default:
-						copy[i] = ((Object[])resultSet[i]).clone();
-						System.arraycopy(resultSet[i], 0, copy[i], 0, 1);
+					copy[i] = ((Object[])resultSet[i]).clone();
+					System.arraycopy(resultSet[i], 0, copy[i], 0, 1);
 			}
 		}
 		CachedIFieldGetter cValue = new CachedIFieldGetter(copy);
