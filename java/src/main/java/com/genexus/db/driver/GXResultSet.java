@@ -29,6 +29,7 @@ import com.genexus.db.IGXResultSet;
 import com.genexus.internet.HttpContext;
 import com.genexus.util.GXFile;
 import com.genexus.util.GXServices;
+import com.genexus.db.driver.ResourceAccessControlList;
 
 public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter, IGXResultSet
 {
@@ -280,7 +281,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 			{
 				value = result.getString(columnIndex);
 				if (result.wasNull() || value == null)
-					value = CommonUtil.replicate(" ", length);
+					value = "";
 				else
 					value = String.format(String.format("%%-%ds", length), value);
 

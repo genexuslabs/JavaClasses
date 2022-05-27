@@ -13,6 +13,7 @@ import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.NumberToTextConverter;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -209,7 +210,7 @@ public class ExcelCells implements IExcelCells {
 				if (org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(pCells[1])) {
 					return pCells[1].getDateCellValue().toString();
 				} else {
-					return Double.toString(pCells[1].getNumericCellValue());
+					return NumberToTextConverter.toText(pCells[1].getNumericCellValue());
 				}
 			} else
 				return pCells[1].getStringCellValue();

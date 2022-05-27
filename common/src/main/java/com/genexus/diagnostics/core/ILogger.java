@@ -43,8 +43,7 @@ public interface ILogger {
 	void info(String[] list);
 	
 	void info(String msg);
-	
-	
+
 	void trace(String msg);
 	
 	void trace(Throwable ex, String[] list);
@@ -55,7 +54,10 @@ public interface ILogger {
 
 	void trace(String msg, Throwable ex);
 	
-	
+	boolean isDebugEnabled();
+
+	boolean isErrorEnabled();
+
 	// Lambda Functions not supported JAVA 7. Only Java 8.
 	/*
 	 * public static void debug(Logger log, String startMsg, Func<String> buildMsg)

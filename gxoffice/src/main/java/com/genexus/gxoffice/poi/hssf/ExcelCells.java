@@ -18,6 +18,7 @@ import org.apache.poi.ss.usermodel.DateUtil;
 import com.genexus.CommonUtil;
 import com.genexus.gxoffice.IExcelCells;
 import com.genexus.gxoffice.IGxError;
+import org.apache.poi.ss.util.NumberToTextConverter;
 
 /**
  * @author Diego
@@ -209,7 +210,7 @@ public class ExcelCells implements IExcelCells {
 				if (DateUtil.isCellDateFormatted(pCells[1])) {
 					return pCells[1].getDateCellValue().toString();
 				} else {
-					return Double.toString(pCells[1].getNumericCellValue());
+					return NumberToTextConverter.toText(pCells[1].getNumericCellValue());
 				}
 			} else
 				return pCells[1].getStringCellValue();
