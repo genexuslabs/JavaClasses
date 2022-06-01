@@ -1470,28 +1470,17 @@ public class HttpContextWeb extends HttpContext {
 					setOutputStream(getResponse().getOutputStream().getOutputStream());
 				}
 
-				boolean isGzipped = setGzippedHttpResponse();
-				if (isGzipped) {
-					setOutputStream(new GZIPOutputStream(getOutputStream()));
+				if (compressed) {
+					String accepts = getHeader("Accept-Encoding");
+					if (accepts != null && accepts.indexOf("gzip") >= 0) {
+						setHeader("Content-Encoding", "gzip");
+						setOutputStream(new GZIPOutputStream(getOutputStream()));
+					}
 				}
-
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e.getMessage());
 		}
-	}
-
-	private boolean setGzippedHttpResponse() {
-		return false;
-		/*if (compressed) {
-			String accepts = getHeader("Accept-Encoding");
-			if (accepts != null && accepts.indexOf("gzip") >= 0) {
-				setHeader("Content-Encoding", "gzip");
-				return true;
-			}
-		}
-		return false;
-		*/
 	}
 
 	public void flushStream() {
