@@ -19,6 +19,8 @@ target/
 
 *.xlsx
 
+*.db
+
 PublicTempStorage/
 PrivateTempStorage/
 gxexternalproviders/resources/

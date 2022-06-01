@@ -439,6 +439,10 @@ public class HttpContextWeb extends HttpContext {
 		return 0;
 	}
 
+	public void removeHeader(String headerName){
+		response.setHeader(headerName, null);
+	}
+
 	public void setDateHeader(String header, int value) {
 		response.setDateHeader(header, value);
 	}
@@ -1018,13 +1022,18 @@ public class HttpContextWeb extends HttpContext {
 
 	public void sendError(int error) {
 		try {
-			setHeader("Content-Encoding", "text/html");
+			disableResponseEncoding();
 			response.sendError(error);
 		} catch (Exception e) {
 			log.error("Error " + error, e);
 		}
 	}
 
+	private void disableResponseEncoding() {
+		if (compressed) {
+			removeHeader("Content-Encoding");
+		}
+	}
 	public void setQueryString(String qs) {
 		loadParameters(qs);
 	}
@@ -1461,17 +1470,28 @@ public class HttpContextWeb extends HttpContext {
 					setOutputStream(getResponse().getOutputStream().getOutputStream());
 				}
 
-				if (compressed) {
-					String accepts = getHeader("Accept-Encoding");
-					if (accepts != null && accepts.indexOf("gzip") >= 0) {
-						setHeader("Content-Encoding", "gzip");
-						setOutputStream(new GZIPOutputStream(getOutputStream()));
-					}
+				boolean isGzipped = setGzippedHttpResponse();
+				if (isGzipped) {
+					setOutputStream(new GZIPOutputStream(getOutputStream()));
 				}
+
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e.getMessage());
 		}
+	}
+
+	private boolean setGzippedHttpResponse() {
+		return false;
+		/*if (compressed) {
+			String accepts = getHeader("Accept-Encoding");
+			if (accepts != null && accepts.indexOf("gzip") >= 0) {
+				setHeader("Content-Encoding", "gzip");
+				return true;
+			}
+		}
+		return false;
+		*/
 	}
 
 	public void flushStream() {
