@@ -441,6 +441,10 @@ public class HttpContextWeb extends HttpContext {
 		return 0;
 	}
 
+	public void removeHeader(String headerName){
+		response.setHeader(headerName, null);
+	}
+
 	public void setDateHeader(String header, int value) {
 		response.setDateHeader(header, value);
 	}
@@ -1020,13 +1024,18 @@ public class HttpContextWeb extends HttpContext {
 
 	public void sendError(int error) {
 		try {
-			setHeader("Content-Encoding", "text/html");
+			disableResponseEncoding();
 			response.sendError(error);
 		} catch (Exception e) {
 			log.error("Error " + error, e);
 		}
 	}
 
+	private void disableResponseEncoding() {
+		if (compressed) {
+			removeHeader("Content-Encoding");
+		}
+	}
 	public void setQueryString(String qs) {
 		loadParameters(qs);
 	}
