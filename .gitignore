@@ -19,7 +19,6 @@ target/
 
 *.xlsx
 
-
 PublicTempStorage/
 PrivateTempStorage/
 gxexternalproviders/resources/
