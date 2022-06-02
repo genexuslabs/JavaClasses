@@ -439,10 +439,6 @@ public class HttpContextWeb extends HttpContext {
 		return 0;
 	}
 
-	public void removeHeader(String headerName){
-		response.setHeader(headerName, null);
-	}
-
 	public void setDateHeader(String header, int value) {
 		response.setDateHeader(header, value);
 	}
@@ -1031,7 +1027,7 @@ public class HttpContextWeb extends HttpContext {
 
 	private void disableResponseEncoding() {
 		if (compressed) {
-			removeHeader("Content-Encoding");
+			setHeader("Content-Encoding", "identity");
 		}
 	}
 	public void setQueryString(String qs) {
