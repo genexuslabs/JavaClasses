@@ -19,7 +19,6 @@ target/
 
 *.xlsx
 
-*.db
 
 PublicTempStorage/
 PrivateTempStorage/
