@@ -20,6 +20,9 @@ public class TestLambdaEventBridgeHandler {
 		Map<String, Object> evt = new HashMap<String, Object>();
 		evt.put("id", "d043a3b9-7e7f-41d3-9656-6fe970b62888");
 		evt.put("time", "2022-05-24T00:43:16Z");
+		Map<String, Object> detail = new HashMap<>();
+		detail.put("name", "test");
+		evt.put("detail", detail);
 		return evt;
 	}
 
