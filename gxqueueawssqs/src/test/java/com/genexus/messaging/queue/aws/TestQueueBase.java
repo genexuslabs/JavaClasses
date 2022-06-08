@@ -88,6 +88,7 @@ public abstract class TestQueueBase {
 		int qLength = queue.getQueueLength();
 		Assert.assertEquals(0, qLength);
 		sendQueueMessage();
+		sleep(5000);
 		qLength = queue.getQueueLength();
 		Assert.assertEquals(1, qLength);
 	}
@@ -98,6 +99,7 @@ public abstract class TestQueueBase {
 		Assert.assertNotNull(sendResult);
 		Assert.assertEquals(SendMessageResult.SENT, sendResult.getMessageSentStatus());
 		Assert.assertNotEquals("", sendResult.getMessageId());
+		Assert.assertNotEquals("", sendResult.getMessageServerId());
 	}
 
 	@Test

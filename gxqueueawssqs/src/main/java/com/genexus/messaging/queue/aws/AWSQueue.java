@@ -98,7 +98,7 @@ public class AWSQueue implements IQueue {
 	@Override
 	public SendMessageResult sendMessage(SimpleQueueMessage simpleQueueMessage, MessageQueueOptions messageQueueOptions) {
 		List<SendMessageResult> result = sendMessagesImpl(Arrays.asList(simpleQueueMessage), messageQueueOptions);
-		return result.get(0); //should not fail
+		return result.get(0);
 	}
 
 	@Override
@@ -156,7 +156,7 @@ public class AWSQueue implements IQueue {
 			}});
 		}
 		for (BatchResultErrorEntry msg : responseBatch.failed()) {
-			logger.error(String.format("SendMessage '%s' was rejected by AWS SQS server", msg.id()));
+			logger.error(String.format("SendMessage '%s' was rejected by AWS SQS server %s", msg.id(), msg.message()));
 			sendMessageResultList.add(new SendMessageResult() {{
 				setMessageId(msg.id());
 				setMessageSentStatus(SendMessageResult.FAILED);
@@ -218,12 +218,42 @@ public class AWSQueue implements IQueue {
 
 	@Override
 	public DeleteMessageResult deleteMessage(String messageHandleId) {
-		return null;
+		return deleteMessagesImpl(Arrays.asList(messageHandleId), new MessageQueueOptions()).get(0);
 	}
 
 	@Override
-	public List<DeleteMessageResult> deleteMessages(List<String> messageHandleId, MessageQueueOptions messageQueueOptions) {
-		return null;
+	public List<DeleteMessageResult> deleteMessages(List<String> messageHandleIds, MessageQueueOptions messageQueueOptions) {
+		return deleteMessagesImpl(messageHandleIds, messageQueueOptions);
+	}
+
+	private List<DeleteMessageResult> deleteMessagesImpl(List<String> messageHandleIds, MessageQueueOptions messageQueueOptions) {
+		List<DeleteMessageResult> deleteMessageResults = new ArrayList<>();
+
+		List<DeleteMessageBatchRequestEntry> deleteMessageEntries = new ArrayList<>();
+		for (String msgId: messageHandleIds) {
+
+		}
+		DeleteMessageBatchRequest.Builder deleteMessageRequest = DeleteMessageBatchRequest.builder()
+			.queueUrl(queueURL)
+			.entries(deleteMessageEntries);
+
+		DeleteMessageBatchResponse deleteMessageBatchResponse = sqsClient.deleteMessageBatch(deleteMessageRequest.build());
+
+		for (DeleteMessageBatchResultEntry msg:deleteMessageBatchResponse.successful()) {
+			deleteMessageResults.add(new DeleteMessageResult() {{
+				setMessageId(msg.id());
+				setMessageDeleteStatus(DeleteMessageResult.DELETED);
+			}});
+		}
+
+		for (BatchResultErrorEntry msg:deleteMessageBatchResponse.failed()) {
+			logger.error(String.format("DeleteMessage '%s' was rejected by AWS SQS server: %s", msg.id(), msg.message()));
+			deleteMessageResults.add(new DeleteMessageResult() {{
+				setMessageId(msg.id());
+				setMessageDeleteStatus(DeleteMessageResult.FAILED);
+			}});
+		}
+		return  deleteMessageResults;
 	}
 
 	@Override
@@ -238,38 +268,3 @@ public class AWSQueue implements IQueue {
 		return false;
 	}
 }
-
-
-/*
-	@Override
-	public SendMessageResult sendMessage(SimpleQueueMessage simpleQueueMessage) {
-		Map<String, MessageAttributeValue> msgProps = new HashMap<>();
-		for (int i = 0; i < simpleQueueMessage.getMessageAttributes().count(); i++) {
-			GXProperty prop = simpleQueueMessage.getMessageAttributes().item(i);
-			MessageAttributeValue msgAtt = MessageAttributeValue.builder()
-				.stringValue(prop.getValue())
-				.dataType("String")
-				.build();
-
-			msgProps.put(prop.getKey(), msgAtt);
-		}
-
-		SendMessageRequest.Builder sendMessageRequestBuilder = SendMessageRequest.builder()
-			.queueUrl(queueURL)
-			.messageBody(simpleQueueMessage.getMessageBody())
-			.messageAttributes(msgProps);
-
-		if (isFIFO) {
-			sendMessageRequestBuilder.messageDeduplicationId(simpleQueueMessage.getMessageId());
-		}
-
-		SendMessageResponse sqsMessageResponse = sqsClient.sendMessage(sendMessageRequestBuilder.build());
-
-		SendMessageResult result = new SendMessageResult() {{
-			setMessageId(simpleQueueMessage.getMessageId());
-			setMessageServerId(sqsMessageResponse.messageId());
-			setMessageSentStatus(SendMessageResult.SENT);
-		}};
-
-		return result;
-	}*/
