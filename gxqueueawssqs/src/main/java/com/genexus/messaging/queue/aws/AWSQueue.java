@@ -11,6 +11,7 @@ import com.genexus.services.ServiceSettingsReader;
 import com.genexus.util.GXProperties;
 import com.genexus.util.GXProperty;
 import com.genexus.util.GXService;
+import org.apache.commons.lang.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -110,8 +111,10 @@ public class AWSQueue implements IQueue {
 		List<SendMessageResult> sendMessageResultList = new ArrayList<>();
 		List<SendMessageBatchRequestEntry> entryList = new ArrayList<>();
 
-		for (SimpleQueueMessage msg : simpleQueueMessages) {
+		if (simpleQueueMessages.size() == 0)
+			return sendMessageResultList;
 
+		for (SimpleQueueMessage msg : simpleQueueMessages) {
 			Map<String, MessageAttributeValue> msgProps = new HashMap<>();
 			for (int i = 0; i < msg.getMessageAttributes().count(); i++) {
 				GXProperty prop = msg.getMessageAttributes().item(i);
@@ -156,7 +159,7 @@ public class AWSQueue implements IQueue {
 			}});
 		}
 		for (BatchResultErrorEntry msg : responseBatch.failed()) {
-			logger.error(String.format("SendMessage '%s' was rejected by AWS SQS server %s", msg.id(), msg.message()));
+			logger.error(String.format("SendMessage '%s' was rejected by AWS SQS server. Message: %s", msg.id(), msg.message()));
 			sendMessageResultList.add(new SendMessageResult() {{
 				setMessageId(msg.id());
 				setMessageSentStatus(SendMessageResult.FAILED);
@@ -186,6 +189,8 @@ public class AWSQueue implements IQueue {
 		}
 		if (messageQueueOptions.isReceiveMessageAttributes()) {
 			receiveMessageRequest.messageAttributeNames("All");
+			receiveMessageRequest.attributeNamesWithStrings("All");
+
 		}
 
 		ReceiveMessageResponse receiveMessageResponse = sqsClient.receiveMessage(receiveMessageRequest.build());
@@ -213,25 +218,37 @@ public class AWSQueue implements IQueue {
 			messageAtts.add(entry.getKey(), entry.getValue());
 		}
 
+		for (Map.Entry<String, MessageAttributeValue> entry : response.messageAttributes().entrySet()) {
+			messageAtts.add(entry.getKey(), entry.getValue().stringValue());
+		}
+
 		return simpleQueueMessage;
 	}
 
 	@Override
 	public DeleteMessageResult deleteMessage(String messageHandleId) {
-		return deleteMessagesImpl(Arrays.asList(messageHandleId), new MessageQueueOptions()).get(0);
+		if (messageHandleId.length() == 0)
+			return new DeleteMessageResult();
+		return deleteMessagesImpl(Arrays.asList(messageHandleId)).get(0);
 	}
 
 	@Override
-	public List<DeleteMessageResult> deleteMessages(List<String> messageHandleIds, MessageQueueOptions messageQueueOptions) {
-		return deleteMessagesImpl(messageHandleIds, messageQueueOptions);
+	public List<DeleteMessageResult> deleteMessages(List<String> messageHandleIds) {
+		return deleteMessagesImpl(messageHandleIds);
 	}
 
-	private List<DeleteMessageResult> deleteMessagesImpl(List<String> messageHandleIds, MessageQueueOptions messageQueueOptions) {
+	private List<DeleteMessageResult> deleteMessagesImpl(List<String> messageHandleIds) {
+		if (messageHandleIds.size() == 0)
+			return new ArrayList<>();
+
 		List<DeleteMessageResult> deleteMessageResults = new ArrayList<>();
 
 		List<DeleteMessageBatchRequestEntry> deleteMessageEntries = new ArrayList<>();
 		for (String msgId: messageHandleIds) {
-
+			deleteMessageEntries.add(DeleteMessageBatchRequestEntry.builder()
+				.id(java.util.UUID.randomUUID().toString())
+				.receiptHandle(msgId)
+				.build());
 		}
 		DeleteMessageBatchRequest.Builder deleteMessageRequest = DeleteMessageBatchRequest.builder()
 			.queueUrl(queueURL)
@@ -247,7 +264,7 @@ public class AWSQueue implements IQueue {
 		}
 
 		for (BatchResultErrorEntry msg:deleteMessageBatchResponse.failed()) {
-			logger.error(String.format("DeleteMessage '%s' was rejected by AWS SQS server: %s", msg.id(), msg.message()));
+			logger.error(String.format("DeleteMessage '%s' was rejected by AWS SQS server: Message: %s", msg.id(), msg.message()));
 			deleteMessageResults.add(new DeleteMessageResult() {{
 				setMessageId(msg.id());
 				setMessageDeleteStatus(DeleteMessageResult.FAILED);

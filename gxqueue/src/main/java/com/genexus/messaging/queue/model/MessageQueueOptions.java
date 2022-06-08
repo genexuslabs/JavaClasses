@@ -1,7 +1,7 @@
 package com.genexus.messaging.queue.model;
 
 public class MessageQueueOptions {
-	private short maxNumberOfMessages;
+	private int maxNumberOfMessages;
 	private boolean deleteConsumedMessages;
 	private int waitTimeout;
 	private int visibilityTimeout;
@@ -10,11 +10,11 @@ public class MessageQueueOptions {
 	private String receiveRequestAttemptId = "";
 	private boolean receiveMessageAttributes;
 
-	public short getMaxNumberOfMessages() {
+	public int getMaxNumberOfMessages() {
 		return maxNumberOfMessages;
 	}
 
-	public void setMaxNumberOfMessages(short maxNumberOfMessages) {
+	public void setMaxNumberOfMessages(int maxNumberOfMessages) {
 		this.maxNumberOfMessages = maxNumberOfMessages;
 	}
 

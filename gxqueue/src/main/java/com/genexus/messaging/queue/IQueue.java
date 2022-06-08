@@ -15,6 +15,6 @@ public interface IQueue {
 	List<SimpleQueueMessage> getMessages(MessageQueueOptions messageQueueOptions);
 	DeleteMessageResult deleteMessage(String messageHandleId);
 
-	List<DeleteMessageResult> deleteMessages(List<String> messageHandleId, MessageQueueOptions messageQueueOptions);
+	List<DeleteMessageResult> deleteMessages(List<String> messageHandleId);
 	boolean purge();
 }
