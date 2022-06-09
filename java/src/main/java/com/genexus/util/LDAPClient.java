@@ -1,5 +1,8 @@
 package com.genexus.util;
 
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
+
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -15,7 +18,7 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 public class LDAPClient {
-	private static final boolean DEBUG = com.genexus.DebugFlag.DEBUG;
+	private static final ILogger logger = LogManager.getLogger(LDAPClient.class);
   String ldapHost;
   int port;
   String authentication;
@@ -90,11 +93,8 @@ public class LDAPClient {
         ctx = new InitialDirContext(env);
       }
       catch (NamingException e) {
-      	if (DEBUG)
-      	{
-        	System.err.println(e);
-        }
-        return 0;
+		  logger.error("Error in connect", e);
+		  return 0;
       }
 
       return 1;
@@ -109,10 +109,7 @@ public class LDAPClient {
     }
     catch (NamingException e)
     {
-    	if (DEBUG)
-    	{
-      	System.err.println(e);
-      }
+      	logger.error("Error in disconnect", e);
     }
   }
 
@@ -142,15 +139,15 @@ public class LDAPClient {
         Attribute resultAtt = resultAtts.get(attName);
         if (resultAtt==null)
         {
-        	if (DEBUG)
-        	{
-	          System.err.println("Attribute " + attName + " not found");
+			if (logger.isErrorEnabled())
+			{
+	          logger.error("Attribute " + attName + " not found");
 	          NamingEnumeration validAtts = resultAtts.getIDs();
-	          System.err.println("Valid attributes are:");
+	          logger.error("Valid attributes are:");
 	          while (validAtts.hasMoreElements())
 	          {
 	            String validAtt = (String) validAtts.next();
-	            System.err.print(" " + validAtt);
+	            logger.error(" " + validAtt);
 	          }
 	        }
         }
@@ -165,11 +162,8 @@ public class LDAPClient {
     }
     catch(NamingException e)
     {
-    	if (DEBUG)
-    	{
-      	System.err.println(e);
-      }
-      return strResult;
+		logger.error("Error in getAttribute", e);
+		return strResult;
     }
   }
 }

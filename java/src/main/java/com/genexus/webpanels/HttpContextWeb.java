@@ -890,8 +890,6 @@ public class HttpContextWeb extends HttpContext {
 
 			if (path.trim().length() > 0)
 				cookie.setPath(path.trim());
-			else
-				cookie.setPath("/");
 
 			if (!expiry.equals(CommonUtil.nullDate())) {
 				long expiryTime = ((expiry.getTime() - new Date().getTime()) / 1000);
