@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import com.genexus.specific.java.Connect;
 import com.genexus.webpanels.GXObjectUploadServices;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Test;
@@ -58,6 +59,8 @@ public class JerseyAwsProxyTest {
 
     @Before
     public void setUpStreams() {
+		Connect.init();
+
         try {
             System.setProperty("LAMBDA_TASK_ROOT", ".");
             l = new LambdaHandler();

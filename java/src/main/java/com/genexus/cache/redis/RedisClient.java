@@ -7,9 +7,9 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import org.apache.commons.lang.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -79,7 +79,11 @@ public class RedisClient implements ICacheService2, Closeable {
 		pool = new JedisPool(new JedisPoolConfig(), host, port, redis.clients.jedis.Protocol.DEFAULT_TIMEOUT, password);
 
 		objMapper = new ObjectMapper();
-		objMapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
+		objMapper
+			.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
+			.setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE)
+			.setVisibility(PropertyAccessor.SETTER, JsonAutoDetect.Visibility.NONE)
+			.setVisibility(PropertyAccessor.CREATOR, JsonAutoDetect.Visibility.NONE);
 		objMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 		objMapper.enable(SerializationFeature.INDENT_OUTPUT);
 	}
