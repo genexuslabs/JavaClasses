@@ -2,6 +2,7 @@ package com.genexus.db.driver;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -44,6 +45,9 @@ public interface GXDBMS
 	void commit(Connection con) throws SQLException;
 	void rollback(Connection con) throws SQLException;
 	ResultSet executeQuery(PreparedStatement stmt, boolean hold) throws SQLException;
+	int executeUpdate(PreparedStatement stmt) throws SQLException;
+	boolean execute(PreparedStatement stmt) throws SQLException;
+	int[] executeBatch(Statement stmt) throws SQLException;
 
 	void setDatabaseName(String dbName);
 	String getDatabaseName();
