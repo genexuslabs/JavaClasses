@@ -265,6 +265,12 @@
 			<version>10.2.0.jre8</version>
 			<scope>runtime</scope>
 		</dependency>		
+    <dependency>
+			<groupId>com.dameng</groupId>
+			<artifactId>DmJdbcDriver18</artifactId>
+			<version>8.1.2.79</version>
+			<scope>runtime</scope>
+		</dependency>		
     </dependencies>
 	
 	<build>
