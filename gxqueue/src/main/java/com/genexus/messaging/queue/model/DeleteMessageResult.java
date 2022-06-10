@@ -1,17 +1,18 @@
 package com.genexus.messaging.queue.model;
 
 public class DeleteMessageResult extends MessageId {
-	public static int FAILED = 2;
-	public static int DELETED = 1;
-	public static int PENDING = 0;
+	public static String DELETED = "Deleted";
+	public static String FAILED = "Failed";
+	public static String SENT = "Sent";
+	public static String UNKNOWN = "Unknown";
 
-	private int messageDeleteStatus = PENDING;
+	private String messageDeleteStatus = UNKNOWN;
 
-	public int getMessageDeleteStatus() {
+	public String getMessageDeleteStatus() {
 		return messageDeleteStatus;
 	}
 
-	public void setMessageDeleteStatus(int messageDeleteStatus) {
+	public void setMessageDeleteStatus(String messageDeleteStatus) {
 		this.messageDeleteStatus = messageDeleteStatus;
 	}
 }

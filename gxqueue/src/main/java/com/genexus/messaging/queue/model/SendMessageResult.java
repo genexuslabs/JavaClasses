@@ -1,21 +1,18 @@
 package com.genexus.messaging.queue.model;
 
-import com.genexus.util.GXProperties;
-
 public class SendMessageResult extends MessageId {
-	public static int FAILED = 2;
-	public static int SENT = 1;
-	public static int PENDING = 0;
+	public static String DELETED = "Deleted";
+	public static String FAILED = "Failed";
+	public static String SENT = "Sent";
+	public static String UNKNOWN = "Unknown";
 
-	private int messageSentStatus = PENDING;
+	private String messageSentStatus = UNKNOWN;
 
-	public int getMessageSentStatus() {
+	public String getMessageSentStatus() {
 		return messageSentStatus;
 	}
 
-	public void setMessageSentStatus(int messageSentStatus) {
+	public void setMessageSentStatus(String messageSentStatus) {
 		this.messageSentStatus = messageSentStatus;
 	}
 }
-
-

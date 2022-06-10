@@ -11,7 +11,6 @@ import com.genexus.services.ServiceSettingsReader;
 import com.genexus.util.GXProperties;
 import com.genexus.util.GXProperty;
 import com.genexus.util.GXService;
-import org.apache.commons.lang.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;

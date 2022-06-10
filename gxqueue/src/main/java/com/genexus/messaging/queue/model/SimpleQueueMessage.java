@@ -8,7 +8,6 @@ public class SimpleQueueMessage {
 	private GXProperties messageAttributes = new GXProperties();
 	private String messageHandleId;
 
-
 	public String getMessageId() {
 		return messageId;
 	}
