@@ -79,7 +79,7 @@ public final class GXCallableStatement extends GXPreparedStatement implements Ca
 
 	public void registerOutParameter(int parameterIndex, int sqlType) throws SQLException
 	{
-		if (con.getDBMS().getId() == GXDBMS.DBMS_ORACLE && sqlType == Types.BIT)
+		if ((con.getDBMS().getId() == GXDBMS.DBMS_ORACLE || con.getDBMS().getId() == GXDBMS.DBMS_DAMENG) && sqlType == Types.BIT)
 		{
 			sqlType = PLSQL_BOOLEAN;
 		}
