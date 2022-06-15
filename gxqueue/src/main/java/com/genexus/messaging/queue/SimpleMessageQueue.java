@@ -1,34 +1,25 @@
 package com.genexus.messaging.queue;
 
-
 import com.genexus.*;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.messaging.queue.model.DeleteMessageResult;
-import com.genexus.messaging.queue.model.MessageId;
 import com.genexus.messaging.queue.model.SendMessageResult;
 import com.genexus.messaging.queue.model.SimpleQueueMessage;
 import com.genexusmessaging.genexusmessagingqueue.simplequeue.SdtMessage;
 import com.genexusmessaging.genexusmessagingqueue.simplequeue.SdtMessageResult;
 
-import java.lang.reflect.Constructor;
-
 public class SimpleMessageQueue {
 	private IQueue queue;
 	private static ILogger logger = LogManager.getLogger(SimpleMessageQueue.class);
 
-	private static String SDT_MESSAGE_CLASS_NAME = "SdtMessage";
-	private static String SDT_MESSAGEPROPERTY_CLASS_NAME = "SdtMessageProperty";
-	private static String SDT_MESSAGERESULT_CLASS_NAME = "SdtMessageResult";
-	private static String NAMESPACE = "GeneXus.Programs.genexusmessagingqueue.simplequeue";
-
-
-	public SimpleMessageQueue() {
+	public SimpleMessageQueue()
+	{
 
 	}
 
-	public SimpleMessageQueue(SimpleMessageQueue other) {
-		queue = other.queue;
+	public SimpleMessageQueue(IQueue queueProvider) {
+		queue = queueProvider;
 	}
 
 	void validQueue() throws Exception {
@@ -76,10 +67,8 @@ public class SimpleMessageQueue {
 			sendMessageResult = queue.sendMessage(queueMessage);
 			success[0] = true;
 			return Convert.toSdtMessageResult(sendMessageResult);
-
 		} catch (Exception ex) {
 			queueErrorMessagesSetup(ex, errorMessages);
-
 			logger.error("Could not send queue message", ex);
 		}
 
@@ -107,14 +96,8 @@ public class SimpleMessageQueue {
 	protected void queueErrorMessagesSetup(Exception ex, GXBaseCollection<SdtMessages_Message> messages) {
 		if (messages != null && ex != null) {
 			StructSdtMessages_Message struct = new StructSdtMessages_Message();
-			/*if (provider!=null && provider.getMessageFromException(ex, struct)) {
-				struct.setDescription(ex.getMessage());
-				struct.setType((byte) 1); //error
-				SdtMessages_Message msg = new SdtMessages_Message(struct);
-				messages.add(msg);
-			} else {
-				GXutil.ErrorToMessages("Storage Error", ex.getClass()+" " +ex.getMessage(), messages);
-			}*/
+			struct.setType((byte)1);
+			struct.setDescription(ex.getMessage());
 		}
 	}
 

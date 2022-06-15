@@ -5,7 +5,7 @@ import com.genexus.xml.*;
 
 import java.util.*;
 
-public class SdtMessageOptions extends GxUserType {
+public final class SdtMessageOptions extends GxUserType {
 	protected byte gxTv_SdtMessageOptions_N;
 	protected short gxTv_SdtMessageOptions_Maxnumberofmessages;
 	protected int gxTv_SdtMessageOptions_Waittimeout;

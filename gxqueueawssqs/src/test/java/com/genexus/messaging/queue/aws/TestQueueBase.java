@@ -1,6 +1,7 @@
 package com.genexus.messaging.queue.aws;
 
 import com.genexus.messaging.queue.IQueue;
+import com.genexus.messaging.queue.SimpleMessageQueue;
 import com.genexus.messaging.queue.model.DeleteMessageResult;
 import com.genexus.messaging.queue.model.MessageQueueOptions;
 import com.genexus.messaging.queue.model.SimpleQueueMessage;
@@ -23,6 +24,7 @@ public abstract class TestQueueBase {
 	public abstract String getProviderName();
 
 	public abstract IQueue getQueue() throws ServiceConfigurationException;
+	public abstract SimpleMessageQueue getQueueWrapper() throws ServiceConfigurationException;
 
 	@Before
 	public void beforeEachTestMethod() {
@@ -90,6 +92,23 @@ public abstract class TestQueueBase {
 		Assert.assertNotEquals("", sendResult.getMessageId());
 		Assert.assertNotEquals("", sendResult.getMessageServerId());
 	}
+
+	/*@Test
+	public void sendMessageWithFactoryQueue() {
+		try {
+			SimpleMessageQueue simpleQueue = getQueueWrapper();
+			simpleQueue.sendMessage(createMessage());
+
+		} catch (ServiceConfigurationException e) {
+			e.printStackTrace();
+		}
+
+		SendMessageResult sendResult = sendQueueMessage();
+		Assert.assertNotNull(sendResult);
+		Assert.assertEquals(SendMessageResult.SENT, sendResult.getMessageSentStatus());
+		Assert.assertNotEquals("", sendResult.getMessageId());
+		Assert.assertNotEquals("", sendResult.getMessageServerId());
+	}*/
 
 	@Test
 	public void sendMessageError() {
@@ -209,6 +228,11 @@ public abstract class TestQueueBase {
 	}
 
 	private SendMessageResult sendQueueMessage() {
+		SimpleQueueMessage msg = createMessage();
+		return queue.sendMessage(msg);
+	}
+
+	private SimpleQueueMessage createMessage() {
 		SimpleQueueMessage msg = new SimpleQueueMessage() {{
 			setMessageId("gx_" + java.util.UUID.randomUUID().toString());
 			setMessageBody("messageBody test");
@@ -218,6 +242,6 @@ public abstract class TestQueueBase {
 			getMessageAttributes().set("att4", "test4");
 			getMessageAttributes().set("att5", "test5");
 		}};
-		return queue.sendMessage(msg);
+		return msg;
 	}
 }

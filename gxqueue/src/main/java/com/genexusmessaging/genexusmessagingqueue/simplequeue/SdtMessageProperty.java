@@ -2,7 +2,7 @@ package com.genexusmessaging.genexusmessagingqueue.simplequeue;
 
 import com.genexus.*;
 
-public class SdtMessageProperty extends GxUserType {
+public final class SdtMessageProperty extends GxUserType {
 	protected byte gxTv_SdtMessageProperty_N;
 	protected String gxTv_SdtMessageProperty_Propertykey;
 	protected String gxTv_SdtMessageProperty_Propertyvalue;

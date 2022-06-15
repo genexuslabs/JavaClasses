@@ -1,7 +1,7 @@
 package com.genexus.messaging.queue;
 
 import com.genexus.GXBaseCollection;
-import com.genexus.ModelContext;
+
 import com.genexus.messaging.queue.model.SendMessageResult;
 import com.genexus.messaging.queue.model.SimpleQueueMessage;
 import com.genexus.util.GXProperties;
@@ -9,8 +9,6 @@ import com.genexus.util.GXProperty;
 import com.genexusmessaging.genexusmessagingqueue.simplequeue.SdtMessage;
 import com.genexusmessaging.genexusmessagingqueue.simplequeue.SdtMessageProperty;
 import com.genexusmessaging.genexusmessagingqueue.simplequeue.SdtMessageResult;
-
-import java.util.ArrayList;
 
 public class Convert {
 
@@ -37,10 +35,10 @@ public class Convert {
 		GXBaseCollection<SdtMessageProperty> props = new GXBaseCollection<SdtMessageProperty>();
 		for (int i = 0; i < msgProps.count(); i++) {
 			GXProperty propertyItem = msgProps.item(i);
-			props.add(new SdtMessageProperty() {{
-				setgxTv_SdtMessageProperty_Propertykey(propertyItem.getKey());
-				setgxTv_SdtMessageProperty_Propertyvalue(propertyItem.getValue());
-			}});
+			SdtMessageProperty msgProperty = new SdtMessageProperty();
+			msgProperty.setgxTv_SdtMessageProperty_Propertykey(propertyItem.getKey());
+			msgProperty.setgxTv_SdtMessageProperty_Propertyvalue(propertyItem.getValue());
+			props.add(msgProperty);
 		}
 		return props;
 	}

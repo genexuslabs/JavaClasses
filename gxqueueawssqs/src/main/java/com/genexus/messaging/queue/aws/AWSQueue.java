@@ -7,10 +7,8 @@ import com.genexus.messaging.queue.model.MessageQueueOptions;
 import com.genexus.messaging.queue.model.SendMessageResult;
 
 import com.genexus.services.ServiceConfigurationException;
-import com.genexus.services.ServiceSettingsReader;
 import com.genexus.util.GXProperties;
 import com.genexus.util.GXProperty;
-import com.genexus.util.GXService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -29,11 +27,6 @@ public class AWSQueue implements IQueue {
 
 	private SqsClient sqsClient;
 
-	public static String ACCESS_KEY = "ACCESS_KEY";
-	public static String SECRET_ACCESS_KEY = "SECRET_KEY";
-	public static String REGION = "REGION";
-	public static String QUEUE_URL = "QUEUE_URL";
-
 	private String accessKey;
 	private String secret;
 	private String awsRegion;
@@ -43,24 +36,24 @@ public class AWSQueue implements IQueue {
 	private static String MESSSAGE_GROUP_ID = "MessageGroupId";
 	private static String MESSSAGE_DEDUPLICATION_ID = "MessageDeduplicationId";
 
-	public AWSQueue() throws ServiceConfigurationException {
-		initialize(new GXService());
+	public AWSQueue(String queueUrl) throws ServiceConfigurationException {
+		initialize(null, queueURL);
 	}
 
-	public AWSQueue(GXService service) throws ServiceConfigurationException {
-		initialize(service);
+	public AWSQueue(AWSBasicCredentials credentials, String queueUrl) throws ServiceConfigurationException {
+		initialize(credentials, queueUrl);
 	}
 
-	private void initialize(GXService providerService) throws ServiceConfigurationException {
-		ServiceSettingsReader serviceSettings = new ServiceSettingsReader("QUEUE", Name, providerService);
+	private void initialize(AWSBasicCredentials credentials, String queueUrl) throws ServiceConfigurationException {
+		queueURL = queueUrl;
 
-		queueURL = serviceSettings.getEncryptedPropertyValue(QUEUE_URL, "");
-		accessKey = serviceSettings.getEncryptedPropertyValue(ACCESS_KEY, "");
-		secret = serviceSettings.getEncryptedPropertyValue(SECRET_ACCESS_KEY, "");
-		awsRegion = serviceSettings.getEncryptedPropertyValue(REGION, "");
-		isFIFO = queueURL.endsWith(".fifo");
-
-		boolean bUseIAM = !serviceSettings.getPropertyValue("USE_IAM", "", "").isEmpty() || (accessKey.equals("") && secret.equals(""));
+		boolean bUseIAM = credentials == null;
+		if (!bUseIAM) {
+			accessKey = credentials.getAccessKeyId();
+			secret = credentials.getSecretKey();
+			awsRegion = credentials.getRegion();
+			isFIFO = queueURL.endsWith(".fifo");
+		}
 
 		if (bUseIAM) {
 			sqsClient = SqsClient.builder()

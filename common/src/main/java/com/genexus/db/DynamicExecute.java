@@ -439,7 +439,8 @@ nextMethod:
 		{
 			//Application.printWarning("java.lang.reflect.InvocationTargetException Can't execute dynamic call " + className + " - " + e.getTargetException().getMessage(), e);
 			//return false;
-			throw new RuntimeException("java.lang.reflect.InvocationTargetException Can't execute dynamic call " + className + " - " + e.getTargetException().getMessage());
+			e.printStackTrace();
+			throw new RuntimeException("java.lang.reflect.InvocationTargetException Can't execute dynamic call " + className + " - " + e.getTargetException().getMessage(), e);
 		}
 		catch (InstantiationException e)
 		{

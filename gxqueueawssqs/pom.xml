@@ -57,6 +57,9 @@
                             <Build-Path>${basedir}</Build-Path>
                         </manifestEntries>
                     </archive>
+                    <excludes>
+                        <exclude>**/com/genexusmessaging/**</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>
