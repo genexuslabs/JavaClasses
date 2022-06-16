@@ -2,13 +2,18 @@ package com.genexus.messaging.queue;
 
 import com.genexus.GXBaseCollection;
 
+import com.genexus.messaging.queue.model.DeleteMessageResult;
+import com.genexus.messaging.queue.model.MessageQueueOptions;
 import com.genexus.messaging.queue.model.SendMessageResult;
 import com.genexus.messaging.queue.model.SimpleQueueMessage;
 import com.genexus.util.GXProperties;
 import com.genexus.util.GXProperty;
 import com.genexusmessaging.genexusmessagingqueue.simplequeue.SdtMessage;
+import com.genexusmessaging.genexusmessagingqueue.simplequeue.SdtMessageOptions;
 import com.genexusmessaging.genexusmessagingqueue.simplequeue.SdtMessageProperty;
 import com.genexusmessaging.genexusmessagingqueue.simplequeue.SdtMessageResult;
+
+import java.util.List;
 
 public class Convert {
 
@@ -22,6 +27,18 @@ public class Convert {
 			}
 		}};
 	}
+
+	protected static MessageQueueOptions toMessageQueueOptions(SdtMessageOptions receiveOptions) {
+		MessageQueueOptions mqOptions = new MessageQueueOptions() {{
+			setMaxNumberOfMessages(receiveOptions.getgxTv_SdtMessageOptions_Maxnumberofmessages());
+			setWaitTimeout(receiveOptions.getgxTv_SdtMessageOptions_Waittimeout());
+			setTimetoLive(receiveOptions.getgxTv_SdtMessageOptions_Timetolive());
+			setDelaySeconds(receiveOptions.getgxTv_SdtMessageOptions_Delayseconds());
+			setVisibilityTimeout(receiveOptions.getgxTv_SdtMessageOptions_Visibilitytimeout());
+		}};
+		return mqOptions;
+	}
+
 
 	protected static SdtMessageResult toSdtMessageResult(SendMessageResult mResult) {
 		SdtMessageResult r = new SdtMessageResult();
@@ -50,4 +67,26 @@ public class Convert {
 		}
 		return props;
 	}
+
+	public static SdtMessage toSdtMessage(SimpleQueueMessage simpleQueueMessage) {
+		SdtMessage msg = new SdtMessage();
+		msg.setgxTv_SdtMessage_Messageattributes(toSdtMessagePropertyCollection(simpleQueueMessage.getMessageAttributes()));
+		msg.setgxTv_SdtMessage_Messagehandleid(simpleQueueMessage.getMessageHandleId());
+		msg.setgxTv_SdtMessage_Messageid(simpleQueueMessage.getMessageId());
+		msg.setgxTv_SdtMessage_Messagebody(simpleQueueMessage.getMessageBody());
+		return msg;
+	}
+
+	public static GXBaseCollection<SdtMessageResult> toDeleteExternalMessageResultList(List<DeleteMessageResult> deletedMessages) {
+		GXBaseCollection<SdtMessageResult> externalList = new GXBaseCollection<>();
+		for (DeleteMessageResult deletedMessage : deletedMessages) {
+			SdtMessageResult sdtMessageResult = new SdtMessageResult();
+			sdtMessageResult.setgxTv_SdtMessageResult_Messageid(deletedMessage.getMessageId());
+			sdtMessageResult.setgxTv_SdtMessageResult_Servermessageid(deletedMessage.getMessageServerId());
+			sdtMessageResult.setgxTv_SdtMessageResult_Messagestatus(deletedMessage.getMessageDeleteStatus());
+			externalList.add(sdtMessageResult);
+		}
+		return externalList;
+	}
+
 }

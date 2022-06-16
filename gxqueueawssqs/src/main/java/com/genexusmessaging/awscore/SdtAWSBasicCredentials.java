@@ -1,4 +1,5 @@
 package com.genexusmessaging.awscore;
+
 import com.genexus.*;
 
 public final class SdtAWSBasicCredentials extends GxUserType {
@@ -7,7 +8,6 @@ public final class SdtAWSBasicCredentials extends GxUserType {
 	protected String gxTv_SdtAWSBasicCredentials_Accesskey;
 	protected String gxTv_SdtAWSBasicCredentials_Secretkey;
 	protected String gxTv_SdtAWSBasicCredentials_Region;
-
 
 	public SdtAWSBasicCredentials() {
 		this(new ModelContext(SdtAWSBasicCredentials.class));
@@ -21,7 +21,6 @@ public final class SdtAWSBasicCredentials extends GxUserType {
 								  ModelContext context) {
 		super(remoteHandle, context, "SdtAWSBasicCredentials");
 	}
-
 
 	public String getgxTv_SdtAWSBasicCredentials_Accesskey() {
 		return gxTv_SdtAWSBasicCredentials_Accesskey;

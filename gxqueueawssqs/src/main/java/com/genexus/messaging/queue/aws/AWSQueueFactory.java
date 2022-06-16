@@ -17,15 +17,15 @@ public class AWSQueueFactory {
 	public SimpleMessageQueue connect(GxUserType awsBasicCredentials, String queueURL, GXBaseCollection<SdtMessages_Message>[] errorMessagesArr, boolean[] success) {
 		GXBaseCollection<SdtMessages_Message> errMessages = errorMessagesArr[0];
 		AWSBasicCredentials credentials = new AWSBasicCredentials() {{
-			setAccessKeyId(((SdtAWSBasicCredentials)awsBasicCredentials).getgxTv_SdtAWSBasicCredentials_Accesskey());
-			setSecretKey(((SdtAWSBasicCredentials)awsBasicCredentials).getgxTv_SdtAWSBasicCredentials_Secretkey());
-			setRegion(((SdtAWSBasicCredentials)awsBasicCredentials).getgxTv_SdtAWSBasicCredentials_Region());
+			setAccessKeyId(((SdtAWSBasicCredentials) awsBasicCredentials).getgxTv_SdtAWSBasicCredentials_Accesskey());
+			setSecretKey(((SdtAWSBasicCredentials) awsBasicCredentials).getgxTv_SdtAWSBasicCredentials_Secretkey());
+			setRegion(((SdtAWSBasicCredentials) awsBasicCredentials).getgxTv_SdtAWSBasicCredentials_Region());
 		}};
 
 		try {
 			IQueue queueImpl = new AWSQueue(credentials, queueURL);
 			errMessages.clear();
-			success[0] = true;
+			success[0] = queueURL.length() > 0;
 			return new SimpleMessageQueue(queueImpl);
 
 		} catch (ServiceConfigurationException e) {
@@ -40,7 +40,7 @@ public class AWSQueueFactory {
 		try {
 			IQueue queueImpl = new AWSQueue(queueURL);
 			errMessages.clear();
-			success[0] = true;
+			success[0] = queueURL.length() > 0;
 			return new SimpleMessageQueue(queueImpl);
 
 		} catch (ServiceConfigurationException e) {

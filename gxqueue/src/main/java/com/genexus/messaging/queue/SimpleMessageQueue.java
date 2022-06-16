@@ -4,17 +4,24 @@ import com.genexus.*;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.messaging.queue.model.DeleteMessageResult;
+import com.genexus.messaging.queue.model.MessageQueueOptions;
 import com.genexus.messaging.queue.model.SendMessageResult;
 import com.genexus.messaging.queue.model.SimpleQueueMessage;
+import com.genexus.xml.GXXMLSerializable;
 import com.genexusmessaging.genexusmessagingqueue.simplequeue.SdtMessage;
+import com.genexusmessaging.genexusmessagingqueue.simplequeue.SdtMessageOptions;
 import com.genexusmessaging.genexusmessagingqueue.simplequeue.SdtMessageResult;
+import jakarta.mail.event.MailEvent;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class SimpleMessageQueue {
 	private IQueue queue;
 	private static ILogger logger = LogManager.getLogger(SimpleMessageQueue.class);
 
-	public SimpleMessageQueue()
-	{
+	public SimpleMessageQueue() {
 
 	}
 
@@ -28,7 +35,6 @@ public class SimpleMessageQueue {
 			throw new Exception("Queue was not instantiated.");
 		}
 	}
-
 
 	public void clear(GXBaseCollection<SdtMessages_Message>[] errorMessagesArr, boolean[] success) {
 		GXBaseCollection<SdtMessages_Message> errorMessages = errorMessagesArr[0];
@@ -55,48 +61,103 @@ public class SimpleMessageQueue {
 		return queueLength;
 	}
 
-	public GxUserType sendMessage(SdtMessage sdtMessage, GXBaseCollection<SdtMessages_Message>[] errorMessagesArr, boolean[] success) {
+	public SdtMessageResult sendMessage(SdtMessage sdtMessage, GXBaseCollection<SdtMessages_Message>[] errorMessagesArr, boolean[] success) {
+		GXBaseCollection<SdtMessage> messages = new GXBaseCollection<>();
+		messages.add(sdtMessage);
+		GXBaseCollection<SdtMessageResult> result = sendMessages(messages, new SdtMessageOptions(), errorMessagesArr, success);
+		return ((result.size() == 1) ? result.item(1) : Convert.toSdtMessageResult(new SendMessageResult()));
+	}
+
+	public GXBaseCollection<SdtMessageResult> sendMessages(GXBaseCollection<SdtMessage> sdtMessages, SdtMessageOptions msgOptions, GXBaseCollection<SdtMessages_Message>[] errorMessagesArr, boolean[] success) {
 		GXBaseCollection<SdtMessages_Message> errorMessages = errorMessagesArr[0];
+		List<SimpleQueueMessage> msgList = new ArrayList<>();
+		GXBaseCollection<SdtMessageResult> listReturn = new GXBaseCollection<>();
 		errorMessages.clear();
 
-		SendMessageResult sendMessageResult = new SendMessageResult();
-		errorMessages = new GXBaseCollection<SdtMessages_Message>();
-		SimpleQueueMessage queueMessage = Convert.toSimpleQueueMessage(sdtMessage);
+		for (SdtMessage m : sdtMessages) {
+			msgList.add(Convert.toSimpleQueueMessage(m));
+		}
+
 		try {
 			validQueue();
-			sendMessageResult = queue.sendMessage(queueMessage);
+			List<SendMessageResult> sendMessageResult = queue.sendMessages(msgList, Convert.toMessageQueueOptions(msgOptions));
 			success[0] = true;
-			return Convert.toSdtMessageResult(sendMessageResult);
+			for (SendMessageResult msgResult : sendMessageResult) {
+				listReturn.add(Convert.toSdtMessageResult(msgResult));
+			}
 		} catch (Exception ex) {
 			queueErrorMessagesSetup(ex, errorMessages);
 			logger.error("Could not send queue message", ex);
 		}
 
-		return Convert.toSdtMessageResult(sendMessageResult);
+		return listReturn;
 	}
 
-	public boolean deleteMessage(String messageHandleId, GXBaseCollection<SdtMessages_Message>[] errorMessagesArr, SdtMessageResult sdtDelete) {
+	public GXBaseCollection<SdtMessage> getMessages(GXBaseCollection<SdtMessages_Message>[] errorMessagesArr, boolean[] success) {
+		return getMessages(null, errorMessagesArr, success);
+	}
+
+	public GXBaseCollection<SdtMessage> getMessages(SdtMessageOptions receiveOptions, GXBaseCollection<SdtMessages_Message>[] errorMessagesArr, boolean[] success) {
+		GXBaseCollection<SdtMessages_Message> errorMessages = errorMessagesArr[0];
+
+		MessageQueueOptions mqOptions = (receiveOptions != null) ? Convert.toMessageQueueOptions(receiveOptions) : new MessageQueueOptions();
+		List<SimpleQueueMessage> receivedMessages = queue.getMessages(mqOptions);
+		GXBaseCollection<SdtMessage> receivedMessagesResult = new GXBaseCollection<>();
+		try {
+			validQueue();
+			for (SimpleQueueMessage m : receivedMessages) {
+				receivedMessagesResult.add(Convert.toSdtMessage(m));
+			}
+			success[0] = true;
+} catch (Exception ex) {
+	queueErrorMessagesSetup(ex, errorMessages);
+	logger.error(String.format("Could not get Messages from Queue"), ex);
+	}
+	return receivedMessagesResult;
+	}
+
+public SdtMessageResult deleteMessage(String messageHandleId, GXBaseCollection<SdtMessages_Message>[] errorMessagesArr, boolean[] success) {
+	GXBaseCollection<SdtMessages_Message> errorMessages = errorMessagesArr[0];
+	errorMessages.clear();
+	SdtMessageResult sdtDelete = new SdtMessageResult();
+	try {
+	validQueue();
+	DeleteMessageResult deletedMessage = queue.deleteMessage(messageHandleId);
+	sdtDelete.setgxTv_SdtMessageResult_Messageid(deletedMessage.getMessageId());
+	sdtDelete.setgxTv_SdtMessageResult_Servermessageid(deletedMessage.getMessageServerId());
+	sdtDelete.setgxTv_SdtMessageResult_Messagestatus(deletedMessage.getMessageDeleteStatus());
+	success[0] = true;
+	} catch (Exception ex) {
+	queueErrorMessagesSetup(ex, errorMessages);
+	logger.error(String.format("Could not delete Message '%s' from Queue ", messageHandleId), ex);
+	}
+	return sdtDelete;
+	}
+
+public GXBaseCollection<SdtMessageResult> deleteMessages(GXSimpleCollection<String> msgHandlesToDelete, GXBaseCollection<SdtMessages_Message>[] errorMessagesArr, boolean[] success) {
 		GXBaseCollection<SdtMessages_Message> errorMessages = errorMessagesArr[0];
 		errorMessages.clear();
 
 		try {
 			validQueue();
-			DeleteMessageResult deletedMessage = queue.deleteMessage(messageHandleId);
-			sdtDelete.setgxTv_SdtMessageResult_Messageid(deletedMessage.getMessageId());
-			sdtDelete.setgxTv_SdtMessageResult_Servermessageid(deletedMessage.getMessageServerId());
-			sdtDelete.setgxTv_SdtMessageResult_Messagestatus(deletedMessage.getMessageDeleteStatus());
-			return deletedMessage.getMessageDeleteStatus() == DeleteMessageResult.DELETED;
+			List<String> handles = new ArrayList<>();
+			for (String hnd:msgHandlesToDelete) {
+				handles.add(hnd);
+			}
+			List<DeleteMessageResult> deletedMessage = queue.deleteMessages(handles);
+			success[0] = true;
+			return Convert.toDeleteExternalMessageResultList(deletedMessage);
 		} catch (Exception ex) {
 			queueErrorMessagesSetup(ex, errorMessages);
-			logger.error(String.format("Could not delete Message '%s' from Queue ", messageHandleId), ex);
+			logger.error(String.format("Could not delete Messages from Queue "), ex);
 		}
-		return false;
+		return new GXBaseCollection<SdtMessageResult>();
 	}
 
 	protected void queueErrorMessagesSetup(Exception ex, GXBaseCollection<SdtMessages_Message> messages) {
 		if (messages != null && ex != null) {
 			StructSdtMessages_Message struct = new StructSdtMessages_Message();
-			struct.setType((byte)1);
+			struct.setType((byte) 1);
 			struct.setDescription(ex.getMessage());
 		}
 	}
