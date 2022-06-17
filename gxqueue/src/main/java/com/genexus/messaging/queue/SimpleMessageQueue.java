@@ -106,39 +106,39 @@ public class SimpleMessageQueue {
 				receivedMessagesResult.add(Convert.toSdtMessage(m));
 			}
 			success[0] = true;
-} catch (Exception ex) {
-	queueErrorMessagesSetup(ex, errorMessages);
-	logger.error(String.format("Could not get Messages from Queue"), ex);
-	}
-	return receivedMessagesResult;
-	}
-
-public SdtMessageResult deleteMessage(String messageHandleId, GXBaseCollection<SdtMessages_Message>[] errorMessagesArr, boolean[] success) {
-	GXBaseCollection<SdtMessages_Message> errorMessages = errorMessagesArr[0];
-	errorMessages.clear();
-	SdtMessageResult sdtDelete = new SdtMessageResult();
-	try {
-	validQueue();
-	DeleteMessageResult deletedMessage = queue.deleteMessage(messageHandleId);
-	sdtDelete.setgxTv_SdtMessageResult_Messageid(deletedMessage.getMessageId());
-	sdtDelete.setgxTv_SdtMessageResult_Servermessageid(deletedMessage.getMessageServerId());
-	sdtDelete.setgxTv_SdtMessageResult_Messagestatus(deletedMessage.getMessageDeleteStatus());
-	success[0] = true;
-	} catch (Exception ex) {
-	queueErrorMessagesSetup(ex, errorMessages);
-	logger.error(String.format("Could not delete Message '%s' from Queue ", messageHandleId), ex);
-	}
-	return sdtDelete;
+		} catch (Exception ex) {
+			queueErrorMessagesSetup(ex, errorMessages);
+			logger.error(String.format("Could not get Messages from Queue"), ex);
+		}
+		return receivedMessagesResult;
 	}
 
-public GXBaseCollection<SdtMessageResult> deleteMessages(GXSimpleCollection<String> msgHandlesToDelete, GXBaseCollection<SdtMessages_Message>[] errorMessagesArr, boolean[] success) {
+	public SdtMessageResult deleteMessage(String messageHandleId, GXBaseCollection<SdtMessages_Message>[] errorMessagesArr, boolean[] success) {
+		GXBaseCollection<SdtMessages_Message> errorMessages = errorMessagesArr[0];
+		errorMessages.clear();
+		SdtMessageResult sdtDelete = new SdtMessageResult();
+		try {
+			validQueue();
+			DeleteMessageResult deletedMessage = queue.deleteMessage(messageHandleId);
+			sdtDelete.setgxTv_SdtMessageResult_Messageid(deletedMessage.getMessageId());
+			sdtDelete.setgxTv_SdtMessageResult_Servermessageid(deletedMessage.getMessageServerId());
+			sdtDelete.setgxTv_SdtMessageResult_Messagestatus(deletedMessage.getMessageDeleteStatus());
+			success[0] = true;
+		} catch (Exception ex) {
+			queueErrorMessagesSetup(ex, errorMessages);
+			logger.error(String.format("Could not delete Message '%s' from Queue ", messageHandleId), ex);
+		}
+		return sdtDelete;
+	}
+
+	public GXBaseCollection<SdtMessageResult> deleteMessages(GXSimpleCollection<String> msgHandlesToDelete, GXBaseCollection<SdtMessages_Message>[] errorMessagesArr, boolean[] success) {
 		GXBaseCollection<SdtMessages_Message> errorMessages = errorMessagesArr[0];
 		errorMessages.clear();
 
 		try {
 			validQueue();
 			List<String> handles = new ArrayList<>();
-			for (String hnd:msgHandlesToDelete) {
+			for (String hnd : msgHandlesToDelete) {
 				handles.add(hnd);
 			}
 			List<DeleteMessageResult> deletedMessage = queue.deleteMessages(handles);
