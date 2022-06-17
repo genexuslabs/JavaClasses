@@ -94,6 +94,9 @@ public final class ModelContext extends AbstractModelContext
         }
 
         SpecificImplementation.Application.setContextClassName(this.packageClass);
+
+		if (threadModelContext.get() == null)
+			threadModelContext.set(this);
         try
         {
             this.staticContentBase = getClientPreferences().getWEB_IMAGE_DIR();
@@ -106,8 +109,6 @@ public final class ModelContext extends AbstractModelContext
         }
         if (httpContext != null)
             httpContext.setStaticContentBase(staticContentBase);
-        if (threadModelContext.get() == null)
-            threadModelContext.set(this);
     }
 
     public ModelContext(ModelContext modelContext)
