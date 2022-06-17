@@ -1018,13 +1018,18 @@ public class HttpContextWeb extends HttpContext {
 
 	public void sendError(int error) {
 		try {
-			setHeader("Content-Encoding", "text/html");
+			disableResponseEncoding();
 			response.sendError(error);
 		} catch (Exception e) {
 			log.error("Error " + error, e);
 		}
 	}
 
+	private void disableResponseEncoding() {
+		if (compressed) {
+			setHeader("Content-Encoding", "identity");
+		}
+	}
 	public void setQueryString(String qs) {
 		loadParameters(qs);
 	}
