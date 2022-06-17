@@ -335,6 +335,10 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 					return Connection.TRANSACTION_READ_COMMITTED;
 				case 0:
 					return Connection.TRANSACTION_READ_UNCOMMITTED;
+				case 2:
+					return Connection.TRANSACTION_REPEATABLE_READ;
+				case 3:
+					return Connection.TRANSACTION_SERIALIZABLE;
 				default:
 					System.err.println("Invalid isolation level " + gxIL);
 					return Connection.TRANSACTION_NONE;
