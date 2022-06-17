@@ -46,6 +46,9 @@
 		<module>gxwebsocketjakarta</module>
 		<module>gxawsserverless</module>
 		<module>androidreports</module>
+        <module>gxqueue</module>
+        <module>gxqueueawssqs</module>
+        <module>gxqueueazure</module>
     </modules>
 
 	<licenses>
