@@ -41,6 +41,7 @@ public class SimpleMessageQueue {
 			success[0] = queue.purge();
 		} catch (Exception ex) {
 			queueErrorMessagesSetup(ex, errorMessages);
+			logger.error("Could not clear queue", ex);
 		}
 		success[0] = false;
 	}
@@ -54,6 +55,7 @@ public class SimpleMessageQueue {
 			queueLength = queue.getQueueLength().shortValue();
 		} catch (Exception ex) {
 			queueErrorMessagesSetup(ex, errorMessages);
+			logger.error("Could not getQueueLength", ex);
 		}
 		return queueLength;
 	}
