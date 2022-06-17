@@ -7,14 +7,11 @@ import com.genexus.messaging.queue.model.DeleteMessageResult;
 import com.genexus.messaging.queue.model.MessageQueueOptions;
 import com.genexus.messaging.queue.model.SendMessageResult;
 import com.genexus.messaging.queue.model.SimpleQueueMessage;
-import com.genexus.xml.GXXMLSerializable;
 import com.genexusmessaging.genexusmessagingqueue.simplequeue.SdtMessage;
 import com.genexusmessaging.genexusmessagingqueue.simplequeue.SdtMessageOptions;
 import com.genexusmessaging.genexusmessagingqueue.simplequeue.SdtMessageResult;
-import jakarta.mail.event.MailEvent;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class SimpleMessageQueue {

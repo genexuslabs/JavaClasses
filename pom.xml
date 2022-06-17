@@ -44,8 +44,8 @@
 		<module>gxawsserverless</module>
 		<module>androidreports</module>
         <module>gxqueue</module>
-        <module>gxqueueawssqs</module>
-        <module>gxqueueazure</module>
+        <module>QueueProviders/gxqueueawssqs</module>
+        <module>QueueProviders/gxqueueazure</module>
     </modules>
 
 	<licenses>

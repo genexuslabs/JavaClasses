@@ -1,9 +1,6 @@
 package com.genexusmessaging.genexusmessagingqueue.simplequeue;
 
 import com.genexus.*;
-import com.genexus.xml.*;
-
-import java.util.*;
 
 public final class SdtMessageOptions extends GxUserType {
 	protected byte gxTv_SdtMessageOptions_N;
