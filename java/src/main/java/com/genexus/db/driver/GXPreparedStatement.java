@@ -704,7 +704,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 				if	( (realLength > 0  && con.getDBMS().useStreamsInLongVarchar()    ) ||
 				      (realLength == 0 && con.getDBMS().useStreamsInNullLongVarchar()))
 				{
-					if(con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+					if(con.getDBMS().getId() == GXDBMS.DBMS_ORACLE || con.getDBMS().getId() == GXDBMS.DBMS_DAMENG)
 					{ // Con Oracle no funciona bien el setAsciiStream con caracteres con tildes o eñes, etc
 					  // así que usamos un setUnicodeStream
 						try
