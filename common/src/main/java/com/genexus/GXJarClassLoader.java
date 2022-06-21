@@ -1,12 +1,14 @@
 
 package com.genexus;
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
+
 import java.io.*;
 import java.util.*;
 import java.util.zip.*;
 
 public class GXJarClassLoader extends ClassLoader
 {
-	private static final boolean DEBUG = DebugFlag.DEBUG;
     private String source;
 	private ZipFile zipFile = null;
     private boolean sourceIsJAR;
@@ -15,6 +17,8 @@ public class GXJarClassLoader extends ClassLoader
     private long jarTimeStamp = 0;
     private boolean autoReload;
     private int loadDepth; // Esta variable mantiene un depth de intentos de lectura del Zip
+
+	private static final ILogger logger = LogManager.getLogger(GXJarClassLoader.class);
     
     /** El Nombre esta medio mal, porque el GXJarClassLoader obtiene las clases de un JAR o 
      * de una directorio base
@@ -30,8 +34,7 @@ public class GXJarClassLoader extends ClassLoader
         sourceIsJAR = new File(source).isFile();
         loadDepth = 0;
         if(!autoReload)openJar();
-        if(DEBUG)
-            System.out.println("## GXJarClassLoader: Initialized (autoReloading: " + autoReload + ")");
+		logger.debug("## GXJarClassLoader: Initialized (autoReloading: " + autoReload + ")");
 	}
     
     /** Obtiene el ClassLoader asociado. En efecto lo que hace es retornarse a s� mismo en el
@@ -45,8 +48,7 @@ public class GXJarClassLoader extends ClassLoader
             return this;
         else 
 		{
-			if	(DEBUG)
-                System.out.println("## GXJarClassLoader: Changed classes detected ..." );
+            logger.debug("## GXJarClassLoader: Changed classes detected ..." );
         	return new GXJarClassLoader(source, autoReload);
 		}
     }
@@ -134,8 +136,7 @@ public class GXJarClassLoader extends ClassLoader
             try
             {
                 result = this.getClass().getClassLoader().loadClass(className);
-                if(DEBUG)
-                    System.out.println("## GXJarClassLoader: Loading ParentClass: " + className);
+				logger.debug("## GXJarClassLoader: Loading ParentClass: " + className);
                 return result;
             }catch(Throwable e) { ; }            
          	throw new ClassNotFoundException(className);
@@ -168,8 +169,7 @@ public class GXJarClassLoader extends ClassLoader
 		byte[] result = null;
 		className = className.replace('.', '/') + ".class";
 
-        if(DEBUG)
-            System.out.println("## GXJarClassLoader: Loading class: " + className + " [" + source + "]");
+        logger.debug("## GXJarClassLoader: Loading class: " + className + " [" + source + "]");
         try
         {
             if(sourceIsJAR)

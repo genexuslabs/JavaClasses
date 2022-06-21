@@ -162,4 +162,8 @@ public class AndroidLogger implements ILogger {
 	public boolean isDebugEnabled() {
 		return true;
 	}
+
+	public boolean isErrorEnabled()  {
+		return true;
+	};
 }

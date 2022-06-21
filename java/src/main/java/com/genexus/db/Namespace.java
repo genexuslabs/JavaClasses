@@ -94,7 +94,7 @@ public class Namespace extends AbstractNamespace
 									iniFile.getProperty(section, "MULTI_JDBC_DATASOURCE_PROC", ""),
 									iniFile.getProperty(section, "JDBC_DATASOURCE", ""),
 									iniFile.getIntegerProperty(section, "MAX_CURSOR", "100"),
-									iniFile.getProperty(section, "ISOLATION_LEVEL", "CR").equals("CR")?1:0,
+									getIsolationLevel(iniFile, section),
 									iniFile.getProperty(section, "XBASE_TINT", "1").equals("1"),
 									iniFile.getProperty(section, "DBMS", "sqlserver"),
 									iniFile.getProperty(section, "CS_SCHEMA", ""),
@@ -157,6 +157,19 @@ public class Namespace extends AbstractNamespace
 		//Enable JMX
 		if (Application.isJMXEnabled())
 			NamespaceJMX.CreateNamespaceJMX(this);
+	}
+
+	private int getIsolationLevel(IniFile iniFile, String section)
+	{
+		String isolationLevel = iniFile.getProperty(section, "ISOLATION_LEVEL", "CR");
+		switch (isolationLevel)
+		{
+			case "UR" : return 0;
+			case "CR" : return 1;
+			case "RR" : return 2;
+			case "SE"  : return 3;
+		}
+		return 0;
 	}
 
 	public static Namespace createNamespace(ModelContext context)
