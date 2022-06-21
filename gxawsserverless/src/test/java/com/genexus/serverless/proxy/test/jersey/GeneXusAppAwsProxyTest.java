@@ -24,6 +24,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genexus.cloud.serverless.aws.LambdaHandler;
+import com.genexus.specific.java.Connect;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -37,22 +38,25 @@ import static org.junit.Assert.*;
  * Unit test class for the Jersey AWS_PROXY default implementation
  */
 public class GeneXusAppAwsProxyTest {
-	private static final String CUSTOM_HEADER_KEY = "x-custom-header";
-	private static final String CUSTOM_HEADER_VALUE = "my-custom-value";
 
-	private ResourceConfig app;
-	private LambdaHandler l;
+    private static final String CUSTOM_HEADER_KEY = "x-custom-header";
+    private static final String CUSTOM_HEADER_VALUE = "my-custom-value";
 
-	@Before
-	public void setUpStreams() {
-		try {
-			System.setProperty("LAMBDA_TASK_ROOT", ".");
-			l = new LambdaHandler();
-			handler = LambdaHandler.handler;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+    private ResourceConfig app;
+    private LambdaHandler l;
+
+    @Before
+    public void setUpStreams() {
+		Connect.init();
+
+        try {
+            System.setProperty("LAMBDA_TASK_ROOT", ".");
+            l = new LambdaHandler();
+            handler = LambdaHandler.handler;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 	public GeneXusAppAwsProxyTest() {
 

@@ -6,7 +6,7 @@
 
 	<groupId>com.genexus</groupId>
 	<artifactId>parent</artifactId>
-	<version>2.6-SNAPSHOT</version>
+	<version>2.7-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>GeneXus Standard Classes (Parent)</name>
@@ -19,6 +19,7 @@
         <jersey.jakarta.version>3.0.1</jersey.jakarta.version>
         <jackson.version>2.13.2</jackson.version>
         <junit.version>4.13.2</junit.version>
+        <software.awssdk.version>2.17.213</software.awssdk.version>
 	</properties>
 
     <modules>
