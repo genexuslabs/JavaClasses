@@ -39,24 +39,24 @@ import static org.junit.Assert.*;
  */
 public class GeneXusAppAwsProxyTest {
 
-    private static final String CUSTOM_HEADER_KEY = "x-custom-header";
-    private static final String CUSTOM_HEADER_VALUE = "my-custom-value";
+	private static final String CUSTOM_HEADER_KEY = "x-custom-header";
+	private static final String CUSTOM_HEADER_VALUE = "my-custom-value";
 
-    private ResourceConfig app;
-    private LambdaHandler l;
+	private ResourceConfig app;
+	private LambdaHandler l;
 
-    @Before
-    public void setUpStreams() {
+	@Before
+	public void setUpStreams() {
 		Connect.init();
 
-        try {
-            System.setProperty("LAMBDA_TASK_ROOT", ".");
-            l = new LambdaHandler();
-            handler = LambdaHandler.handler;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+		try {
+			System.setProperty("LAMBDA_TASK_ROOT", ".");
+			l = new LambdaHandler();
+			handler = LambdaHandler.handler;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	public GeneXusAppAwsProxyTest() {
 

@@ -55,8 +55,7 @@ public class TestLambdaEventBridgeHandler {
 		Exception thrown = null;
 		try {
 			String result = handler.handleRequest(createEvent(), new MockContext());
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			thrown = e;
 		}
 		Assert.assertNotNull(thrown);
