@@ -704,7 +704,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 				if	( (realLength > 0  && con.getDBMS().useStreamsInLongVarchar()    ) ||
 				      (realLength == 0 && con.getDBMS().useStreamsInNullLongVarchar()))
 				{
-					if(con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+					if(con.getDBMS().getId() == GXDBMS.DBMS_ORACLE || con.getDBMS().getId() == GXDBMS.DBMS_DAMENG)
 					{ // Con Oracle no funciona bien el setAsciiStream con caracteres con tildes o eñes, etc
 					  // así que usamos un setUnicodeStream
 						try
@@ -1372,13 +1372,16 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 	{
 		if	(fileName != null && !fileName.trim().equals("") && !fileName.toLowerCase().trim().endsWith("about:blank"))
 		{
-			if(con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+			if(con.getDBMS().getId() == GXDBMS.DBMS_ORACLE || con.getDBMS().getId() == GXDBMS.DBMS_DAMENG)
 			{
 				try
 				{
 					File file = new File(fileName);
 					BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file));
-					((GXDBMSoracle7)con.getDBMS()).setBlobData(blob, inputStream, (int) file.length());
+					if(con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+						((GXDBMSoracle7)con.getDBMS()).setBlobData(blob, inputStream, (int) file.length());
+					else
+						((GXDBMSdameng)con.getDBMS()).setBlobData(blob, inputStream, (int) file.length());
 					inputStream.close();
 				}
 				catch (Exception e)
