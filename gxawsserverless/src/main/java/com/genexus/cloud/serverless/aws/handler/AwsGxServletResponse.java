@@ -1,4 +1,4 @@
-package com.genexus.cloud.serverless.aws;
+package com.genexus.cloud.serverless.aws.handler;
 
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 
