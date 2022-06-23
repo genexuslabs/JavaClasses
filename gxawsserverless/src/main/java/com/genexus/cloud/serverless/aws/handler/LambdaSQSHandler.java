@@ -40,7 +40,7 @@ public class LambdaSQSHandler extends LambdaBaseEventHandler implements RequestH
 			logger.debug(String.format("Processing sqsEvent Message: %s", sqsItem.getMessageId()));
 			EventMessage msg = new EventMessage();
 			msg.setMessageId(sqsItem.getMessageId());
-			msg.setMessageSourceType(EventMessageSourceType.QueueMessage);
+			msg.setMessageSourceType(EventMessageSourceType.QUEUE_MESSAGE);
 			msg.setMessageDate(new Date());
 			msg.setMessageData(sqsItem.getBody());
 			List<EventMessageProperty> msgAtts = msg.getMessageProperties();

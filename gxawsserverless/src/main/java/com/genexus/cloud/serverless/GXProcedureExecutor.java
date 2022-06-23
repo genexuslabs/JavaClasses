@@ -19,16 +19,14 @@ import java.util.Optional;
 public class GXProcedureExecutor {
 	protected Class<GXProcedure> entryPointClass;
 
-	private ModelContext modelContext;
 	private Class<?>[][] supportedMethodSignatures = new Class<?>[5][];
 	private int methodSignatureIdx = -1;
 
 	protected static final String MESSAGE_COLLECTION_INPUT_CLASS_NAME = "com.genexus.genexusserverlessapi.SdtEventMessages";
 	protected static final String MESSAGE_OUTPUT_COLLECTION_CLASS_NAME = "com.genexus.genexusserverlessapi.SdtEventMessageResponse";
 
-	public GXProcedureExecutor(String procedureClassName) throws ClassNotFoundException, NotImplementedException {
-		entryPointClass = (Class<GXProcedure>) Class.forName(procedureClassName);
-
+	public GXProcedureExecutor(Class entryPointClassParms) throws ClassNotFoundException, NotImplementedException {
+		entryPointClass = entryPointClassParms;
 		supportedMethodSignatures[0] = new Class<?>[]{Class.forName(MESSAGE_COLLECTION_INPUT_CLASS_NAME), Class.forName(MESSAGE_OUTPUT_COLLECTION_CLASS_NAME)};
 		supportedMethodSignatures[1] = new Class<?>[]{String.class, Class.forName(MESSAGE_OUTPUT_COLLECTION_CLASS_NAME)};
 		supportedMethodSignatures[2] = new Class<?>[]{String.class};
@@ -38,7 +36,7 @@ public class GXProcedureExecutor {
 		Optional<Method> executeMethodOpt = Arrays.stream(this.entryPointClass.getDeclaredMethods()).filter(m -> m.getName() == DynamicExecute.METHOD_EXECUTE).findFirst();
 
 		if (!executeMethodOpt.isPresent()) {
-			throw new NotImplementedException(String.format("EXECUTE Method not implemented on Class '%s'", procedureClassName));
+			throw new NotImplementedException(String.format("EXECUTE Method not implemented on Class '%s'", entryPointClass.getName()));
 		}
 
 		Method executeMethod = executeMethodOpt.get();

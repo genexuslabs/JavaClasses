@@ -36,20 +36,6 @@ public final class SdtEventCustomPayload_CustomPayloadItem extends GxUserType {
 		return (String) mapper.get(value);
 	}
 
-	public void tojson() {
-		tojson(true);
-	}
-
-	public void tojson(boolean includeState) {
-		tojson(includeState, true);
-	}
-
-	public void tojson(boolean includeState,
-					   boolean includeNonInitialized) {
-		AddObjectProperty("PropertyId", gxTv_SdtEventCustomPayload_CustomPayloadItem_Propertyid, false, false);
-		AddObjectProperty("PropertyValue", gxTv_SdtEventCustomPayload_CustomPayloadItem_Propertyvalue, false, false);
-	}
-
 	public String getgxTv_SdtEventCustomPayload_CustomPayloadItem_Propertyid() {
 		return gxTv_SdtEventCustomPayload_CustomPayloadItem_Propertyid;
 	}

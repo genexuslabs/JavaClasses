@@ -35,7 +35,7 @@ public class LambdaFunctionConfigurationHelper {
 			config.setEntryPointClassName(System.getenv(ENTRY_POINT_CLASS_NAME_VAR));
 		}
 
-		if (config == null || !config.isValidConfiguration()) {
+		if (!config.isValidConfiguration()) {
 			throw new FunctionConfigurationException(String.format("Please check function configuration. Either file '%s' should be present, or '%s' Environment Variable must be defined", FUNCTION_CONFIG_PATH, ENTRY_POINT_CLASS_NAME_VAR));
 		}
 		return config;

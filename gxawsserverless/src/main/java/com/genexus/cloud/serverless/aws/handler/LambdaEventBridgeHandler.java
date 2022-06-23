@@ -2,15 +2,14 @@ package com.genexus.cloud.serverless.aws.handler;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genexus.cloud.serverless.Helper;
 import com.genexus.cloud.serverless.exception.FunctionRuntimeException;
 import com.genexus.cloud.serverless.model.EventMessage;
 import com.genexus.cloud.serverless.model.EventMessageResponse;
 import com.genexus.cloud.serverless.model.EventMessageSourceType;
 import com.genexus.cloud.serverless.model.EventMessages;
-import com.genexus.webpanels.WebUtils;
 import json.org.json.JSONObject;
+import org.apache.http.client.utils.DateUtils;
 
 import java.util.Map;
 
@@ -27,9 +26,8 @@ public class LambdaEventBridgeHandler extends LambdaBaseEventHandler implements 
 	@Override
 	public String handleRequest(Map<String, Object> stringObjectMap, Context context) {
 		String jsonEventRaw = Helper.toJSONString(stringObjectMap);
-		if (logger.isDebugEnabled()) {
-			logger.debug("handleRequest started with event: " + jsonEventRaw);
-		}
+
+		logger.debug("handleRequest started with event: " + jsonEventRaw);
 
 		String errorMessage;
 		EventMessageResponse response;
@@ -37,9 +35,9 @@ public class LambdaEventBridgeHandler extends LambdaBaseEventHandler implements 
 		try {
 			EventMessages msgs = new EventMessages();
 			EventMessage msgItem = new EventMessage();
-			msgItem.setMessageSourceType(EventMessageSourceType.ServiceBusMessage);
+			msgItem.setMessageSourceType(EventMessageSourceType.SERVICE_BUS_MESSAGE);
 			if (stringObjectMap.containsKey("time")) {
-				msgItem.setMessageDate(WebUtils.parseDTimeParm(stringObjectMap.get("time").toString()));
+				msgItem.setMessageDate(DateUtils.parseDate(stringObjectMap.get("time").toString()));
 			}
 			msgItem.setMessageId(stringObjectMap.getOrDefault("id", "").toString());
 			if (stringObjectMap.containsKey("detail")) {
