@@ -58,11 +58,7 @@ public class LambdaBaseEventHandler {
 			throw e;
 		}
 
-		if (entryPointClass == null) {
-			throw new ClassNotFoundException(String.format("GeneXus Procedure '%s' was not found. Check deployment package ", functionConfiguration.getEntryPointClassName()));
-		}
-
-		executor = new GXProcedureExecutor(functionConfiguration.getEntryPointClassName());
+		executor = new GXProcedureExecutor(entryPointClass);
 	}
 
 	protected EventMessageResponse dispatchEvent(EventMessages eventMessages, String lambdaRawMessageBody) throws Exception {

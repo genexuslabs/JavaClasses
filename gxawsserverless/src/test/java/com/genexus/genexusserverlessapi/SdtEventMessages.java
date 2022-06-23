@@ -36,21 +36,6 @@ public final class SdtEventMessages extends GxUserType {
 		return (String) mapper.get(value);
 	}
 
-	public void tojson() {
-		tojson(true);
-	}
-
-	public void tojson(boolean includeState) {
-		tojson(includeState, true);
-	}
-
-	public void tojson(boolean includeState,
-					   boolean includeNonInitialized) {
-		if (gxTv_SdtEventMessages_Eventmessage != null) {
-			AddObjectProperty("EventMessage", gxTv_SdtEventMessages_Eventmessage, false, false);
-		}
-	}
-
 	public GXBaseCollection<com.genexus.genexusserverlessapi.SdtEventMessage> getgxTv_SdtEventMessages_Eventmessage() {
 		if (gxTv_SdtEventMessages_Eventmessage == null) {
 			gxTv_SdtEventMessages_Eventmessage = new GXBaseCollection<com.genexus.genexusserverlessapi.SdtEventMessage>(com.genexus.genexusserverlessapi.SdtEventMessage.class, "EventMessage", "ServerlessAPI", remoteHandle);

@@ -24,50 +24,8 @@ public final class SdtEventMessage extends GxUserType {
 
 	private static java.util.HashMap mapper = new java.util.HashMap();
 
-	static {
-	}
-
 	public String getJsonMap(String value) {
 		return (String) mapper.get(value);
-	}
-
-	public void tojson() {
-		tojson(true);
-	}
-
-	public void tojson(boolean includeState) {
-		tojson(includeState, true);
-	}
-
-	public void tojson(boolean includeState,
-					   boolean includeNonInitialized) {
-		AddObjectProperty("EventMessageId", gxTv_SdtEventMessage_Eventmessageid, false, false);
-		datetime_STZ = gxTv_SdtEventMessage_Eventmessagedate;
-		sDateCnv = "";
-		sNumToPad = GXutil.trim(GXutil.str(GXutil.year(datetime_STZ), 10, 0));
-		sDateCnv += GXutil.substring("0000", 1, 4 - GXutil.len(sNumToPad)) + sNumToPad;
-		sDateCnv += "-";
-		sNumToPad = GXutil.trim(GXutil.str(GXutil.month(datetime_STZ), 10, 0));
-		sDateCnv += GXutil.substring("00", 1, 2 - GXutil.len(sNumToPad)) + sNumToPad;
-		sDateCnv += "-";
-		sNumToPad = GXutil.trim(GXutil.str(GXutil.day(datetime_STZ), 10, 0));
-		sDateCnv += GXutil.substring("00", 1, 2 - GXutil.len(sNumToPad)) + sNumToPad;
-		sDateCnv += "T";
-		sNumToPad = GXutil.trim(GXutil.str(GXutil.hour(datetime_STZ), 10, 0));
-		sDateCnv += GXutil.substring("00", 1, 2 - GXutil.len(sNumToPad)) + sNumToPad;
-		sDateCnv += ":";
-		sNumToPad = GXutil.trim(GXutil.str(GXutil.minute(datetime_STZ), 10, 0));
-		sDateCnv += GXutil.substring("00", 1, 2 - GXutil.len(sNumToPad)) + sNumToPad;
-		sDateCnv += ":";
-		sNumToPad = GXutil.trim(GXutil.str(GXutil.second(datetime_STZ), 10, 0));
-		sDateCnv += GXutil.substring("00", 1, 2 - GXutil.len(sNumToPad)) + sNumToPad;
-		AddObjectProperty("EventMessageDate", sDateCnv, false, false);
-		AddObjectProperty("EventMessageSourceType", gxTv_SdtEventMessage_Eventmessagesourcetype, false, false);
-		AddObjectProperty("EventMessageData", gxTv_SdtEventMessage_Eventmessagedata, false, false);
-		AddObjectProperty("EventMessageVersion", gxTv_SdtEventMessage_Eventmessageversion, false, false);
-		if (gxTv_SdtEventMessage_Eventmessagecustompayload != null) {
-			AddObjectProperty("EventMessageCustomPayload", gxTv_SdtEventMessage_Eventmessagecustompayload, false, false);
-		}
 	}
 
 	public String getgxTv_SdtEventMessage_Eventmessageid() {
