@@ -33,7 +33,6 @@ public class Application
 	public static ILogger logger = LogManager.getLogger(Application.class);
 
 	public static boolean usingQueue = false;
-	private static final boolean DEBUG = DebugFlag.DEBUG;
 	public static java.lang.Object realMainProgram;
 	public static java.lang.Object nullObject = new Object();
 	private static final String UNKNOWN_CALLER = "<unknown>";
@@ -224,8 +223,7 @@ public class Application
 			{
 				if (ApplicationContext.getInstance().isMsgsToUI())
 				{
-					if	(DEBUG)
-						System.err.println("Exiting VM (1)...");
+					logger.debug("Exiting VM (1)...");
 
 					onExitCleanup();
 
@@ -256,8 +254,7 @@ public class Application
 		}
 			try
 			{
-				if	(DEBUG)
-					System.err.println("Exiting VM (2)...");
+				logger.debug("Exiting VM (2)...");
 
 				System.exit(0);
 			}

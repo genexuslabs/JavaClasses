@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="warn">
-  <Properties>
-    <Property name="logPath">logs</Property>
-  </Properties>
-  <Appenders>
-	<Console name="GeneXusDefaultLogger" target="SYSTEM_OUT">
-		<PatternLayout pattern="%p\t%d{ISO8601}\t%r\t%c\t[%t]\t%m%n"/>    
-	</Console>
-	
-  </Appenders>
-  <Loggers>
-    <Root level="OFF">
-    </Root>
-	<!-- For compatibility reasons. All GeneXus Standard Classes log goes to standard output unless Logging Property is enabled -->
-	<logger name="com.genexus" level="WARN" additivity="false">
-		<AppenderRef ref="GeneXusDefaultLogger"/>
-	</logger>
-    
-  </Loggers>
+    <Properties>
+        <Property name="logPath">logs</Property>
+    </Properties>
+    <Appenders>
+        <Console name="GeneXusDefaultLogger" target="SYSTEM_OUT">
+            <PatternLayout pattern="%p\t%d{ISO8601}\t%r\t%c\t[%t]\t%m%n"/>
+        </Console>
+
+    </Appenders>
+    <Loggers>
+        <Root level="DEBUG">
+        </Root>
+        <!-- For compatibility reasons. All GeneXus Standard Classes log goes to standard output unless Logging Property is enabled -->
+        <logger name="com.genexus" level="DEBUG" additivity="false">
+            <AppenderRef ref="GeneXusDefaultLogger"/>
+        </logger>
+
+    </Loggers>
 </Configuration>

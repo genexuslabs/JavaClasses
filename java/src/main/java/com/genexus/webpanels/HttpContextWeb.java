@@ -1018,13 +1018,18 @@ public class HttpContextWeb extends HttpContext {
 
 	public void sendError(int error) {
 		try {
-			setHeader("Content-Encoding", "text/html");
+			disableResponseEncoding();
 			response.sendError(error);
 		} catch (Exception e) {
 			log.error("Error " + error, e);
 		}
 	}
 
+	private void disableResponseEncoding() {
+		if (compressed) {
+			setHeader("Content-Encoding", "identity");
+		}
+	}
 	public void setQueryString(String qs) {
 		loadParameters(qs);
 	}
@@ -1476,6 +1481,7 @@ public class HttpContextWeb extends HttpContext {
 
 	public void flushStream() {
 		proxyCookieValues();
+
 		try {
 			if (buffered) {
 				// Esto en realidad cierra el ZipOutputStream, o el ByteOutputStream, no cierra
@@ -1485,6 +1491,7 @@ public class HttpContextWeb extends HttpContext {
 				// que se grabaron al bytearray
 				closeOutputStream();
 				IHttpServletResponse response = getResponse();
+
 				if (buffer != null && !response.isCommitted()) {
 					IServletOutputStream stream = response.getOutputStream();
 					response.setContentLength(buffer.size());
