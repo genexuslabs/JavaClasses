@@ -753,15 +753,15 @@ public class ExcelCells implements IExcelCells {
 	}
 
 	private void copyPropertiesStyle(HSSFCellStyle dest, HSSFCellStyle source) {
-		dest.setAlignment(source.getAlignmentEnum());
-		dest.setBorderBottom(source.getBorderBottomEnum());
-		dest.setBorderLeft(source.getBorderLeftEnum());
-		dest.setBorderTop(source.getBorderTopEnum());
+		dest.setAlignment(source.getAlignment());
+		dest.setBorderBottom(source.getBorderBottom());
+		dest.setBorderLeft(source.getBorderLeft());
+		dest.setBorderTop(source.getBorderTop());
 		dest.setBottomBorderColor(source.getBottomBorderColor());
 		dest.setDataFormat(source.getDataFormat());
 		dest.setFillBackgroundColor(source.getFillBackgroundColor());
 		dest.setFillForegroundColor(source.getFillForegroundColor());
-		dest.setFillPattern(source.getFillPatternEnum());
+		dest.setFillPattern(source.getFillPattern());
 		dest.setFont(pWorkbook.getFontAt(source.getFontIndexAsInt()));
 		dest.setHidden(source.getHidden());
 		dest.setIndention(source.getIndention());
@@ -770,7 +770,7 @@ public class ExcelCells implements IExcelCells {
 		dest.setRightBorderColor(source.getRightBorderColor());
 		dest.setRotation(source.getRotation());
 		dest.setTopBorderColor(source.getTopBorderColor());
-		dest.setVerticalAlignment(source.getVerticalAlignmentEnum());
+		dest.setVerticalAlignment(source.getVerticalAlignment());
 		dest.setWrapText(source.getWrapText());
 	}
 
