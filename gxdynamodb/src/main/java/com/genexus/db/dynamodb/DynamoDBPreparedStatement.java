@@ -52,6 +52,7 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 	private int _executeQuery(DynamoDBResultSet resultSet) throws SQLException
 	{
 		query.initializeParms(parms);
+		boolean isInsert = query.getQueryType() == QueryType.INS;
 		DynamoDbClient client = getClient();
 
 		HashMap<String, AttributeValue> values = new HashMap<>();
@@ -64,22 +65,44 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 			}
 		}
 
+		HashMap<String, AttributeValue> keyCondition = new HashMap<>();
+		HashMap<String, String> expressionAttributeNames = null;
+		HashSet<String> mappedNames = null;
+
 		for (Iterator<NameValuePair> it = query.getAssignAtts(); it.hasNext(); )
 		{
 			NameValuePair asg = it.next();
-			String name = trimSharp(asg.name);
+			String name = asg.name;
+			if(asg.name.startsWith("#"))
+			{
+				name = trimSharp(asg.name);
+				if (!isInsert)
+				{
+					if(expressionAttributeNames == null)
+					{
+						expressionAttributeNames = new HashMap<>();
+						mappedNames = new HashSet<>();
+					}
+					expressionAttributeNames.put(asg.name, name);
+					mappedNames.add(name);
+				}
+			}
 			String parmName = asg.value;
-			if(!DynamoDBHelper.addAttributeValue(name, values, query.getParm(parmName)))
+			if(!DynamoDBHelper.addAttributeValue(isInsert ? name : ":" + name, values, query.getParm(parmName)))
 				throw new SQLException(String.format("Cannot assign attribute value (name: %s)", parmName));
 		}
-		HashMap<String, AttributeValue> keyCondition = new HashMap<>();
-		HashMap<String, String> expressionAttributeNames = null;
 
 		String keyItemForUpd = query.getPartitionKey();
 		if(keyItemForUpd != null && keyItemForUpd.startsWith("#"))
 		{
-			expressionAttributeNames = new HashMap<>();
-			expressionAttributeNames.put(keyItemForUpd, keyItemForUpd.substring(1));
+			if(expressionAttributeNames == null)
+			{
+				expressionAttributeNames = new HashMap<>();
+				mappedNames = new HashSet<>();
+			}
+			String keyName = keyItemForUpd.substring(1);
+			expressionAttributeNames.put(keyItemForUpd, keyName);
+			mappedNames.add(keyName);
 		}
 
 		for (Iterator<String> it = Arrays.stream(query.selectList)
@@ -87,10 +110,14 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 			.map(IODataMap::getName).iterator(); it.hasNext(); )
 		{
 			if(expressionAttributeNames == null)
+			{
 				expressionAttributeNames = new HashMap<>();
+				mappedNames = new HashSet<>();
+			}
 			String mappedName = it.next();
 			String key = "#" + mappedName;
 			expressionAttributeNames.put(key, mappedName);
+			mappedNames.add(mappedName);
 		}
 
 		if(query.getQueryType() != QueryType.QUERY)
@@ -102,9 +129,10 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 				{
 					String varName = String.format(":%s", match.group(2));
 					String name = trimSharp(match.group(1));
-					if (!DynamoDBHelper.addAttributeValue(name, values, query.getParm(varName)))
+					AttributeValue value = DynamoDBHelper.toAttributeValue(query.getParm(varName));
+					if(value == null)
 						throw new SQLException(String.format("Cannot assign attribute value (name: %s)", varName));
-					keyCondition.put(name, values.get(name));
+					keyCondition.put(name, value);
 				}
 			}
 		}
@@ -197,9 +225,18 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 				UpdateItemRequest request = UpdateItemRequest.builder()
 					.tableName(query.tableName)
 					.key(keyCondition)
-					.attributeUpdates(toAttributeUpdates(keyCondition, values))
+					.updateExpression(toAttributeUpdates(keyCondition, values, mappedNames))
+					.conditionExpression(String.format("attribute_exists(%s)", keyItemForUpd))
+					.expressionAttributeNames(expressionAttributeNames)
+					.expressionAttributeValues(values)
 					.build();
-				client.updateItem(request);
+				try
+				{
+					client.updateItem(request);
+				}catch(ConditionalCheckFailedException recordNotFound)
+				{
+					return Cursor.EOF;
+				}
 				break;
 			}
 			case DLT:
@@ -226,20 +263,21 @@ public class DynamoDBPreparedStatement extends ServicePreparedStatement
 		return 0;
 	}
 
-	private HashMap<String, AttributeValueUpdate> toAttributeUpdates(HashMap<String, AttributeValue> keyConditions, HashMap<String, AttributeValue> values)
+	private String toAttributeUpdates(HashMap<String, AttributeValue> keyConditions, HashMap<String, AttributeValue> values, HashSet<String> mappedNames)
 	{
-		HashMap<String, AttributeValueUpdate> updates = new HashMap<>();
+		StringBuilder updateExpression = new StringBuilder();
 		for(Map.Entry<String, AttributeValue> item : values.entrySet())
 		{
-			if (!keyConditions.containsKey(item.getKey()) && !item.getKey().startsWith("AV"))
+			String keyName = item.getKey().substring(1);
+			if (!keyConditions.containsKey(keyName) && !keyName.startsWith("AV"))
 			{
-				updates.put(item.getKey(), AttributeValueUpdate.builder()
-					.value(item.getValue())
-					.action(AttributeAction.PUT)
-					.build());
+				if (mappedNames != null && mappedNames.contains(keyName))
+					keyName = "#" + keyName;
+				updateExpression.append(updateExpression.length() == 0 ? "SET " : ", ");
+				updateExpression.append(keyName).append(" = ").append(item.getKey());
 			}
 		}
-		return updates;
+		return updateExpression.toString();
 	}
 
 	private static String trimSharp(String name)

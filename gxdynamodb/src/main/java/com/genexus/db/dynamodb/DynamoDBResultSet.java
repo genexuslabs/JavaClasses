@@ -1,6 +1,7 @@
 package com.genexus.db.dynamodb;
 
 import com.genexus.CommonUtil;
+import com.genexus.ModelContext;
 import com.genexus.db.service.IOServiceContext;
 import com.genexus.db.service.ServiceResultSet;
 import software.amazon.awssdk.awscore.exception.AwsErrorDetails;
@@ -21,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
+import java.util.TimeZone;
 
 public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 {
@@ -31,7 +33,7 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 	}
 
 	@Override
-	public boolean next() throws SQLException
+	public boolean next()
 	{
 		try
 		{
@@ -100,7 +102,12 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 		.parseCaseInsensitive()
 		.append(DateTimeFormatter.ISO_LOCAL_DATE)
 		.optionalStart()
+		.optionalStart()
 		.appendLiteral('T')
+		.optionalEnd()
+		.optionalStart()
+		.appendLiteral(' ')
+		.optionalEnd()
 		.append(DateTimeFormatter.ISO_LOCAL_TIME)
 		.optionalStart()
 		.appendOffsetId()
@@ -110,34 +117,51 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 		.appendZoneRegionId()
 		.appendLiteral(']').toFormatter();
 
-	private static final DateTimeFormatter US_DATE_TIME_OR_DATE = DateTimeFormatter.ofPattern("M/d/yyyy[ HH:mm:ss]");
+	private static final DateTimeFormatter [] DATE_TIME_FORMATTERS = new DateTimeFormatter[]
+		{
+			DateTimeFormatter.ofPattern("M/d/yyyy[ H:mm:ss]"),
+			DateTimeFormatter.ofPattern("M/d/yyyy[ h:mm:ss a]"),
+			DateTimeFormatter.ofPattern("yyyy-M-d[ H:mm:ss.S]"),
+			DateTimeFormatter.ofPattern("yyyy-M-d[ H:mm:ss.S a]")
+		};
 
 	private Instant getInstant(int columnIndex)
 	{
 		String value = getString(columnIndex);
-		if(value == null)
+		if(value == null || value.trim().isEmpty())
 		{
 			lastWasNull = true;
 			return CommonUtil.nullDate().toInstant();
 		}
-		TemporalAccessor accessor;
+
+		TemporalAccessor accessor = null;
 
 		try
 		{
 			accessor = ISO_DATE_TIME_OR_DATE.parseBest(value, LocalDateTime::from, LocalDate::from);
 		}catch(DateTimeParseException dtpe)
 		{
-			try
+			for(DateTimeFormatter dateTimeFormatter:DATE_TIME_FORMATTERS)
 			{
-				accessor = US_DATE_TIME_OR_DATE.parseBest(value, LocalDateTime::from, LocalDate::from);
-			}catch(Exception e)
+				try
+				{
+					accessor = dateTimeFormatter.parseBest(value, LocalDateTime::from, LocalDate::from);
+					break;
+				}catch(Exception ignored){ }
+			}
+			if(accessor == null)
 			{
-				throw dtpe;
+				return CommonUtil.resetTime(CommonUtil.nullDate()).toInstant(); 
 			}
 		}
 
+
 		if(accessor instanceof  LocalDateTime)
-			return ((LocalDateTime) accessor).toInstant(ZoneOffset.UTC);
+		{
+			ModelContext ctx = ModelContext.getModelContext();
+			TimeZone tz = ctx != null ? ctx.getClientTimeZone() : TimeZone.getDefault();
+			return ((LocalDateTime) accessor).atZone(tz.toZoneId()).toInstant();
+		}
 		else return LocalDate.from(accessor).atStartOfDay().toInstant(ZoneOffset.UTC);
 	}
 
@@ -244,7 +268,7 @@ public class DynamoDBResultSet extends ServiceResultSet<AttributeValue>
 	}
 
 	@Override
-	public InputStream getBinaryStream(int columnIndex) throws SQLException
+	public InputStream getBinaryStream(int columnIndex)
 	{
 		AttributeValue value = getAttValue(columnIndex);
 		if(value != null)

@@ -7,6 +7,8 @@ import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +18,11 @@ public class DynamoDBHelper
 {
     public static AttributeValue toAttributeValue(VarValue var) throws SQLException
     {
+		if(var == null)
+			return null;
 		Object value = var.value;
+		if(value == null)
+			return null;
 		AttributeValue.Builder builder = AttributeValue.builder();
 		switch (var.type)
 		{
@@ -27,9 +33,10 @@ public class DynamoDBHelper
 			case Decimal:
 				return builder.n(value.toString()).build();
 			case Date:
+				return builder.s(((java.sql.Date) value).toLocalDate().toString()).build();
 			case DateTime:
 			case DateTime2:
-				return builder.s(value.toString()).build();
+				return builder.s(((Timestamp) value).toLocalDateTime().atOffset(ZoneOffset.UTC).toString()).build();
 			case Boolean:
 			case Byte:
 				return builder.bool((Boolean) value).build();
@@ -53,7 +60,7 @@ public class DynamoDBHelper
 			case Clob:
 			case Raw:
 			case Blob:
-				return value != null ? builder.b((SdkBytes) value).build() : builder.nul(true).build();
+				return builder.b((SdkBytes) value).build();
 			case Undefined:
 			case Image:
 			case DateAsChar:
@@ -73,12 +80,12 @@ public class DynamoDBHelper
 			return setToString(attValue.ns());
 		else if (!attValue.ss().isEmpty())
 			return setToString(attValue.ss());
+		else if(attValue.bool() != null)
+			return attValue.bool().toString();
 		else if (attValue.hasM())
 			return new JSONObject(convertToDictionary(attValue.m())).toString();
 		else if (attValue.hasL())
 			return new JSONArray(attValue.l().stream().map(DynamoDBHelper::getString).collect(Collectors.toList())).toString();
-		else if(attValue.bool() != null)
-			return attValue.bool().toString();
 		return null;
 	}
 
@@ -105,9 +112,7 @@ public class DynamoDBHelper
 		if (value != null)
 		{
 			values.put(parmName, value);
-			return true;
 		}
-		return false;
-
+		return true;
     }
 }
