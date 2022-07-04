@@ -1,5 +1,6 @@
 package com.genexus.cache.redis;
 
+import com.genexus.db.CacheValue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.genexus.specific.java.Connect;
@@ -10,6 +11,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 import java.net.URISyntaxException;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.Assume.assumeTrue;
 
@@ -95,16 +97,30 @@ public class TestRedisCacheClient {
 		Assert.assertNotNull("Redis instance could not be created", redis);
 
 		String cacheId = "TEST";
-		String cacheKey = "TEST_KEY";
+		String cacheKey = "TEST_KEY" + ThreadLocalRandom.current().nextInt();
 		String cacheValue = "KeyValue";
 		redis.set(cacheId, cacheKey, cacheValue);
 
 		String obtainedValue = redis.get(cacheId, cacheKey, String.class);
-
 		Assert.assertEquals(obtainedValue, cacheValue);
-
-
-
 	}
+
+	@Test
+	public void testSetCacheValueRedis()
+	{
+		Connect.init();
+
+		RedisClient redis = getRedisClient("", "");
+		Assert.assertNotNull("Redis instance could not be created", redis);
+
+		String cacheId = "TEST"+ ThreadLocalRandom.current().nextInt();
+		String cacheKey = "TEST_KEY" + ThreadLocalRandom.current().nextInt();
+		CacheValue c = new CacheValue("SELECT * FROM User;", new Object[] { 1, 2, 3});
+		c.addItem(123);
+		redis.set(cacheId, cacheKey, c);
+		CacheValue obtainedValue = redis.get(cacheId, cacheKey, CacheValue.class);
+		Assert.assertNotNull(obtainedValue);
+	}
+
 
 }

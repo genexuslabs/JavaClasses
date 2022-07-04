@@ -241,7 +241,7 @@ public class ExcelCells implements IExcelCellRange {
     public BigDecimal getValue() throws ExcelException {
         BigDecimal value = new BigDecimal(0);
         try {
-            CellType cType = pCells[1].getCellTypeEnum();
+            CellType cType = pCells[1].getCellType();
             switch (cType) {
                 case FORMULA:
                     String type = getFormulaType();
@@ -657,7 +657,7 @@ public class ExcelCells implements IExcelCellRange {
                         // System.out.println("Automatic color.");
 
                         if ((red + green + blue) != 0) {
-                            newColor = new XSSFColor(new java.awt.Color(red, green, blue));
+                            newColor = new XSSFColor(new java.awt.Color(red, green, blue), new DefaultIndexedColorMap());
 
                             newFont = (XSSFFont) pWorkbook.createFont();
                             copyPropertiesFont(newFont, fontCell);
@@ -675,7 +675,7 @@ public class ExcelCells implements IExcelCellRange {
                             byte[] triplet = fontColor.getRGB();
 
                             if (triplet[0] != red || triplet[1] != green || triplet[2] != blue) {
-                                newColor = new XSSFColor(new java.awt.Color(red, green, blue));
+                                newColor = new XSSFColor( new java.awt.Color(red, green, blue), new DefaultIndexedColorMap());
 
                                 newFont = (XSSFFont) pWorkbook.createFont();
                                 copyPropertiesFont(newFont, fontCell);
@@ -930,7 +930,7 @@ public class ExcelCells implements IExcelCellRange {
     }
 
     private XSSFColor toColor(ExcelColor color) {
-        return new XSSFColor(new java.awt.Color(color.getRed(), color.getGreen(), color.getBlue()));
+       return new XSSFColor( new java.awt.Color(color.getRed(), color.getGreen(), color.getBlue()), new DefaultIndexedColorMap());
     }
 
     private XSSFCellStyle applyNewCellStyle(XSSFCellStyle cellStyle, ExcelStyle newCellStyle) {

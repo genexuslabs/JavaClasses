@@ -1,5 +1,7 @@
 package com.genexus.util;
 
+import com.genexus.ModelContext;
+
 public class EnvVarReader {
 
     static String[] m_invalidChars = { ".", "|" };
@@ -12,13 +14,28 @@ public class EnvVarReader {
 		}else{
 			String prefix = ENVVAR_PREFIX;
 			if (section != null && !section.isEmpty() && section != "Client") {
-				for (int i = 0; i < m_invalidChars.length; i++)
-					section = section.replace(m_invalidChars[i], "_");
+				section = replaceInvalidChars(section);
+				String realKey = key;
 				key = String.format("%s%s_%s", prefix, section.toUpperCase(), key.toUpperCase());
+				String envVar = System.getenv(key);
+				if (envVar != null)
+					return envVar;
+				if (ModelContext.getModelContext() != null) {
+					section = section.replace(replaceInvalidChars(ModelContext.getModelContext().getPackageName() + "|").toUpperCase(), "");
+					key = String.format("%s%s_%s", prefix, section.toUpperCase(), realKey.toUpperCase());
+				}
+				else
+					return null;
 			} else
 				key = String.format("%s%s", prefix, key.toUpperCase());
 			return System.getenv(key);
 		}
+	}
+
+	private static String replaceInvalidChars(String section) {
+		for (int i = 0; i < m_invalidChars.length; i++)
+			section = section.replace(m_invalidChars[i], "_");
+		return section;
 	}
 
     public static String getEnvironmentValue(String serviceType, String serviceName, String propertyName) {

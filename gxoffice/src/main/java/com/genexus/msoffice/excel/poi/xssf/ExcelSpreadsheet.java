@@ -316,7 +316,7 @@ public class ExcelSpreadsheet implements IExcelSpreadsheet {
                 }
                 Cell cNext = row.getCell(cID + 1);
                 if (cNext != null) {
-                    Cell cNew = row.createCell(cID, cNext.getCellTypeEnum());
+                    Cell cNew = row.createCell(cID, cNext.getCellType());
                     cloneCell(cNew, cNext);
                     //Set the column width only on the first row.
                     //Other wise the second row will overwrite the original column width set previously.
@@ -365,7 +365,7 @@ public class ExcelSpreadsheet implements IExcelSpreadsheet {
                 Cell leftCell = r.getCell(col - 1);
 
                 if (leftCell != null) {
-                    Cell newCell = r.createCell(col, leftCell.getCellTypeEnum());
+                    Cell newCell = r.createCell(col, leftCell.getCellType());
                     cloneCell(newCell, leftCell);
 					/*if (newCell.getCellTypeEnum() == CellType.FORMULA) {
 						newCell.setCellFormula(ExcelHelper.updateFormula(newCell.getCellFormula(), columnIndex));
