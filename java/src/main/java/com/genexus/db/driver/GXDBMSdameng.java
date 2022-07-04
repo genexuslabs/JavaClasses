@@ -73,7 +73,7 @@ public class GXDBMSdameng implements GXDBMS {
 	}
 
 	public boolean ObjectLocked(SQLException e) {
-		return	(	e.getErrorCode() == 54);
+		return	(	e.getErrorCode() == -6409);
 	}
 
 	public boolean ObjectNotFound(SQLException e) {
