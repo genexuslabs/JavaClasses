@@ -661,12 +661,12 @@ public class HttpContextWeb extends HttpContext {
 		String userAgent = request.getHeader("USER-AGENT");
 
 		if (userAgent != null) {
-			if (userAgent.toUpperCase().indexOf("CHROME") != -1) {
+			if ((userAgent.indexOf("Edge")) != -1) {
+				return BROWSER_EDGE;
+			} else if (userAgent.toUpperCase().indexOf("CHROME") != -1) {
 				return BROWSER_CHROME;
 			} else if (userAgent.toUpperCase().indexOf("FIREFOX") != -1) {
 				return BROWSER_FIREFOX;
-			} else if ((userAgent.indexOf("Edge")) != -1) {
-				return BROWSER_EDGE;
 			} else if ((userAgent.indexOf("MSIE")) != -1) {
 				if ((userAgent.indexOf("Windows CE")) != -1)
 					return BROWSER_POCKET_IE;
