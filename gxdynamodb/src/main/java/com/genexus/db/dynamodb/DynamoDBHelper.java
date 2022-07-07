@@ -8,6 +8,8 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +18,7 @@ import java.util.stream.Collectors;
 
 public class DynamoDBHelper
 {
+	private static final SimpleDateFormat ISO_DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
     public static AttributeValue toAttributeValue(VarValue var) throws SQLException
     {
 		if(var == null)
@@ -33,10 +36,16 @@ public class DynamoDBHelper
 			case Decimal:
 				return builder.n(value.toString()).build();
 			case Date:
-				return builder.s(((java.sql.Date) value).toLocalDate().toString()).build();
+				if(value instanceof java.util.Date)
+					return builder.s(ISO_DATE_FORMATTER.format(value)).build();
+				else return builder.s(((java.sql.Date) value).toLocalDate().toString()).build();
 			case DateTime:
 			case DateTime2:
-				return builder.s(((Timestamp) value).toLocalDateTime().atOffset(ZoneOffset.UTC).toString()).build();
+				OffsetDateTime offsetDateTime;
+				if(value instanceof java.util.Date)
+					offsetDateTime = ((java.util.Date)value).toInstant().atOffset(ZoneOffset.UTC);
+				else offsetDateTime = ((Timestamp) value).toLocalDateTime().atOffset(ZoneOffset.UTC);
+				return builder.s(offsetDateTime.toString()).build();
 			case Boolean:
 			case Byte:
 				return builder.bool((Boolean) value).build();
