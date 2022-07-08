@@ -762,7 +762,10 @@ public class Application
 	private static String WEBSOCKET_SERVICE_NAME = "WS_SERVER";
 
 	public static void registerSocketService(IGXWebSocketService wsService) {
-		services.put(WEBSOCKET_SERVICE_NAME, wsService);
+		if (wsService != null) {
+			services.put(WEBSOCKET_SERVICE_NAME, wsService);
+			logger.info("WebSocket Service has been initialized successfully");
+		}
 	}
 
 	public static IGXWebSocketService getSocketService() {
