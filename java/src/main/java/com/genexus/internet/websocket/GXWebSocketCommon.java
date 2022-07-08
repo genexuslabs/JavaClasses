@@ -15,7 +15,7 @@ import com.genexus.util.GXServices;
 import com.genexus.xml.GXXMLSerializable;
 import com.genexus.websocket.ISession;
 
-public class GXWebSocketCommon {
+public abstract class GXWebSocketCommon {
 
 	private static String[] handlerCache = new String[HandlerType.values().length];
 	
@@ -26,7 +26,7 @@ public class GXWebSocketCommon {
 	public enum HandlerType {
 	    ReceivedMessage, OnOpen, OnClose, OnError
 	}
-	
+
 	public void closedSession(GXWebSocketSession session)
 	{				
 		wsClients.remove(session);
