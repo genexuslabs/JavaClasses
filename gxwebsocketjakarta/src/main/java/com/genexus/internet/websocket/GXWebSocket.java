@@ -1,5 +1,6 @@
 package com.genexus.internet.websocket;
 
+import com.genexus.Application;
 import jakarta.websocket.CloseReason;
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnError;
@@ -10,18 +11,12 @@ import jakarta.websocket.server.ServerEndpoint;
 import com.genexus.websocket.Session;
 
 @ServerEndpoint(value = "/gxwebsocket")
-public class GXWebSocket extends GXWebSocketCommon implements IGXWebSocketAsync  {
-	
-	private static GXWebSocket instance = null;
-	
-	public GXWebSocket(){		
-		instance = this;			
+public class GXWebSocket extends GXWebSocketCommon implements IGXWebSocketService {
+
+	public GXWebSocket(){
+		Application.registerSocketService(this);
 	}
-	
-	public static IGXWebSocketAsync getInstance() {
-		return instance;
-	}
-	
+
 	@OnOpen
 	public void OnOpen (jakarta.websocket.Session session) {
 		OnOpenCommon(new Session(session));

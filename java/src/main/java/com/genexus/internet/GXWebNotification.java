@@ -1,22 +1,21 @@
 package com.genexus.internet;
+import com.genexus.Application;
 import com.genexus.ModelContext;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
-import com.genexus.internet.websocket.IGXWebSocketAsync;
+import com.genexus.internet.websocket.IGXWebSocketService;
 import com.genexus.internet.websocket.SendResponseType;
 import com.genexus.xml.GXXMLSerializable;
 
 public class GXWebNotification {
 
 	public static final ILogger logger = LogManager.getLogger(GXWebNotification.class);
-	
-	private static IGXWebSocketAsync ws;
+	private static IGXWebSocketService _ws;
     private HttpContext _ctx;
 	
 	private short _errCode;
     private String _errDescription;
-		
-		
+
 	public short getErrCode()
 	{
 		return _errCode;
@@ -30,26 +29,16 @@ public class GXWebNotification {
     public GXWebNotification(ModelContext gxContext)
     {    	
         _ctx = (HttpContext) gxContext.getHttpContext();
-        if (ws == null)
-        {        			
-			try {
-				setError((short)1);
-				Class<?> c = Class.forName("com.genexus.internet.websocket.GXWebSocket");
-				java.lang.reflect.Method method = c.getDeclaredMethod("getInstance", (Class[])null);
-				Object o = method.invoke(null, (Object[])null);	
-				ws = (IGXWebSocketAsync)o;		
-				if (ws != null)
-					setError((short)0);
-			} catch (Exception e) {
-				logger.error("GXWebNotification", e);
-			}
-        } 
-		if (_errCode != 0)
-		{
-			logger.error("Could not create com.genexus.internet.GXWebSocket instance. Check whether WebServer requirements are met and WebNotifications Provider Generator Property is set");
-		}
     }
-		
+
+	private IGXWebSocketService getWSService() {
+		if (_ws == null)
+		{
+			_ws = Application.getSocketService();
+		}
+		return _ws;
+	}
+
 	public short notifyClient(String clientId, String message)
 	{            		    
 		return notifyClientImpl(clientId, message);
@@ -62,8 +51,9 @@ public class GXWebNotification {
 	}
 	
     public short notifyClientImpl(String clientId, String message)
-    {        	
-		if (ws != null) 
+    {
+		IGXWebSocketService ws = getWSService();
+		if (ws != null)
 		{
 			SendResponseType result = ws.send(clientId.trim(), message);
 			switch (result)
@@ -84,8 +74,9 @@ public class GXWebNotification {
 					break;
 			}
 		}
-		else
-			setError((short)1);
+		else {
+			setError((short) 1);
+		}
 		
 		return _errCode;
     }
@@ -113,14 +104,16 @@ public class GXWebNotification {
     }
 	
 	private void broadcastImpl(String message)
-    {                	
+    {
+		IGXWebSocketService ws = getWSService();
         if (ws != null)
 		{
 			ws.broadcast(message);   
 			setError((short)0);
 		}
-		else
-			setError((short)1);        
+		else {
+			setError((short) 1);
+		}
     }
 	
 	private void setError(short i)
@@ -132,7 +125,7 @@ public class GXWebNotification {
 				_errDescription = "OK";
 				break;
 			case 1:
-				_errDescription = "Could not start WebSocket Server";
+				_errDescription = "WebSocket Server has not been initialized yet";
 				break;
 			case 2:
 				_errDescription = "WebSocket Session not found";

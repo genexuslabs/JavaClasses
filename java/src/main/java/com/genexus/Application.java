@@ -3,10 +3,7 @@ package com.genexus;
 import java.io.Closeable;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Properties;
-import java.util.Vector;
+import java.util.*;
 
 import com.genexus.db.DBConnectionManager;
 import com.genexus.db.DynamicExecute;
@@ -15,6 +12,7 @@ import com.genexus.db.UserInformation;
 import com.genexus.db.driver.ExternalProvider;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
+import com.genexus.internet.websocket.IGXWebSocketService;
 import com.genexus.specific.java.Connect;
 import com.genexus.util.GXQueue;
 import com.genexus.util.GXService;
@@ -49,6 +47,7 @@ public class Application
 
 	private static volatile ExternalProvider externalProvider = null;
 	private static volatile ExternalProvider externalProviderAPI = null;
+	private static volatile HashMap<String, Object> services = new HashMap<>();
 	private static Object objectLock = new Object();
 	private static volatile boolean initialized = false;
 
@@ -753,10 +752,23 @@ public class Application
 
  
 	  static boolean useSmartCache = false;
+
 	  public static com.genexus.GXSmartCacheProvider getSmartCacheProvider(int handle)
 	  {
 	  	useSmartCache = true;
 			return getConnectionManager().getUserInformation(handle).getSmartCacheProvider();	  	
 	  }	  
 
+	private static String WEBSOCKET_SERVICE_NAME = "WS_SERVER";
+
+	public static void registerSocketService(IGXWebSocketService wsService) {
+		services.put(WEBSOCKET_SERVICE_NAME, wsService);
+	}
+
+	public static IGXWebSocketService getSocketService() {
+		if (services.containsKey(WEBSOCKET_SERVICE_NAME)) {
+			return (IGXWebSocketService) services.get(WEBSOCKET_SERVICE_NAME);
+		}
+		return  null;
+	}
 }
