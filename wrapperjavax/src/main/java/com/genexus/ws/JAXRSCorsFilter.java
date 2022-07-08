@@ -6,6 +6,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.ext.Provider;
+import java.util.Collections;
 import java.util.HashMap;
 
 @Provider
@@ -19,9 +20,7 @@ public class JAXRSCorsFilter implements ContainerResponseFilter {
 			return;
 		}
 		for (String headerName : corsHeaders.keySet()) {
-			if (!responseContext.getHeaders().containsKey(headerName)) {
-				responseContext.getHeaders().add(headerName, corsHeaders.get(headerName));
-			}
+			responseContext.getHeaders().putSingle(headerName,corsHeaders.get(headerName));
 		}
 	}
 }
