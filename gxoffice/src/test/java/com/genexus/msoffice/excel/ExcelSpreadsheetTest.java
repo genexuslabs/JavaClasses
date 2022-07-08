@@ -890,7 +890,7 @@ public class ExcelSpreadsheetTest {
 		excel.save();
 		excel.close();
 		// Verify previous Excel Document
-		excel = open("testHideRow");
+		excel = open("testHideRow2");
 
 		assertEquals(1, excel.getCell(1, 1).getNumericValue().intValue());
 		excel.save();
@@ -909,7 +909,7 @@ public class ExcelSpreadsheetTest {
 		excel.save();
 		excel.close();
 		// Verify previous Excel Document
-		excel = open("testHideRow");
+		excel = open("testHideRow3");
 
 		assertEquals(1, excel.getCell(1, 1).getNumericValue().intValue());
 		excel.save();
@@ -1017,6 +1017,67 @@ public class ExcelSpreadsheetTest {
         Assert.assertEquals(new File(excelNew).exists(), true);
 
     }
+
+	@Test
+	public void testAutoFit() {
+		ExcelSpreadsheetGXWrapper excel = create("testAutoFit");
+		excel.setAutofit(true);
+		excel.getCells(1, 2, 1, 1).setText("LONGTEXTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
+		excel.getCells(1, 3, 1, 1).setText("VERYLONGTEXTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
+		excel.getCells(2, 4, 1, 1).setText("hola!");
+		excel.getCells(6, 6, 1, 1).setText("VERYLONGTEXTINDIFFERENTROWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
+		ExcelCells cells = excel.getCells(7, 7, 1, 1);
+		ExcelStyle style = new ExcelStyle();
+		style.setDataFormat("#.##"); //change style, so it shows the full number not scientific notation
+		cells.setNumericValue(new BigDecimal("123456789123456789123456789"));
+		cells.setCellStyle(style);
+		excel.save();
+		excel.close();
+	}
+
+	@Test
+	public void testDateFormat() {
+		ExcelSpreadsheetGXWrapper excel = create("testDateFormat");
+		excel.setAutofit(true);
+		Date date = new Date();
+		//sets date with default format
+		ExcelCells cells = excel.getCells(1, 1, 1, 1);
+		cells.setDateValue(date);
+		//sets date and apply format after
+		cells = excel.getCells(2, 1, 1, 1);
+		ExcelStyle style = new ExcelStyle();
+		cells.setDateValue(date);
+		style.setDataFormat("YYYY/MM/DD hh:mm:ss");
+		cells.setCellStyle(style);
+		//sets date and apply format before
+		cells = excel.getCells(3, 1, 1, 1);
+		style = new ExcelStyle();
+		style.setDataFormat("YYYY/MM/DD hh:mm:ss");
+		cells.setCellStyle(style);
+		cells.setDateValue(date);
+
+		date.setHours(0);
+		date.setMinutes(0);
+		date.setSeconds(0);
+		//sets date with default format without hours
+		cells = excel.getCells(4, 1, 1, 1);
+		cells.setDateValue(date);
+		//sets date and apply format after
+		cells = excel.getCells(5, 1, 1, 1);
+		style = new ExcelStyle();
+		cells.setDateValue(date);
+		style.setDataFormat("YYYY/MM/DD hh:mm:ss");
+		cells.setCellStyle(style);
+		//sets date and apply format before
+		cells = excel.getCells(6, 1, 1, 1);
+		style = new ExcelStyle();
+		style.setDataFormat("YYYY/MM/DD hh:mm:ss");
+		cells.setCellStyle(style);
+		cells.setDateValue(date);
+
+		excel.save();
+		excel.close();
+	}
 
     private void logErrorCodes(ExcelSpreadsheetGXWrapper excel) {
        // System.out.println(String.format("%s - %s", excel.getErrCode(), excel.getErrDescription()));

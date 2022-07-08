@@ -17,8 +17,10 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jersey.javax.version>2.34</jersey.javax.version>
         <jersey.jakarta.version>3.0.1</jersey.jakarta.version>
+        <poi.version>5.2.2</poi.version>
         <jackson.version>2.13.2</jackson.version>
         <junit.version>4.13.2</junit.version>
+        <software.awssdk.version>2.17.213</software.awssdk.version>
 	</properties>
 
     <modules>
