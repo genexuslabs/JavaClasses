@@ -115,33 +115,38 @@ public class SimpleMessageQueue {
 		return receivedMessagesResult;
 	}
 
-	public SdtMessageResult deleteMessage(String messageHandleId, GXBaseCollection<SdtMessages_Message>[] errorMessagesArr, boolean[] success) {
+	public SdtMessageResult deleteMessage(SdtMessage msg, GXBaseCollection<SdtMessages_Message>[] errorMessagesArr, boolean[] success) {
 		GXBaseCollection<SdtMessages_Message> errorMessages = errorMessagesArr[0];
 		errorMessages.clear();
 		SdtMessageResult sdtDelete = new SdtMessageResult();
+		if (msg == null || msg.getgxTv_SdtMessage_Messagehandleid().isEmpty()) {
+			sdtDelete.setgxTv_SdtMessageResult_Messagestatus(DeleteMessageResult.FAILED);
+			appendErrorMessage(errorMessages, 1, "Message HandledId property cannot be empty");
+			return sdtDelete;
+		}
+
 		try {
 			validQueue();
-			DeleteMessageResult deletedMessage = queue.deleteMessage(messageHandleId);
+			DeleteMessageResult deletedMessage = queue.deleteMessage(msg.getgxTv_SdtMessage_Messagehandleid());
 			sdtDelete.setgxTv_SdtMessageResult_Messageid(deletedMessage.getMessageId());
 			sdtDelete.setgxTv_SdtMessageResult_Servermessageid(deletedMessage.getMessageServerId());
 			sdtDelete.setgxTv_SdtMessageResult_Messagestatus(deletedMessage.getMessageDeleteStatus());
 			success[0] = true;
 		} catch (Exception ex) {
 			queueErrorMessagesSetup(ex, errorMessages);
-			logger.error(String.format("Could not delete Message '%s' from Queue ", messageHandleId), ex);
+			logger.error(String.format("Could not delete Message '%s' from Queue", msg.getgxTv_SdtMessage_Messagehandleid()), ex);
 		}
 		return sdtDelete;
 	}
 
-	public GXBaseCollection<SdtMessageResult> deleteMessages(GXSimpleCollection<String> msgHandlesToDelete, GXBaseCollection<SdtMessages_Message>[] errorMessagesArr, boolean[] success) {
+	public GXBaseCollection<SdtMessageResult> deleteMessages(GXBaseCollection<SdtMessage> msgHandlesToDelete, GXBaseCollection<SdtMessages_Message>[] errorMessagesArr, boolean[] success) {
 		GXBaseCollection<SdtMessages_Message> errorMessages = errorMessagesArr[0];
 		errorMessages.clear();
-
 		try {
 			validQueue();
 			List<String> handles = new ArrayList<>();
-			for (String hnd : msgHandlesToDelete) {
-				handles.add(hnd);
+			for (SdtMessage msg : msgHandlesToDelete) {
+				handles.add(msg.getgxTv_SdtMessage_Messagehandleid());
 			}
 			List<DeleteMessageResult> deletedMessage = queue.deleteMessages(handles);
 			success[0] = true;
@@ -155,10 +160,15 @@ public class SimpleMessageQueue {
 
 	protected void queueErrorMessagesSetup(Exception ex, GXBaseCollection<SdtMessages_Message> messages) {
 		if (messages != null && ex != null) {
-			StructSdtMessages_Message struct = new StructSdtMessages_Message();
-			struct.setType((byte) 1);
-			struct.setDescription(ex.getMessage());
+			appendErrorMessage(messages, 1, ex.getMessage());
 		}
+	}
+
+	private void appendErrorMessage(GXBaseCollection<SdtMessages_Message> messages, int errorType, String errMessage) {
+		SdtMessages_Message struct = new SdtMessages_Message();
+		struct.setgxTv_SdtMessages_Message_Type((byte) errorType);
+		struct.setgxTv_SdtMessages_Message_Description(errMessage);
+		messages.add(struct);
 	}
 
 }
