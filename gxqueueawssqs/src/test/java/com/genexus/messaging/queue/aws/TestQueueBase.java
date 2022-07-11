@@ -93,6 +93,17 @@ public abstract class TestQueueBase {
 		Assert.assertNotEquals("", sendResult.getMessageServerId());
 	}
 
+	@Test
+	public void sendMessageWithNoId() {
+		SimpleQueueMessage msg = createMessage();
+		msg.setMessageId("");
+		SendMessageResult sendResult = queue.sendMessage(msg);
+		Assert.assertNotNull(sendResult);
+		Assert.assertEquals(SendMessageResult.SENT, sendResult.getMessageSentStatus());
+		Assert.assertNotEquals("", sendResult.getMessageId());
+		Assert.assertNotEquals("", sendResult.getMessageServerId());
+	}
+
 	/*@Test
 	public void sendMessageWithFactoryQueue() {
 		try {

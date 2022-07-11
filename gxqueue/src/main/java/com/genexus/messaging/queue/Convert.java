@@ -19,7 +19,8 @@ public class Convert {
 
 	protected static SimpleQueueMessage toSimpleQueueMessage(SdtMessage msg) {
 		return new SimpleQueueMessage() {{
-			setMessageId(msg.getgxTv_SdtMessage_Messageid());
+			String id = msg.getgxTv_SdtMessage_Messageid();
+			setMessageId((id.isEmpty())? java.util.UUID.randomUUID().toString() :id);
 			setMessageBody(msg.getgxTv_SdtMessage_Messagebody());
 			setMessageHandleId(msg.getgxTv_SdtMessage_Messagehandleid());
 			if (msg.getgxTv_SdtMessage_Messageattributes() != null) {
