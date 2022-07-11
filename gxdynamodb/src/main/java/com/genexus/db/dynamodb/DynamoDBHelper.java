@@ -41,11 +41,11 @@ public class DynamoDBHelper
 				else return builder.s(((java.sql.Date) value).toLocalDate().toString()).build();
 			case DateTime:
 			case DateTime2:
-				OffsetDateTime offsetDateTime;
-				if(value instanceof java.util.Date)
-					offsetDateTime = ((java.util.Date)value).toInstant().atOffset(ZoneOffset.UTC);
-				else offsetDateTime = ((Timestamp) value).toLocalDateTime().atOffset(ZoneOffset.UTC);
-				return builder.s(offsetDateTime.toString()).build();
+				Timestamp valueTs;
+				if(value instanceof java.sql.Timestamp)
+					valueTs = (java.sql.Timestamp)value;
+				else valueTs = new java.sql.Timestamp(((java.util.Date) value).getTime());
+				return builder.s(valueTs.toLocalDateTime().atOffset(ZoneOffset.UTC).toString()).build();
 			case Boolean:
 			case Byte:
 				return builder.bool((Boolean) value).build();
