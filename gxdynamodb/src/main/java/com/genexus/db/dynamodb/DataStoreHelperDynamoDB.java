@@ -8,6 +8,9 @@ import com.genexus.db.service.GXType;
 import com.genexus.db.service.IQuery;
 import com.genexus.db.service.ServiceDataStoreHelper;
 
+import java.sql.Date;
+import java.sql.Timestamp;
+
 public class DataStoreHelperDynamoDB extends ServiceDataStoreHelper
 {
 	public DynamoQuery newQuery()
@@ -32,9 +35,9 @@ public class DataStoreHelperDynamoDB extends ServiceDataStoreHelper
 			case Int16:
 			case Int32:
 			case Int64: return 0;
-			case Date:
+			case Date: return new Date(CommonUtil.nullDate().getTime());
 			case DateTime:
-			case DateTime2:	return CommonUtil.nullDate();
+			case DateTime2:	return new Timestamp(CommonUtil.nullDate().getTime());
 			case Byte:
 			case NChar:
 			case NClob:

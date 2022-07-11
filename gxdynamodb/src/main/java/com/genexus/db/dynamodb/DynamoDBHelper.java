@@ -36,15 +36,10 @@ public class DynamoDBHelper
 			case Decimal:
 				return builder.n(value.toString()).build();
 			case Date:
-				if(value instanceof java.util.Date)
-					return builder.s(ISO_DATE_FORMATTER.format(value)).build();
-				else return builder.s(((java.sql.Date) value).toLocalDate().toString()).build();
+				return builder.s(ISO_DATE_FORMATTER.format(value)).build();
 			case DateTime:
 			case DateTime2:
-				Timestamp valueTs;
-				if(value instanceof java.sql.Timestamp)
-					valueTs = (java.sql.Timestamp)value;
-				else valueTs = new java.sql.Timestamp(((java.util.Date) value).getTime());
+				Timestamp valueTs = (java.sql.Timestamp)value;
 				return builder.s(valueTs.toLocalDateTime().atOffset(ZoneOffset.UTC).toString()).build();
 			case Boolean:
 			case Byte:
