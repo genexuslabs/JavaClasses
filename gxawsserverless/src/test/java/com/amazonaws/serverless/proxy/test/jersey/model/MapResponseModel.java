@@ -19,21 +19,21 @@ import java.util.Map;
  * Request/response model
  */
 public class MapResponseModel {
-    private Map<String, String> values;
+	private Map<String, String> values;
 
-    public MapResponseModel() {
-        this.values = new HashMap<>();
-    }
+	public MapResponseModel() {
+		this.values = new HashMap<>();
+	}
 
-    public void addValue(String key, String value) {
-        this.values.put(key, value);
-    }
+	public void addValue(String key, String value) {
+		this.values.put(key, value);
+	}
 
-    public Map<String, String> getValues() {
-        return values;
-    }
+	public Map<String, String> getValues() {
+		return values;
+	}
 
-    public void setValues(Map<String, String> values) {
-        this.values = values;
-    }
+	public void setValues(Map<String, String> values) {
+		this.values = values;
+	}
 }

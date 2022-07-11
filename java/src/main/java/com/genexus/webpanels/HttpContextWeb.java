@@ -71,7 +71,7 @@ public class HttpContextWeb extends HttpContext {
 
 	private static final Pattern MULTIMEDIA_GXI_GRID_PATTERN = Pattern.compile("(\\w+)(_\\d{4})$");
 
-	private static final Pattern EDGE_BROWSER_VERSION_REGEX = Pattern.compile(" Edge\\/([0-9]+)\\.",
+	private static final Pattern EDGE_BROWSER_VERSION_REGEX = Pattern.compile(" Edg[\\w]{0,3}\\/([0-9]+)\\.",
 			Pattern.CASE_INSENSITIVE);
 	private static final String GXEVENT_PARM = "gxevent";
 
@@ -661,12 +661,12 @@ public class HttpContextWeb extends HttpContext {
 		String userAgent = request.getHeader("USER-AGENT");
 
 		if (userAgent != null) {
-			if (userAgent.toUpperCase().indexOf("CHROME") != -1) {
+			if ((userAgent.indexOf("Edg") ) != -1) {
+				return BROWSER_EDGE;
+			} else if (userAgent.toUpperCase().indexOf("CHROME") != -1) {
 				return BROWSER_CHROME;
 			} else if (userAgent.toUpperCase().indexOf("FIREFOX") != -1) {
 				return BROWSER_FIREFOX;
-			} else if ((userAgent.indexOf("Edge")) != -1) {
-				return BROWSER_EDGE;
 			} else if ((userAgent.indexOf("MSIE")) != -1) {
 				if ((userAgent.indexOf("Windows CE")) != -1)
 					return BROWSER_POCKET_IE;
@@ -1481,6 +1481,7 @@ public class HttpContextWeb extends HttpContext {
 
 	public void flushStream() {
 		proxyCookieValues();
+
 		try {
 			if (buffered) {
 				// Esto en realidad cierra el ZipOutputStream, o el ByteOutputStream, no cierra
@@ -1490,6 +1491,7 @@ public class HttpContextWeb extends HttpContext {
 				// que se grabaron al bytearray
 				closeOutputStream();
 				IHttpServletResponse response = getResponse();
+
 				if (buffer != null && !response.isCommitted()) {
 					IServletOutputStream stream = response.getOutputStream();
 					response.setContentLength(buffer.size());
