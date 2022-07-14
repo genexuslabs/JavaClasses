@@ -125,16 +125,16 @@ public class GXWebNotification {
 				_errDescription = "OK";
 				break;
 			case 1:
-				_errDescription = "WebSocket Server has not been initialized yet";
+				_errDescription = "WebSocket Server has not been initialized yet. No incoming connections were received";
 				break;
 			case 2:
-				_errDescription = "WebSocket Session not found";
+				_errDescription = "WebSocket Session not found. The client is not connected to socket server";
 				break;
 			case 3:
-				_errDescription = "WebSocket Session is closed or invalid";
+				_errDescription = "WebSocket Session was found, but it's state was closed or invalid";
 				break;
 			case 4:
-				_errDescription = "Message could not be delivered to client";
+				_errDescription = "Message could not be delivered to client because of a connection error";
 				break;				
 			default:
 				_errDescription = "Unknown error";
