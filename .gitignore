@@ -16,6 +16,7 @@ target/
 .classpath
 .settings
 *.versionsBackup
+.flattened-pom.xml
 
 *.xlsx
 
