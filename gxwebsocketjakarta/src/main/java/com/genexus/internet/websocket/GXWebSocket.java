@@ -1,6 +1,5 @@
 package com.genexus.internet.websocket;
 
-import com.genexus.Application;
 import jakarta.websocket.CloseReason;
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnError;
@@ -11,7 +10,7 @@ import jakarta.websocket.server.ServerEndpoint;
 import com.genexus.websocket.Session;
 
 @ServerEndpoint(value = "/gxwebsocket")
-public class GXWebSocket implements IGXWebSocketService {
+public class GXWebSocket {
 
 	private GXWebSocketService wsService;
 
@@ -20,31 +19,23 @@ public class GXWebSocket implements IGXWebSocketService {
 	}
 
 	@OnOpen
-	public void OnOpen(jakarta.websocket.Session session) {
+	public void onOpen(jakarta.websocket.Session session) {
 		wsService.onOpen(new Session(session));
 	}
 
 	@OnMessage
-	public void OnMessage(String txt, jakarta.websocket.Session session) {
+	public void onMessage(String txt, jakarta.websocket.Session session) {
 		wsService.onMessage(txt, new Session(session));
 	}
 
 	@OnClose
-	public void myOnClose(jakarta.websocket.Session session, CloseReason reason) {
+	public void onClose(jakarta.websocket.Session session, CloseReason reason) {
 		wsService.onClose(new Session(session));
 	}
 
 	@OnError
 	public void onError(Throwable exception, jakarta.websocket.Session session) {
 		wsService.onError(exception, new Session(session));
-	}
-
-	public SendResponseType send(String clientId, String message) {
-		return wsService.send(clientId, message);
-	}
-
-	public void broadcast(String message) {
-		wsService.broadcast(message);
 	}
 }
 

@@ -12,7 +12,6 @@ import com.genexus.db.UserInformation;
 import com.genexus.db.driver.ExternalProvider;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
-import com.genexus.internet.websocket.IGXWebSocketService;
 import com.genexus.specific.java.Connect;
 import com.genexus.util.GXQueue;
 import com.genexus.util.GXService;
