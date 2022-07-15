@@ -40,14 +40,12 @@ public class Application
 	private static Boolean isJMXEnabled;
 
 	public static Class gxCfg = ApplicationContext.getInstance().getClass();
-	//public static ModelContext clientContext;
 	private static Vector<ICleanedup> toCleanup = new Vector<>();
 	static LocalUtil localUtil;
 	static Class ClassName = null;
 
 	private static volatile ExternalProvider externalProvider = null;
 	private static volatile ExternalProvider externalProviderAPI = null;
-	private static volatile HashMap<String, Object> services = new HashMap<>();
 	private static Object objectLock = new Object();
 	private static volatile boolean initialized = false;
 
