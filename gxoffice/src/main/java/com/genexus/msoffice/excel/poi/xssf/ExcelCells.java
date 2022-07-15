@@ -145,36 +145,39 @@ public class ExcelCells implements IExcelCellRange {
 
     }
 
-    public boolean setDate(Date value) throws ExcelException {
-        CheckReadonlyDocument();
-        try {
-            if (!CommonUtil.nullDate().equals(value)) {
-				String dformat = ""; //this.doc.getDateFormat().toLowerCase();
+	public boolean setDate(Date value) throws ExcelException {
+		CheckReadonlyDocument();
+		try {
+			if (!CommonUtil.nullDate().equals(value)) {
+				String dformat = "m/d/yy h:mm";//this.doc.getDateFormat().toLowerCase();
 				Calendar calendar = GregorianCalendar.getInstance(); // creates a new calendar instance
 				calendar.setTime(value);
 				if (calendar.get(Calendar.MINUTE) == 0 && calendar.get(Calendar.HOUR) == 0
-						&& calendar.get(Calendar.SECOND) == 0 && dformat.indexOf(' ') > 0) {
+					&& calendar.get(Calendar.SECOND) == 0 && dformat.indexOf(' ') > 0) {
 					dformat = dformat.substring(0, dformat.indexOf(' '));
 				}
-
 				DataFormat df = pWorkbook.createDataFormat();
-				XSSFCellStyle newStyle = stylesCache.getCellStyle(df.getFormat(dformat));
 
 				for (int i = 1; i <= cellCount; i++) {
 					XSSFCellStyle cellStyle = pCells[i].getCellStyle();
-					copyPropertiesStyle(newStyle, cellStyle);
-					newStyle.setDataFormat(df.getFormat(dformat));
+					if (! DateUtil.isCellDateFormatted(pCells[i])) {
+						XSSFCellStyle newStyle = pWorkbook.createCellStyle();
+						copyPropertiesStyle(newStyle, cellStyle);
+						newStyle.setDataFormat(df.getFormat(dformat));
+						pCells[i].setCellStyle(newStyle);
+						fitColumnWidth(i, dformat.length() + 4);
+					}else {
+						fitColumnWidth(i, cellStyle.getDataFormatString().length() + 4);
+					}
 					pCells[i].setCellValue(value);
-					pCells[i].setCellStyle(newStyle);
-					fitColumnWidth(i, dformat.length() + 4);
 				}
-                return true;
-            }
-        } catch (Exception e) {
-            throw new ExcelException(7, "Invalid cell value");
-        }
-        return false;
-    }
+				return true;
+			}
+		} catch (Exception e) {
+			throw new ExcelException(7, "Invalid cell value");
+		}
+		return false;
+	}
 
     public Date getDate() throws ExcelException {
         Date returnValue = null;
@@ -238,7 +241,7 @@ public class ExcelCells implements IExcelCellRange {
     public BigDecimal getValue() throws ExcelException {
         BigDecimal value = new BigDecimal(0);
         try {
-            CellType cType = pCells[1].getCellTypeEnum();
+            CellType cType = pCells[1].getCellType();
             switch (cType) {
                 case FORMULA:
                     String type = getFormulaType();
@@ -654,7 +657,7 @@ public class ExcelCells implements IExcelCellRange {
                         // System.out.println("Automatic color.");
 
                         if ((red + green + blue) != 0) {
-                            newColor = new XSSFColor(new java.awt.Color(red, green, blue));
+                            newColor = new XSSFColor(new java.awt.Color(red, green, blue), new DefaultIndexedColorMap());
 
                             newFont = (XSSFFont) pWorkbook.createFont();
                             copyPropertiesFont(newFont, fontCell);
@@ -672,7 +675,7 @@ public class ExcelCells implements IExcelCellRange {
                             byte[] triplet = fontColor.getRGB();
 
                             if (triplet[0] != red || triplet[1] != green || triplet[2] != blue) {
-                                newColor = new XSSFColor(new java.awt.Color(red, green, blue));
+                                newColor = new XSSFColor( new java.awt.Color(red, green, blue), new DefaultIndexedColorMap());
 
                                 newFont = (XSSFFont) pWorkbook.createFont();
                                 copyPropertiesFont(newFont, fontCell);
@@ -927,7 +930,7 @@ public class ExcelCells implements IExcelCellRange {
     }
 
     private XSSFColor toColor(ExcelColor color) {
-        return new XSSFColor(new java.awt.Color(color.getRed(), color.getGreen(), color.getBlue()));
+       return new XSSFColor( new java.awt.Color(color.getRed(), color.getGreen(), color.getBlue()), new DefaultIndexedColorMap());
     }
 
     private XSSFCellStyle applyNewCellStyle(XSSFCellStyle cellStyle, ExcelStyle newCellStyle) {
