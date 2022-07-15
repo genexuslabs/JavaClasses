@@ -10,8 +10,8 @@ import com.genexus.common.classes.AbstractUserInformation;
 import com.genexus.common.interfaces.IClientPreferences;
 import com.genexus.common.interfaces.IExtensionApplication;
 import com.genexus.common.interfaces.IPreferences;
-import com.genexus.db.DBConnectionManager;
-import com.genexus.db.Namespace;
+import com.genexus.db.*;
+import com.genexus.db.Cursor;
 import com.genexus.internet.HttpResponse;
 import com.genexus.util.IniFile;
 import com.genexus.webpanels.GXWebObjectStub;
@@ -96,6 +96,11 @@ public class Application implements IExtensionApplication {
 	@Override
 	public boolean handlSQLException(int handle, String dataSource, SQLException ex) {
 		return com.genexus.Application.getConnectionManager().getDataSource(handle, dataSource).dbms.ObjectNotFound(ex);
+	}
+
+	@Override
+	public void handleSQLError(IErrorHandler errorHandler, SQLException e, ModelContext context, int remoteHandle, AbstractGXConnection conn, String datastoreName, Cursor cursor) {
+		DefaultExceptionErrorHandler.handleSQLError1(errorHandler, e, context, remoteHandle, conn, datastoreName, cursor);
 	}
 
 	@Override

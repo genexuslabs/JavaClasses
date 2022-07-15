@@ -2,7 +2,7 @@ package com.genexus;
 
 import java.sql.SQLException;
 
-import com.genexus.ModelContext;
+import com.genexus.common.classes.AbstractGXConnection;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.db.*;
 import com.genexus.util.*;
@@ -10,10 +10,15 @@ import com.genexus.util.*;
 public class ExecuteDirectSQL
 {
 	public static void execute(ModelContext context, int handle, String dataSource, String Statement)
+	{
+		execute(context, handle, dataSource, Statement, null);
+	}
+
+	public static void execute(ModelContext context, int handle, String dataSource, String statement, IErrorHandler errorHandler)
 	{						 
 		try
 		{
-			SpecificImplementation.Application.executeStatement(context, handle, dataSource, Statement);
+			SpecificImplementation.Application.executeStatement(context, handle, dataSource, statement);
 		}
 		catch (SQLException ex)
 		{
@@ -27,7 +32,21 @@ public class ExecuteDirectSQL
 			}
 			else
 			{
-				SpecificImplementation.Application.GXLocalException(handle,  "ExecuteDirectSQL/" + Statement, ex); 
+				if (errorHandler == null)
+				{
+					SpecificImplementation.Application.GXLocalException(handle, "ExecuteDirectSQL/" + statement, ex);
+				}
+				else
+				{
+					try {
+						AbstractGXConnection conn = new DefaultConnectionProvider().getConnection(context, handle, "DEFAULT", true, true);
+						SpecificImplementation.Application.handleSQLError(errorHandler, ex, context, handle, conn,  "DEFAULT", new DirectStatement(statement));
+					}
+					catch (SQLException e) {
+						throw new GXRuntimeException(e);
+					}
+				}
+
 			}
 		}
 	}

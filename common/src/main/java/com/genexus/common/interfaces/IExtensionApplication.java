@@ -1,15 +1,14 @@
 package com.genexus.common.interfaces;
 
 import java.sql.SQLException;
-import com.genexus.GXDBException;
-import com.genexus.ICleanedup;
-import com.genexus.ModelContext;
-import com.genexus.SdtMessages_Message;
+
+import com.genexus.*;
 import com.genexus.common.classes.AbstractGXConnection;
 import com.genexus.ModelContext;
 import com.genexus.common.classes.AbstractNamespace;
 import com.genexus.common.classes.AbstractUserInformation;
 
+import com.genexus.db.Cursor;
 import com.genexus.util.IniFile;
 
 public interface IExtensionApplication {
@@ -42,6 +41,8 @@ public interface IExtensionApplication {
 	void addExecutedStatement(String statement);
 
 	boolean handlSQLException(int handle, String dataSource, SQLException ex);
+
+	void handleSQLError(IErrorHandler errorHandler, SQLException e, ModelContext context, int remoteHandle, AbstractGXConnection conn, String datastoreName, Cursor cursor);
 
 	Class<?> getModelContextClass();
 
