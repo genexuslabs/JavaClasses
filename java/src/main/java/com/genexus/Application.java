@@ -757,16 +757,5 @@ public class Application
 	  {
 	  	useSmartCache = true;
 			return getConnectionManager().getUserInformation(handle).getSmartCacheProvider();	  	
-	  }	  
-
-	private static String WEBSOCKET_SERVICE_NAME = "WS_SERVER";
-
-	public static void registerSocketService(IGXWebSocketService wsService) {		
-		services.put(WEBSOCKET_SERVICE_NAME, wsService);
-		logger.info("WebSocket Service has been initialized successfully");		
-	}
-
-	public static IGXWebSocketService getSocketService() {
-		return (IGXWebSocketService) services.get(WEBSOCKET_SERVICE_NAME);
-	}
+	  }
 }
