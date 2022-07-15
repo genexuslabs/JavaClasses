@@ -11,43 +11,41 @@ import com.genexus.Application;
 import com.genexus.websocket.Session;
 
 @ServerEndpoint(value = "/gxwebsocket")
-public class GXWebSocket extends GXWebSocketCommon implements IGXWebSocketService {
+public class GXWebSocket implements IGXWebSocketService {
+
+	private GXWebSocketService wsService;
 
 	public GXWebSocket() {
-		Application.registerSocketService(this);
+		wsService = GXWebSocketService.getService();
 	}
 
 	@OnOpen
-	public void OnOpen (javax.websocket.Session session) {
-		OnOpenCommon(new Session(session));
+	public void OnOpen(javax.websocket.Session session) {
+		wsService.onOpen(new Session(session));
 	}
 		
 	@OnMessage
-	public void OnMessage (String txt, javax.websocket.Session session) {
-		OnMessageCommon(txt, new Session(session));
+	public void OnMessage(String txt, javax.websocket.Session session) {
+		wsService.onMessage(txt, new Session(session));
 	}
 
 	@OnClose
-	public void myOnClose (javax.websocket.Session session, CloseReason reason) {
-		myOnCloseCommon(new Session(session));
+	public void myOnClose(javax.websocket.Session session, CloseReason reason) {
+		wsService.onClose(new Session(session));
 	}
 		
 	@OnError
     public void onError(Throwable exception, javax.websocket.Session session) {
-		onErrorCommon(exception, new Session(session));
+		wsService.onError(exception, new Session(session));
     }
 		
 	public SendResponseType send(String clientId, String message) {
-		return sendCommon(clientId, message);
+		return wsService.send(clientId, message);
 	}
 	
 	public void broadcast(String message) {
-		broadcastCommon(message);
+		wsService.broadcast(message);
 	}
-
-	public boolean start() {
-		return true;
-	}	
 }
 
 
