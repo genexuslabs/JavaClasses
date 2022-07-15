@@ -7,11 +7,10 @@ import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.server.ServerEndpoint;
 
-import com.genexus.Application;
 import com.genexus.websocket.Session;
 
 @ServerEndpoint(value = "/gxwebsocket")
-public class GXWebSocket implements IGXWebSocketService {
+public class GXWebSocket {
 
 	private GXWebSocketService wsService;
 
@@ -20,17 +19,17 @@ public class GXWebSocket implements IGXWebSocketService {
 	}
 
 	@OnOpen
-	public void OnOpen(javax.websocket.Session session) {
+	public void onOpen(javax.websocket.Session session) {
 		wsService.onOpen(new Session(session));
 	}
 		
 	@OnMessage
-	public void OnMessage(String txt, javax.websocket.Session session) {
+	public void onMessage(String txt, javax.websocket.Session session) {
 		wsService.onMessage(txt, new Session(session));
 	}
 
 	@OnClose
-	public void myOnClose(javax.websocket.Session session, CloseReason reason) {
+	public void onClose(javax.websocket.Session session, CloseReason reason) {
 		wsService.onClose(new Session(session));
 	}
 		
@@ -38,14 +37,7 @@ public class GXWebSocket implements IGXWebSocketService {
     public void onError(Throwable exception, javax.websocket.Session session) {
 		wsService.onError(exception, new Session(session));
     }
-		
-	public SendResponseType send(String clientId, String message) {
-		return wsService.send(clientId, message);
-	}
-	
-	public void broadcast(String message) {
-		wsService.broadcast(message);
-	}
+
 }
 
 
