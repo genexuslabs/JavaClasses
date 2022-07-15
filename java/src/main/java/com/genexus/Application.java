@@ -767,9 +767,6 @@ public class Application
 	}
 
 	public static IGXWebSocketService getSocketService() {
-		if (services.containsKey(WEBSOCKET_SERVICE_NAME)) {
-			return (IGXWebSocketService) services.get(WEBSOCKET_SERVICE_NAME);
-		}
-		return null;
+		return (IGXWebSocketService) services.get(WEBSOCKET_SERVICE_NAME);
 	}
 }
