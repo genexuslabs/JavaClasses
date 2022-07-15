@@ -79,7 +79,7 @@ public abstract class GXWebObjectStub extends HttpServlet
 				sBuffer.append(cookies[i].getValue());
 			}
 		}
-		//logger.debug(sBuffer.toString());
+		logger.debug(sBuffer.toString());
 	}
 
 	protected void callExecute(String method, IHttpServletRequest req, IHttpServletResponse res) throws ServletException
