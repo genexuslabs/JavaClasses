@@ -18,6 +18,7 @@ RUN apt-get update \
         sudo \
         tar \
         zip \
+        gnupg2 \
         -o APT::Immediate-Configure=0 \
     && apt-get clean \
     && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
