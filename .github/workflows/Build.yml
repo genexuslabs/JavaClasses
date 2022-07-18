@@ -70,7 +70,7 @@ jobs:
         pomMajorNumber=${semVerComponents[0]}
         pomMinorNumber=${semVerComponents[1]}
 
-        [[ $(git branch --show-current) ]] && branch="$(git symbolic-ref --short HEAD)" || branch=“DETACHED HEAD“
+        [[ $(git branch --show-current) ]] && branch="$(git symbolic-ref --short HEAD)" || branch=“DETACHED_HEAD“
         timestamp=$(date --utc +%Y%m%d%H%M%S)
 
         SHOULD_DEPLOY='false'
