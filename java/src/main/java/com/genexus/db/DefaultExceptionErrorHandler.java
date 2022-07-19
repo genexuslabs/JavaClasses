@@ -27,9 +27,7 @@ public class DefaultExceptionErrorHandler
 			AbstractGXConnection conn = helper.getConnectionProvider().getConnection(context, remoteHandle, helper.getDataStoreName(), true, true);
 			handleSQLError1(errorHandler, e, context, remoteHandle, conn, helper.getDataStoreName(), cursor);
 		}
-		catch (SQLException exc) {
-			throw new GXRuntimeException(e);
-		}
+		catch (SQLException exc) {}
 	}
 
 	public static void handleSQLError1(IErrorHandler errorHandler, SQLException e, ModelContext context, int remoteHandle, AbstractGXConnection conn, String datastoreName, Cursor cursor)
@@ -67,6 +65,7 @@ public class DefaultExceptionErrorHandler
 			{
 				com.genexus.Application.rollback(context, remoteHandle, datastoreName, null);
 				conn.setError();
+				throw new GXRuntimeException(e);
 			}
 		}
 	}
