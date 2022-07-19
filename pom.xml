@@ -297,12 +297,12 @@
 				<repository>
 					<id>azure-devops</id>
 	  				<name>Azure Artifacts</name>
-	  				<url>https://pkgs.dev.azure.com/genexuslabs/3361ab3b-96bc-4a69-a37a-f2b255ff2f35/_packaging/java-releases/maven/v1</url>
+	  				<url>https://pkgs.dev.azure.com/genexuslabs/3361ab3b-96bc-4a69-a37a-f2b255ff2f35/_packaging/releases/maven/v1</url>
 				</repository>
 				<snapshotRepository>
 					<id>azure-devops</id>
 	  				<name>Azure Artifacts</name>
-	  				<url>https://pkgs.dev.azure.com/genexuslabs/3361ab3b-96bc-4a69-a37a-f2b255ff2f35/_packaging/java-snapshots/maven/v1</url>
+	  				<url>https://pkgs.dev.azure.com/genexuslabs/3361ab3b-96bc-4a69-a37a-f2b255ff2f35/_packaging/snapshots/maven/v1</url>
 				</snapshotRepository>
 			</distributionManagement>
 		</profile>
