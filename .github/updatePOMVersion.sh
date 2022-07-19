@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function ReadPomMajorMinorNumbers {
-    currentVersion=$(sed -n '/<version>.*<\/version>/ s/<version>\(.*\)<\/version>/\1/p' pom.xml)
+    currentVersion="$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
     semVerComponents=( ${currentVersion//-/ } )
     semVerComponents=${semVerComponents[0]}
     semVerComponents=( ${semVerComponents//./ } )
@@ -53,4 +53,4 @@ fi
 GIT_HASH=$(git rev-parse HEAD)
 scmversion="<vcm_hash>$GIT_HASH</vcm_hash>"
 scmv=$(echo $scmversion | sed 's/\//\\\//g')
-sed -i "/<\/properties>/ s/.*/${scmv}\n&/" pom.xml
+sed -i "/<\/properties>/ s/.*/        ${scmv}\n&/" pom.xml
