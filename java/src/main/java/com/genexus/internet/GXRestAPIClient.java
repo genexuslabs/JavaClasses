@@ -379,7 +379,10 @@ public class GXRestAPIClient{
 		} 
 		catch (json.org.json.JSONException e)
 		{
+<<<<<<< HEAD
 			System.out.println( e.toString());
+=======
+>>>>>>> 53458cea (- Add Rest API Client implementation.)
 			return null;
 		}
 		return coll;
@@ -422,7 +425,6 @@ public class GXRestAPIClient{
 				httpClient.addHeader("Content-Type", contentType);
 			}
 		}
-
 		String serviceuri = ((this.location.getSecure() > 0) ? "https" : "http") + "://" + this.location.getHost();
 		serviceuri += (this.location.getPort() != 80) ? ":" + Integer.toString(this.location.getPort()): "";
 		serviceuri += "/" + this.location.getBaseURL() + "/" + this.location.getResourceName();
