@@ -4,7 +4,7 @@ import java.io.IOException;
 
 public interface ISession {
 	Integer getHashCode();
-	String getQueryString();
+	String getId();
 	boolean isOpen();
 	void sendEndPointText(String message) throws IOException;
 }
