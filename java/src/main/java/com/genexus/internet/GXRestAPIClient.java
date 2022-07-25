@@ -379,6 +379,7 @@ public class GXRestAPIClient{
 		} 
 		catch (json.org.json.JSONException e)
 		{
+			System.out.println( e.toString());
 			return null;
 		}
 		return coll;
@@ -421,7 +422,7 @@ public class GXRestAPIClient{
 				httpClient.addHeader("Content-Type", contentType);
 			}
 		}
-System.out.println(" BODY " + bodyString);
+
 		String serviceuri = ((this.location.getSecure() > 0) ? "https" : "http") + "://" + this.location.getHost();
 		serviceuri += (this.location.getPort() != 80) ? ":" + Integer.toString(this.location.getPort()): "";
 		serviceuri += "/" + this.location.getBaseURL() + "/" + this.location.getResourceName();
@@ -436,7 +437,6 @@ System.out.println(" BODY " + bodyString);
 		else
 		{
 			try{
-				System.out.println( httpClient.getString());
 				jsonResponse = new JSONObject(httpClient.getString());
 			}
 			catch(JSONException e)
