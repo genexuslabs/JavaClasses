@@ -1362,7 +1362,7 @@ public final class GXutil
 	
 		//hack para salvar el caso de gxooflineeventreplicator que llegan los path de los blobs sin \ porque fueron sacadas por el FromJsonString
 		String blobPath = com.genexus.Preferences.getDefaultPreferences().getProperty("CS_BLOB_PATH", "");
-		if(uploadValue.indexOf(':') == 1 && uploadValue.indexOf(blobPath) != -1 )
+		if(uploadValue.indexOf(':') == 1 && uploadValue.indexOf(File.separator + blobPath) != -1 )
 		{
 			uploadValue = uploadValue.substring(uploadValue.indexOf(blobPath) + blobPath.length());
 			uploadValue = blobPath + "\\" + uploadValue;
