@@ -379,10 +379,6 @@ public class GXRestAPIClient{
 		} 
 		catch (json.org.json.JSONException e)
 		{
-<<<<<<< HEAD
-			System.out.println( e.toString());
-=======
->>>>>>> 53458cea (- Add Rest API Client implementation.)
 			return null;
 		}
 		return coll;
