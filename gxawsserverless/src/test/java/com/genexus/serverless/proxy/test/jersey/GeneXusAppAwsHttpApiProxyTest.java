@@ -107,7 +107,6 @@ public class GeneXusAppAwsHttpApiProxyTest {
 
 		AwsProxyResponse output = handler.proxy(request, lambdaContext);
 		assertEquals(201, output.getStatusCode());
-		System.out.println(output.getBody());
 	}
 
 }
