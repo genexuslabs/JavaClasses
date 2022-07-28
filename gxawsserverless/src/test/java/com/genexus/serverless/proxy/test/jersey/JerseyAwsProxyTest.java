@@ -17,18 +17,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 import com.genexus.specific.java.Connect;
-import com.genexus.webpanels.GXObjectUploadServices;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Test;
 
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
-import com.amazonaws.serverless.proxy.internal.servlet.*;
 import com.amazonaws.serverless.proxy.jersey.JerseyLambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
@@ -39,13 +35,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genexus.cloud.serverless.aws.LambdaHandler;
 import org.junit.*;
-
-
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Enumeration;
-import java.util.concurrent.CountDownLatch;
-import javax.servlet.*;
 
 /**
  * Unit test class for the Jersey AWS_PROXY default implementation
