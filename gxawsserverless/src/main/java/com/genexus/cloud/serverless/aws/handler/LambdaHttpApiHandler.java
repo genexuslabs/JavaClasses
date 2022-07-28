@@ -5,20 +5,14 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.genexus.ApplicationContext;
 import com.genexus.cloud.serverless.aws.LambdaHandler;
 import com.genexus.diagnostics.core.ILogger;
-import com.genexus.specific.java.Connect;
 import com.genexus.specific.java.LogManager;
-import com.genexus.util.IniFile;
 import org.glassfish.jersey.server.ResourceConfig;
-
-import javax.ws.rs.core.Application;
 import java.util.Map;
 
 public class LambdaHttpApiHandler implements RequestHandler<HttpApiV2ProxyRequest, AwsProxyResponse> {
 	private static final String BASE_REST_PATH = "/rest/";
-	private static final String GX_APPLICATION_CLASS = "GXApplication";
 	public static JerseyLambdaContainerHandler<HttpApiV2ProxyRequest, AwsProxyResponse> handler = null;
 	private static ILogger logger = null;
 	private static ResourceConfig jerseyApplication = null;
@@ -29,9 +23,7 @@ public class LambdaHttpApiHandler implements RequestHandler<HttpApiV2ProxyReques
 			logger = LogManager.initialize(".", LambdaHandler.class);
 			LambdaHttpApiHandler.jerseyApplication = ResourceConfig.forApplication(LambdaHelper.initialize());
 			if (jerseyApplication.getClasses().size() == 0) {
-				String errMsg = "No endpoints found for this application";
-				logger.error(errMsg);
-				throw new Exception(errMsg);
+				logger.error("No HTTP endpoints found for this application");
 			}
 			LambdaHttpApiHandler.handler = JerseyLambdaContainerHandler.getHttpApiV2ProxyHandler(LambdaHttpApiHandler.jerseyApplication);
 		}
