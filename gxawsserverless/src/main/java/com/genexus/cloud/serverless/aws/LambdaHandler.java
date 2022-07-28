@@ -45,9 +45,7 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 			logger = LogManager.initialize(".", LambdaHandler.class);
 			LambdaHandler.jerseyApplication = ResourceConfig.forApplication(LambdaHelper.initialize());
 			if (jerseyApplication.getClasses().size() == 0) {
-				String errMsg = "No endpoints found for this application";
-				logger.error(errMsg);
-				throw new Exception(errMsg);
+				logger.error("No HTTP endpoints found for this application");
 			}
 			LambdaHandler.handler = JerseyLambdaContainerHandler.getAwsProxyHandler(LambdaHandler.jerseyApplication);
 		}
