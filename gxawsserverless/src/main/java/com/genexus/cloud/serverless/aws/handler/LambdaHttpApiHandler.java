@@ -6,6 +6,7 @@ import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.genexus.ApplicationContext;
+import com.genexus.cloud.serverless.aws.LambdaHandler;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.specific.java.Connect;
 import com.genexus.specific.java.LogManager;
@@ -25,33 +26,14 @@ public class LambdaHttpApiHandler implements RequestHandler<HttpApiV2ProxyReques
 	public LambdaHttpApiHandler() throws Exception {
 		if (LambdaHttpApiHandler.jerseyApplication == null) {
 			JerseyLambdaContainerHandler.getContainerConfig().setDefaultContentCharset("UTF-8");
-			LambdaHttpApiHandler.jerseyApplication = ResourceConfig.forApplication(initialize());
+			logger = LogManager.initialize(".", LambdaHandler.class);
+			LambdaHttpApiHandler.jerseyApplication = ResourceConfig.forApplication(LambdaHelper.initialize());
 			if (jerseyApplication.getClasses().size() == 0) {
 				String errMsg = "No endpoints found for this application";
 				logger.error(errMsg);
 				throw new Exception(errMsg);
 			}
 			LambdaHttpApiHandler.handler = JerseyLambdaContainerHandler.getHttpApiV2ProxyHandler(LambdaHttpApiHandler.jerseyApplication);
-		}
-	}
-
-	private static Application initialize() throws Exception {
-		logger = LogManager.initialize(".", LambdaHttpApiHandler.class);
-		Connect.init();
-		IniFile config = com.genexus.ConfigFileFinder.getConfigFile(null, "client.cfg", null);
-		String className = config.getProperty("Client", "PACKAGE", null);
-		Class<?> cls;
-		try {
-			cls = Class.forName(className.isEmpty() ? GX_APPLICATION_CLASS : String.format("%s.%s", className, GX_APPLICATION_CLASS));
-			Application app = (Application) cls.getDeclaredConstructor().newInstance();
-			ApplicationContext appContext = ApplicationContext.getInstance();
-			appContext.setServletEngine(true);
-			appContext.setServletEngineDefaultPath("");
-			com.genexus.Application.init(cls);
-			return app;
-		} catch (Exception e) {
-			logger.error("Failed to initialize App", e);
-			throw e;
 		}
 	}
 
