@@ -10,6 +10,7 @@ import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletReques
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
 import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.genexus.cloud.serverless.aws.handler.AwsGxServletResponse;
+import com.genexus.cloud.serverless.aws.handler.LambdaHelper;
 import com.genexus.specific.java.Connect;
 import com.genexus.specific.java.LogManager;
 import com.genexus.webpanels.GXWebObjectStub;
@@ -36,12 +37,13 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 	public static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = null;
 	private static ResourceConfig jerseyApplication = null;
 	private static final String BASE_REST_PATH = "/rest/";
-	private static final String GX_APPLICATION_CLASS = "GXApplication";
+
 
 	public LambdaHandler() throws Exception {
 		if (LambdaHandler.jerseyApplication == null) {
 			JerseyLambdaContainerHandler.getContainerConfig().setDefaultContentCharset("UTF-8");
-			LambdaHandler.jerseyApplication = ResourceConfig.forApplication(initialize());
+			logger = LogManager.initialize(".", LambdaHandler.class);
+			LambdaHandler.jerseyApplication = ResourceConfig.forApplication(LambdaHelper.initialize());
 			if (jerseyApplication.getClasses().size() == 0) {
 				String errMsg = "No endpoints found for this application";
 				logger.error(errMsg);
@@ -166,25 +168,7 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 		return handler;
 	}
 
-	private static Application initialize() throws Exception {
-		logger = LogManager.initialize(".", LambdaHandler.class);
-		Connect.init();
-		IniFile config = com.genexus.ConfigFileFinder.getConfigFile(null, "client.cfg", null);
-		String className = config.getProperty("Client", "PACKAGE", null);
-		Class<?> cls;
-		try {
-			cls = Class.forName(className.isEmpty() ? GX_APPLICATION_CLASS: String.format("%s.%s", className, GX_APPLICATION_CLASS));
-			Application app = (Application) cls.getDeclaredConstructor().newInstance();
-			ApplicationContext appContext = ApplicationContext.getInstance();
-			appContext.setServletEngine(true);
-			appContext.setServletEngineDefaultPath("");
-			com.genexus.Application.init(cls);
-			return app;
-		} catch (Exception e) {
-			logger.error("Failed to initialize App", e);
-			throw e;
-		}
-	}
+
 
 	private void dumpRequest(AwsProxyRequest awsProxyRequest){
 		String lineSeparator = System.lineSeparator();
