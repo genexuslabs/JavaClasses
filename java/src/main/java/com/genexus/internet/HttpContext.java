@@ -520,13 +520,15 @@ public abstract class HttpContext
 		if (!styleSheets.contains(styleSheet))
 		{
 			styleSheets.add(styleSheet);
+			String sUncachedURL = oldConvertURL(styleSheet) + urlBuildNumber;
+			String sLayerName = styleSheet.replace("/", "_").replace(".","_");
 			if (!this.getHtmlHeaderClosed() && this.isEnabled)
 			{
 				String sRelAtt = (isDeferred ? "rel=\"preload\" as=\"style\" " : "rel=\"stylesheet\"");
 				if (isGxThemeHidden)
-					writeTextNL("<link id=\"gxtheme_css_reference\" " + sRelAtt + " type=\"text/css\" href=\"" + oldConvertURL(styleSheet) + urlBuildNumber + "\" " + htmlEndTag(HTMLElement.LINK));
+					writeTextNL("<link id=\"gxtheme_css_reference\" " + sRelAtt + " type=\"text/css\" href=\"" + sUncachedURL + "\" " + htmlEndTag(HTMLElement.LINK));
 				else
-					writeTextNL("<link " + sRelAtt + " type=\"text/css\" href=\"" + oldConvertURL(styleSheet) + urlBuildNumber + "\" " + htmlEndTag(HTMLElement.LINK));						
+					writeTextNL("<style data-gx-href=\""+ sUncachedURL + "\"> @import url(\"" + sUncachedURL + "\") layer(" + sLayerName + ") </style>");
 			}
 			else
 			{
