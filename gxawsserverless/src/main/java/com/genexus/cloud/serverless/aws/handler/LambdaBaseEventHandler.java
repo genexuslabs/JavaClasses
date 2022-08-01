@@ -1,5 +1,6 @@
 package com.genexus.cloud.serverless.aws.handler;
 
+import com.genexus.ApplicationContext;
 import com.genexus.ModelContext;
 import com.genexus.cloud.serverless.*;
 import com.genexus.cloud.serverless.model.EventMessageResponse;
@@ -42,6 +43,7 @@ public class LambdaBaseEventHandler {
 		try {
 			cfgClass = Class.forName(cfgClassName);
 			com.genexus.Application.init(cfgClass);
+			ApplicationContext.getInstance().setPoolConnections(true);
 		} catch (ClassNotFoundException e) {
 			logger.error(String.format("Failed to initialize GX AppConfig Class: %s", cfgClassName), e);
 			throw e;
