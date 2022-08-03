@@ -3,7 +3,7 @@ package com.genexus.websocket;
 import jakarta.websocket.RemoteEndpoint;
 import java.io.IOException;
 
-public class Session implements ISession{
+public class Session implements ISession {
 	private jakarta.websocket.Session session;
 
 	public Session(jakarta.websocket.Session session) {
@@ -14,7 +14,7 @@ public class Session implements ISession{
 		return new Integer(session.hashCode());
 	}
 
-	public String getQueryString() {
+	public String getId() {
 		return session.getQueryString();
 	}
 
