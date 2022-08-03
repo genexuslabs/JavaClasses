@@ -34,7 +34,7 @@ WORKDIR /home/github
 # Enable Git LFS
 RUN git lfs install
 
-# Intall updated cacerts
+# Install updated cacerts
 # Build a new Java cacerts using CAs trusted by Mozilla
 RUN cd /tmp \
     && curl -OL https://hg.mozilla.org/mozilla-central/raw-file/tip/security/nss/lib/ckfw/builtins/certdata.txt \
