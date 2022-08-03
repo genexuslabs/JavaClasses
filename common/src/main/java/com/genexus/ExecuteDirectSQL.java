@@ -39,8 +39,8 @@ public class ExecuteDirectSQL
 				else
 				{
 					try {
-						AbstractGXConnection conn = new DefaultConnectionProvider().getConnection(context, handle, "DEFAULT", true, true);
-						SpecificImplementation.Application.handleSQLError(errorHandler, ex, context, handle, conn,  "DEFAULT", new DirectStatement(statement));
+						AbstractGXConnection conn = new DefaultConnectionProvider().getConnection(context, handle, dataSource, true, true);
+						SpecificImplementation.Application.handleSQLError(errorHandler, ex, context, handle, conn,  dataSource, new DirectStatement(statement));
 					}
 					catch (SQLException e) {
 						throw new GXRuntimeException(e);
