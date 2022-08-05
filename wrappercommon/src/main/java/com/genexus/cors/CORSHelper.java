@@ -1,15 +1,17 @@
 package com.genexus.cors;
 
+import com.genexus.common.interfaces.SpecificImplementation;
+
 import java.util.HashMap;
 
 public class CORSHelper {
-	private static String CORS_ALLOWED_ORIGINS_ENV_VAR_NAME = "GX_CORS_ALLOW_ORIGIN";
+	private static String CORS_ALLOWED_ORIGIN = "CORS_ALLOW_ORIGIN";
 	private static String CORS_MAX_AGE_SECONDS = "86400";
 	private static String CORS_ALLOWED_METHODS = "GET, POST, PUT, DELETE, HEAD";
 	private static String CORS_ALLOWED_HEADERS = "*";
 
 	public static HashMap<String, String> getCORSHeaders(String requestRequiredHeaders) {
-		String corsAllowedOrigin = System.getenv(CORS_ALLOWED_ORIGINS_ENV_VAR_NAME);
+		String corsAllowedOrigin = SpecificImplementation.Application.getClientPreferences().getProperty(CORS_ALLOWED_ORIGIN, "");
 		if (corsAllowedOrigin == null || corsAllowedOrigin.isEmpty()) {
 			return null;
 		}
