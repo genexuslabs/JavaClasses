@@ -1,11 +1,3 @@
-/*
-               File: GXApplication
-        Description: No description for object
-             Author: GeneXus Java Generator version 15_0_11-123400
-       Generated on: July 19, 2018 16:10:34.62
-       Program type: Callable routine
-          Main DBMS: SQL Server
-*/
 package com.gx.serverless.test;
 
 import java.util.*;

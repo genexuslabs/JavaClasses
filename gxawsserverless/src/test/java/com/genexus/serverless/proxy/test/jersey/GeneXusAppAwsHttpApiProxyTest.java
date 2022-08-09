@@ -22,7 +22,6 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genexus.cloud.serverless.aws.handler.LambdaHttpApiHandler;
 import com.genexus.specific.java.Connect;
-import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,7 +38,6 @@ public class GeneXusAppAwsHttpApiProxyTest {
 	private static ObjectMapper objectMapper = new ObjectMapper();
 	private static Context lambdaContext = new MockLambdaContext();
 
-	private ResourceConfig app;
 	private LambdaHttpApiHandler l;
 
 	@Before
@@ -70,6 +68,19 @@ public class GeneXusAppAwsHttpApiProxyTest {
 		AwsProxyResponse output = handler.proxy(request, lambdaContext);
 		assertEquals(200, output.getStatusCode());
 		assertEquals("{\"ItemId\":9,\"ItemName\":\"9 Item\"}", output.getBody());
+	}
+
+	@Test
+	public void testSessionSet() {
+		HttpApiV2ProxyRequest request = new AwsProxyRequestBuilder("/SessionSet", "POST")
+			.body("{\"SessionName\":\"Name\",\"SessionValue\":\"SetValueSession\"}")
+			.json()
+			.header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
+			.toHttpApiV2Request();
+
+		AwsProxyResponse output = handler.proxy(request, lambdaContext);
+		assertEquals(200, output.getStatusCode());
+
 	}
 
 	@Test
