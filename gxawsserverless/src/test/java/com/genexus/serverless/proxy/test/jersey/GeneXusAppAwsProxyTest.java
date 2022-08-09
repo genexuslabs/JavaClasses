@@ -18,6 +18,7 @@ import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.jersey.JerseyLambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
+import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genexus.cloud.serverless.aws.LambdaHandler;
@@ -75,6 +76,19 @@ public class GeneXusAppAwsProxyTest {
 		AwsProxyResponse output = handler.proxy(request, lambdaContext);
 		assertEquals(200, output.getStatusCode());
 		assertEquals("{\"ItemId\":9,\"ItemName\":\"9 Item\"}", output.getBody());
+	}
+
+	@Test
+	public void testSessionSet() {
+		AwsProxyRequest request = new AwsProxyRequestBuilder("/SessionSet", "POST")
+			.body("{\"SessionName\":\"Name\",\"SessionValue\":\"SetValueSession\"}")
+			.json()
+			.header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
+			.build();
+
+		AwsProxyResponse output = handler.proxy(request, lambdaContext);
+		assertEquals(200, output.getStatusCode());
+
 	}
 
 	@Test
