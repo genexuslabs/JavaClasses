@@ -3,10 +3,7 @@ package com.genexus;
 import java.io.Closeable;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Properties;
-import java.util.Vector;
+import java.util.*;
 
 import com.genexus.db.DBConnectionManager;
 import com.genexus.db.DynamicExecute;
@@ -42,7 +39,6 @@ public class Application
 	private static Boolean isJMXEnabled;
 
 	public static Class gxCfg = ApplicationContext.getInstance().getClass();
-	//public static ModelContext clientContext;
 	private static Vector<ICleanedup> toCleanup = new Vector<>();
 	static LocalUtil localUtil;
 	static Class ClassName = null;
@@ -753,10 +749,10 @@ public class Application
 
  
 	  static boolean useSmartCache = false;
+
 	  public static com.genexus.GXSmartCacheProvider getSmartCacheProvider(int handle)
 	  {
 	  	useSmartCache = true;
 			return getConnectionManager().getUserInformation(handle).getSmartCacheProvider();	  	
-	  }	  
-
+	  }
 }

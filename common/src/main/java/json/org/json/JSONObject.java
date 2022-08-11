@@ -963,12 +963,6 @@ public class JSONObject implements IJsonFormattable, java.io.Serializable{
                 sb.append('\\');
                 sb.append(c);
                 break;
-            case '/':
-                if (b == '<') {
-                    sb.append('\\');
-                }
-                sb.append(c);
-                break;
             case '\b':
                 sb.append("\\b");
                 break;
