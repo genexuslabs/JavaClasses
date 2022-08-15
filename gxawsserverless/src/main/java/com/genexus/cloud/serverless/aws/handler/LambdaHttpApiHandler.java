@@ -13,7 +13,6 @@ import com.genexus.specific.java.LogManager;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import java.util.Map;
-import java.util.UUID;
 
 public class LambdaHttpApiHandler implements RequestHandler<HttpApiV2ProxyRequest, AwsProxyResponse> {
 	private static final String BASE_REST_PATH = "/rest/";
@@ -59,16 +58,6 @@ public class LambdaHttpApiHandler implements RequestHandler<HttpApiV2ProxyReques
 	}
 
 	private void prepareRequest(HttpApiV2ProxyRequest awsProxyRequest) {
-
-		if (awsProxyRequest.getRequestContext() == null) {
-			logger.info("setRequestContext was null. Creating NEW");
-			awsProxyRequest.setRequestContext(new HttpApiV2ProxyRequestContext() {{
-				setRequestId(UUID.randomUUID().toString());
-			}});
-		}
-
-		logger.info("getRequestId: " + awsProxyRequest.getRequestContext().getRequestId());
-
 		Map<String, String> headers = awsProxyRequest.getHeaders();
 
 		if (headers == null) {
