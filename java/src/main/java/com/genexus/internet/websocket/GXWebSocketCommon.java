@@ -1,9 +1,13 @@
 package com.genexus.internet.websocket;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.genexus.db.Namespace;
+import com.genexus.db.UserInformation;
+import json.org.json.JSONException;
 import json.org.json.JSONObject;
 
 import com.genexus.Application;
@@ -15,8 +19,11 @@ import com.genexus.util.GXServices;
 import com.genexus.xml.GXXMLSerializable;
 import com.genexus.websocket.ISession;
 
-public class GXWebSocketCommon {
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 
+public class GXWebSocketCommon {
+	public static final ILogger logger = LogManager.getLogger(GXWebSocketCommon.class);
 	private static String[] handlerCache = new String[HandlerType.values().length];
 	
 	private static GXWebSocketSessionCollection wsClients = new GXWebSocketSessionCollection();
@@ -37,8 +44,8 @@ public class GXWebSocketCommon {
 		wsClients.put(client);
 	
 		Object[] parms = new Object[1];
-		parms[0] = client.getId();		
-		ExecuteHandler(HandlerType.OnOpen, parms);
+		parms[0] = client.getId();
+		executeHandler(HandlerType.OnOpen, parms);
 	}
 
 	protected void OnMessageCommon (String txt, ISession session) {
@@ -52,29 +59,34 @@ public class GXWebSocketCommon {
 			jInfo.put("Message", txt);
 			nInfo.FromJSONObject(jInfo);
 			parms[1] = nInfo;
-			ExecuteHandler(HandlerType.ReceivedMessage, parms);
-			
+			executeHandler(HandlerType.ReceivedMessage, parms);
+
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();		
-		} catch (Exception e) {			
-			e.printStackTrace();
-		}			
-	} 
-	
-	private void ExecuteHandler(HandlerType type, Object[] parameters){		
-		String handler = getHandlerClassName(type);				
-		if (handler != null){						
-			try {				
-				if (!DynamicExecute.dynamicExecute(ModelContext.getModelContext(GXutil.class), -1, Application.class, handler, parameters)){
-					System.out.println("GXWebSocket - Handler could not be executed: " + handler);				
-				}	
-			}
-			catch (Exception e){
-				System.out.println("GXWebSocket - Handler failed executing action: " + handler);		
-				e.printStackTrace();				
-			}
-		}	
+			logger.error("WebSocket - SdtNotificationInfo class not found", e);
+		} catch (JSONException | InstantiationException | IllegalAccessException| InvocationTargetException | NoSuchMethodException e) {
+			logger.error("WebSocket - General error ", e);
+		}
 	}
+
+	private void executeHandler(HandlerType type, Object[] parameters) {
+		String handler = getHandlerClassName(type);
+		if (handler != null) {
+			ModelContext modelContext = ModelContext.getModelContext(Application.gxCfg);
+			UserInformation ui = Application.getConnectionManager().createUserInformation(Namespace.getNamespace(modelContext.getNAME_SPACE()));
+			int remoteHandle = ui.getHandle();
+			try {
+				if (!DynamicExecute.dynamicExecute(modelContext, remoteHandle, Application.class, handler, parameters)) {
+					logger.error(String.format("WebSocket - Handler '%s' failed to execute", handler));
+				}
+			} catch (Exception e) {
+				logger.error(String.format("WebSocket - Handler '%s' failed to execute", handler));
+			}
+			finally {
+				Application.cleanupConnection(remoteHandle);
+			}
+		}
+	}
+
 	
 	private String getPtyTypeName(HandlerType type){
 		String typeName = "";
@@ -117,8 +129,8 @@ public class GXWebSocketCommon {
 		GXWebSocketSession client = getGXWebSocketSession(session);
 		closedSession(client);
 		Object[] parms = new Object[1];
-		parms[0] = client.getId();	
-		ExecuteHandler(HandlerType.OnClose, parms);
+		parms[0] = client.getId();
+		executeHandler(HandlerType.OnClose, parms);
 		sessions.remove(client.getSession().getHashCode());
 	}
 
@@ -126,7 +138,7 @@ public class GXWebSocketCommon {
 		Object[] parms = new Object[2];
 		parms[0] = getGXWebSocketSession(session).getId();
 		parms[1] = exception.getMessage();
-		ExecuteHandler(HandlerType.OnError, parms);
+		executeHandler(HandlerType.OnError, parms);
     }
 
 	protected SendResponseType sendCommon(String clientId, String message) {
