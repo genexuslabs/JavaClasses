@@ -1,5 +1,10 @@
 package com.genexus.ws.rs.core;
 
+import com.genexus.cors.CORSHelper;
+import com.genexus.servlet.http.IHttpServletRequest;
+
+import java.util.HashMap;
+
 public abstract class Response extends javax.ws.rs.core.Response{
 
 	public static Response.ResponseBuilder notModifiedWrapped() {
@@ -13,6 +18,25 @@ public abstract class Response extends javax.ws.rs.core.Response{
 	public static Response.ResponseBuilder okWrapped() {
 		return new Response.ResponseBuilder(javax.ws.rs.core.Response.ok());
 	}
+
+	public static Response.ResponseBuilder options(String allowedMethods) {
+		Response.ResponseBuilder builder = new Response.ResponseBuilder(javax.ws.rs.core.Response.ok());
+		builder.header("Allow", allowedMethods);
+		return builder;
+	}
+
+	private static void addCorsHeaders(IHttpServletRequest request, IResponseBuilder builder) {
+		HashMap<String, String> corsHeaders = CORSHelper.getCORSHeaders(request.getHeader("Access-Control-Request-Headers"), request.getMethod());
+		for (String headerName : corsHeaders.keySet()) {
+			builder.header(headerName,corsHeaders.get(headerName));
+		}
+	}
+
+	public static javax.ws.rs.core.Response build(IHttpServletRequest request, IResponseBuilder builder) {
+		addCorsHeaders(request, builder);
+		return (javax.ws.rs.core.Response)builder.build();
+	}
+
 	public static Response.ResponseBuilder notFound() {
 		return new Response.ResponseBuilder(javax.ws.rs.core.Response.status(Status.NOT_FOUND));
 	}

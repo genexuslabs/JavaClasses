@@ -11,23 +11,25 @@ public class CORSHelper {
 	private static String CORS_ALLOWED_HEADERS = "*";
 
 	public static HashMap<String, String> getCORSHeaders(String requestRequiredHeaders) {
+		return getCORSHeaders(requestRequiredHeaders, CORS_ALLOWED_METHODS);
+	}
+	public static HashMap<String, String> getCORSHeaders(String requestRequiredHeaders, String allowedMethods) {
 		String corsAllowedOrigin = SpecificImplementation.Application.getClientPreferences().getProperty(CORS_ALLOWED_ORIGIN, "");
-		if (corsAllowedOrigin == null || corsAllowedOrigin.isEmpty()) {
+		if (corsAllowedOrigin == null || corsAllowedOrigin.isEmpty() || allowedMethods.isEmpty()) {
 			return null;
 		}
+
 		HashMap<String, String> corsHeaders = new HashMap<>();
 		corsHeaders.put(
 			"Access-Control-Allow-Origin", corsAllowedOrigin);
 		corsHeaders.put(
 			"Access-Control-Allow-Credentials", "true");
-
 		corsHeaders.put(
 			"Access-Control-Allow-Headers",
 			requestRequiredHeaders == null || requestRequiredHeaders.isEmpty() ? CORS_ALLOWED_HEADERS : requestRequiredHeaders);
-
 		corsHeaders.put(
 			"Access-Control-Allow-Methods",
-			CORS_ALLOWED_METHODS);
+			allowedMethods);
 		corsHeaders.put(
 			"Access-Control-Max-Age",
 			CORS_MAX_AGE_SECONDS);
