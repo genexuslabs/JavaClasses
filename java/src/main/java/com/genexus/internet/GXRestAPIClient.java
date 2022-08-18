@@ -23,7 +23,8 @@ public class GXRestAPIClient{
 	private Location location;
 	private String protocol = "REST";
 	private String httpMethod = "GET";
-	private short  errorCode;
+	private int  statusCode;
+	private int  errorCode;	
 	private String errorMessage;
 	private Integer responseCode;
 	private String responseMessage;
@@ -68,8 +69,12 @@ public class GXRestAPIClient{
 		return httpMethod;
 	}
 
-	public short getErrorCode() {
+	public int getErrorCode() {
 		return errorCode;
+	}
+
+	public int getStatusCode() {
+		return statusCode;
 	}
 
 	public String getErrorMessage() {
@@ -94,10 +99,14 @@ public class GXRestAPIClient{
 		httpMethod =  value;
 	}
 
-	public void setErrorCode( short value) {
+	public void setStatusCode( int value) {
+		statusCode = value;
+	}
+	
+	public void setErrorCode( int value) {
 		errorCode = value;
 	}
-
+	
 	public void setErrorMessage( String value) {
 		errorMessage = value;
 	}
@@ -426,14 +435,18 @@ public class GXRestAPIClient{
 		serviceuri += "/" + this.location.getBaseURL() + "/" + this.location.getResourceName();
 		serviceuri += queryString;			
 
-		this.httpClient.execute( this.httpMethod, serviceuri);
+		httpClient.execute( this.httpMethod, serviceuri);
+
 		if (httpClient.getStatusCode() >= 300 || httpClient.getErrCode() > 0)
-		{
-			this.errorCode = httpClient.getErrCode();
-			this.errorMessage = httpClient.getErrDescription();				
+		{	
+
+			errorCode = (httpClient.getErrCode() == 0)? 1 : httpClient.getErrCode();
+			errorMessage = httpClient.getErrDescription();				
+			statusCode = httpClient.getStatusCode();
 		}
 		else
 		{
+			statusCode = httpClient.getStatusCode();
 			try{
 				jsonResponse = new JSONObject(httpClient.getString());
 			}
