@@ -14,7 +14,7 @@ public class JAXRSCorsFilter implements ContainerResponseFilter {
 	@Override
 	public void filter(ContainerRequestContext requestContext,
 					   ContainerResponseContext responseContext) {
-		HashMap<String, String> corsHeaders = CORSHelper.getCORSHeaders(requestContext.getHeaderString("Access-Control-Request-Headers"));
+		HashMap<String, String> corsHeaders = CORSHelper.getCORSHeaders(requestContext.getHeaders());
 		if (corsHeaders == null) {
 			return;
 		}
