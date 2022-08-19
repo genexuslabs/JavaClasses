@@ -69,8 +69,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
 					.build();
 			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
-			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client","HTTPCLIENT_MAX_SIZE","1000")));
-			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client","HTTPCLIENT_MAX_PER_ROUTE","1000")));
+			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_SIZE", "1000")));
+			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_PER_ROUTE", "1000")));
+		}
+		else {
+			connManager.closeExpiredConnections();
 		}
 	}
 
@@ -277,7 +280,13 @@ public class HttpClientJavaLib extends GXHttpClient {
 						for (Header header : headers) {
 							String[] cookieParts = header.getValue().split(";");
 							String[] cookieKeyAndValue = cookieParts[0].split("=");
-							webcontextCookieHeader += cookieKeyAndValue[0] + "=" + cookieKeyAndValue[1] + "; ";
+							webcontextCookieHeader += cookieKeyAndValue[0];
+							if (cookieKeyAndValue.length > 1) {
+								webcontextCookieHeader += "=" + cookieKeyAndValue[1] + "; ";
+							}
+							else {
+								webcontextCookieHeader += "; ";
+							}
 						}
 						webcontextCookieHeader = webcontextCookieHeader.trim().substring(0,webcontextCookieHeader.length()-2);	// Se quita el espacio y la coma al final
 						webcontext.setCookie(SET_COOKIE,webcontextCookieHeader,"",CommonUtil.nullDate(),"",this.getSecure());
