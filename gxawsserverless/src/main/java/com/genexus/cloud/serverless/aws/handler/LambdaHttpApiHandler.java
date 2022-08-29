@@ -3,7 +3,6 @@ package com.genexus.cloud.serverless.aws.handler;
 import com.amazonaws.serverless.proxy.jersey.JerseyLambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
-import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequestContext;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.genexus.cloud.serverless.aws.LambdaHandler;
@@ -13,7 +12,6 @@ import com.genexus.specific.java.LogManager;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import java.util.Map;
-import java.util.UUID;
 
 public class LambdaHttpApiHandler implements RequestHandler<HttpApiV2ProxyRequest, AwsProxyResponse> {
 	private static final String BASE_REST_PATH = "/rest/";
@@ -25,7 +23,7 @@ public class LambdaHttpApiHandler implements RequestHandler<HttpApiV2ProxyReques
 		if (LambdaHttpApiHandler.jerseyApplication == null) {
 			JerseyLambdaContainerHandler.getContainerConfig().setDefaultContentCharset("UTF-8");
 			logger = LogManager.initialize(".", LambdaHandler.class);
-			LambdaHttpApiHandler.jerseyApplication = ResourceConfig.forApplication(LambdaHelper.initialize());
+			LambdaHttpApiHandler.jerseyApplication = ResourceConfig.forApplication(LambdaApplicationHelper.initialize());
 
 			if (jerseyApplication.getClasses().size() == 0) {
 				logger.error("No HTTP endpoints found for this application");
@@ -59,16 +57,6 @@ public class LambdaHttpApiHandler implements RequestHandler<HttpApiV2ProxyReques
 	}
 
 	private void prepareRequest(HttpApiV2ProxyRequest awsProxyRequest) {
-
-		if (awsProxyRequest.getRequestContext() == null) {
-			logger.info("setRequestContext was null. Creating NEW");
-			awsProxyRequest.setRequestContext(new HttpApiV2ProxyRequestContext() {{
-				setRequestId(UUID.randomUUID().toString());
-			}});
-		}
-
-		logger.info("getRequestId: " + awsProxyRequest.getRequestContext().getRequestId());
-
 		Map<String, String> headers = awsProxyRequest.getHeaders();
 
 		if (headers == null) {
