@@ -6,7 +6,7 @@
 
 	<groupId>com.genexus</groupId>
 	<artifactId>parent</artifactId>
-	<version>2.7-SNAPSHOT</version>
+	<version>${revision}${changelist}</version>
 	<packaging>pom</packaging>
 
 	<name>GeneXus Standard Classes (Parent)</name>
@@ -14,16 +14,53 @@
 	<url>https://github.com/genexuslabs/JavaClasses</url>
 
 	<properties>
+		<revision>2.8</revision>
+		<changelist>-SNAPSHOT</changelist>
+		<sha1/>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jersey.javax.version>2.34</jersey.javax.version>
-        <jersey.jakarta.version>3.0.1</jersey.jakarta.version>
-        <poi.version>5.2.2</poi.version>
-        <jackson.version>2.13.2</jackson.version>
-        <junit.version>4.13.2</junit.version>
-        <software.awssdk.version>2.17.151</software.awssdk.version>
+		<jersey.javax.version>2.34</jersey.javax.version>
+		<jersey.jakarta.version>3.0.3</jersey.jakarta.version>
+		<poi.version>5.2.2</poi.version>
+		<jackson.version>2.13.2</jackson.version>
+		<junit.version>4.13.2</junit.version>
+		<software.awssdk.version>2.17.213</software.awssdk.version>
 	</properties>
 
-    <modules>
+	<organization>
+		<name>GeneXus S.A.</name>
+		<url>https://www.genexus.com</url>
+	</organization>
+
+	<licenses>
+		<license>
+			<name>Apache 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>iroqueta</id>
+			<name>Ignacio Roqueta</name>
+			<email>iroqueta@genexus.com</email>
+			<organization>GeneXus S.A.</organization>
+			<organizationUrl>https://www.genexus.com/</organizationUrl>
+			<roles>
+				<role>architect</role>
+				<role>developer</role>
+			</roles>
+			<timezone>America/Montevideo</timezone>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:https://github.com/genexuslabs/javaclasses</connection>
+		<developerConnection>scm:git:https://github.com/genexuslabs/javaclasses.git</developerConnection>
+		<url>https://github.com/genexuslabs/javaclasses</url>
+		<tag>${sha1}</tag>
+  	</scm>
+
+	<modules>
 		<module>common</module>
 		<module>wrapperjavax</module>
 		<module>wrapperjakarta</module>
@@ -45,26 +82,19 @@
 		<module>gxwebsocketjakarta</module>
 		<module>gxawsserverless</module>
 		<module>androidreports</module>
-        <module>gxqueue</module>
-        <module>gxqueueawssqs</module>
-        <module>gxqueueazure</module>
-    </modules>
+    <module>gxqueue</module>
+    <module>gxqueueawssqs</module>
+    <module>gxqueueazure</module>    
+	</modules>
 
-	<licenses>
-		<license>
-			<name>Apache 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-		</license>
-	</licenses>
-
-    <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<pluginManagement>
@@ -166,6 +196,144 @@
 				<artifactId>maven-project-info-reports-plugin</artifactId>
 				<version>2.7</version>
 			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>flatten-maven-plugin</artifactId>
+				<version>1.1.0</version>
+				<configuration>
+					<updatePomFile>true</updatePomFile>
+					<flattenMode>ossrh</flattenMode>
+				</configuration>
+				<executions>
+					<execution>
+					<id>flatten</id>
+					<phase>process-resources</phase>
+					<goals>
+						<goal>flatten</goal>
+					</goals>
+					</execution>
+					<execution>
+					<id>flatten.clean</id>
+					<phase>clean</phase>
+					<goals>
+						<goal>clean</goal>
+					</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>ci-cd</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<version>3.2.1</version>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<goals>
+									<goal>jar-no-fork</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>3.2.0</version>
+						<configuration>
+							<excludePackageNames>com.genexus.gxserver.client.services.*</excludePackageNames>
+						</configuration>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+                					<failOnError>false</failOnError>
+									<quiet>true</quiet>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.6</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+								<configuration>
+									<!-- Prevent gpg from using pinentry programs. Fixes: gpg: signing failed: Inappropriate ioctl for device -->
+									<gpgArguments>
+										<arg>--pinentry-mode</arg>
+										<arg>loopback</arg>
+									</gpgArguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>deploy-to-azure</id>
+			<properties>
+			</properties>
+			<distributionManagement>
+				<repository>
+					<id>azure-devops</id>
+	  				<name>Azure Artifacts</name>
+	  				<url>https://pkgs.dev.azure.com/genexuslabs/3361ab3b-96bc-4a69-a37a-f2b255ff2f35/_packaging/releases/maven/v1</url>
+				</repository>
+				<snapshotRepository>
+					<id>azure-devops</id>
+	  				<name>Azure Artifacts</name>
+	  				<url>https://pkgs.dev.azure.com/genexuslabs/3361ab3b-96bc-4a69-a37a-f2b255ff2f35/_packaging/snapshots/maven/v1</url>
+				</snapshotRepository>
+			</distributionManagement>
+		</profile>
+		<profile>
+			<id>deploy-to-maven-central</id>
+			<properties>
+			</properties>
+			<distributionManagement>
+				<repository>
+					<id>ossrh</id>
+	  				<name>Maven Central</name>
+	  				<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+				</repository>
+				<snapshotRepository>
+					<id>ossrh</id>
+	  				<name>Maven Central - Snapshots Repository</name>
+	  				<url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+				</snapshotRepository>
+			</distributionManagement>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<version>1.6.7</version>
+						<extensions>true</extensions>
+						<configuration>
+							<serverId>ossrh</serverId>
+							<nexusUrl>https://s01.oss.sonatype.org</nexusUrl>
+							<autoReleaseAfterClose>true</autoReleaseAfterClose>
+						</configuration>
+					</plugin>
+				 </plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

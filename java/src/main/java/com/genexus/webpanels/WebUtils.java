@@ -321,6 +321,21 @@ public class WebUtils
 		}
 	}
 
+	public static String getEncodedContentDisposition(String value, int browserType)
+	{
+		int filenameIdx = value.toLowerCase().indexOf("filename");
+		int eqIdx = value.toLowerCase().indexOf("=", filenameIdx);
+
+		if(filenameIdx == -1 || eqIdx == -1 || browserType == HttpContext.BROWSER_SAFARI) { //Safari does not support ContentDisposition Header encoded
+			return value;
+		}
+		
+		String filename = value.substring(eqIdx + 1).trim();
+		value = value.substring(0, filenameIdx) + String.format("filename*=UTF-8''%1$s; filename=\"%1$s\"", PrivateUtilities.URLEncode(filename, "UTF8"));
+
+		return value;
+	}
+
 	public static GXWebComponent getWebComponent(Class caller, String name, int remoteHandle, com.genexus.ModelContext context)
 	{
 		try
@@ -562,4 +577,6 @@ public class WebUtils
 			return null;
 		}
 	}
+
+
 }
