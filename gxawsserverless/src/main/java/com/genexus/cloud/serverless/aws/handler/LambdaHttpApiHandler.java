@@ -3,7 +3,6 @@ package com.genexus.cloud.serverless.aws.handler;
 import com.amazonaws.serverless.proxy.jersey.JerseyLambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
-import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequestContext;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.genexus.cloud.serverless.aws.LambdaHandler;
@@ -24,7 +23,7 @@ public class LambdaHttpApiHandler implements RequestHandler<HttpApiV2ProxyReques
 		if (LambdaHttpApiHandler.jerseyApplication == null) {
 			JerseyLambdaContainerHandler.getContainerConfig().setDefaultContentCharset("UTF-8");
 			logger = LogManager.initialize(".", LambdaHandler.class);
-			LambdaHttpApiHandler.jerseyApplication = ResourceConfig.forApplication(LambdaHelper.initialize());
+			LambdaHttpApiHandler.jerseyApplication = ResourceConfig.forApplication(LambdaApplicationHelper.initialize());
 
 			if (jerseyApplication.getClasses().size() == 0) {
 				logger.error("No HTTP endpoints found for this application");

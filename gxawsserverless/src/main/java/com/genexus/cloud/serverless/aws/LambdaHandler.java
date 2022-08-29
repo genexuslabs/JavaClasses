@@ -1,36 +1,31 @@
 package com.genexus.cloud.serverless.aws;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.ws.rs.core.Application;
-
 import com.amazonaws.serverless.proxy.RequestReader;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
-import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
-import com.genexus.cloud.serverless.aws.handler.AwsGxServletResponse;
-import com.genexus.cloud.serverless.aws.handler.LambdaHelper;
-import com.genexus.specific.java.Connect;
-import com.genexus.specific.java.LogManager;
-import com.genexus.webpanels.GXWebObjectStub;
-import org.glassfish.jersey.server.ResourceConfig;
-
 import com.amazonaws.serverless.proxy.jersey.JerseyLambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
+import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.genexus.ApplicationContext;
+import com.genexus.cloud.serverless.aws.handler.AwsGxServletResponse;
+import com.genexus.cloud.serverless.aws.handler.LambdaApplicationHelper;
 import com.genexus.diagnostics.core.ILogger;
-import com.genexus.util.IniFile;
-import com.genexus.webpanels.*;
+import com.genexus.specific.java.LogManager;
+import com.genexus.webpanels.GXOAuthAccessToken;
+import com.genexus.webpanels.GXOAuthLogout;
+import com.genexus.webpanels.GXOAuthUserInfo;
+import com.genexus.webpanels.GXWebObjectStub;
+import org.glassfish.jersey.server.ResourceConfig;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
 
 public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyResponse> {
 	private static ILogger logger = null;
@@ -38,12 +33,11 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 	private static ResourceConfig jerseyApplication = null;
 	private static final String BASE_REST_PATH = "/rest/";
 
-
 	public LambdaHandler() throws Exception {
 		if (LambdaHandler.jerseyApplication == null) {
 			JerseyLambdaContainerHandler.getContainerConfig().setDefaultContentCharset("UTF-8");
 			logger = LogManager.initialize(".", LambdaHandler.class);
-			LambdaHandler.jerseyApplication = ResourceConfig.forApplication(LambdaHelper.initialize());
+			LambdaHandler.jerseyApplication = ResourceConfig.forApplication(LambdaApplicationHelper.initialize());
 			if (jerseyApplication.getClasses().size() == 0) {
 				logger.error("No HTTP endpoints found for this application");
 			}
@@ -61,7 +55,7 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 		dumpRequest(awsProxyRequest);
 
 		logger.debug("Before handle Request");
-		
+
 		awsProxyRequest.setPath(path.replace(BASE_REST_PATH, "/"));
 		AwsProxyResponse response = this.handler.proxy(awsProxyRequest, context);
 
@@ -70,7 +64,7 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 			awsProxyRequest.setPath(path);
 			logger.debug("Trying servlet request: " + path);
 			AwsGxServletResponse servletResponse = handleServletRequest(awsProxyRequest, context);
-			if (servletResponse.wasHandled()){
+			if (servletResponse.wasHandled()) {
 				response = servletResponse.getAwsProxyResponse();
 			}
 		}
@@ -167,8 +161,7 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 	}
 
 
-
-	private void dumpRequest(AwsProxyRequest awsProxyRequest){
+	private void dumpRequest(AwsProxyRequest awsProxyRequest) {
 		String lineSeparator = System.lineSeparator();
 		String reqData = String.format("Path: %s", awsProxyRequest.getPath()) + lineSeparator;
 		reqData += String.format("Method: %s", awsProxyRequest.getHttpMethod()) + lineSeparator;
