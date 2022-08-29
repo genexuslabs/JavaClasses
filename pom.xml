@@ -13,20 +13,20 @@
 	<description>Core classes for the runtime used by Java and Android apps generated with GeneXus</description>
 	<url>https://github.com/genexuslabs/JavaClasses</url>
 
-	<properties>
-		<revision>2.7</revision>
-		<changelist>-SNAPSHOT</changelist>
-		<sha1/>
+    <properties>
+        <revision>2.8</revision>
+        <changelist>-SNAPSHOT</changelist>
+        <sha1/>
 
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    
-		<jersey.javax.version>2.34</jersey.javax.version>
-		<jersey.jakarta.version>3.0.3</jersey.jakarta.version>
-		<poi.version>5.2.2</poi.version>
-		<jackson.version>2.13.2</jackson.version>
-		<junit.version>4.13.2</junit.version>
-		<software.awssdk.version>2.17.213</software.awssdk.version>
-	</properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <jersey.javax.version>2.34</jersey.javax.version>
+        <jersey.jakarta.version>3.0.3</jersey.jakarta.version>
+        <poi.version>5.2.2</poi.version>
+        <jackson.version>2.13.2</jackson.version>
+        <junit.version>4.13.2</junit.version>
+        <software.awssdk.version>2.17.213</software.awssdk.version>
+    </properties>
 
 	<organization>
 		<name>GeneXus S.A.</name>
@@ -84,6 +84,9 @@
 		<module>gxwebsocketjakarta</module>
 		<module>gxawsserverless</module>
 		<module>androidreports</module>
+        <module>gxqueue</module>
+        <module>gxqueueawssqs</module>
+        <module>gxqueueazure</module>
 	</modules>
 
 	<dependencies>
