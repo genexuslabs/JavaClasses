@@ -28,26 +28,16 @@
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-scratchpad</artifactId>
 			<version>${poi.version}</version>
-		</dependency>
+		</dependency>		
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>
 			<version>${poi.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-compress</artifactId>
-			<version>1.21</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi</artifactId>
 			<version>${poi.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-codec</groupId>
-			<artifactId>commons-codec</artifactId>
-			<version>1.9</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openoffice</groupId>
@@ -57,11 +47,6 @@
 		<dependency>
 			<groupId>org.openoffice</groupId>
 			<artifactId>unoil</artifactId>
-			<version>4.1.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openoffice</groupId>
-			<artifactId>ridl</artifactId>
 			<version>4.1.2</version>
 		</dependency>
 	</dependencies>

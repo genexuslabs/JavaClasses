@@ -14,13 +14,13 @@
 	<url>https://github.com/genexuslabs/JavaClasses</url>
 
 	<properties>
-		<revision>2.7</revision>
+		<revision>2.8</revision>
 		<changelist>-SNAPSHOT</changelist>
 		<sha1/>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jersey.javax.version>2.34</jersey.javax.version>
-		<jersey.jakarta.version>3.0.3</jersey.jakarta.version>
+		<jersey.jakarta.version>3.0.4</jersey.jakarta.version>
 		<jackson.version>2.13.2</jackson.version>
 		<poi.version>5.2.2</poi.version>
 		<junit.version>4.13.2</junit.version>
@@ -332,7 +332,7 @@
 						<configuration>
 							<serverId>ossrh</serverId>
 							<nexusUrl>https://s01.oss.sonatype.org</nexusUrl>
-							<autoReleaseAfterClose>false</autoReleaseAfterClose>
+							<autoReleaseAfterClose>true</autoReleaseAfterClose>
 						</configuration>
 					</plugin>
 				 </plugins>

@@ -6,9 +6,11 @@ import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.genexus.cloud.serverless.aws.LambdaHandler;
+import com.genexus.cloud.serverless.aws.handler.internal.GxJerseyLambdaContainerHandlerFactory;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.specific.java.LogManager;
 import org.glassfish.jersey.server.ResourceConfig;
+
 import java.util.Map;
 
 public class LambdaHttpApiHandler implements RequestHandler<HttpApiV2ProxyRequest, AwsProxyResponse> {
@@ -21,11 +23,13 @@ public class LambdaHttpApiHandler implements RequestHandler<HttpApiV2ProxyReques
 		if (LambdaHttpApiHandler.jerseyApplication == null) {
 			JerseyLambdaContainerHandler.getContainerConfig().setDefaultContentCharset("UTF-8");
 			logger = LogManager.initialize(".", LambdaHandler.class);
-			LambdaHttpApiHandler.jerseyApplication = ResourceConfig.forApplication(LambdaHelper.initialize());
+			LambdaHttpApiHandler.jerseyApplication = ResourceConfig.forApplication(LambdaApplicationHelper.initialize());
+
 			if (jerseyApplication.getClasses().size() == 0) {
 				logger.error("No HTTP endpoints found for this application");
 			}
-			LambdaHttpApiHandler.handler = JerseyLambdaContainerHandler.getHttpApiV2ProxyHandler(LambdaHttpApiHandler.jerseyApplication);
+
+			handler = GxJerseyLambdaContainerHandlerFactory.getHttpApiV2ProxyHandler(LambdaHttpApiHandler.jerseyApplication);
 		}
 	}
 
@@ -34,9 +38,9 @@ public class LambdaHttpApiHandler implements RequestHandler<HttpApiV2ProxyReques
 		if (logger.isDebugEnabled()) {
 			dumpRequest(awsProxyRequest);
 		}
+
 		String path = awsProxyRequest.getRawPath();
-		prepareSpecialMethods(awsProxyRequest);
-		dumpRequest(awsProxyRequest);
+		prepareRequest(awsProxyRequest);
 
 		logger.debug("Before handle Request");
 
@@ -46,13 +50,13 @@ public class LambdaHttpApiHandler implements RequestHandler<HttpApiV2ProxyReques
 		int statusCode = response.getStatusCode();
 		logger.debug("After handle Request - Status Code: " + statusCode);
 
-		if (statusCode >= 404 && statusCode <= 499) {
+		if (statusCode >= 404 && statusCode <= 599) {
 			logger.warn(String.format("Request could not be handled (%d): %s", response.getStatusCode(), path));
 		}
 		return response;
 	}
 
-	private void prepareSpecialMethods(HttpApiV2ProxyRequest awsProxyRequest) {
+	private void prepareRequest(HttpApiV2ProxyRequest awsProxyRequest) {
 		Map<String, String> headers = awsProxyRequest.getHeaders();
 
 		if (headers == null) {
@@ -74,4 +78,5 @@ public class LambdaHttpApiHandler implements RequestHandler<HttpApiV2ProxyReques
 		reqData += String.format("Body: %sn", awsProxyRequest.getBody()) + lineSeparator;
 		logger.debug(reqData);
 	}
+
 }

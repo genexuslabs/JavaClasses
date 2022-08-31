@@ -1,17 +1,4 @@
-/*
- * Copyright 2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance
- * with the License. A copy of the License is located at
- *
- * http://aws.amazon.com/apache2.0/
- *
- * or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
- * OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
- * and limitations under the License.
- */
 package com.genexus.serverless.proxy.test.jersey;
-
 
 import com.amazonaws.serverless.proxy.internal.testutils.AwsProxyRequestBuilder;
 import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
@@ -22,15 +9,11 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genexus.cloud.serverless.aws.handler.LambdaHttpApiHandler;
 import com.genexus.specific.java.Connect;
-import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * Unit test class for the Jersey AWS_PROXY default implementation
- */
 public class GeneXusAppAwsHttpApiProxyTest {
 	private static final String CUSTOM_HEADER_KEY = "x-custom-header";
 	private static final String CUSTOM_HEADER_VALUE = "my-custom-value";
@@ -39,7 +22,6 @@ public class GeneXusAppAwsHttpApiProxyTest {
 	private static ObjectMapper objectMapper = new ObjectMapper();
 	private static Context lambdaContext = new MockLambdaContext();
 
-	private ResourceConfig app;
 	private LambdaHttpApiHandler l;
 
 	@Before
@@ -70,6 +52,19 @@ public class GeneXusAppAwsHttpApiProxyTest {
 		AwsProxyResponse output = handler.proxy(request, lambdaContext);
 		assertEquals(200, output.getStatusCode());
 		assertEquals("{\"ItemId\":9,\"ItemName\":\"9 Item\"}", output.getBody());
+	}
+
+	@Test
+	public void testSessionSet() {
+		HttpApiV2ProxyRequest request = new AwsProxyRequestBuilder("/SessionSet", "POST")
+			.body("{\"SessionName\":\"Name\",\"SessionValue\":\"SetValueSession\"}")
+			.json()
+			.header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
+			.toHttpApiV2Request();
+
+		AwsProxyResponse output = handler.proxy(request, lambdaContext);
+		assertEquals(200, output.getStatusCode());
+
 	}
 
 	@Test

@@ -1,3 +1,4 @@
 com.gx.serverless.test.test_services_rest
 com.gx.serverless.test.receivenumber_services_rest
+com.gx.serverless.test.sessionset_services_rest
 com.genexus.serverless.proxy.test.jersey.EchoJerseyResource

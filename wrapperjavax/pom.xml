@@ -42,17 +42,6 @@
 		</dependency>
 
         <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>${jersey.javax.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-server</artifactId>
-            <version>${jersey.javax.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-servlet-core</artifactId>
             <version>${jersey.javax.version}</version>
@@ -65,15 +54,15 @@
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish.jersey.ext</groupId>
-            <artifactId>jersey-entity-filtering</artifactId>
-            <version>${jersey.javax.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.glassfish.jersey.inject</groupId>
             <artifactId>jersey-hk2</artifactId>
             <version>${jersey.javax.version}</version>
+						<exclusions>
+							<exclusion>
+								<groupId>org.glassfish.hk2.external</groupId>
+								<artifactId>aopalliance-repackaged</artifactId>
+							</exclusion>
+						</exclusions>            
         </dependency>
 
         <dependency>
@@ -109,14 +98,13 @@
 		<dependency>
 			<groupId>com.sun.xml.ws</groupId>
 			<artifactId>jaxws-rt</artifactId>
-			<version>2.3.1</version>
+			<version>2.3.5</version>
 			<exclusions>
 				<exclusion>
-            		<groupId>*</groupId>
-            		<artifactId>*</artifactId>
-        		</exclusion>
-    		</exclusions>    			
-    		<scope>runtime</scope>
+					<groupId>com.sun.xml.fastinfoset</groupId>
+					<artifactId>FastInfoset</artifactId>
+				</exclusion>
+    	</exclusions>
 		</dependency>
     </dependencies>
 
