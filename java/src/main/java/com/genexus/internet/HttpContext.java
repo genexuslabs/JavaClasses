@@ -165,9 +165,9 @@ public abstract class HttpContext
 	private static HashMap<String, Messages> cachedMessages = new HashMap<String, Messages>();
 	private String currentLanguage = null;
 	private Vector<Object> userStyleSheetFiles = new Vector<Object>();
-	private String ThemekbPrefix;
-	private String ThemestyleSheet;
-	private String ThemeurlBuildNumber;
+	private String themekbPrefix;
+	private String themestyleSheet;
+	private String themeurlBuildNumber;
 
 	private boolean isServiceWorkerDefined()
 	{
@@ -470,7 +470,7 @@ public abstract class HttpContext
 			writeTextNL("<style id=\"gx-inline-css\">" + cssContent + "</style>");
 			styleSheets.add(getRequest().getServletPath());
 		}
-		String[] referencedFiles = ThemeHelper.getThemeCssReferencedFiles(PrivateUtilities.removeExtension(ThemestyleSheet));
+		String[] referencedFiles = ThemeHelper.getThemeCssReferencedFiles(PrivateUtilities.removeExtension(themestyleSheet));
 		for (int i=0; i<referencedFiles.length; i++)
 		{
 			String file = referencedFiles[i];
@@ -478,9 +478,9 @@ public abstract class HttpContext
 			if (extension != null)
 			{
 				if (extension.equals("css"))
-					AddStyleSheetFile(file, ThemeurlBuildNumber, false, bHasCustomContent);
+					AddStyleSheetFile(file, themeurlBuildNumber, false, bHasCustomContent);
 				else if (extension.equals("js"))
-					AddDeferredJavascriptSource(file, ThemeurlBuildNumber);
+					AddDeferredJavascriptSource(file, themeurlBuildNumber);
 			}
 		}
 		for (Object data : this.userStyleSheetFiles)
@@ -488,7 +488,7 @@ public abstract class HttpContext
 			String[] sdata = (String[]) data;
 			AddStyleSheetFile(sdata[0], sdata[1], false, false);
 		}
-		AddStyleSheetFile(ThemekbPrefix + "Resources/" + getLanguage() + "/" + ThemestyleSheet, ThemeurlBuildNumber, true, bHasCustomContent);
+		AddStyleSheetFile(themekbPrefix + "Resources/" + getLanguage() + "/" + themestyleSheet, themeurlBuildNumber, true, bHasCustomContent);
 	}
 	
 	public void AddThemeStyleSheetFile(String kbPrefix, String styleSheet)
@@ -497,9 +497,9 @@ public abstract class HttpContext
 	}
 	public void AddThemeStyleSheetFile(String kbPrefix, String styleSheet, String urlBuildNumber)
 	{
-		this.ThemekbPrefix = kbPrefix;
-		this.ThemestyleSheet = styleSheet;
-		this.ThemeurlBuildNumber = urlBuildNumber;
+		this.themekbPrefix = kbPrefix;
+		this.themestyleSheet = styleSheet;
+		this.themeurlBuildNumber = urlBuildNumber;
 	}
 
 	public void AddStyleSheetFile(String styleSheet)
