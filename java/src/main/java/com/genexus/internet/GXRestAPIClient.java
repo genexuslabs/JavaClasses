@@ -13,6 +13,7 @@ import json.org.json.JSONArray;
 import com.genexus.internet.IGxJSONAble;
 import com.genexus.xml.GXXMLSerializable;
 import com.genexus.CommonUtil;
+import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.*;
 
 public class GXRestAPIClient{
@@ -388,12 +389,19 @@ public class GXRestAPIClient{
 		} 
 		catch (json.org.json.JSONException e)
 		{
-			System.out.println( e.toString());
+			System.err.println( e.toString());
 			return null;
 		}
 		return coll;
 	}
 
+	public void addUploadFile(String filePath, String fileName)
+	{		
+		httpClient.addFile(filePath, fileName);
+		String mimeType = SpecificImplementation.Application.getContentType(filePath);
+		contentType = mimeType;
+	}
+	
 	public void RestExecute()
 	{
 		String separator = "";
@@ -431,7 +439,6 @@ public class GXRestAPIClient{
 				httpClient.addHeader("Content-Type", contentType);
 			}
 		}
-
 		String serviceuri = ((this.location.getSecure() > 0) ? "https" : "http") + "://" + this.location.getHost();
 		serviceuri += (this.location.getPort() != 80) ? ":" + Integer.toString(this.location.getPort()): "";
 		serviceuri += "/" + this.location.getBaseURL() + "/" + this.location.getResourceName();
