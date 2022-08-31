@@ -37,83 +37,83 @@ import com.amazonaws.serverless.proxy.test.jersey.model.SingleValueModel;
 @Path("/echo")
 public class EchoJerseyResource {
 
-    @Path("/hola")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response hola(@Context ContainerRequestContext context) {
-        MapResponseModel headers = new MapResponseModel();
-        headers.addValue("key", "hola");
+	@Path("/hola")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response hola(@Context ContainerRequestContext context) {
+		MapResponseModel headers = new MapResponseModel();
+		headers.addValue("key", "hola");
 
-        return Response.status(200).entity(headers).build();
-    }
+		return Response.status(200).entity(headers).build();
+	}
 
-    @Path("/headers")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public MapResponseModel echoHeaders(@Context ContainerRequestContext context) {
-        MapResponseModel headers = new MapResponseModel();
-        for (String key : context.getHeaders().keySet()) {
-            headers.addValue(key, context.getHeaderString(key));
-        }
+	@Path("/headers")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public MapResponseModel echoHeaders(@Context ContainerRequestContext context) {
+		MapResponseModel headers = new MapResponseModel();
+		for (String key : context.getHeaders().keySet()) {
+			headers.addValue(key, context.getHeaderString(key));
+		}
 
-        return headers;
-    }
+		return headers;
+	}
 
-    @Path("/servlet-headers")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public MapResponseModel echoServletHeaders(@Context HttpServletRequest context) {
-        MapResponseModel headers = new MapResponseModel();
-        Enumeration<String> headerNames = context.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String headerName = headerNames.nextElement();
-            headers.addValue(headerName, context.getHeader(headerName));
-        }
+	@Path("/servlet-headers")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public MapResponseModel echoServletHeaders(@Context HttpServletRequest context) {
+		MapResponseModel headers = new MapResponseModel();
+		Enumeration<String> headerNames = context.getHeaderNames();
+		while (headerNames.hasMoreElements()) {
+			String headerName = headerNames.nextElement();
+			headers.addValue(headerName, context.getHeader(headerName));
+		}
 
-        return headers;
-    }
+		return headers;
+	}
 
-    @Path("/query-string")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public MapResponseModel echoQueryString(@Context UriInfo context) {
-        MapResponseModel queryStrings = new MapResponseModel();
-        for (String key : context.getQueryParameters().keySet()) {
-            queryStrings.addValue(key, context.getQueryParameters().getFirst(key));
-        }
+	@Path("/query-string")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public MapResponseModel echoQueryString(@Context UriInfo context) {
+		MapResponseModel queryStrings = new MapResponseModel();
+		for (String key : context.getQueryParameters().keySet()) {
+			queryStrings.addValue(key, context.getQueryParameters().getFirst(key));
+		}
 
-        return queryStrings;
-    }
+		return queryStrings;
+	}
 
 
-    @Path("/json-body")
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public SingleValueModel echoJsonValue(final SingleValueModel requestValue) {
-        SingleValueModel output = new SingleValueModel();
-        output.setValue(requestValue.getValue());
+	@Path("/json-body")
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public SingleValueModel echoJsonValue(final SingleValueModel requestValue) {
+		SingleValueModel output = new SingleValueModel();
+		output.setValue(requestValue.getValue());
 
-        return output;
-    }
+		return output;
+	}
 
-    @Path("/status-code")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response echoCustomStatusCode(@QueryParam("status") int statusCode) {
-        SingleValueModel output = new SingleValueModel();
-        output.setValue("" + statusCode);
+	@Path("/status-code")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response echoCustomStatusCode(@QueryParam("status") int statusCode) {
+		SingleValueModel output = new SingleValueModel();
+		output.setValue("" + statusCode);
 
-        return Response.status(statusCode).entity(output).build();
-    }
+		return Response.status(statusCode).entity(output).build();
+	}
 
-    @Path("/binary")
-    @GET
-    @Produces("application/octet-stream")
-    public Response echoBinaryData() {
-        byte[] b = new byte[128];
-        new Random().nextBytes(b);
+	@Path("/binary")
+	@GET
+	@Produces("application/octet-stream")
+	public Response echoBinaryData() {
+		byte[] b = new byte[128];
+		new Random().nextBytes(b);
 
-        return Response.ok(b).build();
-    }
+		return Response.ok(b).build();
+	}
 }
