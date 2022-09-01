@@ -11,7 +11,7 @@ public class GXWebSocketSession{
 		return id;
 	}
 	public GXWebSocketSession(ISession session){
-		id = session.getQueryString();
+		id = session.getId();
 		this.session = session;
 	}
 	public ISession getSession()
