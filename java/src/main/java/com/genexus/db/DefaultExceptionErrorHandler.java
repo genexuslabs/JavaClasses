@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import com.genexus.GXRuntimeException;
 import com.genexus.IErrorHandler;
 import com.genexus.ModelContext;
+import com.genexus.common.classes.AbstractGXConnection;
 import com.genexus.db.driver.GXDBMS;
 import com.genexus.util.ReorgSubmitThreadPool;
 
@@ -22,7 +23,16 @@ public class DefaultExceptionErrorHandler
 
 	public static void handleSQLError(IErrorHandler errorHandler, SQLException e, ModelContext context, int remoteHandle, IDataStoreHelper helper, Cursor cursor)
 	{
-		cursor.status = mapErrorToStatus(DBConnectionManager.getInstance().getUserInformation(remoteHandle).getNamespace().getDataSource(helper.getDataStoreName()).dbms, e);
+		try {
+			AbstractGXConnection conn = helper.getConnectionProvider().getConnection(context, remoteHandle, helper.getDataStoreName(), true, true);
+			handleSQLError1(errorHandler, e, context, remoteHandle, conn, helper.getDataStoreName(), cursor);
+		}
+		catch (SQLException exc) {}
+	}
+
+	public static void handleSQLError1(IErrorHandler errorHandler, SQLException e, ModelContext context, int remoteHandle, AbstractGXConnection conn, String datastoreName, Cursor cursor)
+	{
+		cursor.status = mapErrorToStatus(DBConnectionManager.getInstance().getUserInformation(remoteHandle).getNamespace().getDataSource(datastoreName).dbms, e);
 		if (cursor.status != Cursor.DUPLICATE)
 		{
 			ReorgSubmitThreadPool.setAnError();
@@ -48,16 +58,13 @@ public class DefaultExceptionErrorHandler
 
 			if	(context.globals.Gx_eop == ERROPT_DEFAULT)
 			{
-				defaultSQLErrorHandler(errorHandler, e, context, remoteHandle, helper, cursor);
+				defaultSQLErrorHandler(context, cursor);
 			}
 
 			if	(context.globals.Gx_eop == ERROPT_CANCEL)
 			{
-				com.genexus.Application.rollback(context, remoteHandle, helper.getDataStoreName(), null);
-				try {
-					helper.getConnectionProvider().getConnection(context, remoteHandle, helper.getDataStoreName(), true, true).setError();
-				}
-				catch (SQLException exc) {}
+				com.genexus.Application.rollback(context, remoteHandle, datastoreName, null);
+				conn.setError();
 				throw new GXRuntimeException(e);
 			}
 		}
@@ -101,7 +108,7 @@ public class DefaultExceptionErrorHandler
 		return Cursor.UNEXPECTED_DBMS_ERROR;
 	}
 	
-	public static void defaultSQLErrorHandler(IErrorHandler errorHandler, SQLException e, ModelContext context, int remoteHandle, IDataStoreHelper helper, Cursor cursor)
+	public static void defaultSQLErrorHandler(ModelContext context, Cursor cursor)
 	{
 		context.globals.Gx_eop = ERROPT_CANCEL;
 

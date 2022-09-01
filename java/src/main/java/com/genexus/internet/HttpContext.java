@@ -164,6 +164,10 @@ public abstract class HttpContext
 
 	private static HashMap<String, Messages> cachedMessages = new HashMap<String, Messages>();
 	private String currentLanguage = null;
+	private Vector<Object> userStyleSheetFiles = new Vector<Object>();
+	private String themekbPrefix;
+	private String themestyleSheet;
+	private String themeurlBuildNumber;
 
 	private boolean isServiceWorkerDefined()
 	{
@@ -457,7 +461,7 @@ public abstract class HttpContext
 		return cssContent;
 	}
 
-	public void AddThemeStyleSheetFile(String kbPrefix, String styleSheet, String urlBuildNumber)
+	public void CloseStyles()
 	{
 		String cssContent = FetchCustomCSS();
 		boolean bHasCustomContent = ! cssContent.isEmpty();
@@ -466,7 +470,7 @@ public abstract class HttpContext
 			writeTextNL("<style id=\"gx-inline-css\">" + cssContent + "</style>");
 			styleSheets.add(getRequest().getServletPath());
 		}
-		String[] referencedFiles = ThemeHelper.getThemeCssReferencedFiles(PrivateUtilities.removeExtension(styleSheet));
+		String[] referencedFiles = ThemeHelper.getThemeCssReferencedFiles(PrivateUtilities.removeExtension(themestyleSheet));
 		for (int i=0; i<referencedFiles.length; i++)
 		{
 			String file = referencedFiles[i];
@@ -474,17 +478,28 @@ public abstract class HttpContext
 			if (extension != null)
 			{
 				if (extension.equals("css"))
-					AddStyleSheetFile(file, urlBuildNumber, false, bHasCustomContent);
+					AddStyleSheetFile(file, themeurlBuildNumber, false, bHasCustomContent);
 				else if (extension.equals("js"))
-					AddDeferredJavascriptSource(file, urlBuildNumber);
+					AddDeferredJavascriptSource(file, themeurlBuildNumber);
 			}
 		}
-		AddStyleSheetFile(kbPrefix + "Resources/" + getLanguage() + "/" + styleSheet, urlBuildNumber, true, bHasCustomContent);
+		for (Object data : this.userStyleSheetFiles)
+		{
+			String[] sdata = (String[]) data;
+			AddStyleSheetFile(sdata[0], sdata[1], false, false);
+		}
+		AddStyleSheetFile(themekbPrefix + "Resources/" + getLanguage() + "/" + themestyleSheet, themeurlBuildNumber, true, bHasCustomContent);
 	}
 	
 	public void AddThemeStyleSheetFile(String kbPrefix, String styleSheet)
 	{
 		AddThemeStyleSheetFile(kbPrefix, styleSheet, "");
+	}
+	public void AddThemeStyleSheetFile(String kbPrefix, String styleSheet, String urlBuildNumber)
+	{
+		this.themekbPrefix = kbPrefix;
+		this.themestyleSheet = styleSheet;
+		this.themeurlBuildNumber = urlBuildNumber;
 	}
 
 	public void AddStyleSheetFile(String styleSheet)
@@ -495,7 +510,7 @@ public abstract class HttpContext
 	public void AddStyleSheetFile(String styleSheet, String urlBuildNumber)
 	{
 		urlBuildNumber = getURLBuildNumber(styleSheet, urlBuildNumber);
-		AddStyleSheetFile(styleSheet, urlBuildNumber, false);
+		userStyleSheetFiles.add(new String[] { styleSheet, urlBuildNumber });
 	}
 
 	private String getURLBuildNumber(String resourcePath, String urlBuildNumber)
@@ -520,13 +535,15 @@ public abstract class HttpContext
 		if (!styleSheets.contains(styleSheet))
 		{
 			styleSheets.add(styleSheet);
+			String sUncachedURL = oldConvertURL(styleSheet) + urlBuildNumber;
+			String sLayerName = styleSheet.replace("/", "_").replace(".","_");
 			if (!this.getHtmlHeaderClosed() && this.isEnabled)
 			{
 				String sRelAtt = (isDeferred ? "rel=\"preload\" as=\"style\" " : "rel=\"stylesheet\"");
 				if (isGxThemeHidden)
-					writeTextNL("<link id=\"gxtheme_css_reference\" " + sRelAtt + " type=\"text/css\" href=\"" + oldConvertURL(styleSheet) + urlBuildNumber + "\" " + htmlEndTag(HTMLElement.LINK));
+					writeTextNL("<link id=\"gxtheme_css_reference\" " + sRelAtt + " type=\"text/css\" href=\"" + sUncachedURL + "\" " + htmlEndTag(HTMLElement.LINK));
 				else
-					writeTextNL("<link " + sRelAtt + " type=\"text/css\" href=\"" + oldConvertURL(styleSheet) + urlBuildNumber + "\" " + htmlEndTag(HTMLElement.LINK));						
+					writeTextNL("<style data-gx-href=\""+ sUncachedURL + "\"> @import url(\"" + sUncachedURL + "\") layer(" + sLayerName + ") </style>");
 			}
 			else
 			{

@@ -43,7 +43,9 @@ public final class ModelContext extends AbstractModelContext
         ModelContext context = (ModelContext)threadModelContext.get();
 		if(context == null)
 		{
-			logger.error(new Date() + " - Cannot find ModelContext for thread " + Thread.currentThread() );
+			if (logger.isDebugEnabled()) {
+				logger.debug(new Date() + " - Cannot find ModelContext for thread " + Thread.currentThread());
+			}
 		}
         return context;
     }
