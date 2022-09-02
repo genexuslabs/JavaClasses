@@ -143,7 +143,7 @@ public class GXRestAPIClient{
 	{
 		String fmt = "yyyy-MM-dd'T'HH:mm:ss";
 		if (hasMilliseconds)
-			fmt = "yyyy-MM-dd'T'HH:mm:ss.fff";
+			fmt = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 		SimpleDateFormat df = new SimpleDateFormat(fmt);
 		queryVars.put(varName,  df.format(varValue));
 	}
@@ -200,7 +200,7 @@ public class GXRestAPIClient{
 	{
 		String fmt = "yyyy-MM-dd'T'HH:mm:ss";
 		if (hasMilliseconds)
-			fmt = "yyyy-MM-dd'T'YHH:mm:ss.fff";
+			fmt = "yyyy-MM-dd'T'YHH:mm:ss.SSS";
 		SimpleDateFormat df = new SimpleDateFormat(fmt);
 		bodyVars.put( varName, quoteString(df.format(varValue)));
 	}
@@ -241,7 +241,7 @@ public class GXRestAPIClient{
 		try{
 			String fmt = "yyyy-MM-dd'T'HH:mm:ss";
 			if (hasMilliseconds)
-				fmt = "yyyy-MM-dd'T'YHH:mm:ss.fff";
+				fmt = "yyyy-MM-dd'T'YHH:mm:ss.SSS";
 			return new SimpleDateFormat(fmt).parse(getJsonStr(varName));
 		}
 		catch (ParseException e)
