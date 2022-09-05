@@ -46,7 +46,7 @@
         <dependency>
             <groupId>com.amazonaws.serverless</groupId>
             <artifactId>aws-serverless-java-container-jersey</artifactId>
-            <version>1.6</version>
+            <version>1.8.2</version>
         </dependency>
 
         <dependency>
