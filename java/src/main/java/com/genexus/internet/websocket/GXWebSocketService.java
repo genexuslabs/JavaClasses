@@ -5,6 +5,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.genexus.db.Namespace;
+import com.genexus.db.UserInformation;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import json.org.json.JSONException;
@@ -82,12 +84,18 @@ public class GXWebSocketService {
 	private void executeHandler(HandlerType type, Object[] parameters) {
 		String handler = getHandlerClassName(type);
 		if (handler != null) {
+			ModelContext modelContext = ModelContext.getModelContext(Application.gxCfg);
+			UserInformation ui = Application.getConnectionManager().createUserInformation(Namespace.getNamespace(modelContext.getNAME_SPACE()));
+			int remoteHandle = ui.getHandle();
 			try {
-				if (!DynamicExecute.dynamicExecute(ModelContext.getModelContext(GXutil.class), -1, Application.class, handler, parameters)) {
+				if (!DynamicExecute.dynamicExecute(modelContext, remoteHandle, Application.class, handler, parameters)) {
 					logger.error(String.format("WebSocket - Handler '%s' failed to execute", handler));
 				}
 			} catch (Exception e) {
 				logger.error(String.format("WebSocket - Handler '%s' failed to execute", handler));
+			}
+			finally {
+				Application.cleanupConnection(remoteHandle);
 			}
 		}
 	}
