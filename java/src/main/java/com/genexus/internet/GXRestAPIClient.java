@@ -398,7 +398,7 @@ public class GXRestAPIClient{
 		return sdt;
 	}
 
-	public <T extends GxSilentTrnSdt> GXBaseCollection<T> getBodySdtCollection(String varName, Class<T> elementClasss)
+	public <T extends GxSilentTrnSdt> GXBaseCollection<T> getBodySdtTrnCollection(String varName, Class<T> elementClasss)
 	{			
 		JSONArray jsonarr = new JSONArray();
 		GXBaseCollection<T> col = new GXBaseCollection<T>();  
@@ -433,7 +433,7 @@ public class GXRestAPIClient{
 		return col;
 	}
 
-	public <T extends GxUserType> GXBaseCollection<T> getBodySdtTrnCollection(String varName, Class<T> elementClasss)
+	public <T extends GxUserType> GXBaseCollection<T> getBodySdtCollection(String varName, Class<T> elementClasss)
 	{			
 		JSONArray jsonarr = new JSONArray();
 		GXBaseCollection<T> col = new GXBaseCollection<T>();  
