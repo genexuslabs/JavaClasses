@@ -158,21 +158,42 @@ public class GXRestAPIClient{
 		queryVars.put(varName, varValue.toString());
 	}
 
+	public void addQueryVar(String varName, java.math.BigDecimal varValue)
+	{
+		queryVars.put(varName, varValue.toString());
+	}
+
 
 	private String quoteString(String value)
 	{
 		return "\"" + value + "\"";
 	}
 
-	public void addBodyVar(String varName, GxUserType varValue)
+	public <T extends GxSilentTrnSdt> void addBodyVarBC(String varName, GXBaseCollection<T> varValue)
+	{
+		if ( varValue != null)
+		{
+			bodyVars.put(varName, varValue.toJSonString(false));
+		}
+	}
+
+	public <T extends GxUserType> void addBodyVar(String varName, GXBaseCollection<T> varValue)
+	{
+		if ( varValue != null)
+		{
+			bodyVars.put(varName, varValue.toJSonString(false));
+		}
+	}
+	
+	public void addBodyVar(String varName, GxSilentTrnSdt varValue)
 	{
 		if ( varValue != null)
 		{
 			bodyVars.put(varName, varValue.toJSonString(false));
 		}			
 	}
-
-	public <T extends GxUserType> void addBodyVar(String varName, GXBaseCollection<T> varValue)
+	
+	public void addBodyVar(String varName, GxUserType varValue)
 	{
 		if ( varValue != null)
 		{
@@ -211,6 +232,11 @@ public class GXRestAPIClient{
 	}
 
 	public void addBodyVar(String varName, Boolean varValue)
+	{
+		bodyVars.put( varName, varValue.toString());
+	}
+
+	public void addBodyVar(String varName, java.math.BigDecimal varValue)
 	{
 		bodyVars.put( varName, varValue.toString());
 	}
@@ -298,6 +324,43 @@ public class GXRestAPIClient{
 		return jsonstr;	
 	}
 
+	public <T extends GxSilentTrnSdt> T getBodySdtTrn(String varName, Class<T> sdtClass)
+	{	
+		T sdt;
+		try {
+            sdt = sdtClass.newInstance();
+        } catch (InstantiationException e) {
+            return null;
+        } catch (IllegalAccessException e) {
+            return null;
+        }
+		try {
+			if (jsonResponse != null) {
+				if (jsonResponse.has(varName)) {
+					sdt.fromJSonString(jsonResponse.getString(varName), null);
+				} 
+				else if (jsonResponse.length() == 1 && jsonResponse.has("")) {
+					sdt.fromJSonString(jsonResponse.getString(""), null);
+				} 
+				else if (jsonResponse.length()>= 1 && !jsonResponse.has(varName))
+				{
+					sdt.fromJSonString(httpClient.getString(), null);
+				}
+			}
+			else {
+				errorCode = 1;
+				errorMessage = "Invalid response";
+				return null;
+			}
+		} 
+		catch (json.org.json.JSONException e) {
+			errorCode = 1;
+			errorMessage = "Invalid response";				
+			return null;
+		}
+		return sdt;
+	}
+
 	public <T extends GxUserType> T getBodySdt(String varName, Class<T> sdtClass)
 	{	
 		T sdt;
@@ -335,7 +398,42 @@ public class GXRestAPIClient{
 		return sdt;
 	}
 
-	public <T extends GxUserType> GXBaseCollection<T> getBodySdtCollection(String varName, Class<T> elementClasss)
+	public <T extends GxSilentTrnSdt> GXBaseCollection<T> getBodySdtCollection(String varName, Class<T> elementClasss)
+	{			
+		JSONArray jsonarr = new JSONArray();
+		GXBaseCollection<T> col = new GXBaseCollection<T>();  
+		try {			
+			if (jsonResponse.has(varName))
+				jsonarr = jsonResponse.getJSONArray(varName);
+			else if (jsonResponse.length() == 1 && jsonResponse.has(""))
+				jsonarr = jsonResponse.getJSONArray("");
+
+			if (jsonarr != null) {
+				for (int i=0; i < jsonarr.length(); i++) {
+    				JSONObject o = jsonarr.getJSONObject(i);
+					T sdt = elementClasss.newInstance();
+					sdt.fromJSonString(o.toString(),null);
+					col.add(sdt);
+				}
+			}
+			else {
+				errorCode = 1;
+				errorMessage = "Invalid response";
+			}	
+		} 
+		catch (json.org.json.JSONException e)
+		{
+			errorCode = 1;
+			errorMessage = "Invalid response" +  e.toString();
+		}
+		catch (Exception e) {
+			errorCode = 1;
+			errorMessage = "Invalid response" + e.toString();
+		}
+		return col;
+	}
+
+	public <T extends GxUserType> GXBaseCollection<T> getBodySdtTrnCollection(String varName, Class<T> elementClasss)
 	{			
 		JSONArray jsonarr = new JSONArray();
 		GXBaseCollection<T> col = new GXBaseCollection<T>();  
