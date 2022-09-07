@@ -195,12 +195,6 @@ public class ServiceCursorBase extends Cursor
             default:
                 throw new RuntimeException("Not implemented");
         }
-
-        //if(currentOf)
-        //{ // Si tengo currentof marco uncommited changes para hacer un rollback dado que en algunos casos
-        // de error (Bantotal) les estaban quedando locks en la bd 
-        //	connectionProvider.getConnection().setUncommitedChanges();
-        //}
     }
 
     public boolean next(AbstractDataSource ds) throws SQLException
