@@ -398,6 +398,44 @@ public class GXRestAPIClient{
 		return sdt;
 	}
 
+	
+	public <T extends GXXMLSerializable> T getBodyObj(String varName, Class<T> sdtClass)
+	{	
+		T sdt;
+		try {
+            sdt = sdtClass.newInstance();
+        } catch (InstantiationException e) {
+            return null;
+        } catch (IllegalAccessException e) {
+            return null;
+        }
+		try {
+			if (jsonResponse != null) {
+				if (jsonResponse.has(varName)) {
+					sdt.fromJSonString(jsonResponse.getString(varName), null);
+				} 
+				else if (jsonResponse.length() == 1 && jsonResponse.has("")) {
+					sdt.fromJSonString(jsonResponse.getString(""), null);
+				} 
+				else if (jsonResponse.length()>= 1 && !jsonResponse.has(varName))
+				{
+					sdt.fromJSonString(httpClient.getString(), null);
+				}
+			}
+			else {
+				errorCode = 1;
+				errorMessage = "Invalid response";
+				return null;
+			}
+		} 
+		catch (json.org.json.JSONException e) {
+			errorCode = 1;
+			errorMessage = "Invalid response";				
+			return null;
+		}
+		return sdt;
+	}
+
 	public <T extends GxSilentTrnSdt> GXBaseCollection<T> getBodySdtTrnCollection(String varName, Class<T> elementClasss)
 	{			
 		JSONArray jsonarr = new JSONArray();
@@ -467,6 +505,42 @@ public class GXRestAPIClient{
 		}
 		return col;
 	}
+
+	public <T extends GXXMLSerializable> GXBaseCollection<T> getBodyObjCollection(String varName, Class<T> elementClasss)
+	{			
+		JSONArray jsonarr = new JSONArray();
+		GXBaseCollection<T> col = new GXBaseCollection<T>();  
+		try {			
+			if (jsonResponse.has(varName))
+				jsonarr = jsonResponse.getJSONArray(varName);
+			else if (jsonResponse.length() == 1 && jsonResponse.has(""))
+				jsonarr = jsonResponse.getJSONArray("");
+
+			if (jsonarr != null) {
+				for (int i=0; i < jsonarr.length(); i++) {
+    				JSONObject o = jsonarr.getJSONObject(i);
+					T sdt = elementClasss.newInstance();
+					sdt.fromJSonString(o.toString(),null);
+					col.add(sdt);
+				}
+			}
+			else {
+				errorCode = 1;
+				errorMessage = "Invalid response";
+			}	
+		} 
+		catch (json.org.json.JSONException e)
+		{
+			errorCode = 1;
+			errorMessage = "Invalid response" +  e.toString();
+		}
+		catch (Exception e) {
+			errorCode = 1;
+			errorMessage = "Invalid response" + e.toString();
+		}
+		return col;
+	}
+
 
 	public <T extends Object> GXSimpleCollection<T> getBodyCollection(String varName, Class<T> elementClasss)
 	{	
