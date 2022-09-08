@@ -169,6 +169,21 @@ public class GXRestAPIClient{
 		queryVars.put(varName, varValue.toString());
 	}
 
+	public void addQueryVar(String varName, GxSilentTrnSdt varValue)
+	{
+		if ( varValue != null)
+		{
+			queryVars.put(varName, varValue.toJSonString(false));
+		}			
+	}
+	
+	public void addQueryVar(String varName, GxUserType varValue)
+	{
+		if ( varValue != null)
+		{
+			queryVars.put(varName, varValue.toJSonString(false));
+		}
+	}
 
 	private String quoteString(String value)
 	{
