@@ -11,6 +11,7 @@ import java.util.Date;
 import json.org.json.IJsonFormattable;
 import json.org.json.JSONArray;
 import com.genexus.internet.IGxJSONAble;
+import com.genexus.internet.IGxGeoJSONSerializable;
 import com.genexus.xml.GXXMLSerializable;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
@@ -153,6 +154,11 @@ public class GXRestAPIClient{
 		queryVars.put(varName, varValue.toString());
 	}
 	
+	public void addQueryVar(String varName, IGxGeoJSONSerializable varValue)
+	{
+		queryVars.put(varName, varValue.toJSonString());
+	}
+	
 	public void addQueryVar(String varName, Boolean varValue)
 	{
 		queryVars.put(varName, varValue.toString());
@@ -246,6 +252,11 @@ public class GXRestAPIClient{
 		bodyVars.put( varName, quoteString(varValue.toString()));
 	}
 
+	public void addBodyVar(String varName, IGxGeoJSONSerializable varValue)
+	{
+		bodyVars.put( varName, quoteString(varValue.toJSonString()));
+	}
+
 	public String getBodyString(String varName)
 	{
 		return  getJsonStr(varName);
@@ -284,6 +295,22 @@ public class GXRestAPIClient{
 	public java.util.UUID getBodyGuid(String varName)
 	{			
 		return java.util.UUID.fromString(getJsonStr(varName));
+	}
+
+	public < T extends IGxGeoJSONSerializable> T getBodyGeospatial(String varName, Class<T> sdtClass)
+	{			
+		T sdt;
+		try {
+            sdt = sdtClass.newInstance();
+			sdt.fromJSonString(getJsonStr(varName));
+			return sdt;
+        }
+		catch (IllegalAccessException e) {
+			return null;
+		}
+		catch (InstantiationException e) {
+            return null;
+		}	
 	}
 
 	public Double getBodyNum(String varName)
