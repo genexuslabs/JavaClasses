@@ -61,6 +61,14 @@
 		<tag>${sha1}</tag>
   	</scm>
 
+  <repositories>
+    <repository>
+      <id>iTextRepository</id>
+      <name>iText Repository</name>
+      <url>https://repository.openmindonline.it/</url>
+    </repository>
+  </repositories>
+
 	<modules>
 		<module>common</module>
 		<module>wrapperjavax</module>

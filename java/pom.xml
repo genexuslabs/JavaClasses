@@ -112,6 +112,11 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+		    <groupId>com.lowagie</groupId>
+		    <artifactId>itextasian</artifactId>
+		    <version>1.5.2</version>
+		</dependency>		
+		<dependency>
 			<groupId>redis.clients</groupId>
 			<artifactId>jedis</artifactId>
 			<version>2.9.0</version>
