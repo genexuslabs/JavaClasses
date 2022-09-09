@@ -63,6 +63,12 @@
 
   <repositories>
     <repository>
+	    <id>central</id>
+	    <name>Maven Central</name>
+	    <layout>default</layout>
+	    <url>https://repo1.maven.org/maven2</url>
+	  </repository>  
+    <repository>
       <id>iTextRepository</id>
       <name>iText Repository</name>
       <url>https://repository.openmindonline.it/</url>
