@@ -38,7 +38,6 @@ public class GXRestAPIClient{
 	private JSONObject jsonResponse;
 	private HashMap<String, String> queryVars = new HashMap<String, String>();
 	private HashMap<String, String> bodyVars = new HashMap<String, String>();
-	//private HashMap<String, String> pathVars = new HashMap<String, String>();
 	private HashMap<String, String> responseData = new HashMap<String, String>();
 
 	public GXRestAPIClient()
@@ -116,7 +115,7 @@ public class GXRestAPIClient{
 
 	public void addQueryVar(String varName, String varValue)
 	{
-		queryVars.put(varName, varValue);
+		queryVars.put(varName, GXutil.URLEncode(varValue));
 	}
 
 	public void addQueryVar(String varName, int varValue)
@@ -156,7 +155,7 @@ public class GXRestAPIClient{
 	
 	public void addQueryVar(String varName, IGxGeoJSONSerializable varValue)
 	{
-		queryVars.put(varName, varValue.toJSonString());
+		queryVars.put(varName, GXutil.URLEncode(varValue.toJSonString()));
 	}
 	
 	public void addQueryVar(String varName, Boolean varValue)
