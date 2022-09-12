@@ -18,7 +18,6 @@
         <changelist>-SNAPSHOT</changelist>
         <sha1/>
 
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jersey.javax.version>2.34</jersey.javax.version>
         <jersey.jakarta.version>3.0.4</jersey.jakarta.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
