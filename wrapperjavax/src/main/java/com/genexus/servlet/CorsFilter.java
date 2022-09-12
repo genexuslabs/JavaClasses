@@ -11,7 +11,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.*;
 
 public class CorsFilter implements Filter {
 	@Override
@@ -22,7 +22,7 @@ public class CorsFilter implements Filter {
 	@Override
 	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
 		HttpServletRequest request = (HttpServletRequest) servletRequest;
-		HashMap<String, String> corsHeaders = CORSHelper.getCORSHeaders(request.getHeader("Access-Control-Request-Headers"));
+		HashMap<String, String> corsHeaders = CORSHelper.getCORSHeaders(request.getHeader(CORSHelper.REQUEST_METHOD_HEADER_NAME), request.getHeader(CORSHelper.REQUEST_HEADERS_HEADER_NAME));
 		if (corsHeaders != null) {
 			HttpServletResponse response = (HttpServletResponse) servletResponse;
 			for (String headerName : corsHeaders.keySet()) {
@@ -31,9 +31,7 @@ public class CorsFilter implements Filter {
 				}
 			}
 		}
-		if (!request.getMethod().equalsIgnoreCase("OPTIONS")) {
-			filterChain.doFilter(servletRequest, servletResponse);
-		}
+		filterChain.doFilter(servletRequest, servletResponse);
 	}
 
 	@Override

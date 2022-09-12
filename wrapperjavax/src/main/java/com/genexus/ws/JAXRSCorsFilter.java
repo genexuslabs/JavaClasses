@@ -6,7 +6,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.ext.Provider;
-import java.util.Collections;
 import java.util.HashMap;
 
 @Provider
@@ -15,7 +14,7 @@ public class JAXRSCorsFilter implements ContainerResponseFilter {
 	@Override
 	public void filter(ContainerRequestContext requestContext,
 					   ContainerResponseContext responseContext) {
-		HashMap<String, String> corsHeaders = CORSHelper.getCORSHeaders(requestContext.getHeaderString("Access-Control-Request-Headers"));
+		HashMap<String, String> corsHeaders = CORSHelper.getCORSHeaders(requestContext.getHeaders());
 		if (corsHeaders == null) {
 			return;
 		}
