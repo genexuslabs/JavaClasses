@@ -18,14 +18,14 @@
         <changelist>-SNAPSHOT</changelist>
         <sha1/>
 
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
         <jersey.javax.version>2.34</jersey.javax.version>
-        <jersey.jakarta.version>3.0.3</jersey.jakarta.version>
+        <jersey.jakarta.version>3.0.4</jersey.jakarta.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <poi.version>5.2.2</poi.version>
         <jackson.version>2.13.2</jackson.version>
         <junit.version>4.13.2</junit.version>
-        <software.awssdk.version>2.17.213</software.awssdk.version>
+        <com.amazonaws.version>1.12.93</com.amazonaws.version>
+        <software.awssdk.version>2.17.272</software.awssdk.version>
     </properties>
 
 	<organization>
@@ -62,6 +62,20 @@
 		<tag>${sha1}</tag>
   	</scm>
 
+  <repositories>
+    <repository>
+	    <id>central</id>
+	    <name>Maven Central</name>
+	    <layout>default</layout>
+	    <url>https://repo1.maven.org/maven2</url>
+	  </repository>  
+    <repository>
+      <id>iTextRepository</id>
+      <name>iText Repository</name>
+      <url>https://repository.openmindonline.it/</url>
+    </repository>
+  </repositories>
+
 	<modules>
 		<module>common</module>
 		<module>wrapperjavax</module>
@@ -70,6 +84,7 @@
 		<module>java</module>
 		<module>gxandroidpublisher</module>
 		<module>gxcryptocommon</module>
+		<module>gxdynamiccall</module>
 		<module>gxmail</module>
 		<module>gxmaps</module>
 		<module>gxoffice</module>
@@ -226,7 +241,6 @@
 			</plugin>
 		</plugins>
 	</build>
-
 	<profiles>
 		<profile>
 			<id>ci-cd</id>
