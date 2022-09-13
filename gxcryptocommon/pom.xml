@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.genexus</groupId>
 		<artifactId>parent</artifactId>
-		<version>2.6-SNAPSHOT</version>
+		<version>${revision}${changelist}</version>
 	</parent>
 
 	<artifactId>gxcryptocommon</artifactId>
@@ -33,7 +33,7 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-nop</artifactId>
 			<version>1.7.7</version>
-		</dependency>
+		</dependency>		
 	</dependencies>
 
 	<build>

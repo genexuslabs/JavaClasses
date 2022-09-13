@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.genexus</groupId>
 		<artifactId>parent</artifactId>
-		<version>2.6-SNAPSHOT</version>
+		<version>${revision}${changelist}</version>
 	</parent>
 
 	<artifactId>gxgeospatial</artifactId>
@@ -24,6 +24,16 @@
 			<artifactId>spatial4j</artifactId>
 			<version>0.6</version>
 		</dependency>
+		<dependency>
+		    <groupId>com.vividsolutions</groupId>
+		    <artifactId>jts-core</artifactId>
+		    <version>1.14.0</version>
+		</dependency>		
+		<dependency>
+		    <groupId>com.vividsolutions</groupId>
+		    <artifactId>jts-io</artifactId>
+		    <version>1.14.0</version>
+		</dependency>		
 		<dependency>
 			<groupId>net.sf.geographiclib</groupId>
 			<artifactId>GeographicLib-Java</artifactId>

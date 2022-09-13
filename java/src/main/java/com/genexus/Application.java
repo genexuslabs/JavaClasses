@@ -3,10 +3,7 @@ package com.genexus;
 import java.io.Closeable;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Properties;
-import java.util.Vector;
+import java.util.*;
 
 import com.genexus.db.DBConnectionManager;
 import com.genexus.db.DynamicExecute;
@@ -33,7 +30,6 @@ public class Application
 	public static ILogger logger = LogManager.getLogger(Application.class);
 
 	public static boolean usingQueue = false;
-	private static final boolean DEBUG = DebugFlag.DEBUG;
 	public static java.lang.Object realMainProgram;
 	public static java.lang.Object nullObject = new Object();
 	private static final String UNKNOWN_CALLER = "<unknown>";
@@ -43,7 +39,6 @@ public class Application
 	private static Boolean isJMXEnabled;
 
 	public static Class gxCfg = ApplicationContext.getInstance().getClass();
-	//public static ModelContext clientContext;
 	private static Vector<ICleanedup> toCleanup = new Vector<>();
 	static LocalUtil localUtil;
 	static Class ClassName = null;
@@ -224,8 +219,7 @@ public class Application
 			{
 				if (ApplicationContext.getInstance().isMsgsToUI())
 				{
-					if	(DEBUG)
-						System.err.println("Exiting VM (1)...");
+					logger.debug("Exiting VM (1)...");
 
 					onExitCleanup();
 
@@ -256,8 +250,7 @@ public class Application
 		}
 			try
 			{
-				if	(DEBUG)
-					System.err.println("Exiting VM (2)...");
+				logger.debug("Exiting VM (2)...");
 
 				System.exit(0);
 			}
@@ -756,10 +749,10 @@ public class Application
 
  
 	  static boolean useSmartCache = false;
+
 	  public static com.genexus.GXSmartCacheProvider getSmartCacheProvider(int handle)
 	  {
 	  	useSmartCache = true;
 			return getConnectionManager().getUserInformation(handle).getSmartCacheProvider();	  	
-	  }	  
-
+	  }
 }

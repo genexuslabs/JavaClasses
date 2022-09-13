@@ -1,6 +1,6 @@
 package com.genexus.ws.rs.core;
 
-public abstract class Response extends javax.ws.rs.core.Response{
+public abstract class Response extends javax.ws.rs.core.Response {
 
 	public static Response.ResponseBuilder notModifiedWrapped() {
 		return new Response.ResponseBuilder(javax.ws.rs.core.Response.notModified());
@@ -13,6 +13,13 @@ public abstract class Response extends javax.ws.rs.core.Response{
 	public static Response.ResponseBuilder okWrapped() {
 		return new Response.ResponseBuilder(javax.ws.rs.core.Response.ok());
 	}
+
+	public static Response.ResponseBuilder options(String allowedMethods) {
+		Response.ResponseBuilder builder = okWrapped();
+		builder.header("Allow", allowedMethods);
+		return builder;
+	}
+
 	public static Response.ResponseBuilder notFound() {
 		return new Response.ResponseBuilder(javax.ws.rs.core.Response.status(Status.NOT_FOUND));
 	}
@@ -20,12 +27,15 @@ public abstract class Response extends javax.ws.rs.core.Response{
 	public static Response.ResponseBuilder conflict() {
 		return new Response.ResponseBuilder(javax.ws.rs.core.Response.status(Status.CONFLICT));
 	}
+
 	public static Response.ResponseBuilder forbidden() {
 		return new Response.ResponseBuilder(javax.ws.rs.core.Response.status(Status.FORBIDDEN));
 	}
+
 	public static Response.ResponseBuilder unauthorized() {
 		return new Response.ResponseBuilder(javax.ws.rs.core.Response.status(Status.UNAUTHORIZED));
 	}
+
 	public static Response.ResponseBuilder noContentWrapped() {
 		return new Response.ResponseBuilder(javax.ws.rs.core.Response.noContent());
 	}
@@ -38,7 +48,7 @@ public abstract class Response extends javax.ws.rs.core.Response{
 		return new Response.ResponseBuilder(javax.ws.rs.core.Response.status(status));
 	}
 
-	public static class ResponseBuilder implements IResponseBuilder{
+	public static class ResponseBuilder implements IResponseBuilder {
 		javax.ws.rs.core.Response.ResponseBuilder rb;
 
 		ResponseBuilder(javax.ws.rs.core.Response.ResponseBuilder rb) {
@@ -53,11 +63,17 @@ public abstract class Response extends javax.ws.rs.core.Response{
 			rb.type(type);
 		}
 
-		public void entity(Object entity) { rb.entity(entity); }
+		public void entity(Object entity) {
+			rb.entity(entity);
+		}
 
-		public IResponseBuilder status(short i) { return new ResponseBuilder(rb.status(i)); }
+		public IResponseBuilder status(short i) {
+			return new ResponseBuilder(rb.status(i));
+		}
 
-		public IResponseBuilder entityWrapped(Object entity) { return new ResponseBuilder(rb.entity(entity)); }
+		public IResponseBuilder entityWrapped(Object entity) {
+			return new ResponseBuilder(rb.entity(entity));
+		}
 
 		public void header(String header, Object object) {
 			rb.header(header, object);

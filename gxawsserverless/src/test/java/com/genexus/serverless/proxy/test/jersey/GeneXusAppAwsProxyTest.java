@@ -18,18 +18,15 @@ import com.amazonaws.serverless.proxy.internal.testutils.MockLambdaContext;
 import com.amazonaws.serverless.proxy.jersey.JerseyLambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
-import com.amazonaws.serverless.proxy.test.jersey.model.MapResponseModel;
-import com.amazonaws.serverless.proxy.test.jersey.model.SingleValueModel;
+import com.amazonaws.serverless.proxy.model.HttpApiV2ProxyRequest;
 import com.amazonaws.services.lambda.runtime.Context;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genexus.cloud.serverless.aws.LambdaHandler;
+import com.genexus.specific.java.Connect;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import java.io.IOException;
 
 import static org.junit.Assert.*;
 
@@ -37,59 +34,75 @@ import static org.junit.Assert.*;
  * Unit test class for the Jersey AWS_PROXY default implementation
  */
 public class GeneXusAppAwsProxyTest {
-    private static final String CUSTOM_HEADER_KEY = "x-custom-header";
-    private static final String CUSTOM_HEADER_VALUE = "my-custom-value";
 
-    private ResourceConfig app;
-    private LambdaHandler l;
+	private static final String CUSTOM_HEADER_KEY = "x-custom-header";
+	private static final String CUSTOM_HEADER_VALUE = "my-custom-value";
 
-    @Before
-    public void setUpStreams() {
-        try {
-            System.setProperty("LAMBDA_TASK_ROOT", ".");
-            l = new LambdaHandler();
-            handler = LambdaHandler.handler;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+	private ResourceConfig app;
+	private LambdaHandler l;
 
-    public GeneXusAppAwsProxyTest() {
+	@Before
+	public void setUpStreams() {
+		Connect.init();
 
-    }
+		try {
+			System.setProperty("LAMBDA_TASK_ROOT", ".");
+			l = new LambdaHandler();
+			handler = LambdaHandler.handler;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-    private JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = null;
+	public GeneXusAppAwsProxyTest() {
 
-    private static ObjectMapper objectMapper = new ObjectMapper();
+	}
 
-    private static Context lambdaContext = new MockLambdaContext();
+	private JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = null;
+
+	private static ObjectMapper objectMapper = new ObjectMapper();
+
+	private static Context lambdaContext = new MockLambdaContext();
 
 
-    @Test
-    public void testGXDataProvider() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/Test", "GET")
-                .queryString("Itemnumber", "9")
-                .json()
-                .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
-                .build();
+	@Test
+	public void testGXDataProvider() {
+		AwsProxyRequest request = new AwsProxyRequestBuilder("/Test", "GET")
+			.queryString("Itemnumber", "9")
+			.json()
+			.header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
+			.build();
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
-        assertEquals(200, output.getStatusCode());
-        assertEquals("{\"ItemId\":9,\"ItemName\":\"9 Item\"}", output.getBody());
-    }
+		AwsProxyResponse output = handler.proxy(request, lambdaContext);
+		assertEquals(200, output.getStatusCode());
+		assertEquals("{\"ItemId\":9,\"ItemName\":\"9 Item\"}", output.getBody());
+	}
 
-    @Test
-    public void testGXDataProviderWithParams() {
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/Test/12", "GET")
-                .queryString("Itemnumber", "9")
-                .json()
-                .header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
-                .build();
+	@Test
+	public void testSessionSet() {
+		AwsProxyRequest request = new AwsProxyRequestBuilder("/SessionSet", "POST")
+			.body("{\"SessionName\":\"Name\",\"SessionValue\":\"SetValueSession\"}")
+			.json()
+			.header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
+			.build();
 
-        AwsProxyResponse output = handler.proxy(request, lambdaContext);
-        assertEquals(200, output.getStatusCode());
-        assertEquals("{\"ItemId\":12,\"ItemName\":\"12 Item\"}", output.getBody());
-    }
+		AwsProxyResponse output = handler.proxy(request, lambdaContext);
+		assertEquals(200, output.getStatusCode());
+
+	}
+
+	@Test
+	public void testGXDataProviderWithParams() {
+		AwsProxyRequest request = new AwsProxyRequestBuilder("/Test/12", "GET")
+			.queryString("Itemnumber", "9")
+			.json()
+			.header(CUSTOM_HEADER_KEY, CUSTOM_HEADER_VALUE)
+			.build();
+
+		AwsProxyResponse output = handler.proxy(request, lambdaContext);
+		assertEquals(200, output.getStatusCode());
+		assertEquals("{\"ItemId\":12,\"ItemName\":\"12 Item\"}", output.getBody());
+	}
 
 	@Test
 	public void testGxMultiCall() {
@@ -119,18 +132,18 @@ public class GeneXusAppAwsProxyTest {
 
 	@Test
 	@Ignore
-    public void gxTestOAuthAccessToken() {
+	public void gxTestOAuthAccessToken() {
 
-        AwsProxyRequest request = new AwsProxyRequestBuilder("/oauth/access_token", "POST")
-                .body("client_id=b0be5400435f42e588480fa06330f5ff&grant_type=password&username=ggallotti&password=gonzalo&scope=FullControl")
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                //.header("Content-Length", "116")
-                .build();
+		AwsProxyRequest request = new AwsProxyRequestBuilder("/oauth/access_token", "POST")
+			.body("client_id=b0be5400435f42e588480fa06330f5ff&grant_type=password&username=ggallotti&password=gonzalo&scope=FullControl")
+			.header("Content-Type", "application/x-www-form-urlencoded")
+			//.header("Content-Length", "116")
+			.build();
 
-        AwsProxyResponse output = l.handleRequest(request, lambdaContext);
-        System.out.println(output);
-        //assertEquals(200, output.getStatusCode());
+		AwsProxyResponse output = l.handleRequest(request, lambdaContext);
+		System.out.println(output);
+		//assertEquals(200, output.getStatusCode());
 
-    }
+	}
 
 }
