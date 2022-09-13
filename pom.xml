@@ -84,6 +84,7 @@
 		<module>java</module>
 		<module>gxandroidpublisher</module>
 		<module>gxcryptocommon</module>
+		<module>gxdynamiccall</module>
 		<module>gxmail</module>
 		<module>gxmaps</module>
 		<module>gxoffice</module>
