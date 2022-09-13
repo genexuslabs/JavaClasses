@@ -21,6 +21,7 @@ import com.sap.conn.jco.server.JCoServerExceptionListener;
 import com.sap.conn.jco.server.JCoServerFunctionHandler;
 
 public class DocumentClient {
+
     private static final int BLOB_LENGTH = 1022;
 
     static class ErrorHandler implements JCoServerErrorListener, JCoServerExceptionListener {   
@@ -124,7 +125,5 @@ public class DocumentClient {
             }
         }
     }
-
-
 
 }
