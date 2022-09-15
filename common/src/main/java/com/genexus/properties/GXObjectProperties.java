@@ -1,6 +1,6 @@
 package com.genexus.properties;
 
-import com.genexus.internet.*;
+import com.genexus.internet.Location;
 
 public class GXObjectProperties
 {

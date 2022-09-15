@@ -18,12 +18,10 @@ import org.locationtech.spatial4j.shape.SpatialRelation;
 //import org.noggit.JSONParser.*;
 import org.simpleframework.xml.Root;
 import org.simpleframework.xml.Text;
-import com.genexus.internet.IGxGeoJSONSerializable;
 import com.genexus.internet.IGxJSONSerializable;
 
-
 @Root
-public final class GXGeospatial implements java.io.Serializable, IGxJSONSerializable, IGxGeoJSONSerializable{
+public final class GXGeospatial implements java.io.Serializable, IGxJSONSerializable{
 
 	private Shape innerShape;
 	private String lastError;
