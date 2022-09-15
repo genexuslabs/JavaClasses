@@ -1,6 +1,5 @@
 package  com.genexus.properties;
 
-import com.genexus.internet.*;
 import java.util.HashMap;
 
 public class GXObjectsConfiguration {

@@ -9,7 +9,6 @@ import java.math.*;
 import com.genexus.internet.IGxJSONSerializable;
 import org.simpleframework.xml.*;
 import org.noggit.JSONParser.*;
-import com.genexus.internet.IGxGeoJSONSerializable;
 import org.locationtech.spatial4j.context.SpatialContext;
 import org.locationtech.spatial4j.context.SpatialContextFactory;
 import org.locationtech.spatial4j.context.jts.JtsSpatialContextFactory;
@@ -31,7 +30,7 @@ import org.json.JSONException;
 
 
 @Root
-public final class GXGeospatial implements java.io.Serializable, IGxJSONSerializable, IGxGeoJSONSerializable {
+public final class GXGeospatial implements java.io.Serializable, IGxJSONSerializable {
 
 	private Shape innerShape;
 	private String lastError;
