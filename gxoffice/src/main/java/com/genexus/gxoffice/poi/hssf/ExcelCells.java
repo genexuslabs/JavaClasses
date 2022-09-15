@@ -764,7 +764,7 @@ public class ExcelCells implements IExcelCells {
 			return 0;
 		}
 
-		return cell.getCellStyle().getFillBackgroundColor();
+		return cell.getCellStyle().getFillForegroundColor();
 	}
 
 	@Override
