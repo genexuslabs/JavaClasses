@@ -4,14 +4,14 @@
 				 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>com.genexus</groupId>
-		<artifactId>parent</artifactId>
-		<version>${revision}${changelist}</version>
-	</parent>
+	 <parent>
+        <groupId>com.genexus</groupId>
+        <artifactId>parent</artifactId>
+        <version>${revision}${changelist}</version>
+    </parent>
 
-	<artifactId>javapns</artifactId>
-	<name>JavaPNS</name>
+	<artifactId>gxdynamiccall</artifactId>
+	<name>GeneXus DynamicCall external object</name>
 
 	<dependencies>
 		<dependency>
@@ -20,18 +20,9 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.json</groupId>
-			<artifactId>json</artifactId>
-			<version>20180813</version>
-		</dependency>
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.64</version>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>gxclassR</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<finalName>javapns</finalName>
-	</build>
 </project>
