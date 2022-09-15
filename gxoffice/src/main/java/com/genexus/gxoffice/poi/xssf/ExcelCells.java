@@ -5,14 +5,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.DataFormat;
-import org.apache.poi.ss.usermodel.DataFormatter;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.NumberToTextConverter;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFColor;
@@ -728,6 +721,36 @@ public class ExcelCells implements IExcelCells {
 		} catch (Exception e) {
 			m_errAccess.setErrDes("Invalid font properties");
 			m_errAccess.setErrCod((short) 6);
+		}
+	}
+
+	@Override
+	public long getBackColor() {
+		if (pCells.length == 0) {
+			return 0;
+		}
+
+		Cell cell = pCells[1];
+		if (cell.getCellStyle() == null) {
+			return 0;
+		}
+
+		return cell.getCellStyle().getFillBackgroundColor();
+	}
+
+	@Override
+	public void setBackColor(long nNewVal) {
+		for (int i = 1; i <= cntCells; i++) {
+			Cell cell = pCells[i];
+			CellStyle cellStyle = cell.getCellStyle();
+			if (cellStyle == null) {
+				cellStyle = cell.getSheet().getWorkbook().createCellStyle();
+			}
+			cellStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
+			if (cellStyle.getFillPattern() != FillPatternType.NO_FILL) {
+				cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+			}
+			cell.setCellStyle(cellStyle);
 		}
 	}
 

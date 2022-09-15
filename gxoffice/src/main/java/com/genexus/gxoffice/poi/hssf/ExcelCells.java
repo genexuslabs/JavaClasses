@@ -12,8 +12,7 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.*;
 
 import com.genexus.CommonUtil;
 import com.genexus.gxoffice.IExcelCells;
@@ -751,6 +750,37 @@ public class ExcelCells implements IExcelCells {
 			m_errAccess.setErrCod((short) 6);
 		}
 	}
+
+	@Override
+	public long getBackColor() {
+		if (pCells.length == 0) {
+			return 0;
+		}
+
+		Cell cell = pCells[1];
+		if (cell.getCellStyle() == null) {
+			return 0;
+		}
+
+		return cell.getCellStyle().getFillBackgroundColor();
+	}
+
+	@Override
+	public void setBackColor(long nNewVal) {
+		for (int i = 1; i <= cntCells; i++) {
+			Cell cell = pCells[i];
+			CellStyle cellStyle = cell.getCellStyle();
+			if (cellStyle == null) {
+				cellStyle = cell.getSheet().getWorkbook().createCellStyle();
+			}
+			cellStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
+			if (cellStyle.getFillPattern() != FillPatternType.NO_FILL) {
+				cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+			}
+			cell.setCellStyle(cellStyle);
+		}
+	}
+
 
 	private void copyPropertiesStyle(HSSFCellStyle dest, HSSFCellStyle source) {
 		dest.setAlignment(source.getAlignment());

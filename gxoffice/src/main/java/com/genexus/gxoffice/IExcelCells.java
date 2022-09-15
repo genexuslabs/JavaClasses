@@ -1,34 +1,39 @@
 package com.genexus.gxoffice;
-import java.util.*;
 
-public interface IExcelCells
-{
-public double  getNumber();
-  public Date    getDate();
-  public String  getText();
-  public String  getValue();
+import java.util.Date;
 
-  public void    setNumber(double Value);
-  public void    setDate(Date Value);
-  public void    setText(String Value);
+public interface IExcelCells {
+	public String getValue();
 
-  public String	getFont();
-  public void 	setFont(String sNewVal);
+	public double getNumber();
+	public void setNumber(double Value);
 
-  public long	getColor();
-  public void 	setColor(long nNewVal);
+	public Date getDate();
+	public void setDate(Date Value);
 
-  public double	getSize();
-  public void 	setSize(double nNewVal);
+	public String getText();
+	public void setText(String Value);
 
-  public String	getType();
+	public String getFont();
+	public void setFont(String sNewVal);
 
-  public short	getBold();
-  public void 	setBold(short nNewVal);
+	public long getColor();
+	public void setColor(long nNewVal);
 
-  public short	getItalic();
-  public void 	setItalic(short nNewVal);
+	public long getBackColor();
+	public void setBackColor(long nNewVal);
 
-  public short	getUnderline();
-  public void 	setUnderline(short nNewVal);
+	public double getSize();
+	public void setSize(double nNewVal);
+
+	public String getType();
+
+	public short getBold();
+	public void setBold(short nNewVal);
+
+	public short getItalic();
+	public void setItalic(short nNewVal);
+
+	public short getUnderline();
+	public void setUnderline(short nNewVal);
 }
