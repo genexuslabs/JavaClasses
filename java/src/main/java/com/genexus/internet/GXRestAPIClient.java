@@ -1,18 +1,9 @@
 package com.genexus.internet;
 
+import json.org.json.*;
 import java.util.*;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.text.SimpleDateFormat;
-import java.text.ParseException;
-import java.util.Date;
-import json.org.json.IJsonFormattable;
-import json.org.json.JSONArray;
-import com.genexus.internet.IGxJSONAble;
+import java.text.*;
 import com.genexus.xml.GXXMLSerializable;
-import com.genexus.internet.IGxJSONSerializable;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.*;
@@ -23,7 +14,6 @@ public class GXRestAPIClient {
 
 	public static final ILogger logger = LogManager.getLogger(GXRestAPIClient.class);
 	private HttpClient httpClient;
-	
 	private String name;
 	private Location location;
 	private String protocol = "REST";
@@ -31,7 +21,7 @@ public class GXRestAPIClient {
 	private int  statusCode;
 	private int  errorCode;	
 	private String errorMessage;
-	private Integer responseCode;
+	private int responseCode;
 	private String responseMessage;
 	
 	private String contentType = "application/json; charset=utf-8";
@@ -46,13 +36,10 @@ public class GXRestAPIClient {
 	static final String DATE_FMT = "yyyy-MM-dd";
 	static final String DATETIME_FMT = "yyyy-MM-dd'T'HH:mm:ss";
 	static final String DATETIME_FMT_MS = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-
 	/* Error constants */
-
 	static final int RESPONSE_ERROR_CODE = 2;
 	static final int PARSING_ERROR_CODE = 3;
 	static final int DESERIALIZING_ERROR_CODE = 4;
-	
 	static final String RESPONSE_ERROR_MSG = "Invalid response";
 	static final String PARSING_ERROR_MSG = "Error parsing response";
 	static final String DESERIALIZING_ERROR_MSG = "Error serializing/deserializing object";
@@ -346,7 +333,7 @@ public class GXRestAPIClient {
 				return null;
 			}
 		} 
-		catch (json.org.json.JSONException e) {
+		catch (JSONException e) {
 			errorCode = PARSING_ERROR_CODE;
 			errorMessage = PARSING_ERROR_MSG;
 			logger.error(PARSING_ERROR_MSG + " " + sdtClass, e);
@@ -378,7 +365,7 @@ public class GXRestAPIClient {
 				logger.error(RESPONSE_ERROR_MSG + " " + elementClasss);
 			}	
 		} 
-		catch (json.org.json.JSONException e) {
+		catch (JSONException e) {
 			errorCode = PARSING_ERROR_CODE;
 			errorMessage = PARSING_ERROR_MSG;
 			logger.error(PARSING_ERROR_MSG + " " + elementClasss ,e );			
@@ -407,7 +394,7 @@ public class GXRestAPIClient {
 				coll.fromJSonString(jsonResponse.getString(varName), null);
 			} 
 		} 
-		catch (json.org.json.JSONException e) {
+		catch (JSONException e) {
 			errorCode = PARSING_ERROR_CODE;
 			errorMessage = PARSING_ERROR_MSG;
 			logger.error(PARSING_ERROR_MSG + " " + elementClasss, e);			
