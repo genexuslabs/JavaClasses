@@ -101,42 +101,38 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		httpContext.GX_webresponse.addString(value);
 	}
 
-	public GXMasterPage createMasterPage(int remoteHandle, String fullClassName) {
+	private static String IMPL_CLASS_SUFFIX = "_impl";
 
-		String masterPage = this.context.getPreferences().getProperty("MasterPage", "");
+	public GXMasterPage createMasterPage(int remoteHandle, String fullClassName) {
+		if (fullClassName.equals("(none)")) // none Master Page
+		{
+			return new NoneMasterPage((HttpContext) this.context.getHttpContext());
+		}
+
 		if (fullClassName.equals("(default)")) // Is the default
 		{
+			String masterPage = this.context.getPreferences().getProperty("MasterPage", "");
 			if (masterPage.isEmpty())
 			{
 				logger.error("The default master page is not present on the client.cfg file, please add the MasterPage key to the client.cfg.");
 				return null;
 			}
 			String namespace = this.context.getPreferences().getProperty("NAME_SPACE", "");
-			fullClassName = namespace.isEmpty() ? masterPage.toLowerCase() + "_impl" : namespace.trim() + "." + masterPage.toLowerCase() + "_impl";
+			fullClassName = namespace.isEmpty() ? masterPage.toLowerCase() + IMPL_CLASS_SUFFIX : namespace.trim() + "." + masterPage.toLowerCase() + IMPL_CLASS_SUFFIX;
 		}
-		if (fullClassName.equals("(none)")) // none Master Page
-		{
-			return new NoneMasterPage((HttpContext) this.context.getHttpContext());
-		}
-		else{
-			fullClassName = fullClassName + "_impl";
-		}
+
+		fullClassName = fullClassName + IMPL_CLASS_SUFFIX;
+
 		try {
 			Class<?> masterPageClass = Class.forName(fullClassName);
 			return (GXMasterPage) masterPageClass.getConstructor(new Class<?>[] {int.class, ModelContext.class}).newInstance(remoteHandle, context.copy());
 		} catch (ClassNotFoundException e) {
-			logger.error("MasterPage not found: " + fullClassName);
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
+			logger.error("MasterPage class not found: " + fullClassName, e);
+			throw new RuntimeException(e);
+		} catch (Exception e) {
+			logger.error("MasterPage could not be loaded: " + fullClassName, e);
+			throw new RuntimeException(e);
 		}
-		return null;
 	}
 
 
@@ -147,11 +143,15 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			logger.error("DynCall - Method not found: " + MethodName);
 			return null;
 		}
+
 		Class[] pars = m.getParameterTypes();
 		int ParmsCount = pars.length;
 		Object[] convertedparms = new Object[ParmsCount];
-		for (int i = 0; i < ParmsCount; i++)
+
+		for (int i = 0; i < ParmsCount; i++) {
 			convertedparms[i] = convertparm(pars, i, WebUtils.decryptParm(httpContext.GetNextPar(), ""));
+		}
+
 		try
 		{
 			return m.invoke(this, convertedparms);
@@ -159,8 +159,9 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		catch (java.lang.Exception e)
 		{
 			logger.error("DynCall - Invoke error " + MethodName, e);
-			return null;
 		}
+
+		return null;
 	}
 
         protected Object convertparm(Class<?>[] pars, int i, Object value) {
