@@ -101,28 +101,8 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		httpContext.GX_webresponse.addString(value);
 	}
 
-	private static String IMPL_CLASS_SUFFIX = "_impl";
-
 	public GXMasterPage createMasterPage(int remoteHandle, String fullClassName) {
-		if (fullClassName.equals("(none)")) // none Master Page
-		{
-			return new NoneMasterPage((HttpContext) this.context.getHttpContext());
-		}
-
-		if (fullClassName.equals("(default)")) // Is the default
-		{
-			String masterPage = this.context.getPreferences().getProperty("MasterPage", "");
-			if (masterPage.isEmpty())
-			{
-				logger.error("The default master page is not present on the client.cfg file, please add the MasterPage key to the client.cfg.");
-				return null;
-			}
-			String namespace = this.context.getPreferences().getProperty("NAME_SPACE", "");
-			fullClassName = namespace.isEmpty() ? masterPage.toLowerCase() : namespace.trim() + "." + masterPage.toLowerCase();
-		}
-
-		fullClassName = fullClassName + IMPL_CLASS_SUFFIX;
-
+		fullClassName = fullClassName + "_impl";
 		try {
 			Class<?> masterPageClass = Class.forName(fullClassName);
 			return (GXMasterPage) masterPageClass.getConstructor(new Class<?>[] {int.class, ModelContext.class}).newInstance(remoteHandle, context.copy());
@@ -134,7 +114,6 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			throw new RuntimeException(e);
 		}
 	}
-
 
 	protected Object dyncall(String MethodName)
 	{
