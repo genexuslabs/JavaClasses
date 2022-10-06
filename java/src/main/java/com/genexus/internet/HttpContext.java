@@ -1609,7 +1609,7 @@ public abstract class HttpContext
 				{
 					languageCode=language.toLowerCase();
 				}
-				String resourceName = "messages." + languageCode + ".txt";
+				String resourceName = "messages." + languageCode.toLowerCase() + ".txt";
 				Messages msgs = com.genexus.Messages.getMessages(resourceName, Application.getClientLocalUtil().getLocale());
 				return msgs.getMessage(code);
 			}
