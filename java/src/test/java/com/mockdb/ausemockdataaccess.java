@@ -1,13 +1,15 @@
 package com.mockdb ;
 import com.genexus.*;
 import com.genexus.db.*;
+import com.genexus.sampleapp.GXcfg;
+
 import java.sql.*;
 
 public final  class ausemockdataaccess extends GXProcedure
 {
    public static void main( String args[] )
    {
-      Application.init(com.mockdb.GXcfg.class);
+      Application.init(GXcfg.class);
       ausemockdataaccess pgm = new ausemockdataaccess (-1);
       Application.realMainProgram = pgm;
       pgm.executeCmdLine(args);
@@ -92,7 +94,7 @@ public final  class ausemockdataaccess extends GXProcedure
    public static Object refClasses( )
    {
       GXutil.refClasses(usemockdataaccess.class);
-      return new com.mockdb.GXcfg();
+      return new GXcfg();
    }
 
    protected void cleanup( )
