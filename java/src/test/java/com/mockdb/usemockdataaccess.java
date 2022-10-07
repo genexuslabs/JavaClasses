@@ -1,11 +1,12 @@
 package com.mockdb ;
 import com.genexus.*;
+import com.genexus.sampleapp.GXcfg;
 
 public final  class usemockdataaccess extends GXProcedure
 {
    public static void main( String args[] )
    {
-      Application.init(com.mockdb.GXcfg.class);
+      Application.init(GXcfg.class);
       usemockdataaccess pgm = new usemockdataaccess (-1);
       Application.realMainProgram = pgm;
       pgm.executeCmdLine(args);
@@ -21,7 +22,7 @@ public final  class usemockdataaccess extends GXProcedure
    public usemockdataaccess( )
    {
       super( -1 , new ModelContext( usemockdataaccess.class ), "" );
-      Application.init(com.mockdb.GXcfg.class);
+      Application.init(GXcfg.class);
    }
 
    public usemockdataaccess( int remoteHandle )
