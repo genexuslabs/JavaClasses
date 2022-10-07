@@ -1,8 +1,13 @@
 
 package com.genexus.internet;
 
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
+
 public class GXPOP3Session implements GXInternetConstants
 {
+	public static final ILogger logger = LogManager.getLogger(GXPOP3Session.class);
+
 	private IPOP3Session session;
 
 	private String host;
@@ -32,6 +37,7 @@ public class GXPOP3Session implements GXInternetConstants
 		catch(Throwable e)
 		{
 			session = new POP3Session();
+			logger.warn("Using POP3Session legacy implementation");
 		}
 		
 
