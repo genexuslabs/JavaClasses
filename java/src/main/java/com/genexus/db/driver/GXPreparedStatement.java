@@ -813,44 +813,12 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			stmt.setCharacterStream(index, new InputStreamReader(new ByteArrayInputStream(unicodeBytes), "UnicodeBigUnmarked"), unicodeBytes.length);
         }
 
-	private void setOracleClob(int index, String value) throws
-      UnsupportedEncodingException, ClassNotFoundException, SecurityException,
-      NoSuchMethodException, NoSuchFieldException, IllegalAccessException,
-      IllegalArgumentException, InvocationTargetException, IOException,
-      SQLException {
-          Class<?> clobClass = Class.forName("oracle.sql.CLOB");
-          Class<?> oracleConn = Class.forName("oracle.jdbc.OracleConnection");
-          Class<?> parmTypes[] = new Class[3];
-          parmTypes[0] = java.sql.Connection.class;
-          parmTypes[1] = Boolean.TYPE;
-          parmTypes[2] = Integer.TYPE;
-          Method createTemporaryMethod = clobClass.getDeclaredMethod("createTemporary", parmTypes);
-          Field durationSessionField = clobClass.getField("DURATION_SESSION");
+	private void setOracleClob(int index, String value) throws SQLException
+	{
+		Clob tempClob = con.getJDBCConnection().createClob();
+		tempClob.setString(1, value);
 
-          Object argList[] = new Object[3];
-          argList[0] = con.getJDBCConnection();
-          argList[1] = Boolean.TRUE;
-          argList[2] = durationSessionField.get(null);
-          Object tempClob = createTemporaryMethod.invoke(null, argList);
-
-          parmTypes = new Class[1];
-          parmTypes[0] = Integer.TYPE;
-          Method openMethod = clobClass.getDeclaredMethod("open", parmTypes);
-          Field modeReadWriteField = clobClass.getField("MODE_READWRITE");
-          argList = new Object[1];
-          argList[0] = modeReadWriteField.get(null);
-          openMethod.invoke(tempClob, argList);
-
-          Method getCharacterOutputStreamMethod = clobClass.getDeclaredMethod("getCharacterOutputStream");
-          Writer tempClobWriter = (Writer) getCharacterOutputStreamMethod.invoke(tempClob);
-          tempClobWriter.write(value);
-          tempClobWriter.flush();
-          tempClobWriter.close();
-
-          Method closeMethod = clobClass.getDeclaredMethod("close");
-          closeMethod.invoke(tempClob);
-
-          stmt.setClob(index, (Clob) tempClob);
+		stmt.setClob(index, tempClob);
 	}
 	
     public void setParameterRT(String name, String value)
