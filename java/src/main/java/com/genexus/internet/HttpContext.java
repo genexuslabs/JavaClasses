@@ -1609,7 +1609,7 @@ public abstract class HttpContext
 				{
 					languageCode=language.toLowerCase();
 				}
-				String resourceName = "messages." + languageCode + ".txt";
+				String resourceName = "messages." + languageCode.toLowerCase() + ".txt";
 				Messages msgs = com.genexus.Messages.getMessages(resourceName, Application.getClientLocalUtil().getLocale());
 				return msgs.getMessage(code);
 			}
@@ -1621,7 +1621,7 @@ public abstract class HttpContext
 			Messages messages = cachedMessages.get(language);
 			if (messages == null) {
 				String languageCode = Application.getClientPreferences().getProperty("language|" + language, "code", Application.getClientPreferences().getProperty("LANGUAGE", "eng"));
-				messages = com.genexus.Messages.getMessages("messages." + languageCode + ".txt", Application.getClientLocalUtil().getLocale());
+				messages = com.genexus.Messages.getMessages("messages." + languageCode.toLowerCase() + ".txt", Application.getClientLocalUtil().getLocale());
 				addCachedLanguageMessage(language, messages);
 			}
 			return messages.getMessage(code);

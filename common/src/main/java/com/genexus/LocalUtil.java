@@ -384,7 +384,7 @@ public class LocalUtil
 			currentLocale = new Locale (language, language.toUpperCase());
 		}*/
 
-                String resourceName = "messages." + _language + ".txt";
+                String resourceName = "messages." + _language.toLowerCase() + ".txt";
 
 		if (SpecificImplementation.Application.getModelContextPackageClass() != null)
 		{
