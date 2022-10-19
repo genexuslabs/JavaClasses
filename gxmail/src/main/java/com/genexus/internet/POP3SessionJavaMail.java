@@ -94,8 +94,12 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
 		props.setProperty("mail.pop3.connectiontimeout", String.valueOf(timeout));
 		props.setProperty("mail.pop3.timeout", String.valueOf(timeout));
 
-		if (sessionInfo.getAuthenticationMethod().length() > 0) {
-			props.setProperty("mail.pop3.auth.mechanisms", sessionInfo.getAuthenticationMethod().toUpperCase());
+		String authMethod = sessionInfo.getAuthenticationMethod();
+		if (!authMethod.isEmpty()) {
+			props.setProperty("mail.pop3.auth.mechanisms", authMethod.toUpperCase());
+			if (authMethod.equalsIgnoreCase("XOAUTH2") && pop3Host.equalsIgnoreCase("outlook.office365.com")) {
+				props.setProperty("mail.pop3.auth.xoauth2.two.line.authentication.format", "true");
+			}
 		}
 
 		props.setProperty("mail.pop3.ssl.enable", String.valueOf(secureConnection));
