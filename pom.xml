@@ -27,6 +27,7 @@
         <com.amazonaws.version>1.12.93</com.amazonaws.version>
 		<software.awssdk.version>2.17.272</software.awssdk.version>
         <log4j.version>2.17.1</log4j.version>
+        <io.opentelemetry.version>1.19.0</io.opentelemetry.version>
 	</properties>
 
 	<organization>

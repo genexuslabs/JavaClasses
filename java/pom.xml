@@ -163,7 +163,12 @@
     	    <artifactId>sqlite-jdbc</artifactId>
     	    <version>3.36.0.3</version>
     	    <scope>test</scope>
-		</dependency>		
+		</dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+            <version>${io.opentelemetry.version}</version>
+        </dependency>
     </dependencies>
 	
 	<build>
