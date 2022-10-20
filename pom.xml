@@ -26,7 +26,7 @@
         <junit.version>4.13.2</junit.version>
         <com.amazonaws.version>1.12.93</com.amazonaws.version>
         <software.awssdk.version>2.17.272</software.awssdk.version>
-        <log4j.version>2.19.0</log4j.version>
+        <log4j.version>2.17.1</log4j.version>
     </properties>
 
 	<organization>
