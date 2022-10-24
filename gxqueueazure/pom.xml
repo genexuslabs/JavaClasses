@@ -10,6 +10,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>gxqueueazure</artifactId>
+    <name>GeneXus Azure Storage Queue</name>
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
