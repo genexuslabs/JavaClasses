@@ -1,53 +1,48 @@
 package com.genexus;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 import com.genexus.util.IniFile;
 import com.genexus.util.IniFileMultiple;
 
-public class ConfigFileFinder
-{
+import java.io.*;
+
+public class ConfigFileFinder {
+	public static final ILogger logger = LogManager.getLogger(ConfigFileFinder.class);
 	private static final String CRYPTO_CFG = "crypto.cfg";
 	private static final String PROD_ENV_SUFFIX = ".prod";
+	private static final String DEV_ENV_SUFFIX = ".dev";
 
-	public static IniFile getConfigFile(Class resourceClassParm, String fileName, Class defaultResourceClass)
-	{
+	public static IniFile getConfigFile(Class resourceClassParm, String fileName, Class defaultResourceClass) {
 		IniFileStream iniFileStream = new IniFileStream(resourceClassParm, fileName, defaultResourceClass).invoke();
 		InputStream is = iniFileStream.getIs();
 		InputStream crypto = iniFileStream.getCrypto();
 
-		IniFileStream iniFileStreamProdEnv = new IniFileStream(resourceClassParm, fileName + PROD_ENV_SUFFIX, defaultResourceClass).invoke();
-		InputStream isProdEnv = iniFileStreamProdEnv.getIs();
-
+		//If client.cfg.dev is present, any other client.cfg.* will not be read
+		IniFileStream configurationOverride = new IniFileStream(resourceClassParm, fileName + DEV_ENV_SUFFIX, defaultResourceClass);
+		if (configurationOverride == null || configurationOverride.invoke().getIs() == null) {
+			configurationOverride = new IniFileStream(resourceClassParm, fileName + PROD_ENV_SUFFIX, defaultResourceClass);
+		}
+		
 		IniFile iniFile = null;
 
-		try
-		{
-			iniFile = new IniFileMultiple(is, isProdEnv);
-		}
-		catch (IOException e)
-		{
-			if	(ApplicationContext.getInstance().isGXUtility())
-			{
+		try {
+			iniFile = new IniFileMultiple(is);
+			((IniFileMultiple) iniFile).addConfigurationSource(configurationOverride.fileName, configurationOverride.invoke().getIs());
+		} catch (IOException e) {
+			if (ApplicationContext.getInstance().isGXUtility()) {
 				iniFile = new IniFile(fileName);
-			}
-			else
-			{
+			} else {
 				String userDir;
-				try
-				{
+				try {
 					userDir = System.getProperty("user.dir") + "\\";
-				}
-				catch (SecurityException ex)
-				{
+				} catch (SecurityException ex) {
 					userDir = "";
 				}
 
-				throw new InternalError("Can't open " + userDir + fileName + " / " + e.getMessage());
+				String errMessage = "Can't open " + userDir + fileName;
+				logger.fatal(errMessage, e);
+				throw new InternalError(errMessage + " / " + e.getMessage());
 			}
 		}
 
@@ -85,63 +80,47 @@ public class ConfigFileFinder
 			if (ClientContext.getModelContext() != null)
 				resourceClass = ClientContext.getModelContext().getPackageClass();
 
-			if	(is == null && resourceClass != null)
-			{
+			if (is == null && resourceClass != null) {
 				is = ResourceReader.getResourceAsStream(resourceClass, fileName);
-				if	(is != null)
-				{
+				if (is != null) {
 					crypto = ResourceReader.getResourceAsStream(resourceClass, CRYPTO_CFG);
 				}
 			}
 
 			// This is for GeneXus programs set where is the .cfg file
-			if	(is == null && defaultResourceClass != null)
-			{
+			if (is == null && defaultResourceClass != null) {
 				is = ResourceReader.getResourceAsStream(defaultResourceClass, fileName);
-				if	(is != null)
-				{
+				if (is != null) {
 					crypto = ResourceReader.getResourceAsStream(resourceClass, CRYPTO_CFG);
 				}
 			}
 
-			if	(is == null)
-			{
-					try
-					{
+			if (is == null) {
+				try {
+					is = new BufferedInputStream(new FileInputStream(fileName));
+					if (is != null) {
+						crypto = new BufferedInputStream(new FileInputStream(CRYPTO_CFG));
+					}
+				} catch (FileNotFoundException e) {
+					try {
 						is = new BufferedInputStream(new FileInputStream(fileName));
-						if	(is != null)
-						{
+						if (is != null) {
 							crypto = new BufferedInputStream(new FileInputStream(CRYPTO_CFG));
 						}
+					} catch (FileNotFoundException e2) {
+						;
 					}
-					catch (FileNotFoundException e)
-					{
-						try
-						{
-							is = new BufferedInputStream(new FileInputStream(fileName));
-							if	(is != null)
-							{
-								crypto = new BufferedInputStream(new FileInputStream(CRYPTO_CFG));
-							}
-						}
-						catch (FileNotFoundException e2) { ; }
-					}
+				}
 			}
 
-			if	(is == null)
-			{
-				if	(ApplicationContext.getInstance().isGXUtility())
-				{
-					try
-					{
+			if (is == null) {
+				if (ApplicationContext.getInstance().isGXUtility()) {
+					try {
 						is = new FileInputStream(fileName);
-						if	(is != null)
-						{
+						if (is != null) {
 							crypto = new FileInputStream(fileName);
 						}
-					}
-					catch (IOException e)
-					{
+					} catch (IOException e) {
 					}
 				}
 			}
