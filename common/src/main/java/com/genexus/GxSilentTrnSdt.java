@@ -7,12 +7,18 @@ import com.genexus.diagnostics.core.LogManager;
 import com.genexus.util.GXProperties;
 
 import java.io.InputStream; 
-import java.io.StringWriter; 
+import java.io.StringWriter;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.HashSet;
+
 import com.genexus.xml.GXXMLSerializer;
 
 public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 {
-	public static final ILogger logger = LogManager.getLogger(GxSilentTrnSdt.class);
+	static final ILogger logger = LogManager.getLogger(GxSilentTrnSdt.class);
+	static final String SET_METHOD_PREFIX = "setgxTv_";
+	static final String GET_METHOD_PREFIX = "getgxTv_";
 	IPendingEventHelper pendingHelper;
 	GXProperties dirties = new GXProperties();
 
@@ -264,7 +270,7 @@ public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 		try
 		{
 			Class<?> me = getClass();
-			String methodName = "setgxTv_" + me.getSimpleName() + "_" + name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
+			String methodName = SET_METHOD_PREFIX + me.getSimpleName() + "_" + name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
 			for(java.lang.reflect.Method method : me.getMethods())
 			{
 				if(method.getName().equals(methodName))
@@ -274,7 +280,7 @@ public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 					{
 						if(GXSimpleCollection.class.isAssignableFrom(parmTypes[0]))
 						{
-							String methodNameGet = "getgxTv_" + me.getSimpleName() + "_" + name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
+							String methodNameGet = GET_METHOD_PREFIX + me.getSimpleName() + "_" + name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
 							GXSimpleCollection col = (GXSimpleCollection)me.getMethod(methodNameGet, new Class[]{}).invoke(this, (Object[])null);
 							col.removeAllItems();
 							col.fromJSonString(value);
@@ -294,11 +300,27 @@ public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 	{
 		try
 		{
-			Class<?> superClass = source.getClass();
-			for(java.lang.reflect.Field field : superClass.getDeclaredFields())
+			Class<?> me = getClass();
+			HashMap<String, Method> setMethods = new HashMap<>();
+			HashMap<String, Method> getMethods = new HashMap<>();
+			for(java.lang.reflect.Method method : me.getDeclaredMethods())
 			{
-				field.set(this, field.get(source));
+				String methodName = method.getName();
+				if(methodName.startsWith(SET_METHOD_PREFIX))
+				{
+					setMethods.put(methodName, method);
+				}else if (methodName.startsWith(GET_METHOD_PREFIX)){
+					getMethods.put(methodName, method);
+				}
 			}
+			for(java.lang.reflect.Method setMethod : setMethods.values()) {
+				String getMethod = setMethod.getName().replace(SET_METHOD_PREFIX, GET_METHOD_PREFIX);
+				if (getMethods.containsKey(getMethod)) {
+					Object value = getMethods.get(getMethod).invoke(source, (Object[]) null);
+					setMethod.invoke(this, new Object[]{value});
+				}
+			}
+
 		}catch(Exception e)
 		{
 			logger.fatal(e.getMessage(), e);
@@ -310,7 +332,7 @@ public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 		try
 		{
 			Class<?> me = getClass();
-			String methodName = "getgxTv_" + me.getSimpleName() + "_" + name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
+			String methodName = GET_METHOD_PREFIX + me.getSimpleName() + "_" + name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
 
 			Object obj = me.getMethod(methodName, new Class[]{}).invoke(this, (Object[])null);
 			if(obj instanceof GXSimpleCollection)
