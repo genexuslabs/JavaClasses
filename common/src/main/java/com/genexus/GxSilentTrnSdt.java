@@ -294,8 +294,8 @@ public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 	{
 		try
 		{
-			Class<?> me = getClass();
-			for(java.lang.reflect.Field field : me.getDeclaredFields())
+			Class<?> superClass = source.getClass();
+			for(java.lang.reflect.Field field : superClass.getDeclaredFields())
 			{
 				field.set(this, field.get(source));
 			}
