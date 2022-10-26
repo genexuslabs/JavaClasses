@@ -2,6 +2,8 @@ package com.genexus;
 import com.genexus.ModelContext;
 import com.genexus.common.interfaces.IPendingEventHelper;
 import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 import com.genexus.util.GXProperties;
 
 import java.io.InputStream; 
@@ -10,7 +12,7 @@ import com.genexus.xml.GXXMLSerializer;
 
 public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 {
-
+	public static final ILogger logger = LogManager.getLogger(GxSilentTrnSdt.class);
 	IPendingEventHelper pendingHelper;
 	GXProperties dirties = new GXProperties();
 
@@ -286,6 +288,20 @@ public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 			}
 		}catch(Exception e)
 		{
+		}
+	}
+	public void copy(GxSilentTrnSdt source)
+	{
+		try
+		{
+			Class<?> me = getClass();
+			for(java.lang.reflect.Field field : me.getDeclaredFields())
+			{
+				field.set(this, field.get(source));
+			}
+		}catch(Exception e)
+		{
+			logger.fatal(e.getMessage(), e);
 		}
 	}
 
