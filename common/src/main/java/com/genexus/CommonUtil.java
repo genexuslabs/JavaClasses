@@ -8,6 +8,7 @@ import json.org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.io.*;
+import java.net.URLEncoder;
 import java.text.*;
 import java.util.*;
 
@@ -3219,9 +3220,17 @@ public final class CommonUtil
 			char ch = path.charAt(src);
 			if (ch >= 128  ||  UnsafeChar.get(ch))
 			{
-				buf[dst++] = '%';
-				buf[dst++] = hex_map[(ch & 0xf0) >>> 4];
-				buf[dst++] = hex_map[ch & 0x0f];
+				try
+				{
+					String encoded = URLEncoder.encode( Character.toString(ch), "UTF-8" );
+					for (int i = 0; i < encoded.length(); i++)
+						buf[dst++] = encoded.charAt(i);
+				}
+				catch (UnsupportedEncodingException e)
+				{
+					logger.debug("Error while encoding unsafe char in escapeUnsafeChars: ", e);
+					buf[dst++] = ch;
+				}
 			}
 			else
 				buf[dst++] = ch;
