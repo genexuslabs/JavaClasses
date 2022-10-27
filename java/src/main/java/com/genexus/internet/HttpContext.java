@@ -28,6 +28,7 @@ import com.genexus.util.ThemeHelper;
 import com.genexus.webpanels.GXWebObjectBase;
 import com.genexus.webpanels.WebSession;
 
+import com.genexus.webpanels.WebUtils;
 import json.org.json.IJsonFormattable;
 import json.org.json.JSONArray;
 import json.org.json.JSONException;
@@ -933,7 +934,7 @@ public abstract class HttpContext
 		AddStylesheetsToLoad();
 		if (isSpaRequest())
 		{
-			writeTextNL("<script>gx.ajax.saveJsonResponse(" + getJSONResponse() + ");</script>");
+			writeTextNL("<script>gx.ajax.saveJsonResponse(" + WebUtils.htmlEncode(JSONObject.quote(getJSONResponse()), true) + ");</script>");
 		}
 		else
 		{				
