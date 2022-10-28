@@ -12,33 +12,25 @@ public class CORSHelper {
 
 	private static String CORS_ALLOWED_ORIGIN = "CORS_ALLOW_ORIGIN";
 	private static String CORS_MAX_AGE_SECONDS = "86400";
-
+	private static String PREFLIGHT_REQUEST = "OPTIONS";
 
 	public static boolean corsSupportEnabled() {
 		return getAllowedOrigin() != null;
 	}
 
-	public static HashMap<String, String> getCORSHeaders(Map<String, List<String>> headers) {
-		String corsAllowedOrigin = getAllowedOrigin();
-		if (corsAllowedOrigin == null) return null;
+	public static HashMap<String, String> getCORSHeaders(String httpMethod, Map<String, List<String>> headers) {
+		if (getAllowedOrigin() == null) {
+			return null;
+		}
 
 		String requestedMethod = getHeaderValue(REQUEST_METHOD_HEADER_NAME, headers);
 		String requestedHeaders = getHeaderValue(REQUEST_HEADERS_HEADER_NAME, headers);
-		if (requestedMethod == null) {
-			return null;
-		}
 
-		return corsHeaders(corsAllowedOrigin, requestedMethod, requestedHeaders);
+		return corsHeaders(httpMethod, requestedMethod, requestedHeaders);
 	}
 
-	public static HashMap<String, String> getCORSHeaders(String requestedMethod, String requestedHeaders) {
-		String corsAllowedOrigin = getAllowedOrigin();
-
-		if (corsAllowedOrigin == null || requestedMethod == null) {
-			return null;
-		}
-
-		return corsHeaders(corsAllowedOrigin, requestedMethod, requestedHeaders);
+	public static HashMap<String, String> getCORSHeaders(String httpMethod, String requestedMethod, String requestedHeaders) {
+		return corsHeaders(httpMethod, requestedMethod, requestedHeaders);
 	}
 
 	private static String getAllowedOrigin() {
@@ -49,15 +41,26 @@ public class CORSHelper {
 		return corsAllowedOrigin;
 	}
 
-	private static HashMap<String, String> corsHeaders(String corsAllowedOrigin, String requestedMethod, String requestedHeaders) {
+	private static HashMap<String, String> corsHeaders(String httpMethodName, String requestedMethod, String requestedHeaders) {
+		String corsAllowedOrigin = getAllowedOrigin();
+		if (corsAllowedOrigin == null) {
+			return null;
+		}
+
+		boolean isPreflightRequest = httpMethodName.equalsIgnoreCase(PREFLIGHT_REQUEST);
+
 		HashMap<String, String> corsHeaders = new HashMap<>();
 		corsHeaders.put("Access-Control-Allow-Origin", corsAllowedOrigin);
 		corsHeaders.put("Access-Control-Allow-Credentials", "true");
-		if (requestedHeaders != null && !requestedHeaders.isEmpty()) {
+		corsHeaders.put("Access-Control-Max-Age", CORS_MAX_AGE_SECONDS);
+
+		if (isPreflightRequest && requestedHeaders != null && !requestedHeaders.isEmpty()) {
 			corsHeaders.put("Access-Control-Allow-Headers", requestedHeaders);
 		}
-		corsHeaders.put("Access-Control-Allow-Methods", requestedMethod);
-		corsHeaders.put("Access-Control-Max-Age", CORS_MAX_AGE_SECONDS);
+		if (isPreflightRequest && requestedMethod != null && !requestedMethod.isEmpty()) {
+			corsHeaders.put("Access-Control-Allow-Methods", requestedMethod);
+		}
+
 		return corsHeaders;
 	}
 
