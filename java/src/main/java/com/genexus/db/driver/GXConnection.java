@@ -247,7 +247,7 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 		catch (SQLException sqlException)
 		{
 			String errMessage = "Error setting transaction isolation to " + GXToJDBCIsolationLevel(dataSource.jdbcIsolationLevel);
-			logger.error(errMessage, sqlException);
+			logger.warn(errMessage, sqlException);
 			log(GXDBDebug.LOG_MIN, errMessage);
 			if	(isLogEnabled()) logSQLException(handle, sqlException);
 		}
