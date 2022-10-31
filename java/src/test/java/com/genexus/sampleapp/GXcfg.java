@@ -1,4 +1,4 @@
-package com.mockdb ;
+package com.genexus.sampleapp;
 import com.genexus.*;
 
 public final  class GXcfg
