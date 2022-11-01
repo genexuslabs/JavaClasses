@@ -10,6 +10,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>gxqueue</artifactId>
+    <name>GeneXus Queue API</name>
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
