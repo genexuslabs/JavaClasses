@@ -5,18 +5,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.DataFormat;
-import org.apache.poi.ss.usermodel.DataFormatter;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.formula.functions.Index;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.NumberToTextConverter;
-import org.apache.poi.xssf.usermodel.XSSFCell;
-import org.apache.poi.xssf.usermodel.XSSFColor;
-import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.*;
 
 import com.genexus.CommonUtil;
 import com.genexus.gxoffice.IExcelCells;
@@ -637,7 +629,11 @@ public class ExcelCells implements IExcelCells {
 		try {
 
 			for (int i = 1; i <= cntCells; i++) {
-				CellStyle cellStyle = pCells[i].getCellStyle();
+				Cell cell = pCells[i];
+				CellStyle cellStyle = cell.getCellStyle();
+				if (cellStyle == null) {
+					cellStyle = cell.getSheet().getWorkbook().createCellStyle();
+				}
 				Font fontCell = pWorkbook.getFontAt(cellStyle.getFontIndexAsInt());
 				CellStyle newStyle = null;
 				XSSFFont newFont = null;
@@ -728,6 +724,45 @@ public class ExcelCells implements IExcelCells {
 		} catch (Exception e) {
 			m_errAccess.setErrDes("Invalid font properties");
 			m_errAccess.setErrCod((short) 6);
+		}
+	}
+
+	@Override
+	public long getBackColor() {
+		if (pCells.length == 0) {
+			return 0;
+		}
+
+		Cell cell = pCells[1];
+		if (cell.getCellStyle() == null) {
+			return 0;
+		}
+
+		return cell.getCellStyle().getFillForegroundColor();
+	}
+
+	@Override
+	public void setBackColor(long value) {
+		int val = (int) value;
+		int red = val >> 16 & 0xff;
+		int green = val >> 8 & 0xff;
+		int blue = val & 0xff;
+
+		XSSFColor newColor = new XSSFColor(new java.awt.Color(red, green, blue),null);
+
+		for (int i = 1; i <= cntCells; i++) {
+			Cell cell = pCells[i];
+			CellStyle cellStyle = cell.getCellStyle();
+			if (cellStyle == null) {
+				cellStyle = cell.getSheet().getWorkbook().createCellStyle();
+			}
+
+			if (cellStyle.getFillPattern() == FillPatternType.NO_FILL) {
+				cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+			}
+
+			((XSSFCellStyle)cellStyle).setFillForegroundColor(newColor);
+			cell.setCellStyle(cellStyle);
 		}
 	}
 
