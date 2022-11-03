@@ -12,13 +12,14 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.*;
 
 import com.genexus.CommonUtil;
 import com.genexus.gxoffice.IExcelCells;
 import com.genexus.gxoffice.IGxError;
 import org.apache.poi.ss.util.NumberToTextConverter;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFColor;
 
 /**
  * @author Diego
@@ -751,6 +752,45 @@ public class ExcelCells implements IExcelCells {
 			m_errAccess.setErrCod((short) 6);
 		}
 	}
+
+	@Override
+	public long getBackColor() {
+		if (pCells.length == 0) {
+			return 0;
+		}
+
+		Cell cell = pCells[1];
+		if (cell.getCellStyle() == null) {
+			return 0;
+		}
+
+		return cell.getCellStyle().getFillForegroundColor();
+	}
+
+	@Override
+	public void setBackColor(long value) {
+		int val = (int) value;
+		int red = val >> 16 & 0xff;
+		int green = val >> 8 & 0xff;
+		int blue = val & 0xff;
+		XSSFColor newColor = new XSSFColor(new java.awt.Color(red, green, blue), null);
+
+		for (int i = 1; i <= cntCells; i++) {
+			Cell cell = pCells[i];
+			CellStyle cellStyle = cell.getCellStyle();
+			if (cellStyle == null) {
+				cellStyle = cell.getSheet().getWorkbook().createCellStyle();
+			}
+			if (cellStyle.getFillPattern() == FillPatternType.NO_FILL) {
+				cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+			}
+
+			((HSSFCellStyle)cellStyle).setFillForegroundColor(newColor.getIndexed());
+			cellStyle.setFillForegroundColor((short) value);
+			cell.setCellStyle(cellStyle);
+		}
+	}
+
 
 	private void copyPropertiesStyle(HSSFCellStyle dest, HSSFCellStyle source) {
 		dest.setAlignment(source.getAlignment());
