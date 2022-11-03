@@ -1,8 +1,13 @@
 
 package com.genexus.internet;
 
-public class GXSMTPSession 
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
+
+public class GXSMTPSession
 {
+	public static final ILogger logger = LogManager.getLogger(GXSMTPSession.class);
+
 	private ISMTPSession session ;
 	private String host;
 	private int port;
@@ -21,13 +26,14 @@ public class GXSMTPSession
 	public GXSMTPSession()
 	{
 		try
-		{		
+		{
 			Class c = Class.forName("jakarta.mail.Session");
 			session = new SMTPSessionJavaMail();
 		}
 		catch(Throwable e)
 		{
 			session = new SMTPSession();
+			logger.warn("Using SMTPSession legacy implementation");
 		}
 
 		setHost("");
