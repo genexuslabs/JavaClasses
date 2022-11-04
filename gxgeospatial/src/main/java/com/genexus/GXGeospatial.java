@@ -9,7 +9,6 @@ import java.math.*;
 import com.genexus.internet.IGxJSONSerializable;
 import org.simpleframework.xml.*;
 import org.noggit.JSONParser.*;
-
 import org.locationtech.spatial4j.context.SpatialContext;
 import org.locationtech.spatial4j.context.SpatialContextFactory;
 import org.locationtech.spatial4j.context.jts.JtsSpatialContextFactory;

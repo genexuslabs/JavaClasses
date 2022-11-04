@@ -25,6 +25,9 @@ public class ExcelCells implements IExcelCells
   public native long	getColor();
   public native void 	setColor(long nNewVal);
 
+  public native long	getBackColor();
+  public native void 	setBackColor(long nNewVal);
+
   public native double	getSize();
   public native void 	setSize(double nNewVal);
 
