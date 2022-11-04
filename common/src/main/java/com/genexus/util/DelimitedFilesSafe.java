@@ -531,7 +531,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 				else
 				{
 					Calendar calendar = GregorianCalendar.getInstance();
-					calendar.set(year-1900, month - 1, day);
+					calendar.set(year, month - 1, day);
 					retdate = calendar.getTime();
 				}
 
