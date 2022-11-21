@@ -22,6 +22,7 @@ import com.genexus.util.ThemeHelper;
 import com.genexus.webpanels.GXWebObjectBase;
 import com.genexus.webpanels.WebSession;
 
+import com.genexus.webpanels.WebUtils;
 import json.org.json.IJsonFormattable;
 import json.org.json.JSONArray;
 import json.org.json.JSONException;
@@ -543,7 +544,7 @@ public abstract class HttpContext
 				if (isGxThemeHidden)
 					writeTextNL("<link id=\"gxtheme_css_reference\" " + sRelAtt + " type=\"text/css\" href=\"" + sUncachedURL + "\" " + htmlEndTag(HTMLElement.LINK));
 				else
-					writeTextNL("<style data-gx-href=\""+ sUncachedURL + "\"> @import url(\"" + sUncachedURL + "\") layer(" + sLayerName + ") </style>");
+					writeTextNL("<style data-gx-href=\""+ sUncachedURL + "\"> @import url(\"" + sUncachedURL + "\") layer(" + sLayerName + ");</style>");
 			}
 			else
 			{
@@ -943,7 +944,7 @@ public abstract class HttpContext
 		AddStylesheetsToLoad();
 		if (isSpaRequest())
 		{
-			writeTextNL("<script>gx.ajax.saveJsonResponse(" + getJSONResponse() + ");</script>");
+			writeTextNL("<script>gx.ajax.saveJsonResponse(" + WebUtils.htmlEncode(JSONObject.quote(getJSONResponse()), true) + ");</script>");
 		}
 		else
 		{				
@@ -1609,7 +1610,7 @@ public abstract class HttpContext
 				{
 					languageCode=language.toLowerCase();
 				}
-				String resourceName = "messages." + languageCode + ".txt";
+				String resourceName = "messages." + languageCode.toLowerCase() + ".txt";
 				Messages msgs = com.genexus.Messages.getMessages(resourceName, Application.getClientLocalUtil().getLocale());
 				return msgs.getMessage(code);
 			}
@@ -1621,7 +1622,7 @@ public abstract class HttpContext
 			Messages messages = cachedMessages.get(language);
 			if (messages == null) {
 				String languageCode = Application.getClientPreferences().getProperty("language|" + language, "code", Application.getClientPreferences().getProperty("LANGUAGE", "eng"));
-				messages = com.genexus.Messages.getMessages("messages." + languageCode + ".txt", Application.getClientLocalUtil().getLocale());
+				messages = com.genexus.Messages.getMessages("messages." + languageCode.toLowerCase() + ".txt", Application.getClientLocalUtil().getLocale());
 				addCachedLanguageMessage(language, messages);
 			}
 			return messages.getMessage(code);
@@ -1804,7 +1805,8 @@ public abstract class HttpContext
 								{"svg"	, "image/svg+xml"},
 								{"tgz"	, "application/x-compressed"},
 								{"zip"	, "application/x-zip-compressed"},
-								{"gz"	, "application/x-gzip"}
+								{"gz"	, "application/x-gzip"},
+								{"json"	, "application/json"}
 								};
 
 		public boolean willRedirect()

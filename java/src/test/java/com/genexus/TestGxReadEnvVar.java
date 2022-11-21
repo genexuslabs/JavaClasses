@@ -1,6 +1,7 @@
 package com.genexus;
 
 
+import com.genexus.sampleapp.GXcfg;
 import com.genexus.specific.java.Connect;
 import com.genexus.util.EnvVarReader;
 import org.junit.Assert;
@@ -14,9 +15,9 @@ import java.util.Map;
 public class TestGxReadEnvVar {
 
 	private static final String GX_PROP = "DB_URL";
-	private static final String GX_DATASTORE = "COM.MOCKDB|DEFAULT";
+	private static final String GX_DATASTORE = "COM.GENEXUS.SAMPLEAPP|DEFAULT";
 	private static final String FIRST_ENV_VAR = "GX_DEFAULT_DB_URL";
-	private static final String SECOND_ENV_VAR = "GX_COM_MOCKDB_DEFAULT_DB_URL";
+	private static final String SECOND_ENV_VAR = "GX_COM_GENEXUS_SAMPLEAPP_DEFAULT_DB_URL";
 	private static final String FIRST_VALUE = "FirstDB_URL";
 	private static final String SECOND_VALUE = "SecondDB_URL";
 
@@ -24,7 +25,7 @@ public class TestGxReadEnvVar {
 	public void testGxReadEnvVar()
 	{
 		Connect.init();
-		ModelContext modelContext = ModelContext.getModelContext(com.mockdb.GXcfg.class);
+		ModelContext modelContext = ModelContext.getModelContext(GXcfg.class);
 		try {
 			Map<String, String> newenv = new HashMap<>();
 			newenv.put(FIRST_ENV_VAR, FIRST_VALUE);
