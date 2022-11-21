@@ -61,15 +61,18 @@ public class DecimalUtil
 		return new java.math.BigDecimal(CommonUtil.ltrim(CommonUtil.str(d, len, dec)));
 	}
 
+	private static final int DOUBLE_SCALE = 18; // ~17 decimal digits of precision for double
 	public static double decToDouble(java.math.BigDecimal decimal)
 	{
-		return decimal.doubleValue();
+		if(decimal.scale() >= DOUBLE_SCALE)
+			return decimal.setScale(DOUBLE_SCALE, BigDecimal.ROUND_HALF_DOWN).doubleValue();
+		else return decimal.doubleValue();
 	}
 
  	public static BigDecimal unexponentString(String num) 
    	{
 		num = num.trim();
-		
+
    		String exponent;
    		int scaleAdj = 0;
    		int epos = num.indexOf('E');
