@@ -1488,7 +1488,7 @@ public abstract class HttpContext
 	}
 
 	private String theme = "";
-	private Boolean isDSO = false;
+	private boolean isDSO = false;
 
 	public String getTheme()
 	{
@@ -1505,14 +1505,14 @@ public abstract class HttpContext
 		return theme;
 	}
 
-	public Boolean getThemeisDSO() {
+	public boolean getThemeisDSO() {
 		return isDSO;
 	}
 
 	public void setDefaultTheme(String t){
 		setDefaultTheme( t, false);
 	}
-	public void setDefaultTheme(String t, Boolean isDSO)
+	public void setDefaultTheme(String t, boolean isDSO)
 	{
 		theme = t;
 		this.isDSO = isDSO;
