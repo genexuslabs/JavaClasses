@@ -544,7 +544,16 @@ public abstract class HttpContext
 				if (isGxThemeHidden)
 					writeTextNL("<link id=\"gxtheme_css_reference\" " + sRelAtt + " type=\"text/css\" href=\"" + sUncachedURL + "\" " + htmlEndTag(HTMLElement.LINK));
 				else
-					writeTextNL("<style data-gx-href=\""+ sUncachedURL + "\"> @import url(\"" + sUncachedURL + "\") layer(" + sLayerName + ");</style>");
+				{
+					if (getThemeisDSO())
+					{
+						writeTextNL("<style data-gx-href=\""+ sUncachedURL + "\"> @import url(\"" + sUncachedURL + "\") layer(" + sLayerName + ");</style>");
+					}
+					else
+					{
+						writeTextNL("<link " + sRelAtt + " type=\"text/css\" href=\"" + sUncachedURL + "\" " + htmlEndTag(HTMLElement.LINK));
+					}
+				}
 			}
 			else
 			{
@@ -1479,6 +1488,8 @@ public abstract class HttpContext
 	}
 
 	private String theme = "";
+	private Boolean isDSO = false;
+
 	public String getTheme()
 	{
 	    WebSession session = getWebSession();
@@ -1493,9 +1504,18 @@ public abstract class HttpContext
 
 		return theme;
 	}
-	public void setDefaultTheme(String t)
+
+	public Boolean getThemeisDSO() {
+		return isDSO;
+	}
+
+	public void setDefaultTheme(String t){
+		setDefaultTheme( t, false);
+	}
+	public void setDefaultTheme(String t, Boolean isDSO)
 	{
 		theme = t;
+		this.isDSO = isDSO;
 	}
 	@SuppressWarnings("unchecked")
 	public int setTheme(String t)

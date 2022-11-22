@@ -999,6 +999,8 @@ public abstract class HttpContext extends HttpAjaxContext implements IHttpContex
 	}
 
 	private String theme = "";
+	private Boolean isDSO = false;
+
 	public String getTheme()
 	{
 		
@@ -1009,8 +1011,14 @@ public abstract class HttpContext extends HttpAjaxContext implements IHttpContex
 	}
 	public void setDefaultTheme(String t)
 	{
+		setDefaultTheme( t, false);
+	}
+
+	public void setDefaultTheme(String t, Boolean isDSO)
+	{
 		pushCurrentUrl();
 		theme = t;
+		this.isDSO = isDSO;
 	}
 	public int setTheme(String t)
 	{
