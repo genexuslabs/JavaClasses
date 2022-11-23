@@ -10,8 +10,6 @@ import com.sap.conn.jco.ext.ServerDataEventListener;
 import com.sap.conn.jco.ext.ServerDataProvider;
 import com.sap.conn.jco.ext.Environment;
 
-
-
 public class DestinationProvider implements DestinationDataProvider, ServerDataProvider
 {
 	
@@ -23,7 +21,6 @@ public class DestinationProvider implements DestinationDataProvider, ServerDataP
 			_instance = new DestinationProvider();
 		}
 		return _instance;
-		
 	}
 	
 	private String SAP_SERVER = "SAP_SERVER";
@@ -57,7 +54,6 @@ public class DestinationProvider implements DestinationDataProvider, ServerDataP
 	public boolean supportsEvents()
 	{
 		return true;
-		
 	}
 	
 	/*@Override*/
@@ -90,7 +86,6 @@ public class DestinationProvider implements DestinationDataProvider, ServerDataP
 	public void setServerDataEventListener(ServerDataEventListener arg0) {
 		// Our logon parameters don't change dynamically, so we don't need to fire events. See above comment on DestinationDataEventListener.
 	}
-
 	
 	public void removeServerProperties(String serverName)
 	{
@@ -107,7 +102,6 @@ public class DestinationProvider implements DestinationDataProvider, ServerDataP
 		if ( serverName == null || serverName.equals(""))
 		{
 			serverName = SAP_DOC_SERVER;
-			
 		}
 		if (!Environment.isServerDataProviderRegistered()) 
 		{
@@ -150,7 +144,6 @@ public class DestinationProvider implements DestinationDataProvider, ServerDataP
 		if ( sessionName == null || sessionName.equals(""))
 		{
 			sessionName = SAP_SERVER;
-			
 		}
 		if (!Environment.isDestinationDataProviderRegistered()) 
 		{

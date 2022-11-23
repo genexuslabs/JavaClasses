@@ -155,13 +155,14 @@ public class EnterpriseConnect
 
 						if( jObj.get(key) instanceof String )
 						{
-							if (jcoType == JCoMetaData.TYPE_NUM && dec == 0 )
-							{
-								String sValue = new DecimalFormat("#").format(new BigDecimal(jObj.getString(key))); //"1.2"								
+							String  obj_value = jObj.getString(key);
+							if (jcoType == JCoMetaData.TYPE_NUM && dec == 0  && ( ! obj_value.trim().equals("") ))
+							{								
+								String sValue = new DecimalFormat("#").format(new BigDecimal(obj_value)); 							
 								jTable.setValue(key, sValue);
 							}
 							else {
-								jTable.setValue(key, jObj.getString(key));
+								jTable.setValue(key, obj_value);
 							}
 						}						
 						else if (jcoType == JCoMetaData.TYPE_NUM ||  jcoType == JCoMetaData.TYPE_INT)
@@ -174,7 +175,7 @@ public class EnterpriseConnect
 						}
 						else if (jcoType == JCoMetaData.TYPE_DATE)
 						{
-							jTable.setValue(key, jObj.getString(key)); 	
+							jTable.setValue(key, jObj.getString(key));
 						}
 						else if (jcoType == JCoMetaData.TYPE_INT2 || jcoType == JCoMetaData.TYPE_INT1 
 							      || jcoType == JCoMetaData.TYPE_BYTE)
@@ -194,8 +195,7 @@ public class EnterpriseConnect
 			throw new RuntimeException(ex.toString());
 		}
 		if (setValues)
-		{
-			//System.out.println( " TABLE " + jTable.toString() );
+		{			
 			function.getTableParameterList().setActive(parameterName, true);
 		}
 		else
@@ -276,16 +276,26 @@ public class EnterpriseConnect
 					tbl.setRow(i);
 					for(JCoField field : tbl)
 					{
-						if ( field.getType() == JCoMetaData.TYPE_NUM || 
-						     field.getType() == JCoMetaData.TYPE_FLOAT ||
-                             field.getType() == JCoMetaData.TYPE_BCD )
+						if  (field.getType() == JCoMetaData.TYPE_INT || 
+						    (field.getType() == JCoMetaData.TYPE_NUM  && field.getDecimals() == 0))
 						{
-							jRow.put(field.getName(), field.getDouble());
+							jRow.put(field.getName(), field.getLong());
+						}
+						else if (field.getType() == JCoMetaData.TYPE_INT2 || field.getType() == JCoMetaData.TYPE_INT1 
+								|| field.getType() == JCoMetaData.TYPE_BYTE )
+						{
+							jRow.put(field.getName(), field.getInt());
+						}
+						else if ( field.getType() == JCoMetaData.TYPE_NUM || 
+								field.getType() == JCoMetaData.TYPE_FLOAT ||
+    	    	            	field.getType() == JCoMetaData.TYPE_BCD )
+						{
+								jRow.put(field.getName(), field.getDouble());
 						}
 						else
 						{
-							jRow.put(field.getName(), field.getString());
-						}				
+								jRow.put(field.getName(), field.getString());
+						}										
 					}
 					jCol.put(jRow);
 				}		
@@ -376,7 +386,7 @@ public class EnterpriseConnect
 			}
         catch (JCoException e)
             {
-                throw new RuntimeException(e.toString());    
+                throw new RuntimeException("JCoException: " + e.toString());    
             }
 	}
 	
@@ -392,12 +402,12 @@ public class EnterpriseConnect
 			function = destination.getRepository().getFunction(functionName);	
 			if (function == null) 
 			{
-				throw new RuntimeException( functionName + " not found in SAP");
+				throw new RuntimeException( "GeneXus cannot find SAP function " + functionName);
 			}	
 		}
         catch (AbapException e)
         {
-		    throw new RuntimeException(e.toString());
+		    throw new RuntimeException(" ABAP Exception: " + e.toString());
         }
 	} 
 
@@ -409,7 +419,7 @@ public class EnterpriseConnect
 		}
 		catch (JCoException e)
         {
-            throw new RuntimeException(e.toString());    
+            throw new RuntimeException("JCoException excecuting: " + e.toString());    
         }
     }
 	
@@ -428,7 +438,7 @@ public class EnterpriseConnect
         }
         catch (AbapException e)
         {
-            throw new RuntimeException(e.toString());
+            throw new RuntimeException( "ABAP exception executing: " + e.toString());
         }
         return 0;
     }
