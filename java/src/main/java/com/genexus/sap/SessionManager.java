@@ -12,6 +12,7 @@ import com.sap.conn.jco.JCoFunction;
 
 public class SessionManager
 {
+
 	private String msHost = "";
 	private String msServ = "";
 	private String group = "";
@@ -41,10 +42,10 @@ public class SessionManager
 
 	private ModelContext _context = null;
 	
-	
 	Properties connectionProperties=null;
 	DocumentReceiver documentReceiver=null;
 	DocumentSender documentSender=null;
+
 
 	public SessionManager(ModelContext context)
 	{		
@@ -83,8 +84,6 @@ public class SessionManager
 			else	
 				destination = JCoDestinationManager.getDestination(session, scope);
 			destination.ping();
-
-		
 		}
 		catch (AbapException ex)
 		{
@@ -109,7 +108,7 @@ public class SessionManager
 	            throw new RuntimeException(ex.toString());    
 		}
 	}
-	
+
 	public void Connect()
 	{
 		errorCode = 0;
@@ -141,7 +140,6 @@ public class SessionManager
 	{
 		documentSender.stop();
 	}
-
 
 	public void TransactionBegin()
 	{	
@@ -333,6 +331,12 @@ public class SessionManager
 		return repositoryName;
 	}
 	
+	public String getRepositoryName()
+	{
+		return repositoryName;
+	}
+	
+	
 	/* Setters */
 
 	public void setPort( String value )
@@ -403,6 +407,7 @@ public class SessionManager
 	{
 		systemId = value;
 	}
+
 	
 	public void setSessionName( String value )
    	{
@@ -436,6 +441,7 @@ public class SessionManager
 	
 	public void setErrorMessage( String value )
 	{
+
 		errorMessage = value;
 	}
 		
@@ -458,5 +464,4 @@ public class SessionManager
 	{
 		repositoryName = value;
 	}
-	
 }

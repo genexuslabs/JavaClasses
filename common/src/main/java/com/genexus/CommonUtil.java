@@ -8,6 +8,7 @@ import json.org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.io.*;
+import java.net.URLEncoder;
 import java.text.*;
 import java.util.*;
 
@@ -39,6 +40,11 @@ public final class CommonUtil
 	private static Random random;
 	private static Date nullDate;
 	private static final BitSet UnsafeChar = new BitSet(128);
+
+	private static DateFormat parse_1123;
+	private static DateFormat parse_850;
+	private static DateFormat parse_asctime;
+	private static final Object http_parse_lock  = new Object();
 
 	public static final ILogger logger = LogManager.getLogger(CommonUtil.class);
 
@@ -632,19 +638,37 @@ public final class CommonUtil
 						hour ++;
 					}
 				}
-				return nullDate();
+				hour = 0;
+				return tryNullDateOrTime(year, month, day, hour, minute, second, millisecond);
 			}
 			else
 			{
-				return nullDate();
+				return tryNullDateOrTime(year, month, day, hour, minute, second, millisecond);
 			}
 		}
 		catch (Exception e)
 		{
-			return nullDate();
+			return tryNullDateOrTime(year, month, day, hour, minute, second, millisecond);
 		}
 	}
 
+	private static Date tryNullDateOrTime(int year, int month, int day , int hour , int minute , int second, int millisecond)
+	{
+			if ((year ==1 && month == 1 && day ==1) || (hour == 0 && minute == 0 && second == 0 && millisecond == 0))
+				return nullDate();
+
+			Date tryDate = ymdhmsToT_noYL(1, 1, 1, hour, minute, second, millisecond);
+			if (!tryDate.equals(nullDate()))
+				return tryDate;
+			else
+			{
+				tryDate = ymdhmsToT_noYL(year, month, day, 0, 0, 0, 0);
+				if (!tryDate.equals(nullDate()))
+					return tryDate;
+				else
+					return nullDate();
+			}
+	}
 
 	public static Date newNullDate()
 	{
@@ -1308,7 +1332,7 @@ public final class CommonUtil
 			Number num = java.text.NumberFormat.getInstance().parse(value);
 			return false;
 		}
-		catch(ParseException pe)
+		catch(java.text.ParseException pe)
 		{
 			return true;
 		}
@@ -1358,12 +1382,21 @@ public final class CommonUtil
 		return (appGregorianCalendar.getTime());
 	}
 
+	public static Date dtadd(Date date, double seconds)
+	{
+		if (seconds % 1 != 0)
+			return dtaddms(date, seconds);
+
+		return dtadd(date, (int)seconds);
+	}
+
 	public static Date dtadd(Date date, int seconds)
 	{
 		if (seconds % SECONDS_IN_DAY == 0)
 		{
 			return dadd(date, seconds / SECONDS_IN_DAY);
 		}
+
 		GregorianCalendar appGregorianCalendar = new GregorianCalendar(defaultTimeZone, defaultLocale);
 		appGregorianCalendar.setTime(date);
 		appGregorianCalendar.add(appGregorianCalendar.SECOND, seconds);
@@ -1559,52 +1592,48 @@ public final class CommonUtil
 		int age = 0;
 		int	multiplier = 1;
 
-		if (!fn.equals(nullDate()) && !today.equals(nullDate()))
+		Calendar calendar = GregorianCalendar.getInstance();
+		calendar.setTime(fn);
+		Calendar todayCalendar = GregorianCalendar.getInstance();
+		todayCalendar.setTime(today);
+		int fnTime 		= calendar.get(Calendar.HOUR)    * 10000 + calendar.get(Calendar.MINUTE)    * 100 + calendar.get(Calendar.SECOND);
+		int todayTime 	= todayCalendar.get(Calendar.HOUR) * 10000 + todayCalendar.get(Calendar.MINUTE) * 100 + todayCalendar.get(Calendar.SECOND);
+
+		GregorianCalendar gage1, gage2;
+		gage1 = new GregorianCalendar(defaultLocale);
+		gage2 = new GregorianCalendar(defaultLocale);
+		gage1.setTimeZone(defaultTimeZone);
+		gage2.setTimeZone(defaultTimeZone);
+
+		if	(!fnDate.before(todayDate))
 		{
-			Calendar calendar = GregorianCalendar.getInstance();
-			calendar.setTime(fn);
-			Calendar todayCalendar = GregorianCalendar.getInstance();
-			calendar.setTime(today);
-			int fnTime 		= calendar.get(Calendar.HOUR)    * 10000 + calendar.get(Calendar.MINUTE)    * 100 + calendar.get(Calendar.SECOND);
-			int todayTime 	= todayCalendar.get(Calendar.HOUR) * 10000 + todayCalendar.get(Calendar.MINUTE) * 100 + todayCalendar.get(Calendar.SECOND);
+			multiplier = -1;
+			Date aux = fn;
+			fn = today;
+			today = aux;
+		}
 
-			GregorianCalendar gage1, gage2;
-			gage1 = new GregorianCalendar(defaultLocale);
-			gage2 = new GregorianCalendar(defaultLocale);
-			gage1.setTimeZone(defaultTimeZone);
-			gage2.setTimeZone(defaultTimeZone);
+		gage1.setTime(fn);
+		gage2.setTime(today);
 
-			if	(!fnDate.before(todayDate))
+		int m = gage1.get(gage1.MONTH);
+		int d = gage1.get(gage1.DATE);
+		int y = gage1.get(gage1.YEAR);
+
+		int m1 = gage2.get(gage2.MONTH);
+		int d1 = gage2.get(gage2.DATE);
+		int y1 = gage2.get(gage2.YEAR);
+
+		age = (y1 - y);
+
+		if (age > 0)
+		{
+			if ((m > m1) ||
+				 (m == m1 && d > d1) ||
+				 (m == m1 && d == d1 && fnTime > todayTime))
 			{
-				multiplier = -1;
-				Date aux = fn;
-				fn = today;
-				today = aux;
+				age--;
 			}
-
-			gage1.setTime(fn);
-			gage2.setTime(today);
-
-			int m = gage1.get(gage1.MONTH);
-			int d = gage1.get(gage1.DATE);
-			int y = gage1.get(gage1.YEAR);
-
-			int m1 = gage2.get(gage2.MONTH);
-			int d1 = gage2.get(gage2.DATE);
-			int y1 = gage2.get(gage2.YEAR);
-
-			age = (y1 - y);
-
-			if (age > 0)
-			{
-				if ((m > m1) ||
-					 (m == m1 && d > d1) ||
-					 (m == m1 && d == d1 && fnTime > todayTime))
-				{
-					age--;
-				}
-			}
-
 		}
 
 		return multiplier * age;
@@ -2413,7 +2442,7 @@ public final class CommonUtil
 				return dateFormat.parse(value);
 			}
 		}
-		catch (ParseException ex)
+		catch (java.text.ParseException ex)
 		{
 			return nullDate();
 		}
@@ -2689,68 +2718,50 @@ public final class CommonUtil
         }
         //Parameters in URL are always in Invariant Format
 
-        if (className.equals("short") || className.equals("java.lang.Short") || className.equals("[S"))
-        {
-            try
+        if (className.equals("short") || className.equals("java.lang.Short") || className.equals("[S") ||
+			className.equals("byte") || className.equals("java.lang.Byte") || className.equals("[B") ||
+			className.equals("int") || className.equals("java.lang.Integer") || className.equals("[I") ||
+			className.equals("long") || className.equals("java.lang.Long") || className.equals("[J"))
+		{
+			try
             {
-           		if (objStr.isEmpty())
-					objStr = "0";
-				else 
-				{
-					int i = objStr.indexOf(".");
-					if (i >= 0)
-            			objStr =  objStr.substring(0, i);  
-				}         	
-                return Short.valueOf(objStr);
-            }
-            catch(Exception e)
-            {
-                if (fail)
-                    throw e;
-                return new Short((short)0);
-            }
-        }
-        if (className.equals("byte") || className.equals("java.lang.Byte") || className.equals("[B"))
-        {
-            try
-            {
+            	
 				if (objStr.isEmpty())
 					objStr ="0";
 				else 
 				{
-					int i = objStr.indexOf(".");
+					int i = objStr.indexOf(".") ;
 					if	(i >= 0)
-            			objStr =  objStr.substring(0, i);  
-				}               	              	
+					{
+						if (objStr.indexOf('E') == -1 && objStr.indexOf('e') == -1)
+	            			objStr =  objStr.substring(0, i);  
+						else
+							objStr = CommonUtil.strUnexponentString(objStr);
+					}
+				}
+            }
+            catch(Exception e)
+            {
+                if (fail)
+                    throw e;
+				objStr = "0";                
+            }
+			if (className.equals("short") || className.equals("java.lang.Short") || className.equals("[S"))		   
+    	    {
+        	    return Short.valueOf(objStr);        
+        	}
+        	else if (className.equals("byte") || className.equals("java.lang.Byte") || className.equals("[B"))
+        	{
                 return Byte.valueOf(objStr);
             }
-            catch(Exception e)
-            {
-                if (fail)
-                    throw e;
-                return new Byte((byte)0);
-            }
-        }
-        else if (className.equals("int") || className.equals("java.lang.Integer") || className.equals("[I"))
-        {
-            try
-            {
-            	if (objStr.isEmpty())
-					objStr ="0";
-				else 
-				{
-					int i = objStr.indexOf(".");
-					if	(i >= 0)
-            			objStr =  objStr.substring(0, i);  
-				}       	
-                return new Integer(objStr);
-            }
-            catch(Exception e)
-            {
-                if (fail)
-                    throw e;
-                return new Integer(0);
-            }
+			else if (className.equals("int") || className.equals("java.lang.Integer") || className.equals("[I"))
+			{
+				return  Integer.valueOf(objStr);
+			}    
+			else if (className.equals("long") || className.equals("java.lang.Long") || className.equals("[J"))
+			{
+				return Long.valueOf(objStr);
+			}
         }
         else if (className.equals("string") || className.indexOf("java.lang.String") != -1)
         {
@@ -2768,7 +2779,7 @@ public final class CommonUtil
             {
                 if (fail)
                     throw e;
-                return new Double(0);
+                return Double.valueOf("0");
             }
         }
         else if (className.equals("float") || className.equals("java.lang.Float") || className.equals("[F"))
@@ -2783,30 +2794,7 @@ public final class CommonUtil
             {
                 if (fail)
                     throw e;
-                return new Float(0);
-            }
-        }
-        else if (className.equals("long") || className.equals("java.lang.Long") || className.equals("[J"))
-        {
-            try
-            {
-            	
-				if (objStr.isEmpty())
-					objStr ="0";
-				else 
-				{
-					int i = objStr.indexOf(".");
-					if	(i >= 0)
-            			objStr =  objStr.substring(0, i);  
-				}
-                return Long.valueOf(CommonUtil.strUnexponentString(objStr));
-
-            }
-            catch(Exception e)
-            {
-                if (fail)
-                    throw e;
-                return new Long(0);
+                return Float.valueOf("0");
             }
         }
         else if (className.equals("boolean") || className.equals("java.lang.Boolean") || className.equals("[Z"))
@@ -2819,14 +2807,14 @@ public final class CommonUtil
             {
                 if (fail)
                     throw e;
-                return new Boolean(false);
+                return Boolean.valueOf("false");
             }
         }
         else if (className.indexOf("java.math.BigDecimal") != -1)
         {
             try
             {
-            		if (objStr.isEmpty())
+            	if (objStr.isEmpty())
             			objStr = "0";                	
                 return DecimalUtil.stringToDec(objStr);
             }
@@ -2844,7 +2832,7 @@ public final class CommonUtil
 					return LocalUtil.getISO8601Date(objStr);
 				else
 					return new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss zzz Z").parse(objStr);
-            } catch (ParseException ex) {
+            } catch (java.text.ParseException ex) {
                 return nullDate();
             }
         }
@@ -3232,9 +3220,17 @@ public final class CommonUtil
 			char ch = path.charAt(src);
 			if (ch >= 128  ||  UnsafeChar.get(ch))
 			{
-				buf[dst++] = '%';
-				buf[dst++] = hex_map[(ch & 0xf0) >>> 4];
-				buf[dst++] = hex_map[ch & 0x0f];
+				try
+				{
+					String encoded = URLEncoder.encode( Character.toString(ch), "UTF-8" );
+					for (int i = 0; i < encoded.length(); i++)
+						buf[dst++] = encoded.charAt(i);
+				}
+				catch (UnsupportedEncodingException e)
+				{
+					logger.debug("Error while encoding unsafe char in escapeUnsafeChars: ", e);
+					buf[dst++] = ch;
+				}
 			}
 			else
 				buf[dst++] = ch;
@@ -3248,6 +3244,122 @@ public final class CommonUtil
 
 	static final char[] hex_map =
 		{'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+
+	/**
+	 * Retrieves the value for a given header. The value is parsed as a
+	 * date; if this fails it is parsed as a long representing the number
+	 * of seconds since 12:00 AM, Jan 1st, 1970. If this also fails an
+	 * exception is thrown.
+	 * <br>Note: When sending dates use Util.httpDate().
+	 *
+	 * @param  raw_date the header value.
+	 * @return the value for the header, or null if non-existent.
+	 * @exception IllegalArgumentException if the header's value is neither a
+	 *            legal date nor a number.
+	 * @exception IOException if any exception occurs on the socket.
+	 */
+	public static Date getHeaderAsDate(String raw_date)
+		throws IOException, IllegalArgumentException
+	{
+		if (raw_date == null) return null;
+
+		// asctime() format is missing an explicit GMT specifier
+		if (raw_date.toUpperCase().indexOf("GMT") == -1  &&
+			raw_date.indexOf(' ') > 0)
+			raw_date += " GMT";
+
+		Date   date;
+
+		try
+		{ date = parseHttpDate(raw_date); }
+		catch (IllegalArgumentException iae)
+		{
+			// some servers erroneously send a number, so let's try that
+			long time;
+			try
+			{ time = Long.parseLong(raw_date); }
+			catch (NumberFormatException nfe)
+			{ throw iae; }	// give up
+			if (time < 0)  time = 0;
+			date = new Date(time * 1000L);
+		}
+
+		return date;
+	}
+
+	/**
+	 * Parse the http date string. java.util.Date will do this fine, but
+	 * is deprecated, so we use SimpleDateFormat instead.
+	 *
+	 * @param dstr  the date string to parse
+	 * @return the Date object
+	 */
+	final static Date parseHttpDate(String dstr)
+	{
+		synchronized (http_parse_lock)
+		{
+			if (parse_1123 == null)
+				setupParsers();
+		}
+
+		try
+		{ return parse_1123.parse(dstr); }
+		catch (java.text.ParseException pe)
+		{ }
+		try
+		{ return parse_850.parse(dstr); }
+		catch (java.text.ParseException pe)
+		{ }
+		try
+		{ return parse_asctime.parse(dstr); }
+		catch (java.text.ParseException pe)
+		{ throw new IllegalArgumentException(pe.toString()); }
+	}
+
+	private static final void setupParsers()
+	{
+		parse_1123 =
+			new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US);
+		parse_850 =
+			new SimpleDateFormat("EEEE, dd-MMM-yy HH:mm:ss 'GMT'", Locale.US);
+		parse_asctime =
+			new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy", Locale.US);
+
+		parse_1123.setTimeZone(new SimpleTimeZone(0, "GMT"));
+		parse_850.setTimeZone(new SimpleTimeZone(0, "GMT"));
+		parse_asctime.setTimeZone(new SimpleTimeZone(0, "GMT"));
+
+		parse_1123.setLenient(true);
+		parse_850.setLenient(true);
+		parse_asctime.setLenient(true);
+	}
+
+	/**
+	 * Turns an hashtable of name/value pairs into the string
+	 * "name1=value1&name2=value2&name3=value3". The names and values are
+	 * first urlencoded. This is the form in which form-data is passed to
+	 * a cgi script.
+	 *
+	 * @param hashtable is Hashtable
+	 * @return a string containg the encoded name/value pairs
+	 */
+	public final static String hashtable2query(Hashtable hashtable)
+	{
+		if (hashtable == null)
+			return null;
+
+		StringBuffer qbuf = new StringBuffer();
+		for (Enumeration en = hashtable.keys(); en.hasMoreElements();) {
+			Object key = en.nextElement();
+			qbuf.append((key == null ? null : URLEncode((String)key,"UTF-8")) + "=" +
+				(key == null ? null : URLEncode((String)hashtable.get(key),"UTF-8")) + "&");
+		}
+
+		if (qbuf.length() > 0)
+			qbuf.setLength(qbuf.length()-1);	// remove trailing '&'
+
+		return qbuf.toString();
+	}
 	
 	public static byte remoteFileExists(String URLName){
 	    try {	      

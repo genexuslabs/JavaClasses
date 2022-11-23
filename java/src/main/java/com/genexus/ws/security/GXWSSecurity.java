@@ -8,6 +8,7 @@ public class GXWSSecurity implements IGXWSSecurity
 {
 	private IGXWSSignature signature;
 	private IGXWSEncryption encryption;
+	private int expirationTimeout;
 
 	public GXWSSecurity()
 	{
@@ -33,6 +34,16 @@ public class GXWSSecurity implements IGXWSSecurity
 	public void setEncryption(IGXWSEncryption encryption)
 	{
 		this.encryption = encryption;
-	}	
+	}
+
+	public int getExpirationTimeout()
+	{
+		return expirationTimeout;
+	}
+
+	public void setExpirationTimeout(int expirationTimeout)
+	{
+		this.expirationTimeout = expirationTimeout;
+	}
 }
 

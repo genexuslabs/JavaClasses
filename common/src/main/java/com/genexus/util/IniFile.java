@@ -169,8 +169,8 @@ public class IniFile {
 				sections.put(actSection, new Section(il.section, properties));
 			} else if (il.typeLine == PROPERTY) // && actSection != null)
 			{
-				String key = getMappedProperty(actSection, il.property);
-				String envValue = EnvVarReader.getEnvironmentValue(actSection, key);
+				String mappedKey = getMappedProperty(actSection, il.property);
+				String envValue = EnvVarReader.getEnvironmentVar(actSection, il.property, mappedKey);
 				if (envValue != null)
 					il.value = envValue;
 
@@ -217,7 +217,7 @@ public class IniFile {
 	public void setPropertyEncrypted(String section, String key, String value) {
 		String serverKey = getServerKey();
 		if (key.equals("USER_PASSWORD")) {
-			serverKey = serverKey.substring(16, 32) + serverKey.substring(0, 16);
+			serverKey = Encryption.inverseKey(serverKey);
 		}
 		setProperty(section, key,
 				Encryption.encrypt64(value + Encryption.checksum(value, Encryption.getCheckSumLength()), serverKey));
@@ -231,7 +231,7 @@ public class IniFile {
 			if (val.length() > checkSumLength) {
 				String serverKey = getServerKey();
 				if (key.equals("USER_PASSWORD")) {
-					serverKey = serverKey.substring(16, 32) + serverKey.substring(0, 16);
+					serverKey = Encryption.inverseKey(serverKey);
 				}
 				String dec = Encryption.decrypt64(val, serverKey);
 				// Ojo, el = de aca es porque sino no me deja tener passwords vacias, dado que
@@ -293,6 +293,11 @@ public class IniFile {
 	}
 
 	private String getPropertyImpl(String section, String key) {
+		String mapped = getMappedProperty(section, key);
+		String envValue = EnvVarReader.getEnvironmentVar(section, key, mapped);
+		if (envValue!=null)
+			return envValue;
+
 		String output = null;
 		Section sec = (Section) sections.get(section.toUpperCase());
 		Hashtable prop = null;
@@ -308,19 +313,31 @@ public class IniFile {
 		}
 		return output;
 	}
-
-	private String getMappedProperty(String section, String key){
-		if (getConfMapping() != null && getConfMapping().containsKey(key))
-			return getConfMapping().get(key);
-
-		return key;
+	private String getFullSectionKey(String section, String key){
+		if (section != null && !section.isEmpty() && section != "Client")
+			return String.format("%s:%s", section, key);
+		else
+			return key;
 	}
+	private String getMappedProperty(String section, String key){
+		String fullKey = getFullSectionKey(section, key);
+		if (isMappedProperty(fullKey))
+			return getConfMapping().get(fullKey);
+		return null;
+	}
+	private boolean isMappedProperty(String key){
+		return (getConfMapping() != null && getConfMapping().containsKey(key));
+	}
+
 
 	static ConcurrentHashMap<String, String> getConfMapping(){
 	
 		if (s_confMapping == null){
 			String folderPath = ApplicationContext.getInstance().getServletEngineDefaultPath() + File.separatorChar + "WEB-INF";
 			File envMapping = new File(folderPath, CONFMAPPING_FILE);
+			if (!envMapping.exists()){
+				envMapping = new File(CONFMAPPING_FILE);
+			}
 			if (envMapping.isFile()) {
 				GXFileInfo mapping = new GXFileInfo(envMapping);
 				try {

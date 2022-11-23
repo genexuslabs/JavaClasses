@@ -21,7 +21,6 @@ import com.sap.conn.jco.server.JCoServerExceptionListener;
 import com.sap.conn.jco.server.JCoServerFunctionHandler;
 
 public class DocumentClient {
-
     private static final int BLOB_LENGTH = 1022;
 
     static class ErrorHandler implements JCoServerErrorListener, JCoServerExceptionListener {   
@@ -76,8 +75,10 @@ public class DocumentClient {
                 }
             }
             catch (IOException e) {
+
                 // Unfortunately there is no way of transmitting error details back to SAP, so we better log it here,
                 // if we want to keep the chance of trouble-shooting later, what exactly went wrong...
+
                 e.printStackTrace();
                 function.getExportParameterList().setValue("ERROR", 3);
             }
@@ -127,5 +128,4 @@ public class DocumentClient {
             }
         }
     }
-
 }

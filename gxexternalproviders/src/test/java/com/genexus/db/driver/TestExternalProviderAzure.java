@@ -12,4 +12,8 @@ public class TestExternalProviderAzure extends TestExternalProvider {
 		return new ExternalProviderAzureStorage();
 	}
 
+	@Override
+	public boolean supportsObjectAcls() {
+		return false;
+	}
 }

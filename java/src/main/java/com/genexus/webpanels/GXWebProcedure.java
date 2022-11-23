@@ -8,8 +8,8 @@ import com.genexus.servlet.http.IHttpServletRequest;
 import com.genexus.servlet.http.HttpServletRequest;
 import com.genexus.servlet.http.IHttpServletResponse;
 import com.genexus.servlet.http.HttpServletResponse;
-import javax.xml.ws.WebServiceContext;
-import javax.xml.ws.handler.MessageContext;
+import com.genexus.xml.ws.WebServiceContext;
+import com.genexus.xml.ws.handler.MessageContext;
 
 import com.genexus.ModelContext;
 import com.genexus.db.UserInformation;
@@ -21,6 +21,8 @@ import com.genexus.ws.GXHandlerChain;
 public abstract class GXWebProcedure extends GXWebObjectBase
 {
 	private static final ILogger logger = LogManager.getLogger(GXWebProcedure.class);
+
+	public static final int IN_NEW_UTL = -2;
 	
 	protected abstract void initialize();
 
@@ -33,10 +35,10 @@ public abstract class GXWebProcedure extends GXWebObjectBase
 	{	
 		try
 		{
-			MessageContext msg = wsContext.getMessageContext();
-			IHttpServletRequest request = new HttpServletRequest(msg.get(MessageContext.SERVLET_REQUEST));
-			IHttpServletResponse response = new HttpServletResponse(msg.get(MessageContext.SERVLET_RESPONSE));
-			IServletContext myContext = new ServletContext(msg.get(MessageContext.SERVLET_CONTEXT));
+			MessageContext msg = new MessageContext(wsContext);
+			IHttpServletRequest request = new HttpServletRequest(msg.get(msg.getSERVLET_REQUEST()));
+			IHttpServletResponse response = new HttpServletResponse(msg.get(msg.getSERVLET_RESPONSE()));
+			IServletContext myContext = new ServletContext(msg.get(msg.getSERVLET_CONTEXT()));
 			String messageBody = (String)msg.get(GXHandlerChain.GX_SOAP_BODY);
 			HttpContext httpContext = new HttpContextWeb(request.getMethod(), request, response, myContext);
 			httpContext.getHttpRequest().setSoapMessageBody(messageBody);
@@ -47,11 +49,19 @@ public abstract class GXWebProcedure extends GXWebObjectBase
 			logger.error("Could not initialize Web Service", e);
 		}
 	}
-	
+
 	public GXWebProcedure(int remoteHandle , ModelContext context)
 	{
+		this(false, remoteHandle ,context);
+	}
+
+	public GXWebProcedure(boolean inNewUTL, int remoteHandle , ModelContext context) {
 		super(remoteHandle ,context);
-	}	
+
+		if(inNewUTL) {
+			this.remoteHandle = IN_NEW_UTL;
+		}
+	}
 
 	protected void initState(ModelContext context, UserInformation ui)
 	{

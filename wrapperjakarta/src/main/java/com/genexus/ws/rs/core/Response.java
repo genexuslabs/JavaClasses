@@ -1,6 +1,6 @@
 package com.genexus.ws.rs.core;
 
-public abstract class Response extends jakarta.ws.rs.core.Response{
+public abstract class Response extends jakarta.ws.rs.core.Response {
 
 	public static Response.ResponseBuilder notModifiedWrapped() {
 		return new Response.ResponseBuilder(jakarta.ws.rs.core.Response.notModified());
@@ -12,6 +12,12 @@ public abstract class Response extends jakarta.ws.rs.core.Response{
 
 	public static Response.ResponseBuilder okWrapped() {
 		return new Response.ResponseBuilder(jakarta.ws.rs.core.Response.ok());
+	}
+
+	public static Response.ResponseBuilder options(String allowedMethods) {
+		Response.ResponseBuilder builder = okWrapped();
+		builder.header("Allow", allowedMethods);
+		return builder;
 	}
 
 	public static Response.ResponseBuilder notFound() {
@@ -41,7 +47,8 @@ public abstract class Response extends jakarta.ws.rs.core.Response{
 	public static Response.ResponseBuilder statusWrapped(int status) {
 		return new Response.ResponseBuilder(jakarta.ws.rs.core.Response.status(status));
 	}
-	public static class ResponseBuilder implements IResponseBuilder{
+
+	public static class ResponseBuilder implements IResponseBuilder {
 		jakarta.ws.rs.core.Response.ResponseBuilder rb;
 
 		ResponseBuilder(jakarta.ws.rs.core.Response.ResponseBuilder rb) {
@@ -51,13 +58,22 @@ public abstract class Response extends jakarta.ws.rs.core.Response{
 		public jakarta.ws.rs.core.Response build() {
 			return rb.build();
 		}
+
 		public void type(String type) {
 			rb.type(type);
 		}
-		public void entity(Object entity) { rb.entity(entity); }
 
-		public IResponseBuilder status(short i) { return new ResponseBuilder(rb.status(i)); }
-		public IResponseBuilder entityWrapped(Object entity) { return new ResponseBuilder(rb.entity(entity)); }
+		public void entity(Object entity) {
+			rb.entity(entity);
+		}
+
+		public IResponseBuilder status(short i) {
+			return new ResponseBuilder(rb.status(i));
+		}
+
+		public IResponseBuilder entityWrapped(Object entity) {
+			return new ResponseBuilder(rb.entity(entity));
+		}
 
 		public void header(String header, Object object) {
 			rb.header(header, object);

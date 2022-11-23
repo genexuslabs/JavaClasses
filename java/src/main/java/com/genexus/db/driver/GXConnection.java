@@ -137,6 +137,11 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 				GXPreparedStatement.addSpaceToEmptyVarChar = false;
 			}
 
+			if(context.getPreferences().getProperty("BlankStringAsEmpty", "0").equals("1"))
+			{
+				GXResultSet.blankStringAsEmpty = true;
+			}
+
 			if(context.getPreferences().getProperty("AvoidDataTruncationError", "0").equals("1"))
 			{
 				GXPreparedStatement.avoidDataTruncationError = true;
@@ -241,7 +246,9 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 		}
 		catch (SQLException sqlException)
 		{
-			log(GXDBDebug.LOG_MIN, "Error setting transaction isolation to " + GXToJDBCIsolationLevel(dataSource.jdbcIsolationLevel));
+			String errMessage = "Error setting transaction isolation to " + GXToJDBCIsolationLevel(dataSource.jdbcIsolationLevel);
+			logger.warn(errMessage, sqlException);
+			log(GXDBDebug.LOG_MIN, errMessage);
 			if	(isLogEnabled()) logSQLException(handle, sqlException);
 		}
 
@@ -330,6 +337,10 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 					return Connection.TRANSACTION_READ_COMMITTED;
 				case 0:
 					return Connection.TRANSACTION_READ_UNCOMMITTED;
+				case 2:
+					return Connection.TRANSACTION_REPEATABLE_READ;
+				case 3:
+					return Connection.TRANSACTION_SERIALIZABLE;
 				default:
 					System.err.println("Invalid isolation level " + gxIL);
 					return Connection.TRANSACTION_NONE;

@@ -1,5 +1,6 @@
 package com.genexus.db.driver;
 
+import com.amazonaws.auth.*;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -14,9 +15,7 @@ import com.genexus.StructSdtMessages_Message;
 import java.io.File;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
+
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.util.IOUtils;
@@ -41,6 +40,7 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 	static final String STORAGE_ENDPOINT = "ENDPOINT";
 	static final String BUCKET = "BUCKET_NAME";
 	static final String REGION = "REGION";
+	static final String USE_IAM = "USE_IAM";
 
 	//Keep it for compatibility reasons
 	@Deprecated
@@ -90,8 +90,8 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
     }
 
 	private void initialize() throws Exception{
-		String accessKey = getEncryptedPropertyValue(ACCESS_KEY, ACCESS_KEY_ID_DEPRECATED);
-		String secretKey = getEncryptedPropertyValue(SECRET_ACCESS_KEY, SECRET_ACCESS_KEY_DEPRECATED);
+		String accessKey = getEncryptedPropertyValue(ACCESS_KEY, ACCESS_KEY_ID_DEPRECATED, "");
+		String secretKey = getEncryptedPropertyValue(SECRET_ACCESS_KEY, SECRET_ACCESS_KEY_DEPRECATED, "");
 		String bucket = getEncryptedPropertyValue(BUCKET, BUCKET_DEPRECATED);
 		String folder = getPropertyValue(FOLDER, FOLDER_DEPRECATED, "");
 		String region = getPropertyValue(REGION, REGION_DEPRECATED, DEFAULT_REGION);
@@ -109,10 +109,11 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 			if (region.length() == 0) {
 				region = DEFAULT_REGION;
 			}
+
 			this.bucket = bucket;
 			this.folder = folder;
-			this.client = buildS3Client(accessKey, secretKey, endpointValue, region);
 
+			this.client = buildS3Client(accessKey, secretKey, endpointValue, region);
 			bucketExists();
 			ensureFolder(folder);
 		}
@@ -120,8 +121,16 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 
 	private AmazonS3 buildS3Client(String accessKey, String secretKey, String endpoint, String region) {
 		AmazonS3 s3Client;
-		AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
-		AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(credentials));
+
+		boolean bUseIAM = !getPropertyValue(USE_IAM, "", "").isEmpty() || (accessKey.equals("") && secretKey.equals(""));
+
+		AmazonS3ClientBuilder builder = bUseIAM ?
+							AmazonS3ClientBuilder.standard():
+							AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)));
+
+		if (bUseIAM) {
+			logger.debug("Using IAM Credentials");
+		}
 
 		if (endpoint.length() > 0 && !endpoint.contains(".amazonaws.com")) {
 			pathStyleUrls = true;
@@ -328,27 +337,14 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
         }
     }
 
-    public boolean existsDirectory(String directoryName) {
-        directoryName = StorageUtils.normalizeDirectoryName(directoryName);
-        ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
-            .withBucketName(bucket).withDelimiter(StorageUtils.DELIMITER);
-        List<String> directories = new ArrayList<String>();
-        for (String prefix : client.listObjects(listObjectsRequest).getCommonPrefixes()) {
-            directories.add(prefix);
-            getAllDirectories(prefix, directories);
-        }
-        return directories.contains(directoryName);
-    }
-
-    public void getAllDirectories(String directoryName, List<String> directories) {
-        directoryName = StorageUtils.normalizeDirectoryName(directoryName);
-        ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
-            .withBucketName(bucket).withPrefix(directoryName).withDelimiter(StorageUtils.DELIMITER);
-        for (String prefix : client.listObjects(listObjectsRequest).getCommonPrefixes()) {
-            directories.add(prefix);
-            getAllDirectories(prefix, directories);
-        }
-    }
+	public boolean existsDirectory(String directoryName) {
+		ListObjectsV2Request listObjectsRequest = new ListObjectsV2Request()
+			.withBucketName(bucket)
+			.withDelimiter(StorageUtils.DELIMITER)
+			.withPrefix(StorageUtils.normalizeDirectoryName(directoryName))
+			.withMaxKeys(1);
+		return client.listObjectsV2(listObjectsRequest).getKeyCount() > 0;
+	}
 
     public void createDirectory(String directoryName) {
         ensureFolder(directoryName);

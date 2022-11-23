@@ -1,13 +1,20 @@
 package com.genexus.db.driver;
 
+import com.genexus.specific.java.Connect;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
@@ -18,11 +25,20 @@ public abstract class TestExternalProvider {
 	public abstract String getProviderName();
 	public abstract ExternalProvider getExternalProvider() throws Exception ;
 
-	private static String TEST_SAMPLE_FILE_NAME = "text.txt";
-	private static String TEST_SAMPLE_FILE_PATH = Paths.get("resources", TEST_SAMPLE_FILE_NAME).toString();
+
+	private String testSampleFileName;
+	private String testSampleFilePath;
+	private String uniqueId;
+
+
+	public boolean supportsObjectAcls() {
+		return true;
+	}
 
 	@Before
 	public void beforeEachTestMethod() {
+
+		Connect.init();
 
 		boolean testEnabled = false;
 		try {
@@ -38,18 +54,33 @@ public abstract class TestExternalProvider {
 			e.printStackTrace();
 		}
 		assertTrue(provider != null);
+
+
+		uniqueId = Integer.toString(new Random().nextInt(5000));
+		testSampleFileName = String.format("text-%s.txt", uniqueId);
+		testSampleFilePath = Paths.get("resources", testSampleFileName).toString();
+
+		try {
+			List<String> lines = Arrays.asList("This is a Test File for Standard Classes Java");
+			Path file = Paths.get(testSampleFilePath);
+			Files.write(file, lines, StandardCharsets.UTF_8);
+		}
+		catch (Exception e)
+		{
+
+		}
 	}
 
 
 	@Test
 	public void testUploadPublicMethod(){
-		String upload = provider.upload(TEST_SAMPLE_FILE_PATH, TEST_SAMPLE_FILE_NAME, ResourceAccessControlList.PublicRead);
+		String upload = provider.upload(testSampleFilePath, testSampleFileName, ResourceAccessControlList.PublicRead);
 		ensureUrl(upload, ResourceAccessControlList.PublicRead);
 	}
 
 	@Test
 	public void testUploadDefaultMethod(){
-		String upload = provider.upload(TEST_SAMPLE_FILE_PATH, TEST_SAMPLE_FILE_NAME, ResourceAccessControlList.Default);
+		String upload = provider.upload(testSampleFilePath, testSampleFileName, ResourceAccessControlList.Default);
 		ensureUrl(upload, ResourceAccessControlList.Default);
 	}
 
@@ -70,50 +101,66 @@ public abstract class TestExternalProvider {
 
 	@Test
 	public void testUploadAndCopyMixed(){
+		Assume.assumeTrue(supportsObjectAcls());
 		testUploadAndCopyByAcl(ResourceAccessControlList.Default, ResourceAccessControlList.Private);
 	}
 
 	@Test
 	public void testUploadAndCopyPrivateToPublic(){
+		Assume.assumeTrue(supportsObjectAcls());
 		testUploadAndCopyByAcl(ResourceAccessControlList.Private, ResourceAccessControlList.PublicRead);
 	}
 
 	@Test
 	public void testUploadAndCopyPublicToPrivate(){
+		Assume.assumeTrue(supportsObjectAcls());
 		testUploadAndCopyByAcl(ResourceAccessControlList.PublicRead, ResourceAccessControlList.Private);
 	}
 
 
 	public void testUploadAndCopyByAcl(ResourceAccessControlList aclUpload, ResourceAccessControlList aclCopy){
-		String copyFileName = "test-upload-and-copy.txt";
-		deleteSafe(TEST_SAMPLE_FILE_PATH);
+		String copyFileName = buildRandomTextFileName("test-upload-and-copy");
+		deleteSafe(testSampleFileName);
 		deleteSafe(copyFileName);
-		String upload = provider.upload(TEST_SAMPLE_FILE_PATH, TEST_SAMPLE_FILE_NAME, aclUpload);
+		String upload = provider.upload(testSampleFilePath, testSampleFileName, aclUpload);
 		assertTrue("Not found URL: " + upload, urlExists(upload));
 
 		String copyUrl = tryGet(copyFileName, aclCopy);
 		assertFalse("URL cannot exist: " + copyUrl, urlExists(copyUrl));
 
-		provider.copy(TEST_SAMPLE_FILE_NAME, copyFileName, aclCopy);
+		provider.copy(testSampleFileName, copyFileName, aclCopy);
 		upload = provider.get(copyFileName, aclCopy, 100);
 		ensureUrl(upload, aclCopy);
 	}
 
 	@Test
 	public void testCopyMethod(){
-		String copyFileName = "copy-text.txt";
+		String copyFileName = buildRandomTextFileName("copy-text");
 		copy(copyFileName, ResourceAccessControlList.PublicRead);
 	}
 
 	@Test
+	public void testExistsDirectory(){
+		String copyFileName = buildRandomTextFileName("tempFolder/f1/f2/test-upload-and-copy");
+		String upload = provider.upload(testSampleFilePath, copyFileName, ResourceAccessControlList.Default);
+		assertTrue("Not found URL: " + upload, urlExists(upload));
+		String folder = "tempFolder";
+		boolean existsDir = provider.existsDirectory(folder);
+		assertTrue("Directory does not exists " + folder + " - " + upload, existsDir);
+		String folderNotExists = "tempFolderNotExists";
+		existsDir = provider.existsDirectory(folder);
+		assertTrue("Directory does not exists " + folderNotExists, existsDir);
+	}
+
+	@Test
 	public void testCopyPrivateMethod(){
-		String copyFileName = "copy-text-private.txt";
+		String copyFileName = buildRandomTextFileName("copy-text-private");
 		copy(copyFileName, ResourceAccessControlList.Private);
 	}
 
 	private void copy(String copyFileName, ResourceAccessControlList acl) {
-		provider.upload(TEST_SAMPLE_FILE_PATH, TEST_SAMPLE_FILE_NAME, acl);
-		String upload = provider.get(TEST_SAMPLE_FILE_NAME, acl, 100);
+		provider.upload(testSampleFilePath, testSampleFileName, acl);
+		String upload = provider.get(testSampleFileName, acl, 100);
 		ensureUrl(upload, acl);
 
 		deleteSafe(copyFileName);
@@ -122,7 +169,7 @@ public abstract class TestExternalProvider {
 		String urlCopy = tryGet(copyFileName, ResourceAccessControlList.PublicRead);
 		assertFalse("URL cannot exist: " + urlCopy, urlExists(urlCopy));
 
-		provider.copy("text.txt", copyFileName, acl);
+		provider.copy(testSampleFileName, copyFileName, acl);
 		upload = provider.get(copyFileName, acl, 100);
 		ensureUrl(upload, acl);
 	}
@@ -160,15 +207,15 @@ public abstract class TestExternalProvider {
 
 	@Test
 	public void testMultimediaUpload() {
-		String copyFileName = "copy-text-private.txt";
+		String copyFileName = buildRandomTextFileName("copy-text-private");
 		ResourceAccessControlList acl = ResourceAccessControlList.Private;
 
-		provider.upload(TEST_SAMPLE_FILE_PATH, TEST_SAMPLE_FILE_NAME, acl);
-		String upload = provider.get(TEST_SAMPLE_FILE_NAME, acl, 100);
+		provider.upload(testSampleFilePath, testSampleFileName, acl);
+		String upload = provider.get(testSampleFileName, acl, 100);
 		ensureUrl(upload, acl);
 
 		deleteSafe(copyFileName);
-		provider.copy(TEST_SAMPLE_FILE_NAME, copyFileName, acl);
+		provider.copy(testSampleFileName, copyFileName, acl);
 		upload = tryGet(copyFileName, acl);
 		ensureUrl(upload, acl);
 	}
@@ -176,17 +223,17 @@ public abstract class TestExternalProvider {
 	@Test
 	public void testGetMethod(){
 		testUploadPublicMethod();
-		String url = provider.get("text.txt", ResourceAccessControlList.PublicRead, 10);
+		String url = provider.get(testSampleFileName, ResourceAccessControlList.PublicRead, 10);
 		ensureUrl(url, ResourceAccessControlList.PublicRead);
 	}
 
 	@Test
 	public void testGetObjectName(){
 		testUploadPublicMethod();
-		String url = provider.get(TEST_SAMPLE_FILE_NAME, ResourceAccessControlList.PublicRead, 10);
+		String url = provider.get(testSampleFileName, ResourceAccessControlList.PublicRead, 10);
 		assertTrue(urlExists(url));
 		String objectName = provider.getObjectNameFromURL(url);
-		assertEquals("text.txt", objectName);
+		assertEquals(testSampleFileName, objectName);
 	}
 
 	@Test
@@ -197,18 +244,18 @@ public abstract class TestExternalProvider {
 		File f = new File(filePath);
 		f.delete();
 		assertFalse(f.exists());
-		provider.download(TEST_SAMPLE_FILE_NAME, filePath, ResourceAccessControlList.PublicRead);
+		provider.download(testSampleFileName, filePath, ResourceAccessControlList.PublicRead);
 		assertTrue(f.exists());
 	}
 
 	@Test
 	public void testDeleteFile(){
 		testUploadPublicMethod();
-		String url = tryGet(TEST_SAMPLE_FILE_NAME, ResourceAccessControlList.PublicRead);
+		String url = tryGet(testSampleFileName, ResourceAccessControlList.PublicRead);
 		ensureUrl(url, ResourceAccessControlList.PublicRead);
-		provider.delete(TEST_SAMPLE_FILE_NAME, ResourceAccessControlList.PublicRead);
+		provider.delete(testSampleFileName, ResourceAccessControlList.PublicRead);
 
-		url = tryGet(TEST_SAMPLE_FILE_NAME, ResourceAccessControlList.PublicRead);
+		url = tryGet(testSampleFileName, ResourceAccessControlList.PublicRead);
 		assertFalse(urlExists(url));
 	}
 
@@ -225,10 +272,10 @@ public abstract class TestExternalProvider {
 
 	@Test
 	public void testUploadPrivateMethod(){
-		String externalFileName = "text-private-2.txt";
+		String externalFileName = buildRandomTextFileName("text-private-2");
 
 		deleteSafe(externalFileName);
-		String signedUrl = provider.upload(TEST_SAMPLE_FILE_PATH, externalFileName, ResourceAccessControlList.Private);
+		String signedUrl = provider.upload(testSampleFilePath, externalFileName, ResourceAccessControlList.Private);
 		ensureUrl(signedUrl, ResourceAccessControlList.Private);
 		signedUrl = provider.get(externalFileName, ResourceAccessControlList.Private, 10);
 		ensureUrl(signedUrl, ResourceAccessControlList.Private);
@@ -255,5 +302,10 @@ public abstract class TestExternalProvider {
 
 		}
 		return false;
+	}
+
+	private String buildRandomTextFileName(String name)
+	{
+		return String.format("%s_%s.txt", name, uniqueId);
 	}
 }

@@ -16,8 +16,11 @@ target/
 .classpath
 .settings
 *.versionsBackup
+.flattened-pom.xml
 
 *.xlsx
 
 PublicTempStorage/
 PrivateTempStorage/
+gxexternalproviders/resources/
+.devcontainer/.env

@@ -104,13 +104,7 @@ public abstract class ServiceResultSet<ValueType> implements ResultSet
 	@Deprecated
     public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException
     {
-        return getAs(BigDecimal.class, columnIndex, BigDecimal.ZERO);
-    }
-
-    @Override
-    public byte[] getBytes(int columnIndex) throws SQLException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); 
+		return getBigDecimal(columnIndex).setScale(scale);
     }
 
     @Override
@@ -150,7 +144,33 @@ public abstract class ServiceResultSet<ValueType> implements ResultSet
         return getAs(InputStream.class, columnIndex, new ByteArrayInputStream(new byte[0]));
     }
 
-    @Override
+	@Override
+	public Object getObject(int columnIndex) throws SQLException
+	{
+		return getAs(Object.class, columnIndex, new Object());
+	}
+
+	@Override
+	public Reader getCharacterStream(int columnIndex) throws SQLException
+	{
+		return getAs(Reader.class, columnIndex, new StringReader(""));
+	}
+
+	@Override
+	public BigDecimal getBigDecimal(int columnIndex) throws SQLException
+	{
+		return getAs(BigDecimal.class, columnIndex, BigDecimal.ZERO);
+	}
+
+	// Unsupported methods
+
+	@Override
+	public byte[] getBytes(int columnIndex) throws SQLException
+	{
+		throw new UnsupportedOperationException("Not supported yet.");
+	}
+
+	@Override
     public String getString(String columnLabel) throws SQLException
     {
         throw new UnsupportedOperationException("Not supported yet."); 
@@ -273,12 +293,6 @@ public abstract class ServiceResultSet<ValueType> implements ResultSet
     }
 
     @Override
-    public Object getObject(int columnIndex) throws SQLException
-    {
-        return getAs(Object.class, columnIndex, new Object());
-    }
-
-    @Override
     public Object getObject(String columnLabel) throws SQLException
     {
         throw new UnsupportedOperationException("Not supported yet."); 
@@ -291,21 +305,9 @@ public abstract class ServiceResultSet<ValueType> implements ResultSet
     }
 
     @Override
-    public Reader getCharacterStream(int columnIndex) throws SQLException
-    {
-        return getAs(Reader.class, columnIndex, new StringReader(""));
-    }
-
-    @Override
     public Reader getCharacterStream(String columnLabel) throws SQLException
     {
         throw new UnsupportedOperationException("Not supported yet."); 
-    }
-
-    @Override
-    public BigDecimal getBigDecimal(int columnIndex) throws SQLException
-    {
-        return getAs(BigDecimal.class, columnIndex, BigDecimal.ZERO);
     }
 
     @Override

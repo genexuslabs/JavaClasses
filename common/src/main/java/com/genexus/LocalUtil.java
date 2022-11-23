@@ -4,7 +4,6 @@ import java.util.*;
 import java.text.*;
 
 import com.genexus.common.interfaces.SpecificImplementation;
-import com.genexus.diagnostics.Log;
 import com.genexus.util.GXSimpleDateFormat;
 public class LocalUtil
 {
@@ -385,7 +384,7 @@ public class LocalUtil
 			currentLocale = new Locale (language, language.toUpperCase());
 		}*/
 
-                String resourceName = "messages." + _language + ".txt";
+                String resourceName = "messages." + _language.toLowerCase() + ".txt";
 
 		if (SpecificImplementation.Application.getModelContextPackageClass() != null)
 		{
@@ -847,14 +846,11 @@ public class LocalUtil
 
 	public Date ymdhmsToT (int year, int month, int day , int hour , int minute , int second)
 	{
-		if (year < 100 && !(year == 0 && month == 0 && day == 0))
-			year += year > firstYear2K?1900:2000;
-
-		return CommonUtil.ymdhmsToT_noYL(year, month, day, hour , minute , second);
+		return ymdhmsToT (year, month, day ,hour ,minute ,second,0);
 	}
 	public Date ymdhmsToT (int year, int month, int day, int hour, int minute, int second, int milliseconds)
 	{
-		if (year < 100 && !(year == 0 && month == 0 && day == 0))
+		if (year < 100 && !((year == 0 && month == 0 && day == 0) || ((year == 1 && month == 1 && day == 1))))
 			year += year > firstYear2K?1900:2000;
 
 		return CommonUtil.ymdhmsToT_noYL(year, month, day, hour, minute, second, milliseconds);
@@ -1080,10 +1076,22 @@ public class LocalUtil
 		df.setLenient(false);
 		try
 		{
-			return applyYearLimit( df.parse(date), patternDate + patternTime);
+			Date dt = df.parse(date);
+			if (patternDate.isEmpty())
+			{
+				Calendar calendar = GregorianCalendar.getInstance();
+				calendar.setTime(dt);
+				calendar.set(Calendar.YEAR, 1);
+				dt = calendar.getTime();
+			}
+			return applyYearLimit( dt, patternDate + patternTime);
 		}
 		catch (ParseException e)
 		{
+			//When parsing a date gives a ParseException we try with setLenient(true) to parse dates only with dates with
+			//daylighttime changes at 00:00 AM (Issue: 93038)
+			if (!isNullTimeValue(date.substring(date.indexOf(' ') + 1), false))
+				return null;
 			df.setLenient(true);
 			try
 			{
@@ -1974,7 +1982,7 @@ public class LocalUtil
 	{
 		GXSimpleDateFormat dateFormatter;
 
-		if	(CommonUtil.nullDate().equals(value) || CommonUtil.nullDate().equals(CommonUtil.resetTime(value)))
+		if	(CommonUtil.nullDate().equals(value))
 		{
 			if	(PictureFormatter.isTimeInPicture(picture))
 			{
@@ -2072,19 +2080,23 @@ public class LocalUtil
 			return 	dateTime;
 		}
 
+		Calendar currentCalendar = GregorianCalendar.getInstance();
+		currentCalendar.setTime(new Date());
+
 		Calendar calendar = GregorianCalendar.getInstance();
 		calendar.setTime(dateTime);
 		if	(calendar.get(Calendar.YEAR) % 100 < firstYear2K)
 		{
-			if (calendar.get(Calendar.YEAR) < 100)
+			if (calendar.get(Calendar.YEAR) -100 < 1900 )
 				calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR) + 100);
 		}
-		else if (calendar.get(Calendar.YEAR) > 100)
+		else
 		{
-			calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR) - 100);
+			if (calendar.get(Calendar.YEAR) > currentCalendar.get(Calendar.YEAR))
+				calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR) - 100);
 		}
 
-		return dateTime;
+		return calendar.getTime();
 	}
 
 	public String getDateTimePicture(String dateTime)

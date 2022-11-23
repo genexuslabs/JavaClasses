@@ -735,7 +735,7 @@ class EvalValue
 	public static EvalValue divide(EvalValue a, EvalValue b)
 	{
 		if (a.stringValue == null)
-			return new EvalValue(a.getDecimal().divide(b.getDecimal(), MathContext.DECIMAL64));
+			return new EvalValue(a.getDecimal().divide(b.getDecimal(), MathContext.DECIMAL128));
 		else
 			throw new IllegalArgumentException("Invalid operation: string / string");
 	}

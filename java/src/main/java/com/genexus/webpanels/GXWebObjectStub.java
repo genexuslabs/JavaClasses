@@ -2,6 +2,7 @@ package com.genexus.webpanels;
 
 import java.util.Enumeration;
 
+import com.genexus.db.UserInformation;
 import com.genexus.servlet.ServletException;
 import com.genexus.servlet.http.ICookie;
 import com.genexus.servlet.http.HttpServlet;
@@ -19,19 +20,37 @@ public abstract class GXWebObjectStub extends HttpServlet
 {
 	public static ILogger logger = null;
 
-	private static final boolean DEBUG       = DebugFlag.DEBUG;
-
 	protected abstract void doExecute(HttpContext context) throws Exception;
 	protected abstract void init(HttpContext context) throws Exception;
 	protected abstract boolean IntegratedSecurityEnabled();
 	protected abstract int IntegratedSecurityLevel();
 	protected abstract String IntegratedSecurityPermissionPrefix();
+	protected abstract String EncryptURLParameters();
+
+	protected ModelContext context;
+	protected int remoteHandle = -1;
+	protected transient LocalUtil localUtil;
 
 	protected static final int SECURITY_GXOBJECT = 3;
 	protected static final int SECURITY_HIGH = 2;
 	protected static final int SECURITY_LOW  = 1;
 
 	private static final int HTTP_RESPONSE_BUFFER_SIZE  = 131072;
+
+	public GXWebObjectStub()
+	{
+	}
+
+	public GXWebObjectStub(int remoteHandle , ModelContext context)
+	{
+		this.remoteHandle = remoteHandle;
+		this.context      = context;
+		UserInformation ui = Application.getConnectionManager().getUserInformationNoException(remoteHandle);
+		if (ui == null)
+			localUtil    	  = Application.getConnectionManager().createUserInformation(Namespace.getNamespace(context.getNAME_SPACE())).getLocalUtil();
+		else
+			localUtil = ui.getLocalUtil();
+	}
 
 	private void dumpRequestInfo(HttpContext httpContext)
 	{
@@ -79,7 +98,7 @@ public abstract class GXWebObjectStub extends HttpServlet
 				Application.init(gxcfgClass);
 			}
 			httpContext = new HttpContextWeb(method, req, res, getWrappedServletContext());
-			if (DEBUG)
+			if (logger.isDebugEnabled())
 				dumpRequestInfo(httpContext);
 			boolean useAuthentication = IntegratedSecurityEnabled();
 			if (!useAuthentication)
@@ -97,10 +116,19 @@ public abstract class GXWebObjectStub extends HttpServlet
 				boolean[] flag = new boolean[]{false};
 				boolean[] permissionFlag = new boolean[]{false};
 				String reqUrl = req.getRequestURL().toString();
-				String queryString = req.getQueryString();
-				if (queryString != null)
+				if (req.getMethod().equals("POST"))
 				{
-					reqUrl += "?"+queryString;
+					if (EncryptURLParameters().equals("SESSION"))
+						reqUrl = "";
+					else
+						reqUrl = req.getHeader("Referer");
+				}
+				else
+				{
+					String queryString = req.getQueryString();
+					if (queryString != null) {
+						reqUrl += "?" + queryString;
+					}
 				}
 				ModelContext modelContext = ModelContext.getModelContext(getClass());
 				modelContext.setHttpContext(httpContext);
@@ -176,7 +204,7 @@ public abstract class GXWebObjectStub extends HttpServlet
 			if (!res.isCommitted())
 				res.reset();
 			logger.error("Web Execution Error", e);
-			if (DEBUG && httpContext != null)
+			if (logger.isDebugEnabled() && httpContext != null)
 				dumpRequestInfo(httpContext);
 			throw new ServletException(com.genexus.PrivateUtilities.getStackTraceAsString(e));
 		}

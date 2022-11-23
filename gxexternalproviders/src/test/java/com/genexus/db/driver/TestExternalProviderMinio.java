@@ -42,4 +42,8 @@ public class TestExternalProviderMinio extends TestExternalProvider {
 		*/
 	}
 
+	@Override
+	public boolean supportsObjectAcls() {
+		return false;
+	}
 }
