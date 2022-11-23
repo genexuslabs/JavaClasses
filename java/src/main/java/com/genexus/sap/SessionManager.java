@@ -331,12 +331,6 @@ public class SessionManager
 		return repositoryName;
 	}
 	
-	public String getRepositoryName()
-	{
-		return repositoryName;
-	}
-	
-	
 	/* Setters */
 
 	public void setPort( String value )
@@ -407,7 +401,6 @@ public class SessionManager
 	{
 		systemId = value;
 	}
-
 	
 	public void setSessionName( String value )
    	{
@@ -441,7 +434,6 @@ public class SessionManager
 	
 	public void setErrorMessage( String value )
 	{
-
 		errorMessage = value;
 	}
 		
