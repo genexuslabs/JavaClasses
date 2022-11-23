@@ -1805,7 +1805,8 @@ public abstract class HttpContext
 								{"svg"	, "image/svg+xml"},
 								{"tgz"	, "application/x-compressed"},
 								{"zip"	, "application/x-zip-compressed"},
-								{"gz"	, "application/x-gzip"}
+								{"gz"	, "application/x-gzip"},
+								{"json"	, "application/json"}
 								};
 
 		public boolean willRedirect()
