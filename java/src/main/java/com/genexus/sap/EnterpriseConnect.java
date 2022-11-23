@@ -386,7 +386,7 @@ public class EnterpriseConnect
 			}
         catch (JCoException e)
             {
-                throw new RuntimeException(e.toString());    
+                throw new RuntimeException("JCoException: " + e.toString());    
             }
 	}
 	
@@ -402,12 +402,12 @@ public class EnterpriseConnect
 			function = destination.getRepository().getFunction(functionName);	
 			if (function == null) 
 			{
-				throw new RuntimeException( functionName + " not found in SAP");
+				throw new RuntimeException( "GeneXus cannot find SAP function " + functionName);
 			}	
 		}
         catch (AbapException e)
         {
-		    throw new RuntimeException(e.toString());
+		    throw new RuntimeException(" ABAP Exception: " + e.toString());
         }
 	} 
 
@@ -419,7 +419,7 @@ public class EnterpriseConnect
 		}
 		catch (JCoException e)
         {
-            throw new RuntimeException(e.toString());    
+            throw new RuntimeException("JCoException excecuting: " + e.toString());    
         }
     }
 	
@@ -438,7 +438,7 @@ public class EnterpriseConnect
         }
         catch (AbapException e)
         {
-            throw new RuntimeException(e.toString());
+            throw new RuntimeException( "ABAP exception executing: " + e.toString());
         }
         return 0;
     }
