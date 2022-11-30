@@ -10,8 +10,6 @@ import com.sap.conn.jco.JCoRecordMetaData;
 import com.sap.conn.jco.server.JCoServer;
 import com.sap.conn.jco.server.DefaultServerHandlerFactory;
 
-import com.sap.conn.jco.ext.DestinationDataProvider;
-import com.sap.conn.jco.ext.ServerDataProvider;
 import com.sap.conn.jco.server.JCoServerFactory;
 import com.sap.conn.jco.JCoCustomRepository;
 import com.sap.conn.jco.JCoFunctionTemplate;
@@ -21,10 +19,9 @@ import com.genexus.diagnostics.Log;
 
 public class DocumentSender
 {
- 	private static final int BLOB_LENGTH = 1022;   
-    private String serverName = "";
-	private String repositoryName = "";
-    private ModelContext _context = null;
+    private String serverName;
+	private String repositoryName;
+    private ModelContext _context;
 	JCoServer sender = null;
 
     
@@ -45,7 +42,7 @@ public class DocumentSender
 		}
 		catch (JCoException ex)
 		{
-			Log.error("GX SAP - Error Starting " +  ex.toString()) ;
+			Log.error("GX SAP - Error Starting " + ex) ;
 		}
 	}
 
@@ -78,7 +75,7 @@ public class DocumentSender
 		}
 		catch (JCoException ex)
 		{
-			Log.error("GX SAP - Error Stopping " +  ex.toString()) ;
+			Log.error("GX SAP - Error Stopping " + ex) ;
 		}
 	}
      
@@ -101,7 +98,7 @@ public class DocumentSender
 		exports.lock();
 
 		JCoRecordMetaData tabLine = JCo.createRecordMetaData("BLOB");
-		tabLine.add("LINE", JCoMetaData.TYPE_BYTE, BLOB_LENGTH, 0, BLOB_LENGTH, 0);
+		tabLine.add("LINE", JCoMetaData.TYPE_BYTE, EnterpriseConnect.BLOB_LENGTH, 0, EnterpriseConnect.BLOB_LENGTH, 0);
 		tabLine.lock();
 
 		tables = JCo.createListMetaData("TABLES");
