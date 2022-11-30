@@ -1,6 +1,7 @@
 package com.genexus.sap;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
@@ -25,7 +26,8 @@ import json.org.json.JSONObject;
 
 public class EnterpriseConnect
 {
-	static String DESTINATION_NAME = "SAP_SERVER";
+	static final String DESTINATION_NAME = "SAP_SERVER";
+	static final int BLOB_LENGTH = 1022;
     JCoFunction function = null;
 	String destinationName = DESTINATION_NAME;
 	
@@ -47,14 +49,7 @@ public class EnterpriseConnect
 			setvalue = true;
 			function.getImportParameterList().setValue(parameterName, value);
 		}
-		if (setvalue)
-		{
-			function.getImportParameterList().setActive(parameterName, true);
-		}
-		else
-		{
-			function.getImportParameterList().setActive(parameterName, false);
-		}
+		function.getImportParameterList().setActive(parameterName, setvalue);
 	}
 
 	public void setValue(String parameterName, int value)
@@ -84,7 +79,7 @@ public class EnterpriseConnect
 	public void setValue(String parameterName, Date value)
 	{
 		GregorianCalendar calendar = new GregorianCalendar();
-		calendar.set(0, 0, 0);
+		calendar.set(0, Calendar.JANUARY, 0);
 	    Date baseDate = calendar.getTime();
 		if (value != null && value.after(baseDate))
 		{
@@ -99,7 +94,7 @@ public class EnterpriseConnect
 	
 	// I/O parameter
 	
-	public void setValue(String parameterName, GXSimpleCollection[] value, Boolean inOut)
+	public void setValue(String parameterName, GXSimpleCollection<?>[] value, Boolean inOut)
 	{	
 		if (value != null  && value.length > 0)
 		{
@@ -107,8 +102,7 @@ public class EnterpriseConnect
 		}
 	}
 	
-	
-	public void setValue(String parameterName, GXSimpleCollection[] value)
+	public void setValue(String parameterName, GXSimpleCollection<?>[] value)
 	{
 		if (value != null  && value.length > 0)
 		{
@@ -125,16 +119,16 @@ public class EnterpriseConnect
 	}
 	
 	//  ------
-	public void setValue(String parameterName, GXSimpleCollection value)
+	public void setValue(String parameterName, GXSimpleCollection<?> value)
 	{
 		setValue(parameterName,  value, false);
 	}
 	
-	public void setValue(String parameterName, GXSimpleCollection value, Boolean inOut)
+	public void setValue(String parameterName, GXSimpleCollection<?> value, Boolean inOut)
 	{
 		
 		JCoTable jTable = function.getTableParameterList().getTable(parameterName);	
-        Boolean setValues = false;
+        boolean setValues = false;
 		try{
 			for (int i = 1; i <= value.getItemCount(); i++)
 			{
@@ -184,7 +178,7 @@ public class EnterpriseConnect
 						}
 						else
 						{
-							System.out.println( key +  " Invalid Type " +  Integer.toString(jcoType));
+							System.out.println( key +  " Invalid Type " + jcoType);
 						}
 					}
 				}
@@ -241,7 +235,7 @@ public class EnterpriseConnect
 					}
 					else
 					{
-						System.out.println( key +  " Invalid Type " +  Integer.toString(jcoType));
+						System.out.println( key +  " Invalid Type " + jcoType);
 					}	
 				}
 				function.getImportParameterList().setActive(parameterName, true);	
@@ -260,11 +254,11 @@ public class EnterpriseConnect
 	
 	/*        ---   Get Return Values  ---           */
 	
-	public void getValue(String parameterName, GXSimpleCollection[] value)
+	public void getValue(String parameterName, GXSimpleCollection<?>[] value)
 	{	
 	    if (value.length != 0)
 		{
-			GXSimpleCollection col = value[0];		
+			GXSimpleCollection<?> col = value[0];
 			col.clear();
 			JCoTable tbl = function.getTableParameterList().getTable(parameterName);
 			JSONArray jCol = new JSONArray();
@@ -386,7 +380,7 @@ public class EnterpriseConnect
 			}
         catch (JCoException e)
             {
-                throw new RuntimeException("JCoException: " + e.toString());    
+                throw new RuntimeException("JCoException: " + e);
             }
 	}
 	
@@ -407,7 +401,7 @@ public class EnterpriseConnect
 		}
         catch (AbapException e)
         {
-		    throw new RuntimeException(" ABAP Exception: " + e.toString());
+		    throw new RuntimeException(" ABAP Exception: " + e);
         }
 	} 
 
@@ -419,7 +413,7 @@ public class EnterpriseConnect
 		}
 		catch (JCoException e)
         {
-            throw new RuntimeException("JCoException excecuting: " + e.toString());    
+            throw new RuntimeException("JCoException excecuting: " + e);
         }
     }
 	
@@ -438,7 +432,7 @@ public class EnterpriseConnect
         }
         catch (AbapException e)
         {
-            throw new RuntimeException( "ABAP exception executing: " + e.toString());
+            throw new RuntimeException( "ABAP exception executing: " + e);
         }
         return 0;
     }

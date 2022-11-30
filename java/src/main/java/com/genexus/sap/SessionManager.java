@@ -89,22 +89,22 @@ public class SessionManager
 		{
 	    	errorCode = ex.getGroup();
 			errorMessage = ex.toString();            
-      	  	Log.warning("GX SAP - Error Connecting " +  sessionName + " " + ex.toString()) ;
+      	  	Log.warning("GX SAP - Error Connecting " +  sessionName + " " + ex) ;
 		}
 		catch (JCoException ex)
 		{
 			if(ex.getGroup() == JCoException.JCO_ERROR_INTERNAL)
 			{
-				Log.error("GX SAP - Error Connecting " +  sessionName + " " + ex.toString()) ;
+				Log.error("GX SAP - Error Connecting " +  sessionName + " " + ex) ;
 				throw new RuntimeException(ex.toString());    				
 			}		
 			errorCode = ex.getGroup();
 			errorMessage = ex.toString();            
-			Log.warning("GX SAP - Error Connecting " +  sessionName + " " + ex.toString()) ;
+			Log.warning("GX SAP - Error Connecting " +  sessionName + " " + ex) ;
 	      }
 		catch (Exception ex)
 		{
-			Log.error("GX SAP - Error Connecting " +  sessionName + " " + ex.toString()) ;
+			Log.error("GX SAP - Error Connecting " +  sessionName + " " + ex) ;
 	            throw new RuntimeException(ex.toString());    
 		}
 	}

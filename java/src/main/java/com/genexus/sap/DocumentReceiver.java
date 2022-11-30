@@ -17,10 +17,9 @@ import com.genexus.diagnostics.Log;
 
 public class DocumentReceiver
 {
-   	private static final int BLOB_LENGTH = 1022;
-    private String serverName = "";
-	private String repositoryName = "";
-    private ModelContext _context = null;
+    private String serverName;
+	private String repositoryName;
+    private ModelContext _context;
     JCoServer receiver = null;
 
 
@@ -40,7 +39,7 @@ public class DocumentReceiver
 		}
 		catch (JCoException ex)
 		{
-			Log.error("GX SAP - Error Starting " +  ex.toString()) ;
+			Log.error("GX SAP - Error Starting " + ex) ;
 		}
 	}
 
@@ -75,7 +74,7 @@ public class DocumentReceiver
 		}
 		catch (JCoException ex)
 		{
-			Log.error("GX SAP - Error Stopping " +  ex.toString()) ;
+			Log.error("GX SAP - Error Stopping " + ex) ;
 		}
 
     }
@@ -99,7 +98,7 @@ public class DocumentReceiver
 		exports.lock();
 
 		JCoRecordMetaData tabLine = JCo.createRecordMetaData("BLOB");
-		tabLine.add("LINE", JCoMetaData.TYPE_BYTE, BLOB_LENGTH, 0, BLOB_LENGTH, 0);
+		tabLine.add("LINE", JCoMetaData.TYPE_BYTE, EnterpriseConnect.BLOB_LENGTH, 0, EnterpriseConnect.BLOB_LENGTH, 0);
 		tabLine.lock();
 		tables = JCo.createListMetaData("TABLES");
 		tables.add("BLOB", JCoMetaData.TYPE_TABLE, tabLine, 0);
