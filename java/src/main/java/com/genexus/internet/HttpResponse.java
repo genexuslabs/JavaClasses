@@ -11,6 +11,7 @@ import com.genexus.PrivateUtilities;
 import com.genexus.com.IHttpResponse;
 import com.genexus.webpanels.FileItemCollection;
 import com.genexus.webpanels.HttpContextWeb;
+import com.genexus.webpanels.WebUtils;
 
 /**
 * Esta clase esta disponible en los webprocs para grabar informacion en el response
@@ -41,7 +42,7 @@ public class HttpResponse implements IHttpResponse
 	{
 		if(name.equalsIgnoreCase("Content-Disposition"))
 		{
-		  value = getEncodedContentDisposition(value);
+		  value = WebUtils.getEncodedContentDisposition(value, httpContext.getBrowserType());
 		}
 
 		httpContext.setHeader(name, value);
@@ -55,21 +56,6 @@ public class HttpResponse implements IHttpResponse
 		{
 			httpContext.getResponse().setContentLength((int) CommonUtil.val(value));
 		}
-	}
-        
-	private String getEncodedContentDisposition(String value)
-	{
-		int filenameIdx = value.toLowerCase().indexOf("filename");
-		if(filenameIdx != -1)
-		{
-			int eqIdx = value.toLowerCase().indexOf("=", filenameIdx);
-			if (eqIdx != -1)
-			{
-				String filename = value.substring(eqIdx + 1).trim();
-				value = value.substring(0, eqIdx + 1) + PrivateUtilities.URLEncode(filename, "UTF8");
-			}
-		}
-		return value;
 	}
 
 	public boolean isText()

@@ -233,22 +233,24 @@ public class ExcelSpreadsheet implements IExcelSpreadsheet {
         }
     }
 
-    private void autoFitColumns() {
-        if (_autoFitColumnsOnSave) {
-            int sheetsCount = _workbook.getNumberOfSheets();
-            for (int i = 0; i < sheetsCount; i++) {
-                org.apache.poi.ss.usermodel.Sheet sheet = _workbook.getSheetAt(i);
-
-                Row row = sheet.getRow(0);
-                if (row != null) {
-                    int columnCount = row.getPhysicalNumberOfCells();
-                    for (int j = 0; j < columnCount; j++) {
-                        sheet.autoSizeColumn(j);
-                    }
-                }
-            }
-        }
-    }
+	private void autoFitColumns() {
+		if (_autoFitColumnsOnSave) {
+			int sheetsCount = _workbook.getNumberOfSheets();
+			for (int i = 0; i < sheetsCount; i++) {
+				org.apache.poi.ss.usermodel.Sheet sheet = _workbook.getSheetAt(i);
+				int columnCount = 0;
+				for (int j =0; j <= sheet.getLastRowNum(); j++){
+					Row row = sheet.getRow(j);
+					if (row != null) {
+						columnCount = Math.max(columnCount, row.getLastCellNum());
+					}
+				}
+				for (int j = 0; j < columnCount; j++) {
+					sheet.autoSizeColumn(j);
+				}
+			}
+		}
+	}
 
 
     @Override
@@ -314,7 +316,7 @@ public class ExcelSpreadsheet implements IExcelSpreadsheet {
                 }
                 Cell cNext = row.getCell(cID + 1);
                 if (cNext != null) {
-                    Cell cNew = row.createCell(cID, cNext.getCellTypeEnum());
+                    Cell cNew = row.createCell(cID, cNext.getCellType());
                     cloneCell(cNew, cNext);
                     //Set the column width only on the first row.
                     //Other wise the second row will overwrite the original column width set previously.
@@ -363,7 +365,7 @@ public class ExcelSpreadsheet implements IExcelSpreadsheet {
                 Cell leftCell = r.getCell(col - 1);
 
                 if (leftCell != null) {
-                    Cell newCell = r.createCell(col, leftCell.getCellTypeEnum());
+                    Cell newCell = r.createCell(col, leftCell.getCellType());
                     cloneCell(newCell, leftCell);
 					/*if (newCell.getCellTypeEnum() == CellType.FORMULA) {
 						newCell.setCellFormula(ExcelHelper.updateFormula(newCell.getCellFormula(), columnIndex));

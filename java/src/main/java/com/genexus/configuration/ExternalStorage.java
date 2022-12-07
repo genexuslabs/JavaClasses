@@ -37,7 +37,7 @@ public class ExternalStorage extends GXStorageProvider {
 
 		if (isNullOrEmpty(name))
 		{
-			GXutil.ErrorToMessages("Unsopported", "Provider cannot be empty", messages[0]);
+			GXutil.ErrorToMessages("Unsupported", "Provider name cannot be empty", messages[0]);
 			return false;
 		}
 
@@ -49,6 +49,7 @@ public class ExternalStorage extends GXStorageProvider {
 				providerService.setType(GXServices.STORAGE_SERVICE);
 				providerService.setName(name);
 				providerService.setAllowMultiple(false);
+				providerService.setAllowOverrideWithEnvVarSettings(false);
 				providerService.setProperties(new GXProperties());
 			}
 

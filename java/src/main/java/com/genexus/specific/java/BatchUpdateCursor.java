@@ -11,7 +11,8 @@ public class BatchUpdateCursor implements com.genexus.common.interfaces.IExtensi
 		return ( ds.dbms.getId() == GXDBMS.DBMS_SQLSERVER || 
                  ds.dbms.getId() == GXDBMS.DBMS_AS400 || 
                  ds.dbms.getId() == GXDBMS.DBMS_DB2  || 
-                 ds.dbms.getId() == GXDBMS.DBMS_POSTGRESQL || 
+                 ds.dbms.getId() == GXDBMS.DBMS_POSTGRESQL ||
+				 ds.dbms.getId() == GXDBMS.DBMS_DAMENG ||
                  ds.dbms.getId() == GXDBMS.DBMS_ORACLE );
 	}
 

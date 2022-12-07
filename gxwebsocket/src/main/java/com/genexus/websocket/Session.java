@@ -14,7 +14,7 @@ public class Session implements ISession{
 		return new Integer(session.hashCode());
 	}
 
-	public String getQueryString() {
+	public String getId() {
 		return session.getQueryString();
 	}
 

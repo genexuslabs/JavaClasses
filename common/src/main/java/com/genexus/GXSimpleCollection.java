@@ -37,7 +37,7 @@ import json.org.json.JSONException;
 import org.simpleframework.xml.*;
 
 @Root(name="Collection")
-public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IGxJSONAble, IGxJSONSerializable {
+public class GXSimpleCollection<T> extends GXBaseList<T> {
 
 	@ElementList(entry="item",inline=true)
     GXSimpleCollection<T> list;
@@ -50,6 +50,7 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 
 	public GXSimpleCollection()
 	{
+		super();
 	}
 
 	public GXSimpleCollection(Class<T> elementsType, String elementsName, String containedXmlNamespace)
@@ -69,6 +70,7 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 
 	public GXSimpleCollection(Class<T> elementsType, String elementsName, String containedXmlNamespace, Vector data, int remoteHandle)
 	{
+		super();
 		this.elementsType = elementsType;
 		this.elementsName = elementsName;
 		xmlElementsName = elementsName;
@@ -432,11 +434,6 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 
 	//-- Este add se usa cuando se quiere agregar a las lineas de un BC sin usar la logica de manteniomiento del estado
 	// de la linea
-	@SuppressWarnings("unchecked")
-	public void addBase( Object item)
-	{
-		super.add((T)item);
-	}
 	protected String getMethodName(boolean isGet, String method)
 	{
 		String getName = elementsType.getName();
@@ -454,19 +451,6 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 	public void addInternal(Object item)
 	{
 		super.add((T)item);
-	}
-
-	@SuppressWarnings("unchecked")
-	public void add(Object item, int index)
-	{
-		if(index < 1 || index > size())
-		{
-			add((T)item); //this.add, GXBCLevelCollection.add for example
-		}
-		else
-		{
-			super.add(index - 1, (T)item); //Vector insert element
-		}
 	}
 
 	public void add(byte item)
@@ -518,11 +502,6 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 		{
 			add(new Double(item));
 		}
-	}
-
-	@SuppressWarnings("unchecked")
-	public void addObject(Object obj){
-		super.add((T)obj);
 	}
 
 	public void add(long item)
@@ -600,11 +579,6 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 	public void add(double item, int index)
 	{
 		addIntegralConstant(item, index);
-	}
-
-	public void removeAllItems()
-	{
-		super.clear();
 	}
 
 	public void clearCollection()
@@ -692,30 +666,6 @@ public class GXSimpleCollection<T> extends Vector<T> implements Serializable, IG
 	public boolean remove(char item)
 	{
 		return remove(new Character(item));
-	}
-
-	public byte removeItem(int index)
-	{
-		T item = null;
-		if(index > 0 && index <= size())
-		{
-			item = super.remove((int)index - 1);//Vector.remove(int)
-			return (byte)1;
-		}
-		return (byte)0;
-	}
-
-	public byte removeElement(double index)
-	{
-		if(index > 0 && index <= size())
-		{
-			super.remove((int)index - 1);//Vector.remove(int)
-			return (byte)1;
-		}
-		else
-		{
-			return (byte)0;
-		}
 	}
 
 	/** Ordena la Collection de acuerdo a un proc pasado por parametro

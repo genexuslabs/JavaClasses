@@ -4,10 +4,16 @@ import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import com.genexus.Application;
 import com.genexus.common.classes.AbstractDataSource;
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
+import com.genexus.util.GXService;
+import com.genexus.util.GXServices;
 
 public class DataSource extends AbstractDataSource
 {
+	public static final ILogger logger = LogManager.getLogger(DataSource.class);
 	public static String INFORMIX_DB_ANSI 		= "ANSI";
 	public static String INFORMIX_DB_LOGGED 	= "Logged";
 	public static String INFORMIX_DB_NOTLOGGED 	= "NotLogged";
@@ -310,6 +316,20 @@ public class DataSource extends AbstractDataSource
 		{
 			throw new InternalError("Unrecognized DBMS in configuration file : " + dbmsName + " / " + className);
 		}
+		GXService providerService = Application.getGXServices().get(GXServices.DATA_ACCESS_SERVICE);
+		if (providerService != null)
+		{
+			String providerClassName = providerService.getClassName();
+			try
+			{
+				logger.info("Loading providerService:" + providerClassName);
+				dbms = (GXDBMS) Class.forName(providerClassName).getConstructor(new Class[] {GXDBMS.class}).newInstance(new Object[] {dbms});
+			}
+			catch(Exception ex)
+			{
+				logger.error("Couldn't create DATA_ACCESS_PROVIDER as : " + providerClassName, ex);
+			}
+		}
 	}
 
 	public synchronized IConnectionPool getConnectionPool()
@@ -569,6 +589,7 @@ public class DataSource extends AbstractDataSource
 			case GXDBMS.DBMS_DB2:
 				return new String[]{"", " CONCAT ", ""};
 			case GXDBMS.DBMS_ORACLE:
+			case GXDBMS.DBMS_DAMENG:
 			case GXDBMS.DBMS_HANA:
 			case GXDBMS.DBMS_POSTGRESQL:
 			case GXDBMS.DBMS_SQLITE:

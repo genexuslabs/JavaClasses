@@ -468,7 +468,7 @@ public class GXStatement implements Statement
 
     public int[] executeBatch() throws SQLException
 	{
-		return stmt.executeBatch();
+		return con.getDBMS().executeBatch(stmt);
 	}
 
     public Connection getConnection()  throws SQLException
