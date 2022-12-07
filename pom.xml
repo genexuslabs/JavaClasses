@@ -13,20 +13,22 @@
 	<description>Core classes for the runtime used by Java and Android apps generated with GeneXus</description>
 	<url>https://github.com/genexuslabs/JavaClasses</url>
 
-	<properties>
-		<revision>2.8</revision>
-		<changelist>-SNAPSHOT</changelist>
-		<sha1/>
+    <properties>
+        <revision>2.10</revision>
+        <changelist>-SNAPSHOT</changelist>
+        <sha1/>
 
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    
-		<jersey.javax.version>2.34</jersey.javax.version>
-		<jersey.jakarta.version>3.0.3</jersey.jakarta.version>
-		<poi.version>5.2.2</poi.version>
-		<jackson.version>2.13.2</jackson.version>
-		<junit.version>4.13.2</junit.version>
-		<software.awssdk.version>2.17.213</software.awssdk.version>
-	</properties>
+        <jersey.javax.version>2.34</jersey.javax.version>
+        <jersey.jakarta.version>3.0.4</jersey.jakarta.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <poi.version>5.2.2</poi.version>
+        <jackson.version>2.13.2</jackson.version>
+        <junit.version>4.13.2</junit.version>
+        <com.amazonaws.version>1.12.93</com.amazonaws.version>
+        <software.awssdk.version>2.17.272</software.awssdk.version>
+        <log4j.version>2.19.0</log4j.version>
+        <io.opentelemetry.version>1.19.0</io.opentelemetry.version>
+    </properties>
 
 	<organization>
 		<name>GeneXus S.A.</name>
@@ -62,6 +64,20 @@
 		<tag>${sha1}</tag>
   	</scm>
 
+  <repositories>
+    <repository>
+	    <id>central</id>
+	    <name>Maven Central</name>
+	    <layout>default</layout>
+	    <url>https://repo1.maven.org/maven2</url>
+	  </repository>  
+    <repository>
+      <id>iTextRepository</id>
+      <name>iText Repository</name>
+      <url>https://repository.openmindonline.it/</url>
+    </repository>
+  </repositories>
+
 	<modules>
 		<module>common</module>
 		<module>wrapperjavax</module>
@@ -70,6 +86,7 @@
 		<module>java</module>
 		<module>gxandroidpublisher</module>
 		<module>gxcryptocommon</module>
+		<module>gxdynamiccall</module>
 		<module>gxmail</module>
 		<module>gxmaps</module>
 		<module>gxoffice</module>
@@ -79,11 +96,15 @@
 		<module>android</module>
 		<module>gxgeospatial</module>
 		<module>gxodata</module>
+		<module>gxdynamodb</module>
 		<module>gxexternalproviders</module>
 		<module>gxwebsocket</module>
 		<module>gxwebsocketjakarta</module>
 		<module>gxawsserverless</module>
 		<module>androidreports</module>
+        <module>gxqueue</module>
+        <module>gxqueueawssqs</module>
+        <module>gxqueueazure</module>
 	</modules>
 
 	<dependencies>
@@ -222,7 +243,6 @@
 			</plugin>
 		</plugins>
 	</build>
-
 	<profiles>
 		<profile>
 			<id>ci-cd</id>

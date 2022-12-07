@@ -9,7 +9,6 @@ import json.org.json.*;
 
 import java.io.Serializable;
 import java.util.Iterator;
-import java.util.Hashtable;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
 

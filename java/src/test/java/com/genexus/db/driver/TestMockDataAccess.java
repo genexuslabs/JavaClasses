@@ -1,5 +1,6 @@
 package com.genexus.db.driver;
 
+import com.genexus.sampleapp.GXcfg;
 import com.mockdb.*;
 import com.genexus.Application;
 import org.junit.Before;
