@@ -22,6 +22,7 @@ import com.genexus.util.ThemeHelper;
 import com.genexus.webpanels.GXWebObjectBase;
 import com.genexus.webpanels.WebSession;
 
+import com.genexus.webpanels.WebUtils;
 import json.org.json.IJsonFormattable;
 import json.org.json.JSONArray;
 import json.org.json.JSONException;
@@ -543,7 +544,16 @@ public abstract class HttpContext
 				if (isGxThemeHidden)
 					writeTextNL("<link id=\"gxtheme_css_reference\" " + sRelAtt + " type=\"text/css\" href=\"" + sUncachedURL + "\" " + htmlEndTag(HTMLElement.LINK));
 				else
-					writeTextNL("<style data-gx-href=\""+ sUncachedURL + "\"> @import url(\"" + sUncachedURL + "\") layer(" + sLayerName + ");</style>");
+				{
+					if (getThemeisDSO())
+					{
+						writeTextNL("<style data-gx-href=\""+ sUncachedURL + "\"> @import url(\"" + sUncachedURL + "\") layer(" + sLayerName + ");</style>");
+					}
+					else
+					{
+						writeTextNL("<link " + sRelAtt + " type=\"text/css\" href=\"" + sUncachedURL + "\" " + htmlEndTag(HTMLElement.LINK));
+					}
+				}
 			}
 			else
 			{
@@ -943,7 +953,7 @@ public abstract class HttpContext
 		AddStylesheetsToLoad();
 		if (isSpaRequest())
 		{
-			writeTextNL("<script>gx.ajax.saveJsonResponse(" + getJSONResponse() + ");</script>");
+			writeTextNL("<script>gx.ajax.saveJsonResponse(" + WebUtils.htmlEncode(JSONObject.quote(getJSONResponse()), true) + ");</script>");
 		}
 		else
 		{				
@@ -1478,6 +1488,8 @@ public abstract class HttpContext
 	}
 
 	private String theme = "";
+	private boolean isDSO = false;
+
 	public String getTheme()
 	{
 	    WebSession session = getWebSession();
@@ -1492,9 +1504,18 @@ public abstract class HttpContext
 
 		return theme;
 	}
-	public void setDefaultTheme(String t)
+
+	public boolean getThemeisDSO() {
+		return isDSO;
+	}
+
+	public void setDefaultTheme(String t){
+		setDefaultTheme( t, false);
+	}
+	public void setDefaultTheme(String t, boolean isDSO)
 	{
 		theme = t;
+		this.isDSO = isDSO;
 	}
 	@SuppressWarnings("unchecked")
 	public int setTheme(String t)
@@ -1804,7 +1825,8 @@ public abstract class HttpContext
 								{"svg"	, "image/svg+xml"},
 								{"tgz"	, "application/x-compressed"},
 								{"zip"	, "application/x-zip-compressed"},
-								{"gz"	, "application/x-gzip"}
+								{"gz"	, "application/x-gzip"},
+								{"json"	, "application/json"}
 								};
 
 		public boolean willRedirect()
