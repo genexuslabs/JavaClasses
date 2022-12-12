@@ -9,9 +9,6 @@ import org.junit.Test;
 
 public class TestHttpClient {
 
-	private static String TEST_URL_ERROR = "https://localhost/My API with Spaces";
-	private static String TEST_URL_OK = "https://www.google.com/";
-	private static String TEST_URL_OK_WITH_SPACES = "https://www.google.com?q=My API with Spaces";
 	@Before
 	public void setUp() throws Exception {
 		Connect.init();
@@ -23,15 +20,7 @@ public class TestHttpClient {
 	public void executeHttpGetJavaLibInvalidURI() {
 		HttpClientJavaLib httpClient = new HttpClientJavaLib();
 		httpClient.setTimeout(1);
-		httpClient.execute("GET", TEST_URL_ERROR);
-		Assert.assertEquals(0, httpClient.getStatusCode());
-	}
-
-	@Test
-	public void executeHttpGetJavaOldLibInvalidURI() {
-		HttpClientManual httpClient = new HttpClientManual();
-		httpClient.setTimeout(1);
-		httpClient.execute("GET", TEST_URL_ERROR);
+		httpClient.execute("GET", "https://localhost/My API with Spaces");
 		Assert.assertEquals(0, httpClient.getStatusCode());
 	}
 
@@ -39,15 +28,7 @@ public class TestHttpClient {
 	public void executeHttpGetJavaLib() {
 		HttpClientJavaLib httpClient = new HttpClientJavaLib();
 		httpClient.setTimeout(1);
-		httpClient.execute("GET", TEST_URL_OK);
-		Assert.assertEquals(200, httpClient.getStatusCode());
-	}
-
-	@Test
-	public void executeHttpGetJavaOldLib() {
-		HttpClientManual httpClient = new HttpClientManual();
-		httpClient.setTimeout(1);
-		httpClient.execute("GET", TEST_URL_OK);
+		httpClient.execute("GET", "https://www.google.com/");
 		Assert.assertEquals(200, httpClient.getStatusCode());
 	}
 
@@ -55,15 +36,16 @@ public class TestHttpClient {
 	public void executeHttpGetJavaLib2() {
 		HttpClientJavaLib httpClient = new HttpClientJavaLib();
 		httpClient.setTimeout(1);
-		httpClient.execute("GET", TEST_URL_OK_WITH_SPACES);
+		httpClient.execute("GET", "https://www.google.com?q=My API with Spaces");
 		Assert.assertEquals(200, httpClient.getStatusCode());
 	}
 
 	@Test
-	public void executeHttpGetJavaOldLib2() {
-		HttpClientManual httpClient = new HttpClientManual();
+	public void executeHttpGetJavaLib3() {
+		HttpClientJavaLib httpClient = new HttpClientJavaLib();
 		httpClient.setTimeout(1);
-		httpClient.execute("GET", TEST_URL_OK_WITH_SPACES);
-		Assert.assertEquals(200, httpClient.getStatusCode());
+		httpClient.execute("GET", "https://www.google.com/test api");
+		Assert.assertEquals(404, httpClient.getStatusCode());
 	}
+
 }
