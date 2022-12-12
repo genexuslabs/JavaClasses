@@ -9,6 +9,8 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+
+import HTTPClient.ParseException;
 import com.genexus.ModelContext;
 import com.genexus.util.IniFile;
 import org.apache.http.*;
@@ -182,16 +184,14 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 		catch (URISyntaxException e)
 		{
-			System.err.println("E " + e + " " + stringURL);
-			e.printStackTrace();
+			logger.error(String.format("Could not setURL '%s'", stringURL), e);
 		}
 	}
 
 	private String getURLValid(String url) {
-		URI uri;
 		try
 		{
-			uri = new URI(url);
+			URI uri = new URI(url);
 			if (!uri.isAbsolute())		// En caso que la URL pasada por parametro no sea una URL valida (en este caso seria que no sea un URL absoluta), salta una excepcion en esta linea, y se continua haciendo todo el proceso con los datos ya guardados como atributos
 				return url;
 			else {
@@ -216,6 +216,40 @@ public class HttpClientJavaLib extends GXHttpClient {
 			}
 		}
 		catch (URISyntaxException e)
+		{
+			return getURLValid2(url); //Retries with old uri builder
+		}
+	}
+
+	private String getURLValid2(String url) {
+		HTTPClient.URI uri;
+		try
+		{
+			uri = new HTTPClient.URI(url);
+			setPrevURLhost(getHost());
+			setPrevURLbaseURL(getBaseURL());
+			setPrevURLport(getPort());
+			setPrevURLsecure(getSecure());
+			setIsURL(true);
+
+			setHost(uri.getHost());
+			setPort(uri.getPort());
+			setBaseURL(uri.getPath());
+			setSecure(uri.getScheme().equalsIgnoreCase("https") ? 1 : 0);
+
+			StringBuilder relativeUri = new StringBuilder();
+			if (uri.getPath() != null) {
+				relativeUri.append(uri.getPath());
+			}
+			if (uri.getQueryString() != null) {
+				relativeUri.append('?').append(uri.getQueryString());
+			}
+			if (uri.getFragment() != null) {
+				relativeUri.append('#').append(uri.getFragment());
+			}
+			return relativeUri.toString();
+		}
+		catch (ParseException e)
 		{
 			return url;
 		}
