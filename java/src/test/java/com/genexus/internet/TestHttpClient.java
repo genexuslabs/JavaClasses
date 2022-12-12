@@ -48,4 +48,11 @@ public class TestHttpClient {
 		Assert.assertEquals(404, httpClient.getStatusCode());
 	}
 
+	@Test
+	public void executeHttpGetJavaLib4() {
+		HttpClientJavaLib httpClient = new HttpClientJavaLib();
+		httpClient.setTimeout(1);
+		httpClient.execute("GET", "https://www.google.com/test api?q=hello world");
+		Assert.assertEquals(404, httpClient.getStatusCode());
+	}
 }
