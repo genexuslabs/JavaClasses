@@ -11,6 +11,7 @@ public class TestHttpClient {
 
 	private static String TEST_URL_ERROR = "https://localhost/My API with Spaces";
 	private static String TEST_URL_OK = "https://www.google.com/";
+	private static String TEST_URL_OK_WITH_SPACES = "https://www.google.com?q=My API with Spaces";
 	@Before
 	public void setUp() throws Exception {
 		Connect.init();
@@ -47,6 +48,22 @@ public class TestHttpClient {
 		HttpClientManual httpClient = new HttpClientManual();
 		httpClient.setTimeout(1);
 		httpClient.execute("GET", TEST_URL_OK);
+		Assert.assertEquals(200, httpClient.getStatusCode());
+	}
+
+	@Test
+	public void executeHttpGetJavaLib2() {
+		HttpClientJavaLib httpClient = new HttpClientJavaLib();
+		httpClient.setTimeout(1);
+		httpClient.execute("GET", TEST_URL_OK_WITH_SPACES);
+		Assert.assertEquals(200, httpClient.getStatusCode());
+	}
+
+	@Test
+	public void executeHttpGetJavaOldLib2() {
+		HttpClientManual httpClient = new HttpClientManual();
+		httpClient.setTimeout(1);
+		httpClient.execute("GET", TEST_URL_OK_WITH_SPACES);
 		Assert.assertEquals(200, httpClient.getStatusCode());
 	}
 }
