@@ -188,37 +188,42 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	private String getURLValid(String url) {
-		URI uri;
 		try
 		{
-			uri = new URI(url);
-			if (!uri.isAbsolute())		// En caso que la URL pasada por parametro no sea una URL valida (en este caso seria que no sea un URL absoluta), salta una excepcion en esta linea, y se continua haciendo todo el proceso con los datos ya guardados como atributos
-				return url;
-			else {
-				setPrevURLhost(getHost());
-				setPrevURLbaseURL(getBaseURL());
-				setPrevURLport(getPort());
-				setPrevURLsecure(getSecure());
-				setIsURL(true);
-				setURL(url);
-
-				StringBuilder relativeUri = new StringBuilder();
-				if (uri.getPath() != null) {
-					relativeUri.append(uri.getPath());
-				}
-				if (uri.getQuery() != null) {
-					relativeUri.append('?').append(uri.getQuery());
-				}
-				if (uri.getFragment() != null) {
-					relativeUri.append('#').append(uri.getFragment());
-				}
-				return relativeUri.toString();
+			URI uri;
+			try {
+				uri = new URI(url);
 			}
+			catch (URISyntaxException _) {
+				url = CommonUtil.escapeUnsafeChars(url);
+				uri = new URI(url);
+			}
+			if (!uri.isAbsolute()) {        // En caso que la URL pasada por parametro no sea una URL valida (en este caso seria que no sea un URL absoluta), salta una excepcion en esta linea, y se continua haciendo todo el proceso con los datos ya guardados como atributos
+				return url;
+			}
+			setPrevURLhost(getHost());
+			setPrevURLbaseURL(getBaseURL());
+			setPrevURLport(getPort());
+			setPrevURLsecure(getSecure());
+			setIsURL(true);
+			setURL(url);
+
+			StringBuilder relativeUri = new StringBuilder();
+			if (uri.getRawPath() != null) {
+				relativeUri.append(uri.getRawPath());
+			}
+			if (uri.getRawQuery() != null) {
+				relativeUri.append('?').append(uri.getRawQuery());
+			}
+			if (uri.getRawFragment() != null) {
+				relativeUri.append('#').append(uri.getRawFragment());
+			}
+			return relativeUri.toString();
 		}
-		catch (URISyntaxException e)
+		catch (URISyntaxException _)
 		{
-			return url;
 		}
+		return url;
 	}
 
 	private static SSLConnectionSocketFactory getSSLSecureInstance() {
