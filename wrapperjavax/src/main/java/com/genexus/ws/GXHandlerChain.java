@@ -27,13 +27,15 @@ public class GXHandlerChain implements SOAPHandler<SOAPMessageContext> {
         java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
         ;
         try {
-            messageContext.getMessage().writeTo(out);
-            String messageBody = new String(out.toByteArray(), "utf-8");
-            if (Boolean.FALSE.equals(outboundProperty)) {
-                messageContext.put(GX_SOAP_BODY, messageBody);
-                messageContext.setScope(GX_SOAP_BODY, MessageContext.Scope.APPLICATION);
-            }
-            logger.debug(messageBody);
+			if (logger.isDebugEnabled()) {
+				messageContext.getMessage().writeTo(out);
+				String messageBody = new String(out.toByteArray(), "utf-8");
+				if (Boolean.FALSE.equals(outboundProperty)) {
+					messageContext.put(GX_SOAP_BODY, messageBody);
+					messageContext.setScope(GX_SOAP_BODY, MessageContext.Scope.APPLICATION);
+				}
+				logger.debug(messageBody);
+			}
         } catch (Exception e) {
             logger.error("Exception in handler: ", e);
         }
