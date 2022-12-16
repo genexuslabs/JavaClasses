@@ -53,19 +53,37 @@ public class GXHandlerConsumerChain implements SOAPHandler<SOAPMessageContext>
 		return headers;
 	}
 
+	private SOAPMessage message;
+	private SOAPEnvelope envelope;
+	private SOAPHeader header;
+
+	private void getMessageData(SOAPMessageContext messageContext)
+	{
+		if (message == null)
+		{
+			message = messageContext.getMessage();
+			try
+			{
+				envelope = message.getSOAPPart().getEnvelope();
+				header = envelope.getHeader();
+			}
+			catch (SOAPException e)
+			{
+				logger.error("Exception in getMessageData: ", e);
+			}
+		}
+	}
+
 	public boolean handleMessage(SOAPMessageContext messageContext)
 	{
 		Boolean outboundProperty = (Boolean) messageContext.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
-		java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();;
+		java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
 		try
 		{
-			SOAPMessage message = messageContext.getMessage();
-			SOAPEnvelope envelope = message.getSOAPPart().getEnvelope();
-			SOAPHeader header = envelope.getHeader();
-
 			//soapHeadersRaw
 			if (Boolean.TRUE.equals(outboundProperty) && soapHeaderRaw != null)
 			{
+				getMessageData(messageContext);
 				Document doc = parseXML(soapHeaderRaw);
 				header.detachNode();
 				SOAPHeader sh = envelope.addHeader();
@@ -78,6 +96,7 @@ public class GXHandlerConsumerChain implements SOAPHandler<SOAPMessageContext>
 			IGXWSAddressing wsAddressing = location.getWSAddressing();
 			if (wsAddressing != null && Boolean.TRUE.equals(outboundProperty) && soapHeaderRaw == null && !wsAddressing.getMessageID().isEmpty())
 			{
+				getMessageData(messageContext);
 				header.addNamespaceDeclaration("wsa", WSSECURITY_ADDRESSING_URL);
 
 				//wsa:Action
@@ -133,6 +152,7 @@ public class GXHandlerConsumerChain implements SOAPHandler<SOAPMessageContext>
 
 			if (Boolean.TRUE.equals(outboundProperty) && soapHeaderRaw == null && ((wsSignature != null && !wsSignature.getAlias().isEmpty()) || (wsEncryption != null && !wsEncryption.getAlias().isEmpty())))
 			{
+				getMessageData(messageContext);
 				Document doc = messageToDocument(messageContext.getMessage());
 
 				//Security header
@@ -192,9 +212,11 @@ public class GXHandlerConsumerChain implements SOAPHandler<SOAPMessageContext>
 				message.saveChanges();
 			}
 
-			messageContext.getMessage().writeTo(out);
-			String messageBody = new String(out.toByteArray(), "utf-8");
-			logger.debug(messageBody);
+			if (logger.isDebugEnabled()) {
+				messageContext.getMessage().writeTo(out);
+				String messageBody = new String(out.toByteArray(), "utf-8");
+				logger.debug(messageBody);
+			}
 		}
 		catch (Exception e)
 		{
