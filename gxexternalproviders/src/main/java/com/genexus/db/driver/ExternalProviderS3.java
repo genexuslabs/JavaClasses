@@ -115,7 +115,6 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 
 			this.client = buildS3Client(accessKey, secretKey, endpointValue, region);
 			bucketExists();
-			ensureFolder(folder);
 		}
 	}
 
@@ -276,7 +275,7 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
     }
 
     public String copy(String objectUrl, String newName, String tableName, String fieldName, ResourceAccessControlList acl) {
-        String resourceFolderName = ensureFolder(folder, tableName, fieldName);
+        String resourceFolderName = buildPath(folder, tableName, fieldName);
         String resourceKey = resourceFolderName + StorageUtils.DELIMITER + newName;
 
         try {
@@ -371,7 +370,6 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
     public void renameDirectory(String directoryName, String newDirectoryName) {
         directoryName = StorageUtils.normalizeDirectoryName(directoryName);
         newDirectoryName = StorageUtils.normalizeDirectoryName(newDirectoryName);
-        ensureFolder(newDirectoryName);
         ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
             .withBucketName(bucket).withPrefix(directoryName);
         for (S3ObjectSummary file : client.listObjects(listObjectsRequest).getObjectSummaries()) {
