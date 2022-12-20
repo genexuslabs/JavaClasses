@@ -22,7 +22,7 @@
         <jersey.jakarta.version>3.0.4</jersey.jakarta.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <poi.version>5.2.2</poi.version>
-        <jackson.version>2.13.2</jackson.version>
+        <jackson.version>2.14.1</jackson.version>
         <junit.version>4.13.2</junit.version>
         <com.amazonaws.version>1.12.93</com.amazonaws.version>
         <software.awssdk.version>2.17.272</software.awssdk.version>
