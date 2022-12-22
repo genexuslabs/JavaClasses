@@ -3222,7 +3222,7 @@ public final class CommonUtil
 			{
 				try
 				{
-					String encoded = URLEncoder.encode( Character.toString(ch), "UTF-8" );
+					String encoded = URLEncoder.encode( Character.toString(ch), "UTF-8" ).replaceAll("\\+", "%20");
 					for (int i = 0; i < encoded.length(); i++)
 						buf[dst++] = encoded.charAt(i);
 				}
