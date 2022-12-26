@@ -480,7 +480,10 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
                     }
                     else
                     {
-                        gxColl.addBase(currObj);
+						if (gxColl.getElementsType() == java.math.BigDecimal.class)
+							gxColl.addBase(DecimalUtil.stringToDec(jsonArray.getString(i)));
+						else
+                        	gxColl.addBase(currObj);
                     }
                 }
             }
