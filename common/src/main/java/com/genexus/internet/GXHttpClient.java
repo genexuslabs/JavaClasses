@@ -2,6 +2,14 @@ package com.genexus.internet;
 
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.util.Hashtable;
@@ -775,8 +783,39 @@ public abstract class GXHttpClient implements IHttpClient{
 			return "Content-Disposition: form-data; name=\""+ name + "\"; filename=\""+ fileName + "\"\r\n" + "Content-Type: " + mimeType + "\r\n\r\n";
 		}
 		String getFormDataTemplate(String varName, String value){
-			return "\r\n--" + boundary + "\r\nContent-Disposition: form-data; name=\"" + varName + "\";\r\n\r\n" + value;
+			String contentType = getContentTypeFromString(value);
+			return "\r\n--" + boundary + "\r\nContent-Disposition: form-data; name=\"" + varName + "\";\r\n" + ((contentType != null)? "Content-Type: " + contentType + "\r\n" : "") + "\r\n" + value;
+		}
+
+		private String getContentTypeFromString(String value){
+			if (isJsonString(value))
+				return "application/json";
+
+			if (isXMLString(value))
+				return "text/xml";
+
+			return null;
+		}
+
+		private boolean isJsonString(String value){
+			try {
+				JSONObject json = new JSONObject(value);
+				return true;
+			} catch (JSONException e) {
+				return false;
+			}
+		}
+
+		private boolean isXMLString(String value){
+			try {
+				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder builder = factory.newDocumentBuilder();
+				InputSource inputSource = new InputSource(new StringReader(value));
+				Document document = builder.parse(inputSource);
+				return true;
+			} catch (ParserConfigurationException | SAXException | IOException e) {
+				return false;
+			}
 		}
 	}
-
 }
