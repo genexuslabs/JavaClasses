@@ -7,6 +7,8 @@ import json.org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -811,6 +813,7 @@ public abstract class GXHttpClient implements IHttpClient{
 				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 				DocumentBuilder builder = factory.newDocumentBuilder();
 				InputSource inputSource = new InputSource(new StringReader(value));
+				builder.setErrorHandler(new DefaultHandler());
 				Document document = builder.parse(inputSource);
 				return true;
 			} catch (ParserConfigurationException | SAXException | IOException e) {
