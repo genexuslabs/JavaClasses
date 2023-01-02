@@ -1,4 +1,4 @@
-name: External Storage Tests
+name: Cloud Storage Tests
 
 on:
   workflow_dispatch:
@@ -16,8 +16,8 @@ on:
     - cron: '0 0 * * 1' # At 00:00 on (every) Monday
 
 jobs:
- test-external-storages:
-    name: Test External Storage
+ test-cloud-storage-providers:
+    name: Cloud Storage Provider Test
     env:
       GIT_REF: ${{ github.ref }}
       GIT_SHA: ${{ github.sha }}
@@ -45,7 +45,7 @@ jobs:
     - name: Install
       run: mvn -B install --file $POM_PATH
 
-    - name: Test External Storages
+    - name: Test Cloud Storage
       run: |
         export AWSS3_TEST_ENABLED=true
         export STORAGE_AWSS3_ACCESS_KEY="${{ secrets.AWSS3_ACCESS_KEY }}"
@@ -72,4 +72,4 @@ jobs:
         export STORAGE_GOOGLECS_FOLDER_NAME=gxclasses
         export STORAGE_GOOGLECS_APPLICATION_NAME=gxjavacloudstorageunittests
 
-        mvn -B -pl gxexternalproviders test --file $POM_PATH
+        mvn -B -pl gxcloudstorage-tests test --file $POM_PATH
