@@ -10,34 +10,19 @@
 		<version>${revision}${changelist}</version>
 	</parent>
 
-	<artifactId>gxexternalproviders</artifactId>
-	<name>GeneXus External Providers</name>
+    <artifactId>gxcloudstorage-googlecloudstorage</artifactId>
+    <name>GeneXus Google Cloud Storage</name>
 
 	<dependencies>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>gxclassR</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.microsoft.azure</groupId>
-			<artifactId>azure-storage</artifactId>
-			<version>4.2.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.pacesys</groupId>
-			<artifactId>openstack4j</artifactId>
-			<version>3.0.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.pacesys</groupId>
-			<artifactId>openstack4j-core</artifactId>
-			<version>3.0.0</version>
-		</dependency>
         <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-s3</artifactId>
-            <version>${com.amazonaws.version}</version>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>gxclassR</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.genexus</groupId>
+            <artifactId>gxcloudstorage-common</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -64,14 +49,6 @@
             <artifactId>guava</artifactId>
             <version>30.1.1-jre</version>
         </dependency>
-        <dependency>
-            <groupId>com.ibm.cos</groupId>
-            <artifactId>ibm-cos-java-sdk-s3</artifactId>
-            <version>2.10.0</version>
-        </dependency>
 	</dependencies>
 
-	<build>
-		<finalName>gxexternalproviders</finalName>
-	</build>
 </project>

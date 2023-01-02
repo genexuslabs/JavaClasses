@@ -21,7 +21,7 @@ public abstract class ExternalProviderBase {
 	static final String DEFAULT_EXPIRATION_DEPRECATED = "STORAGE_PROVIDER_DEFAULT_EXPIRATION";
 
 	static final int DEFAULT_EXPIRATION_MINUTES = 24 * 60;
-	 ResourceAccessControlList defaultAcl = ResourceAccessControlList.PublicRead;
+	ResourceAccessControlList defaultAcl = com.genexus.db.driver.ResourceAccessControlList.PublicRead;
 
 	public ExternalProviderBase() {
 		init();

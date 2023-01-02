@@ -12,6 +12,7 @@ import com.genexus.Application;
 import com.genexus.util.GXService;
 import com.genexus.util.StorageUtils;
 import com.genexus.StructSdtMessages_Message;
+
 import java.io.File;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
@@ -33,7 +34,7 @@ import java.util.List;
 public class ExternalProviderS3 extends ExternalProviderBase implements ExternalProvider  {
 	private static Logger logger = LogManager.getLogger(ExternalProviderS3.class);
 
-	static final String NAME = "AWSS3";
+	public static final String NAME = "AWSS3";
 	static final String ACCESS_KEY = "ACCESS_KEY";
 	static final String SECRET_ACCESS_KEY = "SECRET_KEY";
 	static final String STORAGE_CUSTOM_ENDPOINT = "CUSTOM_ENDPOINT";

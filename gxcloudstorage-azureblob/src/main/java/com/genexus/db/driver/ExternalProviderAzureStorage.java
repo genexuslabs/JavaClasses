@@ -1,26 +1,21 @@
 package com.genexus.db.driver;
 
 import com.genexus.Application;
+import com.genexus.StructSdtMessages_Message;
 import com.genexus.util.GXService;
 import com.genexus.util.StorageUtils;
-import com.genexus.StructSdtMessages_Message;
-
-import com.microsoft.azure.storage.*;
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.*;
-
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
+import java.util.*;
 
 public class ExternalProviderAzureStorage extends ExternalProviderBase implements ExternalProvider {
 	private static Logger logger = LogManager.getLogger(ExternalProviderAzureStorage.class);
@@ -111,7 +106,7 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 			logger.error("Invalid URI ", ex.getMessage());
 		} catch (StorageException ex) {
 			throw new RuntimeException(ex.getMessage(), ex);
-		} catch (java.io.IOException ioex) {
+		} catch (IOException ioex) {
 			logger.error("Error downloading file", ioex);
 		}
 	}
@@ -168,7 +163,7 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 			return "";
 		} catch (StorageException ex) {
 			throw new RuntimeException(ex.getMessage(), ex);
-		} catch (java.io.IOException ex) {
+		} catch (IOException ex) {
 			logger.error("Error uploading file", ex);
 			return "";
 		}
@@ -359,7 +354,7 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 			logger.error("Invalid URI ", ex.getMessage());
 		} catch (StorageException ex) {
 			throw new RuntimeException(ex.getMessage(), ex);
-		} catch (java.io.IOException ioex) {
+		} catch (IOException ioex) {
 			logger.error("Error uploading file", ioex);
 		}
 	}
