@@ -25,9 +25,9 @@
             <version>${project.version}</version>
         </dependency>
 		<dependency>
-			<groupId>com.microsoft.azure</groupId>
-			<artifactId>azure-storage</artifactId>
-			<version>4.4.0</version>
+			<groupId>com.azure</groupId>
+			<artifactId>azure-storage-blob</artifactId>
+			<version>12.20.1</version>
 		</dependency>
 	</dependencies>
 </project>
