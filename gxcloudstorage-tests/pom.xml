@@ -3,15 +3,15 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 				 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<parent>
 		<groupId>com.genexus</groupId>
 		<artifactId>parent</artifactId>
 		<version>${revision}${changelist}</version>
 	</parent>
 
-	<artifactId>gxexternalproviders</artifactId>
-	<name>GeneXus External Providers</name>
+	<artifactId>gxcloudstorage-tests</artifactId>
+	<name>GeneXus Cloud Storage Tests</name>
 
 	<dependencies>
         <dependency>
@@ -49,8 +49,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-	<build>
-		<finalName>gxexternalproviders</finalName>
-	</build>
 </project>
