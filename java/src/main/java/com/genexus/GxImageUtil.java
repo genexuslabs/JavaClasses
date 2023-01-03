@@ -6,6 +6,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.URL;
 
 import com.genexus.db.driver.ResourceAccessControlList;
 import com.genexus.util.GxFileInfoSourceType;
@@ -22,7 +23,13 @@ public class GxImageUtil {
 
 	private static BufferedImage createBufferedImageFromURI(String filePathOrUrl) throws IOException
 	{
-		try (InputStream is = getGXFile(filePathOrUrl).getStream()) {
+		InputStream is;
+		try {
+			if (PrivateUtilities.isValidURL(filePathOrUrl))
+				is = new URL(filePathOrUrl).openStream();
+			else{
+				is = getGXFile(filePathOrUrl).getStream();
+			}
 			return ImageIO.read(is);
 		}
 		catch (IOException e) {
@@ -33,6 +40,10 @@ public class GxImageUtil {
 
 	private static GXFile getGXFile(String filePathOrUrl) {
 		String basePath = (com.genexus.ModelContext.getModelContext() != null) ? com.genexus.ModelContext.getModelContext().getHttpContext().getDefaultPath(): "";
+		String environmentName = basePath.substring(basePath.lastIndexOf("\\") + 1);
+		if (filePathOrUrl.substring(1).startsWith(environmentName)) {
+			filePathOrUrl = filePathOrUrl.substring(environmentName.length() + 2);
+		}
 		return new GXFile(basePath, filePathOrUrl, ResourceAccessControlList.Default, GxFileInfoSourceType.Unknown);
 	}
 
