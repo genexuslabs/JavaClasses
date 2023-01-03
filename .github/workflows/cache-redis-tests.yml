@@ -53,4 +53,5 @@ jobs:
     - name: Test Redis
       run: |
         export EXECUTE_REDIS_TESTS=true        
-        mvn -B -pl java test --file $POM_PATH
+        mvn -B -pl gxcache-redis test --file $POM_PATH
+        

@@ -105,7 +105,9 @@
         <module>gxqueue</module>
         <module>gxqueueawssqs</module>
         <module>gxqueueazure</module>
-	</modules>
+        <module>gxcache-redis</module>
+        <module>gxcache-memcached</module>
+    </modules>
 
 	<dependencies>
 		<dependency>
