@@ -97,7 +97,6 @@
 		<module>gxgeospatial</module>
 		<module>gxodata</module>
 		<module>gxdynamodb</module>
-		<module>gxexternalproviders</module>
 		<module>gxwebsocket</module>
 		<module>gxwebsocketjakarta</module>
 		<module>gxawsserverless</module>
@@ -105,7 +104,13 @@
         <module>gxqueue</module>
         <module>gxqueueawssqs</module>
         <module>gxqueueazure</module>
-	</modules>
+        <module>gxcloudstorage-common</module>
+        <module>gxcloudstorage-awss3</module>
+        <module>gxcloudstorage-googlecloudstorage</module>
+        <module>gxcloudstorage-azureblob</module>
+        <module>gxcloudstorage-ibmcos</module>
+        <module>gxcloudstorage-tests</module>
+    </modules>
 
 	<dependencies>
 		<dependency>
