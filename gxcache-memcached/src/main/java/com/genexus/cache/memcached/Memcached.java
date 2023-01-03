@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.genexus.Application;
+import com.genexus.CommonUtil;
 import com.genexus.ICacheService2;
 import com.genexus.util.GXService;
 import com.genexus.util.GXServices;
