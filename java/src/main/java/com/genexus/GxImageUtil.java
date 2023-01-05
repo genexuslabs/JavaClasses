@@ -35,7 +35,7 @@ public class GxImageUtil {
 		} catch (IOException e) {
 			log.error("Failed to read image stream: " + filePathOrUrl);
 			throw e;
-		} finally { is.close(); }
+		} finally {is.close();}
 	}
 
 	private static GXFile getGXFile(String filePathOrUrl) {
