@@ -18,10 +18,8 @@ import java.io.PrintWriter;
 import java.io.PushbackInputStream;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.InvalidPathException;
-import java.io.FileNotFoundException;
 import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.Random;
@@ -623,29 +621,6 @@ public final class PrivateUtilities
 		try {
 			return Paths.get(path).isAbsolute();
 		} catch (InvalidPathException | NullPointerException ex) {
-			return false;
-		}
-	}
-
-
-	/**
-	 * <pre>
-	 * Checks if a string has valid URL syntax and points to a valid resource on the web.
-	 * Null safe.
-	 * </pre>
-	 */
-	//Me fijo si la sintaxis del string es la sintaxis de una URL y si
-	//de verdad existe a lo que esta apuntando
-	public static boolean isValidURL(String urlString) {
-		try {
-			URL url = new URL(urlString);
-			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-			connection.setRequestMethod("HEAD");
-			int responseCode = connection.getResponseCode();
-			return (responseCode == HttpURLConnection.HTTP_OK);
-		} catch (MalformedURLException | FileNotFoundException  e) {
-			return false;
-		} catch (IOException | NullPointerException e) {
 			return false;
 		}
 	}

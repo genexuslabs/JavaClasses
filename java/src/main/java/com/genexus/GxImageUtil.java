@@ -23,27 +23,23 @@ public class GxImageUtil {
 
 	private static BufferedImage createBufferedImageFromURI(String filePathOrUrl) throws IOException
 	{
-		InputStream is;
-		try {
-			if (PrivateUtilities.isValidURL(filePathOrUrl))
-				is = new URL(filePathOrUrl).openStream();
-			else{
+		IHttpContext httpContext = com.genexus.ModelContext.getModelContext().getHttpContext();
+		InputStream is = null;
+		try{
+			if (filePathOrUrl.toLowerCase().startsWith("http://") || filePathOrUrl.toLowerCase().startsWith("https://") ||
+				(httpContext.isHttpContextWeb() && filePathOrUrl.startsWith(httpContext.getContextPath())))
+				is = new URL(GXDbFile.pathToUrl( filePathOrUrl, httpContext)).openStream();
+			else
 				is = getGXFile(filePathOrUrl).getStream();
-			}
 			return ImageIO.read(is);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			log.error("Failed to read image stream: " + filePathOrUrl);
 			throw e;
-		}
+		} finally { is.close(); }
 	}
 
 	private static GXFile getGXFile(String filePathOrUrl) {
 		String basePath = (com.genexus.ModelContext.getModelContext() != null) ? com.genexus.ModelContext.getModelContext().getHttpContext().getDefaultPath(): "";
-		String environmentName = basePath.substring(basePath.lastIndexOf("\\") + 1);
-		if (filePathOrUrl.substring(1).startsWith(environmentName)) {
-			filePathOrUrl = filePathOrUrl.substring(environmentName.length() + 2);
-		}
 		return new GXFile(basePath, filePathOrUrl, ResourceAccessControlList.Default, GxFileInfoSourceType.Unknown);
 	}
 
