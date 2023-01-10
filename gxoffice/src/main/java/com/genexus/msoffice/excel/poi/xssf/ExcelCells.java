@@ -1110,4 +1110,9 @@ public class ExcelCells implements IExcelCellRange {
     public enum BorderCellSide {
         RIGHT, LEFT, TOP, BOTTOM, DIAGONALUP, DIAGONALDOWN
     }
+
+	public XSSFCell[] getUnderlyingObject(){
+		return pCells;
+
+	}
 }
