@@ -487,4 +487,8 @@ public class ExcelSpreadsheet implements IExcelSpreadsheet {
         return false;
     }
 
+	public XSSFWorkbook getUnderlyingObject(){
+		return _workbook;
+	}
+
 }
