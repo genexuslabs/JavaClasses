@@ -1,10 +1,14 @@
-package com.genexus;
+package com.genexus.cache.memcached;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import com.genexus.Application;
+import com.genexus.CommonUtil;
+import com.genexus.ICacheService2;
 import com.genexus.util.GXService;
 import com.genexus.util.GXServices;
 
