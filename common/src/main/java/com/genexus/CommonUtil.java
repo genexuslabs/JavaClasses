@@ -2352,6 +2352,7 @@ public final class CommonUtil
 					}catch(StringIndexOutOfBoundsException e)
 					{ // Si el value termina con un %, lo ignoro
 						 lastIndex--;
+						 stringBuilder.append("%");
 					}
 				}
 			}
