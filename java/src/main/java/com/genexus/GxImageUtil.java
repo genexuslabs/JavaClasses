@@ -30,16 +30,8 @@ public class GxImageUtil {
 				(httpContext.isHttpContextWeb() && filePathOrUrl.startsWith(httpContext.getContextPath())))
 				is = new URL(GXDbFile.pathToUrl( filePathOrUrl, httpContext)).openStream();
 			else
-		IHttpContext httpContext = com.genexus.ModelContext.getModelContext().getHttpContext();
-		InputStream is = null;
-		try{
-			if (filePathOrUrl.toLowerCase().startsWith("http://") || filePathOrUrl.toLowerCase().startsWith("https://") ||
-				(httpContext.isHttpContextWeb() && filePathOrUrl.startsWith(httpContext.getContextPath())))
-				is = new URL(GXDbFile.pathToUrl( filePathOrUrl, httpContext)).openStream();
-			else
 				is = getGXFile(filePathOrUrl).getStream();
 			return ImageIO.read(is);
-		} catch (IOException e) {
 		} catch (IOException e) {
 			log.error("Failed to read image stream: " + filePathOrUrl);
 			throw e;
