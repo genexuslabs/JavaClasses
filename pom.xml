@@ -101,16 +101,18 @@
 		<module>gxwebsocketjakarta</module>
 		<module>gxawsserverless</module>
 		<module>androidreports</module>
-        <module>gxqueue</module>
-        <module>gxqueueawssqs</module>
-        <module>gxqueueazure</module>
-        <module>gxcloudstorage-common</module>
-        <module>gxcloudstorage-awss3</module>
-        <module>gxcloudstorage-googlecloudstorage</module>
-        <module>gxcloudstorage-azureblob</module>
-        <module>gxcloudstorage-ibmcos</module>
-        <module>gxcloudstorage-tests</module>
-    </modules>
+    <module>gxqueue</module>
+    <module>gxqueueawssqs</module>
+    <module>gxqueueazure</module>
+    <module>gxcache-redis</module>
+    <module>gxcache-memcached</module>
+    <module>gxcloudstorage-common</module>
+    <module>gxcloudstorage-awss3</module>
+    <module>gxcloudstorage-googlecloudstorage</module>
+    <module>gxcloudstorage-azureblob</module>
+    <module>gxcloudstorage-ibmcos</module>
+    <module>gxcloudstorage-tests</module>
+  </modules>
 
 	<dependencies>
 		<dependency>

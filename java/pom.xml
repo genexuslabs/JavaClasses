@@ -111,11 +111,6 @@
            	<version>${jackson.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>net.spy</groupId>
-			<artifactId>spymemcached</artifactId>
-			<version>2.10.3</version>
-		</dependency>
-		<dependency>
 			<groupId>com.lowagie</groupId>
 			<artifactId>itext</artifactId>
 			<version>2.1.7</version>
@@ -130,11 +125,6 @@
 		    <groupId>com.lowagie</groupId>
 		    <artifactId>itextasian</artifactId>
 		    <version>1.5.2</version>
-		</dependency>		
-		<dependency>
-			<groupId>redis.clients</groupId>
-			<artifactId>jedis</artifactId>
-			<version>2.9.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sap.conn.jco</groupId>
