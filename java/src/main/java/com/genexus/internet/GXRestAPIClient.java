@@ -9,6 +9,7 @@ import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.*;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
+import com.genexus.specific.java.GXSilentTrnSdt;
 
 public class GXRestAPIClient {
 
@@ -303,6 +304,44 @@ public class GXRestAPIClient {
 		return jsonstr;	
 	}
 
+	public <T extends com.genexus.GxSilentTrnSdt> T getBodyBC(String varName, Class<T> sdtClass) {	
+		T sdt;
+		try {
+            sdt = sdtClass.newInstance();
+        } 
+		catch (InstantiationException e) {
+            return null;
+        } 
+		catch (IllegalAccessException e) {
+            return null;
+        }
+		try {
+			if (jsonResponse != null) {
+				if (jsonResponse.has(varName)) {
+					sdt.fromJSonString(jsonResponse.getString(varName));
+				} 
+				else if (jsonResponse.length() == 1 && jsonResponse.has("")) {
+					sdt.fromJSonString(jsonResponse.getString(""));
+				} 
+				else if (jsonResponse.length()>= 1 && !jsonResponse.has(varName)) {
+					sdt.fromJSonString(httpClient.getString());
+				}
+			}
+			else {
+				errorCode = RESPONSE_ERROR_CODE;
+				errorMessage = RESPONSE_ERROR_MSG;
+				logger.error(RESPONSE_ERROR_MSG + " " + sdtClass);			
+				return null;
+			}
+		} 
+		catch (JSONException e) {
+			errorCode = PARSING_ERROR_CODE;
+			errorMessage = PARSING_ERROR_MSG;
+			logger.error(PARSING_ERROR_MSG + " " + sdtClass, e);
+			return null;
+		}
+		return sdt;
+	}
 	public <T extends GXXMLSerializable> T getBodyObj(String varName, Class<T> sdtClass) {	
 		T sdt;
 		try {
@@ -342,6 +381,45 @@ public class GXRestAPIClient {
 		return sdt;
 	}
 
+
+
+	public <T extends GxSilentTrnSdt> GXBCCollection<T> getBodyBCCollection(String varName, Class<T> elementClasss) 
+	{
+		JSONArray jsonarr = new JSONArray();
+		GXBCCollection<T> col = new GXBCCollection<T>(); 
+		try {			
+			if (jsonResponse.has(varName))
+				jsonarr = jsonResponse.getJSONArray(varName);
+			else if (jsonResponse.length() == 1 && jsonResponse.has(""))
+				jsonarr = jsonResponse.getJSONArray("");
+
+			if (jsonarr != null) {
+				for (int i=0; i < jsonarr.length(); i++) {
+    				JSONObject o = jsonarr.getJSONObject(i);
+					T sdt = elementClasss.getDeclaredConstructor().newInstance();
+					sdt.fromJSonString(o.toString(),null);
+					col.add(sdt);
+				}
+			}
+			else {
+				errorCode = RESPONSE_ERROR_CODE;
+				errorMessage = RESPONSE_ERROR_MSG;
+				logger.error(RESPONSE_ERROR_MSG + " " + elementClasss);
+			}	
+		} 
+		catch (JSONException e) {
+			errorCode = PARSING_ERROR_CODE;
+			errorMessage = PARSING_ERROR_MSG;
+			logger.error(PARSING_ERROR_MSG + " " + elementClasss ,e );			
+		}
+		catch (Exception e) {
+			errorCode = DESERIALIZING_ERROR_CODE;
+			errorMessage = DESERIALIZING_ERROR_MSG;
+			logger.error(DESERIALIZING_ERROR_MSG + " " + elementClasss, e);
+		}
+		return col;
+	}
+
 	public <T extends GXXMLSerializable> GXBaseCollection<T> getBodyObjCollection(String varName, Class<T> elementClasss) {			
 		JSONArray jsonarr = new JSONArray();
 		GXBaseCollection<T> col = new GXBaseCollection<T>();  
@@ -354,7 +432,7 @@ public class GXRestAPIClient {
 			if (jsonarr != null) {
 				for (int i=0; i < jsonarr.length(); i++) {
     				JSONObject o = jsonarr.getJSONObject(i);
-					T sdt = elementClasss.newInstance();
+					T sdt = elementClasss.getDeclaredConstructor().newInstance();
 					sdt.fromJSonString(o.toString(),null);
 					col.add(sdt);
 				}
