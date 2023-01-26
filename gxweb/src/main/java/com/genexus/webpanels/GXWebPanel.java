@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 
 import com.genexus.*;
+import com.genexus.common.interfaces.IGXWindow;
 import com.genexus.db.UserInformation;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
@@ -479,16 +480,6 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		return false;
 	}
 
-	public interface IDynAjaxEventContext
-	{
-		void Clear();
-		void ClearParmsMetadata();
-		boolean isInputParm(String key);
-		void SetParmHash(String fieldName, Object value);
-		boolean isParmModified(String fieldName, Object value);
-
-	}
-
 	protected class DynAjaxEvent {
 		JSONArray events = new JSONArray();
 		GXWebPanel targetObj;
@@ -532,7 +523,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 				} else {
 					if (!cmpContext.equals("") && objMessage.has("objClass")) {
 						String fullClassName = pckgName + objMessage.getString("objClass") + "_impl";
-						GXWebComponent webComponent = WebUtils.getWebComponent(getClass(), fullClassName, remoteHandle, context);
+						GXWebComponent webComponent = WebFrontendUtils.getWebComponent(getClass(), fullClassName, remoteHandle, context);
 						this.targetObj = webComponent;
 					}
 				}
@@ -1191,4 +1182,20 @@ public abstract class GXWebPanel extends GXWebObjectBase
 	{
 		return target != null && (target.equalsIgnoreCase("top") || target.equalsIgnoreCase("right") || target.equalsIgnoreCase("bottom") || target.equalsIgnoreCase("left"));
 	}
+
+	public void popup(String url) {
+		popup(url, new Object[] {});
+	}
+
+	public void popup(String url, Object[] returnParms) {
+		IGXWindow win = new GXWindow();
+		win.setUrl(url);
+		win.setReturnParms(returnParms);
+		newWindow(win);
+	}
+
+	public void newWindow(IGXWindow win) {
+		((HttpContextWeb) httpContext).redirect_impl(win.getUrl(), win);
+	}
+
 }

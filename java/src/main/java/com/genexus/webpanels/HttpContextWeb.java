@@ -8,6 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
+import com.genexus.common.interfaces.IGXWindow;
 import com.genexus.fileupload.servlet.IServletFileUpload;
 import com.genexus.servlet.*;
 import com.genexus.servlet.http.Cookie;
@@ -32,7 +33,6 @@ import com.genexus.internet.HttpResponse;
 import com.genexus.internet.MsgList;
 import com.genexus.util.Base64;
 import com.genexus.util.GXFile;
-import com.genexus.util.GXServices;
 
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
@@ -1339,7 +1339,7 @@ public class HttpContextWeb extends HttpContext {
 		this.writeTextNL("</head>");
 	}
 
-	public void redirect_impl(String url, GXWindow win) {
+	public void redirect_impl(String url, IGXWindow win) {
 		if (!isGxAjaxRequest() && !isAjaxRequest() && win == null) {
 			String popupLvl = getNavigationHelper(false).getUrlPopupLevel(getRequestNavUrl());
 			String popLvlParm = "";
@@ -1410,21 +1410,6 @@ public class HttpContextWeb extends HttpContext {
 		if (!Redirected) {
 			redirect_impl(url, null);
 		}
-	}
-
-	public void popup(String url) {
-		popup(url, new Object[] {});
-	}
-
-	public void popup(String url, Object[] returnParms) {
-		GXWindow win = new GXWindow();
-		win.setUrl(url);
-		win.setReturnParms(returnParms);
-		newWindow(win);
-	}
-
-	public void newWindow(GXWindow win) {
-		redirect_impl(win.getUrl(), win);
 	}
 
 	public void dispatchAjaxCommands() {

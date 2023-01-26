@@ -1,5 +1,6 @@
 package com.genexus.cryptography;
 
+import com.genexus.CommonUtil;
 import com.genexus.cryptography.GXSigning.PKCSStandard;
 
 public class Constants {
@@ -12,7 +13,7 @@ public class Constants {
 
 	/* HASHING CONSTANTS */
 	public static String DEFAULT_HASH_ALGORITHM = "SHA-256";
-	public static String SECURITY_HASH_ALGORITHM = "SHA-256";
+	public static String SECURITY_HASH_ALGORITHM = CommonUtil.SECURITY_HASH_ALGORITHM;
 
 	
 	/* SIGN Constants */ 
