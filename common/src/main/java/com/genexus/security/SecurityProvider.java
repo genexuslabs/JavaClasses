@@ -15,5 +15,6 @@ public interface SecurityProvider
 	GXResult oauthauthentication(int remoteHandle, ModelContext context, String grantType, String userName, String userPassword, String clientId, String clientSecret, String scope, OutData outData, String[] redirectURL, boolean[] flag);
 	GXResult oauthauthentication(int remoteHandle, ModelContext context, String grantType, String userName, String userPassword, String clientId, String clientSecret, String scope, String additional_parameters, OutData outData, String[] redirectURL, boolean[] flag);
 	void oauthgetuser(int remoteHandle, ModelContext context, String[] userJson, boolean[] isOK);
+	void oauthlogout(int remoteHandle, ModelContext context);
 	void oauthlogout(int remoteHandle, ModelContext context, String[] URL, short[] statusCode);
 }
