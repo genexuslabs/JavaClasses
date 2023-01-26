@@ -8,16 +8,15 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import com.genexus.common.interfaces.IGXWebRow;
 import com.genexus.servlet.http.ICookie;
 import com.genexus.servlet.http.IHttpServletRequest;
 import com.genexus.servlet.http.IHttpServletResponse;
 
 import com.genexus.*;
 
-import com.genexus.usercontrols.UserControlFactoryImpl;
 import com.genexus.util.Codecs;
 import com.genexus.util.Encryption;
-import com.genexus.util.GXMap;
 import com.genexus.util.ThemeHelper;
 import com.genexus.webpanels.GXWebObjectBase;
 import com.genexus.webpanels.WebSession;
@@ -48,6 +47,11 @@ public abstract class HttpContext
     protected boolean AjaxEventMode = false;
     protected boolean fullAjaxMode = false;
 	public boolean drawingGrid = false;
+
+	public void setDrawingGrid(boolean drawingGrid)
+	{
+		this.drawingGrid = drawingGrid;
+	}
 	 
 	
 	public void setFullAjaxMode()
@@ -106,7 +110,7 @@ public abstract class HttpContext
 		return getRequest() != null && getRequest().getHeader(GX_SOAP_ACTION_HEADER) != null;
 	}
 
-    public void ajax_sending_grid_row(com.genexus.webpanels.GXWebRow row)
+    public void ajax_sending_grid_row(IGXWebRow row)
     {
         if (isAjaxCallMode())
         {
@@ -337,9 +341,6 @@ public abstract class HttpContext
 	public abstract WebSession getWebSession();
 	public abstract void redirect(String url);
 	public abstract void redirect(String url, boolean SkipPushUrl);
-    public abstract void popup( String url);
-    public abstract void popup( String url, Object[] returnParms);
-    public abstract void newWindow( com.genexus.webpanels.GXWindow win);
 	public abstract void setStream() ;
 	public abstract void flushStream();
 
@@ -659,7 +660,7 @@ public abstract class HttpContext
 	{
 		return responseCommited;
 	}
-
+	
 	public static String GX_NAV_HELPER = "GX_NAV_HELPER";
 	
 	protected GXNavigationHelper getNavigationHelper()
@@ -987,7 +988,7 @@ public abstract class HttpContext
 
 	public String getEncryptedSignature( String value, String key)
 	{
-		return encrypt64(CommonUtil.getHash( com.genexus.security.web.WebSecurityHelper.StripInvalidChars(value), com.genexus.cryptography.Constants.SECURITY_HASH_ALGORITHM), key);
+		return encrypt64(CommonUtil.getHash( com.genexus.security.web.WebSecurityHelper.StripInvalidChars(value), CommonUtil.SECURITY_HASH_ALGORITHM), key);
 	}
 
 	public String encrypt64(String value, String key)
@@ -1336,13 +1337,6 @@ public abstract class HttpContext
 	public void writeTextNL(String text)
 	{
 		writeText(text + "\n");
-	}
-
-	public void renderUserControl(String controlType, String internalName, String htmlId, GXMap propbag)
-	{
-		propbag.put("ContainerName", htmlId);
-		String ucServerContent = UserControlFactoryImpl.getInstance().renderControl(controlType, internalName, propbag);
-		writeText( String.format("<div class=\"gx_usercontrol\" id=\"%s\">%s</div>", htmlId, ucServerContent));
 	}
 
 	public boolean useUtf8 = false;

@@ -36,6 +36,7 @@ public final class CommonUtil
 	static TimeZone 	originalTimeZone;
 	public static IThreadLocal threadCalendar;
 
+	public static String SECURITY_HASH_ALGORITHM = "SHA-256";
 	public static final String [][] ENCODING_JAVA_IANA;
 	private static Random random;
 	private static Date nullDate;

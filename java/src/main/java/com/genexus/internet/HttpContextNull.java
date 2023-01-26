@@ -7,7 +7,7 @@ import com.genexus.servlet.http.IHttpServletResponse;
 
 import com.genexus.Application;
 import com.genexus.GXutil;
-import com.genexus.GxEjbContext;
+import com.genexus.common.interfaces.IGxEjbContext;
 import com.genexus.ModelContext;
 import com.genexus.common.interfaces.IHttpContextNull;
 import com.genexus.db.DBConnectionManager;
@@ -148,7 +148,7 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 	public String getUserId(String key, ModelContext context, int handle, String dataSource)
 	{
           if (context.getSessionContext() != null) //Si estoy en el contexto de un EJB
-             return ((GxEjbContext)context.getSessionContext()).getUserId();
+             return ((IGxEjbContext)context.getSessionContext()).getUserId();
 
 		if	(key.toLowerCase().equals("server") &&  !Application.getUserIdServerAsUserId(handle))
 		{
@@ -166,7 +166,7 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 	public String getUserId(String key, ModelContext context, int handle, com.genexus.db.IDataStoreProvider dataStore)
 	{
         if (context.getSessionContext() != null) //Si estoy en el contexto de un EJB
-             return ((GxEjbContext)context.getSessionContext()).getUserId();
+             return ((IGxEjbContext)context.getSessionContext()).getUserId();
 
 		if	(key.toLowerCase().equals("server") &&  !Application.getUserIdServerAsUserId(handle))
 		{
@@ -417,9 +417,6 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 
 	public void redirect(String url) {}
 	public void redirect(String url, boolean SkipPushUrl) {}
-	public void popup(String url) {}
-	public void popup(String url, Object[] returnParms) {}
-	public void newWindow(com.genexus.webpanels.GXWindow win) {}
 	public void ajax_rsp_command_close(){};
 	public void dispatchAjaxCommands() {};
     public void closeHtmlHeader() {};
