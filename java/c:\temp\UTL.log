@@ -1,0 +1,140 @@
+Java vendor       : Oracle Corporation
+Java version      : 17.0.2
+Generator version : 
+Java classpath    : /workspaces/JavaClasses/java/target/test-classes:/workspaces/JavaClasses/java/target/classes:/workspaces/JavaClasses/common/target/gxcommon.jar:/home/github/.m2/repository/xerces/xercesImpl/2.12.0/xercesImpl-2.12.0.jar:/home/github/.m2/repository/xml-apis/xml-apis/1.4.01/xml-apis-1.4.01.jar:/home/github/.m2/repository/commons-codec/commons-codec/1.9/commons-codec-1.9.jar:/home/github/.m2/repository/commons-lang/commons-lang/2.6/commons-lang-2.6.jar:/home/github/.m2/repository/org/simpleframework/simple-xml/2.7.1/simple-xml-2.7.1.jar:/home/github/.m2/repository/stax/stax-api/1.0.1/stax-api-1.0.1.jar:/home/github/.m2/repository/stax/stax/1.2.0/stax-1.2.0.jar:/home/github/.m2/repository/xpp3/xpp3/1.1.3.3/xpp3-1.1.3.3.jar:/home/github/.m2/repository/org/bouncycastle/bcpkix-jdk15on/1.69/bcpkix-jdk15on-1.69.jar:/home/github/.m2/repository/org/bouncycastle/bcutil-jdk15on/1.69/bcutil-jdk15on-1.69.jar:/workspaces/JavaClasses/wrapperjavax/target/gxwrapperjavax.jar:/workspaces/JavaClasses/wrappercommon/target/gxwrappercommon.jar:/home/github/.m2/repository/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar:/home/github/.m2/repository/javax/annotation/javax.annotation-api/1.3.2/javax.annotation-api-1.3.2.jar:/home/github/.m2/repository/javax/ws/rs/javax.ws.rs-api/2.1/javax.ws.rs-api-2.1.jar:/home/github/.m2/repository/commons-fileupload/commons-fileupload/1.3.3/commons-fileupload-1.3.3.jar:/home/github/.m2/repository/org/glassfish/jersey/core/jersey-client/2.34/jersey-client-2.34.jar:/home/github/.m2/repository/org/glassfish/jersey/core/jersey-common/2.34/jersey-common-2.34.jar:/home/github/.m2/repository/org/glassfish/hk2/osgi-resource-locator/1.0.3/osgi-resource-locator-1.0.3.jar:/home/github/.m2/repository/org/glassfish/hk2/external/jakarta.inject/2.6.1/jakarta.inject-2.6.1.jar:/home/github/.m2/repository/org/glassfish/jersey/core/jersey-server/2.34/jersey-server-2.34.jar:/home/github/.m2/repository/jakarta/annotation/jakarta.annotation-api/1.3.5/jakarta.annotation-api-1.3.5.jar:/home/github/.m2/repository/jakarta/validation/jakarta.validation-api/2.0.2/jakarta.validation-api-2.0.2.jar:/home/github/.m2/repository/org/glassfish/jersey/containers/jersey-container-servlet-core/2.34/jersey-container-servlet-core-2.34.jar:/home/github/.m2/repository/org/glassfish/jersey/media/jersey-media-json-jackson/2.34/jersey-media-json-jackson-2.34.jar:/home/github/.m2/repository/org/glassfish/jersey/ext/jersey-entity-filtering/2.34/jersey-entity-filtering-2.34.jar:/home/github/.m2/repository/org/glassfish/jersey/inject/jersey-hk2/2.34/jersey-hk2-2.34.jar:/home/github/.m2/repository/org/glassfish/hk2/hk2-locator/2.6.1/hk2-locator-2.6.1.jar:/home/github/.m2/repository/org/glassfish/hk2/external/aopalliance-repackaged/2.6.1/aopalliance-repackaged-2.6.1.jar:/home/github/.m2/repository/org/glassfish/hk2/hk2-api/2.6.1/hk2-api-2.6.1.jar:/home/github/.m2/repository/org/glassfish/hk2/hk2-utils/2.6.1/hk2-utils-2.6.1.jar:/home/github/.m2/repository/org/javassist/javassist/3.25.0-GA/javassist-3.25.0-GA.jar:/home/github/.m2/repository/com/fasterxml/jackson/module/jackson-module-jaxb-annotations/2.13.2/jackson-module-jaxb-annotations-2.13.2.jar:/home/github/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/2.3.3/jakarta.xml.bind-api-2.3.3.jar:/home/github/.m2/repository/jakarta/activation/jakarta.activation-api/1.2.1/jakarta.activation-api-1.2.1.jar:/home/github/.m2/repository/com/fasterxml/jackson/jaxrs/jackson-jaxrs-json-provider/2.13.2/jackson-jaxrs-json-provider-2.13.2.jar:/home/github/.m2/repository/com/fasterxml/jackson/jaxrs/jackson-jaxrs-base/2.13.2/jackson-jaxrs-base-2.13.2.jar:/home/github/.m2/repository/org/apache/ws/security/wss4j/1.6.19/wss4j-1.6.19.jar:/home/github/.m2/repository/org/opensaml/opensaml/2.5.1-1/opensaml-2.5.1-1.jar:/home/github/.m2/repository/org/opensaml/openws/1.4.2-1/openws-1.4.2-1.jar:/home/github/.m2/repository/org/opensaml/xmltooling/1.3.2-1/xmltooling-1.3.2-1.jar:/home/github/.m2/repository/com/sun/xml/ws/jaxws-rt/2.3.1/jaxws-rt-2.3.1.jar:/workspaces/JavaClasses/gxcryptocommon/target/gxcryptocommon.jar:/home/github/.m2/repository/org/apache/santuario/xmlsec/2.2.3/xmlsec-2.2.3.jar:/home/github/.m2/repository/org/slf4j/slf4j-api/1.7.30/slf4j-api-1.7.30.jar:/home/github/.m2/repository/com/fasterxml/woodstox/woodstox-core/5.2.1/woodstox-core-5.2.1.jar:/home/github/.m2/repository/org/codehaus/woodstox/stax2-api/4.2/stax2-api-4.2.jar:/home/github/.m2/repository/org/slf4j/slf4j-nop/1.7.7/slf4j-nop-1.7.7.jar:/workspaces/JavaClasses/gxmail/target/gxmail.jar:/home/github/.m2/repository/com/sun/mail/jakarta.mail/2.0.1/jakarta.mail-2.0.1.jar:/home/github/.m2/repository/com/sun/activation/jakarta.activation/2.0.1/jakarta.activation-2.0.1.jar:/home/github/.m2/repository/javax/xml/ws/jaxws-api/2.3.1/jaxws-api-2.3.1.jar:/workspaces/JavaClasses/javapns/target/javapns.jar:/home/github/.m2/repository/org/json/json/20180813/json-20180813.jar:/home/github/.m2/repository/org/bouncycastle/bcprov-jdk15on/1.64/bcprov-jdk15on-1.64.jar:/home/github/.m2/repository/org/apache/commons/commons-collections4/4.1/commons-collections4-4.1.jar:/home/github/.m2/repository/org/apache/logging/log4j/log4j-1.2-api/2.17.1/log4j-1.2-api-2.17.1.jar:/home/github/.m2/repository/org/apache/logging/log4j/log4j-api/2.17.1/log4j-api-2.17.1.jar:/home/github/.m2/repository/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar:/home/github/.m2/repository/javax/ejb/ejb-api/3.0/ejb-api-3.0.jar:/home/github/.m2/repository/org/glassfish/main/javaee-api/javax.jms/3.1.2.2/javax.jms-3.1.2.2.jar:/home/github/.m2/repository/commons-io/commons-io/2.11.0/commons-io-2.11.0.jar:/home/github/.m2/repository/joda-time/joda-time/2.10.4/joda-time-2.10.4.jar:/home/github/.m2/repository/com/github/spullara/mustache/java/compiler/0.9.7/compiler-0.9.7.jar:/home/github/.m2/repository/commons-logging/commons-logging/1.0.4/commons-logging-1.0.4.jar:/home/github/.m2/repository/commons-net/commons-net/3.3/commons-net-3.3.jar:/home/github/.m2/repository/org/apache/commons/commons-pool2/2.4.2/commons-pool2-2.4.2.jar:/home/github/.m2/repository/javax/transaction/jta/1.1/jta-1.1.jar:/home/github/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.13.2/jackson-core-2.13.2.jar:/home/github/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.13.2/jackson-annotations-2.13.2.jar:/home/github/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.13.2.1/jackson-databind-2.13.2.1.jar:/home/github/.m2/repository/com/google/apis/google-api-services-androidpublisher/v2-rev105-1.23.0/google-api-services-androidpublisher-v2-rev105-1.23.0.jar:/home/github/.m2/repository/com/google/api-client/google-api-client/1.23.0/google-api-client-1.23.0.jar:/home/github/.m2/repository/com/google/oauth-client/google-oauth-client/1.23.0/google-oauth-client-1.23.0.jar:/home/github/.m2/repository/com/google/http-client/google-http-client/1.23.0/google-http-client-1.23.0.jar:/home/github/.m2/repository/com/google/code/findbugs/jsr305/1.3.9/jsr305-1.3.9.jar:/home/github/.m2/repository/com/google/http-client/google-http-client-jackson2/1.23.0/google-http-client-jackson2-1.23.0.jar:/home/github/.m2/repository/com/google/guava/guava-jdk5/17.0/guava-jdk5-17.0.jar:/home/github/.m2/repository/net/spy/spymemcached/2.10.3/spymemcached-2.10.3.jar:/home/github/.m2/repository/com/lowagie/itext/2.1.7/itext-2.1.7.jar:/home/github/.m2/repository/bouncycastle/bcprov-jdk14/138/bcprov-jdk14-138.jar:/home/github/.m2/repository/org/bouncycastle/bctsp-jdk14/1.38/bctsp-jdk14-1.38.jar:/home/github/.m2/repository/org/bouncycastle/bcprov-jdk14/1.38/bcprov-jdk14-1.38.jar:/home/github/.m2/repository/org/bouncycastle/bcmail-jdk14/1.38/bcmail-jdk14-1.38.jar:/home/github/.m2/repository/redis/clients/jedis/2.9.0/jedis-2.9.0.jar:/home/github/.m2/repository/com/sap/conn/jco/sapjco3/3.0.14/sapjco3-3.0.14.jar:/home/github/.m2/repository/org/owasp/encoder/encoder/1.2.2/encoder-1.2.2.jar:/home/github/.m2/repository/org/owasp/encoder/encoder-jsp/1.2.2/encoder-jsp-1.2.2.jar:/home/github/.m2/repository/org/apache/httpcomponents/httpclient/4.5.13/httpclient-4.5.13.jar:/home/github/.m2/repository/org/apache/httpcomponents/httpcore/4.4.13/httpcore-4.4.13.jar:/home/github/.m2/repository/org/glassfish/gmbal/gmbal-api-only/3.1.0-b001/gmbal-api-only-3.1.0-b001.jar:/home/github/.m2/repository/org/glassfish/ha/ha-api/3.1.9/ha-api-3.1.9.jar:/home/github/.m2/repository/javax/xml/bind/jaxb-api/2.3.1/jaxb-api-2.3.1.jar:/home/github/.m2/repository/javax/activation/javax.activation-api/1.2.0/javax.activation-api-1.2.0.jar:/home/github/.m2/repository/com/sun/xml/bind/jaxb-core/2.3.0/jaxb-core-2.3.0.jar:/home/github/.m2/repository/com/sun/xml/bind/jaxb-impl/2.3.1/jaxb-impl-2.3.1.jar:/home/github/.m2/repository/org/glassfish/external/management-api/3.2.1/management-api-3.2.1.jar:/home/github/.m2/repository/com/sun/xml/ws/policy/2.7.5/policy-2.7.5.jar:/home/github/.m2/repository/org/jvnet/staxex/stax-ex/1.8/stax-ex-1.8.jar:/home/github/.m2/repository/javax/activation/activation/1.1/activation-1.1.jar:/home/github/.m2/repository/com/sun/xml/stream/buffer/streambuffer/1.5.6/streambuffer-1.5.6.jar:/home/github/.m2/repository/com/sun/org/apache/xml/internal/resolver/20050927/resolver-20050927.jar:/home/github/.m2/repository/com/sun/xml/messaging/saaj/saaj-impl/1.5.0/saaj-impl-1.5.0.jar:/home/github/.m2/repository/javax/xml/soap/javax.xml.soap-api/1.4.0/javax.xml.soap-api-1.4.0.jar:/home/github/.m2/repository/org/jvnet/mimepull/mimepull/1.9.8/mimepull-1.9.8.jar:/home/github/.m2/repository/javax/xml/soap/saaj-api/1.3.5/saaj-api-1.3.5.jar:/home/github/.m2/repository/jakarta/servlet/jakarta.servlet-api/5.0.0/jakarta.servlet-api-5.0.0.jar:/home/github/.m2/repository/jakarta/ws/rs/jakarta.ws.rs-api/3.0.0/jakarta.ws.rs-api-3.0.0.jar:/home/github/.m2/repository/org/xerial/sqlite-jdbc/3.36.0.3/sqlite-jdbc-3.36.0.3.jar:/home/github/.m2/repository/com/microsoft/sqlserver/mssql-jdbc/10.2.0.jre8/mssql-jdbc-10.2.0.jre8.jar:/home/github/.m2/repository/junit/junit/4.13.2/junit-4.13.2.jar:/home/github/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:
+Operating System  : Linux 5.10.104-linuxkit/aarch64
+Current DateTime  : Thu Aug 04 19:35:04 UYT 2022
+
+       0(1)(19:35:04.102)GXConnection/1048712791: Trying to connect to : Driver  : org.sqlite.JDBC
+       1(1)(19:35:04.102)GXConnection/1048712791:                        URL     : jdbc:sqlite:sample.db
+       2(1)(19:35:04.103)GXConnection/1048712791:                        User    : iroqueta
+       3(1)(19:35:04.306)GXConnection/1048712791: Creating Java 2 statement cache: Maximum size 100
+       4(1)(19:35:04.310)GXConnection/1048712791: Connected to     : jdbc:sqlite:sample.db
+       5(1)(19:35:04.310)GXConnection/1048712791:                    jdbc:sqlite:sample.db
+       6(1)(19:35:04.311)GXConnection/1048712791: Connection class : org.sqlite.jdbc4.JDBC4Connection
+       7(1)(19:35:04.312)GXConnection/1048712791: Database         : SQLite version 3.36.0
+       8(1)(19:35:04.312)GXConnection/1048712791: Driver           : SQLite JDBC
+       9(1)(19:35:04.313)GXConnection/1048712791: Version          : 3.36.0.3
+      10(1)(19:35:04.314)GXConnection/1048712791: GX DBMS          : com.genexus.db.driver.GXDBMSGxTest@2262b621
+      11(1)(19:35:04.315)GXConnection/1048712791: DataStore        : DEFAULT
+      12(1)(19:35:04.315)GXConnection/1048712791: setAutoCommit - autoCommit = false
+      13(1)(19:35:04.318)GXConnection/1048712791: setTransactionIsolation - level 2
+      14(1)(19:35:04.321)GXConnection/1048712791: prepareStatement - sql = SELECT @@spid
+org.sqlite.SQLiteException: [SQLITE_ERROR] SQL error or missing database (unrecognized token: "@")
+	at org.sqlite.core.DB.newSQLException(DB.java:1030)
+	at org.sqlite.core.DB.newSQLException(DB.java:1042)
+	at org.sqlite.core.DB.throwex(DB.java:1007)
+	at org.sqlite.core.NativeDB.prepare_utf8(Native Method)
+	at org.sqlite.core.NativeDB.prepare(NativeDB.java:137)
+	at org.sqlite.core.DB.prepare(DB.java:257)
+	at org.sqlite.core.CorePreparedStatement.<init>(CorePreparedStatement.java:45)
+	at org.sqlite.jdbc3.JDBC3PreparedStatement.<init>(JDBC3PreparedStatement.java:30)
+	at org.sqlite.jdbc4.JDBC4PreparedStatement.<init>(JDBC4PreparedStatement.java:25)
+	at org.sqlite.jdbc4.JDBC4Connection.prepareStatement(JDBC4Connection.java:35)
+	at org.sqlite.jdbc3.JDBC3Connection.prepareStatement(JDBC3Connection.java:241)
+	at org.sqlite.jdbc3.JDBC3Connection.prepareStatement(JDBC3Connection.java:205)
+	at com.genexus.db.driver.GXConnection.prepareStatement(GXConnection.java:875)
+	at com.genexus.db.driver.PreparedStatementCache.createStatement(PreparedStatementCache.java:77)
+	at com.genexus.db.driver.PreparedStatementCache.getStatement(PreparedStatementCache.java:121)
+	at com.genexus.db.driver.GXConnection.getStatement(GXConnection.java:794)
+	at com.genexus.db.driver.GXConnection.getStatement(GXConnection.java:806)
+	at com.genexus.db.driver.GXDBMSsqlserver.connectionPhysicalId(GXDBMSsqlserver.java:193)
+	at com.genexus.db.driver.GXDBMSGxTest.connectionPhysicalId(GXDBMSGxTest.java:140)
+	at com.genexus.db.driver.GXConnection.getDBMSId(GXConnection.java:1594)
+	at com.genexus.db.driver.GXConnection.<init>(GXConnection.java:276)
+	at com.genexus.db.LocalUserInformation.createConnection(LocalUserInformation.java:171)
+	at com.genexus.db.LocalUserInformation.getConnection(LocalUserInformation.java:79)
+	at com.genexus.db.LocalDBConnectionManager.getConnection(LocalDBConnectionManager.java:41)
+	at com.genexus.specific.java.Application.getConnection(Application.java:159)
+	at com.genexus.db.DefaultConnectionProvider.getConnection(DefaultConnectionProvider.java:13)
+	at com.genexus.db.DataStoreProviderBase.getConnection(DataStoreProviderBase.java:44)
+	at com.genexus.db.DataStoreProviderBase.getConnection(DataStoreProviderBase.java:35)
+	at com.genexus.db.DataStoreProviderBase.getConnection(DataStoreProviderBase.java:12)
+	at com.genexus.db.SentenceProvider.acquireConnection(SentenceProvider.java:12)
+	at com.genexus.db.SentenceProvider.getPreparedStatement(SentenceProvider.java:16)
+	at com.genexus.db.UpdateCursor.preExecute(UpdateCursor.java:32)
+	at com.genexus.db.DataStoreProvider.execute(DataStoreProvider.java:230)
+	at com.genexus.db.DataStoreProvider.execute(DataStoreProvider.java:201)
+	at com.mockdb.ausemockdataaccess.privateExecute(ausemockdataaccess.java:56)
+	at com.mockdb.ausemockdataaccess.execute_int(ausemockdataaccess.java:44)
+	at com.mockdb.ausemockdataaccess.execute(ausemockdataaccess.java:36)
+	at com.genexus.db.driver.TestMockDataAccess.testMockDataAccess(TestMockDataAccess.java:27)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:26)
+	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at org.junit.runners.BlockJUnit4ClassRunner$1.evaluate(BlockJUnit4ClassRunner.java:100)
+	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:366)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:103)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:63)
+	at org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)
+	at org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)
+	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:413)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:252)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:141)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:112)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray(ReflectionUtils.java:189)
+	at org.apache.maven.surefire.booter.ProviderFactory$ProviderProxy.invoke(ProviderFactory.java:165)
+	at org.apache.maven.surefire.booter.ProviderFactory.invokeProvider(ProviderFactory.java:85)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:115)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:75)
+      15(1)(19:35:04.341)Exception: SQLState: null ErrorCode: 1 in 1048712791
+      16(1)(19:35:04.342)           Message : [SQLITE_ERROR] SQL error or missing database (unrecognized token: "@")
+      17(1)(19:35:04.343)           Message : [SQLITE_ERROR] SQL error or missing database (unrecognized token: "@")
+      18(1)(19:35:04.343)GXConnection/1048712791: prepareStatement - sql = INSERT INTO [Transaction1]([Transaction1Id], [Transaction1Nombre]) VALUES(?, ?)
+      19(1)(19:35:04.344)GXConnection/1048712791: prepareStatement - id  = 523211332
+      20(1)(19:35:04.345)GXConnection/1048712791: Preparing new cursor P000R2 free 0 used 0 - INSERT INTO [Transaction1]([Transaction1Id], [Transaction1Nombre]) VALUES(?, ?)
+      21(1)(19:35:04.346)GXPreparedStatement/523211332: setShort - index : 1 value : 1
+      22(1)(19:35:04.346)GXPreparedStatement/523211332: setString - index : 2 value : UNO
+      23(1)(19:35:04.347)GXPreparedStatement/523211332: executeUpdate
+      24(1)(19:35:04.364)GXConnection/1048712791: isClosed
+      25(1)(19:35:04.364)GXConnection/1048712791: prepareStatement - sql = UPDATE [Transaction1] SET [Transaction1Nombre]='UNO UNO'  WHERE [Transaction1Id] = 1
+      26(1)(19:35:04.365)GXConnection/1048712791: prepareStatement - id  = 1594039997
+      27(1)(19:35:04.366)GXConnection/1048712791: Preparing new cursor P000R3 free 1 used 0 - UPDATE [Transaction1] SET [Transaction1Nombre]='UNO UNO'  WHERE [Transaction1Id] = 1
+      28(1)(19:35:04.367)GXPreparedStatement/1594039997: executeUpdate
+      29(1)(19:35:04.370)GXConnection/1048712791: isClosed
+      30(1)(19:35:04.371)GXConnection/1048712791: prepareStatement - sql = SELECT [Transaction1Nombre], [Transaction1Id] FROM [Transaction1] ORDER BY [Transaction1Id] 
+      31(1)(19:35:04.371)GXConnection/1048712791: prepareStatement - id  = 1170788511
+      32(1)(19:35:04.372)GXConnection/1048712791: Preparing new cursor P000R4 free 2 used 0 - SELECT [Transaction1Nombre], [Transaction1Id] FROM [Transaction1] ORDER BY [Transaction1Id] 
+      33(1)(19:35:04.373)GXConnection/1048712791: Warning: setQueryTimeout - seconds:0
+      34(1)(19:35:04.373)GXPreparedStatement/1170788511: executeQuery start timeout 3000
+      35(1)(19:35:04.378)GXPreparedStatement/1170788511: executeQuery - id = com.genexus.db.driver.GXPreparedStatement@45c8d09f - 1110195322
+      36(1)(19:35:04.379)GXResultSet/1110195322: next
+      37(1)(19:35:04.380)GXResultSet/1110195322: getString - index : 1 length : 20
+      38(1)(19:35:04.382)GXResultSet/1110195322: getString - value : UNO UNO             
+      39(1)(19:35:04.383)GXResultSet/1110195322: getShort - index : 2
+      40(1)(19:35:04.384)GXResultSet/1110195322: getShort - value : 1
+      41(1)(19:35:04.384)GXResultSet/1110195322: next
+      42(1)(19:35:04.385)GXResultSet/1110195322: close
+      43(1)(19:35:04.386)GXConnection/1048712791: isClosed
+      44(1)(19:35:04.386)GXConnection/1048712791: prepareStatement - sql = DELETE FROM [Transaction1]  WHERE [Transaction1Id] = 1
+      45(1)(19:35:04.387)GXConnection/1048712791: prepareStatement - id  = 404947798
+      46(1)(19:35:04.389)GXConnection/1048712791: Preparing new cursor P000R5 free 3 used 0 - DELETE FROM [Transaction1]  WHERE [Transaction1Id] = 1
+      47(1)(19:35:04.389)GXPreparedStatement/404947798: executeUpdate
+      48(1)(19:35:04.390)GXConnection/1048712791: isClosed
+      49(1)(19:35:04.391)GXConnection/1048712791: Scanning 0 batch Stmts with pending updates
+      50(1)(19:35:04.392)GXConnection/1048712791: commit
+      51(1)(19:35:04.399)GXConnection/1048712791: close
+      52(1)(19:35:04.400)GXConnection/1048712791: Dropping all cursors. Used :0 free 4
+      53(1)(19:35:04.406)GXConnection/1048712791: close stmt
+      54(1)(19:35:04.407)GXConnection/1048712791: GX: Dropping older cursor free INSERT INTO [Transaction1]([Transaction1Id], [Transaction1Nombre]) VALUES(?, ?)
+      55(1)(19:35:04.408)GXConnection/1048712791: close stmt
+      56(1)(19:35:04.409)GXConnection/1048712791: GX: Dropping older cursor free UPDATE [Transaction1] SET [Transaction1Nombre]='UNO UNO'  WHERE [Transaction1Id] = 1
+      57(1)(19:35:04.410)GXConnection/1048712791: close stmt
+      58(1)(19:35:04.410)GXConnection/1048712791: GX: Dropping older cursor free SELECT [Transaction1Nombre], [Transaction1Id] FROM [Transaction1] ORDER BY [Transaction1Id] 
+      59(1)(19:35:04.411)GXConnection/1048712791: close stmt
+      60(1)(19:35:04.411)GXConnection/1048712791: GX: Dropping older cursor free DELETE FROM [Transaction1]  WHERE [Transaction1Id] = 1
