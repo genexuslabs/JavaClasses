@@ -4,7 +4,6 @@ import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.internet.HttpContext;
 import com.genexus.internet.HttpRequest;
-import com.genexus.webpanels.GXWebObjectBase;
 import com.genexus.webpanels.WebSession;
 import com.genexuscore.genexus.common.*;
 
@@ -38,7 +37,7 @@ public final class GXGridStateHandler {
 	}
 
 	//Cosntructor por java <= 1.7
-	public GXGridStateHandler(ModelContext context, String gridName, String programName, GXWebObjectBase parent, String varsFromStateMethod, String varsToStateMethod) {
+	public GXGridStateHandler(ModelContext context, String gridName, String programName, Object parent, String varsFromStateMethod, String varsToStateMethod) {
 		this(context, gridName, programName);
 		this.varsFromStateMethod = varsFromStateMethod;
 		this.varsToStateMethod = varsToStateMethod;

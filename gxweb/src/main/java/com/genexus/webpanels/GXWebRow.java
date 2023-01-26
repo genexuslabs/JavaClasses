@@ -6,6 +6,7 @@ import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
 import com.genexus.internet.HttpContext;
 import com.genexus.internet.IGxJSONAble;
+import com.genexus.common.interfaces.IGXWebRow;
 
 import json.org.json.IJsonFormattable;
 import json.org.json.JSONArray;
@@ -13,7 +14,7 @@ import json.org.json.JSONException;
 import json.org.json.JSONObject;
 
 
-public class GXWebRow implements IGxJSONAble
+public class GXWebRow implements IGxJSONAble, IGXWebRow
 {
     ModelContext context;
     GXWebGrid _parentGrid;
