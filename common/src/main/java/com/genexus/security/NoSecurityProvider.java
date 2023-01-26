@@ -67,7 +67,9 @@ public class NoSecurityProvider implements SecurityProvider
 		userJson[0] = "";
 	}
 	
-	public void oauthlogout(int remoteHandle, ModelContext context)
+	public void oauthlogout(int remoteHandle, ModelContext context, String[] URL, short[] statusCode)
 	{
+		URL[0] = "";
+		statusCode[0] = -1;
 	}
 }
