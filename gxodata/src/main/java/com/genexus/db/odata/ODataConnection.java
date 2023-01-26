@@ -291,39 +291,7 @@ public class ODataConnection extends ServiceConnection
 		if(handlerFactory != null)
 			client.getConfiguration().setHttpClientFactory(handlerFactory);
 		if(model == null)
-		{
-			// Chequeo que este funcionando con Jackson 2.12.x
-			if(!FromXmlParser.Feature.EMPTY_ELEMENT_AS_NULL.enabledByDefault())
-			{ // Estoy con Jackson 2.12+
-				boolean validOlingo = true;
-				try
-				{
-					Object olingoVersion = client.getConfiguration().getHttpClientFactory().create(HttpMethod.GET, new URI(url)).getParams().getParameter(CoreProtocolPNames.USER_AGENT);
-					if(olingoVersion instanceof String)
-					{
-						String olingoVersionStr = (String)olingoVersion;
-						if(olingoVersionStr.endsWith("4.8.0"))
-						{ // Estoy con Olingo 4.8.0
-							if (!props.getProperty("ignore_empty_element_as_null", "false").equalsIgnoreCase("true") &&
-								!Class.forName("org.apache.olingo.client.core.serialization.ClientODataDeserializerImpl")
-								     .getDeclaredField("FIXED_JACKSON_2_12")
-									 .getBoolean(null)
-								)
-							{
-									validOlingo = false;
-							}
-						}
-					}
-				}catch(Exception e)
-				{
-					validOlingo = false;
-				}
-				if(!validOlingo)
-					LogManager.getLogger(ODataConnection.class).error("Using Olingo 4.8.0 with Jackson 2.12 may yield wrong queries");
-			}
-
 			model = client.getRetrieveRequestFactory().getMetadataRequest(url).execute().getBody();
-		}
 		modelInfo = new ModelInfo(url, model, checkOptimisticConcurrency);
 		modelInfo.handlerFactory = handlerFactory;
 		modelInfo.useChunked = use_chunked;
