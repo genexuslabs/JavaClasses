@@ -25,13 +25,7 @@
 					<groupId>${project.groupId}</groupId>
 					<artifactId>gxclassR</artifactId>
 					<version>${project.version}</version>
-				</dependency>
-		
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>gxcryptocommon</artifactId>
-            <version>${project.version}</version>
-        </dependency>		
+				</dependency>		
 	</dependencies>
 
 	<build>
