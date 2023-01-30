@@ -2725,10 +2725,9 @@ public final class CommonUtil
 		{
 			try
             {
-            	
-				if (objStr.isEmpty())
+				if (objStr.isEmpty() || objStr.equals("null"))
 					objStr ="0";
-				else 
+				else
 				{
 					int i = objStr.indexOf(".") ;
 					if	(i >= 0)
@@ -2748,7 +2747,7 @@ public final class CommonUtil
             }
 			if (className.equals("short") || className.equals("java.lang.Short") || className.equals("[S"))		   
     	    {
-        	    return Short.valueOf(objStr);        
+        	    return Short.valueOf(objStr);
         	}
         	else if (className.equals("byte") || className.equals("java.lang.Byte") || className.equals("[B"))
         	{
@@ -2765,7 +2764,7 @@ public final class CommonUtil
         }
         else if (className.equals("string") || className.indexOf("java.lang.String") != -1)
         {
-            return objStr;
+            return objStr.equals("null") ? null : objStr;
         }
         else if (className.equals("double") || className.equals("java.lang.Double") || className.equals("[D"))
         {

@@ -432,10 +432,7 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 								}
 							}
 							if (setClass != null)
-								if (!currObj.toString().equals("null"))
-									setMethod.invoke(this, new Object[] { convertValueToParmType(currObj, setClass) });
-								else
-									setMethod.invoke(this, new Object[] { convertValueToParmType(null, setClass) });
+								setMethod.invoke(this, new Object[] { convertValueToParmType(currObj, setClass) });
 						}
 					}
 					catch (java.lang.ClassCastException ex)
