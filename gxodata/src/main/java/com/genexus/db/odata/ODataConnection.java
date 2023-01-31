@@ -1,6 +1,5 @@
 package com.genexus.db.odata;
 
-import com.fasterxml.jackson.dataformat.xml.deser.FromXmlParser;
 import com.genexus.ModelContext;
 import com.genexus.db.driver.GXDBMSservice;
 import com.genexus.db.service.ServiceConnection;
@@ -14,7 +13,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.HttpEntityWrapper;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.apache.olingo.client.api.ODataClient;
