@@ -102,8 +102,8 @@
 		<module>gxawsserverless</module>
 		<module>androidreports</module>
         <module>gxqueue</module>
-        <module>gxqueueawssqs</module>
-        <module>gxqueueazure</module>
+        <module>gxqueue-awssqs</module>
+        <module>gxqueue-azure</module>
         <module>gxcloudstorage-common</module>
         <module>gxcloudstorage-awss3</module>
         <module>gxcloudstorage-googlecloudstorage</module>
