@@ -9,6 +9,8 @@ import com.genexus.common.classes.AbstractModelContext;
 import com.genexus.common.interfaces.IClientPreferences;
 import com.genexus.common.interfaces.IPreferences;
 import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 import com.genexus.util.GUIContextNull;
 import com.genexus.util.GXThreadLocal;
 import com.genexus.util.IGUIContext;
@@ -34,17 +36,17 @@ public final class ModelContext extends AbstractModelContext
 	public boolean inErrorHandler = false;
 
     public static IThreadLocal threadModelContext = GXThreadLocal.newThreadLocal();
+	private static final ILogger logger = LogManager.getLogger(ModelContext.class);
  
     public static ModelContext getModelContext()
     {
         ModelContext context = (ModelContext)threadModelContext.get();
-        if(DebugFlag.DEBUG)
-        {
-            if(context == null)
-            {
-                System.err.println(new Date() + " - Cannot find ModelContext for thread " + Thread.currentThread() );
-            }
-        }
+		if(context == null)
+		{
+			if (logger.isDebugEnabled()) {
+				logger.debug(new Date() + " - Cannot find ModelContext for thread " + Thread.currentThread());
+			}
+		}
         return context;
     }
 
@@ -92,6 +94,9 @@ public final class ModelContext extends AbstractModelContext
         }
 
         SpecificImplementation.Application.setContextClassName(this.packageClass);
+
+		if (threadModelContext.get() == null)
+			threadModelContext.set(this);
         try
         {
             this.staticContentBase = getClientPreferences().getWEB_IMAGE_DIR();
@@ -104,8 +109,6 @@ public final class ModelContext extends AbstractModelContext
         }
         if (httpContext != null)
             httpContext.setStaticContentBase(staticContentBase);
-        if (threadModelContext.get() == null)
-            threadModelContext.set(this);
     }
 
     public ModelContext(ModelContext modelContext)

@@ -26,8 +26,16 @@ public class APIObjectFilter extends Filter {
         if (request.isHttpServletRequest() && response.isHttpServletResponse()) {
             IHttpServletRequest httpRequest = request.getHttpServletRequest();
             String path = httpRequest.getRequestURI().substring(httpRequest.getContextPath().length()).substring(1);
-            String urlString = (path.lastIndexOf("/") > -1)? path.substring(0,path.lastIndexOf("/")).toLowerCase():path.toLowerCase();
-            boolean isPath = appPath.contains(urlString);
+            String urlString = path.toLowerCase();
+            boolean isPath = false;
+            for(String appBasePath : appPath)
+            {                
+                if (urlString.startsWith(appBasePath))
+				{
+                    isPath = true;
+					break;					
+				}
+            }     
             if(isPath)
             {
                 String fwdURI = "/rest/" + path;
@@ -79,7 +87,7 @@ public class APIObjectFilter extends Filter {
             }
             else
             {
-                logger.info("API base path invalid.");
+                logger.info("API base path invalid."); 
             }
         } 
         catch (Exception e) {

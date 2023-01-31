@@ -2,21 +2,21 @@ package com.genexus.internet;
 
 import java.io.*;
 import java.util.*;
-import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
+import jakarta.mail.*;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 
 import com.genexus.CommonUtil;
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 
-import javax.mail.internet.MimeBodyPart;
-import javax.activation.*;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.activation.*;
 
 public final class SMTPSessionJavaMail implements GXInternetConstants,ISMTPSession
 {
-	static private boolean DEBUG = GXInternetConstants.DEBUG;
-	
-	static private PrintStream logOutput;
+	public static final ILogger logger = LogManager.getLogger(SMTPSessionJavaMail.class);
 
 	protected String host;
 	protected int port;
@@ -36,21 +36,6 @@ public final class SMTPSessionJavaMail implements GXInternetConstants,ISMTPSessi
 	private Session session;
 	private Transport t;
 	MimeMessage mailMessage;
-
-	static
-	{	
-		if	(DEBUG)
-		{
-			try
-			{
-				logOutput = new PrintStream(new FileOutputStream(new File("_gx_smtp.log"), true));
-			}
-			catch (IOException e)
-			{
-				System.out.println("Can't open SMTP log file smtp.log");
-			}
-		}
-	}
     	
 	public SMTPSessionJavaMail()
 	{
@@ -96,10 +81,9 @@ public final class SMTPSessionJavaMail implements GXInternetConstants,ISMTPSessi
 			props.setProperty("mail.smtp.user", user);
 		}
 		session = Session.getInstance(props);
-		if	(DEBUG)
+		if	(logger.isDebugEnabled())
 		{
 			session.setDebug(true);
-			session.setDebugOut(logOutput);
 		}
 		try
 		{	
@@ -287,11 +271,6 @@ public final class SMTPSessionJavaMail implements GXInternetConstants,ISMTPSessi
 
 	protected void log(String text)
 	{
-		if	(DEBUG)
-			if (logOutput != null)
-			{
-				logOutput.println(text);
-				logOutput.flush();
-			}
+		logger.debug(text);
 	}
 }

@@ -384,7 +384,7 @@ public class LocalUtil
 			currentLocale = new Locale (language, language.toUpperCase());
 		}*/
 
-                String resourceName = "messages." + _language + ".txt";
+                String resourceName = "messages." + _language.toLowerCase() + ".txt";
 
 		if (SpecificImplementation.Application.getModelContextPackageClass() != null)
 		{
@@ -1076,7 +1076,15 @@ public class LocalUtil
 		df.setLenient(false);
 		try
 		{
-			return applyYearLimit( df.parse(date), patternDate + patternTime);
+			Date dt = df.parse(date);
+			if (patternDate.isEmpty())
+			{
+				Calendar calendar = GregorianCalendar.getInstance();
+				calendar.setTime(dt);
+				calendar.set(Calendar.YEAR, 1);
+				dt = calendar.getTime();
+			}
+			return applyYearLimit( dt, patternDate + patternTime);
 		}
 		catch (ParseException e)
 		{
@@ -1974,7 +1982,7 @@ public class LocalUtil
 	{
 		GXSimpleDateFormat dateFormatter;
 
-		if	(CommonUtil.nullDate().equals(value) || CommonUtil.nullDate().equals(CommonUtil.resetTime(value)))
+		if	(CommonUtil.nullDate().equals(value))
 		{
 			if	(PictureFormatter.isTimeInPicture(picture))
 			{

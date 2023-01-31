@@ -226,7 +226,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			log(GXDBDebug.LOG_MAX, "Warning: execute");
 			try
 			{
-				ret = stmt.execute();
+				ret = con.getDBMS().execute(stmt);
 				return ret;
 			}
 			catch (SQLException sqlException)
@@ -243,7 +243,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		{
 			try
 			{
-				ret = stmt.execute();
+				ret = con.getDBMS().execute(stmt);
 				return ret;
 			}
 			catch (SQLException sqlException)
@@ -341,11 +341,11 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			if	(DEBUG)
 			{
 				log(GXDBDebug.LOG_MIN, "executeUpdate");
-				ret = stmt.executeUpdate();
+				ret = con.getDBMS().executeUpdate(stmt);
 			}
 			else
 			{
-				ret = stmt.executeUpdate();
+				ret = con.getDBMS().executeUpdate(stmt);
 			}
 		}
 		catch (SQLException e)
@@ -393,7 +393,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			log(GXDBDebug.LOG_MAX, "setBoolean - index : " + index + " value : " + value);
 			try
 			{
-				if (this instanceof GXCallableStatement && !isUpdateBlobStmt && con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+				if (this instanceof GXCallableStatement && !isUpdateBlobStmt && (con.getDBMS().getId() == GXDBMS.DBMS_ORACLE || con.getDBMS().getId() == GXDBMS.DBMS_DAMENG))
 				{
 					stmt.setObject(index, value, PLSQL_BOOLEAN);
 				}
@@ -410,7 +410,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		}
 		else
 		{
-			if (this instanceof GXCallableStatement && !isUpdateBlobStmt && con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+			if (this instanceof GXCallableStatement && !isUpdateBlobStmt && (con.getDBMS().getId() == GXDBMS.DBMS_ORACLE || con.getDBMS().getId() == GXDBMS.DBMS_DAMENG))
 			{
 				stmt.setObject(index, value, PLSQL_BOOLEAN);
 			}
@@ -615,12 +615,12 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 	public static boolean addSpaceToEmptyVarChar = true;
 	public void setVarchar(int index, String value, int length) throws SQLException
 	{
-		String realValue = (con.getDBMS().getId() == GXDBMS.DBMS_ORACLE) ? CommonUtil.rtrim(value) : value;
+		String realValue = (con.getDBMS().getId() == GXDBMS.DBMS_ORACLE || con.getDBMS().getId() == GXDBMS.DBMS_DAMENG) ? CommonUtil.rtrim(value) : value;
 		realValue  = CommonUtil.left(realValue, length);
 
 		if(realValue.equals("") &&
 		   (addSpaceToEmptyVarChar||!fieldAcceptsNull) &&
-		   con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+			(con.getDBMS().getId() == GXDBMS.DBMS_ORACLE || con.getDBMS().getId() == GXDBMS.DBMS_DAMENG))
 		{
 			realValue = " ";
 		}
@@ -686,10 +686,10 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 	}	
 	private void setLongVarchar2(int index, String value, boolean nls) throws SQLException
 	{
-		String 	realValue  = (con.getDBMS().getId() == GXDBMS.DBMS_ORACLE) ? CommonUtil.rtrim(value) : value;		
+		String 	realValue  = (con.getDBMS().getId() == GXDBMS.DBMS_ORACLE || con.getDBMS().getId() == GXDBMS.DBMS_DAMENG) ? CommonUtil.rtrim(value) : value;
 		if(realValue.equals("") &&
 		   (addSpaceToEmptyVarChar||!fieldAcceptsNull) &&
-		   con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+			(con.getDBMS().getId() == GXDBMS.DBMS_ORACLE || con.getDBMS().getId() == GXDBMS.DBMS_DAMENG))
 		{
 			realValue = " ";
 		}
@@ -704,7 +704,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 				if	( (realLength > 0  && con.getDBMS().useStreamsInLongVarchar()    ) ||
 				      (realLength == 0 && con.getDBMS().useStreamsInNullLongVarchar()))
 				{
-					if(con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+					if(con.getDBMS().getId() == GXDBMS.DBMS_ORACLE || con.getDBMS().getId() == GXDBMS.DBMS_DAMENG)
 					{ // Con Oracle no funciona bien el setAsciiStream con caracteres con tildes o eñes, etc
 					  // así que usamos un setUnicodeStream
 						try
@@ -813,44 +813,12 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			stmt.setCharacterStream(index, new InputStreamReader(new ByteArrayInputStream(unicodeBytes), "UnicodeBigUnmarked"), unicodeBytes.length);
         }
 
-	private void setOracleClob(int index, String value) throws
-      UnsupportedEncodingException, ClassNotFoundException, SecurityException,
-      NoSuchMethodException, NoSuchFieldException, IllegalAccessException,
-      IllegalArgumentException, InvocationTargetException, IOException,
-      SQLException {
-          Class<?> clobClass = Class.forName("oracle.sql.CLOB");
-          Class<?> oracleConn = Class.forName("oracle.jdbc.OracleConnection");
-          Class<?> parmTypes[] = new Class[3];
-          parmTypes[0] = java.sql.Connection.class;
-          parmTypes[1] = Boolean.TYPE;
-          parmTypes[2] = Integer.TYPE;
-          Method createTemporaryMethod = clobClass.getDeclaredMethod("createTemporary", parmTypes);
-          Field durationSessionField = clobClass.getField("DURATION_SESSION");
+	private void setOracleClob(int index, String value) throws SQLException
+	{
+		Clob tempClob = con.getJDBCConnection().createClob();
+		tempClob.setString(1, value);
 
-          Object argList[] = new Object[3];
-          argList[0] = con.getJDBCConnection();
-          argList[1] = Boolean.TRUE;
-          argList[2] = durationSessionField.get(null);
-          Object tempClob = createTemporaryMethod.invoke(null, argList);
-
-          parmTypes = new Class[1];
-          parmTypes[0] = Integer.TYPE;
-          Method openMethod = clobClass.getDeclaredMethod("open", parmTypes);
-          Field modeReadWriteField = clobClass.getField("MODE_READWRITE");
-          argList = new Object[1];
-          argList[0] = modeReadWriteField.get(null);
-          openMethod.invoke(tempClob, argList);
-
-          Method getCharacterOutputStreamMethod = clobClass.getDeclaredMethod("getCharacterOutputStream");
-          Writer tempClobWriter = (Writer) getCharacterOutputStreamMethod.invoke(tempClob);
-          tempClobWriter.write(value);
-          tempClobWriter.flush();
-          tempClobWriter.close();
-
-          Method closeMethod = clobClass.getDeclaredMethod("close");
-          closeMethod.invoke(tempClob);
-
-          stmt.setClob(index, (Clob) tempClob);
+		stmt.setClob(index, tempClob);
 	}
 	
     public void setParameterRT(String name, String value)
@@ -894,7 +862,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		}
 
 
-		if(value.equals("") && con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+		if(value.equals("") && (con.getDBMS().getId() == GXDBMS.DBMS_ORACLE || con.getDBMS().getId() == GXDBMS.DBMS_DAMENG))
 		{
 			value = " ";
 		}
@@ -904,7 +872,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			log(GXDBDebug.LOG_MAX, "setString - index : " + index + " value : " + value);
 			try
 			{
-				if (con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+				if (con.getDBMS().getId() == GXDBMS.DBMS_ORACLE || con.getDBMS().getId() == GXDBMS.DBMS_DAMENG)
 				{
 					stmt.setObject(index, value);
 				}
@@ -921,7 +889,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		}
 		else
 		{
-			if (con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+			if (con.getDBMS().getId() == GXDBMS.DBMS_ORACLE || con.getDBMS().getId() == GXDBMS.DBMS_DAMENG)
 			{
 				stmt.setObject(index, value);
 			}
@@ -1372,13 +1340,16 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 	{
 		if	(fileName != null && !fileName.trim().equals("") && !fileName.toLowerCase().trim().endsWith("about:blank"))
 		{
-			if(con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+			if(con.getDBMS().getId() == GXDBMS.DBMS_ORACLE || con.getDBMS().getId() == GXDBMS.DBMS_DAMENG)
 			{
 				try
 				{
 					File file = new File(fileName);
 					BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file));
-					((GXDBMSoracle7)con.getDBMS()).setBlobData(blob, inputStream, (int) file.length());
+					if(con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
+						((GXDBMSoracle7)con.getDBMS()).setBlobData(blob, inputStream, (int) file.length());
+					else
+						((GXDBMSdameng)con.getDBMS()).setBlobData(blob, inputStream, (int) file.length());
 					inputStream.close();
 				}
 				catch (Exception e)

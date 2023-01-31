@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.genexus</groupId>
 		<artifactId>parent</artifactId>
-		<version>2.5-SNAPSHOT</version>
+		<version>${revision}${changelist}</version>
 	</parent>
 
 	<artifactId>gxcryptocommon</artifactId>
@@ -28,12 +28,24 @@
 			<groupId>org.apache.santuario</groupId>
 			<artifactId>xmlsec</artifactId>
 			<version>2.2.3</version>
+			<exclusions>
+				<exclusion>
+					<groupId>*</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+    	</exclusions>			
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-nop</artifactId>
 			<version>1.7.7</version>
-		</dependency>
+			<exclusions>
+				<exclusion>
+					<groupId>*</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+    	</exclusions>			
+		</dependency>		
 	</dependencies>
 
 	<build>

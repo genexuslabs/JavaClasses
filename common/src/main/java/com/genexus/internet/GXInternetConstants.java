@@ -3,8 +3,6 @@ package com.genexus.internet;
 
 public interface GXInternetConstants
 {
-	static boolean DEBUG = com.genexus.DebugFlag.DEBUG;
-
 	static String CRLFString = System.getProperty("line.separator");
 
 	static String BASE64 = "base64";

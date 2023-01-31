@@ -20,9 +20,14 @@ jobs:
       GIT_REF: ${{ github.ref }}
       GIT_SHA: ${{ github.sha }}
       POM_PATH: ./pom.xml
-      VERSION_SCRIPT: ./github/updatePOMVersion.sh
     
     runs-on: ubuntu-latest
+
+    outputs:
+      MAVEN_VERSION: ${{ steps.buildVariables.outputs.MAVEN_VERSION }}
+      LAST_COMMITTER: ${{ steps.buildVariables.outputs.LAST_COMMITTER }}
+      COMMIT_MESSAGE: ${{ steps.buildVariables.outputs.COMMIT_MESSAGE }}
+      SHOULD_DEPLOY: ${{ steps.buildVariables.outputs.SHOULD_DEPLOY }}
 
     steps:
     - name: Checkout
@@ -34,52 +39,161 @@ jobs:
       uses: actions/setup-java@v1.4.3
       with:
         java-version: 1.9
+        gpg-private-key: ${{ secrets.MAVEN_GPG_BUILDER_PRIVATE_KEY }}
+        gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
     - name: Setup Maven settings
       uses: whelk-io/maven-settings-xml-action@v14
       with:
-        repositories: '[{ "id": "github-genexuslabs", "url": "https://maven.pkg.github.com/genexuslabs/Private-Maven-for-GX",  "releases": { "enabled": "true" }, "snapshots": { "enabled": "true" } }]'
-        servers: '[{ "id": "github-genexuslabs", "username": "genexusbot", "password": "${{ secrets.SECURE_TOKEN }}" }]'
+        repositories: '[{ "id": "github-genexuslabs", "url": "https://maven.pkg.github.com/genexuslabs/*",  "releases": { "enabled": "true" }, "snapshots": { "enabled": "true" } }]'
+        servers: '[
+          { "id": "github-genexuslabs", "username": "genexusbot", "password": "${{ secrets.SECURE_TOKEN }}" },
+          { "id": "azure-devops", "username": "genexuslabs", "password": "${env.AZURE_ARTIFACTS_TOKEN}" },
+          { "id": "ossrh", "username": "${env.MAVEN_USERNAME}", "password": "${env.MAVEN_PASSWORD}" },
+          { "id": "gpg.passphrase", "passphrase": "${env.MAVEN_GPG_PASSPHRASE}" }
+        ]'
 
     - name: Calculate build variables
       id: buildVariables
       run: |
-        if ! [[ "$GIT_REF" =~ 'release-.+$' ]]; then
-          CommitNumber=$(git rev-list --count HEAD)
-        else
-          CommitNumber=$(git rev-list --count origin/master..)
-        fi
-
         LastCommitter=$(git log -1 --pretty=format:%an)
         CommitMessage=$(git log -1 --pretty=%B)
 
-        echo "::set-output name=CommitNumber::$CommitNumber"
-        echo "::set-output name=LastCommitter::$LastCommitter"
-        echo "::set-output name=CommitMessage::$CommitMessage"
+        echo "::set-output name=LAST_COMMITTER::$LastCommitter"
+        echo "::set-output name=COMMIT_MESSAGE::$CommitMessage"
 
-    - name: Update POM version
-      id: POMVersion
-      run: |
-        script="$VERSION_SCRIPT"
-        if [ -f "$script" ]; then
-          echo "Executing version script at: $script"
-          sh "$script"
+        currentVersion="$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
+        semVerComponents=( ${currentVersion//-/ } )
+        semVerComponents=${semVerComponents[0]}
+        semVerComponents=( ${semVerComponents//./ } )
+            
+        pomMajorNumber=${semVerComponents[0]}
+        pomMinorNumber=${semVerComponents[1]}
+
+        [[ $(git branch --show-current) ]] && branch="$(git symbolic-ref --short HEAD)" || branch=“DETACHED_HEAD“
+        timestamp=$(date --utc +%Y%m%d%H%M%S)
+
+        SHOULD_DEPLOY='false'
+        SHOULD_DEPLOY_MAVEN_CENTRAL='false'
+        
+        case "$branch" in
+          master)
+            echo "## Is MASTER branch"
+
+            versionChangelist="-stable.$timestamp-SNAPSHOT"
+            SHOULD_DEPLOY='true'
+            ;;
+
+          beta)
+            echo "## Is BETA branch, add +100 to major number"
+
+            pomMajorNumber=$(expr $pomMajorNumber + 100)
+            
+            versionChangelist="-trunk.$timestamp-SNAPSHOT"
+            SHOULD_DEPLOY='true'
+            ;;
+
+          beta-corona)
+            echo "## Is BETA-CORONA branch, use fixed version"
+                
+            pomMajorNumber="116"
+            pomMinorNumber="0"
+            pomPatchNumber="$(git rev-list --count origin/master..)"
+            
+            SHOULD_DEPLOY='true'
+            ;;
+
+          release-*)
+            echo "## Is RELEASE/UPGRADE branch, use pom.xml version modifing patch number"
+
+            pomPatchNumber="$(git rev-list --count origin/master..)"
+
+            SHOULD_DEPLOY='true'
+            SHOULD_DEPLOY_MAVEN_CENTRAL='true'
+            ;;
+
+          *)
+            echo "## Is a feature branch, use pom.xml version as is"
+            ;;
+        esac
+
+        if [ -z "$pomPatchNumber" ]; then
+          newVersion="$pomMajorNumber.$pomMinorNumber"
         else
-          echo 'No version script specified. Will generate packages with the version on the POM file'
+          newVersion="$pomMajorNumber.$pomMinorNumber.$pomPatchNumber"
         fi
 
-        finalPOMVersion=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout --file $POM_PATH)
-        echo "Project version: $finalPOMVersion"
-        echo "::set-output name=finalPOMVersion::$finalPOMVersion"
+        # Add current commit's SHA to pom.xml
+        GIT_HASH=$(git rev-parse HEAD)
+        scmversion="<vcm_hash>$GIT_HASH</vcm_hash>"
+        scmv=$(echo $scmversion | sed 's/\//\\\//g')
+        sed -i "/<\/properties>/ s/.*/        ${scmv}\n&/" pom.xml
+
+        echo "Project version: $newVersion"
+        echo "Version changelist: $versionChangelist"
+
+        MAVEN_VERSION="$newVersion$versionChangelist"
+        echo "Full project version: $MAVEN_VERSION"
+        
+        echo "::set-output name=newVersion::$newVersion"
+        echo "::set-output name=versionChangelist::$versionChangelist"
+        echo "::set-output name=MAVEN_VERSION::$MAVEN_VERSION"
+        echo "::set-output name=SHOULD_DEPLOY::$SHOULD_DEPLOY"
+        echo "::set-output name=SHOULD_DEPLOY_MAVEN_CENTRAL::$SHOULD_DEPLOY_MAVEN_CENTRAL"
 
     - name: Validate build
-      run: mvn -B validate --file $POM_PATH
+      run: mvn -B validate -Drevision=${{ steps.buildVariables.outputs.newVersion }} -Dchangelist=${{ steps.buildVariables.outputs.versionChangelist }} -Dsha1=${{ github.sha }} --file $POM_PATH -P ci-cd
 
     - name: Build
-      run: mvn -B compile --file $POM_PATH
+      run: mvn -B compile -Drevision=${{ steps.buildVariables.outputs.newVersion }} -Dchangelist=${{ steps.buildVariables.outputs.versionChangelist }} -Dsha1=${{ github.sha }} --file $POM_PATH -P ci-cd
 
     - name: Test
-      run: mvn -B test --file $POM_PATH
+      run: mvn -B test -Drevision=${{ steps.buildVariables.outputs.newVersion }} -Dchangelist=${{ steps.buildVariables.outputs.versionChangelist }} -Dsha1=${{ github.sha }} --file $POM_PATH -P ci-cd
 
     - name: Package
-      run: mvn -B package --file $POM_PATH
+      run: mvn -B -DskipTests package -Drevision=${{ steps.buildVariables.outputs.newVersion }} -Dchangelist=${{ steps.buildVariables.outputs.versionChangelist }} -Dsha1=${{ github.sha }} --file $POM_PATH -P ci-cd
+
+    - name: Deploy to Azure Artifacts
+      if: steps.buildVariables.outputs.SHOULD_DEPLOY == 'true'
+      run: mvn -B -DskipTests deploy -Drevision=${{ steps.buildVariables.outputs.newVersion }} -Dchangelist=${{ steps.buildVariables.outputs.versionChangelist }} -Dsha1=${{ github.sha }} -DdeployAtEnd=true --file "$POM_PATH" -P ci-cd -P deploy-to-azure
+      env:
+        AZURE_ARTIFACTS_TOKEN: ${{ secrets.AZURE_ARTIFACTS_TOKEN }}
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_BUILDER_PASSPHRASE }}
+
+    - name: Deploy to Maven Central
+      if: steps.buildVariables.outputs.SHOULD_DEPLOY_MAVEN_CENTRAL == 'true'
+      run: mvn -B -DskipTests deploy -Drevision=${{ steps.buildVariables.outputs.newVersion }} -Dchangelist=${{ steps.buildVariables.outputs.versionChangelist }} -Dsha1=${{ github.sha }} -DdeployAtEnd=true --file "$POM_PATH" -P ci-cd -P deploy-to-maven-central
+      env:
+        MAVEN_USERNAME: ${{ secrets.MAVEN_OSSRH_USERNAME }}
+        MAVEN_PASSWORD: ${{ secrets.MAVEN_OSSRH_TOKEN }}
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_BUILDER_PASSPHRASE }}
+
+  dispatch-build:
+    name: Dispatch build result
+    needs: build
+    if: github.repository_owner == 'GeneXusLabs' && needs.build.outputs.SHOULD_DEPLOY == 'true'
+    
+    runs-on: ubuntu-latest
+
+    concurrency: 
+      group: build-${{ github.ref }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout action
+        uses: actions/checkout@v2
+        with:
+            repository: genexuslabs/dispatch-build-result
+            ref: releases/v2
+            token: ${{ secrets.SECURE_TOKEN }}
+            path: ./tmp/.github/actions/dispatch-build-result
+
+      - name: Dispatch build result
+        uses: ./tmp/.github/actions/dispatch-build-result
+        with:
+          component-name: ${{ github.event.inputs.repository }}
+          branch-ref: ${{ env.GIT_REF }}
+          new-version: ${{ needs.build.outputs.MAVEN_VERSION }}
+          committer: ${{ needs.build.outputs.LAST_COMMITTER }}
+          commit-message: ${{ needs.build.outputs.COMMIT_MESSAGE }}
+          token: ${{ secrets.SECURE_TOKEN }}

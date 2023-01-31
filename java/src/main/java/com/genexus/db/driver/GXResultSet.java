@@ -29,6 +29,7 @@ import com.genexus.db.IGXResultSet;
 import com.genexus.internet.HttpContext;
 import com.genexus.util.GXFile;
 import com.genexus.util.GXServices;
+import com.genexus.db.driver.ResourceAccessControlList;
 
 public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter, IGXResultSet
 {
@@ -280,7 +281,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 			{
 				value = result.getString(columnIndex);
 				if (result.wasNull() || value == null)
-					value = CommonUtil.replicate(" ", length);
+					value = "";
 				else
 					value = String.format(String.format("%%-%ds", length), value);
 
@@ -944,7 +945,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 			if (source != null)
 			{
 				firstByte = source.read(xbuffer);
-				if (con.getDBMS() instanceof GXDBMSoracle7)
+				if (con.getDBMS() instanceof GXDBMSoracle7 || con.getDBMS() instanceof GXDBMSdameng)
 				{
 					secondByte = source.read();
 				}
@@ -957,7 +958,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
               isEmptyBuffer = true;
             }
 
-			if	(result.wasNull() || source == null || firstByte == -1 || (con.getDBMS() instanceof GXDBMSoracle7 && secondByte == -1) || isEmptyBuffer)
+			if	(result.wasNull() || source == null || firstByte == -1 || ((con.getDBMS() instanceof GXDBMSoracle7 || con.getDBMS() instanceof GXDBMSdameng) && secondByte == -1) || isEmptyBuffer)
 			{
 				if(source != null)
 				{
@@ -978,7 +979,7 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 			int bytes_read;
 
 			destination.write(xbuffer, 0, 1);
-			if (con.getDBMS() instanceof GXDBMSoracle7)
+			if (con.getDBMS() instanceof GXDBMSoracle7 || con.getDBMS() instanceof GXDBMSdameng)
 			{
 				destination.write(secondByte);
 			}

@@ -1,9 +1,6 @@
 package com.genexus.db.driver;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Date;
 
 import com.genexus.CommonUtil;
@@ -15,6 +12,21 @@ public class GXDBMShana implements GXDBMS
 	public ResultSet executeQuery(PreparedStatement stmt, boolean hold) throws SQLException
 	{
 		return stmt.executeQuery();
+	}
+
+	public int executeUpdate(PreparedStatement stmt) throws SQLException
+	{
+		return stmt.executeUpdate();
+	}
+
+	public boolean execute(PreparedStatement stmt) throws SQLException
+	{
+		return stmt.execute();
+	}
+
+	public int[] executeBatch(Statement stmt) throws SQLException
+	{
+		return stmt.executeBatch();
 	}
 
 	public boolean isAlive(GXConnection con)
@@ -118,7 +130,7 @@ public class GXDBMShana implements GXDBMS
 
 	public java.util.Date serverDateTime(GXConnection con) throws SQLException
 	{
-		ResultSet rslt = con.getStatement("_ServerDT_", "SELECT NOW()", false).executeQuery();
+		ResultSet rslt = con.getStatement("_ServerDT_", "SELECT CURRENT_TIMESTAMP FROM DUMMY", false).executeQuery();
 
 		rslt.next();
 		Date value = rslt.getTimestamp(1);
@@ -129,7 +141,7 @@ public class GXDBMShana implements GXDBMS
 	
 	public String serverVersion(GXConnection con) throws SQLException
 	{
-		ResultSet rslt = con.getStatement("_ServerVERSION_", "SELECT VERSION()", false).executeQuery();
+		ResultSet rslt = con.getStatement("_ServerVERSION_", "SELECT VERSION FROM M_DATABASE", false).executeQuery();
 		
 		rslt.next();
 		String value = rslt.getString(1);
@@ -142,7 +154,7 @@ public class GXDBMShana implements GXDBMS
 	{
 		try
 		{
-			ResultSet rslt = con.getStatement("_ConnectionID_", "SELECT CONNECTION_ID()", false).executeQuery();
+			ResultSet rslt = con.getStatement("_ConnectionID_", "SELECT CURRENT_CONNECTION FROM DUMMY", false).executeQuery();
 
 			rslt.next();
 			String value = rslt.getString(1);

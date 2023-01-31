@@ -8,6 +8,7 @@ import json.org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.io.*;
+import java.net.URLEncoder;
 import java.text.*;
 import java.util.*;
 
@@ -637,19 +638,37 @@ public final class CommonUtil
 						hour ++;
 					}
 				}
-				return nullDate();
+				hour = 0;
+				return tryNullDateOrTime(year, month, day, hour, minute, second, millisecond);
 			}
 			else
 			{
-				return nullDate();
+				return tryNullDateOrTime(year, month, day, hour, minute, second, millisecond);
 			}
 		}
 		catch (Exception e)
 		{
-			return nullDate();
+			return tryNullDateOrTime(year, month, day, hour, minute, second, millisecond);
 		}
 	}
 
+	private static Date tryNullDateOrTime(int year, int month, int day , int hour , int minute , int second, int millisecond)
+	{
+			if ((year ==1 && month == 1 && day ==1) || (hour == 0 && minute == 0 && second == 0 && millisecond == 0))
+				return nullDate();
+
+			Date tryDate = ymdhmsToT_noYL(1, 1, 1, hour, minute, second, millisecond);
+			if (!tryDate.equals(nullDate()))
+				return tryDate;
+			else
+			{
+				tryDate = ymdhmsToT_noYL(year, month, day, 0, 0, 0, 0);
+				if (!tryDate.equals(nullDate()))
+					return tryDate;
+				else
+					return nullDate();
+			}
+	}
 
 	public static Date newNullDate()
 	{
@@ -1363,12 +1382,21 @@ public final class CommonUtil
 		return (appGregorianCalendar.getTime());
 	}
 
+	public static Date dtadd(Date date, double seconds)
+	{
+		if (seconds % 1 != 0)
+			return dtaddms(date, seconds);
+
+		return dtadd(date, (int)seconds);
+	}
+
 	public static Date dtadd(Date date, int seconds)
 	{
 		if (seconds % SECONDS_IN_DAY == 0)
 		{
 			return dadd(date, seconds / SECONDS_IN_DAY);
 		}
+
 		GregorianCalendar appGregorianCalendar = new GregorianCalendar(defaultTimeZone, defaultLocale);
 		appGregorianCalendar.setTime(date);
 		appGregorianCalendar.add(appGregorianCalendar.SECOND, seconds);
@@ -3192,9 +3220,17 @@ public final class CommonUtil
 			char ch = path.charAt(src);
 			if (ch >= 128  ||  UnsafeChar.get(ch))
 			{
-				buf[dst++] = '%';
-				buf[dst++] = hex_map[(ch & 0xf0) >>> 4];
-				buf[dst++] = hex_map[ch & 0x0f];
+				try
+				{
+					String encoded = URLEncoder.encode( Character.toString(ch), "UTF-8" ).replaceAll("\\+", "%20");
+					for (int i = 0; i < encoded.length(); i++)
+						buf[dst++] = encoded.charAt(i);
+				}
+				catch (UnsupportedEncodingException e)
+				{
+					logger.debug("Error while encoding unsafe char in escapeUnsafeChars: ", e);
+					buf[dst++] = ch;
+				}
 			}
 			else
 				buf[dst++] = ch;

@@ -1,12 +1,8 @@
 package com.genexus.internet;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.Date;
 import java.util.Enumeration;
-import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -17,8 +13,6 @@ import com.genexus.servlet.http.IHttpServletRequest;
 import com.genexus.servlet.http.IHttpServletResponse;
 
 import com.genexus.*;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.BOMInputStream;
 
 import com.genexus.usercontrols.UserControlFactoryImpl;
 import com.genexus.util.Codecs;
@@ -28,6 +22,7 @@ import com.genexus.util.ThemeHelper;
 import com.genexus.webpanels.GXWebObjectBase;
 import com.genexus.webpanels.WebSession;
 
+import com.genexus.webpanels.WebUtils;
 import json.org.json.IJsonFormattable;
 import json.org.json.JSONArray;
 import json.org.json.JSONException;
@@ -170,6 +165,10 @@ public abstract class HttpContext
 
 	private static HashMap<String, Messages> cachedMessages = new HashMap<String, Messages>();
 	private String currentLanguage = null;
+	private Vector<Object> userStyleSheetFiles = new Vector<Object>();
+	private String themekbPrefix;
+	private String themestyleSheet;
+	private String themeurlBuildNumber;
 
 	private boolean isServiceWorkerDefined()
 	{
@@ -442,21 +441,20 @@ public abstract class HttpContext
 		if (cssContent == null)
 		{
 			String path = getRequest().getServletPath().replaceAll(".*/", "") + ".css";
-			try 
+			try(InputStream istream = context.packageClass.getResourceAsStream(path))
 			{
-				InputStream istream = context.packageClass.getResourceAsStream(path);
+
 				if (istream == null)
 				{
 					cssContent = "";
 				}
-				else
-				{
-					BOMInputStream bomInputStream = new BOMInputStream(istream);
-					cssContent = IOUtils.toString(bomInputStream, "UTF-8");
+				else {
+					//BOMInputStream bomInputStream = new BOMInputStream(istream);// Avoid using BOMInputStream because of runtime error (java.lang.NoSuchMethodError: org.apache.commons.io.IOUtils.length([Ljava/lang/Object;)I) issue 94611
+					//cssContent = IOUtils.toString(bomInputStream, "UTF-8");
+					cssContent = PrivateUtilities.BOMInputStreamToStringUTF8(istream);
 				}
 			}
-			catch ( Exception e)
-			{
+			catch ( Exception e) {
 				cssContent = "";
 			}
 			ApplicationContext.getcustomCSSContent().put(getRequest().getServletPath(), cssContent);
@@ -464,7 +462,7 @@ public abstract class HttpContext
 		return cssContent;
 	}
 
-	public void AddThemeStyleSheetFile(String kbPrefix, String styleSheet, String urlBuildNumber)
+	public void CloseStyles()
 	{
 		String cssContent = FetchCustomCSS();
 		boolean bHasCustomContent = ! cssContent.isEmpty();
@@ -473,7 +471,7 @@ public abstract class HttpContext
 			writeTextNL("<style id=\"gx-inline-css\">" + cssContent + "</style>");
 			styleSheets.add(getRequest().getServletPath());
 		}
-		String[] referencedFiles = ThemeHelper.getThemeCssReferencedFiles(PrivateUtilities.removeExtension(styleSheet));
+		String[] referencedFiles = ThemeHelper.getThemeCssReferencedFiles(PrivateUtilities.removeExtension(themestyleSheet));
 		for (int i=0; i<referencedFiles.length; i++)
 		{
 			String file = referencedFiles[i];
@@ -481,17 +479,28 @@ public abstract class HttpContext
 			if (extension != null)
 			{
 				if (extension.equals("css"))
-					AddStyleSheetFile(file, urlBuildNumber, false, bHasCustomContent);
+					AddStyleSheetFile(file, themeurlBuildNumber, false, bHasCustomContent);
 				else if (extension.equals("js"))
-					AddDeferredJavascriptSource(file, urlBuildNumber);
+					AddDeferredJavascriptSource(file, themeurlBuildNumber);
 			}
 		}
-		AddStyleSheetFile(kbPrefix + "Resources/" + getLanguage() + "/" + styleSheet, urlBuildNumber, true, bHasCustomContent);
+		for (Object data : this.userStyleSheetFiles)
+		{
+			String[] sdata = (String[]) data;
+			AddStyleSheetFile(sdata[0], sdata[1], false, false);
+		}
+		AddStyleSheetFile(themekbPrefix + "Resources/" + getLanguage() + "/" + themestyleSheet, themeurlBuildNumber, true, bHasCustomContent);
 	}
 	
 	public void AddThemeStyleSheetFile(String kbPrefix, String styleSheet)
 	{
 		AddThemeStyleSheetFile(kbPrefix, styleSheet, "");
+	}
+	public void AddThemeStyleSheetFile(String kbPrefix, String styleSheet, String urlBuildNumber)
+	{
+		this.themekbPrefix = kbPrefix;
+		this.themestyleSheet = styleSheet;
+		this.themeurlBuildNumber = urlBuildNumber;
 	}
 
 	public void AddStyleSheetFile(String styleSheet)
@@ -502,7 +511,7 @@ public abstract class HttpContext
 	public void AddStyleSheetFile(String styleSheet, String urlBuildNumber)
 	{
 		urlBuildNumber = getURLBuildNumber(styleSheet, urlBuildNumber);
-		AddStyleSheetFile(styleSheet, urlBuildNumber, false);
+		userStyleSheetFiles.add(new String[] { styleSheet, urlBuildNumber });
 	}
 
 	private String getURLBuildNumber(String resourcePath, String urlBuildNumber)
@@ -527,17 +536,28 @@ public abstract class HttpContext
 		if (!styleSheets.contains(styleSheet))
 		{
 			styleSheets.add(styleSheet);
+			String sUncachedURL = oldConvertURL(styleSheet) + urlBuildNumber;
+			String sLayerName = styleSheet.replace("/", "_").replace(".","_");
 			if (!this.getHtmlHeaderClosed() && this.isEnabled)
 			{
 				String sRelAtt = (isDeferred ? "rel=\"preload\" as=\"style\" " : "rel=\"stylesheet\"");
 				if (isGxThemeHidden)
-					writeTextNL("<link id=\"gxtheme_css_reference\" " + sRelAtt + " type=\"text/css\" href=\"" + oldConvertURL(styleSheet) + urlBuildNumber + "\" " + htmlEndTag(HTMLElement.LINK));
+					writeTextNL("<link id=\"gxtheme_css_reference\" " + sRelAtt + " type=\"text/css\" href=\"" + sUncachedURL + "\" " + htmlEndTag(HTMLElement.LINK));
 				else
-					writeTextNL("<link " + sRelAtt + " type=\"text/css\" href=\"" + oldConvertURL(styleSheet) + urlBuildNumber + "\" " + htmlEndTag(HTMLElement.LINK));						
+				{
+					if (getThemeisDSO())
+					{
+						writeTextNL("<style data-gx-href=\""+ sUncachedURL + "\"> @import url(\"" + sUncachedURL + "\") layer(" + sLayerName + ");</style>");
+					}
+					else
+					{
+						writeTextNL("<link " + sRelAtt + " type=\"text/css\" href=\"" + sUncachedURL + "\" " + htmlEndTag(HTMLElement.LINK));
+					}
+				}
 			}
 			else
 			{
-				if (!isGxThemeHidden) this.StylesheetsToLoad.put(styleSheet);
+				if (!isGxThemeHidden) this.StylesheetsToLoad.put(oldConvertURL(styleSheet) + urlBuildNumber);
 			}
 		}
 	}
@@ -881,7 +901,7 @@ public abstract class HttpContext
 			if (_clientId == null || _clientId.equals(""))
 			{
 				_clientId = java.util.UUID.randomUUID().toString();
-				this.setCookie(CLIENT_ID_HEADER, _clientId, "", new Date(Long.MAX_VALUE), "", getHttpSecure());
+				this.setCookie(CLIENT_ID_HEADER, _clientId, "/", new Date(Long.MAX_VALUE), "", getHttpSecure());
 			}
 			this.setClientId(_clientId);
 		}            
@@ -933,7 +953,7 @@ public abstract class HttpContext
 		AddStylesheetsToLoad();
 		if (isSpaRequest())
 		{
-			writeTextNL("<script>gx.ajax.saveJsonResponse(" + getJSONResponse() + ");</script>");
+			writeTextNL("<script>gx.ajax.saveJsonResponse(" + WebUtils.htmlEncode(JSONObject.quote(getJSONResponse()), true) + ");</script>");
 		}
 		else
 		{				
@@ -1468,6 +1488,8 @@ public abstract class HttpContext
 	}
 
 	private String theme = "";
+	private boolean isDSO = false;
+
 	public String getTheme()
 	{
 	    WebSession session = getWebSession();
@@ -1482,9 +1504,18 @@ public abstract class HttpContext
 
 		return theme;
 	}
-	public void setDefaultTheme(String t)
+
+	public boolean getThemeisDSO() {
+		return isDSO;
+	}
+
+	public void setDefaultTheme(String t){
+		setDefaultTheme( t, false);
+	}
+	public void setDefaultTheme(String t, boolean isDSO)
 	{
 		theme = t;
+		this.isDSO = isDSO;
 	}
 	@SuppressWarnings("unchecked")
 	public int setTheme(String t)
@@ -1599,7 +1630,7 @@ public abstract class HttpContext
 				{
 					languageCode=language.toLowerCase();
 				}
-				String resourceName = "messages." + languageCode + ".txt";
+				String resourceName = "messages." + languageCode.toLowerCase() + ".txt";
 				Messages msgs = com.genexus.Messages.getMessages(resourceName, Application.getClientLocalUtil().getLocale());
 				return msgs.getMessage(code);
 			}
@@ -1611,7 +1642,7 @@ public abstract class HttpContext
 			Messages messages = cachedMessages.get(language);
 			if (messages == null) {
 				String languageCode = Application.getClientPreferences().getProperty("language|" + language, "code", Application.getClientPreferences().getProperty("LANGUAGE", "eng"));
-				messages = com.genexus.Messages.getMessages("messages." + languageCode + ".txt", Application.getClientLocalUtil().getLocale());
+				messages = com.genexus.Messages.getMessages("messages." + languageCode.toLowerCase() + ".txt", Application.getClientLocalUtil().getLocale());
 				addCachedLanguageMessage(language, messages);
 			}
 			return messages.getMessage(code);
@@ -1619,6 +1650,16 @@ public abstract class HttpContext
 
 		private synchronized void addCachedLanguageMessage(String language, Messages msg) {
 			cachedMessages.putIfAbsent(language, msg);
+		}
+
+		public int getYearLimit()
+		{
+			return Application.getClientPreferences().getYEAR_LIMIT();
+		}
+
+		public int getStorageTimezone()
+		{
+			return Application.getClientPreferences().getStorageTimezonePty();
 		}
 
 		public String getLanguageProperty(String property)
@@ -1784,7 +1825,8 @@ public abstract class HttpContext
 								{"svg"	, "image/svg+xml"},
 								{"tgz"	, "application/x-compressed"},
 								{"zip"	, "application/x-zip-compressed"},
-								{"gz"	, "application/x-gzip"}
+								{"gz"	, "application/x-gzip"},
+								{"json"	, "application/json"}
 								};
 
 		public boolean willRedirect()

@@ -9,7 +9,6 @@ import json.org.json.*;
 
 import java.io.Serializable;
 import java.util.Iterator;
-import java.util.Hashtable;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -480,7 +479,10 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
                     }
                     else
                     {
-                        gxColl.addBase(currObj);
+						if (gxColl.getElementsType() == java.math.BigDecimal.class)
+							gxColl.addBase(DecimalUtil.stringToDec(jsonArray.getString(i)));
+						else
+                        	gxColl.addBase(currObj);
                     }
                 }
             }

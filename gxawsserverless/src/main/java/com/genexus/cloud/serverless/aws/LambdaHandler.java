@@ -1,33 +1,31 @@
 package com.genexus.cloud.serverless.aws;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.ws.rs.core.Application;
-
+import com.amazonaws.serverless.proxy.RequestReader;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsHttpServletResponse;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletRequest;
+import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
 import com.amazonaws.serverless.proxy.internal.servlet.AwsServletContext;
-import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
-import com.genexus.specific.java.LogManager;
-import com.genexus.webpanels.GXWebObjectStub;
-import org.apache.logging.log4j.Logger;
-import org.glassfish.jersey.server.ResourceConfig;
-
 import com.amazonaws.serverless.proxy.jersey.JerseyLambdaContainerHandler;
 import com.amazonaws.serverless.proxy.model.AwsProxyRequest;
 import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
+import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.genexus.ApplicationContext;
+import com.genexus.cloud.serverless.aws.handler.AwsGxServletResponse;
+import com.genexus.cloud.serverless.aws.handler.LambdaApplicationHelper;
 import com.genexus.diagnostics.core.ILogger;
-import com.genexus.util.IniFile;
-import com.genexus.webpanels.*;
+import com.genexus.specific.java.LogManager;
+import com.genexus.webpanels.GXOAuthAccessToken;
+import com.genexus.webpanels.GXOAuthLogout;
+import com.genexus.webpanels.GXOAuthUserInfo;
+import com.genexus.webpanels.GXWebObjectStub;
+import org.glassfish.jersey.server.ResourceConfig;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-
-import com.amazonaws.serverless.proxy.internal.servlet.AwsProxyHttpServletResponseWriter;
 
 public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyResponse> {
 	private static ILogger logger = null;
@@ -38,44 +36,61 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 	public LambdaHandler() throws Exception {
 		if (LambdaHandler.jerseyApplication == null) {
 			JerseyLambdaContainerHandler.getContainerConfig().setDefaultContentCharset("UTF-8");
-			LambdaHandler.jerseyApplication = ResourceConfig.forApplication(initialize());
+			logger = LogManager.initialize(".", LambdaHandler.class);
+			LambdaHandler.jerseyApplication = ResourceConfig.forApplication(LambdaApplicationHelper.initialize());
 			if (jerseyApplication.getClasses().size() == 0) {
-				String errMsg = "No endpoints found for this application";
-				logger.error(errMsg);
-				throw new Exception(errMsg);
+				logger.error("No HTTP endpoints found for this application");
 			}
 			LambdaHandler.handler = JerseyLambdaContainerHandler.getAwsProxyHandler(LambdaHandler.jerseyApplication);
 		}
 	}
 
-
 	@Override
 	public AwsProxyResponse handleRequest(AwsProxyRequest awsProxyRequest, Context context) {
-		dumpRequest(awsProxyRequest);
+		if (logger.isDebugEnabled()) {
+			dumpRequest(awsProxyRequest);
+		}
 		String path = awsProxyRequest.getPath();
-		awsProxyRequest.setPath(path.replace(BASE_REST_PATH, "/"));
-		handleSpecialMethods(awsProxyRequest);
+		prepareSpecialMethods(awsProxyRequest);
 		dumpRequest(awsProxyRequest);
 
 		logger.debug("Before handle Request");
+
+		awsProxyRequest.setPath(path.replace(BASE_REST_PATH, "/"));
 		AwsProxyResponse response = this.handler.proxy(awsProxyRequest, context);
+
+		//This code should be removed when GAM services get implemented via API Object.
+		if (response.getStatusCode() == 404) {
+			awsProxyRequest.setPath(path);
+			logger.debug("Trying servlet request: " + path);
+			AwsGxServletResponse servletResponse = handleServletRequest(awsProxyRequest, context);
+			if (servletResponse.wasHandled()) {
+				response = servletResponse.getAwsProxyResponse();
+			}
+		}
+
 		int statusCode = response.getStatusCode();
 		logger.debug("After handle Request - Status Code: " + statusCode);
 
-		if (statusCode >= 400 && statusCode <= 599) {
+		if (statusCode >= 404 && statusCode <= 499) {
 			logger.warn(String.format("Request could not be handled (%d): %s", response.getStatusCode(), path));
 		}
 		return response;
 	}
 
-	private void handleSpecialMethods(AwsProxyRequest awsProxyRequest) {
-		if (awsProxyRequest.getPath().startsWith("/gxmulticall")) { //Gxmulticall does not respect queryString standard, so we need to transform.
+	private void prepareSpecialMethods(AwsProxyRequest awsProxyRequest) {
+		String path = awsProxyRequest.getPath();
+
+		if (path.startsWith("/gxmulticall")) { //Gxmulticall does not respect queryString standard, so we need to transform.
 			String parmValue = awsProxyRequest.getQueryString().replace("?", "").replace("=", "");
 			MultiValuedTreeMap<String, String> qString = new MultiValuedTreeMap<>();
 			qString.add("", parmValue);
 			awsProxyRequest.setMultiValueQueryStringParameters(qString);
 		}
 
+		if (awsProxyRequest.getMultiValueHeaders() == null) {
+			return;
+		}
 		// In Jersey lambda context, the Referer Header has a special meaning. So we copy it to another Header.
 		List<String> referer = awsProxyRequest.getMultiValueHeaders().get("Referer");
 		if (referer != null && !referer.isEmpty()) {
@@ -83,13 +98,14 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 		}
 	}
 
-	private AwsProxyResponse handleServletRequest(AwsProxyRequest awsProxyRequest, Context context) {
+	private AwsGxServletResponse handleServletRequest(AwsProxyRequest awsProxyRequest, Context context) {
 		try {
 			GXWebObjectStub servlet = resolveServlet(awsProxyRequest);
 			if (servlet != null) {
 				CountDownLatch latch = new CountDownLatch(0);
-				ServletContext servletContext = new AwsServletContext(null);//AwsServletContext.getInstance(lambdaContext, null);
+				ServletContext servletContext = new AwsServletContext(null);
 				AwsProxyHttpServletRequest servletRequest = new AwsProxyHttpServletRequest(awsProxyRequest, context, null);
+				servletRequest.setAttribute(RequestReader.API_GATEWAY_CONTEXT_PROPERTY, awsProxyRequest.getRequestContext());
 				servlet.init(new ServletConfig() {
 					@Override
 					public String getServletName() {
@@ -114,14 +130,14 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 				AwsHttpServletResponse response = new AwsHttpServletResponse(servletRequest, latch);
 				servletRequest.setServletContext(servletContext);
 				servlet.service(servletRequest, response);
-				return new AwsProxyHttpServletResponseWriter().writeResponse(response, context);
+				return new AwsGxServletResponse(new AwsProxyHttpServletResponseWriter().writeResponse(response, context));
 			} else {
-				return new AwsProxyResponse(404);
+				return new AwsGxServletResponse(new AwsProxyResponse(404));
 			}
 		} catch (Exception e) {
 			logger.error("Error processing servlet request", e);
 		}
-		return new AwsProxyResponse(500);
+		return new AwsGxServletResponse();
 	}
 
 	private GXWebObjectStub resolveServlet(AwsProxyRequest awsProxyRequest) {
@@ -139,31 +155,13 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 				handler = new GXOAuthUserInfo();
 				break;
 			default:
-				logger.error("Could not handle Servlet Path: " + path);
+				logger.debug("Could not handle Servlet Path: " + path);
 		}
 		return handler;
 	}
 
-	private static Application initialize() throws Exception {
-		logger = LogManager.initialize(".", LambdaHandler.class);
-		IniFile config = com.genexus.ConfigFileFinder.getConfigFile(null, "client.cfg", null);
-		String className = config.getProperty("Client", "PACKAGE", null);
-		Class<?> cls;
-		try {
-			cls = Class.forName(className + ".GXApplication");
-			Application app = (Application) cls.newInstance();
-			ApplicationContext appContext = ApplicationContext.getInstance();
-			appContext.setServletEngine(true);
-			appContext.setServletEngineDefaultPath("");
-			com.genexus.Application.init(cls);
-			return app;
-		} catch (Exception e) {
-			logger.error("Failed to initialize App", e);
-			throw e;
-		}
-	}
 
-	private void dumpRequest(AwsProxyRequest awsProxyRequest){
+	private void dumpRequest(AwsProxyRequest awsProxyRequest) {
 		String lineSeparator = System.lineSeparator();
 		String reqData = String.format("Path: %s", awsProxyRequest.getPath()) + lineSeparator;
 		reqData += String.format("Method: %s", awsProxyRequest.getHttpMethod()) + lineSeparator;
@@ -172,3 +170,4 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 		logger.debug(reqData);
 	}
 }
+
