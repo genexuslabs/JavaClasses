@@ -1,8 +1,13 @@
 
 package com.genexus.internet;
 
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
+
 public class GXPOP3Session implements GXInternetConstants
 {
+	public static final ILogger logger = LogManager.getLogger(GXPOP3Session.class);
+
 	private IPOP3Session session;
 
 	private String host;
@@ -10,6 +15,7 @@ public class GXPOP3Session implements GXInternetConstants
 	private String userName;
 	private String password;
 	private short timeout;
+	private String authenticationProtocol;
 
 	private String attachDir;
 	private short newMessages ;
@@ -25,12 +31,13 @@ public class GXPOP3Session implements GXInternetConstants
 	{
 		try
 		{		
-			Class c = Class.forName("javax.mail.Session");
+			Class c = Class.forName("jakarta.mail.Session");
 			session = new POP3SessionJavaMail();
 		}
 		catch(Throwable e)
 		{
 			session = new POP3Session();
+			logger.warn("Using POP3Session legacy implementation");
 		}
 		
 
@@ -40,6 +47,7 @@ public class GXPOP3Session implements GXInternetConstants
 		setUserName("");
 		setPassword("");
 		setTimeout(30);
+		setAuthenticationMethod("");
 
 		errDescription = "";
 	}
@@ -82,6 +90,16 @@ public class GXPOP3Session implements GXInternetConstants
 	public String getPassword()
 	{
 		return password;
+	}
+
+	public void setAuthenticationMethod(String authenticationProtocol)
+	{
+		this.authenticationProtocol = authenticationProtocol;
+	}
+
+	public String getAuthenticationMethod()
+	{
+		return this.authenticationProtocol;
 	}
 
     public void setSecure(short secure)

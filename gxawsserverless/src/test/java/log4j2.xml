@@ -1,21 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="warn">
-  <Properties>
-    <Property name="logPath">logs</Property>
-  </Properties>
-  <Appenders>
-	<Console name="GeneXusDefaultLogger" target="SYSTEM_OUT">
-		<PatternLayout pattern="%p\t%d{ISO8601}\t%r\t%c\t[%t]\t%m%n"/>    
-	</Console>
-	
-  </Appenders>
-  <Loggers>
-    <Root level="OFF">
-    </Root>
-	<!-- For compatibility reasons. All GeneXus Standard Classes log goes to standard output unless Logging Property is enabled -->
-	<logger name="com.genexus" level="WARN" additivity="false">
-		<AppenderRef ref="GeneXusDefaultLogger"/>
-	</logger>
-    
-  </Loggers>
+    <Properties>
+        <Property name="logBaseDir">${main:0:-.}${sys:file.separator}logs${sys:file.separator}</Property>
+
+        <Property name="logFile">${logBaseDir}client.log</Property>
+    </Properties>
+
+    <Appenders>
+        <RollingFile name="RollingFile" fileName="${logFile}" filePattern="${logBaseDir}old${sys:file.separator}app-%d{yyyy-MM-dd-HH}-%i.log.gz">
+            <PatternLayout pattern="%d{ISO8601} [%t] %-5p %c - %m%n"/>
+
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+        </RollingFile>
+
+        <Console name="ConsoleAppender" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{ISO8601} [%t] %-5p %c - %m%n"/>
+
+        </Console>
+
+    </Appenders>
+
+    <Loggers>
+        <Root level="${env:LOG_LEVEL:-INFO}">
+            <AppenderRef ref="${env:LOG_OUTPUT:-ConsoleAppender}"/>
+        </Root>
+        <logger name="com.genexus" level="${env:LOG_LEVEL:-INFO}" additivity="false">
+            <AppenderRef ref="${env:LOG_OUTPUT:-ConsoleAppender}"/>
+        </logger>
+        <!-- User custom Logging !-->
+        <logger name="GeneXusUserLog" level="${env:LOG_LEVEL_USER:-ALL}" additivity="false">
+            <AppenderRef ref="${env:LOG_OUTPUT:-ConsoleAppender}"/>
+        </logger>
+
+    </Loggers>
 </Configuration>

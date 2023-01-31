@@ -6,24 +6,24 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Properties;
 
-import javax.mail.Flags;
-import javax.mail.Folder;
-import javax.mail.Header;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.NoSuchProviderException;
-import javax.mail.Part;
-import javax.mail.Session;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeUtility;
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
+import jakarta.mail.Flags;
+import jakarta.mail.Folder;
+import jakarta.mail.Header;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.NoSuchProviderException;
+import jakarta.mail.Part;
+import jakarta.mail.Session;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeUtility;
 
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.sun.mail.pop3.POP3Folder;
@@ -31,9 +31,7 @@ import com.sun.mail.pop3.POP3Store;
 
 public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
 {
-
-	static private boolean DEBUG = GXInternetConstants.DEBUG;
-	static private PrintStream logOutput;
+	public static final ILogger logger = LogManager.getLogger(POP3SessionJavaMail.class);
 
 	private String user;
 	private String password;
@@ -57,21 +55,6 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
 	Message[] messages;
 	POP3Folder emailFolder;
 
-	static
-	{
-		if	(DEBUG)
-		{
-			try
-			{
-				logOutput = new PrintStream(new FileOutputStream(new File("_gx_pop3.log"), true));
-			}
-			catch (IOException e)
-			{
-				System.out.println("Can't open POP3 log file pop3.log");
-			}
-		}		
-	}
-
 	public POP3SessionJavaMail()
 	{
 	}
@@ -92,14 +75,22 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
 		props.setProperty("mail.pop3.host", pop3Host);
 		props.setProperty("mail.pop3.port", String.valueOf(pop3Port));	
 		props.setProperty("mail.pop3.connectiontimeout", String.valueOf(timeout));
-		props.setProperty("mail.pop3.timeout", String.valueOf(timeout));		
+		props.setProperty("mail.pop3.timeout", String.valueOf(timeout));
+
+		String authMethod = sessionInfo.getAuthenticationMethod();
+		if (!authMethod.isEmpty()) {
+			props.setProperty("mail.pop3.auth.mechanisms", authMethod.toUpperCase());
+			if (authMethod.equalsIgnoreCase("XOAUTH2") && pop3Host.equalsIgnoreCase("outlook.office365.com")) {
+				props.setProperty("mail.pop3.auth.xoauth2.two.line.authentication.format", "true");
+			}
+		}
+
 		props.setProperty("mail.pop3.ssl.enable", String.valueOf(secureConnection));
 		
 		session = Session.getInstance(props);
-		if	(DEBUG)
+		if	(logger.isDebugEnabled())
 		{
 			session.setDebug(true);
-			session.setDebugOut(logOutput);
 		}		
 		try
 		{
@@ -266,12 +257,27 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
   		handlePart(multipart.getBodyPart(i), gxmessage);
     }
   }
+
+  private boolean findContentTypeHeaderStartingWithMessage(Part part) throws MessagingException {
+	  String[] contentTypeHeader = part.getHeader("Content-Type");
+	  int i = 0;
+	  boolean foundOne = false;
+	  while (i < contentTypeHeader.length && !foundOne) {
+		  if (contentTypeHeader[i].toLowerCase().startsWith("message"))
+			  foundOne = true;
+		  else
+			  i++;
+	  }
+	  return foundOne;
+  }
   
   private void handlePart(Part part, GXMailMessage gxmessage) throws MessagingException, IOException 
   {
     String disposition = part.getDisposition();
+
+
     boolean isXForwardedFor = part.getContent() instanceof MimeMessage &&		// Para soportar attachments de mails que llegan a la casilla con el header "X-Forwarded-For"
-		Arrays.stream(part.getHeader("Content-Type")).filter(header -> header.toLowerCase().startsWith("message")).findFirst().orElse(null) != null;
+							  findContentTypeHeaderStartingWithMessage(part);
 
     if (System.getProperties().getProperty("DownloadAllMailsAttachment", null) != null && isXForwardedFor)
 		handlePart((MimeMessage) part.getContent(),gxmessage);
@@ -387,8 +393,6 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
 	
 	private void log(String text)
 	{
-		if	(DEBUG)
-			if (logOutput != null)
-				logOutput.println(text);
+		logger.debug(text);
 	}
 }

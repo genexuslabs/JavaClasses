@@ -5,99 +5,153 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.net.URL;
 
+import com.genexus.db.driver.ResourceAccessControlList;
+import com.genexus.util.GxFileInfoSourceType;
 import com.genexus.util.GXFile;
 import org.apache.logging.log4j.Logger;
 
 public class GxImageUtil {
 	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(GxImageUtil.class);
+	private static int INVALID_CODE = -1;
 
-	private static String getImageAbsolutePath(String imageFile){
-		if (CommonUtil.isUploadPrefix(imageFile)) {
-			return new GXFile(imageFile).getAbsolutePath();
-		}
-		String defaultPath = com.genexus.ModelContext.getModelContext().getHttpContext().getDefaultPath();
-		return imageFile.startsWith(defaultPath)? imageFile : defaultPath + imageFile.replace("/", File.separator);
+	private static InputStream getInputStream(String filePathOrUrl) throws IOException {
+		return getGXFile(filePathOrUrl).getStream();
+	}
+
+	private static BufferedImage createBufferedImageFromURI(String filePathOrUrl) throws IOException
+	{
+		IHttpContext httpContext = com.genexus.ModelContext.getModelContext().getHttpContext();
+		InputStream is = null;
+		try{
+			if (filePathOrUrl.toLowerCase().startsWith("http://") || filePathOrUrl.toLowerCase().startsWith("https://") ||
+				(httpContext.isHttpContextWeb() && filePathOrUrl.startsWith(httpContext.getContextPath())))
+				is = new URL(GXDbFile.pathToUrl( filePathOrUrl, httpContext)).openStream();
+			else
+				is = getGXFile(filePathOrUrl).getStream();
+			return ImageIO.read(is);
+		} catch (IOException e) {
+			log.error("Failed to read image stream: " + filePathOrUrl);
+			throw e;
+		} finally {is.close();}
+	}
+
+	private static GXFile getGXFile(String filePathOrUrl) {
+		String basePath = (com.genexus.ModelContext.getModelContext() != null) ? com.genexus.ModelContext.getModelContext().getHttpContext().getDefaultPath(): "";
+		return new GXFile(basePath, filePathOrUrl, ResourceAccessControlList.Default, GxFileInfoSourceType.Unknown);
 	}
 
 	public static long getFileSize(String imageFile){
-		return new File(getImageAbsolutePath(imageFile)).length();
+		if (!isValidInput(imageFile))
+			return INVALID_CODE;
+
+		return new GXFile(imageFile).getLength();
 	}
 
 	public static int getImageHeight(String imageFile) {
+		if (!isValidInput(imageFile))
+			return INVALID_CODE;
+
 		try {
-			BufferedImage image = ImageIO.read(new File(getImageAbsolutePath(imageFile)));
-			return image.getHeight();
+			return createBufferedImageFromURI(imageFile).getHeight();
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			log.error("getImageHeight " + imageFile + " failed" , e);
-			return 0;
 		}
+		return INVALID_CODE;
+	}
+
+	private static boolean isValidInput(String imageFile) {
+		boolean isValid =  imageFile != null && imageFile.length() > 0;
+		if (!isValid) {
+			log.debug("Image Api - FileName cannot be empty");
+		}
+		return isValid;
 	}
 
 	public static int getImageWidth(String imageFile) {
+		if (!isValidInput(imageFile))
+			return INVALID_CODE;
+
 		try {
-			BufferedImage image = ImageIO.read(new File(getImageAbsolutePath(imageFile)));
-			return image.getWidth();
+			return createBufferedImageFromURI(imageFile).getWidth();
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			log.error("getImageWidth " + imageFile + " failed" , e);
-			return 0;
 		}
+		return INVALID_CODE;
 	}
 
-	public static String crop(String imageFile, int x, int y, int width, int height){
+	public static String crop(String imageFile, int x, int y, int width, int height) {
+		if (!isValidInput(imageFile))
+			return "";
+
 		try {
-			String absolutePath = getImageAbsolutePath(imageFile);
-			BufferedImage image = ImageIO.read(new File(absolutePath));
-			BufferedImage cropedImage = image.getSubimage(x, y, width, height);
-			ImageIO.write(cropedImage, CommonUtil.getFileType(absolutePath), new FileOutputStream(absolutePath));
+			BufferedImage image = createBufferedImageFromURI(imageFile);
+			BufferedImage croppedImage = image.getSubimage(x, y, width, height);
+			writeImage(croppedImage, imageFile);
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			log.error("crop " + imageFile + " failed" , e);
 		}
 		return imageFile;
 	}
 
-	public static String flipHorizontally(String imageFile){
+	private static void writeImage(BufferedImage croppedImage, String destinationFilePathOrUrl) throws IOException {
+		try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
+			ImageIO.write(croppedImage, CommonUtil.getFileType(destinationFilePathOrUrl), outStream);
+			try (ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray())) {
+				GXFile file = getGXFile(destinationFilePathOrUrl);
+				file.create(inStream, true);
+				file.close();
+			}
+		}
+	}
+
+	public static String flipHorizontally(String imageFile) {
+		if (!isValidInput(imageFile))
+			return "";
+
 		try {
-			String absolutePath = getImageAbsolutePath(imageFile);
-			BufferedImage image = ImageIO.read(new File(absolutePath));
+			BufferedImage image = createBufferedImageFromURI(imageFile);
 			AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
 			tx.translate(-image.getWidth(null), 0);
 			AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-			BufferedImage flipedImage = op.filter(image, null);
-			ImageIO.write(flipedImage, CommonUtil.getFileType(absolutePath), new FileOutputStream(absolutePath));
+			BufferedImage flippedImage = op.filter(image, null);
+			writeImage(flippedImage, imageFile);
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			log.error("flip horizontal " + imageFile + " failed" , e);
 		}
 		return imageFile;
 	}
 
-	public static String flipVertically(String imageFile){
+	public static String flipVertically(String imageFile) {
+		if (!isValidInput(imageFile))
+			return "";
+
 		try {
-			String absolutePath = getImageAbsolutePath(imageFile);
-			BufferedImage image = ImageIO.read(new File(absolutePath));
+			BufferedImage image = createBufferedImageFromURI(imageFile);
 			AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
 			tx.translate(0, -image.getHeight(null));
 			AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-			BufferedImage flipedImage = op.filter(image, null);
-			ImageIO.write(flipedImage, CommonUtil.getFileType(absolutePath), new FileOutputStream(absolutePath));
+			BufferedImage flippedImage = op.filter(image, null);
+			writeImage(flippedImage, imageFile);
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			log.error("flip vertical " + imageFile + " failed" , e);
 		}
 		return imageFile;
 	}
 
-	public static String resize(String imageFile, int width, int height, boolean keepAspectRatio){
+	public static String resize(String imageFile, int width, int height, boolean keepAspectRatio) {
+		if (!isValidInput(imageFile))
+			return "";
+
 		try {
-			String absolutePath = getImageAbsolutePath(imageFile);
-			BufferedImage image = ImageIO.read(new File(absolutePath));
+			BufferedImage image = createBufferedImageFromURI(imageFile);
 			if (keepAspectRatio) {
 				double imageHeight = image.getHeight();
 				double imageWidth = image.getWidth();
@@ -112,34 +166,37 @@ public class GxImageUtil {
 			Graphics2D g2d = resizedImage.createGraphics();
 			g2d.drawImage(image, 0, 0, width, height, null);
 			g2d.dispose();
-			ImageIO.write(resizedImage, CommonUtil.getFileType(absolutePath), new FileOutputStream(absolutePath));
+			writeImage(resizedImage, imageFile);
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			log.error("resize " + imageFile + " failed" , e);
 		}
 		return imageFile;
 	}
 
-	public static String scale(String imageFile, short percent){
+	public static String scale(String imageFile, short percent) {
+		if (!isValidInput(imageFile))
+			return "";
+
 		try {
-			String absolutePath = getImageAbsolutePath(imageFile);
-			BufferedImage image = ImageIO.read(new File(absolutePath));
+			BufferedImage image = createBufferedImageFromURI(imageFile);
 			imageFile = resize(imageFile, image.getWidth() * percent / 100, image.getHeight() * percent / 100,true);
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			log.error("scale " + imageFile + " failed" , e);
 		}
 		return imageFile;
 	}
 
-	public static String rotate(String imageFile, short angle){
+	public static String rotate(String imageFile, short angle) {
+		if (!isValidInput(imageFile))
+			return "";
 		try {
-			String absolutePath = getImageAbsolutePath(imageFile);
-			BufferedImage image = ImageIO.read(new File(absolutePath));
+			BufferedImage image = createBufferedImageFromURI(imageFile);
 			BufferedImage rotatedImage = rotateImage(image, angle);
-			ImageIO.write(rotatedImage, CommonUtil.getFileType(absolutePath), new FileOutputStream(absolutePath));
+			writeImage(rotatedImage, imageFile);
 		}
-		catch (IOException e) {
+		catch (Exception e) {
 			log.error("rotate " + imageFile + " failed" , e);
 		}
 		return imageFile;

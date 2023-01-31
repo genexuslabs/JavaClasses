@@ -2,6 +2,7 @@ package com.genexus.webpanels;
 
 import java.util.Enumeration;
 
+import com.genexus.db.UserInformation;
 import com.genexus.servlet.ServletException;
 import com.genexus.servlet.http.ICookie;
 import com.genexus.servlet.http.HttpServlet;
@@ -18,8 +19,6 @@ import com.genexus.security.GXSecurityProvider;
 public abstract class GXWebObjectStub extends HttpServlet
 {
 	public static ILogger logger = null;
-
-	private static final boolean DEBUG       = DebugFlag.DEBUG;
 
 	protected abstract void doExecute(HttpContext context) throws Exception;
 	protected abstract void init(HttpContext context) throws Exception;
@@ -46,7 +45,11 @@ public abstract class GXWebObjectStub extends HttpServlet
 	{
 		this.remoteHandle = remoteHandle;
 		this.context      = context;
-		localUtil    	  = Application.getConnectionManager().createUserInformation(Namespace.getNamespace(context.getNAME_SPACE())).getLocalUtil();
+		UserInformation ui = Application.getConnectionManager().getUserInformationNoException(remoteHandle);
+		if (ui == null)
+			localUtil    	  = Application.getConnectionManager().createUserInformation(Namespace.getNamespace(context.getNAME_SPACE())).getLocalUtil();
+		else
+			localUtil = ui.getLocalUtil();
 	}
 
 	private void dumpRequestInfo(HttpContext httpContext)
@@ -95,7 +98,7 @@ public abstract class GXWebObjectStub extends HttpServlet
 				Application.init(gxcfgClass);
 			}
 			httpContext = new HttpContextWeb(method, req, res, getWrappedServletContext());
-			if (DEBUG)
+			if (logger.isDebugEnabled())
 				dumpRequestInfo(httpContext);
 			boolean useAuthentication = IntegratedSecurityEnabled();
 			if (!useAuthentication)
@@ -201,7 +204,7 @@ public abstract class GXWebObjectStub extends HttpServlet
 			if (!res.isCommitted())
 				res.reset();
 			logger.error("Web Execution Error", e);
-			if (DEBUG && httpContext != null)
+			if (logger.isDebugEnabled() && httpContext != null)
 				dumpRequestInfo(httpContext);
 			throw new ServletException(com.genexus.PrivateUtilities.getStackTraceAsString(e));
 		}

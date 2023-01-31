@@ -189,7 +189,8 @@ public class DynamicExecute
 		return true;
 	}
 
-	private final static String METHOD_EXECUTE = "execute"; // El m�todo a ejecutar en la clase
+	public final static String METHOD_EXECUTE = "execute"; // Method to Execute for entry points in GXWebProcedure.
+
 	public static boolean dynamicExecute(ModelContext context, int handle, Class caller, String sPackage, String sPgmName, Object[] params)
 	{
 		String pgmName = getDynamicPgmName(caller, sPackage, sPgmName);
@@ -198,7 +199,7 @@ public class DynamicExecute
 
 	public static boolean dynamicExecute(ModelContext context, int handle, Class caller, String className, Object[] params)
 	{
-		Object [] callingParams = new Object[params.length]; // Contiene el verdadero array a pasarle a la clase
+		Object [] callingParams = new Object[params.length];
 		boolean [] needToUpdateParams = new boolean[params.length]; // Indica si hay que actualizar el array de parametros(params) al terminar la invocaci�n del m�todo. Solo se deben actualizar los parametros que en destino son 'arrays', que son los que pueden sufrir modificaci�n
 
 		// Primero obtengo la clase a ejecutar
@@ -437,9 +438,7 @@ nextMethod:
 		}
 		catch (java.lang.reflect.InvocationTargetException e)
 		{
-			//Application.printWarning("java.lang.reflect.InvocationTargetException Can't execute dynamic call " + className + " - " + e.getTargetException().getMessage(), e);
-			//return false;
-			throw new RuntimeException("java.lang.reflect.InvocationTargetException Can't execute dynamic call " + className + " - " + e.getTargetException().getMessage());
+			throw new RuntimeException("java.lang.reflect.InvocationTargetException Can't execute dynamic call " + className + " - " + e.getTargetException().getMessage(), e);
 		}
 		catch (InstantiationException e)
 		{

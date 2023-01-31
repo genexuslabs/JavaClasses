@@ -63,5 +63,5 @@ public interface IHttpContext {
 	boolean isHttpContextNull();
 	boolean isHttpContextWeb();
 
-
+	String getContextPath();
 }
