@@ -672,4 +672,10 @@ public abstract class GXWebObjectBase extends GXRestServiceWrapper implements IE
 		if(dbgInfo != null)
 			dbgInfo.trkRng(lineNro, colNro, lineNro2, colNro2);
 	}
+
+	protected void callWebObject(String url)
+	{
+		httpContext.wjLoc = url;
+	}
+
 }
