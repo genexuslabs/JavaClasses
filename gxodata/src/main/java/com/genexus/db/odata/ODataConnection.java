@@ -40,7 +40,7 @@ import java.util.function.Function;
 
 public class ODataConnection extends ServiceConnection
 {
-	private static final String GXODATA_VERSION = "1.0";
+	private static final String GXODATA_VERSION = "1.1";
 
     ODataClient client;
     private ModelInfo modelInfo;
