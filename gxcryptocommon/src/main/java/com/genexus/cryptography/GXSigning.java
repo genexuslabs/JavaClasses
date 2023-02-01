@@ -13,6 +13,7 @@ import com.genexus.cryptography.exception.SignatureException;
 import com.genexus.cryptography.signing.IPkcsSign;
 import com.genexus.cryptography.signing.standards.PKCS1Signature;
 import com.genexus.cryptography.signing.standards.PKCS7Signature;
+import com.genexus.cryptography.Utils.PKCSStandard;
 
 public class GXSigning {
 
@@ -26,10 +27,6 @@ public class GXSigning {
 	private Boolean isDirty;
 	private Boolean _validateCertificates;
 	private PKCSStandard _standard;
-
-	public enum PKCSStandard {
-		PKCS1, PKCS7
-	};
 
 	public GXSigning() {
 		isDirty = true;
