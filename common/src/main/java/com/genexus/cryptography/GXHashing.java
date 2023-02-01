@@ -4,8 +4,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.genexus.cryptography.hashing.IGXHashing;
 import com.genexus.cryptography.hashing.KeyedHashProvider;
 import com.genexus.cryptography.hashing.MessageDigestProvider;
@@ -45,13 +43,13 @@ public class GXHashing {
         initialize();
         if (!anyError()) {
             boolean keyHashAlgorithm = _hash instanceof KeyedHashProvider;
-            if (keyHashAlgorithm && StringUtils.isBlank(key))
+            if (keyHashAlgorithm && isBlank(key))
             {
                 setError(4);
             }
             else
             {
-                if (!keyHashAlgorithm && !StringUtils.isBlank(key))
+                if (!keyHashAlgorithm && !isBlank(key))
                 {
                     setError(3);
                 }
@@ -120,4 +118,10 @@ public class GXHashing {
     public String getErrDescription() {
         return _lastErrorDescription;
     }
+    
+    private boolean isBlank(String s)
+	{
+		return (s == null || s.trim().length() == 0);
+	}
+    
 }
