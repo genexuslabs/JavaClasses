@@ -13,7 +13,7 @@
     <artifactId>gxcloudstorage-azureblob</artifactId>
     <name>GeneXus Azure Blob Cloud Storage</name>
 
-	<dependencies>
+    <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>gxclassR</artifactId>
@@ -24,10 +24,16 @@
             <artifactId>gxcloudstorage-common</artifactId>
             <version>${project.version}</version>
         </dependency>
-		<dependency>
-			<groupId>com.microsoft.azure</groupId>
-			<artifactId>azure-storage</artifactId>
-			<version>4.4.0</version>
-		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-storage</artifactId>
+            <version>8.6.6</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.microsoft.azure</groupId>
+                    <artifactId>azure-keyvault-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
 </project>
