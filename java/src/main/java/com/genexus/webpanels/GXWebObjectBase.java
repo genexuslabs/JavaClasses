@@ -678,4 +678,12 @@ public abstract class GXWebObjectBase extends GXRestServiceWrapper implements IE
 		httpContext.wjLoc = url;
 	}
 
+
+	public void popup(String url)
+	{
+	}
+
+	public void popup(String url, Object[] returnParms)
+	{
+	}
 }
