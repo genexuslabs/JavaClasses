@@ -71,8 +71,13 @@
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-server</artifactId>
             <version>${jersey.javax.version}</version>
-        </dependency>        
+        </dependency>
 
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+            <version>3.19.2</version>
+        </dependency>
     </dependencies>
 
     <build>

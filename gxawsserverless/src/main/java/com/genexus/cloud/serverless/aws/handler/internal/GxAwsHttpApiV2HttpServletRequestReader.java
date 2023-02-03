@@ -25,7 +25,7 @@ public class GxAwsHttpApiV2HttpServletRequestReader extends RequestReader<HttpAp
 		// clean out the request path based on the container config
 		request.setRawPath(stripBasePath(request.getRawPath(), config));
 
-		AwsHttpApiV2ProxyHttpServletRequest servletRequest = new AwsHttpApiV2ProxyHttpServletRequest(request, lambdaContext, securityContext, config);
+		GxAwsHttpApiV2ProxyHttpServletRequest servletRequest = new GxAwsHttpApiV2ProxyHttpServletRequest(request, lambdaContext, securityContext, config);
 
 		AwsProxyRequestContext rContext = new AwsProxyRequestContext();
 		rContext.setRequestId(request.getRequestContext().getRequestId());
