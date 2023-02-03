@@ -27,7 +27,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyResponse> {
+public class LambdaHandler implements RequestHandler<AwsProxyHttpServletRequest, AwsProxyResponse> {
 	private static ILogger logger = null;
 	public static JerseyLambdaContainerHandler<AwsProxyRequest, AwsProxyResponse> handler = null;
 	private static ResourceConfig jerseyApplication = null;
@@ -168,6 +168,11 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 		reqData += String.format("QueryString: %s", awsProxyRequest.getQueryString()) + lineSeparator;
 		reqData += String.format("Body: %sn", awsProxyRequest.getBody()) + lineSeparator;
 		logger.debug(reqData);
+	}
+
+	@Override
+	public AwsProxyResponse handleRequest(AwsProxyHttpServletRequest input, Context context) {
+		return null;
 	}
 }
 
