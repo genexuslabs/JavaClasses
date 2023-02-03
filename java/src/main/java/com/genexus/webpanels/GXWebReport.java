@@ -24,6 +24,7 @@ public abstract class GXWebReport extends GXWebProcedure
    	protected int gxYPage;
    	protected int Gx_page;
    	protected String Gx_out = ""; // Esto est� asi porque no me pude deshacer de una comparacion contra Gx_out antes del ask.
+	protected String filename;
 
 	public GXWebReport(HttpContext httpContext)
 	{
@@ -45,7 +46,8 @@ public abstract class GXWebReport extends GXWebProcedure
 	protected void preExecute()
 	{
 		httpContext.setContentType("application/pdf");
-		httpContext.getResponse().addHeader("content-disposition", "inline; filename=" + getClass().getSimpleName() + ".pdf");
+		String outputFileName = filename!=null ? filename : getClass().getSimpleName();
+		httpContext.getResponse().addHeader("content-disposition", "inline; filename=" + outputFileName + ".pdf");
 		httpContext.setStream();
 
 		// Tiene que ir despues del setStream porque sino el getOutputStream apunta
@@ -53,6 +55,9 @@ public abstract class GXWebReport extends GXWebProcedure
                  ((PDFReportItext) reportHandler).setOutputStream(httpContext.getOutputStream());
 	}
 
+	protected void setOutputFileName(String outputFileName){
+		filename = outputFileName;
+	}
 	private void initValues()
 	{
    		Gx_line = 0;
