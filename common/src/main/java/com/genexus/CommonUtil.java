@@ -1837,7 +1837,7 @@ public final class CommonUtil
 		synchronized (cal)
 		{
 			cal.setTime(date);
-			return (byte) cal.get(Calendar.DAY_OF_WEEK);
+			return (byte) (date.equals(nullDate) ? 0 : cal.get(Calendar.DAY_OF_WEEK));
 		}
 	}
 
