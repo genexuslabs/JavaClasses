@@ -46,8 +46,6 @@ public abstract class GXWebReport extends GXWebProcedure
 	protected void preExecute()
 	{
 		httpContext.setContentType("application/pdf");
-		String outputFileName = filename!=null ? filename : getClass().getSimpleName();
-		httpContext.getResponse().addHeader("content-disposition", "inline; filename=" + outputFileName + ".pdf");
 		httpContext.setStream();
 
 		// Tiene que ir despues del setStream porque sino el getOutputStream apunta
@@ -103,6 +101,8 @@ public abstract class GXWebReport extends GXWebProcedure
 	{
 		int x[] = {gxXPage};
 		int y[] = {gxYPage};
+		String outputFileName = filename!=null ? filename : getClass().getSimpleName();
+		httpContext.getResponse().addHeader("content-disposition", "inline; filename=" + outputFileName + ".pdf");
 
 		getPrinter().GxRVSetLanguage(localUtil._language);
       	boolean ret = getPrinter().GxPrintInit(output, x, y, iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
