@@ -1,12 +1,22 @@
 package com.genexus;
 
+import com.genexus.specific.java.Connect;
+import com.genexus.specific.java.LogManager;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class TestCommonUtil {
 
+	private void initialize()
+	{
+		Connect.init();
+		LogManager.initialize(".");
+	}
+
 	@Test
 	public void testFormat() {
+		initialize();
+
 		// Test case 1: Pass in a string with no parameter markers
 		String value = "Hello world";
 		String expectedResult = "Hello world";
@@ -71,6 +81,12 @@ public class TestCommonUtil {
 		value = "sample text %1%%2%%3%%4%%5 sample text";
 		expectedResult = "sample text 10%10%10%10%10 sample text";
 		result = CommonUtil.format(value, "10","10","10", "10", "10", "", "", "", "");
+		Assert.assertEquals(expectedResult, result);
+
+		// Test case 11: Pass in a string with a parameter marker that should be ignored
+		value = "sample text //%1 sample text";
+		expectedResult = "sample text %1 sample text";
+		result = CommonUtil.format(value, "10","","", "", "", "", "", "", "");
 		Assert.assertEquals(expectedResult, result);
 	}
 
