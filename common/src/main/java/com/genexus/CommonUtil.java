@@ -2322,54 +2322,47 @@ public final class CommonUtil
 		}
 		return false;
 	}
-	public static String format(String value, String v1, String v2, String v3, String v4, String v5, String v6, String v7, String v8, String v9)
-	{
-		String[] vs = {v1, v2, v3, v4, v5, v6, v7, v8, v9};
-		StringBuffer stringBuilder = new StringBuffer();
-		if (value != null && !value.equals(""))
-		{
-			StringTokenizer tokenizer = new StringTokenizer(value, "%", false);
-			int lastIndex = 0;
-			int index = 0;
-			int idx = 0;
-			while((index = value.indexOf('%', lastIndex)) != -1)
-			{
-				if(index > 0 && value.charAt(index - 1) == '\\')
-			    {
-					stringBuilder.append(value.substring(lastIndex, index-1));
-					stringBuilder.append("%");
-					lastIndex = index + 1;
-				}
-				else
-				{
-					try
-					{
-						stringBuilder.append(value.substring(lastIndex, index));
-						lastIndex = index + 2;
-						stringBuilder.append(vs[Integer.parseInt("" + value.charAt(index+1))-1]);
-					}catch(NumberFormatException e)
-					{ // Si el value tiene algo tipo %a, dejo el %a
-						stringBuilder.append("%").append(value.charAt(index+1));
-					}catch(StringIndexOutOfBoundsException e)
-					{ // Si el value termina con un %, lo ignoro
-						 lastIndex--;
-						 stringBuilder.append("%");
+public static String format(String value, String v1, String v2, String v3, String v4, String v5, String v6, String v7, String v8, String v9) {
+		StringBuilder sb = new StringBuilder();
+		String[] values = {v1, v2, v3, v4, v5, v6, v7, v8, v9};
+		boolean inPlaceholder = false;
+		String placeholder = "";
+		for (int i = 0; i < value.length(); i++) {
+			char c = value.charAt(i);
+			if (inPlaceholder) {
+				if (Character.isDigit(c))
+					placeholder += c;
+				else {
+					if (!placeholder.isEmpty()) {
+						int num = Integer.parseInt(placeholder);
+						if (num > 0 && num <= 9)
+							sb.append(values[num - 1]);
+						else
+							sb.append("%" + placeholder);
 					}
+					inPlaceholder = false;
+					placeholder = "";
+					sb.append(c);
 				}
+			} else if (c == '\\') {
+				i++;
+				if (i < value.length())
+					sb.append(value.charAt(i));
+			} else if (c == '%')
+				inPlaceholder = true;
+			else
+				sb.append(c);
+		}
+		if (inPlaceholder) {
+			if (!placeholder.isEmpty()) {
+				int num = Integer.parseInt(placeholder);
+				if (num > 0 && num <= 9)
+					sb.append(values[num - 1]);
+				else
+					sb.append("%" + placeholder);
 			}
-			stringBuilder.append(value.substring(lastIndex));
 		}
-
-		String res = stringBuilder.toString();
-		if (value!=null && res.equals(value))
-		{
-			 //Parameters format {0}, {1}, ...
-			 Object[] args = new Object[] {v1, v2, v3, v4, v5, v6, v7, v8, v9};
-			 MessageFormat form = new MessageFormat(res);
-			 res = form.format(args);
-		}
-
-		return res;
+		return sb.toString();
 	}
 
 	public static String getFileName( String sFullFileName)
