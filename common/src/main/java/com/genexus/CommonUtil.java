@@ -1834,11 +1834,13 @@ public final class CommonUtil
 
 	public static byte dow(Date date)
 	{
+		if	(date == null || date.equals(nullDate()))
+			return 0;
 		Calendar cal = getCalendar();
 		synchronized (cal)
 		{
 			cal.setTime(date);
-			return (byte) (date.equals(nullDate) ? 0 : cal.get(Calendar.DAY_OF_WEEK));
+			return (byte) cal.get(Calendar.DAY_OF_WEEK);
 		}
 	}
 
