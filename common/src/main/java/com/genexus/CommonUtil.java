@@ -2768,7 +2768,7 @@ public static String format(String value, String v1, String v2, String v3, Strin
         {
             try
             {
-            	if (objStr.isEmpty())
+            	if (objStr.isEmpty() || objStr.equals("null"))
             		objStr = "0";                	
                 return Double.valueOf(objStr);
             }
@@ -2783,7 +2783,7 @@ public static String format(String value, String v1, String v2, String v3, Strin
         {
             try
             {
-            	if (objStr.isEmpty())
+            	if (objStr.isEmpty() || objStr.equals("null"))
             		objStr = "0";                	
                 return Float.valueOf(objStr);
             }
@@ -2798,7 +2798,7 @@ public static String format(String value, String v1, String v2, String v3, Strin
         {
             try
             {
-                return Boolean.valueOf(objStr);
+                return objStr.equals("null") ? false : Boolean.valueOf(objStr);
             }
             catch(Exception e)
             {
@@ -2811,7 +2811,7 @@ public static String format(String value, String v1, String v2, String v3, Strin
         {
             try
             {
-            	if (objStr.isEmpty())
+            	if (objStr.isEmpty() || objStr.equals("null"))
             			objStr = "0";                	
                 return DecimalUtil.stringToDec(objStr);
             }
@@ -2825,7 +2825,9 @@ public static String format(String value, String v1, String v2, String v3, Strin
         else if (className.indexOf("java.util.Date") != -1)
         {
             try {
-				if (objStr.indexOf('/')>0) //Json CallAjax
+				if (objStr.equals("null"))
+					return nullDate();
+				else if (objStr.indexOf('/')>0) //Json CallAjax
 					return LocalUtil.getISO8601Date(objStr);
 				else
 					return new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss zzz Z").parse(objStr);
@@ -2836,7 +2838,7 @@ public static String format(String value, String v1, String v2, String v3, Strin
         else if(className.indexOf("java.util.UUID") != -1)
         {
 			try {
-				return UUID.fromString(objStr);
+				return objStr.equals("null") ? new UUID(0,0) : UUID.fromString(objStr);
 			}catch(IllegalArgumentException e)
 			{
 				if(fail)
