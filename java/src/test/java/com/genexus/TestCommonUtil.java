@@ -84,7 +84,7 @@ public class TestCommonUtil {
 		Assert.assertEquals(expectedResult, result);
 
 		// Test case 11: Pass in a string with a parameter marker that should be ignored
-		value = "sample text //%1 sample text";
+		value = "sample text \\%1 sample text";
 		expectedResult = "sample text %1 sample text";
 		result = CommonUtil.format(value, "10","","", "", "", "", "", "", "");
 		Assert.assertEquals(expectedResult, result);
