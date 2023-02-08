@@ -217,7 +217,7 @@ public class PDFReportItext implements IReportHandler
      * utiliza esta property para obtener la ubicación + ejecutable del Acrobat, sino se busca en el Registry
      * @param pdfFilename Nombre del reporte a imprimir (con extensión)
      * @param silent Booleano que indica si se va a imprimir sin diálogo
-     * @exception Excepcion si no se puede realizar la operación
+     * @exception Exception si no se puede realizar la operación
      */
     public static void printReport(String pdfFilename, boolean silent) throws Exception
     {
@@ -251,7 +251,7 @@ public class PDFReportItext implements IReportHandler
     /** Muestra el reporte en pantalla
      * @param filename nombre del PDF a mostrar
      * @param modal indica si el PDF se va a mostrar en diálogo modal
-     * @exception Si no se puede encontrar el Acrobat
+     * @exception Exception no se puede encontrar el Acrobat
      */
     public static void showReport(String filename, boolean modal) throws Exception
     {
