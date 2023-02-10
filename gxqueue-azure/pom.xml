@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>gxqueueazure</artifactId>
+    <artifactId>gxqueue-azure</artifactId>
     <name>GeneXus Azure Storage Queue</name>
 
     <dependencies>
