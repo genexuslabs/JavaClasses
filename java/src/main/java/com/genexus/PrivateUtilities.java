@@ -1202,6 +1202,15 @@ loop:	while (true)
 
 		return newFile;
 	}
+
+	public static String getRandomNumberSquence(int sequenceLength){
+		Random random = new Random();
+		StringBuilder randomString = new StringBuilder();
+		for (int i = 0; i < sequenceLength; i++) {
+			randomString.append(random.nextInt(10));
+		}
+		return randomString.toString();
+	}
 }
 
 	class ReadProperties implements Runnable

@@ -101,25 +101,49 @@ public class GxImageUtil {
 	public static String crop(String imageFile, int x, int y, int width, int height) {
 		if (!isValidInput(imageFile))
 			return "";
-
 		try {
 			BufferedImage image = createBufferedImageFromURI(imageFile);
 			BufferedImage croppedImage = image.getSubimage(x, y, width, height);
-			writeImage(croppedImage, imageFile);
+			return writeImage(croppedImage, imageFile);
 		}
 		catch (Exception e) {
 			log.error("crop " + imageFile + " failed" , e);
 		}
-		return imageFile;
+		return "";
 	}
 
-	private static void writeImage(BufferedImage croppedImage, String destinationFilePathOrUrl) throws IOException {
+	private static String writeImage(BufferedImage croppedImage, String destinationFilePathOrUrl) throws IOException {
+
+		IHttpContext httpContext = com.genexus.ModelContext.getModelContext().getHttpContext();
+		destinationFilePathOrUrl = destinationFilePathOrUrl.substring(0, destinationFilePathOrUrl.lastIndexOf(".")) + "-" +
+				PrivateUtilities.getRandomNumberSquence(6) + destinationFilePathOrUrl.substring(destinationFilePathOrUrl.lastIndexOf("."));
+		String fileDestination = "";
+
 		try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
 			ImageIO.write(croppedImage, CommonUtil.getFileType(destinationFilePathOrUrl), outStream);
 			try (ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray())) {
-				GXFile file = getGXFile(destinationFilePathOrUrl);
+
+				if (httpContext.isHttpContextWeb() && destinationFilePathOrUrl.startsWith(httpContext.getContextPath())){ //Es un link a una imagen de la KB
+					String basePath = (com.genexus.ModelContext.getModelContext() != null) ? httpContext.getDefaultPath(): "";
+					String filePath = destinationFilePathOrUrl.substring(destinationFilePathOrUrl.indexOf("/", 1)).replaceAll("/", "\\\\");
+					StringBuffer sb = new StringBuffer(basePath);
+					sb.append(filePath);
+					fileDestination = sb.toString();
+				} else if (destinationFilePathOrUrl.toLowerCase().startsWith("http://") || destinationFilePathOrUrl.toLowerCase().startsWith("https://")){ //Es la URL a una imagen externa
+					String basePath = (com.genexus.ModelContext.getModelContext() != null) ? httpContext.getDefaultPath(): "";
+					String staticResourceFolder = (httpContext.getStaticContentBase() + "Resources\\").replaceAll("/", "\\\\");
+					String fileName = destinationFilePathOrUrl.substring(destinationFilePathOrUrl.lastIndexOf("/") + 1);
+					StringBuffer sb = new StringBuffer(basePath);
+					sb.append(staticResourceFolder);
+					sb.append(fileName);
+					fileDestination = sb.toString();
+				} else { //Es una imagen de la KB
+					fileDestination = destinationFilePathOrUrl;
+				}
+				GXFile file = getGXFile(fileDestination);
 				file.create(inStream, true);
 				file.close();
+				return file.getFilePath();
 			}
 		}
 	}
@@ -127,43 +151,40 @@ public class GxImageUtil {
 	public static String flipHorizontally(String imageFile) {
 		if (!isValidInput(imageFile))
 			return "";
-
 		try {
 			BufferedImage image = createBufferedImageFromURI(imageFile);
 			AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
 			tx.translate(-image.getWidth(null), 0);
 			AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 			BufferedImage flippedImage = op.filter(image, null);
-			writeImage(flippedImage, imageFile);
+			return writeImage(flippedImage, imageFile);
 		}
 		catch (Exception e) {
 			log.error("flip horizontal " + imageFile + " failed" , e);
 		}
-		return imageFile;
+		return "";
 	}
 
 	public static String flipVertically(String imageFile) {
 		if (!isValidInput(imageFile))
 			return "";
-
 		try {
 			BufferedImage image = createBufferedImageFromURI(imageFile);
 			AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
 			tx.translate(0, -image.getHeight(null));
 			AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 			BufferedImage flippedImage = op.filter(image, null);
-			writeImage(flippedImage, imageFile);
+			return writeImage(flippedImage, imageFile);
 		}
 		catch (Exception e) {
 			log.error("flip vertical " + imageFile + " failed" , e);
 		}
-		return imageFile;
+		return "";
 	}
 
 	public static String resize(String imageFile, int width, int height, boolean keepAspectRatio) {
 		if (!isValidInput(imageFile))
 			return "";
-
 		try {
 			BufferedImage image = createBufferedImageFromURI(imageFile);
 			if (keepAspectRatio) {
@@ -180,12 +201,12 @@ public class GxImageUtil {
 			Graphics2D g2d = resizedImage.createGraphics();
 			g2d.drawImage(image, 0, 0, width, height, null);
 			g2d.dispose();
-			writeImage(resizedImage, imageFile);
+			return writeImage(resizedImage, imageFile);
 		}
 		catch (Exception e) {
 			log.error("resize " + imageFile + " failed" , e);
 		}
-		return imageFile;
+		return "";
 	}
 
 	public static String scale(String imageFile, short percent) {
@@ -208,12 +229,12 @@ public class GxImageUtil {
 		try {
 			BufferedImage image = createBufferedImageFromURI(imageFile);
 			BufferedImage rotatedImage = rotateImage(image, angle);
-			writeImage(rotatedImage, imageFile);
+			return writeImage(rotatedImage, imageFile);
 		}
 		catch (Exception e) {
 			log.error("rotate " + imageFile + " failed" , e);
 		}
-		return imageFile;
+		return "";
 	}
 
 	private static BufferedImage rotateImage(BufferedImage buffImage, double angle) {
