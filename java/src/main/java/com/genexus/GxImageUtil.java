@@ -90,7 +90,7 @@ public class GxImageUtil {
 		try {
 			BufferedImage image = createBufferedImageFromURI(imageFile);
 			BufferedImage croppedImage = image.getSubimage(x, y, width, height);
-			return writeImage(croppedImage, imageFile,false);
+			return writeImage(croppedImage, imageFile);
 		}
 		catch (Exception e) {
 			log.error("crop " + imageFile + " failed" , e);
@@ -98,11 +98,10 @@ public class GxImageUtil {
 		return "";
 	}
 
-	private static String writeImage(BufferedImage croppedImage, String destinationFilePathOrUrl, boolean overwrite) throws IOException {
+	private static String writeImage(BufferedImage croppedImage, String destinationFilePathOrUrl) throws IOException {
 
 		IHttpContext httpContext = com.genexus.ModelContext.getModelContext().getHttpContext();
-		if (!overwrite)
-			destinationFilePathOrUrl = destinationFilePathOrUrl.substring(0, destinationFilePathOrUrl.lastIndexOf(".")) + "-" +
+		destinationFilePathOrUrl = destinationFilePathOrUrl.substring(0, destinationFilePathOrUrl.lastIndexOf(".")) + "-" +
 				PrivateUtilities.getRandomNumberSquence(6) + destinationFilePathOrUrl.substring(destinationFilePathOrUrl.lastIndexOf("."));
 		String fileDestination = "";
 
@@ -130,7 +129,7 @@ public class GxImageUtil {
 				GXFile file = getGXFile(fileDestination);
 				file.create(inStream, true);
 				file.close();
-				return fileDestination;
+				return file.getFilePath();
 			}
 		}
 	}
@@ -144,7 +143,7 @@ public class GxImageUtil {
 			tx.translate(-image.getWidth(null), 0);
 			AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 			BufferedImage flippedImage = op.filter(image, null);
-			return writeImage(flippedImage, imageFile,true);
+			return writeImage(flippedImage, imageFile);
 		}
 		catch (Exception e) {
 			log.error("flip horizontal " + imageFile + " failed" , e);
@@ -161,7 +160,7 @@ public class GxImageUtil {
 			tx.translate(0, -image.getHeight(null));
 			AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 			BufferedImage flippedImage = op.filter(image, null);
-			return writeImage(flippedImage, imageFile, true);
+			return writeImage(flippedImage, imageFile);
 		}
 		catch (Exception e) {
 			log.error("flip vertical " + imageFile + " failed" , e);
@@ -188,7 +187,7 @@ public class GxImageUtil {
 			Graphics2D g2d = resizedImage.createGraphics();
 			g2d.drawImage(image, 0, 0, width, height, null);
 			g2d.dispose();
-			return writeImage(resizedImage, imageFile,false);
+			return writeImage(resizedImage, imageFile);
 		}
 		catch (Exception e) {
 			log.error("resize " + imageFile + " failed" , e);
@@ -213,11 +212,10 @@ public class GxImageUtil {
 	public static String rotate(String imageFile, short angle) {
 		if (!isValidInput(imageFile))
 			return "";
-		String newImagePath = "";
 		try {
 			BufferedImage image = createBufferedImageFromURI(imageFile);
 			BufferedImage rotatedImage = rotateImage(image, angle);
-			return writeImage(rotatedImage, imageFile, false);
+			return writeImage(rotatedImage, imageFile);
 		}
 		catch (Exception e) {
 			log.error("rotate " + imageFile + " failed" , e);
