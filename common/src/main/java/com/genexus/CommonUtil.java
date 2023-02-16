@@ -1833,6 +1833,8 @@ public final class CommonUtil
 
 	public static byte dow(Date date)
 	{
+		if	(date == null || date.equals(nullDate()))
+			return 0;
 		Calendar cal = getCalendar();
 		synchronized (cal)
 		{
