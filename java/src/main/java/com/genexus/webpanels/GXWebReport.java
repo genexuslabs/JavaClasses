@@ -24,6 +24,8 @@ public abstract class GXWebReport extends GXWebProcedure
    	protected int gxYPage;
    	protected int Gx_page;
    	protected String Gx_out = ""; // Esto est� asi porque no me pude deshacer de una comparacion contra Gx_out antes del ask.
+	protected String filename;
+	protected String filetype;
 
 	public GXWebReport(HttpContext httpContext)
 	{
@@ -45,7 +47,6 @@ public abstract class GXWebReport extends GXWebProcedure
 	protected void preExecute()
 	{
 		httpContext.setContentType("application/pdf");
-		httpContext.getResponse().addHeader("content-disposition", "inline; filename=" + getClass().getSimpleName() + ".pdf");
 		httpContext.setStream();
 
 		// Tiene que ir despues del setStream porque sino el getOutputStream apunta
@@ -53,6 +54,12 @@ public abstract class GXWebReport extends GXWebProcedure
                  ((PDFReportItext) reportHandler).setOutputStream(httpContext.getOutputStream());
 	}
 
+	protected void setOutputFileName(String outputFileName){
+		filename = outputFileName;
+	}
+	protected void setOutputType(String outputType){
+		filetype = outputType.toLowerCase();
+	}
 	private void initValues()
 	{
    		Gx_line = 0;
@@ -98,6 +105,7 @@ public abstract class GXWebReport extends GXWebProcedure
 	{
 		int x[] = {gxXPage};
 		int y[] = {gxYPage};
+		setResponseOuputFileName();
 
 		getPrinter().GxRVSetLanguage(localUtil._language);
       	boolean ret = getPrinter().GxPrintInit(output, x, y, iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
@@ -106,6 +114,12 @@ public abstract class GXWebReport extends GXWebProcedure
 		this.gxYPage = y[0];
 
 		return ret;
+	}
+
+	private void setResponseOuputFileName(){
+		String outputFileName = filename!=null ? filename : getClass().getSimpleName();
+		String outputFileType = filetype!=null ? "." + filetype.toLowerCase(): ".pdf";
+		httpContext.getResponse().addHeader("content-disposition", "inline; filename=" + outputFileName + outputFileType);
 	}
 
 	protected void endPrinter()
