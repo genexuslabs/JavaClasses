@@ -301,10 +301,12 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
     if (this.downloadAttachments && (disposition!=null && (disposition.equalsIgnoreCase(Part.ATTACHMENT) || disposition.equalsIgnoreCase(Part.INLINE) || disposition.equalsIgnoreCase("UNKNOWN")))) 
     {
     	String fileName = "";
-		if (part.getFileName() != null || (isXForwardedFor && ((MimeMessage) part.getContent()).getFileName() != null))
-				fileName = MimeUtility.decodeText(part.getContent() instanceof MimeMessage ? ((MimeMessage) part.getContent()).getFileName() : part.getFileName());
-			else if (!(part.getContent() instanceof MimeMessage) || ((MimeMessage) part.getContent()).getFileName() == null)
-				fileName = SpecificImplementation.GXutil.getTempFileName("tmp");
+		if (part.getFileName() != null)
+			fileName = MimeUtility.decodeText(part.getFileName());
+		else if (isXForwardedFor && ((MimeMessage) part.getContent()).getFileName() != null)
+			fileName = MimeUtility.decodeText(((MimeMessage) part.getContent()).getFileName());
+		else if (!(part.getContent() instanceof MimeMessage) || ((MimeMessage) part.getContent()).getFileName() == null)
+			fileName = SpecificImplementation.GXutil.getTempFileName("tmp");
 		
 		String cid = getAttachmentContentId(part);
 		if (disposition.equalsIgnoreCase(Part.INLINE) && !cid.isEmpty())
