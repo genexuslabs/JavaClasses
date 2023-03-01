@@ -642,7 +642,16 @@ public abstract class HttpContext
 	
 	protected GXNavigationHelper getNavigationHelper(boolean useWebSession)
 	{
-		GXNavigationHelper helper = (GXNavigationHelper)getSessionValue(GX_NAV_HELPER);
+		GXNavigationHelper helper;
+		try
+		{
+			helper = (GXNavigationHelper) getSessionValue(GX_NAV_HELPER);
+		}
+		catch (Exception e)
+		{
+			//If it gives an error to recover the GXNavigationHelper from the session then I start with a new GXNavigationHelper to avoid a runtime error
+			helper = null;
+		}
 		if (helper == null)
 		{
 			helper = new GXNavigationHelper();
