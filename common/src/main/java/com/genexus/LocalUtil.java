@@ -1030,17 +1030,6 @@ public class LocalUtil
 		if (!getBLANK_EMPTY_DATE() && date.indexOf("    ") != -1)
 			return true;
 
-		String separator = "";
-		if (date.contains("/"))
-			separator = "/" ;
-		else
-			separator = "-";
-		String[] parts = date.split(separator);
-		for (String part : parts) {
-			if (part.length() == 4 && part.matches("\\d{4}"))
-				return true;
-		}
-
 		return date.length() == 10 || date.length() == 19;
 	}
 
