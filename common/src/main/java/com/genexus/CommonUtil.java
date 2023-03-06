@@ -1833,6 +1833,8 @@ public final class CommonUtil
 
 	public static byte dow(Date date)
 	{
+		if	(date == null || date.equals(nullDate()))
+			return 0;
 		Calendar cal = getCalendar();
 		synchronized (cal)
 		{
@@ -2325,12 +2327,11 @@ public final class CommonUtil
 	{
 		String[] vs = {v1, v2, v3, v4, v5, v6, v7, v8, v9};
 		StringBuffer stringBuilder = new StringBuffer();
+		int valueLength = value.length();
 		if (value != null && !value.equals(""))
 		{
-			StringTokenizer tokenizer = new StringTokenizer(value, "%", false);
 			int lastIndex = 0;
 			int index = 0;
-			int idx = 0;
 			while((index = value.indexOf('%', lastIndex)) != -1)
 			{
 				if(index > 0 && value.charAt(index - 1) == '\\')
@@ -2339,8 +2340,12 @@ public final class CommonUtil
 					stringBuilder.append("%");
 					lastIndex = index + 1;
 				}
-				else
+				else if (index > 0 && index < valueLength - 1 && value.charAt(index) == '%' && value.charAt(index + 1) == '%' )
 				{
+					stringBuilder.append(value.substring(lastIndex, index));
+					stringBuilder.append("%");
+					lastIndex = index + 1;
+				} else {
 					try
 					{
 						stringBuilder.append(value.substring(lastIndex, index));
@@ -2351,7 +2356,8 @@ public final class CommonUtil
 						stringBuilder.append("%").append(value.charAt(index+1));
 					}catch(StringIndexOutOfBoundsException e)
 					{ // Si el value termina con un %, lo ignoro
-						 lastIndex--;
+						lastIndex--;
+						stringBuilder.append("%");
 					}
 				}
 			}
