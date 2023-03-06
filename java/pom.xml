@@ -18,17 +18,17 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>gxcommon</artifactId>
 			<version>${project.version}</version>
-		</dependency>
+		</dependency>		
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>gxwrapperjavax</artifactId>
 			<version>${project.version}</version> 			
-		</dependency>		
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>gxcryptocommon</artifactId>
-			<version>${project.version}</version>
 		</dependency>
+    <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>gxcryptocommon</artifactId>
+        <version>${project.version}</version>
+    </dependency>		
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>gxmail</artifactId>
@@ -59,12 +59,6 @@
             <artifactId>log4j-1.2-api</artifactId>
             <version>${log4j.version}</version>
         </dependency>
-        <dependency>
-			<groupId>javax.ejb</groupId>
-			<artifactId>ejb-api</artifactId>
-			<version>3.0</version>
-			<scope>provided</scope>
-		</dependency>
 		<dependency>
 			<groupId>org.glassfish.main.javaee-api</groupId>
 			<artifactId>javax.jms</artifactId>
@@ -81,11 +75,6 @@
 			<version>2.10.4</version>
 		</dependency>
 		<dependency>
-			<groupId>com.github.spullara.mustache.java</groupId>
-			<artifactId>compiler</artifactId>
-			<version>0.9.7</version>
-		</dependency>
-		<dependency>
 			<groupId>commons-net</groupId>
 			<artifactId>commons-net</artifactId>
 			<version>3.9.0</version>
@@ -94,11 +83,6 @@
 			<groupId>javax.transaction</groupId>
 			<artifactId>jta</artifactId>
 			<version>1.1</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-			<version>${jackson.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -163,6 +147,12 @@
             <artifactId>opentelemetry-api</artifactId>
             <version>${io.opentelemetry.version}</version>
         </dependency>
+		<dependency>
+		    <groupId>org.bouncycastle</groupId>
+		    <artifactId>bcprov-jdk15on</artifactId>
+		    <version>1.69</version>
+		</dependency>
+        
     </dependencies>
 	
 	<build>
