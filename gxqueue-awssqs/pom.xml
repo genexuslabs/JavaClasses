@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>gxqueueawssqs</artifactId>
+    <artifactId>gxqueue-awssqs</artifactId>
     <name>GeneXus AWS SQS Queue</name>
     <dependencies>
         <dependency>
