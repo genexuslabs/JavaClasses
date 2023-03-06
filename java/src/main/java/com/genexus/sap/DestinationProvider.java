@@ -23,8 +23,8 @@ public class DestinationProvider implements DestinationDataProvider, ServerDataP
 		return _instance;
 	}
 	
-	private String SAP_SERVER = "SAP_SERVER";
-	private String SAP_DOC_SERVER = "DMS_SERVER";
+	private static final String SAP_SERVER = "SAP_SERVER";
+	private static final String SAP_DOC_SERVER = "DMS_SERVER";
 	private Properties connectionProperties;
 	private Hashtable<String, Properties> connectionList = new Hashtable<String, Properties>(); 
 	private DestinationDataEventListener eventListener;
@@ -33,16 +33,8 @@ public class DestinationProvider implements DestinationDataProvider, ServerDataP
 	public Properties getDestinationProperties(String sessionName)
 	{
 		if (sessionName != null)
-		{			
-			Properties val = connectionList.get(sessionName);
-			if (val != null)
-			{			
-				return val;
-			}
-			else
-			{
-				return null;
-			}
+		{
+			return connectionList.get(sessionName);
 		}
 		else
 		{
@@ -65,16 +57,8 @@ public class DestinationProvider implements DestinationDataProvider, ServerDataP
 	@Override
 	public Properties getServerProperties(String serverName) {		
 		if (serverName != null)
-		{			
-			Properties val = connectionList.get(serverName);
-			if (val != null)
-			{			
-				return val;
-			}
-			else
-			{
-				return null;
-			}
+		{
+			return connectionList.get(serverName);
 		}
 		else
 		{
@@ -118,7 +102,7 @@ public class DestinationProvider implements DestinationDataProvider, ServerDataP
 		}
 		else
 		{
-			Log.info("GX SAP Doc Server - Setting Properties : " + serverName + " total : " + Integer.toString(connectionList.size()));
+			Log.info("GX SAP Doc Server - Setting Properties : " + serverName + " total : " + connectionList.size());
 			connectionProperties = properties;
 			connectionList.put( serverName, connectionProperties);
 			if (eventListener != null)
@@ -160,7 +144,7 @@ public class DestinationProvider implements DestinationDataProvider, ServerDataP
 		}
 		else
 		{
-			Log.info("GX SAP - Setting Properties : " + sessionName + " total : " + Integer.toString(connectionList.size()));
+			Log.info("GX SAP - Setting Properties : " + sessionName + " total : " + connectionList.size());
 			connectionProperties = properties;
 			connectionList.put( sessionName, connectionProperties);
 			if (eventListener != null)
