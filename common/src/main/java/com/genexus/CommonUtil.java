@@ -2732,7 +2732,7 @@ public final class CommonUtil
 			try
             {
             	
-				if (objStr.isEmpty())
+				if (objStr.isEmpty() || objStr.equals("null"))
 					objStr ="0";
 				else 
 				{
@@ -2771,13 +2771,13 @@ public final class CommonUtil
         }
         else if (className.equals("string") || className.indexOf("java.lang.String") != -1)
         {
-            return objStr;
+            return objStr.equals("null") ? "" : objStr;
         }
         else if (className.equals("double") || className.equals("java.lang.Double") || className.equals("[D"))
         {
             try
             {
-            	if (objStr.isEmpty())
+            	if (objStr.isEmpty() || objStr.equals("null"))
             		objStr = "0";                	
                 return Double.valueOf(objStr);
             }
@@ -2792,7 +2792,7 @@ public final class CommonUtil
         {
             try
             {
-            	if (objStr.isEmpty())
+            	if (objStr.isEmpty() || objStr.equals("null"))
             		objStr = "0";                	
                 return Float.valueOf(objStr);
             }
@@ -2807,7 +2807,7 @@ public final class CommonUtil
         {
             try
             {
-                return Boolean.valueOf(objStr);
+                return objStr.equals("null") ? false : Boolean.valueOf(objStr);
             }
             catch(Exception e)
             {
@@ -2820,7 +2820,7 @@ public final class CommonUtil
         {
             try
             {
-            	if (objStr.isEmpty())
+            	if (objStr.isEmpty() || objStr.equals("null"))
             			objStr = "0";                	
                 return DecimalUtil.stringToDec(objStr);
             }
@@ -2834,7 +2834,9 @@ public final class CommonUtil
         else if (className.indexOf("java.util.Date") != -1)
         {
             try {
-				if (objStr.indexOf('/')>0) //Json CallAjax
+				if (objStr.equals("null"))
+					return nullDate();
+				else if (objStr.indexOf('/')>0) //Json CallAjax
 					return LocalUtil.getISO8601Date(objStr);
 				else
 					return new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss zzz Z").parse(objStr);
@@ -2845,7 +2847,7 @@ public final class CommonUtil
         else if(className.indexOf("java.util.UUID") != -1)
         {
 			try {
-				return UUID.fromString(objStr);
+				return objStr.equals("null") ? new UUID(0,0) : UUID.fromString(objStr);
 			}catch(IllegalArgumentException e)
 			{
 				if(fail)
