@@ -4,6 +4,8 @@ import com.genexus.specific.java.Connect;
 import com.genexus.specific.java.LogManager;
 import org.junit.Assert;
 import org.junit.Test;
+import java.util.Date;
+import java.util.UUID;
 
 public class TestCommonUtil {
 
@@ -112,6 +114,134 @@ public class TestCommonUtil {
 		expectedResult = "Alex is 26 years old";
 		result = CommonUtil.format(value, "Alex", "26", "10", "10", "", "", "", "", "");
 		Assert.assertEquals(expectedResult, result);
+	}
+
+	@Test
+	public void testConvertObjectTo() {
+		initialize();
+
+		Object obj;
+		Object result;
+
+		// Test case 1: Pass in a non-null integer
+		obj = 1;
+		try{
+			Class integerClass = Class.forName("java.lang.Integer");
+			result = CommonUtil.convertObjectTo(obj, integerClass, true);
+			Assert.assertEquals(Integer.valueOf("1"), result);
+		} catch (Exception e){
+			Assert.fail("Test failed " + e);
+		}
+
+		// Test case 2: Pass in a "null" integer
+		obj = "null";
+		try{
+			Class integerClass = Class.forName("java.lang.Integer");
+			result = CommonUtil.convertObjectTo(obj, integerClass, true);
+			Assert.assertEquals(Integer.valueOf("0"), result);
+		} catch (Exception e){
+			Assert.fail("Test failed " + e);
+		}
+
+		// Test case 3: Pass in a non-null string
+		obj = "Hello world";
+		try {
+			Class stringClass = Class.forName("java.lang.String");
+			result = CommonUtil.convertObjectTo(obj, stringClass, true);
+			Assert.assertEquals("Hello world", result);
+		} catch (Exception e){
+			Assert.fail("Test failed " + e);
+		}
+
+		// Test case 4: Pass in a "null" string
+		obj = "null";
+		try{
+			Class stringClass = Class.forName("java.lang.String");
+			result = CommonUtil.convertObjectTo(obj, stringClass, true);
+			Assert.assertEquals("", result);
+		} catch (Exception e){
+			Assert.fail("Test failed " + e);
+		}
+
+		// Test case 5: Pass in a non-null decimal
+		obj = 1.5;
+		try{
+			Class decimalClass = Class.forName("java.lang.Float");
+			result = CommonUtil.convertObjectTo(obj, decimalClass, true);
+			Assert.assertEquals(Float.valueOf("1.5"), result);
+		} catch (Exception e){
+			Assert.fail("Test failed " + e);
+		}
+
+		// Test case 6: Pass in a "null" decimal
+		obj = "null";
+		try{
+			Class decimalClass = Class.forName("java.lang.Float");
+			result = CommonUtil.convertObjectTo(obj, decimalClass, true);
+			Assert.assertEquals(Float.valueOf("0"), result);
+		} catch (Exception e){
+			Assert.fail("Test failed " + e);
+		}
+
+		// Test case 7: Pass in a non-null boolean
+		obj = true;
+		try{
+			Class booleanClass = Class.forName("java.lang.Boolean");
+			result = CommonUtil.convertObjectTo(obj, booleanClass, true);
+			Assert.assertEquals(true, result);
+		} catch (Exception e){
+			Assert.fail("Test failed " + e);
+		}
+
+		// Test case 7: Pass in a "null" boolean
+		obj = "null";
+		try{
+			Class booleanClass = Class.forName("java.lang.Boolean");
+			result = CommonUtil.convertObjectTo(obj, booleanClass, true);
+			Assert.assertEquals(false, result);
+		} catch (Exception e){
+			Assert.fail("Test failed " + e);
+		}
+
+		// Test case 8: Pass in a non-null date
+		obj = new Date(0);
+		try{
+			Class dateClass = Class.forName("java.util.Date");
+			result = CommonUtil.convertObjectTo(obj, dateClass, true);
+			Assert.assertEquals(LocalUtil.getISO8601Date("0001/01/01"), result);
+		} catch (Exception e){
+			Assert.fail("Test failed " + e);
+		}
+
+		// Test case 9: Pass in a "null" date
+		obj = "null";
+		try{
+			Class dateClass = Class.forName("java.util.Date");
+			result = CommonUtil.convertObjectTo(obj, dateClass, true);
+			Assert.assertEquals(CommonUtil.nullDate(), result);
+		} catch (Exception e){
+			Assert.fail("Test failed " + e);
+		}
+
+		// Test case 9: Pass in a non-null uuid
+		obj = UUID.randomUUID();
+		try{
+			Class uudiClass = Class.forName("java.util.UUID");
+			result = CommonUtil.convertObjectTo(obj, uudiClass, true);
+			Assert.assertEquals(UUID.fromString(obj.toString()), result);
+		} catch (Exception e){
+			Assert.fail("Test failed " + e);
+		}
+
+		// Test case 10: Pass in a "null" uuid
+		obj = "null";
+		try{
+			Class uudiClass = Class.forName("java.util.UUID");
+			result = CommonUtil.convertObjectTo(obj, uudiClass, true);
+			Assert.assertEquals(new UUID(0,0), result);
+		} catch (Exception e){
+			Assert.fail("Test failed " + e);
+		}
 	}
 
 }
