@@ -148,12 +148,6 @@
             <artifactId>opentelemetry-api</artifactId>
             <version>${io.opentelemetry.version}</version>
         </dependency>
-		<dependency>
-		    <groupId>org.bouncycastle</groupId>
-		    <artifactId>bcprov-jdk15on</artifactId>
-		    <version>1.69</version>
-		</dependency>
-        
     </dependencies>
 	
 	<build>
