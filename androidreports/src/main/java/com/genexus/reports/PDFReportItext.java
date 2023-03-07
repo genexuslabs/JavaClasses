@@ -246,6 +246,7 @@ public class PDFReportItext implements IReportHandler
     /** Muestra el reporte en pantalla
      * @param filename nombre del PDF a mostrar
      * @param modal indica si el PDF se va a mostrar en diálogo modal
+     * @exception exception si no se puede encontrar el Acrobat
      */
     public static void showReport(String filename, boolean modal) throws Exception
     {
