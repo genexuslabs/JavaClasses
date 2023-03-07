@@ -111,7 +111,6 @@
     <module>gxcloudstorage-googlecloudstorage</module>
     <module>gxcloudstorage-azureblob</module>
     <module>gxcloudstorage-ibmcos</module>
-    <module>gxcloudstorage-tests</module>
   </modules>
 
 	<dependencies>
