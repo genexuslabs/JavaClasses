@@ -106,11 +106,6 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-		    <groupId>com.lowagie</groupId>
-		    <artifactId>itextasian</artifactId>
-		    <version>1.5.2</version>
-		</dependency>
-		<dependency>
 			<groupId>com.sap.conn.jco</groupId>
 			<artifactId>sapjco3</artifactId>
 			<version>3.0.14</version>
