@@ -146,77 +146,6 @@ public class CosmosDBPreparedStatement extends ServicePreparedStatement
 		}
 		return false;
 	}
-	private boolean checkQueryByPK(CosmosDBQuery query, String[] documentId, Object[] partitionKey)
-	{
-		if (query.filters.length > 0)
-		{
-			if (query.filters.length == 2)
-			{
-				String fieldValue1 = "";
-				String fieldValue2 = "";
-
-				String[] fieldName1 = new String[1];
-				String[] fieldName2 = new String[1];
-
-				VarValue varValue = getDataEqualParameterfromQueryVars(query.filters[0], query.getVars(), fieldName1);
-				fieldValue1 = varValue != null ? varValue.value.toString() : null;
-				//fieldValue1 = fieldValue1 == null? getDataEqualParameterfromCollection(query.filters[0], parms, fieldName1) : null;
-
-				VarValue varValue1 = getDataEqualParameterfromQueryVars(query.filters[1], query.getVars(), fieldName2);
-				fieldValue2 = varValue1 != null ? varValue1.value.toString() : null;
-				//fieldValue2 = fieldValue2 == null ? getDataEqualParameterfromCollection(Arrays.stream(query.filters).skip(1).toString(), parms, fieldName2) : null;
-
-				if (fieldName1[0] == "id" && fieldName2[0] == query.getPartitionKey())
-				{
-					documentId[0] = fieldValue1;
-					partitionKey[0] = fieldValue2;
-					return true;
-				}
-				else
-				{
-					if (fieldName1[0] == query.getPartitionKey() && fieldName2[0] == "id")
-					{
-						documentId[0] = fieldValue2;
-						partitionKey[0] = fieldValue1;
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-
-	private VarValue getDataEqualParameterfromQueryVars(String filter, HashMap<String, VarValue> values, String[] name) {
-		String equalFilterPattern = "\\((.*) = :(.*)\\)";
-		name[0] = "";
-		Matcher match = Pattern.compile(equalFilterPattern).matcher(filter);
-		if (match.find()) {
-			String varName = match.group(2);
-			varName = varName.substring(0, varName.length() - 1);
-			name[0] = match.group(1);
-
-			String varNameM = ":" + varName;
-			return values.entrySet().stream().filter(v -> varNameM.equals(v.getKey())).findFirst().get().getValue();
-		}
-		return null;
-	}
-
-	private String getDataEqualParameterfromCollection(String filter, HashMap<String, VarValue> parms, String[] name) {
-		String equalFilterPattern = "\\((.*) = :(.*)\\)";
-		Matcher match = Pattern.compile(equalFilterPattern).matcher(filter);
-		if (match.find()) {
-			String varName = match.group(2);
-			name[0] = match.group(1);
-			varName = varName.substring(0, varName.length() - 1);
-
-			/// !!!!!!!!!!!!
-			VarValue v= parms.get(varName);
-			return v.toString();
-			//if (parm instanceof ServiceParameter) {
-			//	return ((ServiceParameter) parm).getValue().toString();
-			}
-		return "";
-	}
 
 	private AtomicInteger executeReadByPK(String idValue, Object partitionKey) throws Exception {
 		//  Read document by ID
@@ -285,10 +214,10 @@ public class CosmosDBPreparedStatement extends ServicePreparedStatement
 					logger.debug(String.format("Deleted document- id: %1 partitionkey: %2",idValue,partitionKey.toString()));
 					logger.debug(String.format("Status Code: %1",itemResponse.getStatusCode()));
 					statusCode[0] = itemResponse.getStatusCode();
-					latch.countDown();
+					//latch.countDown();
 				})
 				.doOnError(error -> {
-					logger.error(String.format("Fail: %1",error.getMessage()));
+					//logger.error(String.format("Fail: %1",error.getMessage()));
 					if (error.getMessage().toString().contains("404"))
 						statusCode[0] = 404;
 					latch.countDown();
@@ -350,10 +279,10 @@ public class CosmosDBPreparedStatement extends ServicePreparedStatement
 				logger.debug(String.format("Replaced document- id: %1 partitionkey: %2",idValue,partitionKey.toString()));
 				logger.debug(String.format("Status Code: %1",itemResponse.getStatusCode()));
 				statusCode[0] = itemResponse.getStatusCode();
-				latch.countDown();
+				//latch.countDown();
 			})
 			.doOnError(error -> {
-				logger.error(String.format("Fail: %1",error.getMessage()));
+				//logger.error(String.format("Fail: %1",error.getMessage()));
 				if (error.getMessage().toString().contains("404"))
 					statusCode[0] = 404;
 				latch.countDown();
