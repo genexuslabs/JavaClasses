@@ -113,14 +113,19 @@ public class GxImageUtil {
 	}
 
 	private static String writeImage(BufferedImage croppedImage, String destinationFilePathOrUrl) throws IOException {
+		String newFileName = PrivateUtilities.getTempFileName(destinationFilePathOrUrl.substring(destinationFilePathOrUrl.lastIndexOf(".") + 1));
 		try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
-			ImageIO.write(croppedImage, CommonUtil.getFileType(destinationFilePathOrUrl), outStream);
-			outStream.flush();
-			byte[] imageInByte = outStream.toByteArray();
-			return GXutil.blobFromBytes(imageInByte);
-		} catch (IOException e) {
-			log.error("writeImage " + destinationFilePathOrUrl + " failed" , e);
-			return "";
+			ImageIO.write(croppedImage, CommonUtil.getFileType(newFileName), outStream);
+			try (ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray())) {
+				String filePath = Preferences.getDefaultPreferences().getPRIVATE_PATH() + newFileName;
+				GXFile file = getGXFile(filePath);
+				file.create(inStream, true);
+				file.close();
+				return filePath;
+			} catch (IOException e) {
+				log.error("writeImage " + destinationFilePathOrUrl + " failed" , e);
+				return "";
+			}
 		}
 	}
 
