@@ -1030,7 +1030,7 @@ public class LocalUtil
 		if (!getBLANK_EMPTY_DATE() && date.indexOf("    ") != -1)
 			return true;
 
-		return date.length() == 10 || date.length() == 19;
+		return date.length() == 10 || date.length() == 19 || date.length() == 23;
 	}
 
 	public Date ctotex(String date, int format)
