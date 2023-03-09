@@ -99,38 +99,14 @@ public class GxImageUtil {
 	}
 
 	private static String writeImage(BufferedImage croppedImage, String destinationFilePathOrUrl) throws IOException {
-
-		IHttpContext httpContext = com.genexus.ModelContext.getModelContext().getHttpContext();
-		destinationFilePathOrUrl = destinationFilePathOrUrl.substring(0, destinationFilePathOrUrl.lastIndexOf(".")) + "-" +
-				PrivateUtilities.getRandomNumberSquence(6) + destinationFilePathOrUrl.substring(destinationFilePathOrUrl.lastIndexOf("."));
-		String fileDestination = "";
-
 		try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
 			ImageIO.write(croppedImage, CommonUtil.getFileType(destinationFilePathOrUrl), outStream);
-			try (ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray())) {
-
-				if (httpContext.isHttpContextWeb() && destinationFilePathOrUrl.startsWith(httpContext.getContextPath())){ //Es un link a una imagen de la KB
-					String basePath = (com.genexus.ModelContext.getModelContext() != null) ? httpContext.getDefaultPath(): "";
-					String filePath = destinationFilePathOrUrl.substring(destinationFilePathOrUrl.indexOf("/", 1)).replaceAll("/", "\\\\");
-					StringBuffer sb = new StringBuffer(basePath);
-					sb.append(filePath);
-					fileDestination = sb.toString();
-				} else if (destinationFilePathOrUrl.toLowerCase().startsWith("http://") || destinationFilePathOrUrl.toLowerCase().startsWith("https://")){ //Es la URL a una imagen externa
-					String basePath = (com.genexus.ModelContext.getModelContext() != null) ? httpContext.getDefaultPath(): "";
-					String staticResourceFolder = (httpContext.getStaticContentBase() + "Resources\\").replaceAll("/", "\\\\");
-					String fileName = destinationFilePathOrUrl.substring(destinationFilePathOrUrl.lastIndexOf("/") + 1);
-					StringBuffer sb = new StringBuffer(basePath);
-					sb.append(staticResourceFolder);
-					sb.append(fileName);
-					fileDestination = sb.toString();
-				} else { //Es una imagen de la KB
-					fileDestination = destinationFilePathOrUrl;
-				}
-				GXFile file = getGXFile(fileDestination);
-				file.create(inStream, true);
-				file.close();
-				return file.getFilePath();
-			}
+			outStream.flush();
+			byte[] imageInByte = outStream.toByteArray();
+			return GXutil.blobFromBytes(imageInByte);
+		} catch (IOException e) {
+			log.error("writeImage " + destinationFilePathOrUrl + " failed" , e);
+			return "";
 		}
 	}
 
