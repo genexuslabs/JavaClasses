@@ -1,9 +1,18 @@
 package com.genexus.internet;
 
-import json.org.json.*;
 import java.util.*;
-import java.text.*;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
+import java.util.Date;
+import json.org.json.IJsonFormattable;
+import json.org.json.JSONArray;
+import com.genexus.internet.IGxJSONAble;
 import com.genexus.xml.GXXMLSerializable;
+import com.genexus.internet.IGxJSONSerializable;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.*;
@@ -14,6 +23,7 @@ public class GXRestAPIClient {
 
 	public static final ILogger logger = LogManager.getLogger(GXRestAPIClient.class);
 	private HttpClient httpClient;
+	
 	private String name;
 	private Location location;
 	private String protocol = "REST";
@@ -21,7 +31,7 @@ public class GXRestAPIClient {
 	private int  statusCode;
 	private int  errorCode;	
 	private String errorMessage;
-	private int responseCode;
+	private Integer responseCode;
 	private String responseMessage;
 	
 	private String contentType = "application/json; charset=utf-8";
@@ -36,10 +46,13 @@ public class GXRestAPIClient {
 	static final String DATE_FMT = "yyyy-MM-dd";
 	static final String DATETIME_FMT = "yyyy-MM-dd'T'HH:mm:ss";
 	static final String DATETIME_FMT_MS = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+
 	/* Error constants */
+
 	static final int RESPONSE_ERROR_CODE = 2;
 	static final int PARSING_ERROR_CODE = 3;
 	static final int DESERIALIZING_ERROR_CODE = 4;
+	
 	static final String RESPONSE_ERROR_MSG = "Invalid response";
 	static final String PARSING_ERROR_MSG = "Error parsing response";
 	static final String DESERIALIZING_ERROR_MSG = "Error serializing/deserializing object";
@@ -333,7 +346,7 @@ public class GXRestAPIClient {
 				return null;
 			}
 		} 
-		catch (JSONException e) {
+		catch (json.org.json.JSONException e) {
 			errorCode = PARSING_ERROR_CODE;
 			errorMessage = PARSING_ERROR_MSG;
 			logger.error(PARSING_ERROR_MSG + " " + sdtClass, e);
@@ -342,9 +355,19 @@ public class GXRestAPIClient {
 		return sdt;
 	}
 
-	public <T extends GXXMLSerializable> GXBaseCollection<T> getBodyObjCollection(String varName, Class<T> elementClasss) {			
+	public <T extends GxSilentTrnSdt> GXBCCollection<T> getBodyBCCollection(String varName, Class<T> elementClass) {
+		GXBCCollection<T> col = new GXBCCollection<T>();
+		fillCollection(varName,elementClass, col);
+		return col;
+	}
+
+	public <T extends GXXMLSerializable> GXBaseCollection<T> getBodyObjCollection(String varName, Class<T> elementClass) {
+		GXBaseCollection<T> col = new GXBaseCollection<T>();
+		fillCollection(varName, elementClass, col);
+		return col;
+	}
+	private <T extends GXXMLSerializable>  void fillCollection(String varName, Class<T> elementClass, GXBaseCollection col) {
 		JSONArray jsonarr = new JSONArray();
-		GXBaseCollection<T> col = new GXBaseCollection<T>();  
 		try {			
 			if (jsonResponse.has(varName))
 				jsonarr = jsonResponse.getJSONArray(varName);
@@ -354,7 +377,7 @@ public class GXRestAPIClient {
 			if (jsonarr != null) {
 				for (int i=0; i < jsonarr.length(); i++) {
     				JSONObject o = jsonarr.getJSONObject(i);
-					T sdt = elementClasss.newInstance();
+					T sdt = elementClass.newInstance();
 					sdt.fromJSonString(o.toString(),null);
 					col.add(sdt);
 				}
@@ -362,20 +385,19 @@ public class GXRestAPIClient {
 			else {
 				errorCode = RESPONSE_ERROR_CODE;
 				errorMessage = RESPONSE_ERROR_MSG;
-				logger.error(RESPONSE_ERROR_MSG + " " + elementClasss);
+				logger.error(RESPONSE_ERROR_MSG + " " + elementClass);
 			}	
 		} 
-		catch (JSONException e) {
+		catch (json.org.json.JSONException e) {
 			errorCode = PARSING_ERROR_CODE;
 			errorMessage = PARSING_ERROR_MSG;
-			logger.error(PARSING_ERROR_MSG + " " + elementClasss ,e );			
+			logger.error(PARSING_ERROR_MSG + " " + elementClass ,e );
 		}
 		catch (Exception e) {
 			errorCode = DESERIALIZING_ERROR_CODE;
 			errorMessage = DESERIALIZING_ERROR_MSG;
-			logger.error(DESERIALIZING_ERROR_MSG + " " + elementClasss, e);
+			logger.error(DESERIALIZING_ERROR_MSG + " " + elementClass, e);
 		}
-		return col;
 	}
 
 	public <T extends Object> GXSimpleCollection<T> getBodyCollection(String varName, Class<T> elementClasss) {	
@@ -394,7 +416,7 @@ public class GXRestAPIClient {
 				coll.fromJSonString(jsonResponse.getString(varName), null);
 			} 
 		} 
-		catch (JSONException e) {
+		catch (json.org.json.JSONException e) {
 			errorCode = PARSING_ERROR_CODE;
 			errorMessage = PARSING_ERROR_MSG;
 			logger.error(PARSING_ERROR_MSG + " " + elementClasss, e);			
@@ -444,7 +466,7 @@ public class GXRestAPIClient {
 		serviceuri += queryString;
 		httpClient.execute( this.httpMethod, serviceuri);
 
-		if (httpClient.getStatusCode() >= 300 || httpClient.getErrCode() > 0) {	    
+		if (httpClient.getStatusCode() >= 300 || httpClient.getErrCode() > 0) {	
 			errorCode = (httpClient.getErrCode() == 0)? 1 : httpClient.getErrCode();
 			errorMessage = httpClient.getErrDescription();				
 			statusCode = httpClient.getStatusCode();

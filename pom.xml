@@ -14,7 +14,7 @@
 	<url>https://github.com/genexuslabs/JavaClasses</url>
 
     <properties>
-        <revision>2.10</revision>
+        <revision>3.0</revision>
         <changelist>-SNAPSHOT</changelist>
         <sha1/>
 
@@ -80,11 +80,11 @@
 
 	<modules>
 		<module>common</module>
+		<module>gxweb</module>
 		<module>wrapperjavax</module>
 		<module>wrapperjakarta</module>
 		<module>wrappercommon</module>
 		<module>java</module>
-		<module>gxandroidpublisher</module>
 		<module>gxcryptocommon</module>
 		<module>gxdynamiccall</module>
 		<module>gxmail</module>
@@ -102,8 +102,8 @@
 		<module>gxawsserverless</module>
 		<module>androidreports</module>
     <module>gxqueue</module>
-    <module>gxqueueawssqs</module>
-    <module>gxqueueazure</module>
+    <module>gxqueue-awssqs</module>
+    <module>gxqueue-azure</module>
     <module>gxcache-redis</module>
     <module>gxcache-memcached</module>
     <module>gxcloudstorage-common</module>
