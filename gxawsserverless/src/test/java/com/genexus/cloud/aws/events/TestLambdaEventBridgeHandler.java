@@ -30,21 +30,21 @@ public class TestLambdaEventBridgeHandler {
 	public void simpleEvent() throws Exception {
 		LambdaEventBridgeHandler handler = new LambdaEventBridgeHandler(SIMPLE_HANDLER);
 		String result = handler.handleRequest(createEvent(), new MockContext());
-		Assert.assertEquals("{\"Handled\":true,\"ErrorMessage\":\"\"}", result);
+		Assert.assertEquals("{\"HandleFailure\":false,\"ErrorMessage\":\"\"}", result);
 	}
 
 	@Test
 	public void simpleEventRaw() throws Exception {
 		LambdaEventBridgeHandler handler = new LambdaEventBridgeHandler(SIMPLE_RAW_HANDLER);
 		String result = handler.handleRequest(createEvent(), new MockContext());
-		Assert.assertEquals("{\"Handled\":true,\"ErrorMessage\":\"\"}", result);
+		Assert.assertEquals("{\"HandleFailure\":false,\"ErrorMessage\":\"\"}", result);
 	}
 
 	@Test
 	public void simpleEventNoParms() throws Exception {
 		LambdaEventBridgeHandler handler = new LambdaEventBridgeHandler(handlesimplenoparmsevent.class.getName());
 		String result = handler.handleRequest(createEvent(), new MockContext());
-		Assert.assertEquals("{\"Handled\":true,\"ErrorMessage\":\"\"}", result);
+		Assert.assertEquals("{\"HandleFailure\":false,\"ErrorMessage\":\"\"}", result);
 	}
 
 

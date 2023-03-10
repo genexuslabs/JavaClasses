@@ -40,7 +40,6 @@ public final class handlesimplesqsevent2 extends GXProcedure {
 	private void privateExecute() {
 		System.out.println("START EventBridge Event received");
 		System.out.println("END EventBridge Event received");
-		handlesimplesqsevent2.this.AV9EventMessageResponse.setgxTv_SdtEventMessageResponse_Handled(true);
 		cleanup();
 	}
 
