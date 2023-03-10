@@ -50,6 +50,17 @@ public class CosmosDBConnection extends ServiceConnection
 				default: break;
 			}
 		}
+		if (maccountEndpoint == null)
+		{
+			String accountURI = "";
+			if (connUrl.contains("AccountEndpoint="))
+			{
+				int pos1 = connUrl.indexOf("AccountEndpoint=",0);
+				int pos2 = connUrl.indexOf(";",pos1);
+				accountURI = connUrl.substring(pos1,pos2);
+				maccountEndpoint = accountURI != "" ? accountURI.replace("AccountEndpoint=",""):null;
+			}
+		}
 
 		//Consistency Level: https://learn.microsoft.com/en-us/java/api/com.azure.cosmos.consistencylevel?view=azure-java-stable
 
