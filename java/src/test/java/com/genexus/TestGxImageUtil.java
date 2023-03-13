@@ -1,6 +1,5 @@
 package com.genexus;
 
-import com.genexus.reports.GXcfg;
 import com.genexus.specific.java.Connect;
 import com.genexus.specific.java.LogManager;
 import org.junit.Assert;
@@ -34,7 +33,6 @@ public class TestGxImageUtil {
 	private String initialize(String name)
 	{
 		Connect.init();
-		Application.init(GXcfg.class);
 		LogManager.initialize(".");
 
 		String copiedFileName = String.format(FILE_NAME_COPY, name, java.util.UUID.randomUUID().toString());
