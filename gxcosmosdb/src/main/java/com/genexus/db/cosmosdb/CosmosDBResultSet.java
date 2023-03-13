@@ -6,8 +6,6 @@ import com.genexus.db.service.IOServiceContext;
 import com.genexus.db.service.ServiceResultSet;
 
 import com.azure.cosmos.CosmosException;
-import com.genexus.db.service.IOServiceContext;
-import com.genexus.db.service.ServiceResultSet;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -112,10 +110,11 @@ public class CosmosDBResultSet extends ServiceResultSet<Object>
 		Object value = getAttValue(columnIndex);
 		if(value != null)
 		{
+			lastWasNull = false;
 			return value.toString().trim();
 		}
 		lastWasNull = true;
-		return "";
+		return null;
 	}
 
 	@Override

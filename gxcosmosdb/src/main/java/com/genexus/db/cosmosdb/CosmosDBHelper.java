@@ -131,7 +131,10 @@ public class CosmosDBHelper {
 			} else if (value.isArray()) {
 				result.put(key, jsonNodeToList(value));
 			} else if (value.isValueNode()) {
-				result.put(key, value.asText());
+				if (value.isNull())
+					result.put(key,null);
+				else
+					result.put(key, value.asText());
 			}
 		});
 		return result;

@@ -236,7 +236,11 @@ public class CosmosDBPreparedStatement extends ServicePreparedStatement
 		int[] statusCode = new int[1];
 		if (container != null) {
 			ObjectMapper mapper = new ObjectMapper();
-			JsonNode jsonNode = mapper.readTree(jsonObject.toString());
+			String jsonStr = jsonObject.toString();
+			//Parse string to extract nulls
+			jsonStr = jsonStr.replaceAll("\\\"(null)\\\"", "$1");
+
+			JsonNode jsonNode = mapper.readTree(jsonStr);
 			CountDownLatch latch = new CountDownLatch(1);
 	
 			if (jsonNode != null) {
