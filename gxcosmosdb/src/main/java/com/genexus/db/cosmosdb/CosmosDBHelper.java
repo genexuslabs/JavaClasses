@@ -10,12 +10,8 @@ import org.apache.commons.collections.ListUtils;
 
 import java.sql.SQLException;
 import java.util.*;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
 public class CosmosDBHelper {
