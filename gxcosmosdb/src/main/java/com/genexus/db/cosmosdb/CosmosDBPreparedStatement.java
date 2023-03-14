@@ -275,7 +275,10 @@ public class CosmosDBPreparedStatement extends ServicePreparedStatement
 		if (container != null)
 		{
 		ObjectMapper mapper = new ObjectMapper();
-		JsonNode jsonNode = mapper.readTree(jsonObject.toString());
+		String jsonStr = jsonObject.toString();
+		jsonStr = jsonStr.replaceAll("\\\"(null)\\\"", "$1");
+
+		JsonNode jsonNode = mapper.readTree(jsonStr);
 		CountDownLatch latch = new CountDownLatch(1);
 
 		Mono<CosmosItemResponse<JsonNode>> cosmosItemResponseMono = container.replaceItem(jsonNode, idValue, toPartitionKey(partitionKey), new CosmosItemRequestOptions())
