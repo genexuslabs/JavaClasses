@@ -19,14 +19,21 @@ import com.genexus.reports.fonts.PDFFontDescriptor;
 import com.genexus.reports.fonts.Type1FontMetrics;
 import com.genexus.reports.fonts.Utilities;
 
+import com.lowagie.text.Paragraph;
 import org.apache.pdfbox.cos.*;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.font.*;
+import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.graphics.state.PDTextState;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationText;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceEntry;
 import org.apache.pdfbox.util.Matrix;
 
 public class PDFReportpdfbox implements IReportHandler{
@@ -88,7 +95,7 @@ public class PDFReportpdfbox implements IReportHandler{
 	public boolean lineCapProjectingSquare = true;
 	public boolean barcode128AsImage = true;
 	ConcurrentHashMap<String, PDImageXObject> documentImages;
-	Matrix rundirection = new Matrix(1, 0, 0, 1, 0, 0);
+	Matrix runDirection = new Matrix(1, 0, 0, 1, 0, 0);
 	public int justifiedType;
 	private HttpContext httpContext = null;
 	float[] STYLE_SOLID = new float[]{1,0};//0
@@ -1321,155 +1328,40 @@ public class PDFReportpdfbox implements IReportHandler{
 
 		if (htmlformat == 1)
 		{
-			StyleSheet styles = new StyleSheet();
-			Hashtable locations = getFontLocations();
-			for (Enumeration e = locations.keys(); e.hasMoreElements() ;)
-			{
-				String fontName = (String)e.nextElement();
-				String fontPath = (String)locations.get(fontName);
-				if (fontPath.equals(""))
-				{
-					fontPath = PDFFontDescriptor.getTrueTypeFontLocation(fontName, props);
-				}
-				if (!fontPath.equals(""))
-				{
-					FontFactory.register(fontPath, fontName);
-					styles.loadTagStyle("body", "face", fontName);
-
-					if (isEmbeddedFont(fontName)){
-						styles.loadTagStyle("body", "encoding", BaseFont.IDENTITY_H);
-					}
-					else{
-						styles.loadTagStyle("body", "encoding", BaseFont.WINANSI);
-					}
-				}
-			}
-
-			//Bottom y top son los absolutos, sin considerar la altura real a la que se escriben las letras.
-			bottomAux = (float)convertScale(bottom);
-			topAux = (float)convertScale(top);
-
-			ColumnText Col = new ColumnText(cb);
-			int colAlignment = columnAlignment(alignment);
-			if (colAlignment!=0)
-				Col.setAlignment(colAlignment);
-			ColumnText simulationCol = new ColumnText(null);
-			float drawingPageHeight = (float)this.pageSize.getTop() - topMargin - bottomMargin;
-			//Col.setSimpleColumn(llx, lly, urx, ury);
-			Col.setSimpleColumn(leftAux + leftMargin,drawingPageHeight - bottomAux,rightAux + leftMargin,drawingPageHeight - topAux);
-			simulationCol.setSimpleColumn(leftAux + leftMargin,drawingPageHeight - bottomAux,rightAux + leftMargin,drawingPageHeight - topAux);
-
-			try
-			{
-				ArrayList objects = HTMLWorker.parseToList(new StringReader(sTxt), styles);
-				for (int k = 0; k < objects.size(); ++k)
-				{
-					if (pageHeightExceeded(bottomAux, drawingPageHeight))
-					{
-						simulationCol.addElement((Element)objects.get(k));
-						simulationCol.go(true);
-
-						if (simulationCol.getYLine() < bottomMargin)
-						{
-							GxEndPage();
-							GxStartPage();
-							simulationCol = new ColumnText(null);
-							simulationCol.setSimpleColumn(leftAux + leftMargin,drawingPageHeight - bottomAux,rightAux + leftMargin,drawingPageHeight - topAux);
-							simulationCol.addElement((Element)objects.get(k));
-
-							Col = new ColumnText(cb);
-							if (colAlignment!=0)
-								Col.setAlignment(colAlignment);
-							Col.setSimpleColumn(leftAux + leftMargin,drawingPageHeight - bottomAux,rightAux + leftMargin,drawingPageHeight - topAux);
-
-							bottomAux = bottomAux - drawingPageHeight;
-						}
-					}
-					if (objects.get(k) instanceof Paragraph && colAlignment!=0)
-						((Paragraph)objects.get(k)).setAlignment(colAlignment);
-
-					Col.addElement((Element)objects.get(k));
-					Col.go();
-				}
-			}catch(Exception de){
-				System.out.println("ERROR printing HTML text " + de.getMessage());
-			}
+			//Por ahora no soportamos la impresion de HTML
 		}
 		else
 		if (barcode!=null)
 		{
-			if(DEBUG)DEBUG_STREAM.println("Barcode: --> " + barcode.getClass().getName());
-			try
-			{
-				barcode.setCode(sTxt);
-				barcode.setTextAlignment(alignment);
-				com.lowagie.text.Rectangle rectangle = new com.lowagie.text.Rectangle(0, 0);
-				//El rectangulo tiene tamaño ok.
-				switch (alignment)
-				{
-					case 1: // Center Alignment
-						rectangle = new com.lowagie.text.Rectangle((leftAux + rightAux) / 2 + leftMargin - rectangleWidth / 2,
-							(float)this.pageSize.getUpperRightY() - (float)convertScale(bottom) - topMargin - bottomMargin,
-							(leftAux + rightAux) / 2 + leftMargin + rectangleWidth / 2,
-							(float)this.pageSize.getUpperRightY() - (float)convertScale(top) - topMargin - bottomMargin);
-						break;
-					case 2: // Right Alignment
-						rectangle = new com.lowagie.text.Rectangle(rightAux + leftMargin - rectangleWidth,
-							(float)this.pageSize.getUpperRightY() - (float)convertScale(bottom) - topMargin - bottomMargin,
-							rightAux + leftMargin,
-							(float)this.pageSize.getUpperRightY() - (float)convertScale(top) - topMargin - bottomMargin);
-						break;
-					case 0: // Left Alignment
-						rectangle = new com.lowagie.text.Rectangle(leftAux + leftMargin,
-							(float)this.pageSize.getUpperRightY() - (float)convertScale(bottom) - topMargin - bottomMargin,
-							leftAux + leftMargin + rectangleWidth,
-							(float)this.pageSize.getUpperRightY() - (float)convertScale(top) - topMargin - bottomMargin);
-						break;
-				}
-				barcode.setAltText("");
-				barcode.setBaseline(0);
-				//barcode.Size = 0;
-
-				if (fontSize < Const.LARGE_FONT_SIZE)
-					barcode.setX(Const.OPTIMAL_MINIMU_BAR_WIDTH_SMALL_FONT);
-				else
-					barcode.setX(Const.OPTIMAL_MINIMU_BAR_WIDTH_LARGE_FONT);
-
-				PDImageXObject imageCode = barcode.createImageWithBarcode(cb, backFill ? backColor : null, foreColor);
-				imageCode.setAbsolutePosition(leftAux + leftMargin, rectangle.getBottom());
-				barcode.setBarHeight(rectangle.getHeight());
-				imageCode.scaleToFit(rectangle.getWidth(), rectangle.getHeight());
-				document.add(imageCode);
-			}
-			catch (Exception ex)
-			{
-				if(DEBUG)DEBUG_STREAM.println("Error generating Barcode: --> " + barcode.getClass().getName() + ex.getMessage());
-				if(DEBUG)ex.printStackTrace ();
-			}
+			//Por ahora no soportamos la impresion de barcodes
 		}
 		else
 		{
 
 			if(backFill)
 			{
-				com.lowagie.text.Rectangle rectangle = new com.lowagie.text.Rectangle(0,0);
+				PDRectangle rectangle = new PDRectangle(0,0);
 				//Si el texto tiene background lo dibujo de esta forma
 				switch(alignment)
 				{
 					case 1: // Center Alignment
-						rectangle = new com.lowagie.text.Rectangle((leftAux + rightAux)/2 + leftMargin - rectangleWidth/2, (float)this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin , (leftAux + rightAux)/2 + leftMargin + rectangleWidth/2, (float)this.pageSize.getTop() - topAux - topMargin -bottomMargin);
+						rectangle = new PDRectangle((leftAux + rightAux)/2 + leftMargin - rectangleWidth/2, (float)this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin , (leftAux + rightAux)/2 + leftMargin + rectangleWidth/2, (float)this.pageSize.getTop() - topAux - topMargin -bottomMargin);
 						break;
 					case 2: // Right Alignment
-						rectangle = new com.lowagie.text.Rectangle(rightAux + leftMargin - rectangleWidth, (float)this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin , rightAux + leftMargin, (float)this.pageSize.getTop() - topAux - topMargin -bottomMargin);
+						rectangle = new PDRectangle(rightAux + leftMargin - rectangleWidth, (float)this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin , rightAux + leftMargin, (float)this.pageSize.getTop() - topAux - topMargin -bottomMargin);
 						break;
 					case 0: // Left Alignment
-						rectangle = new com.lowagie.text.Rectangle(leftAux + leftMargin, (float)this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin , leftAux + leftMargin + rectangleWidth, (float)this.pageSize.getTop() - topAux - topMargin -bottomMargin);
+						rectangle = new PDRectangle(leftAux + leftMargin, (float)this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin , leftAux + leftMargin + rectangleWidth, (float)this.pageSize.getTop() - topAux - topMargin -bottomMargin);
 						break;
 				}
-				rectangle.setBackgroundColor(backColor);
+				PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
+				contentStream.setNonStrokingColor(backColor); // set background color to yellow
+				contentStream.addRect(rectangle.getLowerLeftX(), rectangle.getLowerLeftY(),rectangle.getWidth(), rectangle.getHeight());
+				contentStream.fill();
+				contentStream.close();
 				try
 				{
-					document.add(rectangle);
+					document.getPage(page).setMediaBox(rectangle);
 				}
 				catch(Exception e)
 				{
@@ -1479,39 +1371,43 @@ public class PDFReportpdfbox implements IReportHandler{
 
 			float underlineSeparation = lineHeight / 5;//Separacion entre el texto y la linea del subrayado
 			int underlineHeight = (int)underlineSeparation + (int)(underlineSeparation/4);
-			com.lowagie.text.Rectangle underline;
+			PDRectangle underline;
 
 			//Si el texto esta subrayado
 			if (fontUnderline)
 			{
-				underline = new com.lowagie.text.Rectangle(0,0);
+				underline = new PDRectangle(0,0);
 
 				switch(alignment)
 				{
 					case 1: // Center Alignment
-						underline = new com.lowagie.text.Rectangle(
+						underline = new PDRectangle(
 							(leftAux + rightAux)/2 + leftMargin - rectangleWidth/2,
 							this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation,
 							(leftAux + rightAux)/2 + leftMargin + rectangleWidth/2,
 							this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineHeight);
 						break;
 					case 2: // Right Alignment
-						underline = new com.lowagie.text.Rectangle( rightAux + leftMargin - rectangleWidth ,
+						underline = new PDRectangle( rightAux + leftMargin - rectangleWidth ,
 							this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation,
 							rightAux + leftMargin,
 							this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);
 						break;
 					case 0: // Left Alignment
-						underline = new com.lowagie.text.Rectangle( leftAux + leftMargin ,
+						underline = new PDRectangle( leftAux + leftMargin ,
 							this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation,
 							leftAux + leftMargin + rectangleWidth,
 							this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);
 						break;
 				}
-				underline.setBackgroundColor(foreColor);
+				PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
+				contentStream.setNonStrokingColor(foreColor); // set background color to yellow
+				contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY(),underline.getWidth(), underline.getHeight());
+				contentStream.fill();
+				contentStream.close();
 				try
 				{
-					document.add(underline);
+					document.getPage(page).setMediaBox(underline);
 				}
 				catch(Exception e)
 				{
@@ -1522,35 +1418,39 @@ public class PDFReportpdfbox implements IReportHandler{
 			//Si el texto esta tachado
 			if (fontStrikethru)
 			{
-				underline = new com.lowagie.text.Rectangle(0,0);
+				underline = new PDRectangle(0,0);
 				float strikethruSeparation = lineHeight / 2;
 
 				switch(alignment)
 				{
 					case 1: // Center Alignment
-						underline = new com.lowagie.text.Rectangle(
+						underline = new PDRectangle(
 							(leftAux + rightAux)/2 + leftMargin - rectangleWidth/2,
 							this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation,
 							(leftAux + rightAux)/2 + leftMargin + rectangleWidth/2,
 							this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
 						break;
 					case 2: // Right Alignment
-						underline = new com.lowagie.text.Rectangle( rightAux + leftMargin - rectangleWidth ,
+						underline = new PDRectangle( rightAux + leftMargin - rectangleWidth ,
 							this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation,
 							rightAux + leftMargin,
 							this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
 						break;
 					case 0: // Left Alignment
-						underline = new com.lowagie.text.Rectangle( leftAux + leftMargin ,
+						underline = new PDRectangle( leftAux + leftMargin ,
 							this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation,
 							leftAux + leftMargin + rectangleWidth,
 							this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
 						break;
 				}
-				underline.setBackgroundColor(foreColor);
+				PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
+				contentStream.setNonStrokingColor(foreColor); // set background color to yellow
+				contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY(),underline.getWidth(), underline.getHeight());
+				contentStream.fill();
+				contentStream.close();
 				try
 				{
-					document.add(underline);
+					document.getPage(page).setMediaBox(underline);
 				}
 				catch(Exception e)
 				{
@@ -1562,10 +1462,15 @@ public class PDFReportpdfbox implements IReportHandler{
 			{// Si el texto es la cantidad de páginas del documento
 				if (!templateCreated)
 				{
-					template = cb.createTemplate(right - left, bottom - top);
+					PDFormXObject template = new PDFormXObject(document);
+					template.setResources(new PDResources());
+					template.setBBox(new PDRectangle(right - left, bottom - top));
 					templateCreated = true;
 				}
-				cb.addTemplate(template, leftAux + leftMargin, this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin);
+				PDFormXObject form = new PDFormXObject(document);
+				PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
+				contentStream.transform(Matrix.getTranslateInstance(leftAux + leftMargin, leftAux + leftMargin));
+				contentStream.drawForm(form); // draw the form onto th
 				templateFont = baseFont;
 				templateFontSize = fontSize;
 				templateColorFill = foreColor;
@@ -1573,7 +1478,7 @@ public class PDFReportpdfbox implements IReportHandler{
 			}
 
 			float textBlockWidth = rightAux - leftAux;
-			float TxtWidth = baseFont.getWidthPoint(sTxt, fontSize);
+			float TxtWidth = baseFont.getStringWidth(sTxt)/ 1000 * fontSize;
 			boolean justified = (alignment == 3) && textBlockWidth < TxtWidth;
 			boolean wrap = ((align & 16) == 16);
 
@@ -1586,14 +1491,19 @@ public class PDFReportpdfbox implements IReportHandler{
 
 				//La constante 2 para LEADING indica la separacion que se deja entre un renglon y otro. (es lo que mas se asemeja a la api vieja).
 				float leading = (float)(Double.valueOf(props.getGeneralProperty(Const.LEADING)).doubleValue());
-				Paragraph p = new Paragraph(sTxt, font);
-
-				float llx = leftAux + leftMargin;
-				float lly = (float)this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin;
-				float urx = rightAux + leftMargin;
-				float ury = (float)this.pageSize.getUpperRightY() - topAux - topMargin - bottomMargin;
+				PDAnnotationText annotation = new PDAnnotationText();
+				annotation.setContents(sTxt);
+				annotation.setDefaultAppearance("/" + font.getName() + " " + fontSize +" Tf 0 g");
+				annotation.setRectangle(new PDRectangle(leftAux + leftMargin, this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin,
+					rightAux + leftMargin, this.pageSize.getUpperRightY() - topAux - topMargin - bottomMargin));
 
 				try{
+					document.getPage(page).getAnnotations().add(annotation);
+					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
+					contentStream.beginText();
+					contentStream.showText(annotation.getContents());
+					contentStream.endText();
+					contentStream.close();
 					DrawColumnText(cb, llx, lly, urx, ury, p, leading, runDirection, valign, alignment);
 				}
 				catch (Exception e)
@@ -1614,22 +1524,27 @@ public class PDFReportpdfbox implements IReportHandler{
 					{
 						sTxt = newsTxt;
 						newsTxt = newsTxt.substring(0, newsTxt.length()-1);
-						TxtWidth = baseFont.getWidthPoint(newsTxt, fontSize);
+						TxtWidth = baseFont.getStringWidth(newsTxt) / 1000 * fontSize;
 					}
 				}
 
-				Phrase phrase = new Phrase(sTxt, font);
+				PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
+				contentStream.beginText();
+				contentStream.setFont(font, 12);
+				contentStream.showText(sTxt);
+				contentStream.endText();
+
 				switch(alignment)
 				{
 					case 1: // Center Alignment
-						ColumnText.showTextAligned(cb, cb.ALIGN_CENTER, phrase, ((leftAux + rightAux) / 2) + leftMargin, this.pageSize.getTop() - bottomAux - topMargin - bottomMargin + startHeight, 0, runDirection, arabicOptions);
+						ColumnText.showTextAligned(cb, cb.ALIGN_CENTER, phrase, ((leftAux + rightAux) / 2) + leftMargin, this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight, 0, runDirection, arabicOptions);
 						break;
 					case 2: // Right Alignment
-						ColumnText.showTextAligned(cb, cb.ALIGN_RIGHT, phrase, rightAux + leftMargin, this.pageSize.getTop() - bottomAux - topMargin - bottomMargin + startHeight, 0, runDirection, arabicOptions);
+						ColumnText.showTextAligned(cb, cb.ALIGN_RIGHT, phrase, rightAux + leftMargin, this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight, 0, runDirection, arabicOptions);
 						break;
 					case 0: // Left Alignment
 					case 3: // Justified, only one text line
-						ColumnText.showTextAligned(cb, cb.ALIGN_LEFT, phrase, leftAux + leftMargin, this.pageSize.getTop() - bottomAux - topMargin - bottomMargin + startHeight, 0, runDirection, arabicOptions);
+						ColumnText.showTextAligned(cb, cb.ALIGN_LEFT, phrase, leftAux + leftMargin, this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight, 0, runDirection, arabicOptions);
 						break;
 				}
 			}
@@ -1650,7 +1565,7 @@ public class PDFReportpdfbox implements IReportHandler{
 		Col.go(true);
 		return Col;
 	}
-	void DrawColumnText(PdfContentByte cb, float llx, float lly, float urx, float ury, Paragraph p, float leading, int runDirection, int valign, int alignment) throws DocumentException
+	void DrawColumnText(PDPageContentStream cb, float llx, float lly, float urx, float ury, float leading, Matrix runDirection, int valign, int alignment) throws DocumentException
 	{
 		Rectangle rect = new Rectangle(llx, lly, urx, ury);
 		ColumnText ct = SimulateDrawColumnText(cb, rect, p, leading, runDirection, alignment);//add the column in simulation mode
