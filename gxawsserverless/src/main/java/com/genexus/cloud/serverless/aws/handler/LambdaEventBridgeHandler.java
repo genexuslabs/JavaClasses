@@ -58,7 +58,7 @@ public class LambdaEventBridgeHandler extends LambdaBaseEventHandler implements 
 			return "";
 		}
 
-		if (!response.isHandled()) {
+		if (response.hasFailed()) {
 			//Throw exception in order to mark the message as not processed.
 			logger.error(String.format("Messages were not handled. Error: %s", response.getErrorMessage()));
 			throw new RuntimeException(response.getErrorMessage());
