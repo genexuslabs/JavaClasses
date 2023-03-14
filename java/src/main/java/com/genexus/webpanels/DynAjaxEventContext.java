@@ -7,7 +7,7 @@ import json.org.json.JSONArray;
 import java.util.HashSet;
 import java.util.Hashtable;
 
-public class DynAjaxEventContext implements GXWebPanel.IDynAjaxEventContext {
+public class DynAjaxEventContext implements IDynAjaxEventContext {
 	JSONArray inParmsMetadata;
 	HashSet<String> inParmsMetadataHash = new HashSet<String>();
 	JSONArray outParmsMetadata;

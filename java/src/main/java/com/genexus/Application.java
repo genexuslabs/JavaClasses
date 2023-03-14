@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
+import com.genexus.common.interfaces.IGxEjbContext;
 import com.genexus.db.DBConnectionManager;
 import com.genexus.db.DynamicExecute;
 import com.genexus.db.Namespace;
@@ -685,7 +686,7 @@ public class Application
               	executeEvent(context, info, objName, "before_rollback", dataSourceName);
               	context.inBeforeRollback = false;
               }
-			  ((GxEjbContext) context.getSessionContext()).setRollback();
+			  ((IGxEjbContext) context.getSessionContext()).setRollback();
 							if (!context.inAfterRollback)
 							{
 								context.inAfterRollback = true;

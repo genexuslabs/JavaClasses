@@ -306,13 +306,13 @@ public final class GXutil
    	public static int strcmp( String left ,
                              String right )
    	{
-        return rtrim(left).compareTo(rtrim(right));
+        return CommonUtil.strcmp(left, right);
    	}
 
    	public static boolean strcmp2( String left ,
                              String right )
    	{
-        return left.compareTo(right) == 0;
+        return CommonUtil.strcmp2(left, right);
    	}
 
 	public static int guidCompare(java.util.UUID guidA, java.util.UUID guidB, int mode)
@@ -1669,15 +1669,7 @@ public final class GXutil
 
 	public static void ErrorToMessages(String errorId, String errorDescription, GXBaseCollection<SdtMessages_Message> messages)
 	{
-		if (messages != null)
-		{
-			StructSdtMessages_Message struct = new StructSdtMessages_Message();
-			struct.setId(errorId);
-			struct.setDescription(errorDescription);
-			struct.setType((byte)1); //error
-			SdtMessages_Message msg = new SdtMessages_Message(struct);
-			messages.add(msg);
-		}
+		CommonUtil.ErrorToMessages(errorId, errorDescription, messages);
 	}
 	
 	public static String encodeJSON(String in)
@@ -1712,11 +1704,11 @@ public final class GXutil
 
 	public static String getEncryptedSignature( String value, String key)
 	{
-		return Encryption.encrypt64(CommonUtil.getHash( com.genexus.security.web.WebSecurityHelper.StripInvalidChars(value), com.genexus.cryptography.Constants.SECURITY_HASH_ALGORITHM), key);
+		return Encryption.encrypt64(CommonUtil.getHash( com.genexus.security.web.WebSecurityHelper.StripInvalidChars(value), CommonUtil.SECURITY_HASH_ALGORITHM), key);
 	}
 	public static boolean checkEncryptedSignature( String value, String hash, String key)
 	{
-		return CommonUtil.getHash( com.genexus.security.web.WebSecurityHelper.StripInvalidChars(value), com.genexus.cryptography.Constants.SECURITY_HASH_ALGORITHM).equals(Encryption.decrypt64(hash, key));
+		return CommonUtil.getHash( com.genexus.security.web.WebSecurityHelper.StripInvalidChars(value), CommonUtil.SECURITY_HASH_ALGORITHM).equals(Encryption.decrypt64(hash, key));
 	}
 
 	public static String buildWSDLFromHttpClient(com.genexus.internet.HttpClient GXSoapHTTPClient, String wsdlURL)

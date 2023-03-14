@@ -10,11 +10,11 @@ import java.util.Collections;
 import java.util.Arrays;
 
 import com.genexus.IGXAssigned;
+import com.genexus.common.interfaces.IGXWebGrid;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.webpanels.DynAjaxEventContext;
-import com.genexus.webpanels.GXWebPanel;
-import com.genexus.webpanels.GXWebRow;
+import com.genexus.common.interfaces.IGXWebRow;
 
 import json.org.json.IJsonFormattable;
 import json.org.json.JSONArray;
@@ -34,7 +34,7 @@ public abstract class HttpAjaxContext
 		private Hashtable<String, Integer> DicGrids = new Hashtable<String, Integer>();
         private JSONObject ComponentObjects = new JSONObject();
         protected GXAjaxCommandCollection commands = new GXAjaxCommandCollection();
-        protected GXWebRow _currentGridRow = null;
+        protected IGXWebRow _currentGridRow = null;
         protected JSONArray StylesheetsToLoad = new JSONArray();
 
         protected boolean bCloseCommand = false;
@@ -128,7 +128,7 @@ public abstract class HttpAjaxContext
             }
         }
 
-        public void doAjaxLoad(int SId, GXWebRow row)
+        public void doAjaxLoad(int SId, IGXWebRow row)
         {
             try
             {
@@ -488,13 +488,13 @@ public abstract class HttpAjaxContext
           }
         }
 
-		public void ajax_rsp_assign_grid(String gridName, com.genexus.webpanels.GXWebGrid gridObj)
+		public void ajax_rsp_assign_grid(String gridName, IGXWebGrid gridObj)
 		{
 			Object jsonObj = ((IGxJSONAble) gridObj).GetJSONObject();
 			Grids.add(jsonObj);
 		}
 
-        public void ajax_rsp_assign_grid(String gridName, com.genexus.webpanels.GXWebGrid gridObj, String Control)
+        public void ajax_rsp_assign_grid(String gridName, IGXWebGrid gridObj, String Control)
         {
 			Object jsonObj = ((IGxJSONAble) gridObj).GetJSONObject();
 			if (DicGrids.containsKey(Control)) {
