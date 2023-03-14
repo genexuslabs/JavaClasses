@@ -11,9 +11,6 @@ import com.genexus.db.service.ServiceDataStoreHelper;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 
 public class DataStoreHelperCosmosDB extends ServiceDataStoreHelper
 {

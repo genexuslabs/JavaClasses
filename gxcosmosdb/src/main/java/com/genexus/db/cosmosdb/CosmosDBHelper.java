@@ -6,13 +6,13 @@ import com.genexus.db.service.GXType;
 import com.genexus.db.service.VarValue;
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
-import org.apache.commons.collections.ListUtils;
-
 import java.sql.SQLException;
 import java.util.*;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.ZoneOffset;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CosmosDBHelper {
 
@@ -69,7 +69,9 @@ public class CosmosDBHelper {
 			else
 				projectionList = element;
 		}
-		List<String> allFilters = ListUtils.union(query.getKeyFilters(), Arrays.asList(query.filters));
+
+		List<String> allFilters = Stream.concat(query.getKeyFilters().stream(), Arrays.asList(query.filters).stream())
+			.collect(Collectors.toList());
 
 		List<String> allFiltersQuery = new ArrayList<>();
 		List<String> keyFilterQ = new ArrayList<>();

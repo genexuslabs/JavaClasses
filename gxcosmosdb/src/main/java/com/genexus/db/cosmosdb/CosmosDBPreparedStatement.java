@@ -17,7 +17,6 @@ import com.genexus.diagnostics.core.LogManager;
 import com.genexus.util.NameValuePair;
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
-import org.apache.commons.collections.ListUtils;
 import reactor.core.publisher.Mono;
 
 import java.io.InputStream;
@@ -30,6 +29,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CosmosDBPreparedStatement extends ServicePreparedStatement
 {
@@ -323,7 +324,9 @@ public class CosmosDBPreparedStatement extends ServicePreparedStatement
 		String keyFilterS;
 		String condition = "";
 		Iterable<String> keyFilterQ = Collections.emptyList();
-		Iterable<String> allFilters = ListUtils.union(query.getKeyFilters(), Arrays.asList(query.filters));
+
+		Iterable<String> allFilters = Stream.concat(query.getKeyFilters().stream(), Arrays.asList(query.filters).stream())
+			.collect(Collectors.toList());
 
 		for (String keyFilter : allFilters) {
 			keyFilterS = keyFilter;

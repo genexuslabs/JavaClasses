@@ -1,12 +1,9 @@
 package com.genexus.db.cosmosdb;
 
 import com.genexus.db.service.Query;
-import com.genexus.db.service.ServiceDataStoreHelper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class CosmosDBQuery extends Query {
 	public CosmosDBQuery(DataStoreHelperCosmosDB dataStoreHelper) {
