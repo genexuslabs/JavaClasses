@@ -19,21 +19,18 @@ import com.genexus.reports.fonts.PDFFontDescriptor;
 import com.genexus.reports.fonts.Type1FontMetrics;
 import com.genexus.reports.fonts.Utilities;
 
-import com.lowagie.text.Paragraph;
 import org.apache.pdfbox.cos.*;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.PDResources;
+import org.apache.pdfbox.pdmodel.*;
+import org.apache.pdfbox.pdmodel.common.PDPageLabelRange;
+import org.apache.pdfbox.pdmodel.common.PDPageLabels;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.font.*;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-import org.apache.pdfbox.pdmodel.graphics.state.PDTextState;
+import org.apache.pdfbox.pdmodel.interactive.action.PDActionJavaScript;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationText;
-import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
-import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceEntry;
+import org.apache.pdfbox.pdmodel.interactive.viewerpreferences.PDViewerPreferences;
 import org.apache.pdfbox.util.Matrix;
 
 public class PDFReportpdfbox implements IReportHandler{
@@ -42,7 +39,7 @@ public class PDFReportpdfbox implements IReportHandler{
 	private int pageOrientation;  // Indica la orientacion de las páginas
 	private PDType1Font font;
 	private PDType0Font baseFont;
-	private BarcodeUtil barcode = null;
+	//private BarcodeUtil barcode = null; por ahora no soportamos barcode
 	private boolean fontUnderline;
 	private boolean fontStrikethru;
 	private int fontSize;
@@ -72,7 +69,7 @@ public class PDFReportpdfbox implements IReportHandler{
 	//private Hashtable fontMetricsProps = new Hashtable();
 	public static boolean DEBUG = false;
 	private PDDocument document;
-	private PDDocument writer;
+	private PDDocumentCatalog writer;
 	private PDPageContentStream chunk;
 	private int currLine;
 	private int lastLine = 0;
@@ -95,7 +92,7 @@ public class PDFReportpdfbox implements IReportHandler{
 	public boolean lineCapProjectingSquare = true;
 	public boolean barcode128AsImage = true;
 	ConcurrentHashMap<String, PDImageXObject> documentImages;
-	Matrix runDirection = new Matrix(1, 0, 0, 1, 0, 0);
+	public int runDirection = 0;
 	public int justifiedType;
 	private HttpContext httpContext = null;
 	float[] STYLE_SOLID = new float[]{1,0};//0
@@ -965,12 +962,11 @@ public class PDFReportpdfbox implements IReportHandler{
 
 		if (barcode128AsImage && fontName.toLowerCase().indexOf("barcode 128") >= 0 || fontName.toLowerCase().indexOf("barcode128") >= 0)
 		{
-			barcode = new Barcode128();
-			barcode.setCodeType(Barcode128.CODE128);
+			// Por ahora no soportamos barcode
 		}
 		else
 		{
-			barcode = null;
+			// Por ahora no soportamos barcode
 		}
 		this.fontUnderline = fontUnderline;
 		this.fontStrikethru = fontStrikethru;
@@ -1271,291 +1267,320 @@ public class PDFReportpdfbox implements IReportHandler{
 	}
 	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border, int valign)
 	{
-		boolean printRectangle = false;
-		if (props.getBooleanGeneralProperty(Const.BACK_FILL_IN_CONTROLS, true))
-			printRectangle = true;
+		try{
+			boolean printRectangle = false;
+			if (props.getBooleanGeneralProperty(Const.BACK_FILL_IN_CONTROLS, true))
+				printRectangle = true;
 
-		if (printRectangle && (border == 1 || backFill))
-		{
-			GxDrawRect(left, top, right, bottom, border, foreColor.getRed(), foreColor.getGreen(), foreColor.getBlue(), backFill ? 1 : 0, backColor.getRed(), backColor.getGreen(), backColor.getBlue(), 0, 0);
-		}
-
-		PDPageContentStream cb =  new PDPageContentStream(document, document.getPage(page));
-		sTxt = CommonUtil.rtrim(sTxt);
-
-		COSDictionary fontDict = baseFont.getCOSObject();
-		COSDictionary newFontDict = new COSDictionary(fontDict);
-		newFontDict.setFloat(COSName.SIZE, fontSize);
-		PDType0Font auxFont = new PDType0Font(newFontDict);
-		cb.setFont(font,fontSize);
-
-		cb.setNonStrokingColor(foreColor);
-		int arabicOptions = 0;
-		float captionHeight = 	 auxFont.getFontDescriptor().getCapHeight();
-		float rectangleWidth = auxFont.getStringWidth(sTxt);
-		float lineHeight = auxFont.getFontDescriptor().getFontBoundingBox().getUpperRightY() - auxFont.getFontDescriptor().getFontBoundingBox().getLowerLeftX();
-		float textBlockHeight = (float)convertScale(bottom-top);
-		int linesCount =   (int)(textBlockHeight/lineHeight);
-		int bottomOri = bottom;
-		int topOri = top;
-
-		//Si se tiene un campo con mas de una linea y no tiene wrap, no es justify, y no es html, se simula que el campo tiene una sola linea
-		//asignando al bottom el top mas el lineHeight
-		if (linesCount >= 2 && !((align & 16) == 16) && htmlformat != 1)
-		{
-			if (valign == PDFReportpdfbox.VerticalAlign.TOP.value())
-				bottom = top + (int)reconvertScale(lineHeight);
-			else if (valign == PDFReportpdfbox.VerticalAlign.BOTTOM.value())
-				top = bottom - (int)reconvertScale(lineHeight);
-			//if valign == middle, no se cambia ni top ni bottom
-		}
-
-		float bottomAux = (float)convertScale(bottom) - ((float)convertScale(bottom-top) - captionHeight)/2;
-		//Al bottom de los textos se le resta espacio entre el texto y el borde del textblock,
-		//porque en el reporte genexus la x,y de un
-		//text es la x,y del cuadro que contiene el texto, y la api de itext espera la x,y del texto en si.
-		//Generalmente el cuadro es mas grande que lo que ocupa el texto realmente (depende del tipo de font)
-		//captionHeight esta convertido, bottom y top no.
-		float topAux = (float)convertScale(top) + ((float)convertScale(bottom-top) - captionHeight)/2;
-
-
-		float startHeight = bottomAux - topAux - captionHeight;
-
-		float leftAux = (float)convertScale(left);
-		float rightAux = (float)convertScale(right);
-		int alignment = align & 3;
-		boolean autoResize = (align & 256) == 256;
-
-		if (htmlformat == 1)
-		{
-			//Por ahora no soportamos la impresion de HTML
-		}
-		else
-		if (barcode!=null)
-		{
-			//Por ahora no soportamos la impresion de barcodes
-		}
-		else
-		{
-
-			if(backFill)
+			if (printRectangle && (border == 1 || backFill))
 			{
-				PDRectangle rectangle = new PDRectangle(0,0);
-				//Si el texto tiene background lo dibujo de esta forma
-				switch(alignment)
-				{
-					case 1: // Center Alignment
-						rectangle = new PDRectangle((leftAux + rightAux)/2 + leftMargin - rectangleWidth/2, (float)this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin , (leftAux + rightAux)/2 + leftMargin + rectangleWidth/2, (float)this.pageSize.getTop() - topAux - topMargin -bottomMargin);
-						break;
-					case 2: // Right Alignment
-						rectangle = new PDRectangle(rightAux + leftMargin - rectangleWidth, (float)this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin , rightAux + leftMargin, (float)this.pageSize.getTop() - topAux - topMargin -bottomMargin);
-						break;
-					case 0: // Left Alignment
-						rectangle = new PDRectangle(leftAux + leftMargin, (float)this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin , leftAux + leftMargin + rectangleWidth, (float)this.pageSize.getTop() - topAux - topMargin -bottomMargin);
-						break;
-				}
-				PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
-				contentStream.setNonStrokingColor(backColor); // set background color to yellow
-				contentStream.addRect(rectangle.getLowerLeftX(), rectangle.getLowerLeftY(),rectangle.getWidth(), rectangle.getHeight());
-				contentStream.fill();
-				contentStream.close();
-				try
-				{
-					document.getPage(page).setMediaBox(rectangle);
-				}
-				catch(Exception e)
-				{
-					System.err.println(e.getMessage());
-				}
+				GxDrawRect(left, top, right, bottom, border, foreColor.getRed(), foreColor.getGreen(), foreColor.getBlue(), backFill ? 1 : 0, backColor.getRed(), backColor.getGreen(), backColor.getBlue(), 0, 0);
 			}
 
-			float underlineSeparation = lineHeight / 5;//Separacion entre el texto y la linea del subrayado
-			int underlineHeight = (int)underlineSeparation + (int)(underlineSeparation/4);
-			PDRectangle underline;
+			PDPageContentStream cb =  new PDPageContentStream(document, document.getPage(page));
+			sTxt = CommonUtil.rtrim(sTxt);
 
-			//Si el texto esta subrayado
-			if (fontUnderline)
+			COSDictionary fontDict = baseFont.getCOSObject();
+			COSDictionary newFontDict = new COSDictionary(fontDict);
+			newFontDict.setFloat(COSName.SIZE, fontSize);
+			PDType0Font auxFont = new PDType0Font(newFontDict);
+			cb.setFont(font,fontSize);
+
+			cb.setNonStrokingColor(foreColor);
+			int arabicOptions = 0;
+			float captionHeight = 	 auxFont.getFontDescriptor().getCapHeight();
+			float rectangleWidth = auxFont.getStringWidth(sTxt);
+			float lineHeight = auxFont.getFontDescriptor().getFontBoundingBox().getUpperRightY() - auxFont.getFontDescriptor().getFontBoundingBox().getLowerLeftX();
+			float textBlockHeight = (float)convertScale(bottom-top);
+			int linesCount =   (int)(textBlockHeight/lineHeight);
+			int bottomOri = bottom;
+			int topOri = top;
+
+			//Si se tiene un campo con mas de una linea y no tiene wrap, no es justify, y no es html, se simula que el campo tiene una sola linea
+			//asignando al bottom el top mas el lineHeight
+			if (linesCount >= 2 && !((align & 16) == 16) && htmlformat != 1)
 			{
-				underline = new PDRectangle(0,0);
-
-				switch(alignment)
-				{
-					case 1: // Center Alignment
-						underline = new PDRectangle(
-							(leftAux + rightAux)/2 + leftMargin - rectangleWidth/2,
-							this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation,
-							(leftAux + rightAux)/2 + leftMargin + rectangleWidth/2,
-							this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineHeight);
-						break;
-					case 2: // Right Alignment
-						underline = new PDRectangle( rightAux + leftMargin - rectangleWidth ,
-							this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation,
-							rightAux + leftMargin,
-							this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);
-						break;
-					case 0: // Left Alignment
-						underline = new PDRectangle( leftAux + leftMargin ,
-							this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation,
-							leftAux + leftMargin + rectangleWidth,
-							this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);
-						break;
-				}
-				PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
-				contentStream.setNonStrokingColor(foreColor); // set background color to yellow
-				contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY(),underline.getWidth(), underline.getHeight());
-				contentStream.fill();
-				contentStream.close();
-				try
-				{
-					document.getPage(page).setMediaBox(underline);
-				}
-				catch(Exception e)
-				{
-					System.err.println(e.getMessage());
-				}
+				if (valign == PDFReportpdfbox.VerticalAlign.TOP.value())
+					bottom = top + (int)reconvertScale(lineHeight);
+				else if (valign == PDFReportpdfbox.VerticalAlign.BOTTOM.value())
+					top = bottom - (int)reconvertScale(lineHeight);
+				//if valign == middle, no se cambia ni top ni bottom
 			}
 
-			//Si el texto esta tachado
-			if (fontStrikethru)
+			float bottomAux = (float)convertScale(bottom) - ((float)convertScale(bottom-top) - captionHeight)/2;
+			//Al bottom de los textos se le resta espacio entre el texto y el borde del textblock,
+			//porque en el reporte genexus la x,y de un
+			//text es la x,y del cuadro que contiene el texto, y la api de itext espera la x,y del texto en si.
+			//Generalmente el cuadro es mas grande que lo que ocupa el texto realmente (depende del tipo de font)
+			//captionHeight esta convertido, bottom y top no.
+			float topAux = (float)convertScale(top) + ((float)convertScale(bottom-top) - captionHeight)/2;
+
+
+			float startHeight = bottomAux - topAux - captionHeight;
+
+			float leftAux = (float)convertScale(left);
+			float rightAux = (float)convertScale(right);
+			int alignment = align & 3;
+			boolean autoResize = (align & 256) == 256;
+
+			if (htmlformat == 1)
 			{
-				underline = new PDRectangle(0,0);
-				float strikethruSeparation = lineHeight / 2;
-
-				switch(alignment)
-				{
-					case 1: // Center Alignment
-						underline = new PDRectangle(
-							(leftAux + rightAux)/2 + leftMargin - rectangleWidth/2,
-							this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation,
-							(leftAux + rightAux)/2 + leftMargin + rectangleWidth/2,
-							this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
-						break;
-					case 2: // Right Alignment
-						underline = new PDRectangle( rightAux + leftMargin - rectangleWidth ,
-							this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation,
-							rightAux + leftMargin,
-							this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
-						break;
-					case 0: // Left Alignment
-						underline = new PDRectangle( leftAux + leftMargin ,
-							this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation,
-							leftAux + leftMargin + rectangleWidth,
-							this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
-						break;
-				}
-				PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
-				contentStream.setNonStrokingColor(foreColor); // set background color to yellow
-				contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY(),underline.getWidth(), underline.getHeight());
-				contentStream.fill();
-				contentStream.close();
-				try
-				{
-					document.getPage(page).setMediaBox(underline);
-				}
-				catch(Exception e)
-				{
-					System.err.println(e.getMessage());
-				}
+				//Por ahora no soportamos la impresion de HTML
 			}
-
-			if(sTxt.trim().equalsIgnoreCase("{{Pages}}"))
-			{// Si el texto es la cantidad de páginas del documento
-				if (!templateCreated)
-				{
-					PDFormXObject template = new PDFormXObject(document);
-					template.setResources(new PDResources());
-					template.setBBox(new PDRectangle(right - left, bottom - top));
-					templateCreated = true;
-				}
-				PDFormXObject form = new PDFormXObject(document);
-				PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
-				contentStream.transform(Matrix.getTranslateInstance(leftAux + leftMargin, leftAux + leftMargin));
-				contentStream.drawForm(form); // draw the form onto th
-				templateFont = baseFont;
-				templateFontSize = fontSize;
-				templateColorFill = foreColor;
-				return;
-			}
-
-			float textBlockWidth = rightAux - leftAux;
-			float TxtWidth = baseFont.getStringWidth(sTxt)/ 1000 * fontSize;
-			boolean justified = (alignment == 3) && textBlockWidth < TxtWidth;
-			boolean wrap = ((align & 16) == 16);
-
-			//Justified
-			if (wrap || justified)
+			else
+			if (1 == 2)//(barcode!=null)
 			{
-				//Bottom y top son los absolutos, sin considerar la altura real a la que se escriben las letras.
-				bottomAux = (float)convertScale(bottomOri);
-				topAux = (float)convertScale(topOri);
-
-				//La constante 2 para LEADING indica la separacion que se deja entre un renglon y otro. (es lo que mas se asemeja a la api vieja).
-				float leading = (float)(Double.valueOf(props.getGeneralProperty(Const.LEADING)).doubleValue());
-				PDAnnotationText annotation = new PDAnnotationText();
-				annotation.setContents(sTxt);
-				annotation.setDefaultAppearance("/" + font.getName() + " " + fontSize +" Tf 0 g");
-				annotation.setRectangle(new PDRectangle(leftAux + leftMargin, this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin,
-					rightAux + leftMargin, this.pageSize.getUpperRightY() - topAux - topMargin - bottomMargin));
-
-				try{
-					document.getPage(page).getAnnotations().add(annotation);
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
-					contentStream.beginText();
-					contentStream.showText(annotation.getContents());
-					contentStream.endText();
-					contentStream.close();
-					DrawColumnText(cb, llx, lly, urx, ury, p, leading, runDirection, valign, alignment);
-				}
-				catch (Exception e)
-				{
-					e.printStackTrace(System.err);
-				}
+				//Por ahora no soportamos la impresion de barcodes
 			}
-			else //no wrap
+			else
 			{
-				startHeight=0;
-				if (!autoResize)
+
+				if(backFill)
 				{
-					//Va quitando el ultimo char del texto hasta que llega a un string cuyo ancho se pasa solo por un caracter
-					//del ancho del textblock ("se pasa solo por un caracter": esto es porque en el caso general es ese el texto que
-					//mas se parece a lo que se disenia en genexus).
-					String newsTxt = sTxt;
-					while(TxtWidth > textBlockWidth && (newsTxt.length()-1>=0))
+					PDRectangle rectangle = new PDRectangle(0,0);
+					//Si el texto tiene background lo dibujo de esta forma
+					switch(alignment)
 					{
-						sTxt = newsTxt;
-						newsTxt = newsTxt.substring(0, newsTxt.length()-1);
-						TxtWidth = baseFont.getStringWidth(newsTxt) / 1000 * fontSize;
+						case 1: // Center Alignment
+							rectangle = new PDRectangle((leftAux + rightAux)/2 + leftMargin - rectangleWidth/2, (float)this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin , (leftAux + rightAux)/2 + leftMargin + rectangleWidth/2, (float)this.pageSize.getUpperRightY() - topAux - topMargin -bottomMargin);
+							break;
+						case 2: // Right Alignment
+							rectangle = new PDRectangle(rightAux + leftMargin - rectangleWidth, (float)this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin , rightAux + leftMargin, (float)this.pageSize.getUpperRightY() - topAux - topMargin -bottomMargin);
+							break;
+						case 0: // Left Alignment
+							rectangle = new PDRectangle(leftAux + leftMargin, (float)this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin , leftAux + leftMargin + rectangleWidth, (float)this.pageSize.getUpperRightY() - topAux - topMargin -bottomMargin);
+							break;
+					}
+					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
+					contentStream.setNonStrokingColor(backColor); // set background color to yellow
+					contentStream.addRect(rectangle.getLowerLeftX(), rectangle.getLowerLeftY(),rectangle.getWidth(), rectangle.getHeight());
+					contentStream.fill();
+					contentStream.close();
+					try
+					{
+						document.getPage(page).setMediaBox(rectangle);
+					}
+					catch(Exception e)
+					{
+						System.err.println(e.getMessage());
 					}
 				}
 
-				PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
-				contentStream.beginText();
-				contentStream.setFont(font, 12);
-				contentStream.showText(sTxt);
-				contentStream.endText();
+				float underlineSeparation = lineHeight / 5;//Separacion entre el texto y la linea del subrayado
+				int underlineHeight = (int)underlineSeparation + (int)(underlineSeparation/4);
+				PDRectangle underline;
 
-				switch(alignment)
+				//Si el texto esta subrayado
+				if (fontUnderline)
 				{
-					case 1: // Center Alignment
-						ColumnText.showTextAligned(cb, cb.ALIGN_CENTER, phrase, ((leftAux + rightAux) / 2) + leftMargin, this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight, 0, runDirection, arabicOptions);
-						break;
-					case 2: // Right Alignment
-						ColumnText.showTextAligned(cb, cb.ALIGN_RIGHT, phrase, rightAux + leftMargin, this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight, 0, runDirection, arabicOptions);
-						break;
-					case 0: // Left Alignment
-					case 3: // Justified, only one text line
-						ColumnText.showTextAligned(cb, cb.ALIGN_LEFT, phrase, leftAux + leftMargin, this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight, 0, runDirection, arabicOptions);
-						break;
+					underline = new PDRectangle(0,0);
+
+					switch(alignment)
+					{
+						case 1: // Center Alignment
+							underline = new PDRectangle(
+								(leftAux + rightAux)/2 + leftMargin - rectangleWidth/2,
+								this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation,
+								(leftAux + rightAux)/2 + leftMargin + rectangleWidth/2,
+								this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineHeight);
+							break;
+						case 2: // Right Alignment
+							underline = new PDRectangle( rightAux + leftMargin - rectangleWidth ,
+								this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation,
+								rightAux + leftMargin,
+								this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);
+							break;
+						case 0: // Left Alignment
+							underline = new PDRectangle( leftAux + leftMargin ,
+								this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation,
+								leftAux + leftMargin + rectangleWidth,
+								this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);
+							break;
+					}
+					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
+					contentStream.setNonStrokingColor(foreColor); // set background color to yellow
+					contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY(),underline.getWidth(), underline.getHeight());
+					contentStream.fill();
+					contentStream.close();
+					try
+					{
+						document.getPage(page).setMediaBox(underline);
+					}
+					catch(Exception e)
+					{
+						System.err.println(e.getMessage());
+					}
+				}
+
+				//Si el texto esta tachado
+				if (fontStrikethru)
+				{
+					underline = new PDRectangle(0,0);
+					float strikethruSeparation = lineHeight / 2;
+
+					switch(alignment)
+					{
+						case 1: // Center Alignment
+							underline = new PDRectangle(
+								(leftAux + rightAux)/2 + leftMargin - rectangleWidth/2,
+								this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation,
+								(leftAux + rightAux)/2 + leftMargin + rectangleWidth/2,
+								this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
+							break;
+						case 2: // Right Alignment
+							underline = new PDRectangle( rightAux + leftMargin - rectangleWidth ,
+								this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation,
+								rightAux + leftMargin,
+								this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
+							break;
+						case 0: // Left Alignment
+							underline = new PDRectangle( leftAux + leftMargin ,
+								this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation,
+								leftAux + leftMargin + rectangleWidth,
+								this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
+							break;
+					}
+					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
+					contentStream.setNonStrokingColor(foreColor); // set background color to yellow
+					contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY(),underline.getWidth(), underline.getHeight());
+					contentStream.fill();
+					contentStream.close();
+					try
+					{
+						document.getPage(page).setMediaBox(underline);
+					}
+					catch(Exception e)
+					{
+						System.err.println(e.getMessage());
+					}
+				}
+
+				if(sTxt.trim().equalsIgnoreCase("{{Pages}}"))
+				{// Si el texto es la cantidad de páginas del documento
+					if (!templateCreated)
+					{
+						PDFormXObject template = new PDFormXObject(document);
+						template.setResources(new PDResources());
+						template.setBBox(new PDRectangle(right - left, bottom - top));
+						templateCreated = true;
+					}
+					PDFormXObject form = new PDFormXObject(document);
+					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
+					contentStream.transform(Matrix.getTranslateInstance(leftAux + leftMargin, leftAux + leftMargin));
+					contentStream.drawForm(form); // draw the form onto th
+					templateFont = baseFont;
+					templateFontSize = fontSize;
+					templateColorFill = foreColor;
+					return;
+				}
+
+				float textBlockWidth = rightAux - leftAux;
+				float TxtWidth = baseFont.getStringWidth(sTxt)/ 1000 * fontSize;
+				boolean justified = (alignment == 3) && textBlockWidth < TxtWidth;
+				boolean wrap = ((align & 16) == 16);
+
+				//Justified
+				if (wrap || justified)
+				{
+					//Bottom y top son los absolutos, sin considerar la altura real a la que se escriben las letras.
+					bottomAux = (float)convertScale(bottomOri);
+					topAux = (float)convertScale(topOri);
+
+					//La constante 2 para LEADING indica la separacion que se deja entre un renglon y otro. (es lo que mas se asemeja a la api vieja).
+					float leading = (float)(Double.valueOf(props.getGeneralProperty(Const.LEADING)).doubleValue());
+					PDAnnotationText annotation = new PDAnnotationText();
+					String alignmentString;
+					switch(alignment) {
+						case 1:
+							alignmentString = "center";
+							break;
+						case 2:
+							alignmentString = "right";
+							break;
+						default:
+							alignmentString = "left";
+					}
+					annotation.setDefaultAppearance("/" + font.getName() + " " + fontSize + " Tf " + leading + " TL 0 g " + alignmentString + " <</BMC [0 0]>>BDC q BT /F1 " + fontSize + " Tf " + leading + " TL Tj ET Q EMC");
+					annotation.setContents(sTxt);
+					annotation.setRectangle(new PDRectangle(leftAux + leftMargin, this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin,
+						rightAux + leftMargin, this.pageSize.getUpperRightY() - topAux - topMargin - bottomMargin));
+					try{
+						document.getPage(page).getAnnotations().add(annotation);
+						PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
+						contentStream.beginText();
+						contentStream.showText(annotation.getContents());
+						contentStream.endText();
+						contentStream.close();
+					}
+					catch (Exception e)
+					{
+						e.printStackTrace(System.err);
+					}
+				}
+				else //no wrap
+				{
+					startHeight=0;
+					if (!autoResize)
+					{
+						//Va quitando el ultimo char del texto hasta que llega a un string cuyo ancho se pasa solo por un caracter
+						//del ancho del textblock ("se pasa solo por un caracter": esto es porque en el caso general es ese el texto que
+						//mas se parece a lo que se disenia en genexus).
+						String newsTxt = sTxt;
+						while(TxtWidth > textBlockWidth && (newsTxt.length()-1>=0))
+						{
+							sTxt = newsTxt;
+							newsTxt = newsTxt.substring(0, newsTxt.length()-1);
+							TxtWidth = baseFont.getStringWidth(newsTxt) / 1000 * fontSize;
+						}
+					}
+
+					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
+					contentStream.beginText();
+					contentStream.setFont(baseFont, fontSize);
+
+					switch(alignment)
+					{
+						case 1: // Center Alignment
+							float x = ((leftAux + rightAux) / 2) + leftMargin;
+							float y = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight;
+							contentStream.newLineAtOffset(x, y);
+							cb.setHorizontalScaling(1f);
+							contentStream.showText(sTxt);
+							contentStream.endText();
+							contentStream.close();
+							break;
+						case 2: // Right Alignment
+							x = rightAux + leftMargin;
+							y = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight;
+							contentStream.newLineAtOffset(x, y);
+							contentStream.showText(sTxt);
+							cb.setHorizontalScaling(1f);
+							contentStream.endText();
+							contentStream.close();
+							break;
+						case 0: // Left Alignment
+						case 3: // Justified, only one text line
+							x = (leftAux + rightAux) / 2 + leftMargin;
+							y = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight;
+							cb.newLineAtOffset(x, y);
+							cb.setHorizontalScaling(1f);
+							cb.showText(sTxt);
+							cb.endText();
+							break;
+					}
 				}
 			}
+		} catch (Exception e){
+			System.err.println(e.getMessage());
 		}
 	}
 	boolean pageHeightExceeded(float bottomAux, float drawingPageHeight){
 		return bottomAux > drawingPageHeight;
 	}
-	PDPageContentStream SimulateDrawColumnText(PDPageContentStream cb, PDRectangle rect, PDPageContentStream p, float leading, int runDirection, int alignment) throws DocumentException
+
+	/*
+	ColumnText SimulateDrawColumnText(PdfContentByte cb, Rectangle rect, Paragraph p, float leading, int runDirection, int alignment) throws DocumentException
 	{
-		// Recordar que p es un parrafo
 		ColumnText Col = new ColumnText(cb);
 		Col.setRunDirection(runDirection);
 		Col.setAlignment(alignment);
@@ -1565,6 +1590,8 @@ public class PDFReportpdfbox implements IReportHandler{
 		Col.go(true);
 		return Col;
 	}
+	 */
+	/*
 	void DrawColumnText(PDPageContentStream cb, float llx, float lly, float urx, float ury, float leading, Matrix runDirection, int valign, int alignment) throws DocumentException
 	{
 		Rectangle rect = new Rectangle(llx, lly, urx, ury);
@@ -1594,6 +1621,10 @@ public class PDFReportpdfbox implements IReportHandler{
 		Col.addText(p);
 		Col.go();
 	}
+
+	 */
+
+	/*
 	private int columnAlignment(int alignment)
 	{
 		if (alignment == Element.ALIGN_JUSTIFIED)
@@ -1601,6 +1632,9 @@ public class PDFReportpdfbox implements IReportHandler{
 		else
 			return alignment;
 	}
+
+	 */
+
 	public void GxClearAttris()
 	{
 	}
@@ -1676,14 +1710,10 @@ public class PDFReportpdfbox implements IReportHandler{
 
 		runDirection = Integer.valueOf(props.getGeneralProperty(Const.RUN_DIRECTION)).intValue();
 
-		if (props.getBooleanGeneralProperty(Const.JUSTIFIED_TYPE_ALL, false))
-			justifiedType = Element.ALIGN_JUSTIFIED_ALL;
-		else
-			justifiedType = Element.ALIGN_JUSTIFIED;
 
 		//Se ignora el parametro orientation para el calculo del pageSize, los valores de alto y ancho ya vienen invertidos si Orientation=2=landscape.
 		this.pageSize = computePageSize(leftMargin, topMargin, pageWidth, pageLength, props.getBooleanGeneralProperty(Const.MARGINS_INSIDE_BORDER, false));
-		gxXPage[0] = (int)this.pageSize.getRight();
+		gxXPage[0] = (int)this.pageSize.getUpperRightX ();
 		if (props.getBooleanGeneralProperty(Const.FIX_SAC24437, true))
 			gxYPage[0] = (int)(pageLength / GX_PAGE_SCALE_Y); // Cuanto menor sea GX_PAGE_SCALE_Y, GeneXus imprime mayor parte de cada hoja
 		else
@@ -1702,8 +1732,8 @@ public class PDFReportpdfbox implements IReportHandler{
 		//System.err.println("Invalid page Margin... Resetting to defaults");
 		//}
 
-
-		document = new Document(this.pageSize,0,0,0,0);
+		document = new PDDocument();
+		document.addPage(new PDPage(this.pageSize));
 
 		init();
 
@@ -1712,30 +1742,30 @@ public class PDFReportpdfbox implements IReportHandler{
 		return true;
 	}
 
-	private com.lowagie.text.Rectangle computePageSize(float leftMargin, float topMargin, int width, int length, boolean marginsInsideBorder)
+	private PDRectangle computePageSize(float leftMargin, float topMargin, int width, int length, boolean marginsInsideBorder)
 	{
 		if ((leftMargin == 0 && topMargin == 0)||marginsInsideBorder)
 		{
 			if (length == 23818 && width == 16834)
-				return PageSize.A3;
+				return PDRectangle.A3;
 			else if (length == 16834 && width == 11909)
-				return PageSize.A4;
+				return PDRectangle.A4;
 			else if (length == 11909 && width == 8395)
-				return PageSize.A5;
+				return PDRectangle.A5;
 			else if (length == 20016 && width == 5731)
-				return PageSize.B4;
+				return new PDRectangle(250f, 353f);
 			else if (length == 14170 && width == 9979)
-				return PageSize.B5;
+				return new PDRectangle(176f, 250f);
 			else if (length == 15120 && width == 10440)
-				return PageSize.EXECUTIVE;
+				return new PDRectangle(184.15f, 266.7f);
 			else if (length == 20160 && width == 12240)
-				return PageSize.LEGAL;
+				return PDRectangle.LEGAL;
 			else if (length == 15840 && width == 12240)
-				return PageSize.LETTER;
+				return PDRectangle.LETTER;
 			else
-				return new com.lowagie.text.Rectangle((int)(width / PAGE_SCALE_X) , (int)(length / PAGE_SCALE_Y) );
+				return new PDRectangle((int)(width / PAGE_SCALE_X) , (int)(length / PAGE_SCALE_Y) );
 		}
-		return new com.lowagie.text.Rectangle((int)(width / PAGE_SCALE_X) + leftMargin, (int)(length / PAGE_SCALE_Y) + topMargin);
+		return new PDRectangle((int)(width / PAGE_SCALE_X) + leftMargin, (int)(length / PAGE_SCALE_Y) + topMargin);
 	}
 
 	public int getPageLines()
@@ -1795,39 +1825,58 @@ public class PDFReportpdfbox implements IReportHandler{
 
 	public void GxEndDocument()
 	{
-		if(document.getPageNumber() == 0)
+		if(document.getNumberOfPages() == 0)
 		{ // Si no hay ninguna página en el documento, agrego una vacia}
-			writer.setPageEmpty(false);
+			document.addPage(new PDPage(this.pageSize));
 		}
 
 		//Ahora proceso los comandos GeneXus {{Pages}}
 		if (template != null)
 		{
-			template.beginText();
-			template.setFontAndSize(templateFont, templateFontSize);
-			template.setTextMatrix(0,0);
-			template.setColorFill(templateColorFill);
-			template.showText(String.valueOf(pages));
-			template.endText();
+			try{
+				for (PDPage page : document.getPages()){
+					template = new PDPageContentStream(document, page, PDPageContentStream.AppendMode.APPEND, true, true);
+					template.beginText();
+					template.setFont(baseFont, fontSize);
+					template.setTextMatrix(new Matrix());
+					template.setNonStrokingColor(templateColorFill);
+					template.showText(String.valueOf(pages));
+					template.endText();
+				}
+			} catch (IOException e){ }
+
 		}
 		int copies = 1;
 		try
 		{
 			copies = Integer.parseInt(printerSettings.getProperty(form, Const.COPIES));
 			if(DEBUG)DEBUG_STREAM.println("Setting number of copies to " + copies);
-			writer.addViewerPreference(PdfName.NUMCOPIES, new PdfNumber(copies));
+
+			writer = document.getDocumentCatalog();
+			COSDictionary dict = writer.getViewerPreferences().getCOSObject();
+			if (dict == null) {dict = new COSDictionary();}
+			PDViewerPreferences viewerPreferences = new PDViewerPreferences(dict);
+			viewerPreferences.setPrintScaling(PDViewerPreferences.PRINT_SCALING.None);
+			dict.setInt("NumCopies", copies);
+			writer.setViewerPreferences(viewerPreferences);
 
 			int duplex= Integer.parseInt(printerSettings.getProperty(form, Const.DUPLEX));
-			PdfName duplexValue;
+			COSName duplexValue;
 			switch (duplex){
-				case 1: duplexValue = PdfName.SIMPLEX; break;
-				case 2: duplexValue = PdfName.DUPLEX; break;
-				case 3: duplexValue = PdfName.DUPLEXFLIPSHORTEDGE;break;
-				case 4: duplexValue = PdfName.DUPLEXFLIPLONGEDGE;break;
-				default: duplexValue = PdfName.NONE;
+				case 1: duplexValue = COSName.HELV; break;
+				case 2: duplexValue = COSName.DUPLEX; break;
+				case 3: duplexValue = COSName.DUPLEX;break;
+				case 4: duplexValue = COSName.DUPLEX;break;
+				default: duplexValue = COSName.NONE;
 			}
-			if(DEBUG)DEBUG_STREAM.println("Setting duplex to " + duplexValue.toString());
-			writer.addViewerPreference(PdfName.DUPLEX, duplexValue);
+			if(DEBUG)DEBUG_STREAM.println("Setting duplex to " + duplexValue);
+			writer = document.getDocumentCatalog();
+			dict = writer.getViewerPreferences().getCOSObject();
+			if (dict == null) {dict = new COSDictionary();}
+			viewerPreferences = new PDViewerPreferences(dict);
+			viewerPreferences.setPrintScaling(PDViewerPreferences.PRINT_SCALING.None);
+			dict.setName(COSName.DUPLEX, duplexValue.toString());
+			writer.setViewerPreferences(viewerPreferences);
 		}
 		catch(Exception ex)
 		{
@@ -1841,48 +1890,52 @@ public class PDFReportpdfbox implements IReportHandler{
 			//writer.addJavaScript("if (this.external)\n");//Specifies whether the current document is being viewed in the Acrobat application or in an external window (such as a web browser).
 			//writer.addJavaScript("app.alert('SI es externa' + this.external);");
 
-
-			writer.addJavaScript("var pp = this.getPrintParams();\n");
+			PDActionJavaScript jsAction = new PDActionJavaScript();
+			jsAction.setAction("var pp = this.getPrintParams();\n");
 			//writer.addJavaScript("pp.interactive = pp.constants.interactionLevel.automatic;\n");
 			String printerAux=printerSettings.getProperty(form, Const.PRINTER);
 			String printer = replace(printerAux, "\\", "\\\\");
 
 			if (printer!=null && !printer.equals(""))
 			{
-				writer.addJavaScript("pp.printerName = \"" + printer + "\";\n");
+				jsAction.setAction("pp.printerName = \"" + printer + "\";\n");
 			}
 
 			if (fit)
 			{
-				writer.addJavaScript("pp.pageHandling = pp.constants.handling.fit;\n");
+				jsAction.setAction("pp.pageHandling = pp.constants.handling.fit;\n");
 			}
 			else
 			{
-				writer.addJavaScript("pp.pageHandling = pp.constants.handling.none;\n");
+				jsAction.setAction("pp.pageHandling = pp.constants.handling.none;\n");
 			}
 
 			if (printerSettings.getProperty(form, Const.MODE, "3").startsWith("0"))//Show printer dialog Never
 			{
-				writer.addJavaScript("pp.interactive = pp.constants.interactionLevel.automatic;\n");
+				jsAction.setAction("pp.interactive = pp.constants.interactionLevel.automatic;\n");
 				//No print dialog is displayed. During printing a progress monitor and cancel
 				//dialog is displayed and removed automatically when printing is complete.
 				for(int i = 0; i < copies; i++)
 				{
-					writer.addJavaScript("this.print(pp);\n");
+					jsAction.setAction("this.print(pp);\n");
 				}
 			}
 			else //Show printer dialog is sent directly to printer | always
 			{
-				writer.addJavaScript("pp.interactive = pp.constants.interactionLevel.full;\n");
+				jsAction.setAction("pp.interactive = pp.constants.interactionLevel.full;\n");
 				//Displays the print dialog allowing the user to change print settings and requiring
 				//the user to press OK to continue. During printing a progress monitor and cancel
 				//dialog is displayed and removed automatically when printing is complete.
-				writer.addJavaScript("this.print(pp);\n");
+				jsAction.setAction("this.print(pp);\n");
 			}
 
 		}
+		try {
+			document.close();
+		} catch (IOException e) {
+			System.err.println(e.getMessage());
+		}
 
-		document.close();
 
 		if(DEBUG)DEBUG_STREAM.println("GxEndDocument!");
 		//showInformation();
@@ -1901,10 +1954,10 @@ public class PDFReportpdfbox implements IReportHandler{
 				{ // Si no se puede mostrar el reporte
 					e.printStackTrace();
 				}
-//  Comento la próxima lú‹ea, porque por manejo interno del Acrobat, si ya habú} una instancia del
-//  Acrobat corriendo, el modal no funciona (x que el proceso levantado le avisa al que ya estaba abierto qu\uFFFDE
-//  archivo abrir y luego se mata automáticamente)
-//            if(modal)if(new File(docName).delete())TemporaryFiles.getInstance().removeFileFromList(docName); // Intento eliminar el docName aqu\uFFFDE
+				//  Comento la próxima lú‹ea, porque por manejo interno del Acrobat, si ya habú} una instancia del
+				//  Acrobat corriendo, el modal no funciona (x que el proceso levantado le avisa al que ya estaba abierto qu\uFFFDE
+				//  archivo abrir y luego se mata automáticamente)
+				//  if(modal)if(new File(docName).delete())TemporaryFiles.getInstance().removeFileFromList(docName); // Intento eliminar el docName aqu\uFFFDE
 				break;
 			case Const.OUTPUT_PRINTER:
 				try{ outputStream.close(); } catch(IOException e) { ; } // Cierro el archivo
@@ -1933,14 +1986,8 @@ public class PDFReportpdfbox implements IReportHandler{
 	}
 	public void GxStartPage()
 	{
-		//try
-		//{
-		boolean ret = document.newPage();
+		document.addPage(new PDPage());
 		pages = pages +1;
-		//}
-		//catch(DocumentException de) {
-		//    System.err.println(de.getMessage());
-		//}
 	}
 
 	public void GxStartDoc()
