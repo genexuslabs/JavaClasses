@@ -116,13 +116,9 @@ public class GxImageUtil {
 		String newFileName = PrivateUtilities.getTempFileName(CommonUtil.getFileType(destinationFilePathOrUrl));
 		try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
 			ImageIO.write(croppedImage, CommonUtil.getFileType(newFileName), outStream);
-			try (ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray())) {
-				String filePath = Preferences.getDefaultPreferences().getPRIVATE_PATH() + newFileName;
-				GXFile file = getGXFile(filePath);
-				file.create(inStream, true);
-				file.close();
-				return filePath;
-			}
+			outStream.flush();
+			byte[] imageInByte = outStream.toByteArray();
+			return GXutil.blobFromBytes(imageInByte);
 		}
 	}
 
