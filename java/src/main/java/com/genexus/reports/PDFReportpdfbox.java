@@ -2,6 +2,7 @@ package com.genexus.reports;
 
 import java.awt.Color;
 import java.io.*;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -19,10 +20,9 @@ import com.genexus.reports.fonts.PDFFontDescriptor;
 import com.genexus.reports.fonts.Type1FontMetrics;
 import com.genexus.reports.fonts.Utilities;
 
+import com.lowagie.text.pdf.BaseFont;
 import org.apache.pdfbox.cos.*;
 import org.apache.pdfbox.pdmodel.*;
-import org.apache.pdfbox.pdmodel.common.PDPageLabelRange;
-import org.apache.pdfbox.pdmodel.common.PDPageLabels;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.font.*;
@@ -35,8 +35,7 @@ import org.apache.pdfbox.util.Matrix;
 
 public class PDFReportpdfbox implements IReportHandler{
 	private int lineHeight, pageLines;
-	private org.apache.pdfbox.pdmodel.common.PDRectangle pageSize; // Contiene las dimensiones de la página
-	private int pageOrientation;  // Indica la orientacion de las páginas
+	private PDRectangle pageSize;
 	private PDType1Font font;
 	private PDType0Font baseFont;
 	//private BarcodeUtil barcode = null; por ahora no soportamos barcode
@@ -47,37 +46,29 @@ public class PDFReportpdfbox implements IReportHandler{
 	private boolean fontItalic = false;
 	private Color backColor, foreColor;
 	public static PrintStream DEBUG_STREAM = System.out;
-	private OutputStream outputStream = null; // Contiene el OutputStream de salida del reporte
-	//private Point pageMargin = new Point(0,0); // Contiene el margen [left, top] de cada página
+	private OutputStream outputStream = null;
 	private static ParseINI props = new ParseINI();
 	private ParseINI printerSettings;
 	private String form;
-	private Vector stringTotalPages; // Contiene la lista de locations del parámetros {{Pages}}
-	private boolean isPageDirty; // Indica si la pagina NO se debe 'dispose()'ar pues se le va a agregar cosas al terminar el PDF
-	private int outputType = -1; // Indica el tipo de Output que se desea para el documento
-	private int printerOutputMode = -1; // Indica si se debe mostrar el cuadro de Impresion para la salida por impresora
-	private boolean modal = false; // Indica si el diálogo debe ser modal o no modal en
-	private String docName = "PDFReport.pdf"; // Nombre del documento a generar (se cambia con GxSetDocName)
+	private Vector stringTotalPages;
+	private int outputType = -1;
+	private int printerOutputMode = -1;
+	private boolean modal = false;
+	private String docName = "PDFReport.pdf";
 	private static INativeFunctions nativeCode = NativeFunctions.getInstance();
-	private static Hashtable<String, String> fontSubstitutes = new Hashtable<>(); // Contiene la tabla de substitutos de fonts (String <--> String)
+	private static Hashtable<String, String> fontSubstitutes = new Hashtable<>();
 	private static String configurationFile = null;
 	private static String configurationTemplateFile = null;
-	private static String defaultRelativePrepend = null; // En aplicaciones web, contiene la ruta al root de la aplicación para ser agregado al inicio de las imagenes con path relativo
+	private static String defaultRelativePrepend = null;
 	private static String defaultRelativePrependINI = null;
 	private static String webAppDir = null;
-	//private boolean containsSpecialMetrics = false;
-	//private Hashtable fontMetricsProps = new Hashtable();
 	public static boolean DEBUG = false;
 	private PDDocument document;
 	private PDDocumentCatalog writer;
-	private PDPageContentStream chunk;
-	private int currLine;
-	private int lastLine = 0;
-	private static String predefinedSearchPath = ""; // Contiene los predefinedSearchPaths
+	private static String predefinedSearchPath = "";
 	private float leftMargin;
 	private float topMargin;
-	private float bottomMargin; //If Margin Bottom is not specified 6 lines are assumed (nlines =6).
-
+	private float bottomMargin;
 	private PDPageContentStream template;
 	private PDType0Font templateFont;
 	private int templateFontSize;
@@ -85,22 +76,17 @@ public class PDFReportpdfbox implements IReportHandler{
 	private Color templateColorFill;
 	private int pages=0;
 	private boolean templateCreated = false;
-	public static float DASHES_UNITS_ON = 10;
-	public static float DASHES_UNITS_OFF = 10;
-	public static float DOTS_UNITS_OFF = 3;
-	public static float DOTS_UNITS_ON = 1;
 	public boolean lineCapProjectingSquare = true;
 	public boolean barcode128AsImage = true;
 	ConcurrentHashMap<String, PDImageXObject> documentImages;
 	public int runDirection = 0;
-	public int justifiedType;
 	private HttpContext httpContext = null;
 	float[] STYLE_SOLID = new float[]{1,0};//0
-	float[] STYLE_NONE = null;//1
-	float[] STYLE_DOTTED, //2
-		STYLE_DASHED, //3
-		STYLE_LONG_DASHED, //4
-		STYLE_LONG_DOT_DASHED; //5
+	float[] STYLE_NONE = null;
+	float[] STYLE_DOTTED,
+		STYLE_DASHED,
+		STYLE_LONG_DASHED,
+		STYLE_LONG_DOT_DASHED;
 	int STYLE_NONE_CONST=1;
 
 	private enum VerticalAlign{
@@ -117,16 +103,11 @@ public class PDFReportpdfbox implements IReportHandler{
 		}
 	}
 
-	/** Setea el OutputStream a utilizar
-	 *  @param outputStream Stream a utilizar
-	 */
 	public void setOutputStream(OutputStream outputStream)
 	{
 		this.outputStream = outputStream;
 	}
 
-	/** Busca la ubicación del Acrobat. Si no la encuentra tira una excepción
-	 */
 	private static String getAcrobatLocation() throws Exception
 	{
 		ParseINI props;
@@ -140,31 +121,21 @@ public class PDFReportpdfbox implements IReportHandler{
 		{
 			props = new ParseINI();
 		}
-
-		// Primero debo obtener la ubicación + ejecutable del Acrobat
 		String acrobatLocation = props.getGeneralProperty(Const.ACROBAT_LOCATION); // Veo si esta fijada la ubicación del Acrobat en la property
 		if(acrobatLocation == null)
 		{
 			if(NativeFunctions.isUnix())
-			{ // Si estoy en Unix no puedo ir a buscar el registry ;)
+			{
 				throw new Exception("Try setting Acrobat location & executable in property '" + Const.ACROBAT_LOCATION + "' of PDFReport.ini");
 			}
 		}
 		return acrobatLocation;
 	}
 
-	/** Manda a imprimir el reporte a la impresora
-	 * Si en las properties del PDFReport esta definida una GeneralProperty 'Acrobat Location' se
-	 * utiliza esta property para obtener la ubicación + ejecutable del Acrobat, sino se busca en el Registry
-	 * @param pdfFilename Nombre del reporte a imprimir (con extensión)
-	 * @param silent Booleano que indica si se va a imprimir sin diálogo
-	 * @exception Exception si no se puede realizar la operación
-	 */
 	public static void printReport(String pdfFilename, boolean silent) throws Exception
 	{
 		if(NativeFunctions.isWindows())
-		{ // En Windows obtenemos el full path
-			// En Linux esto no anda bien
+		{
 			pdfFilename = "\"" + new File(pdfFilename).getAbsolutePath() + "\"";
 		}
 
@@ -172,17 +143,12 @@ public class PDFReportpdfbox implements IReportHandler{
 		String acrobatLocation = null;
 		try
 		{
-			// Primero debo obtener la ubicación + ejecutable del Acrobat
 			acrobatLocation = getAcrobatLocation();
 		}catch(Exception acrobatNotFound)
 		{
 			throw new Exception("Acrobat cannot be found in this machine: " + acrobatNotFound.getMessage());
 		}
-
-		//Se genera el PostScript
 		nativeCode.executeModal(acrobatLocation + " -toPostScript " + pdfFilename, false);
-
-		//Se manda a imprimir a la impresora default
 		int pos = pdfFilename.lastIndexOf(".");
 		pdfFilename = pdfFilename.substring(0, pos) + ".ps";
 		cmd = new String[] { "lp", pdfFilename};
@@ -197,20 +163,17 @@ public class PDFReportpdfbox implements IReportHandler{
 	public static void showReport(String filename, boolean modal) throws Exception
 	{
 		if(NativeFunctions.isWindows())
-		{ // En Windows obtenemos el full path
-			// En Linux esto no anda bien
+		{
 			filename = "\"" + new File(filename).getAbsolutePath() + "\"";
 		}
 		String acrobatLocation;
 		try
 		{
-			// Primero debo obtener la ubicación + ejecutable del Acrobat
 			acrobatLocation = getAcrobatLocation();
 		}catch(Exception acrobatNotFound)
 		{
 			throw new Exception("Acrobat cannot be found in this machine: " + acrobatNotFound.getMessage());
 		}
-
 		if(modal)
 		{
 			nativeCode.executeModal(acrobatLocation + " " + filename, true);
@@ -241,7 +204,7 @@ public class PDFReportpdfbox implements IReportHandler{
 			defaultRelativePrependINI = defaultRelativePrepend;
 			if(new File(defaultRelativePrepend + Const.WEB_INF).isDirectory())
 			{
-				configurationFile = defaultRelativePrepend + Const.WEB_INF + File.separatorChar + Const.INI_FILE; // Esto es para que en aplicaciones web el PDFReport.INI no quede visible en el server
+				configurationFile = defaultRelativePrepend + Const.WEB_INF + File.separatorChar + Const.INI_FILE;
 				configurationTemplateFile = defaultRelativePrepend + Const.WEB_INF + File.separatorChar + Const.INI_TEMPLATE_FILE;
 			}
 			else
@@ -253,25 +216,12 @@ public class PDFReportpdfbox implements IReportHandler{
 
 			if(httpContext instanceof HttpContextWeb || !httpContext.getDefaultPath().isEmpty())
 			{
-				// @cambio: 23/07/03
-				// Para los reportes en el web, debemos tener en cuenta la preference 'Static Content Base URL' del modelo
-				// Pero SOLO la tenemos en cuenta si es un directorio relativo
-				// O sea, si la preference dice algo tipo /pepe, entonces vamos a buscar las
-				// imagenes relativas a %WebApp%/pepe, pero si la preference dice algo tipo
-				// 'http://otroServer/xxxyyy' entonces ahi no le damos bola a la preference!
-				// Además, para mantener compatibilidad con las aplicaciones hasta ahora, si la imagen
-				// no se encuentra all\uFFFDElo que hacemos es ir a buscarla a %WebApp%
-
-				// @cambio: 12/09/17
-				// Esto tambien se tiene que hacer para los reportes web que se llaman con submit
-				// (ese es el caso en el cual el getDefaultPath no es Empty)
-
 				String staticContentBase = httpContext.getStaticContentBase();
 				if(staticContentBase != null)
 				{
 					staticContentBase = staticContentBase.trim();
 					if(staticContentBase.indexOf(':') == -1)
-					{ // Si la staticContentBase es una ruta relativa
+					{
 						staticContentBase = staticContentBase.replace(alternateSeparator, File.separatorChar);
 						if(staticContentBase.startsWith(File.separator))
 						{
@@ -362,7 +312,7 @@ public class PDFReportpdfbox implements IReportHandler{
 		props.setupGeneralProperty(Const.STYLE_LONG_DASHED, Const.DEFAULT_STYLE_LONG_DASHED);
 		props.setupGeneralProperty(Const.STYLE_LONG_DOT_DASHED, Const.DEFAULT_STYLE_LONG_DOT_DASHED);
 
-		loadSubstituteTable(); // Cargo la tabla de substitutos de fonts
+		loadSubstituteTable();
 
 		if(props.getBooleanGeneralProperty("DEBUG", false))
 		{
@@ -384,7 +334,7 @@ public class PDFReportpdfbox implements IReportHandler{
 		String predefinedPath = "";
 		for(int i = 0; i < predefinedPaths.length; i++)
 			predefinedPath += predefinedPaths[i] + ";";
-		predefinedSearchPath = predefinedPath + predefinedSearchPath; // SearchPath= los viejos más los nuevos
+		predefinedSearchPath = predefinedPath + predefinedSearchPath;
 	}
 
 	public static final String getPredefinedSearchPaths()
@@ -397,33 +347,15 @@ public class PDFReportpdfbox implements IReportHandler{
 		try {
 			document = new PDDocument();
 			document.addPage(new PDPage());
-			ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(((ByteArrayOutputStream) outputStream).toByteArray());
-			PDDocument document = PDDocument.load(byteArrayInputStream);
 		}
 		catch(Exception e) {
 			System.err.println(e.getMessage());
 		}
 	}
 
-	private void fin()
-	{
-		try {
-			document.save(outputStream);
-			document.close();
-			outputStream.close();
-		}
-		catch(Exception e) {
-			System.err.println(e.getMessage());
-		}
-	}
+	public void GxRVSetLanguage(String lang) {}
 
-	public void GxRVSetLanguage(String lang)
-	{
-	}
-
-	public void GxSetTextMode(int nHandle, int nGridX, int nGridY, int nPageLength)
-	{
-	}
+	public void GxSetTextMode(int nHandle, int nGridX, int nGridY, int nPageLength) {}
 
 	private float[] parsePattern(String patternStr)
 	{
@@ -468,15 +400,12 @@ public class PDFReportpdfbox implements IReportHandler{
 							   int styleTop, int styleBottom, int styleRight, int styleLeft,
 							   float radioTL, float radioTR, float radioBL, float radioBR, float penAux, boolean hideCorners)
 	{
-
-
 		float[] dashPatternTop = getDashedPattern(styleTop);
 		float[] dashPatternBottom = getDashedPattern(styleBottom);
 		float[] dashPatternLeft = getDashedPattern(styleLeft);
 		float[] dashPatternRight = getDashedPattern(styleRight);
 
 		try {
-			//-------------------bottom line---------------------
 			if (styleBottom!=STYLE_NONE_CONST)
 			{
 				cb.setLineDashPattern(dashPatternBottom, 0);
@@ -498,10 +427,7 @@ public class PDFReportpdfbox implements IReportHandler{
 					cb.moveTo(x, y);
 				}
 			}
-
-			//-------------------bottom right corner---------------------
-
-			if (styleBottom!=STYLE_NONE_CONST)//si es null es Style None y no traza la linea
+			if (styleBottom!=STYLE_NONE_CONST)
 			{
 				if (hideCorners && styleRight==STYLE_NONE_CONST && radioBR==0)
 				{
@@ -516,9 +442,6 @@ public class PDFReportpdfbox implements IReportHandler{
 					cb.curveTo(x + w - radioBR * b, y, x + w, y + radioBR * b, x + w, y + radioBR);
 				}
 			}
-
-			//-------------------right line---------------------
-
 			if (styleRight!=STYLE_NONE_CONST && dashPatternRight!=dashPatternBottom)
 			{
 				cb.stroke();
@@ -532,8 +455,6 @@ public class PDFReportpdfbox implements IReportHandler{
 					cb.moveTo(x + w, y + radioBR);
 				}
 			}
-
-			//-------------------top right corner---------------------
 			if (styleRight!=STYLE_NONE_CONST)
 			{
 				if (hideCorners && styleTop==STYLE_NONE_CONST && radioTR==0)
@@ -549,9 +470,6 @@ public class PDFReportpdfbox implements IReportHandler{
 					cb.curveTo(x + w, y + h - radioTR * b, x + w - radioTR * b, y + h, x + w - radioTR, y + h);
 				}
 			}
-
-			//-------------------top line---------------------
-
 			if (styleTop!=STYLE_NONE_CONST && dashPatternTop!=dashPatternRight)
 			{
 				cb.stroke();
@@ -565,8 +483,6 @@ public class PDFReportpdfbox implements IReportHandler{
 					cb.moveTo(x + w - radioTR, y + h);
 				}
 			}
-
-			//-------------------top left corner---------------------
 			if (styleTop!=STYLE_NONE_CONST)
 			{
 				if (hideCorners && styleLeft==STYLE_NONE_CONST && radioTL==0)
@@ -582,9 +498,6 @@ public class PDFReportpdfbox implements IReportHandler{
 					cb.curveTo(x + radioTL * b, y + h, x, y + h - radioTL * b, x, y + h - radioTL);
 				}
 			}
-
-			//-------------------left line---------------------
-
 			if (styleLeft!=STYLE_NONE_CONST  && dashPatternLeft!=dashPatternTop)
 			{
 				cb.stroke();
@@ -598,8 +511,6 @@ public class PDFReportpdfbox implements IReportHandler{
 					cb.moveTo(x, y + h - radioTL);
 				}
 			}
-
-			//-------------------bottom left corner---------------------
 			if (styleLeft!=STYLE_NONE_CONST)
 			{
 				if (hideCorners && styleBottom==STYLE_NONE_CONST && radioBL==0)
@@ -625,8 +536,6 @@ public class PDFReportpdfbox implements IReportHandler{
 								float radioTL, float radioTR, float radioBL, float radioBR)
 	{
 		try {
-			//-------------------bottom line---------------------
-
 			float b = 0.4477f;
 			if (radioBL>0)
 			{
@@ -636,22 +545,16 @@ public class PDFReportpdfbox implements IReportHandler{
 			{
 				cb.moveTo(x, y);
 			}
-
-			//-------------------bottom right corner---------------------
-
 			cb.lineTo(x + w - radioBR, y);
 			if (radioBR>0)
 			{
 				cb.curveTo(x + w - radioBR * b, y, x + w, y + radioBR * b, x + w, y + radioBR);
 			}
-
-
 			cb.lineTo (x + w, y + h - radioTR);
 			if (radioTR>0)
 			{
 				cb.curveTo(x + w, y + h - radioTR * b, x + w - radioTR * b, y + h, x + w - radioTR, y + h);
 			}
-
 			cb.lineTo(x + radioTL, y + h);
 			if (radioTL>0)
 			{
@@ -681,7 +584,6 @@ public class PDFReportpdfbox implements IReportHandler{
 						   int styleTop, int styleBottom, int styleRight, int styleLeft, int cornerRadioTL, int cornerRadioTR, int cornerRadioBL, int cornerRadioBR)
 	{
 		try{
-
 			PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page));
 
 			float penAux = (float)convertScale(pen);
@@ -703,8 +605,6 @@ public class PDFReportpdfbox implements IReportHandler{
 
 			if (cornerRadioBL==0 && cornerRadioBR==0 && cornerRadioTL==0 && cornerRadioTR==0 && styleBottom==0 && styleLeft==0 && styleRight==0 && styleTop==0)
 			{
-				//Tengo que hacer eso para que el borde quede del mismo color que el fill si se indica que no se quiere borde,
-				//porque no funciona el setLineWidth
 				if (pen > 0)
 					cb.setStrokingColor(foreRed, foreGreen, foreBlue);
 				else
@@ -740,7 +640,6 @@ public class PDFReportpdfbox implements IReportHandler{
 				float cRadioBL = (float)convertScale(cornerRadioBL);
 				float cRadioBR = (float)convertScale(cornerRadioBR);
 
-				// Scale the radius if it's too large or to small to fit.
 				int max = (int)Math.min(w, h);
 				cRadioTL = Math.max(0, Math.min(cRadioTL, max/2));
 				cRadioTR = Math.max(0, Math.min(cRadioTR, max/2));
@@ -749,7 +648,6 @@ public class PDFReportpdfbox implements IReportHandler{
 
 				if (backMode!=0)
 				{
-					//Interior del rectangulo
 					cb.setStrokingColor(backRed, backGreen, backBlue);
 					cb.setLineWidth(0);
 					roundRectangle(cb, x1, y1, w, h,
@@ -761,7 +659,6 @@ public class PDFReportpdfbox implements IReportHandler{
 				}
 				if (pen > 0)
 				{
-					//Bordes del rectangulo
 					cb.setStrokingColor(foreRed, foreGreen, foreBlue);
 					drawRectangle(cb, x1, y1, w, h,
 						styleTop, styleBottom, styleRight, styleLeft,
@@ -779,7 +676,7 @@ public class PDFReportpdfbox implements IReportHandler{
 
 	public void GxDrawLine(int left, int top, int right, int bottom, int width, int foreRed, int foreGreen, int foreBlue)
 	{
-		GxDrawLine(left, top,      right, bottom, width, foreRed, foreGreen, foreBlue, 0);
+		GxDrawLine(left, top, right, bottom, width, foreRed, foreGreen, foreBlue, 0);
 	}
 
 	public void GxDrawLine(int left, int top, int right, int bottom, int width, int foreRed, int foreGreen, int foreBlue, int style)
@@ -808,7 +705,7 @@ public class PDFReportpdfbox implements IReportHandler{
 
 			if (lineCapProjectingSquare)
 			{
-				cb.setLineCapStyle(2); //Hace que lineas de width 10 por ejemplo que forman una esquina no quedan igual que en disenio porque "rellena" la esquina.
+				cb.setLineCapStyle(2);
 			}
 			if (style!=0)
 			{
@@ -835,10 +732,7 @@ public class PDFReportpdfbox implements IReportHandler{
 		try
 		{
 			PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page));
-
-			//java.awt.Image image;
-			org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject image;
-			org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject imageRef;
+			PDImageXObject image;
 			try
 			{
 				if (documentImages != null && documentImages.containsKey(bitmap))
@@ -859,15 +753,11 @@ public class PDFReportpdfbox implements IReportHandler{
 						{
 							bitmap = bitmap.replace(httpContext.getStaticContentBase(), "");
 						}
-						// Si la ruta a la imagen NO es absoluta, en aplicaciones Web le agregamos al comienzo la ruta al root de la aplicación
-						// más la staticContentBaseURL si ésta es relativa.
 						image = PDImageXObject.createFromFile(defaultRelativePrepend + bitmap,document);
-						//image = com.genexus.uifactory.awt.AWTUIFactory.getImageNoWait(defaultRelativePrepend + bitmap);
 						if(image == null)
-						{ // Si all\uFFFDEno se encuentra la imagen, entonces la buscamos bajo el webAppDir (para mantener compatibilidad)
+						{
 							bitmap = webAppDir + bitmap;
 							image = PDImageXObject.createFromFile(bitmap,document);
-							//image = com.genexus.uifactory.awt.AWTUIFactory.getImageNoWait(bitmap);
 						}
 						else
 						{
@@ -877,19 +767,18 @@ public class PDFReportpdfbox implements IReportHandler{
 					else
 					{
 						image = PDImageXObject.createFromFile(bitmap,document);
-						//image = com.genexus.uifactory.awt.AWTUIFactory.getImageNoWait(bitmap);
 					}
 				}
 			}
-			catch(java.lang.IllegalArgumentException ex)//Puede ser una url absoluta
+			catch(java.lang.IllegalArgumentException ex)
 			{
-				java.net.URL url= new java.net.URL(bitmap);
+				URL url= new java.net.URL(bitmap);
 				image = PDImageXObject.createFromFile(url.toString(),document);
 			}
 
 			if (documentImages == null)
 			{
-				documentImages = new ConcurrentHashMap<String, PDImageXObject>();
+				documentImages = new ConcurrentHashMap<>();
 			}
 			documentImages.putIfAbsent(bitmap, image);
 
@@ -897,7 +786,7 @@ public class PDFReportpdfbox implements IReportHandler{
 			if(DEBUG)DEBUG_STREAM.println("GxDrawBitMap -> '" + bitmap + "' [" + left + "," + top + "] - Size: (" + (right - left) + "," + (bottom - top) + ")");
 
 			if(image != null)
-			{ // Si la imagen NO se encuentra, no hago nada
+			{
 				float rightAux = (float)convertScale(right);
 				float bottomAux = (float)convertScale(bottom);
 				float leftAux = (float)convertScale(left);
@@ -907,9 +796,9 @@ public class PDFReportpdfbox implements IReportHandler{
 				float y = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin;
 
 				if (aspectRatio == 0)
-					cb.drawImage(image, x, y, image.getWidth(), image.getHeight());
+					cb.drawImage(image, x, y, rightAux - leftAux, bottomAux - topAux);
 				else
-					cb.drawImage(image, x, y, image.getWidth() * aspectRatio, image.getHeight() * aspectRatio);
+					cb.drawImage(image, x, y, (rightAux - leftAux) * aspectRatio, (bottomAux - topAux) * aspectRatio);
 				cb.close();
 			}
 		}
@@ -945,7 +834,7 @@ public class PDFReportpdfbox implements IReportHandler{
 		String originalFontName = fontName;
 		if (!embeedFont)
 		{
-			fontName = getSubstitute(fontName); // Veo si hay substitutos solo si el font no va a ir embebido
+			fontName = getSubstitute(fontName);
 		}
 		if(DEBUG)
 		{
@@ -980,7 +869,6 @@ public class PDFReportpdfbox implements IReportHandler{
 		try {
 			if (PDFFont.isType1(fontName))
 			{
-				//Me fijo si es un Asian font
 				for(int i = 0; i < Type1FontMetrics.CJKNames.length; i++)
 				{
 					if(Type1FontMetrics.CJKNames[i][0].equalsIgnoreCase(fontName) ||
@@ -1020,6 +908,14 @@ public class PDFReportpdfbox implements IReportHandler{
 							fontName =  PDFFont.base14[i][1+style].substring(1);
 							break;
 						}
+						COSDictionary dict = new COSDictionary();
+						dict.setItem(COSName.TYPE, COSName.FONT);
+						dict.setItem(COSName.SUBTYPE, COSName.TYPE0);
+						dict.setItem(COSName.BASE_FONT, COSName.getPDFName(fontName));
+						dict.setItem(COSName.ENCODING, COSName.WIN_ANSI_ENCODING);
+						dict.setItem(COSName.DESCENDANT_FONTS, new COSArray());
+						dict.setBoolean(COSName.getPDFName("Embedded"), false);
+						baseFont = new PDType0Font(dict);
 					}
 
 					switch (fontName.trim().toUpperCase()) {
@@ -1072,7 +968,7 @@ public class PDFReportpdfbox implements IReportHandler{
 				}
 			}
 			else
-			{//Si el Font es true type
+			{
 				String style = "";
 				if (fontBold && fontItalic)
 					style = ",BoldItalic";
@@ -1092,26 +988,14 @@ public class PDFReportpdfbox implements IReportHandler{
 					fontPath = PDFFontDescriptor.getTrueTypeFontLocation(fontName, props);
 					if (fontPath.equals(""))
 					{
-						COSDictionary fontDict = new COSDictionary();
-						fontDict.setItem(COSName.TYPE, COSName.FONT);
-						fontDict.setItem(COSName.SUBTYPE, COSName.TYPE1);
-						fontDict.setItem(COSName.BASE_FONT, COSName.getPDFName("Helvetica"));
-						fontDict.setItem(COSName.ENCODING, COSName.getPDFName("WinAnsiEncoding"));
-						COSDictionary fontDescriptor = new COSDictionary();
-						fontDescriptor.setItem(COSName.TYPE, COSName.FONT_DESC);
-						fontDescriptor.setItem(COSName.FONT_NAME, COSName.getPDFName("Helvetica"));
-						fontDescriptor.setItem(COSName.FONT_FAMILY, new COSString("Helvetica"));
-						fontDescriptor.setItem(COSName.FONT_WEIGHT, COSInteger.ONE);
-						COSArray fontBBox = new COSArray();
-						fontBBox.add(new COSFloat(-166));
-						fontBBox.add(new COSFloat(-225));
-						fontBBox.add(new COSFloat(1000));
-						fontBBox.add(new COSFloat(931));
-						fontDescriptor.setItem(COSName.ASCENT, new COSFloat(718));
-						fontDescriptor.setItem(COSName.DESCENT, new COSFloat(-207));
-						fontDict.setItem(COSName.FONT_DESC, fontDescriptor);
-
-						baseFont = new PDType0Font(fontDict);
+						COSDictionary dict = new COSDictionary();
+						dict.setItem(COSName.TYPE, COSName.FONT);
+						dict.setItem(COSName.SUBTYPE, COSName.TYPE0);
+						dict.setItem(COSName.BASE_FONT, COSName.HELV);
+						dict.setItem(COSName.ENCODING, COSName.WIN_ANSI_ENCODING);
+						dict.setItem(COSName.DESCENDANT_FONTS, new COSArray());
+						dict.setItem(COSName.FONT_FILE2, COSNull.NULL);
+						baseFont = new PDType0Font(dict);
 						foundFont = false;
 					}
 				}
@@ -1122,15 +1006,7 @@ public class PDFReportpdfbox implements IReportHandler{
 						baseFont = PDType0Font.load(document,new File(fontPath));
 					}
 					else
-					{//No se embebe el font
-						COSDictionary fontDict = new COSDictionary();
-						fontDict.setName(COSName.TYPE, "Font");
-						fontDict.setName(COSName.SUBTYPE, "TrueType");
-						fontDict.setItem(COSName.DESC, null);
-						byte[] fontBytes = Files.readAllBytes(Paths.get(fontPath + style));
-						PDStream fontStream = new PDStream(document, new ByteArrayInputStream(fontBytes));
-						fontDict.setItem(COSName.FONT_FILE2, fontStream);
-						baseFont = new PDType0Font(fontDict);
+					{	baseFont = PDType0Font.load();
 					}
 				}
 			}
@@ -1296,23 +1172,15 @@ public class PDFReportpdfbox implements IReportHandler{
 			int bottomOri = bottom;
 			int topOri = top;
 
-			//Si se tiene un campo con mas de una linea y no tiene wrap, no es justify, y no es html, se simula que el campo tiene una sola linea
-			//asignando al bottom el top mas el lineHeight
 			if (linesCount >= 2 && !((align & 16) == 16) && htmlformat != 1)
 			{
 				if (valign == PDFReportpdfbox.VerticalAlign.TOP.value())
 					bottom = top + (int)reconvertScale(lineHeight);
 				else if (valign == PDFReportpdfbox.VerticalAlign.BOTTOM.value())
 					top = bottom - (int)reconvertScale(lineHeight);
-				//if valign == middle, no se cambia ni top ni bottom
 			}
 
 			float bottomAux = (float)convertScale(bottom) - ((float)convertScale(bottom-top) - captionHeight)/2;
-			//Al bottom de los textos se le resta espacio entre el texto y el borde del textblock,
-			//porque en el reporte genexus la x,y de un
-			//text es la x,y del cuadro que contiene el texto, y la api de itext espera la x,y del texto en si.
-			//Generalmente el cuadro es mas grande que lo que ocupa el texto realmente (depende del tipo de font)
-			//captionHeight esta convertido, bottom y top no.
 			float topAux = (float)convertScale(top) + ((float)convertScale(bottom-top) - captionHeight)/2;
 
 
@@ -1338,7 +1206,6 @@ public class PDFReportpdfbox implements IReportHandler{
 				if(backFill)
 				{
 					PDRectangle rectangle = new PDRectangle(0,0);
-					//Si el texto tiene background lo dibujo de esta forma
 					switch(alignment)
 					{
 						case 1: // Center Alignment
@@ -1366,11 +1233,10 @@ public class PDFReportpdfbox implements IReportHandler{
 					}
 				}
 
-				float underlineSeparation = lineHeight / 5;//Separacion entre el texto y la linea del subrayado
+				float underlineSeparation = lineHeight / 5;
 				int underlineHeight = (int)underlineSeparation + (int)(underlineSeparation/4);
 				PDRectangle underline;
 
-				//Si el texto esta subrayado
 				if (fontUnderline)
 				{
 					underline = new PDRectangle(0,0);
@@ -1412,7 +1278,6 @@ public class PDFReportpdfbox implements IReportHandler{
 					}
 				}
 
-				//Si el texto esta tachado
 				if (fontStrikethru)
 				{
 					underline = new PDRectangle(0,0);
@@ -1441,7 +1306,7 @@ public class PDFReportpdfbox implements IReportHandler{
 							break;
 					}
 					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
-					contentStream.setNonStrokingColor(foreColor); // set background color to yellow
+					contentStream.setNonStrokingColor(foreColor);
 					contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY(),underline.getWidth(), underline.getHeight());
 					contentStream.fill();
 					contentStream.close();
@@ -1456,7 +1321,7 @@ public class PDFReportpdfbox implements IReportHandler{
 				}
 
 				if(sTxt.trim().equalsIgnoreCase("{{Pages}}"))
-				{// Si el texto es la cantidad de páginas del documento
+				{
 					if (!templateCreated)
 					{
 						PDFormXObject template = new PDFormXObject(document);
@@ -1467,7 +1332,7 @@ public class PDFReportpdfbox implements IReportHandler{
 					PDFormXObject form = new PDFormXObject(document);
 					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
 					contentStream.transform(Matrix.getTranslateInstance(leftAux + leftMargin, leftAux + leftMargin));
-					contentStream.drawForm(form); // draw the form onto th
+					contentStream.drawForm(form);
 					templateFont = baseFont;
 					templateFontSize = fontSize;
 					templateColorFill = foreColor;
@@ -1479,14 +1344,11 @@ public class PDFReportpdfbox implements IReportHandler{
 				boolean justified = (alignment == 3) && textBlockWidth < TxtWidth;
 				boolean wrap = ((align & 16) == 16);
 
-				//Justified
 				if (wrap || justified)
 				{
-					//Bottom y top son los absolutos, sin considerar la altura real a la que se escriben las letras.
 					bottomAux = (float)convertScale(bottomOri);
 					topAux = (float)convertScale(topOri);
 
-					//La constante 2 para LEADING indica la separacion que se deja entre un renglon y otro. (es lo que mas se asemeja a la api vieja).
 					float leading = (float)(Double.valueOf(props.getGeneralProperty(Const.LEADING)).doubleValue());
 					PDAnnotationText annotation = new PDAnnotationText();
 					String alignmentString;
@@ -1517,14 +1379,11 @@ public class PDFReportpdfbox implements IReportHandler{
 						e.printStackTrace(System.err);
 					}
 				}
-				else //no wrap
+				else
 				{
 					startHeight=0;
 					if (!autoResize)
 					{
-						//Va quitando el ultimo char del texto hasta que llega a un string cuyo ancho se pasa solo por un caracter
-						//del ancho del textblock ("se pasa solo por un caracter": esto es porque en el caso general es ese el texto que
-						//mas se parece a lo que se disenia en genexus).
 						String newsTxt = sTxt;
 						while(TxtWidth > textBlockWidth && (newsTxt.length()-1>=0))
 						{
@@ -1578,75 +1437,13 @@ public class PDFReportpdfbox implements IReportHandler{
 		return bottomAux > drawingPageHeight;
 	}
 
-	/*
-	ColumnText SimulateDrawColumnText(PdfContentByte cb, Rectangle rect, Paragraph p, float leading, int runDirection, int alignment) throws DocumentException
-	{
-		ColumnText Col = new ColumnText(cb);
-		Col.setRunDirection(runDirection);
-		Col.setAlignment(alignment);
-		Col.setLeading(leading, 1);
-		Col.setSimpleColumn(rect.getLeft(), rect.getBottom(), rect.getRight(), rect.getTop());
-		Col.addText(p);
-		Col.go(true);
-		return Col;
-	}
-	 */
-	/*
-	void DrawColumnText(PDPageContentStream cb, float llx, float lly, float urx, float ury, float leading, Matrix runDirection, int valign, int alignment) throws DocumentException
-	{
-		Rectangle rect = new Rectangle(llx, lly, urx, ury);
-		ColumnText ct = SimulateDrawColumnText(cb, rect, p, leading, runDirection, alignment);//add the column in simulation mode
-		float y = ct.getYLine();
-		int linesCount = ct.getLinesWritten();
+	public void GxClearAttris() {}
 
-		//calculate a new rectangle for valign = middle
-		if (valign == PDFReportItext.VerticalAlign.MIDDLE.value())
-			ury = ury - ((y - lly) / 2) + leading;
-		else if (valign == PDFReportItext.VerticalAlign.BOTTOM.value())
-			ury = ury - (y - lly- leading);
-		else if (valign == PDFReportItext.VerticalAlign.TOP.value())
-			ury = ury + leading/2;
-
-		rect = new Rectangle(llx, lly, urx, ury); //Rectangle for new ury
-
-		ColumnText Col = new ColumnText(cb);
-		Col.setRunDirection(runDirection);
-		if (linesCount <= 1)
-			Col.setLeading(0, 1);
-		else
-			Col.setLeading(leading, 1);
-		Col.setSimpleColumn(rect.getLeft(), rect.getBottom(), rect.getRight(), rect.getTop());
-
-		Col.setAlignment(columnAlignment(alignment));
-		Col.addText(p);
-		Col.go();
-	}
-
-	 */
-
-	/*
-	private int columnAlignment(int alignment)
-	{
-		if (alignment == Element.ALIGN_JUSTIFIED)
-			return justifiedType;
-		else
-			return alignment;
-	}
-
-	 */
-
-	public void GxClearAttris()
-	{
-	}
-
-	public static final double PAGE_SCALE_Y = 20; // Indica la escala de la página
-	public static final double PAGE_SCALE_X = 20; // Indica la escala de la página
+	public static final double PAGE_SCALE_Y = 20;
+	public static final double PAGE_SCALE_X = 20;
 	public static final double GX_PAGE_SCALE_Y_OLD = 15.45;
-	public static final double GX_PAGE_SCALE_Y = 14.4; // Indica la escala de la página, GeneXus lleva otra escala para el tamaño de la hoja, (variando este parametro, se agranda o achica el tamaño imprimible por GeneXus)
-	//Por ejemplo: si en genexus se tiene un reporte con Paper Height de 1169 (A4) centésimos de pulgada (1/100 inch),
-	//en el parámetro pageLength llega 16834 que esta en Twips (16834 = 1169*14.4). 1 twip = 1/1440 inch.
-	//Con el valor anterior 15.45 estaba quedando un margen bottom fijo que no se podia eliminar (incluso seteando mb 0).
-	private static double TO_CM_SCALE =28.6;  // Escala CM -> metricas PDF (utilizado en el pageMargin)
+	public static final double GX_PAGE_SCALE_Y = 14.4;
+	private static double TO_CM_SCALE =28.6;
 	public boolean GxPrintInit(String output, int gxXPage[], int gxYPage[], String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex)
 	{
 		PPP = gxYPage[0];
@@ -1685,10 +1482,10 @@ public class PDFReportpdfbox implements IReportHandler{
 			{
 				setOutputStream(new FileOutputStream(docName));
 			}catch(IOException accessError)
-			{ // Si no se puede generar el archivo, muestro el stackTrace y seteo el stream como NullOutputStream
+			{
 				accessError.printStackTrace(System.err);
 				outputStream = new com.genexus.util.NullOutputStream();
-				outputType = Const.OUTPUT_FILE; // Hago esto para no tener lios con el Acrobat
+				outputType = Const.OUTPUT_FILE;
 			}
 		}
 		printerOutputMode = mode;
@@ -1710,34 +1507,17 @@ public class PDFReportpdfbox implements IReportHandler{
 
 		runDirection = Integer.valueOf(props.getGeneralProperty(Const.RUN_DIRECTION)).intValue();
 
-
-		//Se ignora el parametro orientation para el calculo del pageSize, los valores de alto y ancho ya vienen invertidos si Orientation=2=landscape.
 		this.pageSize = computePageSize(leftMargin, topMargin, pageWidth, pageLength, props.getBooleanGeneralProperty(Const.MARGINS_INSIDE_BORDER, false));
 		gxXPage[0] = (int)this.pageSize.getUpperRightX ();
 		if (props.getBooleanGeneralProperty(Const.FIX_SAC24437, true))
-			gxYPage[0] = (int)(pageLength / GX_PAGE_SCALE_Y); // Cuanto menor sea GX_PAGE_SCALE_Y, GeneXus imprime mayor parte de cada hoja
+			gxYPage[0] = (int)(pageLength / GX_PAGE_SCALE_Y);
 		else
-			gxYPage[0] = (int)(pageLength / GX_PAGE_SCALE_Y_OLD); // Cuanto menor sea GX_PAGE_SCALE_Y, GeneXus imprime mayor parte de cada hoja
-
-
-		//Ahora chequeamos que el margen asociado en el PDFReport.INI sea correcto, y si es inválido, asociamos el que sea por defecto
-		//if(leftMargin > this.pageSize.width || topMargin > this.pageSize.height)
-		//{ // Si el margen asociado es mayor que el tamaño de la página, entonces asociamos los márgenes por default
-
-		//float leftMargin = (float) (TO_CM_SCALE * Double.valueOf(Const.DEFAULT_LEFT_MARGIN).doubleValue());
-		//float topMargin = (float) (TO_CM_SCALE * Double.valueOf(Const.DEFAULT_TOP_MARGIN).doubleValue());
-
-		//float rightMargin = 0;
-		//float bottomMargin = 0;
-		//System.err.println("Invalid page Margin... Resetting to defaults");
-		//}
+			gxYPage[0] = (int)(pageLength / GX_PAGE_SCALE_Y_OLD);
 
 		document = new PDDocument();
 		document.addPage(new PDPage(this.pageSize));
 
 		init();
-
-		//if(DEBUG)DEBUG_STREAM.println("GxPrintInit ---> Size:" + this.pageSize + " Orientation: " + (pageOrientation == PDFPage.PORTRAIT ? "Portrait" : "Landscape"));
 
 		return true;
 	}
@@ -1813,24 +1593,14 @@ public class PDFReportpdfbox implements IReportHandler{
 		this.M_bot = M_bot;
 	}
 
-	public void GxEndPage()
-	{
-		//if(DEBUG)DEBUG_STREAM.println("GxEndPage");
-
-		//if(document != null && !isPageDirty)
-		//    document.dispose();
-//        if(document == null) GxStartPage(); // Si la página esta vacú}, la agrego primero al PDF. Esto hace que haya una hoja vacú} al final, as\uFFFDEque lo saco
-//        document = null; // La nueva página est\uFFFDEvacú}
-	}
+	public void GxEndPage() {}
 
 	public void GxEndDocument()
 	{
 		if(document.getNumberOfPages() == 0)
-		{ // Si no hay ninguna página en el documento, agrego una vacia}
+		{
 			document.addPage(new PDPage(this.pageSize));
 		}
-
-		//Ahora proceso los comandos GeneXus {{Pages}}
 		if (template != null)
 		{
 			try{
@@ -1887,12 +1657,8 @@ public class PDFReportpdfbox implements IReportHandler{
 		boolean fit= props.getGeneralProperty(Const.ADJUST_TO_PAPER).equals("true");
 		if ((outputType==Const.OUTPUT_PRINTER || outputType==Const.OUTPUT_STREAM_PRINTER) && (httpContext instanceof HttpContextWeb && serverPrinting.equals("false")))
 		{
-			//writer.addJavaScript("if (this.external)\n");//Specifies whether the current document is being viewed in the Acrobat application or in an external window (such as a web browser).
-			//writer.addJavaScript("app.alert('SI es externa' + this.external);");
-
 			PDActionJavaScript jsAction = new PDActionJavaScript();
 			jsAction.setAction("var pp = this.getPrintParams();\n");
-			//writer.addJavaScript("pp.interactive = pp.constants.interactionLevel.automatic;\n");
 			String printerAux=printerSettings.getProperty(form, Const.PRINTER);
 			String printer = replace(printerAux, "\\", "\\\\");
 
@@ -1913,19 +1679,14 @@ public class PDFReportpdfbox implements IReportHandler{
 			if (printerSettings.getProperty(form, Const.MODE, "3").startsWith("0"))//Show printer dialog Never
 			{
 				jsAction.setAction("pp.interactive = pp.constants.interactionLevel.automatic;\n");
-				//No print dialog is displayed. During printing a progress monitor and cancel
-				//dialog is displayed and removed automatically when printing is complete.
 				for(int i = 0; i < copies; i++)
 				{
 					jsAction.setAction("this.print(pp);\n");
 				}
 			}
-			else //Show printer dialog is sent directly to printer | always
+			else
 			{
 				jsAction.setAction("pp.interactive = pp.constants.interactionLevel.full;\n");
-				//Displays the print dialog allowing the user to change print settings and requiring
-				//the user to press OK to continue. During printing a progress monitor and cancel
-				//dialog is displayed and removed automatically when printing is complete.
 				jsAction.setAction("this.print(pp);\n");
 			}
 
@@ -1936,42 +1697,32 @@ public class PDFReportpdfbox implements IReportHandler{
 			System.err.println(e.getMessage());
 		}
 
-
 		if(DEBUG)DEBUG_STREAM.println("GxEndDocument!");
-		//showInformation();
-		//ParseINI props = pdf.getPDF().props;
-		//pdf.end();
 
 		try{ props.save(); } catch(IOException e) { ; }
 
-
-		// OK, ahora que ya terminamos el PDF, vemos si tenemos que mostrarlo en pantalla
 		switch(outputType)
 		{
 			case Const.OUTPUT_SCREEN:
-				try{ outputStream.close(); } catch(IOException e) { ; } // Cierro el archivo
-				try{ showReport(docName, modal); } catch(Exception e)
-				{ // Si no se puede mostrar el reporte
+				try{ outputStream.close(); } catch(IOException e) { }
+				try{ showReport(docName, modal); }
+				catch(Exception e) {
 					e.printStackTrace();
 				}
-				//  Comento la próxima lú‹ea, porque por manejo interno del Acrobat, si ya habú} una instancia del
-				//  Acrobat corriendo, el modal no funciona (x que el proceso levantado le avisa al que ya estaba abierto qu\uFFFDE
-				//  archivo abrir y luego se mata automáticamente)
-				//  if(modal)if(new File(docName).delete())TemporaryFiles.getInstance().removeFileFromList(docName); // Intento eliminar el docName aqu\uFFFDE
 				break;
 			case Const.OUTPUT_PRINTER:
-				try{ outputStream.close(); } catch(IOException e) { ; } // Cierro el archivo
+				try{ outputStream.close(); } catch(IOException e) { }
 				try{
 					if (!(httpContext instanceof HttpContextWeb) || !serverPrinting.equals("false"))
 					{
 						printReport(docName, this.printerOutputMode == 1);
 					}
-				} catch(Exception e){ // Si no se puede mostrar el reporte
+				} catch(Exception e){
 					e.printStackTrace();
 				}
 				break;
 			case Const.OUTPUT_FILE:
-				try{ outputStream.close(); } catch(IOException e) { ; } // Cierro el archivo
+				try{ outputStream.close(); } catch(IOException e) { ; }
 				break;
 			case Const.OUTPUT_STREAM:
 			case Const.OUTPUT_STREAM_PRINTER:
@@ -1980,24 +1731,15 @@ public class PDFReportpdfbox implements IReportHandler{
 		outputStream = null;
 	}
 
-	public void GxEndPrinter()
-	{
-		//DEBUG.println("Processing...");
-	}
+	public void GxEndPrinter() {}
 	public void GxStartPage()
 	{
 		document.addPage(new PDPage());
 		pages = pages +1;
 	}
 
-	public void GxStartDoc()
-	{
-		//DEBUG.println("Processing...");
-	}
-	public void GxSetDocFormat(String format)
-	{
-		//DEBUG.println("Processing...");
-	}
+	public void GxStartDoc() {}
+	public void GxSetDocFormat(String format) {}
 
 	public void GxSetDocName(String docName)
 	{
@@ -2005,7 +1747,7 @@ public class PDFReportpdfbox implements IReportHandler{
 		if(this.docName.indexOf('.') < 0)
 			this.docName += ".pdf";
 		if(!new File(docName).isAbsolute())
-		{ // Si el nombre del documento es relativo, veo si hay que agregarle el outputDir
+		{
 			String outputDir = props.getGeneralProperty(Const.OUTPUT_FILE_DIRECTORY, "").replace(alternateSeparator, File.separatorChar).trim();
 			if(!outputDir.equalsIgnoreCase("") && !outputDir.equalsIgnoreCase("."))
 			{
@@ -2036,13 +1778,11 @@ public class PDFReportpdfbox implements IReportHandler{
 
 	public boolean GxPrTextInit(String ouput, int nxPage[], int nyPage[], String psIniFile, String psForm, String sPrinter, int nMode, int nPaperLength, int nPaperWidth, int nGridX, int nGridY, int nPageLines)
 	{
-		//DEBUG.println("Processing...");
 		return true;
 	}
 
 	public boolean GxPrnCfg( String ini )
 	{
-		//DEBUG.println("Processing...");
 		return true;
 	}
 
@@ -2055,7 +1795,6 @@ public class PDFReportpdfbox implements IReportHandler{
 	{
 		return true;
 	}
-
 
 	private int page;
 	public int getPage()
@@ -2079,33 +1818,25 @@ public class PDFReportpdfbox implements IReportHandler{
 
 	public void cleanup() {}
 
-	public void setMetrics(String fontName, boolean bold, boolean italic, int ascent, int descent, int height, int maxAdvance, int[] sizes)
-	{
-	}
-
+	public void setMetrics(String fontName, boolean bold, boolean italic, int ascent, int descent, int height, int maxAdvance, int[] sizes) {}
 
 	/** Carga la tabla de substitutos
 	 */
 	private void loadSubstituteTable()
 	{
-		// Primero leemos la tabla de substitutos del Registry
 		Hashtable<String, Vector<String>> tempInverseMappings = new Hashtable<>();
 
-		// Seteo algunos Mappings que Acrobat toma como Type1
 		for(int i = 0; i < Const.FONT_SUBSTITUTES_TTF_TYPE1.length; i++)
 			fontSubstitutes.put(Const.FONT_SUBSTITUTES_TTF_TYPE1[i][0], Const.FONT_SUBSTITUTES_TTF_TYPE1[i][1]);
 
-		// Ahora inserto los mappings extra del PDFReport.INI (si es que hay)
-		// Los font substitutes del PDFReport.INI se encuentran bajo la seccion
-		// indicada por Const.FONT_SUBSTITUTES_SECTION y son pares oldFont -> newFont
 		Hashtable otherMappings = props.getSection(Const.FONT_SUBSTITUTES_SECTION);
 		if(otherMappings != null)
 			for(Enumeration enumera = otherMappings.keys(); enumera.hasMoreElements();)
 			{
 				String fontName = (String)enumera.nextElement();
 				fontSubstitutes.put(fontName, (String)otherMappings.get(fontName));
-				if(tempInverseMappings.containsKey(fontName)) // Con esto solucionamos el tema de la recursión de Fonts -> Fonts
-				{                                             // x ej: Si tenú} Font1-> Font2, y ahora tengo Font2->Font3, pongo cambio el 1º por Font1->Font3
+				if(tempInverseMappings.containsKey(fontName))
+				{
 					String fontSubstitute = (String)otherMappings.get(fontName);
 					for(Enumeration<String> enum2 = tempInverseMappings.get(fontName).elements(); enum2.hasMoreElements();)
 						fontSubstitutes.put(enum2.nextElement(), fontSubstitute);
@@ -2121,10 +1852,7 @@ public class PDFReportpdfbox implements IReportHandler{
 	public void GxPrintOnTop() { ; }
 	public void GxPrnCmd(String cmd)  { ; }
 
-
-	public void showInformation()
-	{
-	}
+	public void showInformation() {}
 
 	public static final double SCALE_FACTOR = 72;
 	private double PPP = 96;
@@ -2146,12 +1874,6 @@ public class PDFReportpdfbox implements IReportHandler{
 		return result;
 	}
 
-	class FontProps
-	{
-		public int horizontal;
-		public int vertical;
-	}
-
 	/**
 	 * Helper method for toString()
 	 * @param s source string
@@ -2171,44 +1893,10 @@ public class PDFReportpdfbox implements IReportHandler{
 			}
 		}
 
-		// include any remaining text
 		if(p<s.length())
 			b.append(s.substring(p));
 
 		return b.toString();
 	}
 
-	/** Contiene un state de una pagina (atributos, etc) + un String a ingresar
-	 *  La idea es que se pueda agregar Strings en cualquier página al final del proceso del PDF
-	 */
-	/*
-    class TextProperties
-    {
-        public final PDFGraphics document;
-        public final Font font;
-        public final Color foreColor;
-        public final Color backColor;
-        public final boolean fontUnderline;
-        public final boolean fontStrikeThru;
-        public final String text;
-        public final int left, top, right, bottom, align;
-        public TextProperties(PDFGraphics document, Font font, Color foreColor, Color backColor,
-                              boolean fontUnderline, boolean fontStrikeThru, String text, int left,
-                              int top, int right, int bottom, int align)
-        {
-            this.document = document;
-            this.font = font;
-            this.foreColor = foreColor;
-            this.backColor = backColor;
-            this.fontUnderline = fontUnderline;
-            this.fontStrikeThru = fontStrikeThru;
-            this.text = text;
-            this.left = left;
-            this.top = top;
-            this.right = right;
-            this.bottom = bottom;
-            this.align = align;
-        }
-    }
-    */
 }
