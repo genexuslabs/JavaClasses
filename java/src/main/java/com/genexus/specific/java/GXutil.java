@@ -22,16 +22,24 @@ import com.genexus.ModelContext;
 import com.genexus.common.interfaces.IExtensionGXutil;
 import com.genexus.db.IDataStoreProvider;
 import com.genexus.util.CacheAPI;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.DateTimeZone;
 
 public class GXutil implements IExtensionGXutil {
+	private static Logger logger = LogManager.getLogger(GXutil.class);
 
-	private static org.joda.time.DateTimeZone Java2JodaTimeZone(TimeZone tz) {
-		org.joda.time.DateTimeZone jodaTZ;
+	private static DateTimeZone Java2JodaTimeZone(TimeZone tz) {
+		DateTimeZone jodaTZ = DateTimeZone.getDefault();
 		try {
-			jodaTZ = org.joda.time.DateTimeZone.forID(tz.getID());
+			jodaTZ = DateTimeZone.forID(tz.getID());
 		} catch (IllegalArgumentException e) {
-			jodaTZ = org.joda.time.DateTimeZone.forTimeZone(tz);
+			try {
+				jodaTZ = DateTimeZone.forTimeZone(tz);
+			}
+			} catch (IllegalArgumentException e) {
+				logger.error("Failed to find TimeZone: " + tz.getID(), e);
+			}
 		}
 		return jodaTZ;
 	}

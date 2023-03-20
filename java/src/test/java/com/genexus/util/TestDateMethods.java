@@ -88,4 +88,12 @@ public class TestDateMethods {
 		calendar.setTime(testDate3);
 		Assert.assertTrue(calendar.get(Calendar.YEAR) == 1931);
 	}
+
+	@Test
+	public void testTimeZone(){
+		Connect.init();
+
+		TimeZone timezone = TimeZone.getTimeZone("America/Montevideo");
+		Date = com.genexus.specific.java.GXutil.DateTimeToUTC(new Date(), timezone);
+	}
 }
