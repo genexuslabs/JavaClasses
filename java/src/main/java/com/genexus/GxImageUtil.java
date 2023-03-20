@@ -46,8 +46,22 @@ public class GxImageUtil {
 	public static long getFileSize(String imageFile){
 		if (!isValidInput(imageFile))
 			return INVALID_CODE;
-
-		return new GXFile(imageFile).getLength();
+		IHttpContext httpContext = com.genexus.ModelContext.getModelContext().getHttpContext();
+		if (imageFile.toLowerCase().startsWith("http://") || imageFile.toLowerCase().startsWith("https://") ||
+			(httpContext.isHttpContextWeb() && imageFile.startsWith(httpContext.getContextPath()))){
+			try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+				BufferedImage image = ImageIO.read(new URL(GXDbFile.pathToUrl( imageFile, httpContext)).openStream());
+				String extension = imageFile.substring(imageFile.lastIndexOf(".") + 1);
+				ImageIO.write(image, extension, baos);
+				baos.flush();
+				byte[] imageInByte = baos.toByteArray();
+				return imageInByte.length;
+			} catch (Exception e) {
+				log.error("getFileSize " + imageFile + " failed" , e);
+			}
+		} else
+			return getGXFile(imageFile).getLength();
+		return INVALID_CODE;
 	}
 
 	public static int getImageHeight(String imageFile) {
