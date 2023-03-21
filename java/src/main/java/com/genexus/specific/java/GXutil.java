@@ -18,7 +18,6 @@ import org.apache.commons.io.IOUtils;
 
 import com.genexus.Application;
 import com.genexus.PrivateUtilities;
-import com.genexus.ModelContext;
 import com.genexus.common.interfaces.IExtensionGXutil;
 import com.genexus.db.IDataStoreProvider;
 import com.genexus.util.CacheAPI;
@@ -33,12 +32,11 @@ public class GXutil implements IExtensionGXutil {
 		DateTimeZone jodaTZ = DateTimeZone.getDefault();
 		try {
 			jodaTZ = DateTimeZone.forID(tz.getID());
-		} catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException _) {
 			try {
 				jodaTZ = DateTimeZone.forTimeZone(tz);
-			}
 			} catch (IllegalArgumentException e) {
-				logger.error("Failed to find TimeZone: " + tz.getID(), e);
+				logger.error(String.format("Failed to find TimeZone: %s. Using default Timezone", tz.getID()), e);
 			}
 		}
 		return jodaTZ;
