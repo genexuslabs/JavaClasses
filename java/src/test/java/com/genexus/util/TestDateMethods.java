@@ -98,7 +98,6 @@ public class TestDateMethods {
             long diff = utcDate.getTime() - mvdDate.getTime();
             long expectedDiff = 10800000;
             Assert.assertEquals("Timezone offset invalid", expectedDiff, diff);
-            System.out.println("");
         } catch (Exception e) {
 			Assert.fail();
         }
