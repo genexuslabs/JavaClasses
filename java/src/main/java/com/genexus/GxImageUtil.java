@@ -101,69 +101,64 @@ public class GxImageUtil {
 	public static String crop(String imageFile, int x, int y, int width, int height) {
 		if (!isValidInput(imageFile))
 			return "";
-
 		try {
 			BufferedImage image = createBufferedImageFromURI(imageFile);
 			BufferedImage croppedImage = image.getSubimage(x, y, width, height);
-			writeImage(croppedImage, imageFile);
+			return writeImage(croppedImage, imageFile);
 		}
 		catch (Exception e) {
 			log.error("crop " + imageFile + " failed" , e);
 		}
-		return imageFile;
+		return "";
 	}
 
-	private static void writeImage(BufferedImage croppedImage, String destinationFilePathOrUrl) throws IOException {
+	private static String writeImage(BufferedImage croppedImage, String destinationFilePathOrUrl) throws IOException {
+		String newFileName = PrivateUtilities.getTempFileName(CommonUtil.getFileType(destinationFilePathOrUrl));
 		try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
-			ImageIO.write(croppedImage, CommonUtil.getFileType(destinationFilePathOrUrl), outStream);
-			try (ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray())) {
-				GXFile file = getGXFile(destinationFilePathOrUrl);
-				file.create(inStream, true);
-				file.close();
-			}
+			ImageIO.write(croppedImage, CommonUtil.getFileType(newFileName), outStream);
+			outStream.flush();
+			byte[] imageInByte = outStream.toByteArray();
+			return GXutil.blobFromBytes(imageInByte);
 		}
 	}
 
 	public static String flipHorizontally(String imageFile) {
 		if (!isValidInput(imageFile))
 			return "";
-
 		try {
 			BufferedImage image = createBufferedImageFromURI(imageFile);
 			AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
 			tx.translate(-image.getWidth(null), 0);
 			AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 			BufferedImage flippedImage = op.filter(image, null);
-			writeImage(flippedImage, imageFile);
+			return writeImage(flippedImage, imageFile);
 		}
 		catch (Exception e) {
 			log.error("flip horizontal " + imageFile + " failed" , e);
 		}
-		return imageFile;
+		return "";
 	}
 
 	public static String flipVertically(String imageFile) {
 		if (!isValidInput(imageFile))
 			return "";
-
 		try {
 			BufferedImage image = createBufferedImageFromURI(imageFile);
 			AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
 			tx.translate(0, -image.getHeight(null));
 			AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 			BufferedImage flippedImage = op.filter(image, null);
-			writeImage(flippedImage, imageFile);
+			return writeImage(flippedImage, imageFile);
 		}
 		catch (Exception e) {
 			log.error("flip vertical " + imageFile + " failed" , e);
 		}
-		return imageFile;
+		return "";
 	}
 
 	public static String resize(String imageFile, int width, int height, boolean keepAspectRatio) {
 		if (!isValidInput(imageFile))
 			return "";
-
 		try {
 			BufferedImage image = createBufferedImageFromURI(imageFile);
 			if (keepAspectRatio) {
@@ -180,12 +175,12 @@ public class GxImageUtil {
 			Graphics2D g2d = resizedImage.createGraphics();
 			g2d.drawImage(image, 0, 0, width, height, null);
 			g2d.dispose();
-			writeImage(resizedImage, imageFile);
+			return writeImage(resizedImage, imageFile);
 		}
 		catch (Exception e) {
 			log.error("resize " + imageFile + " failed" , e);
 		}
-		return imageFile;
+		return "";
 	}
 
 	public static String scale(String imageFile, short percent) {
@@ -208,12 +203,12 @@ public class GxImageUtil {
 		try {
 			BufferedImage image = createBufferedImageFromURI(imageFile);
 			BufferedImage rotatedImage = rotateImage(image, angle);
-			writeImage(rotatedImage, imageFile);
+			return writeImage(rotatedImage, imageFile);
 		}
 		catch (Exception e) {
 			log.error("rotate " + imageFile + " failed" , e);
 		}
-		return imageFile;
+		return "";
 	}
 
 	private static BufferedImage rotateImage(BufferedImage buffImage, double angle) {
