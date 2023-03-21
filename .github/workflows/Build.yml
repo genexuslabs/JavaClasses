@@ -42,6 +42,11 @@ jobs:
         gpg-private-key: ${{ secrets.MAVEN_GPG_BUILDER_PRIVATE_KEY }}
         gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
+    - name: Setup Maven
+      uses: stCarolas/setup-maven@v4.5
+      with:
+        maven-version: 3.8.7
+
     - name: Setup Maven settings
       uses: whelk-io/maven-settings-xml-action@v14
       with:
