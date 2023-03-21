@@ -3,8 +3,6 @@ package com.genexus.reports;
 import java.awt.Color;
 import java.io.*;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,11 +18,9 @@ import com.genexus.reports.fonts.PDFFontDescriptor;
 import com.genexus.reports.fonts.Type1FontMetrics;
 import com.genexus.reports.fonts.Utilities;
 
-import com.lowagie.text.pdf.BaseFont;
 import org.apache.pdfbox.cos.*;
 import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.font.*;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
@@ -1006,7 +1002,11 @@ public class PDFReportpdfbox implements IReportHandler{
 						baseFont = PDType0Font.load(document,new File(fontPath));
 					}
 					else
-					{	baseFont = PDType0Font.load();
+					{
+						baseFont = PDType0Font.load(document,new File(fontPath + style));
+						COSDictionary dict = baseFont.getCOSObject();
+						dict.setItem(COSName.ENCODING, COSName.IDENTITY_H);
+						dict.setItem(COSName.FONT_FILE2, COSNull.NULL);
 					}
 				}
 			}
@@ -1159,14 +1159,14 @@ public class PDFReportpdfbox implements IReportHandler{
 			COSDictionary fontDict = baseFont.getCOSObject();
 			COSDictionary newFontDict = new COSDictionary(fontDict);
 			newFontDict.setFloat(COSName.SIZE, fontSize);
-			PDType0Font auxFont = new PDType0Font(newFontDict);
-			cb.setFont(font,fontSize);
+			PDType0Font font = new PDType0Font(newFontDict);
 
+			cb.setFont(font,fontSize);
 			cb.setNonStrokingColor(foreColor);
 			int arabicOptions = 0;
-			float captionHeight = 	 auxFont.getFontDescriptor().getCapHeight();
-			float rectangleWidth = auxFont.getStringWidth(sTxt);
-			float lineHeight = auxFont.getFontDescriptor().getFontBoundingBox().getUpperRightY() - auxFont.getFontDescriptor().getFontBoundingBox().getLowerLeftX();
+			float captionHeight = font.getFontDescriptor().getCapHeight();
+			float rectangleWidth = font.getStringWidth(sTxt);
+			float lineHeight = font.getFontDescriptor().getFontBoundingBox().getUpperRightY() - font.getFontDescriptor().getFontBoundingBox().getLowerLeftX();
 			float textBlockHeight = (float)convertScale(bottom-top);
 			int linesCount =   (int)(textBlockHeight/lineHeight);
 			int bottomOri = bottom;
@@ -1219,7 +1219,7 @@ public class PDFReportpdfbox implements IReportHandler{
 							break;
 					}
 					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
-					contentStream.setNonStrokingColor(backColor); // set background color to yellow
+					contentStream.setNonStrokingColor(backColor);
 					contentStream.addRect(rectangle.getLowerLeftX(), rectangle.getLowerLeftY(),rectangle.getWidth(), rectangle.getHeight());
 					contentStream.fill();
 					contentStream.close();
@@ -1657,39 +1657,41 @@ public class PDFReportpdfbox implements IReportHandler{
 		boolean fit= props.getGeneralProperty(Const.ADJUST_TO_PAPER).equals("true");
 		if ((outputType==Const.OUTPUT_PRINTER || outputType==Const.OUTPUT_STREAM_PRINTER) && (httpContext instanceof HttpContextWeb && serverPrinting.equals("false")))
 		{
-			PDActionJavaScript jsAction = new PDActionJavaScript();
-			jsAction.setAction("var pp = this.getPrintParams();\n");
+			PDDocumentCatalog catalog = document.getDocumentCatalog();
+			StringBuffer jsActions = new StringBuffer();
+			jsActions.append("var pp = this.getPrintParams();\n");
 			String printerAux=printerSettings.getProperty(form, Const.PRINTER);
 			String printer = replace(printerAux, "\\", "\\\\");
 
 			if (printer!=null && !printer.equals(""))
 			{
-				jsAction.setAction("pp.printerName = \"" + printer + "\";\n");
+				jsActions.append("pp.printerName = \"" + printer + "\";\n");
 			}
 
 			if (fit)
 			{
-				jsAction.setAction("pp.pageHandling = pp.constants.handling.fit;\n");
+				jsActions.append("pp.pageHandling = pp.constants.handling.fit;\n");
 			}
 			else
 			{
-				jsAction.setAction("pp.pageHandling = pp.constants.handling.none;\n");
+				jsActions.append("pp.pageHandling = pp.constants.handling.none;\n");
 			}
 
-			if (printerSettings.getProperty(form, Const.MODE, "3").startsWith("0"))//Show printer dialog Never
+			if (printerSettings.getProperty(form, Const.MODE, "3").startsWith("0"))
 			{
-				jsAction.setAction("pp.interactive = pp.constants.interactionLevel.automatic;\n");
+				jsActions.append("pp.interactive = pp.constants.interactionLevel.automatic;\n");
 				for(int i = 0; i < copies; i++)
 				{
-					jsAction.setAction("this.print(pp);\n");
+					jsActions.append("this.print(pp);\n");
 				}
 			}
 			else
 			{
-				jsAction.setAction("pp.interactive = pp.constants.interactionLevel.full;\n");
-				jsAction.setAction("this.print(pp);\n");
+				jsActions.append("pp.interactive = pp.constants.interactionLevel.full;\n");
+				jsActions.append("this.print(pp);\n");
 			}
-
+			PDActionJavaScript openActions = new PDActionJavaScript(jsActions.toString());
+			catalog.setOpenAction(openActions);
 		}
 		try {
 			document.close();
