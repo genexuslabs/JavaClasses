@@ -1,7 +1,6 @@
 package com.genexus.db.cosmosdb;
 
 import com.genexus.CommonUtil;
-import com.genexus.ModelContext;
 import com.genexus.db.service.IOServiceContext;
 import com.genexus.db.service.ServiceResultSet;
 
@@ -15,8 +14,6 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.TemporalAccessor;
-import java.util.TimeZone;
 import static java.lang.Boolean.valueOf;
 
 public class CosmosDBResultSet extends ServiceResultSet<Object>
@@ -177,43 +174,6 @@ public class CosmosDBResultSet extends ServiceResultSet<Object>
 		return BigDecimal.ZERO;
 	}
 
-	private Instant getInstant(int columnIndex)
-	{
-		String value = getString(columnIndex);
-		if(value == null || value.trim().isEmpty())
-		{
-			lastWasNull = true;
-			return CommonUtil.nullDate().toInstant();
-		}
-
-		TemporalAccessor accessor = null;
-
-		try
-		{
-			accessor = ISO_DATE_TIME_OR_DATE.parseBest(value, LocalDateTime::from, LocalDate::from);
-		}catch(DateTimeParseException dtpe)
-		{
-			for(DateTimeFormatter dateTimeFormatter:DATE_TIME_FORMATTERS)
-			{
-				try
-				{
-					accessor = dateTimeFormatter.parseBest(value, LocalDateTime::from, LocalDate::from);
-					break;
-				}catch(Exception ignored){ }
-			}
-			if(accessor == null)
-			{
-				return CommonUtil.resetTime(CommonUtil.nullDate()).toInstant();
-			}
-		}
-		if(accessor instanceof  LocalDateTime)
-		{
-			ModelContext ctx = ModelContext.getModelContext();
-			TimeZone tz = ctx != null ? ctx.getClientTimeZone() : TimeZone.getDefault();
-			return ((LocalDateTime) accessor).atZone(tz.toZoneId()).toInstant();
-		}
-		else return LocalDate.from(accessor).atStartOfDay().toInstant(ZoneOffset.UTC);
-	}
 	@Override
 	public java.sql.Date getDate(int columnIndex)
 	{
