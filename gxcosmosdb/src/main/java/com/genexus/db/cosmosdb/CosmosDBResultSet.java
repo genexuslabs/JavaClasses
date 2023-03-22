@@ -11,10 +11,7 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.ZoneOffset;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
@@ -232,7 +229,33 @@ public class CosmosDBResultSet extends ServiceResultSet<Object>
 	@Override
 	public Timestamp getTimestamp(int columnIndex)
 	{
-		return java.sql.Timestamp.from(getInstant(columnIndex));
+		String datetimeString = getString(columnIndex);
+		if(datetimeString == null || datetimeString.trim().isEmpty())
+		{
+			lastWasNull = true;
+			return java.sql.Timestamp.from(CommonUtil.nullDate().toInstant());
+		}
+		LocalDateTime localDateTime = null;
+		try {
+			localDateTime = LocalDateTime.parse(datetimeString, ISO_DATE_TIME_OR_DATE);
+			ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, ZoneOffset.UTC);
+			return Timestamp.valueOf(zonedDateTime.toLocalDateTime());
+		}
+		catch (DateTimeParseException dateTimeParseException)
+		{
+			for(DateTimeFormatter dateTimeFormatter:DATE_TIME_FORMATTERS) {
+				try {
+					localDateTime = LocalDateTime.parse(datetimeString, dateTimeFormatter);
+					ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, ZoneOffset.UTC);
+					return Timestamp.valueOf(zonedDateTime.toLocalDateTime());
+				}
+				catch (Exception ignored)
+				{}
+			}
+			if (localDateTime == null)
+			{return java.sql.Timestamp.from(CommonUtil.nullDate().toInstant());}
+		}
+		return java.sql.Timestamp.from(CommonUtil.nullDate().toInstant());
 	}
 
 	@Override
