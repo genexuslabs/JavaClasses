@@ -66,6 +66,7 @@ public class PDFReportpdfbox implements IReportHandler{
 	private float topMargin;
 	private float bottomMargin;
 	private PDPageContentStream template;
+	private PDFormXObject formXObjecttemplate;
 	private PDType0Font templateFont;
 	private int templateFontSize;
 	private boolean backFill = true;
@@ -187,7 +188,7 @@ public class PDFReportpdfbox implements IReportHandler{
 		document = null;
 		pageSize = null;
 		stringTotalPages = new Vector();
-		documentImages = new ConcurrentHashMap<String, PDImageXObject>();
+		documentImages = new ConcurrentHashMap<>();
 		httpContext = (HttpContext) context.getHttpContext();
 
 		if(defaultRelativePrepend == null)
@@ -342,7 +343,6 @@ public class PDFReportpdfbox implements IReportHandler{
 	{
 		try {
 			document = new PDDocument();
-			document.addPage(new PDPage());
 		}
 		catch(Exception e) {
 			System.err.println(e.getMessage());
@@ -1324,9 +1324,10 @@ public class PDFReportpdfbox implements IReportHandler{
 				{
 					if (!templateCreated)
 					{
-						PDFormXObject template = new PDFormXObject(document);
-						template.setResources(new PDResources());
-						template.setBBox(new PDRectangle(right - left, bottom - top));
+						formXObjecttemplate = new PDFormXObject(document);
+						template = new PDPageContentStream(document, formXObjecttemplate, outputStream);
+						formXObjecttemplate.setResources(new PDResources());
+						formXObjecttemplate.setBBox(new PDRectangle(right - left, bottom - top));
 						templateCreated = true;
 					}
 					PDFormXObject form = new PDFormXObject(document);
@@ -1514,9 +1515,6 @@ public class PDFReportpdfbox implements IReportHandler{
 		else
 			gxYPage[0] = (int)(pageLength / GX_PAGE_SCALE_Y_OLD);
 
-		document = new PDDocument();
-		document.addPage(new PDPage(this.pageSize));
-
 		init();
 
 		return true;
@@ -1565,7 +1563,6 @@ public class PDFReportpdfbox implements IReportHandler{
 	}
 	public void setLineHeight(int lineHeight)
 	{
-
 		if(DEBUG)DEBUG_STREAM.println("setLineHeight: " + lineHeight);
 		this.lineHeight = lineHeight;
 	}
@@ -1600,21 +1597,25 @@ public class PDFReportpdfbox implements IReportHandler{
 		if(document.getNumberOfPages() == 0)
 		{
 			document.addPage(new PDPage(this.pageSize));
+			pages++;
 		}
 		if (template != null)
 		{
 			try{
+				template.beginText();
+				template.setFont(baseFont, fontSize);
+				template.setTextMatrix(new Matrix());
+				template.setNonStrokingColor(templateColorFill);
+				template.showText(String.valueOf(pages));
+				template.endText();
+				template.close();
 				for (PDPage page : document.getPages()){
-					template = new PDPageContentStream(document, page, PDPageContentStream.AppendMode.APPEND, true, true);
-					template.beginText();
-					template.setFont(baseFont, fontSize);
-					template.setTextMatrix(new Matrix());
-					template.setNonStrokingColor(templateColorFill);
-					template.showText(String.valueOf(pages));
-					template.endText();
-				}
-			} catch (IOException e){ }
+					PDPageContentStream templatePainter = new PDPageContentStream(document, page);
+					templatePainter.drawForm(formXObjecttemplate);
+					templatePainter.close();
 
+				}
+			} catch (IOException e){ System.err.println(e.getMessage()); }
 		}
 		int copies = 1;
 		try
@@ -1623,8 +1624,10 @@ public class PDFReportpdfbox implements IReportHandler{
 			if(DEBUG)DEBUG_STREAM.println("Setting number of copies to " + copies);
 
 			writer = document.getDocumentCatalog();
-			COSDictionary dict = writer.getViewerPreferences().getCOSObject();
-			if (dict == null) {dict = new COSDictionary();}
+
+			COSDictionary dict = new COSDictionary();
+			if (writer.getViewerPreferences() != null && writer.getViewerPreferences().getCOSObject() != null)
+				dict = writer.getViewerPreferences().getCOSObject();
 			PDViewerPreferences viewerPreferences = new PDViewerPreferences(dict);
 			viewerPreferences.setPrintScaling(PDViewerPreferences.PRINT_SCALING.None);
 			dict.setInt("NumCopies", copies);
@@ -1694,6 +1697,8 @@ public class PDFReportpdfbox implements IReportHandler{
 			catalog.setOpenAction(openActions);
 		}
 		try {
+			String pdfFilename = new File(docName).getAbsolutePath();
+			document.save(pdfFilename);
 			document.close();
 		} catch (IOException e) {
 			System.err.println(e.getMessage());
@@ -1737,7 +1742,7 @@ public class PDFReportpdfbox implements IReportHandler{
 	public void GxStartPage()
 	{
 		document.addPage(new PDPage());
-		pages = pages +1;
+		pages++;
 	}
 
 	public void GxStartDoc() {}
@@ -1845,7 +1850,6 @@ public class PDFReportpdfbox implements IReportHandler{
 				}
 			}
 	}
-
 
 	/** Estos métodos no hacen nada en este contexto
 	 */
