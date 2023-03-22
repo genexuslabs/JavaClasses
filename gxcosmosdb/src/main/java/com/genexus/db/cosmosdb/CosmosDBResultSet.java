@@ -11,10 +11,7 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.ZoneOffset;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
@@ -180,43 +177,6 @@ public class CosmosDBResultSet extends ServiceResultSet<Object>
 		return BigDecimal.ZERO;
 	}
 
-	private Instant getInstant(int columnIndex)
-	{
-		String value = getString(columnIndex);
-		if(value == null || value.trim().isEmpty())
-		{
-			lastWasNull = true;
-			return CommonUtil.nullDate().toInstant();
-		}
-
-		TemporalAccessor accessor = null;
-
-		try
-		{
-			accessor = ISO_DATE_TIME_OR_DATE.parseBest(value, LocalDateTime::from, LocalDate::from);
-		}catch(DateTimeParseException dtpe)
-		{
-			for(DateTimeFormatter dateTimeFormatter:DATE_TIME_FORMATTERS)
-			{
-				try
-				{
-					accessor = dateTimeFormatter.parseBest(value, LocalDateTime::from, LocalDate::from);
-					break;
-				}catch(Exception ignored){ }
-			}
-			if(accessor == null)
-			{
-				return CommonUtil.resetTime(CommonUtil.nullDate()).toInstant();
-			}
-		}
-		if(accessor instanceof  LocalDateTime)
-		{
-			ModelContext ctx = ModelContext.getModelContext();
-			TimeZone tz = ctx != null ? ctx.getClientTimeZone() : TimeZone.getDefault();
-			return ((LocalDateTime) accessor).atZone(tz.toZoneId()).toInstant();
-		}
-		else return LocalDate.from(accessor).atStartOfDay().toInstant(ZoneOffset.UTC);
-	}
 	@Override
 	public java.sql.Date getDate(int columnIndex)
 	{
@@ -232,7 +192,33 @@ public class CosmosDBResultSet extends ServiceResultSet<Object>
 	@Override
 	public Timestamp getTimestamp(int columnIndex)
 	{
-		return java.sql.Timestamp.from(getInstant(columnIndex));
+		String datetimeString = getString(columnIndex);
+		if(datetimeString == null || datetimeString.trim().isEmpty())
+		{
+			lastWasNull = true;
+			return java.sql.Timestamp.from(CommonUtil.nullDate().toInstant());
+		}
+		LocalDateTime localDateTime = null;
+		try {
+			localDateTime = LocalDateTime.parse(datetimeString, ISO_DATE_TIME_OR_DATE);
+			ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, ZoneOffset.UTC);
+			return Timestamp.valueOf(zonedDateTime.toLocalDateTime());
+		}
+		catch (DateTimeParseException dateTimeParseException)
+		{
+			for(DateTimeFormatter dateTimeFormatter:DATE_TIME_FORMATTERS) {
+				try {
+					localDateTime = LocalDateTime.parse(datetimeString, dateTimeFormatter);
+					ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, ZoneOffset.UTC);
+					return Timestamp.valueOf(zonedDateTime.toLocalDateTime());
+				}
+				catch (Exception ignored)
+				{}
+			}
+			if (localDateTime == null)
+			{return java.sql.Timestamp.from(CommonUtil.nullDate().toInstant());}
+		}
+		return java.sql.Timestamp.from(CommonUtil.nullDate().toInstant());
 	}
 
 	@Override
