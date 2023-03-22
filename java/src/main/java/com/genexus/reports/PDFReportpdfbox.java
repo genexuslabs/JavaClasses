@@ -579,8 +579,7 @@ public class PDFReportpdfbox implements IReportHandler{
 	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue,
 						   int styleTop, int styleBottom, int styleRight, int styleLeft, int cornerRadioTL, int cornerRadioTR, int cornerRadioBL, int cornerRadioBR)
 	{
-		try{
-			PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page));
+		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page - 1))){
 
 			float penAux = (float)convertScale(pen);
 			float rightAux = (float)convertScale(right);
@@ -677,8 +676,7 @@ public class PDFReportpdfbox implements IReportHandler{
 
 	public void GxDrawLine(int left, int top, int right, int bottom, int width, int foreRed, int foreGreen, int foreBlue, int style)
 	{
-		try {
-			PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page));
+		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page - 1))){
 
 			float widthAux = (float)convertScale(width);
 			float rightAux = (float)convertScale(right);
@@ -725,9 +723,7 @@ public class PDFReportpdfbox implements IReportHandler{
 
 	public void GxDrawBitMap(String bitmap, int left, int top, int right, int bottom, int aspectRatio)
 	{
-		try
-		{
-			PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page));
+		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page - 1))){
 			PDImageXObject image;
 			try
 			{
@@ -1143,7 +1139,7 @@ public class PDFReportpdfbox implements IReportHandler{
 	}
 	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border, int valign)
 	{
-		try{
+		try (PDPageContentStream cb =  new PDPageContentStream(document, document.getPage(page - 1))){
 			boolean printRectangle = false;
 			if (props.getBooleanGeneralProperty(Const.BACK_FILL_IN_CONTROLS, true))
 				printRectangle = true;
@@ -1153,7 +1149,6 @@ public class PDFReportpdfbox implements IReportHandler{
 				GxDrawRect(left, top, right, bottom, border, foreColor.getRed(), foreColor.getGreen(), foreColor.getBlue(), backFill ? 1 : 0, backColor.getRed(), backColor.getGreen(), backColor.getBlue(), 0, 0);
 			}
 
-			PDPageContentStream cb =  new PDPageContentStream(document, document.getPage(page));
 			sTxt = CommonUtil.rtrim(sTxt);
 
 			COSDictionary fontDict = baseFont.getCOSObject();
@@ -1218,14 +1213,15 @@ public class PDFReportpdfbox implements IReportHandler{
 							rectangle = new PDRectangle(leftAux + leftMargin, (float)this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin , leftAux + leftMargin + rectangleWidth, (float)this.pageSize.getUpperRightY() - topAux - topMargin -bottomMargin);
 							break;
 					}
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
+					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1));
 					contentStream.setNonStrokingColor(backColor);
 					contentStream.addRect(rectangle.getLowerLeftX(), rectangle.getLowerLeftY(),rectangle.getWidth(), rectangle.getHeight());
 					contentStream.fill();
 					contentStream.close();
 					try
 					{
-						document.getPage(page).setMediaBox(rectangle);
+						document.getPage(page - 1).setMediaBox(rectangle);
+						contentStream.close();
 					}
 					catch(Exception e)
 					{
@@ -1263,14 +1259,15 @@ public class PDFReportpdfbox implements IReportHandler{
 								this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);
 							break;
 					}
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
+					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1));
 					contentStream.setNonStrokingColor(foreColor); // set background color to yellow
 					contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY(),underline.getWidth(), underline.getHeight());
 					contentStream.fill();
 					contentStream.close();
 					try
 					{
-						document.getPage(page).setMediaBox(underline);
+						document.getPage(page - 1).setMediaBox(underline);
+						contentStream.close();
 					}
 					catch(Exception e)
 					{
@@ -1305,14 +1302,15 @@ public class PDFReportpdfbox implements IReportHandler{
 								this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
 							break;
 					}
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
+					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1));
 					contentStream.setNonStrokingColor(foreColor);
 					contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY(),underline.getWidth(), underline.getHeight());
 					contentStream.fill();
 					contentStream.close();
 					try
 					{
-						document.getPage(page).setMediaBox(underline);
+						document.getPage(page - 1).setMediaBox(underline);
+						contentStream.close();
 					}
 					catch(Exception e)
 					{
@@ -1331,9 +1329,10 @@ public class PDFReportpdfbox implements IReportHandler{
 						templateCreated = true;
 					}
 					PDFormXObject form = new PDFormXObject(document);
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
+					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1));
 					contentStream.transform(Matrix.getTranslateInstance(leftAux + leftMargin, leftAux + leftMargin));
 					contentStream.drawForm(form);
+					contentStream.close();
 					templateFont = baseFont;
 					templateFontSize = fontSize;
 					templateColorFill = foreColor;
@@ -1368,8 +1367,8 @@ public class PDFReportpdfbox implements IReportHandler{
 					annotation.setRectangle(new PDRectangle(leftAux + leftMargin, this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin,
 						rightAux + leftMargin, this.pageSize.getUpperRightY() - topAux - topMargin - bottomMargin));
 					try{
-						document.getPage(page).getAnnotations().add(annotation);
-						PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
+						document.getPage(page - 1).getAnnotations().add(annotation);
+						PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1));
 						contentStream.beginText();
 						contentStream.showText(annotation.getContents());
 						contentStream.endText();
@@ -1394,39 +1393,46 @@ public class PDFReportpdfbox implements IReportHandler{
 						}
 					}
 
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
-					contentStream.beginText();
-					contentStream.setFont(baseFont, fontSize);
+					try (PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1))){
 
-					switch(alignment)
-					{
-						case 1: // Center Alignment
-							float x = ((leftAux + rightAux) / 2) + leftMargin;
-							float y = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight;
-							contentStream.newLineAtOffset(x, y);
-							cb.setHorizontalScaling(1f);
-							contentStream.showText(sTxt);
-							contentStream.endText();
-							contentStream.close();
-							break;
-						case 2: // Right Alignment
-							x = rightAux + leftMargin;
-							y = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight;
-							contentStream.newLineAtOffset(x, y);
-							contentStream.showText(sTxt);
-							cb.setHorizontalScaling(1f);
-							contentStream.endText();
-							contentStream.close();
-							break;
-						case 0: // Left Alignment
-						case 3: // Justified, only one text line
-							x = (leftAux + rightAux) / 2 + leftMargin;
-							y = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight;
-							cb.newLineAtOffset(x, y);
-							cb.setHorizontalScaling(1f);
-							cb.showText(sTxt);
-							cb.endText();
-							break;
+						switch(alignment)
+						{
+							case 1: // Center Alignment
+								float x = ((leftAux + rightAux) / 2) + leftMargin;
+								float y = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight;
+								contentStream.setHorizontalScaling(1f);
+								contentStream.setFont(baseFont, fontSize);
+								contentStream.beginText();
+								contentStream.newLineAtOffset(x, y);
+								contentStream.showText(sTxt);
+								contentStream.endText();
+								contentStream.close();
+								break;
+							case 2: // Right Alignment
+								x = rightAux + leftMargin;
+								y = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight;
+								contentStream.setHorizontalScaling(1f);
+								contentStream.setFont(baseFont, fontSize);
+								contentStream.beginText();
+								contentStream.newLineAtOffset(x, y);
+								contentStream.showText(sTxt);
+								contentStream.endText();
+								contentStream.close();
+								break;
+							case 0: // Left Alignment
+							case 3: // Justified, only one text line
+								x = (leftAux + rightAux) / 2 + leftMargin;
+								y = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight;
+								contentStream.setHorizontalScaling(1f);
+								contentStream.setFont(baseFont, fontSize);
+								contentStream.beginText();
+								contentStream.newLineAtOffset(x, y);
+								contentStream.showText(sTxt);
+								contentStream.endText();
+								break;
+						}
+					} catch (Exception e) {
+						System.err.println(e.getMessage());
 					}
 				}
 			}
@@ -1610,11 +1616,12 @@ public class PDFReportpdfbox implements IReportHandler{
 				template.endText();
 				template.close();
 				for (PDPage page : document.getPages()){
-					PDPageContentStream templatePainter = new PDPageContentStream(document, page);
-					templatePainter.drawForm(formXObjecttemplate);
-					templatePainter.close();
+					try (PDPageContentStream templatePainter = new PDPageContentStream(document, page)) {
+						templatePainter.drawForm(formXObjecttemplate);
+					}
 
 				}
+				template.close();
 			} catch (IOException e){ System.err.println(e.getMessage()); }
 		}
 		int copies = 1;
