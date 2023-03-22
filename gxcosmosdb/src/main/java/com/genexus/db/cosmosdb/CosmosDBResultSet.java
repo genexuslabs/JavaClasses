@@ -1,7 +1,6 @@
 package com.genexus.db.cosmosdb;
 
 import com.genexus.CommonUtil;
-import com.genexus.ModelContext;
 import com.genexus.db.service.IOServiceContext;
 import com.genexus.db.service.ServiceResultSet;
 
@@ -15,8 +14,6 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.TemporalAccessor;
-import java.util.TimeZone;
 import static java.lang.Boolean.valueOf;
 
 public class CosmosDBResultSet extends ServiceResultSet<Object>
