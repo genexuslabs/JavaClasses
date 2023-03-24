@@ -10,46 +10,41 @@ import com.genexus.webpanels.HttpContextWeb;
 import java.awt.*;
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class GXReportPainter implements IReportHandler{
 	protected int lineHeight, pageLines;
-	protected int pageOrientation;  // Indica la orientacion de las páginas
-
+	protected int pageOrientation;
 	protected boolean fontUnderline;
 	protected boolean fontStrikethru;
 	protected int fontSize;
 	protected boolean fontBold = false;
 	protected boolean fontItalic = false;
 	protected Color backColor, foreColor;
-	public static PrintStream DEBUG_STREAM;
-	protected OutputStream outputStream = null; // Contiene el OutputStream de salida del reporte
-	//private Point pageMargin = new Point(0,0); // Contiene el margen [left, top] de cada página
-	protected static ParseINI props;
+	public static PrintStream DEBUG_STREAM = System.out;
+	protected OutputStream outputStream = null;
+	protected static ParseINI props = new ParseINI();
 	protected ParseINI printerSettings;
 	protected String form;
-	protected Vector stringTotalPages; // Contiene la lista de locations del parámetros {{Pages}}
-	protected boolean isPageDirty; // Indica si la pagina NO se debe 'dispose()'ar pues se le va a agregar cosas al terminar el PDF
-	protected int outputType = -1; // Indica el tipo de Output que se desea para el documento
-	protected int printerOutputMode = -1; // Indica si se debe mostrar el cuadro de Impresion para la salida por impresora
-	protected boolean modal = false; // Indica si el diálogo debe ser modal o no modal en
-	protected String docName = "PDFReport.pdf"; // Nombre del documento a generar (se cambia con GxSetDocName)
-	private static INativeFunctions nativeCode = NativeFunctions.getInstance();
-	private static Hashtable<String, String> fontSubstitutes = new Hashtable<>(); // Contiene la tabla de substitutos de fonts (String <--> String)
-	private static String configurationFile = null;
-	private static String configurationTemplateFile = null;
-	private static String defaultRelativePrepend = null; // En aplicaciones web, contiene la ruta al root de la aplicación para ser agregado al inicio de las imagenes con path relativo
-	private static String defaultRelativePrependINI = null;
-	private static String webAppDir = null;
-	//private boolean containsSpecialMetrics = false;
-	//private Hashtable fontMetricsProps = new Hashtable();
+	protected Vector stringTotalPages;
+	protected boolean isPageDirty;
+	protected int outputType = -1;
+	protected int printerOutputMode = -1;
+	protected boolean modal = false;
+	protected String docName = "PDFReport.pdf";
+	protected static INativeFunctions nativeCode = NativeFunctions.getInstance();
+	protected static Hashtable<String, String> fontSubstitutes = new Hashtable<>();
+	protected static String configurationFile = null;
+	protected static String configurationTemplateFile = null;
+	protected static String defaultRelativePrepend = null;
+	protected static String defaultRelativePrependINI = null;
+	protected static String webAppDir = null;
 	public static boolean DEBUG = false;
 	protected int currLine;
 	protected int lastLine = 0;
-	private static String predefinedSearchPath = ""; // Contiene los predefinedSearchPaths
+	private static String predefinedSearchPath = "";
 	protected float leftMargin;
 	protected float topMargin;
-	protected float bottomMargin; //If Margin Bottom is not specified 6 lines are assumed (nlines =6).
+	protected float bottomMargin;
 	protected int templateFontSize;
 	protected boolean backFill = true;
 	protected Color templateColorFill;
@@ -63,12 +58,12 @@ public abstract class GXReportPainter implements IReportHandler{
 	public boolean barcode128AsImage = true;
 	public int justifiedType;
 	protected HttpContext httpContext = null;
-	float[] STYLE_SOLID = new float[]{1,0};//0
-	float[] STYLE_NONE = null;//1
-	float[] STYLE_DOTTED, //2
-		STYLE_DASHED, //3
-		STYLE_LONG_DASHED, //4
-		STYLE_LONG_DOT_DASHED; //5
+	float[] STYLE_SOLID = new float[]{1,0};
+	float[] STYLE_NONE = null;
+	float[] STYLE_DOTTED,
+		STYLE_DASHED,
+		STYLE_LONG_DASHED,
+		STYLE_LONG_DOT_DASHED;
 	int STYLE_NONE_CONST=1;
 
 	protected enum VerticalAlign{
@@ -84,13 +79,7 @@ public abstract class GXReportPainter implements IReportHandler{
 			return intValue;
 		}
 	}
-	protected static char alternateSeparator;
-
-	static {
-		props = new ParseINI();
-		alternateSeparator = File.separatorChar == '/' ? '\\' : '/';
-		DEBUG_STREAM = System.out;
-	}
+	protected static char alternateSeparator = File.separatorChar == '/' ? '\\' : '/';
 
 	/** Setea el OutputStream a utilizar
 	 *  @param outputStream Stream a utilizar

@@ -8,15 +8,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
-import com.genexus.internet.HttpContext;
-import com.genexus.platform.INativeFunctions;
 import com.genexus.platform.NativeFunctions;
 import com.genexus.util.TemporaryFiles;
 import com.genexus.webpanels.HttpContextWeb;
 import com.genexus.reports.fonts.PDFFont;
 import com.genexus.reports.fonts.PDFFontDescriptor;
 import com.genexus.reports.fonts.Type1FontMetrics;
-import com.genexus.reports.fonts.Utilities;
 
 import org.apache.pdfbox.cos.*;
 import org.apache.pdfbox.pdmodel.*;
@@ -34,13 +31,6 @@ public class PDFReportpdfbox extends GXReportPainter{
 	private PDType1Font font;
 	private PDType0Font baseFont;
 	//private BarcodeUtil barcode = null; por ahora no soportamos barcode
-	private static INativeFunctions nativeCode = NativeFunctions.getInstance();
-	private static Hashtable<String, String> fontSubstitutes = new Hashtable<>();
-	private static String configurationFile = null;
-	private static String configurationTemplateFile = null;
-	private static String defaultRelativePrepend = null;
-	private static String defaultRelativePrependINI = null;
-	private static String webAppDir = null;
 	public static boolean DEBUG = false;
 	private PDDocument document;
 	private PDDocumentCatalog writer;
@@ -81,16 +71,24 @@ public class PDFReportpdfbox extends GXReportPainter{
 	public PDFReportpdfbox(ModelContext context)
 	{
 		super(context);
-		document = null;
-		pageSize = null;
-		documentImages = new ConcurrentHashMap<>();
+		try {
+			document = null;
+			pageSize = null;
+			documentImages = new ConcurrentHashMap<>();
+		} catch (Exception e){
+			e.printStackTrace(System.err);
+		}
 	}
 
 	private static boolean firstTime = true;
 
 	protected void loadPrinterSettingsProps(String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex)
 	{
-		super.loadPrinterSettingsProps(iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
+		try {
+			super.loadPrinterSettingsProps(iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
+		} catch (Exception e){
+			e.printStackTrace(System.err);
+		}
 	}
 
 	protected void loadProps()
@@ -312,7 +310,7 @@ public class PDFReportpdfbox extends GXReportPainter{
 	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue,
 						   int styleTop, int styleBottom, int styleRight, int styleLeft, int cornerRadioTL, int cornerRadioTR, int cornerRadioBL, int cornerRadioBR)
 	{
-		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page - 1))){
+		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page))){
 
 			float penAux = (float)convertScale(pen);
 			float rightAux = (float)convertScale(right);
@@ -409,7 +407,7 @@ public class PDFReportpdfbox extends GXReportPainter{
 
 	public void GxDrawLine(int left, int top, int right, int bottom, int width, int foreRed, int foreGreen, int foreBlue, int style)
 	{
-		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page - 1))){
+		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page))){
 
 			float widthAux = (float)convertScale(width);
 			float rightAux = (float)convertScale(right);
@@ -456,7 +454,7 @@ public class PDFReportpdfbox extends GXReportPainter{
 
 	public void GxDrawBitMap(String bitmap, int left, int top, int right, int bottom, int aspectRatio)
 	{
-		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page - 1))){
+		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page))){
 			PDImageXObject image;
 			try
 			{
@@ -832,7 +830,7 @@ public class PDFReportpdfbox extends GXReportPainter{
 	}
 	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border, int valign)
 	{
-		try (PDPageContentStream cb =  new PDPageContentStream(document, document.getPage(page - 1))){
+		try (PDPageContentStream cb =  new PDPageContentStream(document, document.getPage(page))){
 			boolean printRectangle = false;
 			if (props.getBooleanGeneralProperty(Const.BACK_FILL_IN_CONTROLS, true))
 				printRectangle = true;
@@ -906,14 +904,13 @@ public class PDFReportpdfbox extends GXReportPainter{
 							rectangle = new PDRectangle(leftAux + leftMargin, (float)this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin , leftAux + leftMargin + rectangleWidth, (float)this.pageSize.getUpperRightY() - topAux - topMargin -bottomMargin);
 							break;
 					}
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1));
+					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
 					contentStream.setNonStrokingColor(backColor);
 					contentStream.addRect(rectangle.getLowerLeftX(), rectangle.getLowerLeftY(),rectangle.getWidth(), rectangle.getHeight());
 					contentStream.fill();
-					contentStream.close();
 					try
 					{
-						document.getPage(page - 1).setMediaBox(rectangle);
+						document.getPage(page).setMediaBox(rectangle);
 						contentStream.close();
 					}
 					catch(Exception e)
@@ -952,14 +949,13 @@ public class PDFReportpdfbox extends GXReportPainter{
 								this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);
 							break;
 					}
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1));
+					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
 					contentStream.setNonStrokingColor(foreColor); // set background color to yellow
 					contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY(),underline.getWidth(), underline.getHeight());
 					contentStream.fill();
-					contentStream.close();
 					try
 					{
-						document.getPage(page - 1).setMediaBox(underline);
+						document.getPage(page).setMediaBox(underline);
 						contentStream.close();
 					}
 					catch(Exception e)
@@ -995,14 +991,13 @@ public class PDFReportpdfbox extends GXReportPainter{
 								this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
 							break;
 					}
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1));
+					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
 					contentStream.setNonStrokingColor(foreColor);
 					contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY(),underline.getWidth(), underline.getHeight());
 					contentStream.fill();
-					contentStream.close();
 					try
 					{
-						document.getPage(page - 1).setMediaBox(underline);
+						document.getPage(page).setMediaBox(underline);
 						contentStream.close();
 					}
 					catch(Exception e)
@@ -1022,7 +1017,7 @@ public class PDFReportpdfbox extends GXReportPainter{
 						templateCreated = true;
 					}
 					PDFormXObject form = new PDFormXObject(document);
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1));
+					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
 					contentStream.transform(Matrix.getTranslateInstance(leftAux + leftMargin, leftAux + leftMargin));
 					contentStream.drawForm(form);
 					contentStream.close();
@@ -1060,8 +1055,8 @@ public class PDFReportpdfbox extends GXReportPainter{
 					annotation.setRectangle(new PDRectangle(leftAux + leftMargin, this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin,
 						rightAux + leftMargin, this.pageSize.getUpperRightY() - topAux - topMargin - bottomMargin));
 					try{
-						document.getPage(page - 1).getAnnotations().add(annotation);
-						PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1));
+						document.getPage(page).getAnnotations().add(annotation);
+						PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page));
 						contentStream.beginText();
 						contentStream.showText(annotation.getContents());
 						contentStream.endText();
@@ -1086,7 +1081,7 @@ public class PDFReportpdfbox extends GXReportPainter{
 						}
 					}
 
-					try (PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1))){
+					try (PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page))){
 
 						switch(alignment)
 						{
@@ -1095,8 +1090,8 @@ public class PDFReportpdfbox extends GXReportPainter{
 								float y = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight;
 								contentStream.setHorizontalScaling(1f);
 								contentStream.setFont(baseFont, fontSize);
+								contentStream.moveTo(x, y);
 								contentStream.beginText();
-								contentStream.newLineAtOffset(x, y);
 								contentStream.showText(sTxt);
 								contentStream.endText();
 								contentStream.close();
@@ -1106,8 +1101,8 @@ public class PDFReportpdfbox extends GXReportPainter{
 								y = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight;
 								contentStream.setHorizontalScaling(1f);
 								contentStream.setFont(baseFont, fontSize);
+								contentStream.moveTo(x, y);
 								contentStream.beginText();
-								contentStream.newLineAtOffset(x, y);
 								contentStream.showText(sTxt);
 								contentStream.endText();
 								contentStream.close();
@@ -1118,10 +1113,11 @@ public class PDFReportpdfbox extends GXReportPainter{
 								y = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight;
 								contentStream.setHorizontalScaling(1f);
 								contentStream.setFont(baseFont, fontSize);
+								contentStream.moveTo(x, y);
 								contentStream.beginText();
-								contentStream.newLineAtOffset(x, y);
 								contentStream.showText(sTxt);
 								contentStream.endText();
+								contentStream.close();
 								break;
 						}
 					} catch (Exception e) {
@@ -1146,77 +1142,82 @@ public class PDFReportpdfbox extends GXReportPainter{
 	private static double TO_CM_SCALE =28.6;
 	public boolean GxPrintInit(String output, int gxXPage[], int gxYPage[], String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex)
 	{
-		PPP = gxYPage[0];
-		loadPrinterSettingsProps(iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
+		try {
+			PPP = gxYPage[0];
+			loadPrinterSettingsProps(iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
 
-		if(outputStream != null)
-		{
-			if (output.equalsIgnoreCase("PRN"))
-				outputType = Const.OUTPUT_STREAM_PRINTER;
-			else
-				outputType = Const.OUTPUT_STREAM;
-		}
-		else
-		{
-			if(output.equalsIgnoreCase("SCR"))
-				outputType = Const.OUTPUT_SCREEN;
-			else if(output.equalsIgnoreCase("PRN"))
-				outputType = Const.OUTPUT_PRINTER;
-			else outputType = Const.OUTPUT_FILE;
-
-			if(outputType == Const.OUTPUT_FILE)
-				TemporaryFiles.getInstance().removeFileFromList(docName);
+			if(outputStream != null)
+			{
+				if (output.equalsIgnoreCase("PRN"))
+					outputType = Const.OUTPUT_STREAM_PRINTER;
+				else
+					outputType = Const.OUTPUT_STREAM;
+			}
 			else
 			{
-				String tempPrefix = docName;
-				String tempExtension = "pdf";
-				int tempIndex = docName.lastIndexOf('.');
-				if(tempIndex != -1)
+				if(output.equalsIgnoreCase("SCR"))
+					outputType = Const.OUTPUT_SCREEN;
+				else if(output.equalsIgnoreCase("PRN"))
+					outputType = Const.OUTPUT_PRINTER;
+				else outputType = Const.OUTPUT_FILE;
+
+				if(outputType == Const.OUTPUT_FILE)
+					TemporaryFiles.getInstance().removeFileFromList(docName);
+				else
 				{
-					tempPrefix = docName.substring(0, tempIndex);
-					tempExtension = ((docName + " ").substring(tempIndex + 1)).trim();
+					String tempPrefix = docName;
+					String tempExtension = "pdf";
+					int tempIndex = docName.lastIndexOf('.');
+					if(tempIndex != -1)
+					{
+						tempPrefix = docName.substring(0, tempIndex);
+						tempExtension = ((docName + " ").substring(tempIndex + 1)).trim();
+					}
+					docName = TemporaryFiles.getInstance().getTemporaryFile(tempPrefix, tempExtension);
 				}
-				docName = TemporaryFiles.getInstance().getTemporaryFile(tempPrefix, tempExtension);
+				try
+				{
+					setOutputStream(new FileOutputStream(docName));
+				}catch(IOException accessError)
+				{
+					accessError.printStackTrace(System.err);
+					outputStream = new com.genexus.util.NullOutputStream();
+					outputType = Const.OUTPUT_FILE;
+				}
 			}
-			try
-			{
-				setOutputStream(new FileOutputStream(docName));
-			}catch(IOException accessError)
-			{
-				accessError.printStackTrace(System.err);
-				outputStream = new com.genexus.util.NullOutputStream();
-				outputType = Const.OUTPUT_FILE;
-			}
+			printerOutputMode = mode;
+
+			boolean ret;
+			ret = props.setupGeneralProperty(Const.LEFT_MARGIN, Const.DEFAULT_LEFT_MARGIN);
+			ret = props.setupGeneralProperty(Const.TOP_MARGIN, Const.DEFAULT_TOP_MARGIN);
+			ret = props.setupGeneralProperty(Const.BOTTOM_MARGIN, Const.DEFAULT_BOTTOM_MARGIN);
+			leftMargin = (float) (TO_CM_SCALE * Double.valueOf(props.getGeneralProperty(Const.LEFT_MARGIN)).doubleValue());
+			topMargin = (float) (TO_CM_SCALE * Double.valueOf(props.getGeneralProperty(Const.TOP_MARGIN)).doubleValue());
+			bottomMargin = (float) (Double.valueOf(props.getGeneralProperty(Const.BOTTOM_MARGIN)).doubleValue());
+
+			lineCapProjectingSquare = props.getGeneralProperty(Const.LINE_CAP_PROJECTING_SQUARE).equals("true");
+			barcode128AsImage = props.getGeneralProperty(Const.BARCODE128_AS_IMAGE).equals("true");
+			STYLE_DOTTED = parsePattern(props.getGeneralProperty(Const.STYLE_DOTTED));
+			STYLE_DASHED = parsePattern(props.getGeneralProperty(Const.STYLE_DASHED));
+			STYLE_LONG_DASHED = parsePattern(props.getGeneralProperty(Const.STYLE_LONG_DASHED));
+			STYLE_LONG_DOT_DASHED = parsePattern(props.getGeneralProperty(Const.STYLE_LONG_DOT_DASHED));
+
+			runDirection = Integer.valueOf(props.getGeneralProperty(Const.RUN_DIRECTION)).intValue();
+
+			this.pageSize = computePageSize(leftMargin, topMargin, pageWidth, pageLength, props.getBooleanGeneralProperty(Const.MARGINS_INSIDE_BORDER, false));
+			gxXPage[0] = (int)this.pageSize.getUpperRightX ();
+			if (props.getBooleanGeneralProperty(Const.FIX_SAC24437, true))
+				gxYPage[0] = (int)(pageLength / GX_PAGE_SCALE_Y);
+			else
+				gxYPage[0] = (int)(pageLength / GX_PAGE_SCALE_Y_OLD);
+
+			init();
+
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace(System.err);
+			return false;
 		}
-		printerOutputMode = mode;
-
-		boolean ret;
-		ret = props.setupGeneralProperty(Const.LEFT_MARGIN, Const.DEFAULT_LEFT_MARGIN);
-		ret = props.setupGeneralProperty(Const.TOP_MARGIN, Const.DEFAULT_TOP_MARGIN);
-		ret = props.setupGeneralProperty(Const.BOTTOM_MARGIN, Const.DEFAULT_BOTTOM_MARGIN);
-		leftMargin = (float) (TO_CM_SCALE * Double.valueOf(props.getGeneralProperty(Const.LEFT_MARGIN)).doubleValue());
-		topMargin = (float) (TO_CM_SCALE * Double.valueOf(props.getGeneralProperty(Const.TOP_MARGIN)).doubleValue());
-		bottomMargin = (float) (Double.valueOf(props.getGeneralProperty(Const.BOTTOM_MARGIN)).doubleValue());
-
-		lineCapProjectingSquare = props.getGeneralProperty(Const.LINE_CAP_PROJECTING_SQUARE).equals("true");
-		barcode128AsImage = props.getGeneralProperty(Const.BARCODE128_AS_IMAGE).equals("true");
-		STYLE_DOTTED = parsePattern(props.getGeneralProperty(Const.STYLE_DOTTED));
-		STYLE_DASHED = parsePattern(props.getGeneralProperty(Const.STYLE_DASHED));
-		STYLE_LONG_DASHED = parsePattern(props.getGeneralProperty(Const.STYLE_LONG_DASHED));
-		STYLE_LONG_DOT_DASHED = parsePattern(props.getGeneralProperty(Const.STYLE_LONG_DOT_DASHED));
-
-		runDirection = Integer.valueOf(props.getGeneralProperty(Const.RUN_DIRECTION)).intValue();
-
-		this.pageSize = computePageSize(leftMargin, topMargin, pageWidth, pageLength, props.getBooleanGeneralProperty(Const.MARGINS_INSIDE_BORDER, false));
-		gxXPage[0] = (int)this.pageSize.getUpperRightX ();
-		if (props.getBooleanGeneralProperty(Const.FIX_SAC24437, true))
-			gxYPage[0] = (int)(pageLength / GX_PAGE_SCALE_Y);
-		else
-			gxYPage[0] = (int)(pageLength / GX_PAGE_SCALE_Y_OLD);
-
-		init();
-
-		return true;
 	}
 
 	private PDRectangle computePageSize(float leftMargin, float topMargin, int width, int length, boolean marginsInsideBorder)
@@ -1289,149 +1290,152 @@ public class PDFReportpdfbox extends GXReportPainter{
 
 	public void GxEndDocument()
 	{
-		if(document.getNumberOfPages() == 0)
-		{
-			document.addPage(new PDPage(this.pageSize));
-			pages++;
-		}
-		if (template != null)
-		{
-			try{
-				template.beginText();
-				template.setFont(baseFont, fontSize);
-				template.setTextMatrix(new Matrix());
-				template.setNonStrokingColor(templateColorFill);
-				template.showText(String.valueOf(pages));
-				template.endText();
-				template.close();
-				for (PDPage page : document.getPages()){
-					try (PDPageContentStream templatePainter = new PDPageContentStream(document, page)) {
-						templatePainter.drawForm(formXObjecttemplate);
+		try {
+			if(document.getNumberOfPages() == 0)
+			{
+				document.addPage(new PDPage(this.pageSize));
+				pages++;
+			}
+			if (template != null)
+			{
+				try{
+					template.beginText();
+					template.setFont(baseFont, fontSize);
+					template.setTextMatrix(new Matrix());
+					template.setNonStrokingColor(templateColorFill);
+					template.showText(String.valueOf(pages));
+					template.endText();
+					template.close();
+					for (PDPage page : document.getPages()){
+						try (PDPageContentStream templatePainter = new PDPageContentStream(document, page)) {
+							templatePainter.drawForm(formXObjecttemplate);
+						}
+
 					}
+					template.close();
+				} catch (IOException e){ System.err.println(e.getMessage()); }
+			}
+			int copies = 1;
+			try
+			{
+				copies = Integer.parseInt(printerSettings.getProperty(form, Const.COPIES));
+				if(DEBUG)DEBUG_STREAM.println("Setting number of copies to " + copies);
 
+				writer = document.getDocumentCatalog();
+
+				COSDictionary dict = new COSDictionary();
+				if (writer.getViewerPreferences() != null && writer.getViewerPreferences().getCOSObject() != null)
+					dict = writer.getViewerPreferences().getCOSObject();
+				PDViewerPreferences viewerPreferences = new PDViewerPreferences(dict);
+				viewerPreferences.setPrintScaling(PDViewerPreferences.PRINT_SCALING.None);
+				dict.setInt("NumCopies", copies);
+				writer.setViewerPreferences(viewerPreferences);
+
+				int duplex= Integer.parseInt(printerSettings.getProperty(form, Const.DUPLEX));
+				COSName duplexValue;
+				switch (duplex){
+					case 1: duplexValue = COSName.HELV; break;
+					case 2: duplexValue = COSName.DUPLEX; break;
+					case 3: duplexValue = COSName.DUPLEX;break;
+					case 4: duplexValue = COSName.DUPLEX;break;
+					default: duplexValue = COSName.NONE;
 				}
-				template.close();
-			} catch (IOException e){ System.err.println(e.getMessage()); }
-		}
-		int copies = 1;
-		try
-		{
-			copies = Integer.parseInt(printerSettings.getProperty(form, Const.COPIES));
-			if(DEBUG)DEBUG_STREAM.println("Setting number of copies to " + copies);
-
-			writer = document.getDocumentCatalog();
-
-			COSDictionary dict = new COSDictionary();
-			if (writer.getViewerPreferences() != null && writer.getViewerPreferences().getCOSObject() != null)
+				if(DEBUG)DEBUG_STREAM.println("Setting duplex to " + duplexValue);
+				writer = document.getDocumentCatalog();
 				dict = writer.getViewerPreferences().getCOSObject();
-			PDViewerPreferences viewerPreferences = new PDViewerPreferences(dict);
-			viewerPreferences.setPrintScaling(PDViewerPreferences.PRINT_SCALING.None);
-			dict.setInt("NumCopies", copies);
-			writer.setViewerPreferences(viewerPreferences);
-
-			int duplex= Integer.parseInt(printerSettings.getProperty(form, Const.DUPLEX));
-			COSName duplexValue;
-			switch (duplex){
-				case 1: duplexValue = COSName.HELV; break;
-				case 2: duplexValue = COSName.DUPLEX; break;
-				case 3: duplexValue = COSName.DUPLEX;break;
-				case 4: duplexValue = COSName.DUPLEX;break;
-				default: duplexValue = COSName.NONE;
+				if (dict == null) {dict = new COSDictionary();}
+				viewerPreferences = new PDViewerPreferences(dict);
+				viewerPreferences.setPrintScaling(PDViewerPreferences.PRINT_SCALING.None);
+				dict.setName(COSName.DUPLEX, duplexValue.toString());
+				writer.setViewerPreferences(viewerPreferences);
 			}
-			if(DEBUG)DEBUG_STREAM.println("Setting duplex to " + duplexValue);
-			writer = document.getDocumentCatalog();
-			dict = writer.getViewerPreferences().getCOSObject();
-			if (dict == null) {dict = new COSDictionary();}
-			viewerPreferences = new PDViewerPreferences(dict);
-			viewerPreferences.setPrintScaling(PDViewerPreferences.PRINT_SCALING.None);
-			dict.setName(COSName.DUPLEX, duplexValue.toString());
-			writer.setViewerPreferences(viewerPreferences);
-		}
-		catch(Exception ex)
-		{
-			ex.printStackTrace(System.err);
-		}
-
-		String serverPrinting = props.getGeneralProperty(Const.SERVER_PRINTING);
-		boolean fit= props.getGeneralProperty(Const.ADJUST_TO_PAPER).equals("true");
-		if ((outputType==Const.OUTPUT_PRINTER || outputType==Const.OUTPUT_STREAM_PRINTER) && (httpContext instanceof HttpContextWeb && serverPrinting.equals("false")))
-		{
-			PDDocumentCatalog catalog = document.getDocumentCatalog();
-			StringBuffer jsActions = new StringBuffer();
-			jsActions.append("var pp = this.getPrintParams();\n");
-			String printerAux=printerSettings.getProperty(form, Const.PRINTER);
-			String printer = replace(printerAux, "\\", "\\\\");
-
-			if (printer!=null && !printer.equals(""))
+			catch(Exception ex)
 			{
-				jsActions.append("pp.printerName = \"" + printer + "\";\n");
+				ex.printStackTrace(System.err);
 			}
 
-			if (fit)
+			String serverPrinting = props.getGeneralProperty(Const.SERVER_PRINTING);
+			boolean fit= props.getGeneralProperty(Const.ADJUST_TO_PAPER).equals("true");
+			if ((outputType==Const.OUTPUT_PRINTER || outputType==Const.OUTPUT_STREAM_PRINTER) && (httpContext instanceof HttpContextWeb && serverPrinting.equals("false")))
 			{
-				jsActions.append("pp.pageHandling = pp.constants.handling.fit;\n");
-			}
-			else
-			{
-				jsActions.append("pp.pageHandling = pp.constants.handling.none;\n");
-			}
+				PDDocumentCatalog catalog = document.getDocumentCatalog();
+				StringBuffer jsActions = new StringBuffer();
+				jsActions.append("var pp = this.getPrintParams();\n");
+				String printerAux=printerSettings.getProperty(form, Const.PRINTER);
+				String printer = replace(printerAux, "\\", "\\\\");
 
-			if (printerSettings.getProperty(form, Const.MODE, "3").startsWith("0"))
-			{
-				jsActions.append("pp.interactive = pp.constants.interactionLevel.automatic;\n");
-				for(int i = 0; i < copies; i++)
+				if (printer!=null && !printer.equals(""))
 				{
+					jsActions.append("pp.printerName = \"" + printer + "\";\n");
+				}
+
+				if (fit)
+				{
+					jsActions.append("pp.pageHandling = pp.constants.handling.fit;\n");
+				}
+				else
+				{
+					jsActions.append("pp.pageHandling = pp.constants.handling.none;\n");
+				}
+
+				if (printerSettings.getProperty(form, Const.MODE, "3").startsWith("0"))
+				{
+					jsActions.append("pp.interactive = pp.constants.interactionLevel.automatic;\n");
+					for(int i = 0; i < copies; i++)
+					{
+						jsActions.append("this.print(pp);\n");
+					}
+				}
+				else
+				{
+					jsActions.append("pp.interactive = pp.constants.interactionLevel.full;\n");
 					jsActions.append("this.print(pp);\n");
 				}
+				PDActionJavaScript openActions = new PDActionJavaScript(jsActions.toString());
+				catalog.setOpenAction(openActions);
 			}
-			else
+			try {
+				document.save(outputStream);
+				document.close();
+			} catch (IOException e) {
+				System.err.println(e.getMessage());
+			}
+
+			if(DEBUG)DEBUG_STREAM.println("GxEndDocument!");
+
+			try{ props.save(); } catch(IOException e) { ; }
+
+			switch(outputType)
 			{
-				jsActions.append("pp.interactive = pp.constants.interactionLevel.full;\n");
-				jsActions.append("this.print(pp);\n");
-			}
-			PDActionJavaScript openActions = new PDActionJavaScript(jsActions.toString());
-			catalog.setOpenAction(openActions);
-		}
-		try {
-			String pdfFilename = new File(docName).getAbsolutePath();
-			document.save(pdfFilename);
-			document.close();
-		} catch (IOException e) {
-			System.err.println(e.getMessage());
-		}
-
-		if(DEBUG)DEBUG_STREAM.println("GxEndDocument!");
-
-		try{ props.save(); } catch(IOException e) { ; }
-
-		switch(outputType)
-		{
-			case Const.OUTPUT_SCREEN:
-				try{ outputStream.close(); } catch(IOException e) { }
-				try{ showReport(docName, modal); }
-				catch(Exception e) {
-					e.printStackTrace();
-				}
-				break;
-			case Const.OUTPUT_PRINTER:
-				try{ outputStream.close(); } catch(IOException e) { }
-				try{
-					if (!(httpContext instanceof HttpContextWeb) || !serverPrinting.equals("false"))
-					{
-						printReport(docName, this.printerOutputMode == 1);
+				case Const.OUTPUT_SCREEN:
+					try{ outputStream.close(); } catch(IOException e) { }
+					try{ showReport(docName, modal); }
+					catch(Exception e) {
+						e.printStackTrace();
 					}
-				} catch(Exception e){
-					e.printStackTrace();
-				}
-				break;
-			case Const.OUTPUT_FILE:
-				try{ outputStream.close(); } catch(IOException e) { ; }
-				break;
-			case Const.OUTPUT_STREAM:
-			case Const.OUTPUT_STREAM_PRINTER:
-			default: break;
+					break;
+				case Const.OUTPUT_PRINTER:
+					try{ outputStream.close(); } catch(IOException e) { }
+					try{
+						if (!(httpContext instanceof HttpContextWeb) || !serverPrinting.equals("false"))
+						{
+							printReport(docName, this.printerOutputMode == 1);
+						}
+					} catch(Exception e){
+						e.printStackTrace();
+					}
+					break;
+				case Const.OUTPUT_FILE:
+					try{ outputStream.close(); } catch(IOException e) { ; }
+					break;
+				case Const.OUTPUT_STREAM:
+				case Const.OUTPUT_STREAM_PRINTER:
+				default: break;
+			}
+			outputStream = null;
+		} catch (Exception e){
+			e.printStackTrace(System.err);
 		}
-		outputStream = null;
 	}
 
 	public void GxEndPrinter() {}

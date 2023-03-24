@@ -50,15 +50,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.StringReader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
-import com.genexus.internet.HttpContext;
-import com.genexus.platform.INativeFunctions;
 import com.genexus.platform.NativeFunctions;
 import com.genexus.util.TemporaryFiles;
 import com.genexus.webpanels.HttpContextWeb;
@@ -87,7 +84,6 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.genexus.reports.fonts.PDFFont;
 import com.genexus.reports.fonts.PDFFontDescriptor;
 import com.genexus.reports.fonts.Type1FontMetrics;
-import com.genexus.reports.fonts.Utilities;
 
 public class PDFReportItext extends GXReportPainter
 {
@@ -97,13 +93,6 @@ public class PDFReportItext extends GXReportPainter
 	private BaseFont baseFont;
 	private Barcode barcode = null;
     //private Point pageMargin = new Point(0,0); // Contiene el margen [left, top] de cada página
-    private static INativeFunctions nativeCode = NativeFunctions.getInstance();
-    private static Hashtable<String, String> fontSubstitutes = new Hashtable<>(); // Contiene la tabla de substitutos de fonts (String <--> String)
-	private static String configurationFile = null;
-	private static String configurationTemplateFile = null;
-	private static String defaultRelativePrepend = null; // En aplicaciones web, contiene la ruta al root de la aplicación para ser agregado al inicio de las imagenes con path relativo
-	private static String defaultRelativePrependINI = null;
-	private static String webAppDir = null;
 	//private boolean containsSpecialMetrics = false;
 	//private Hashtable fontMetricsProps = new Hashtable();
 	public static boolean DEBUG = false;
