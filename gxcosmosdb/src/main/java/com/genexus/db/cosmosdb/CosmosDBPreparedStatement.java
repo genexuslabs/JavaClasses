@@ -17,6 +17,7 @@ import com.genexus.diagnostics.core.LogManager;
 import com.genexus.util.NameValuePair;
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
+import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 
 import java.io.InputStream;
@@ -45,7 +46,7 @@ public class CosmosDBPreparedStatement extends ServicePreparedStatement
 		super(con, parms, gxCon);
 		this.query = query;
 		this.cursor = cursor;
-		getCointainer(query.tableName);
+		getContainer(query.tableName);
 	}
 	@Override
 	public ResultSet executeQuery() throws SQLException
@@ -135,7 +136,7 @@ public class CosmosDBPreparedStatement extends ServicePreparedStatement
 	CosmosAsyncDatabase getDatabase() throws SQLException {
 		return ((CosmosDBConnection)getConnection()).cosmosDatabase;
 	}
-	private void getCointainer(String containerName) throws SQLException {
+	private void getContainer(String containerName) throws SQLException {
 		container = getDatabase().getContainer(containerName);
 	}
 
@@ -223,8 +224,9 @@ public class CosmosDBPreparedStatement extends ServicePreparedStatement
 						statusCode[0] = 404;
 					latch.countDown();
 				});
-			cosmosItemResponseMono.subscribe();
+			Disposable d = cosmosItemResponseMono.subscribe();
 			latch.await();
+			d.dispose();
 			return statusCode;
 		}
 		else
@@ -259,9 +261,9 @@ public class CosmosDBPreparedStatement extends ServicePreparedStatement
 						latch.countDown();
 					});
 
-				cosmosItemResponseMono.subscribe();
+				Disposable d = cosmosItemResponseMono.subscribe();
 				latch.await();
-
+				d.dispose();
 				return statusCode;
 			} else {
 				throw new Exception("CosmosDB Insert Execution failed. Invalid json payload.");
@@ -296,8 +298,9 @@ public class CosmosDBPreparedStatement extends ServicePreparedStatement
 				latch.countDown();
 			});
 
-			cosmosItemResponseMono.subscribe();
+			Disposable d = cosmosItemResponseMono.subscribe();
 			latch.await();
+			d.dispose();
 			return statusCode;
 		}
 		else {
