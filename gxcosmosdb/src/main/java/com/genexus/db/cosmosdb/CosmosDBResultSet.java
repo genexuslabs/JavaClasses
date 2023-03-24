@@ -47,7 +47,8 @@ public class CosmosDBResultSet extends ServiceResultSet<Object>
 	}
 
 	private static final IOServiceContext SERVICE_CONTEXT = null;
-
+	private static final Timestamp TIMESTAMP_NULL_VALUE = java.sql.Timestamp.from(CommonUtil.nullDate().toInstant());
+	private static final java.util.Date DATE_NULL_VALUE = Date.from(CommonUtil.nullDate().toInstant());
 	private boolean lastWasNull;
 	@Override
 	public boolean wasNull()
@@ -180,7 +181,7 @@ public class CosmosDBResultSet extends ServiceResultSet<Object>
 	@Override
 	public java.sql.Date getDate(int columnIndex) throws SQLException {
 		Timestamp ts = getTimestamp(columnIndex);
-		if (!ts.toString().equals(java.sql.Timestamp.from(CommonUtil.nullDate().toInstant()).toString()))
+		if (!ts.toString().equals(TIMESTAMP_NULL_VALUE.toString()))
 		{
 			return java.sql.Date.valueOf(ts.toInstant().atOffset(ZoneOffset.UTC).toLocalDate());
 		}
@@ -193,7 +194,7 @@ public class CosmosDBResultSet extends ServiceResultSet<Object>
 			} catch (Exception ignored) {
 			}
 		}
-		return new java.sql.Date(Date.from(CommonUtil.nullDate().toInstant()).getTime());
+		return new java.sql.Date(DATE_NULL_VALUE.getTime());
 	}
 
 	@Override
@@ -209,7 +210,7 @@ public class CosmosDBResultSet extends ServiceResultSet<Object>
 		if(datetimeString == null || datetimeString.trim().isEmpty())
 		{
 			lastWasNull = true;
-			return java.sql.Timestamp.from(CommonUtil.nullDate().toInstant());
+			return TIMESTAMP_NULL_VALUE;
 		}
 		LocalDateTime localDateTime = null;
 		try {
@@ -229,9 +230,9 @@ public class CosmosDBResultSet extends ServiceResultSet<Object>
 				{}
 			}
 			if (localDateTime == null)
-			{return java.sql.Timestamp.from(CommonUtil.nullDate().toInstant());}
+			{return TIMESTAMP_NULL_VALUE;}
 		}
-		return java.sql.Timestamp.from(CommonUtil.nullDate().toInstant());
+		return TIMESTAMP_NULL_VALUE;
 	}
 
 	@Override
