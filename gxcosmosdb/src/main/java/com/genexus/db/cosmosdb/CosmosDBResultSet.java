@@ -7,9 +7,12 @@ import com.genexus.db.service.ServiceResultSet;
 import com.azure.cosmos.CosmosException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -175,9 +178,22 @@ public class CosmosDBResultSet extends ServiceResultSet<Object>
 	}
 
 	@Override
-	public java.sql.Date getDate(int columnIndex)
-	{
-		return java.sql.Date.valueOf(getTimestamp(columnIndex).toInstant().atOffset(ZoneOffset.UTC).toLocalDate());
+	public java.sql.Date getDate(int columnIndex) throws SQLException {
+		Timestamp ts = getTimestamp(columnIndex);
+		if (!ts.toString().equals(java.sql.Timestamp.from(CommonUtil.nullDate().toInstant()).toString()))
+		{
+			return java.sql.Date.valueOf(ts.toInstant().atOffset(ZoneOffset.UTC).toLocalDate());
+		}
+		String strDate = getString(columnIndex);
+		for(String dateFormatter:DATE_FORMATTERS) {
+			try {
+				DateFormat dateFormat = new SimpleDateFormat(dateFormatter);
+				java.util.Date date = dateFormat.parse(strDate);
+				return new java.sql.Date(date.getTime());
+			} catch (Exception ignored) {
+			}
+		}
+		return new java.sql.Date(Date.from(CommonUtil.nullDate().toInstant()).getTime());
 	}
 
 	@Override
@@ -262,5 +278,28 @@ public class CosmosDBResultSet extends ServiceResultSet<Object>
 			DateTimeFormatter.ofPattern("M/d/yyyy[ h:mm:ss a]"),
 			DateTimeFormatter.ofPattern("yyyy-M-d[ H:mm:ss.S]"),
 			DateTimeFormatter.ofPattern("yyyy-M-d[ H:mm:ss.S a]")
+		};
+	private static final String [] DATE_FORMATTERS = new String[]
+		{
+			"yyyy-MM-dd",
+			"yyyy-dd-MM",
+			"dd-MM-yyyy",
+			"MM/dd/yyyy",
+			"dd/MM/yyyy",
+			"yyyy/MM/dd",
+			"EEE, dd MMM yyyy",
+			"EEEE, dd MMMM yyyy",
+			"Month D, Yr",
+			"Yr, Month D",
+			"D Month, Yr",
+			"M/D/YY",
+			"D/M/YY",
+			"YY/M/D",
+			"Mon-DD-YYYY",
+			"DD-Mon-YYYY",
+			"YYYYY-Mon-DD",
+			"Mon DD, YYYY",
+			"DD Mon, YYYY",
+			"YYYY, Mon DD"
 		};
 }
