@@ -111,35 +111,13 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 
 	public String toxml(boolean includeHeader, boolean includeState, String header, String namespace)
 	{
-		if(SpecificImplementation.Application.getProperty("SIMPLE_XML_SUPPORT", "0").equals("1"))
-		{
-			try {
-				Class<?> me = getClass();
-				Object struct = me.getMethod("getStruct", new Class[]{}).invoke(this, (Object[])null);
-				GXProperties stateAttributes=null;
-				if (isVisitorStrategy(includeState)){
-					stateAttributes = getStateAttributes();
-				}
-				try{
-					return GXXMLSerializer.serializeSimpleXml(includeHeader, SpecificImplementation.Application.createCollectionWrapper(struct), stateAttributes);
-				}catch(ClassCastException e){
-					return GXXMLSerializer.serializeSimpleXml(includeHeader, struct, stateAttributes);
-				}
-			}
-			catch (  Exception e) {
-				e.printStackTrace();
-			}
-			return "";
-		}
-		else{
-			XMLWriter oWriter = new XMLWriter();
-			oWriter.openToString();
-			if (includeHeader)
-				oWriter.writeStartDocument("UTF-8");
-			writexml(oWriter, header, namespace, includeState);
-			oWriter.close();
-			return oWriter.getResultingString() ;
-		}
+		XMLWriter oWriter = new XMLWriter();
+		oWriter.openToString();
+		if (includeHeader)
+			oWriter.writeStartDocument("UTF-8");
+		writexml(oWriter, header, namespace, includeState);
+		oWriter.close();
+		return oWriter.getResultingString() ;
 	}
 	public boolean fromxmlfile(AbstractGXFile xml, GXBaseCollection<SdtMessages_Message> messages, String collName)
 	{
@@ -163,26 +141,18 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 	public boolean fromxml(String sXML, GXBaseCollection<SdtMessages_Message> messages, String sName)
 	{
 		try {
-			if(SpecificImplementation.Application.getProperty("SIMPLE_XML_SUPPORT", "0").equals("1"))
-			{
-				Class<?> me = getClass();
-				Object struct = me.getMethod("getStruct", new Class[]{}).invoke(this, (Object[])null);
-                me.getMethod("setStruct", struct.getClass()).invoke(this, GXXMLSerializer.deserializeSimpleXml(struct, sXML));
-				return true;
-			}else{
-				short nResult ;
-				XMLReader oReader = new XMLReader();
-				oReader.openFromString(sXML);
-				oReader.read();
-				nResult = readxml(oReader, sName) ;
-				oReader.close();
-				if (nResult <= 0) {
-					CommonUtil.ErrorToMessages(String.valueOf(oReader.getErrCode()), oReader.getErrDescription(), messages);
-					return false;
-				}
-				else
-					return true;
+			short nResult ;
+			XMLReader oReader = new XMLReader();
+			oReader.openFromString(sXML);
+			oReader.read();
+			nResult = readxml(oReader, sName) ;
+			oReader.close();
+			if (nResult <= 0) {
+				CommonUtil.ErrorToMessages(String.valueOf(oReader.getErrCode()), oReader.getErrDescription(), messages);
+				return false;
 			}
+			else
+				return true;
 		}
 		catch (  Exception ex) {
 			ex.printStackTrace();
