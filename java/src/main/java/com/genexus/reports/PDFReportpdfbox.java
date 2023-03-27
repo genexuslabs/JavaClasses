@@ -1081,14 +1081,13 @@ public class PDFReportpdfbox extends GXReportPainter{
 						}
 					}
 
-					try (PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page))){
+					try (PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page),PDPageContentStream.AppendMode.APPEND, false, false)){
 
 						switch(alignment)
 						{
 							case 1: // Center Alignment
 								float x = ((leftAux + rightAux) / 2) + leftMargin;
 								float y = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight;
-								contentStream.setHorizontalScaling(1f);
 								contentStream.setFont(baseFont, fontSize);
 								contentStream.moveTo(x, y);
 								contentStream.beginText();
@@ -1099,7 +1098,6 @@ public class PDFReportpdfbox extends GXReportPainter{
 							case 2: // Right Alignment
 								x = rightAux + leftMargin;
 								y = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight;
-								contentStream.setHorizontalScaling(1f);
 								contentStream.setFont(baseFont, fontSize);
 								contentStream.moveTo(x, y);
 								contentStream.beginText();
@@ -1109,16 +1107,16 @@ public class PDFReportpdfbox extends GXReportPainter{
 								break;
 							case 0: // Left Alignment
 							case 3: // Justified, only one text line
-								x = (leftAux + rightAux) / 2 + leftMargin;
-								y = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight;
-								contentStream.setHorizontalScaling(1f);
-								contentStream.setFont(baseFont, fontSize);
-								contentStream.moveTo(x, y);
-								contentStream.beginText();
-								contentStream.showText(sTxt);
-								contentStream.endText();
-								contentStream.close();
-								break;
+									x = (leftAux + rightAux) / 2 + leftMargin;
+									y = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight;
+									contentStream.beginText();
+									contentStream.setFont(baseFont, fontSize);
+									contentStream.newLineAtOffset(x, y);
+									contentStream.showText(sTxt);
+									contentStream.endText();
+									contentStream.close();
+									break;
+
 						}
 					} catch (Exception e) {
 						System.err.println(e.getMessage());
