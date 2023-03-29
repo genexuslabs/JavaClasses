@@ -95,7 +95,6 @@ public class PDFReportItext extends GXReportPainter
     //private Point pageMargin = new Point(0,0); // Contiene el margen [left, top] de cada página
 	//private boolean containsSpecialMetrics = false;
 	//private Hashtable fontMetricsProps = new Hashtable();
-	public static boolean DEBUG = false;
     private Document document;
 	private PdfWriter writer;
 	private Paragraph chunk;
