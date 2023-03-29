@@ -1,5 +1,52 @@
 package com.genexus.reports;
 
+/**
+ * Formato del archivo PDFReport.INI
+ * ---------------------------------
+ *
+ * GeneralProperties:
+ *  - Embeed Fonts -> booleano que indica si embeber los fonts o no (ver Seccion 'Embeed Fonts')
+ *  - SearchNewFonts -> booleano que indica si se deben buscar los fonts si no estan en el INI al embeberlos
+ *  - SearchNewFontsOnce -> booleano que indica buscar por única vez los fonts si no se encuentran
+ *  - Version -> Indica la version del PDFReport (formato a.b.c.d)
+ *  - FontsLocation -> Indica la ubicación de los fonts
+ *  - LeftMargin -> Indica el margen izquierdo asociado al documento (en centúŠetros)
+ *  - TopMargin -> Indica el margen arriba asociado al documento (en centúŠetros)
+ *  - DEBUG -> Indica que se quiere mostrar DEBUG por la stdout
+ *
+ * Seccion 'Embeed Fonts':
+ *  - Para cada nombre de font se le asocia un booleano que indica si embeber el font o no (para granularidad más fina de la GeneralProperty)
+ *    Para embeber un font, debe estar en 'true' la generalProperty y la property de esta seccion
+ *    Para setear que fonts embeber, se puede ejecutar el 'com.genexus.reports.PDFReportConfig'
+ *
+ * Seccion 'Fonts Location (MS)' y 'Fonts Location (Sun)'
+ *  - Se almacenan los mappings 'FontName= ubiacion del .ttf asociado'. Estos mappings son distintos para MS y Sun
+ *    Estos mappings son creados automaticamente
+ *
+ * Seccion 'Fonts Substitutions'
+ *  - Se almacenan pares 'Font= Font' que mapean un font en otro.
+ *    Por ejemplo, se puede poner 'Impact= Courier', para mapear un TrueTypeFont en otro
+ *    También se puede mapear un font en un Type1, por ej: 'Impact= Helvetica'
+ *    Estos mappings los puede realizar el usuario
+ *
+ * Seccion 'Font Metrics'
+ *  - Se almacenan pares 'Font= metricas' que indican las metricas de un font
+ *    Esto es definido por el usuario, es decir estas métricas hacen un override de las
+ *    metricas que se utilizarú}n en otro caso
+ *	  Las metricas se definen mediante rules separadas por ';':
+ *	  FontName= rule1;rule2;...;ruleN
+ *    donde cada rule puede ser de este estilo:
+ *      - monospaced(XXX), que indica que se utilizan las mismas metricas para todos los caracteres
+ *	    - range(NN,XX0,XX1,XX2,XX3,XX4....,XXN, en el que se enumeran las metricas para cada
+ *     caracter comenzando desde el caracter NN. En este caso si se indican unas pocas metricas, solo
+ *     se hace el override de la interseccion.
+ *		- move(HH,VV), que indica que los textos con dicho font se deben mover HH y VV pixels
+ *	   horizantal y verticalmente
+ *	  Nota: no se puede especificar si el font es bold y/o italic, es decir que estas metricas
+ *    van a aplicar para todas las combinaciones de bold/italic para dicho font
+ *
+ */
+
 import com.genexus.ModelContext;
 import com.genexus.internet.HttpContext;
 import com.genexus.platform.INativeFunctions;
@@ -58,6 +105,7 @@ public abstract class GXReportPainter implements IReportHandler{
 	public boolean barcode128AsImage = true;
 	public int justifiedType;
 	protected HttpContext httpContext = null;
+	protected static boolean firstTime = true;
 	float[] STYLE_SOLID = new float[]{1,0};
 	float[] STYLE_NONE = null;
 	float[] STYLE_DOTTED,
@@ -84,7 +132,7 @@ public abstract class GXReportPainter implements IReportHandler{
 	/** Setea el OutputStream a utilizar
 	 *  @param outputStream Stream a utilizar
 	 */
-	protected void setOutputStream(OutputStream outputStream)
+	public void setOutputStream(OutputStream outputStream)
 	{
 		this.outputStream = outputStream;
 	}
@@ -104,7 +152,6 @@ public abstract class GXReportPainter implements IReportHandler{
 		{
 			props = new ParseINI();
 		}
-
 		// Primero debo obtener la ubicación + ejecutable del Acrobat
 		String acrobatLocation = props.getGeneralProperty(Const.ACROBAT_LOCATION); // Veo si esta fijada la ubicación del Acrobat en la property
 		if(acrobatLocation == null)
@@ -186,8 +233,6 @@ public abstract class GXReportPainter implements IReportHandler{
 	}
 	public GXReportPainter(ModelContext context)
 	{
-		//document = null;
-		//pageSize = null;
 		stringTotalPages = new Vector();
 		httpContext = (HttpContext) context.getHttpContext();
 
@@ -255,8 +300,6 @@ public abstract class GXReportPainter implements IReportHandler{
 			firstTime = false;
 		}
 	}
-
-	private static boolean firstTime = true;
 
 	protected void loadPrinterSettingsProps(String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex)
 	{
@@ -353,7 +396,6 @@ public abstract class GXReportPainter implements IReportHandler{
 	}
 
 	protected abstract void init();
-
 
 	public void GxRVSetLanguage(String lang) {}
 
@@ -538,8 +580,8 @@ public abstract class GXReportPainter implements IReportHandler{
 		this.lineHeight = lineHeight;
 	}
 
-	int M_top ;
-	int M_bot ;
+	protected int M_top ;
+	protected int M_bot ;
 
 	public	int getM_top()
 	{
@@ -568,14 +610,8 @@ public abstract class GXReportPainter implements IReportHandler{
 	public void GxEndPrinter() {}
 	public abstract void GxStartPage();
 
-	public void GxStartDoc()
-	{
-		//DEBUG.println("Processing...");
-	}
-	public void GxSetDocFormat(String format)
-	{
-		//DEBUG.println("Processing...");
-	}
+	public void GxStartDoc() {}
+	public void GxSetDocFormat(String format) {}
 
 	public void GxSetDocName(String docName)
 	{
@@ -614,13 +650,11 @@ public abstract class GXReportPainter implements IReportHandler{
 
 	public boolean GxPrTextInit(String ouput, int nxPage[], int nyPage[], String psIniFile, String psForm, String sPrinter, int nMode, int nPaperLength, int nPaperWidth, int nGridX, int nGridY, int nPageLines)
 	{
-		//DEBUG.println("Processing...");
 		return true;
 	}
 
 	public boolean GxPrnCfg( String ini )
 	{
-		//DEBUG.println("Processing...");
 		return true;
 	}
 
@@ -657,9 +691,7 @@ public abstract class GXReportPainter implements IReportHandler{
 
 	public void cleanup() {}
 
-	public void setMetrics(String fontName, boolean bold, boolean italic, int ascent, int descent, int height, int maxAdvance, int[] sizes)
-	{
-	}
+	public void setMetrics(String fontName, boolean bold, boolean italic, int ascent, int descent, int height, int maxAdvance, int[] sizes) {}
 
 
 	/** Carga la tabla de substitutos
@@ -695,14 +727,14 @@ public abstract class GXReportPainter implements IReportHandler{
 	/** Estos métodos no hacen nada en este contexto
 	 */
 	public void GxPrintMax() { ; }
+
 	public void GxPrintNormal() { ; }
+
 	public void GxPrintOnTop() { ; }
+
 	public void GxPrnCmd(String cmd)  { ; }
 
-
-	public void showInformation()
-	{
-	}
+	public void showInformation() {}
 
 	public static final double SCALE_FACTOR = 72;
 	protected double PPP = 96;

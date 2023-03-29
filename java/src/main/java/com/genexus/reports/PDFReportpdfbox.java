@@ -33,7 +33,6 @@ public class PDFReportpdfbox extends GXReportPainter{
 	//private BarcodeUtil barcode = null; por ahora no soportamos barcode
 	private PDDocument document;
 	private PDDocumentCatalog writer;
-	private static String predefinedSearchPath = "";
 	private PDPageContentStream template;
 	private PDFormXObject formXObjecttemplate;
 	private PDType0Font templateFont;
@@ -41,26 +40,7 @@ public class PDFReportpdfbox extends GXReportPainter{
 	public boolean barcode128AsImage = true;
 	ConcurrentHashMap<String, PDImageXObject> documentImages;
 	public int runDirection = 0;
-
-	public void setOutputStream(OutputStream outputStream)
-	{
-		super.setOutputStream(outputStream);
-	}
-
-	protected static String getAcrobatLocation() throws Exception
-	{
-		return GXReportPainter.getAcrobatLocation();
-	}
-
-	public static void printReport(String pdfFilename, boolean silent) throws Exception
-	{
-		GXReportPainter.printReport(pdfFilename,silent);
-	}
-
-	public static void showReport(String filename, boolean modal) throws Exception
-	{
-		GXReportPainter.showReport(filename,modal);
-	}
+	private int page;
 
 	public PDFReportpdfbox(ModelContext context)
 	{
@@ -74,22 +54,6 @@ public class PDFReportpdfbox extends GXReportPainter{
 		}
 	}
 
-	private static boolean firstTime = true;
-
-	protected void loadPrinterSettingsProps(String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex)
-	{
-		try {
-			super.loadPrinterSettingsProps(iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
-		} catch (Exception e){
-			e.printStackTrace(System.err);
-		}
-	}
-
-	protected void loadProps()
-	{
-		super.loadProps();
-	}
-
 	protected void init()
 	{
 		try {
@@ -98,20 +62,6 @@ public class PDFReportpdfbox extends GXReportPainter{
 		catch(Exception e) {
 			System.err.println(e.getMessage());
 		}
-	}
-
-	public void GxRVSetLanguage(String lang) {}
-
-	public void GxSetTextMode(int nHandle, int nGridX, int nGridY, int nPageLength) {}
-
-	protected float[] parsePattern(String patternStr)
-	{
-		return super.parsePattern(patternStr);
-	}
-
-	protected float [] getDashedPattern(int style)
-	{
-		return super.getDashedPattern(style);
 	}
 
 	private void drawRectangle(PDPageContentStream cb, float x, float y, float w, float h,
@@ -288,16 +238,6 @@ public class PDFReportpdfbox extends GXReportPainter{
 		}
 	}
 
-	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue)
-	{
-		GxDrawRect(left, top, right, bottom, pen, foreRed, foreGreen, foreBlue, backMode, backRed, backGreen, backBlue, 0, 0);
-	}
-
-	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue, int style, int cornerRadius)
-	{
-		GxDrawRect(left, top, right, bottom, pen, foreRed, foreGreen, foreBlue, backMode, backRed, backGreen, backBlue, style, style, style, style, cornerRadius, cornerRadius, cornerRadius, cornerRadius);
-	}
-
 	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue,
 						   int styleTop, int styleBottom, int styleRight, int styleLeft, int cornerRadioTL, int cornerRadioTR, int cornerRadioBL, int cornerRadioBR)
 	{
@@ -391,11 +331,6 @@ public class PDFReportpdfbox extends GXReportPainter{
 		}
 	}
 
-	public void GxDrawLine(int left, int top, int right, int bottom, int width, int foreRed, int foreGreen, int foreBlue)
-	{
-		GxDrawLine(left, top, right, bottom, width, foreRed, foreGreen, foreBlue, 0);
-	}
-
 	public void GxDrawLine(int left, int top, int right, int bottom, int width, int foreRed, int foreGreen, int foreBlue, int style)
 	{
 		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page),PDPageContentStream.AppendMode.APPEND,false)){
@@ -436,11 +371,6 @@ public class PDFReportpdfbox extends GXReportPainter{
 		} catch (Exception e){
 			System.err.println(e.getMessage());
 		}
-	}
-
-	public void GxDrawBitMap(String bitmap, int left, int top, int right, int bottom)
-	{
-		GxDrawBitMap(bitmap, left, top, right, bottom, 0);
 	}
 
 	public void GxDrawBitMap(String bitmap, int left, int top, int right, int bottom, int aspectRatio)
@@ -519,11 +449,6 @@ public class PDFReportpdfbox extends GXReportPainter{
 		{
 			System.err.println(e.getMessage());
 		}
-	}
-
-	public String getSubstitute(String fontName)
-	{
-		return super.getSubstitute(fontName);
 	}
 
 	public void GxAttris(String fontName, int fontSize, boolean fontBold, boolean fontItalic, boolean fontUnderline, boolean fontStrikethru, int Pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue)
@@ -719,20 +644,6 @@ public class PDFReportpdfbox extends GXReportPainter{
 		}
 	}
 
-	protected String getFontLocation(String fontName)
-	{
-		return super.getFontLocation(fontName);
-	}
-	@SuppressWarnings("unchecked")
-	protected Hashtable getFontLocations()
-	{
-		return super.getFontLocations();
-	}
-
-	protected boolean isEmbeddedFont(String realFontName) {
-		return super.isEmbeddedFont(realFontName);
-	}
-
 	public void setAsianFont(String fontName, String style)
 	{
 		try
@@ -802,21 +713,6 @@ public class PDFReportpdfbox extends GXReportPainter{
 		catch(Exception e) {
 			System.err.println(e.getMessage());
 		}
-	}
-	/**
-	 * @deprecated
-	 */
-	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align)
-	{
-		GxDrawText(sTxt, left, top, right, bottom, align, 0);
-	}
-	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat)
-	{
-		GxDrawText(sTxt, left, top, right, bottom, align, htmlformat, 0);
-	}
-	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border)
-	{
-		GxDrawText(sTxt, left, top, right, bottom, align, htmlformat, border, 0);
 	}
 	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border, int valign)
 	{
@@ -1076,10 +972,6 @@ public class PDFReportpdfbox extends GXReportPainter{
 		} catch (Exception e) { System.err.println(e.getMessage()); }
 	}
 
-	boolean pageHeightExceeded(float bottomAux, float drawingPageHeight){
-		return super.pageHeightExceeded(bottomAux,drawingPageHeight);
-	}
-
 	public void GxClearAttris() {}
 
 	public static final double PAGE_SCALE_Y = 20;
@@ -1192,48 +1084,6 @@ public class PDFReportpdfbox extends GXReportPainter{
 		}
 		return new PDRectangle((int)(width / PAGE_SCALE_X) + leftMargin, (int)(length / PAGE_SCALE_Y) + topMargin);
 	}
-
-	public int getPageLines()
-	{
-		return super.getPageLines();
-	}
-	public int getLineHeight()
-	{
-		return super.getLineHeight();
-	}
-	public void setPageLines(int P_lines)
-	{
-		super.setPageLines(P_lines);
-	}
-	public void setLineHeight(int lineHeight)
-	{
-		super.setLineHeight(lineHeight);
-	}
-
-	int M_top ;
-	int M_bot ;
-
-	public	int getM_top()
-	{
-		return super.getM_top();
-	}
-
-	public int getM_bot()
-	{
-		return super.getM_bot();
-	}
-
-	public void setM_top(int M_top)
-	{
-		super.setM_top(M_top);
-	}
-
-	public void setM_bot(int M_bot)
-	{
-		super.setM_bot(M_bot);
-	}
-
-	public void GxEndPage() {}
 
 	public void GxEndDocument()
 	{
@@ -1384,97 +1234,11 @@ public class PDFReportpdfbox extends GXReportPainter{
 			e.printStackTrace(System.err);
 		}
 	}
-
-	public void GxEndPrinter() {}
 	public void GxStartPage()
 	{
 		document.addPage(new PDPage(this.pageSize));
 		pages++;
 	}
 
-	public void GxStartDoc() {}
-	public void GxSetDocFormat(String format) {}
-
-	public void GxSetDocName(String docName)
-	{
-		super.GxSetDocName(docName);
-	}
-
-	public boolean GxPrTextInit(String ouput, int nxPage[], int nyPage[], String psIniFile, String psForm, String sPrinter, int nMode, int nPaperLength, int nPaperWidth, int nGridX, int nGridY, int nPageLines)
-	{
-		return super.GxPrTextInit(ouput, nxPage, nyPage, psIniFile, psForm, sPrinter, nMode, nPaperLength, nPaperWidth, nGridX, nGridY, nPageLines);
-	}
-
-	public boolean GxPrnCfg( String ini )
-	{
-		return super.GxPrnCfg(ini);
-	}
-
-	public boolean GxIsAlive()
-	{
-		return super.GxIsAlive();
-	}
-
-	public boolean GxIsAliveDoc()
-	{
-		return super.GxIsAliveDoc();
-	}
-
-	private int page;
-	public int getPage()
-	{
-		return super.getPage();
-	}
-
-	public void setPage(int page)
-	{
-		super.setPage(page);
-	}
-
-	public boolean getModal()
-	{
-		return super.getModal();
-	}
-	public void setModal(boolean modal)
-	{
-		super.setModal(modal);
-	}
-
-	public void cleanup() {}
-
-	public void setMetrics(String fontName, boolean bold, boolean italic, int ascent, int descent, int height, int maxAdvance, int[] sizes) {}
-
-	protected void loadSubstituteTable()
-	{
-		super.loadSubstituteTable();
-	}
-
-	public void GxPrintMax() { ; }
-	public void GxPrintNormal() { ; }
-	public void GxPrintOnTop() { ; }
-	public void GxPrnCmd(String cmd)  { ; }
-
-	public void showInformation() {}
-
-	public static final double SCALE_FACTOR = 72;
-
-	protected double convertScale(int value)
-	{
-		return super.convertScale(value);
-	}
-
-	protected double convertScale(double value)
-	{
-		return super.convertScale(value);
-	}
-
-	protected float reconvertScale(float value)
-	{
-		return super.reconvertScale(value);
-	}
-
-	protected static String replace(String s,String f,String t) {
-		return GXReportPainter.replace(s,f,t);
-	}
-
+	public void GxEndPage() {}
 }

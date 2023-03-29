@@ -1,51 +1,6 @@
 package com.genexus.reports;
+
 import java.awt.Color;
-/**
- * Formato del archivo PDFReport.INI
- * ---------------------------------
- *
- * GeneralProperties:
- *  - Embeed Fonts -> booleano que indica si embeber los fonts o no (ver Seccion 'Embeed Fonts')
- *  - SearchNewFonts -> booleano que indica si se deben buscar los fonts si no estan en el INI al embeberlos
- *  - SearchNewFontsOnce -> booleano que indica buscar por única vez los fonts si no se encuentran
- *  - Version -> Indica la version del PDFReport (formato a.b.c.d)
- *  - FontsLocation -> Indica la ubicación de los fonts
- *  - LeftMargin -> Indica el margen izquierdo asociado al documento (en centúŠetros)
- *  - TopMargin -> Indica el margen arriba asociado al documento (en centúŠetros)
- *  - DEBUG -> Indica que se quiere mostrar DEBUG por la stdout
- *
- * Seccion 'Embeed Fonts':
- *  - Para cada nombre de font se le asocia un booleano que indica si embeber el font o no (para granularidad más fina de la GeneralProperty)
- *    Para embeber un font, debe estar en 'true' la generalProperty y la property de esta seccion
- *    Para setear que fonts embeber, se puede ejecutar el 'com.genexus.reports.PDFReportConfig'
- *
- * Seccion 'Fonts Location (MS)' y 'Fonts Location (Sun)'
- *  - Se almacenan los mappings 'FontName= ubiacion del .ttf asociado'. Estos mappings son distintos para MS y Sun
- *    Estos mappings son creados automaticamente
- *
- * Seccion 'Fonts Substitutions'
- *  - Se almacenan pares 'Font= Font' que mapean un font en otro.
- *    Por ejemplo, se puede poner 'Impact= Courier', para mapear un TrueTypeFont en otro
- *    También se puede mapear un font en un Type1, por ej: 'Impact= Helvetica'
- *    Estos mappings los puede realizar el usuario
- *
- * Seccion 'Font Metrics'
- *  - Se almacenan pares 'Font= metricas' que indican las metricas de un font
- *    Esto es definido por el usuario, es decir estas métricas hacen un override de las
- *    metricas que se utilizarú}n en otro caso
- *	  Las metricas se definen mediante rules separadas por ';':
- *	  FontName= rule1;rule2;...;ruleN
- *    donde cada rule puede ser de este estilo:
- *      - monospaced(XXX), que indica que se utilizan las mismas metricas para todos los caracteres
- *	    - range(NN,XX0,XX1,XX2,XX3,XX4....,XXN, en el que se enumeran las metricas para cada
- *     caracter comenzando desde el caracter NN. En este caso si se indican unas pocas metricas, solo
- *     se hace el override de la interseccion.
- *		- move(HH,VV), que indica que los textos con dicho font se deben mover HH y VV pixels
- *	   horizantal y verticalmente
- *	  Nota: no se puede especificar si el font es bold y/o italic, es decir que estas metricas
- *    van a aplicar para todas las combinaciones de bold/italic para dicho font
- *
- */
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -87,62 +42,19 @@ import com.genexus.reports.fonts.Type1FontMetrics;
 
 public class PDFReportItext extends GXReportPainter
 {
-
     private com.lowagie.text.Rectangle pageSize;   // Contiene las dimensiones de la página
     private Font font;
 	private BaseFont baseFont;
 	private Barcode barcode = null;
-    //private Point pageMargin = new Point(0,0); // Contiene el margen [left, top] de cada página
-	//private boolean containsSpecialMetrics = false;
-	//private Hashtable fontMetricsProps = new Hashtable();
     private Document document;
 	private PdfWriter writer;
 	private Paragraph chunk;
-	private static String predefinedSearchPath = ""; // Contiene los predefinedSearchPaths
 	private PdfTemplate template;
 	private BaseFont templateFont;
 	public boolean lineCapProjectingSquare = true;
 	public boolean barcode128AsImage = true;
 	ConcurrentHashMap<String, Image> documentImages;
 	public int runDirection = PdfWriter.RUN_DIRECTION_LTR;
-	public int justifiedType;
-
-    /** Setea el OutputStream a utilizar
-     *  @param outputStream Stream a utilizar
-     */
-    public void setOutputStream(OutputStream outputStream)
-    {
-        super.setOutputStream(outputStream);
-    }
-
-    /** Busca la ubicación del Acrobat. Si no la encuentra tira una excepción
-     */
-    protected static String getAcrobatLocation() throws Exception
-    {
-    	return GXReportPainter.getAcrobatLocation();
-    }
-
-    /** Manda a imprimir el reporte a la impresora
-     * Si en las properties del PDFReport esta definida una GeneralProperty 'Acrobat Location' se
-     * utiliza esta property para obtener la ubicación + ejecutable del Acrobat, sino se busca en el Registry
-     * @param pdfFilename Nombre del reporte a imprimir (con extensión)
-     * @param silent Booleano que indica si se va a imprimir sin diálogo
-     * @exception Exception si no se puede realizar la operación
-     */
-    public static void printReport(String pdfFilename, boolean silent) throws Exception
-    {
-		GXReportPainter.printReport(pdfFilename,silent);
-    }
-
-    /** Muestra el reporte en pantalla
-     * @param filename nombre del PDF a mostrar
-     * @param modal indica si el PDF se va a mostrar en diálogo modal
-     * @exception Exception no se puede encontrar el Acrobat
-     */
-    public static void showReport(String filename, boolean modal) throws Exception
-    {
-		GXReportPainter.showReport(filename,modal);
-    }
 
 	public PDFReportItext(ModelContext context)
     {
@@ -151,18 +63,6 @@ public class PDFReportItext extends GXReportPainter
 		pageSize = null;
 		documentImages = new ConcurrentHashMap<>();
     }
-	
-	private static boolean firstTime = true;
-	
-	protected void loadPrinterSettingsProps(String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex)
-	{
-		super.loadPrinterSettingsProps(iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
-	}
-
-	protected void loadProps()
-	{
-        super.loadProps();
-	}
 
 	protected void init()
     {
@@ -175,25 +75,6 @@ public class PDFReportItext extends GXReportPainter
       }
       document.open();
     }
-
-
-    public void GxRVSetLanguage(String lang)
-    {
-    }
-
-    public void GxSetTextMode(int nHandle, int nGridX, int nGridY, int nPageLength)
-    {
-    }
-	
-	protected float[] parsePattern(String patternStr)
-	{
-		return super.parsePattern(patternStr);
-	}
-
-	protected float [] getDashedPattern(int style)
-	{
-		return super.getDashedPattern(style);
-	}
 	
 	/**
 	 * @param hideCorners indica si se deben ocultar los triangulos de las esquinas cuando el lado que los une esta oculto.
@@ -394,15 +275,7 @@ public class PDFReportItext extends GXReportPainter
 		}
             
 	}
-	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue)
-	{
-		GxDrawRect(left, top, right, bottom, pen, foreRed, foreGreen, foreBlue, backMode, backRed, backGreen, backBlue, 0, 0);
-	}
-	
-    public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue, int style, int cornerRadius)
-    {
-		GxDrawRect(left, top, right, bottom, pen, foreRed, foreGreen, foreBlue, backMode, backRed, backGreen, backBlue, style, style, style, style, cornerRadius, cornerRadius, cornerRadius, cornerRadius);
-	}
+
 	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue, 
 		int styleTop, int styleBottom, int styleRight, int styleLeft, int cornerRadioTL, int cornerRadioTR, int cornerRadioBL, int cornerRadioBR)
 	{
@@ -497,11 +370,6 @@ public class PDFReportItext extends GXReportPainter
 		
 		if(DEBUG)DEBUG_STREAM.println("GxDrawRect -> (" + left + "," + top + ") - (" + right + "," + bottom + ")  BackMode: " + backMode + " Pen:" + pen);
     }
-
-	public void GxDrawLine(int left, int top, int right, int bottom, int width, int foreRed, int foreGreen, int foreBlue)
-	{
-		GxDrawLine(left, top, right, bottom, width, foreRed, foreGreen, foreBlue, 0);
-	}
 	
     public void GxDrawLine(int left, int top, int right, int bottom, int width, int foreRed, int foreGreen, int foreBlue, int style)
     {
@@ -541,11 +409,6 @@ public class PDFReportItext extends GXReportPainter
 			
 		cb.restoreState();
     }
-
-	public void GxDrawBitMap(String bitmap, int left, int top, int right, int bottom)	
-	{
-		GxDrawBitMap(bitmap, left, top, right, bottom, 0);		
-	}
 	
     public void GxDrawBitMap(String bitmap, int left, int top, int right, int bottom, int aspectRatio)
     {
@@ -639,11 +502,6 @@ public class PDFReportItext extends GXReportPainter
 		{
 			System.err.println(e.getMessage());
 		}
-    }
-    
-    public String getSubstitute(String fontName)
-    {
-		return super.getSubstitute(fontName);
     }
 
     public void GxAttris(String fontName, int fontSize, boolean fontBold, boolean fontItalic, boolean fontUnderline, boolean fontStrikethru, int Pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue)
@@ -779,20 +637,6 @@ public class PDFReportItext extends GXReportPainter
         }
     }
 
-	protected String getFontLocation(String fontName)
-	{
-		return super.getFontLocation(fontName);
-	}
-	@SuppressWarnings("unchecked")
-	protected Hashtable getFontLocations()
-	{
-		return super.getFontLocations();
-	}
-
-	protected boolean isEmbeddedFont(String realFontName) {
-		return super.isEmbeddedFont(realFontName);
-	}
-
 	public void setAsianFont(String fontName, String style)
 	{
 		try
@@ -831,21 +675,6 @@ public class PDFReportItext extends GXReportPainter
             System.err.println(ioe.getMessage());
         }
 	}
-    /**
-    * @deprecated
-    */
-    public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align)
-    {
-		GxDrawText(sTxt, left, top, right, bottom, align, 0);
-	}
-    public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat)
-    {
-		GxDrawText(sTxt, left, top, right, bottom, align, htmlformat, 0);
-	}	
-    public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border)
-    {
-		GxDrawText(sTxt, left, top, right, bottom, align, htmlformat, border, 0);
-    }
     public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border, int valign)
     {
     	boolean printRectangle = false;
@@ -935,7 +764,6 @@ public class PDFReportItext extends GXReportPainter
 				Col.setAlignment(colAlignment);
 			ColumnText simulationCol = new ColumnText(null);
 			float drawingPageHeight = (float)this.pageSize.getTop() - topMargin - bottomMargin;
-            //Col.setSimpleColumn(llx, lly, urx, ury);
 			Col.setSimpleColumn(leftAux + leftMargin,drawingPageHeight - bottomAux,rightAux + leftMargin,drawingPageHeight - topAux);
 			simulationCol.setSimpleColumn(leftAux + leftMargin,drawingPageHeight - bottomAux,rightAux + leftMargin,drawingPageHeight - topAux);
 
@@ -1265,7 +1093,6 @@ public class PDFReportItext extends GXReportPainter
 		else
 			return alignment;
 	}
-	public void GxClearAttris() {}
 
 	public static final double PAGE_SCALE_Y = 20; // Indica la escala de la página
     public static final double PAGE_SCALE_X = 20; // Indica la escala de la página
@@ -1351,25 +1178,9 @@ public class PDFReportItext extends GXReportPainter
 		else
 			gxYPage[0] = (int)(pageLength / GX_PAGE_SCALE_Y_OLD); // Cuanto menor sea GX_PAGE_SCALE_Y, GeneXus imprime mayor parte de cada hoja
 
-
-        //Ahora chequeamos que el margen asociado en el PDFReport.INI sea correcto, y si es inválido, asociamos el que sea por defecto
-        //if(leftMargin > this.pageSize.width || topMargin > this.pageSize.height)
-        //{ // Si el margen asociado es mayor que el tamaño de la página, entonces asociamos los márgenes por default
-
-			//float leftMargin = (float) (TO_CM_SCALE * Double.valueOf(Const.DEFAULT_LEFT_MARGIN).doubleValue());
-			//float topMargin = (float) (TO_CM_SCALE * Double.valueOf(Const.DEFAULT_TOP_MARGIN).doubleValue());
-
-			//float rightMargin = 0;
-			//float bottomMargin = 0;
-            //System.err.println("Invalid page Margin... Resetting to defaults");
-        //}
-
-
 		document = new Document(this.pageSize,0,0,0,0);
 
         init();
-
-        //if(DEBUG)DEBUG_STREAM.println("GxPrintInit ---> Size:" + this.pageSize + " Orientation: " + (pageOrientation == PDFPage.PORTRAIT ? "Portrait" : "Landscape"));
 
         return true;
     }
@@ -1399,56 +1210,6 @@ public class PDFReportItext extends GXReportPainter
 		}
 		return new com.lowagie.text.Rectangle((int)(width / PAGE_SCALE_X) + leftMargin, (int)(length / PAGE_SCALE_Y) + topMargin);
 	}
-
-    public int getPageLines()
-    {
-        return super.getPageLines();
-    }
-	public int getLineHeight()
-	{
-		return super.getLineHeight();
-	}
-	public void setPageLines(int P_lines)
-	{
-		super.setPageLines(P_lines);
-	}
-	public void setLineHeight(int lineHeight)
-	{
-		super.setLineHeight(lineHeight);
-	}
-	
-	int M_top ;
-	int M_bot ;
-	
-	public	int getM_top()
-	{
-		return super.getM_top();
-	}
-	
-    public int getM_bot()
-	{
-		return super.getM_bot();
-	}
-	
-	public void setM_top(int M_top)
-	{
-		super.setM_top(M_top);
-	}
-
-	public void setM_bot(int M_bot)
-	{
-		super.setM_bot(M_bot);
-	}	
-
-    public void GxEndPage()
-    {
-        //if(DEBUG)DEBUG_STREAM.println("GxEndPage");
-
-        //if(document != null && !isPageDirty)
-        //    document.dispose();
-//        if(document == null) GxStartPage(); // Si la página esta vacú}, la agrego primero al PDF. Esto hace que haya una hoja vacú} al final, as\uFFFDEque lo saco
-//        document = null; // La nueva página est\uFFFDEvacú}
-    }
 
     public void GxEndDocument()
     {
@@ -1542,9 +1303,6 @@ public class PDFReportItext extends GXReportPainter
 		document.close();
 
         if(DEBUG)DEBUG_STREAM.println("GxEndDocument!");
-        //showInformation();
-        //ParseINI props = pdf.getPDF().props;
-        //pdf.end();
 
 		try{ props.save(); } catch(IOException e) { ; }
 
@@ -1583,167 +1341,18 @@ public class PDFReportItext extends GXReportPainter
         }
         outputStream = null;
     }
-
-    public void GxEndPrinter()
-    {
-        //DEBUG.println("Processing...");
-    }
     public void GxStartPage()
     {
-		//try
-		//{
-			boolean ret = document.newPage();
-			pages = pages +1;
-		//}
-		//catch(DocumentException de) {
-        //    System.err.println(de.getMessage());
-        //}
+		boolean ret = document.newPage();
+		pages = pages +1;
 	}
 
-    public void GxStartDoc()
-    {
-        //DEBUG.println("Processing...");
-    }
-    public void GxSetDocFormat(String format)
-    {
-        //DEBUG.println("Processing...");
-    }
-
-    public void GxSetDocName(String docName)
-    {
-		super.GxSetDocName(docName);
-    }
-
-    public boolean GxPrTextInit(String ouput, int nxPage[], int nyPage[], String psIniFile, String psForm, String sPrinter, int nMode, int nPaperLength, int nPaperWidth, int nGridX, int nGridY, int nPageLines)
-    {
-        return super.GxPrTextInit(ouput, nxPage, nyPage, psIniFile, psForm, sPrinter, nMode, nPaperLength, nPaperWidth, nGridX, nGridY, nPageLines);
-    }
-
-    public boolean GxPrnCfg( String ini )
-    {
-		return super.GxPrnCfg(ini);
-    }
-
-    public boolean GxIsAlive()
-    {
-        return super.GxIsAlive();
-    }
-
-    public boolean GxIsAliveDoc()
-    {
-        return super.GxIsAliveDoc();
-    }
-
-    public int getPage()
-    {
-		return super.getPage();
-    }
-
-    public void setPage(int page)
-    {
-		super.setPage(page);
-    }
-
-    public boolean getModal()
-    {
-        return super.getModal();
-    }
-    public void setModal(boolean modal)
-    {
-		super.setModal(modal);
-    }
-	
-	public void cleanup() {}
-
-    public void setMetrics(String fontName, boolean bold, boolean italic, int ascent, int descent, int height, int maxAdvance, int[] sizes)
-    {
-    }
-
-
-    /** Carga la tabla de substitutos
-     */
-    protected void loadSubstituteTable()
-    {
-        super.loadSubstituteTable();
-    }
-
-
-    /** Estos métodos no hacen nada en este contexto
-     */
-    public void GxPrintMax() { ; }
-    public void GxPrintNormal() { ; }
-    public void GxPrintOnTop() { ; }
-    public void GxPrnCmd(String cmd)  { ; }
-
-
-    public void showInformation()
-    {
-    }
-
-	public static final double SCALE_FACTOR = 72;
-
-	protected double convertScale(int value)
-	{
-		return super.convertScale(value);
-	}
-		
-	protected double convertScale(double value)
-	{
-		return super.convertScale(value);
-	}
-	
-	protected float reconvertScale(float value)
-	{
-		return super.reconvertScale(value);
-	}		
+	public void GxEndPage() {}
 
 	class FontProps
 	{
 		public int horizontal;
 		public int vertical;
 	}
-	
-    /**
-     * Helper method for toString()
-     * @param s source string
-     * @param f string to remove
-     * @param t string to replace f
-     * @return string with f replaced by t
-     */
-	protected static String replace(String s,String f,String t) {
-		return GXReportPainter.replace(s,f,t);
-	}
-
-    /** Contiene un state de una pagina (atributos, etc) + un String a ingresar
-     *  La idea es que se pueda agregar Strings en cualquier página al final del proceso del PDF
-     *//*
-    class TextProperties
-    {
-        public final PDFGraphics document;
-        public final Font font;
-        public final Color foreColor;
-        public final Color backColor;
-        public final boolean fontUnderline;
-        public final boolean fontStrikeThru;
-        public final String text;
-        public final int left, top, right, bottom, align;
-        public TextProperties(PDFGraphics document, Font font, Color foreColor, Color backColor,
-                              boolean fontUnderline, boolean fontStrikeThru, String text, int left,
-                              int top, int right, int bottom, int align)
-        {
-            this.document = document;
-            this.font = font;
-            this.foreColor = foreColor;
-            this.backColor = backColor;
-            this.fontUnderline = fontUnderline;
-            this.fontStrikeThru = fontStrikeThru;
-            this.text = text;
-            this.left = left;
-            this.top = top;
-            this.right = right;
-            this.bottom = bottom;
-            this.align = align;
-        }
-    }*/
 
 }
