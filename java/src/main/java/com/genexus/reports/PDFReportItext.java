@@ -709,7 +709,6 @@ public class PDFReportItext extends GXReportPainter
 				bottom = top + (int)reconvertScale(lineHeight);
 			else if (valign == VerticalAlign.BOTTOM.value())
 				top = bottom - (int)reconvertScale(lineHeight);
-			//if valign == middle, no se cambia ni top ni bottom
 		}
 
 		float bottomAux = (float)convertScale(bottom) - ((float)convertScale(bottom-top) - captionHeight)/2;   
@@ -942,7 +941,7 @@ public class PDFReportItext extends GXReportPainter
 							(leftAux + rightAux)/2 + leftMargin + rectangleWidth/2, 
 							this.pageSize.getTop() - bottomAux - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);				
 					break;
-				case 2: // Right Alignment
+				 case 2: // Right Alignment
 						underline = new com.lowagie.text.Rectangle( rightAux + leftMargin - rectangleWidth , 
 							this.pageSize.getTop() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation, 
 							rightAux + leftMargin, 
@@ -952,7 +951,7 @@ public class PDFReportItext extends GXReportPainter
 						underline = new com.lowagie.text.Rectangle( leftAux + leftMargin , 
 							this.pageSize.getTop() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation, 
 							leftAux + leftMargin + rectangleWidth, 
-							this.pageSize.getTop() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);				
+							this.pageSize.getTop() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
 					break;
 				}
 				underline.setBackgroundColor(foreColor);

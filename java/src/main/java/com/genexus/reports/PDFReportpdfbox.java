@@ -737,8 +737,8 @@ public class PDFReportpdfbox extends GXReportPainter{
 			cb.setNonStrokingColor(foreColor);
 			int arabicOptions = 0;
 			float captionHeight = baseFont.getFontMatrix().transformPoint(0, font.getFontDescriptor().getCapHeight()).y * fontSize;
-			float rectangleWidth = font.getStringWidth(sTxt);
-			float lineHeight = font.getFontDescriptor().getFontBoundingBox().getUpperRightY() - font.getFontDescriptor().getFontBoundingBox().getLowerLeftX();
+			float rectangleWidth = baseFont.getStringWidth(sTxt) / 1000 * fontSize;
+			float lineHeight = (baseFont.getFontDescriptor().getFontBoundingBox().getUpperRightY() - baseFont.getFontDescriptor().getFontBoundingBox().getLowerLeftY())/ 1000 * fontSize;
 			float textBlockHeight = (float)convertScale(bottom-top);
 			int linesCount =   (int)(textBlockHeight/lineHeight);
 			int bottomOri = bottom;
@@ -777,17 +777,26 @@ public class PDFReportpdfbox extends GXReportPainter{
 
 				if(backFill)
 				{
-					PDRectangle rectangle = new PDRectangle(0,0);
+					PDRectangle rectangle = new PDRectangle();
 					switch(alignment)
 					{
 						case 1: // Center Alignment
-							rectangle = new PDRectangle((leftAux + rightAux)/2 + leftMargin - rectangleWidth/2, (float)this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin , (leftAux + rightAux)/2 + leftMargin + rectangleWidth/2, (float)this.pageSize.getUpperRightY() - topAux - topMargin -bottomMargin);
+							rectangle.setLowerLeftX((leftAux + rightAux)/2 + leftMargin - rectangleWidth/2);
+							rectangle.setLowerLeftY(this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin);
+							rectangle.setUpperRightX((leftAux + rightAux)/2 + leftMargin + rectangleWidth/2);
+							rectangle.setUpperRightY(this.pageSize.getUpperRightY() - topAux - topMargin -bottomMargin);
 							break;
 						case 2: // Right Alignment
-							rectangle = new PDRectangle(rightAux + leftMargin - rectangleWidth, (float)this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin , rightAux + leftMargin, (float)this.pageSize.getUpperRightY() - topAux - topMargin -bottomMargin);
+							rectangle.setLowerLeftX(rightAux + leftMargin - rectangleWidth);
+							rectangle.setLowerLeftY(this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin);
+							rectangle.setUpperRightX(rightAux + leftMargin);
+							rectangle.setUpperRightY(this.pageSize.getUpperRightY() - topAux - topMargin -bottomMargin);
 							break;
 						case 0: // Left Alignment
-							rectangle = new PDRectangle(leftAux + leftMargin, (float)this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin , leftAux + leftMargin + rectangleWidth, (float)this.pageSize.getUpperRightY() - topAux - topMargin -bottomMargin);
+							rectangle.setLowerLeftX(leftAux + leftMargin);
+							rectangle.setLowerLeftY(this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin);
+							rectangle.setUpperRightX(leftAux + leftMargin + rectangleWidth);
+							rectangle.setUpperRightY(this.pageSize.getUpperRightY() - topAux - topMargin -bottomMargin);
 							break;
 					}
 					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page),PDPageContentStream.AppendMode.APPEND,false);
@@ -803,28 +812,27 @@ public class PDFReportpdfbox extends GXReportPainter{
 
 				if (fontUnderline)
 				{
-					underline = new PDRectangle(0,0);
+					underline = new PDRectangle();
 
 					switch(alignment)
 					{
 						case 1: // Center Alignment
-							underline = new PDRectangle(
-								(leftAux + rightAux)/2 + leftMargin - rectangleWidth/2,
-								this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation,
-								(leftAux + rightAux)/2 + leftMargin + rectangleWidth/2,
-								this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineHeight);
+							underline.setLowerLeftX((leftAux + rightAux)/2 + leftMargin - rectangleWidth/2);
+							underline.setLowerLeftY(this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation);
+							underline.setUpperRightX((leftAux + rightAux)/2 + leftMargin + rectangleWidth/2);
+							underline.setUpperRightY(this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineHeight);
 							break;
 						case 2: // Right Alignment
-							underline = new PDRectangle( rightAux + leftMargin - rectangleWidth ,
-								this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation,
-								rightAux + leftMargin,
-								this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);
+							underline.setLowerLeftX(rightAux + leftMargin - rectangleWidth);
+							underline.setLowerLeftY(this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation);
+							underline.setUpperRightX(rightAux + leftMargin);
+							underline.setUpperRightY(this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);
 							break;
 						case 0: // Left Alignment
-							underline = new PDRectangle( leftAux + leftMargin ,
-								this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation,
-								leftAux + leftMargin + rectangleWidth,
-								this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);
+							underline.setLowerLeftX(leftAux + leftMargin);
+							underline.setLowerLeftY(this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation);
+							underline.setUpperRightX(leftAux + leftMargin + rectangleWidth);
+							underline.setUpperRightY(this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);
 							break;
 					}
 					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page),PDPageContentStream.AppendMode.APPEND,false);
@@ -836,34 +844,33 @@ public class PDFReportpdfbox extends GXReportPainter{
 
 				if (fontStrikethru)
 				{
-					underline = new PDRectangle(0,0);
+					underline = new PDRectangle();
 					float strikethruSeparation = lineHeight / 2;
 
 					switch(alignment)
 					{
 						case 1: // Center Alignment
-							underline = new PDRectangle(
-								(leftAux + rightAux)/2 + leftMargin - rectangleWidth/2,
-								this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation,
-								(leftAux + rightAux)/2 + leftMargin + rectangleWidth/2,
-								this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
+							underline.setLowerLeftX((leftAux + rightAux)/2 + leftMargin - rectangleWidth/2);
+							underline.setLowerLeftY(this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation);
+							underline.setUpperRightX((leftAux + rightAux)/2 + leftMargin + rectangleWidth/2);
+							underline.setUpperRightY(this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
 							break;
 						case 2: // Right Alignment
-							underline = new PDRectangle( rightAux + leftMargin - rectangleWidth ,
-								this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation,
-								rightAux + leftMargin,
-								this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
+							underline.setLowerLeftX(rightAux + leftMargin - rectangleWidth);
+							underline.setLowerLeftY(this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation);
+							underline.setUpperRightX(rightAux + leftMargin);
+							underline.setUpperRightY(this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
 							break;
 						case 0: // Left Alignment
-							underline = new PDRectangle( leftAux + leftMargin ,
-								this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation,
-								leftAux + leftMargin + rectangleWidth,
-								this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
+							underline.setLowerLeftX(leftAux + leftMargin);
+							underline.setLowerLeftY(this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation);
+							underline.setUpperRightX(leftAux + leftMargin + rectangleWidth);
+							underline.setUpperRightY(this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
 							break;
 					}
 					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page),PDPageContentStream.AppendMode.APPEND,false);
 					contentStream.setNonStrokingColor(foreColor);
-					contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY(),underline.getWidth(), underline.getHeight());
+					contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY() - strikethruSeparation * 1/3, underline.getWidth(), underline.getHeight());
 					contentStream.fill();
 					contentStream.close();
 				}
@@ -914,8 +921,13 @@ public class PDFReportpdfbox extends GXReportPainter{
 					}
 					annotation.setDefaultAppearance("/" + font.getName() + " " + fontSize + " Tf " + leading + " TL 0 g " + alignmentString + " <</BMC [0 0]>>BDC q BT /F1 " + fontSize + " Tf " + leading + " TL Tj ET Q EMC");
 					annotation.setContents(sTxt);
-					annotation.setRectangle(new PDRectangle(leftAux + leftMargin, this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin,
-						rightAux + leftMargin, this.pageSize.getUpperRightY() - topAux - topMargin - bottomMargin));
+
+					PDRectangle annotationRectangle = new PDRectangle();
+					annotationRectangle.setLowerLeftX(leftAux + leftMargin);
+					annotationRectangle.setLowerLeftY(this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin);
+					annotationRectangle.setUpperRightX(rightAux + leftMargin);
+					annotationRectangle.setUpperRightY(this.pageSize.getUpperRightY() - topAux - topMargin - bottomMargin);
+					annotation.setRectangle(annotationRectangle);
 					document.getPage(page).getAnnotations().add(annotation);
 					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page),PDPageContentStream.AppendMode.APPEND,false);
 					contentStream.beginText();
