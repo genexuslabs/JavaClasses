@@ -165,7 +165,6 @@ public class CosmosDBPreparedStatement extends ServicePreparedStatement
 	private Iterator<HashMap<String, Object>> executeReadByPK(String idValue, Object partitionKey, int[] statusCode) throws Exception {
 		// Read document by ID
 		Iterator<HashMap<String, Object>> iterator = null;
-		//statusCode = new int[1];
 		if (container != null) {
 			AtomicReference<JsonNode> itemRef = new AtomicReference<>();
 			List<HashMap<String, Object>> hashMapList = new ArrayList<>();
