@@ -142,18 +142,7 @@ public class GXBaseCollection<T extends GXXMLSerializable> extends GXSimpleColle
 	}
     @Override
     public String toxml(boolean includeHeader, boolean includeState, String header, String namespace) {
-		if(SpecificImplementation.Application.getProperty("SIMPLE_XML_SUPPORT", "0").equals("1")){
-			try {
-				Class<?> me = getClass();
-				Object struct = me.getMethod("getStruct", new Class[]{}).invoke(this, (Object[]) null);
-				return GXXMLSerializer.serializeSimpleXml(includeHeader, SpecificImplementation.Application.createCollectionWrapper(struct), header, this.elementsName, this.containedXmlNamespace); //simplexml
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			return "";
-		}else{
-			return super.toxml(includeHeader, includeState, header, namespace);
-		}
+		return super.toxml(includeHeader, includeState, header, namespace);
     }
 
     @Override
