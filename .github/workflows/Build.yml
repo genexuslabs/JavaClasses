@@ -64,8 +64,8 @@ jobs:
         LastCommitter=$(git log -1 --pretty=format:%an)
         CommitMessage=$(git log -1 --pretty=%B)
 
-        echo "name=LAST_COMMITTER=$LastCommitter" >> $GITHUB_OUTPUT
-        echo "name=COMMIT_MESSAGE=$CommitMessage" >> $GITHUB_OUTPUT
+        echo "LAST_COMMITTER=$LastCommitter" >> $GITHUB_OUTPUT
+        echo "COMMIT_MESSAGE=$CommitMessage" >> $GITHUB_OUTPUT
 
         currentVersion="$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
         semVerComponents=( ${currentVersion//-/ } )
@@ -140,11 +140,11 @@ jobs:
         MAVEN_VERSION="$newVersion$versionChangelist"
         echo "Full project version: $MAVEN_VERSION"
         
-        echo "name=newVersion=$newVersion" >> $GITHUB_OUTPUT
-        echo "name=versionChangelist=$versionChangelist" >> $GITHUB_OUTPUT
-        echo "name=MAVEN_VERSION=$MAVEN_VERSION" >> $GITHUB_OUTPUT
-        echo "name=SHOULD_DEPLOY=$SHOULD_DEPLOY" >> $GITHUB_OUTPUT
-        echo "name=SHOULD_DEPLOY_MAVEN_CENTRAL=$SHOULD_DEPLOY_MAVEN_CENTRAL" >> $GITHUB_OUTPUT
+        echo "newVersion=$newVersion" >> $GITHUB_OUTPUT
+        echo "versionChangelist=$versionChangelist" >> $GITHUB_OUTPUT
+        echo "MAVEN_VERSION=$MAVEN_VERSION" >> $GITHUB_OUTPUT
+        echo "SHOULD_DEPLOY=$SHOULD_DEPLOY" >> $GITHUB_OUTPUT
+        echo "SHOULD_DEPLOY_MAVEN_CENTRAL=$SHOULD_DEPLOY_MAVEN_CENTRAL" >> $GITHUB_OUTPUT
 
     - name: Validate build
       run: mvn -B validate -Drevision=${{ steps.buildVariables.outputs.newVersion }} -Dchangelist=${{ steps.buildVariables.outputs.versionChangelist }} -Dsha1=${{ github.sha }} --file $POM_PATH -P ci-cd
