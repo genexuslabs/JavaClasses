@@ -1,4 +1,4 @@
-﻿name: Build
+name: Build
 
 on:
   workflow_dispatch:
@@ -61,12 +61,6 @@ jobs:
     - name: Calculate build variables
       id: buildVariables
       run: |
-        LastCommitter=$(git log -1 --pretty=format:%an)
-        CommitMessage=$(git log -1 --pretty=%B)
-
-        echo "LAST_COMMITTER=$LastCommitter" >> $GITHUB_OUTPUT
-        echo "COMMIT_MESSAGE=$CommitMessage" >> $GITHUB_OUTPUT
-
         currentVersion="$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
         semVerComponents=( ${currentVersion//-/ } )
         semVerComponents=${semVerComponents[0]}
@@ -139,7 +133,18 @@ jobs:
 
         MAVEN_VERSION="$newVersion$versionChangelist"
         echo "Full project version: $MAVEN_VERSION"
+
+        LastCommitter=$(git log -1 --pretty=format:%an)
+        CommitMessage=$(git log -1 --pretty=%B)
+
+        echo "LAST_COMMITTER=$LastCommitter" >> $GITHUB_OUTPUT
         
+        # Handling a multi-line output value
+        OUTPUT_MESSAGE_EOF="eof${MAVEN_VERSION}"
+        echo "COMMIT_MESSAGE<<$OUTPUT_MESSAGE_EOF" >> $GITHUB_OUTPUT
+        echo "$CommitMessage" >> $GITHUB_OUTPUT
+        echo "$OUTPUT_MESSAGE_EOF" >> $GITHUB_OUTPUT
+
         echo "newVersion=$newVersion" >> $GITHUB_OUTPUT
         echo "versionChangelist=$versionChangelist" >> $GITHUB_OUTPUT
         echo "MAVEN_VERSION=$MAVEN_VERSION" >> $GITHUB_OUTPUT
