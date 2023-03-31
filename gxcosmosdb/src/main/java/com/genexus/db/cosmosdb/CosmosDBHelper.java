@@ -120,21 +120,24 @@ public class CosmosDBHelper {
 	}
 
 	public static HashMap<String, Object> jsonNodeToHashMap(JsonNode jsonNode) {
+
 		HashMap<String, Object> result = new HashMap<>();
-		jsonNode.fields().forEachRemaining(entry -> {
-			String key = entry.getKey();
-			JsonNode value = entry.getValue();
-			if (value.isObject()) {
-				result.put(key, jsonNodeToHashMap(value));
-			} else if (value.isArray()) {
-				result.put(key, jsonNodeToList(value));
-			} else if (value.isValueNode()) {
-				if (value.isNull())
-					result.put(key,null);
-				else
-					result.put(key, value.asText());
-			}
-		});
+		if (jsonNode != null) {
+			jsonNode.fields().forEachRemaining(entry -> {
+				String key = entry.getKey();
+				JsonNode value = entry.getValue();
+				if (value.isObject()) {
+					result.put(key, jsonNodeToHashMap(value));
+				} else if (value.isArray()) {
+					result.put(key, jsonNodeToList(value));
+				} else if (value.isValueNode()) {
+					if (value.isNull())
+						result.put(key, null);
+					else
+						result.put(key, value.asText());
+				}
+			});
+		}
 		return result;
 	}
 
@@ -185,11 +188,7 @@ public class CosmosDBHelper {
 				jsonObject.put(name, parm.value);
 		}
 		else
-			//jsonObject.put(name,getJSONObjectValue(null));
 			jsonObject.put(name, JSONObject.NULL);
 		return jsonObject;
 	}
-	private static Object getJSONObjectValue(Object value)  {
-			return value == null ? "null" : value;
-		}
 }
