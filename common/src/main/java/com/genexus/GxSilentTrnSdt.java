@@ -133,19 +133,12 @@ public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 	public boolean fromxml( String sXML, GXBaseCollection<SdtMessages_Message> messages, String sName )
 	{
 		try{
-			if(SpecificImplementation.Application.getProperty("SIMPLE_XML_SUPPORT", "0").equals("1")) {
-             	Class<?> me = getClass();
-             	Object struct = me.getMethod("getStruct", new Class[]{}).invoke(this, (Object[]) null);
-             	me.getMethod("setStruct", struct.getClass()).invoke(this, GXXMLSerializer.deserializeSimpleXml(struct, sXML));
-				return true;
-            }else{
-				boolean result = super.fromxml(sXML, messages, sName);
-				if (getTransaction() != null)
-				{
-					getTransaction().ReloadFromSDT();
-				}
-				return result;
+			boolean result = super.fromxml(sXML, messages, sName);
+			if (getTransaction() != null)
+			{
+				getTransaction().ReloadFromSDT();
 			}
+			return result;
 		}
 		catch(Exception ex)
 		{

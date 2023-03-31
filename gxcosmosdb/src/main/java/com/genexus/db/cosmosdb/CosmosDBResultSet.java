@@ -1,25 +1,22 @@
 package com.genexus.db.cosmosdb;
 
 import com.genexus.CommonUtil;
-import com.genexus.ModelContext;
 import com.genexus.db.service.IOServiceContext;
 import com.genexus.db.service.ServiceResultSet;
 
 import com.azure.cosmos.CosmosException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.ZoneOffset;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.TemporalAccessor;
-import java.util.TimeZone;
 import static java.lang.Boolean.valueOf;
 
 public class CosmosDBResultSet extends ServiceResultSet<Object>
@@ -50,7 +47,8 @@ public class CosmosDBResultSet extends ServiceResultSet<Object>
 	}
 
 	private static final IOServiceContext SERVICE_CONTEXT = null;
-
+	private static final Timestamp TIMESTAMP_NULL_VALUE = java.sql.Timestamp.from(CommonUtil.nullDate().toInstant());
+	private static final java.util.Date DATE_NULL_VALUE = Date.from(CommonUtil.nullDate().toInstant());
 	private boolean lastWasNull;
 	@Override
 	public boolean wasNull()
@@ -180,47 +178,23 @@ public class CosmosDBResultSet extends ServiceResultSet<Object>
 		return BigDecimal.ZERO;
 	}
 
-	private Instant getInstant(int columnIndex)
-	{
-		String value = getString(columnIndex);
-		if(value == null || value.trim().isEmpty())
-		{
-			lastWasNull = true;
-			return CommonUtil.nullDate().toInstant();
-		}
-
-		TemporalAccessor accessor = null;
-
-		try
-		{
-			accessor = ISO_DATE_TIME_OR_DATE.parseBest(value, LocalDateTime::from, LocalDate::from);
-		}catch(DateTimeParseException dtpe)
-		{
-			for(DateTimeFormatter dateTimeFormatter:DATE_TIME_FORMATTERS)
-			{
-				try
-				{
-					accessor = dateTimeFormatter.parseBest(value, LocalDateTime::from, LocalDate::from);
-					break;
-				}catch(Exception ignored){ }
-			}
-			if(accessor == null)
-			{
-				return CommonUtil.resetTime(CommonUtil.nullDate()).toInstant();
-			}
-		}
-		if(accessor instanceof  LocalDateTime)
-		{
-			ModelContext ctx = ModelContext.getModelContext();
-			TimeZone tz = ctx != null ? ctx.getClientTimeZone() : TimeZone.getDefault();
-			return ((LocalDateTime) accessor).atZone(tz.toZoneId()).toInstant();
-		}
-		else return LocalDate.from(accessor).atStartOfDay().toInstant(ZoneOffset.UTC);
-	}
 	@Override
-	public java.sql.Date getDate(int columnIndex)
-	{
-		return java.sql.Date.valueOf(getTimestamp(columnIndex).toInstant().atOffset(ZoneOffset.UTC).toLocalDate());
+	public java.sql.Date getDate(int columnIndex) throws SQLException {
+		Timestamp ts = getTimestamp(columnIndex);
+		if (!ts.toString().equals(TIMESTAMP_NULL_VALUE.toString()))
+		{
+			return java.sql.Date.valueOf(ts.toInstant().atOffset(ZoneOffset.UTC).toLocalDate());
+		}
+		String strDate = getString(columnIndex);
+		for(String dateFormatter:DATE_FORMATTERS) {
+			try {
+				DateFormat dateFormat = new SimpleDateFormat(dateFormatter);
+				java.util.Date date = dateFormat.parse(strDate);
+				return new java.sql.Date(date.getTime());
+			} catch (Exception ignored) {
+			}
+		}
+		return new java.sql.Date(DATE_NULL_VALUE.getTime());
 	}
 
 	@Override
@@ -232,7 +206,33 @@ public class CosmosDBResultSet extends ServiceResultSet<Object>
 	@Override
 	public Timestamp getTimestamp(int columnIndex)
 	{
-		return java.sql.Timestamp.from(getInstant(columnIndex));
+		String datetimeString = getString(columnIndex);
+		if(datetimeString == null || datetimeString.trim().isEmpty())
+		{
+			lastWasNull = true;
+			return TIMESTAMP_NULL_VALUE;
+		}
+		LocalDateTime localDateTime = null;
+		try {
+			localDateTime = LocalDateTime.parse(datetimeString, ISO_DATE_TIME_OR_DATE);
+			ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, ZoneOffset.UTC);
+			return Timestamp.valueOf(zonedDateTime.toLocalDateTime());
+		}
+		catch (DateTimeParseException dateTimeParseException)
+		{
+			for(DateTimeFormatter dateTimeFormatter:DATE_TIME_FORMATTERS) {
+				try {
+					localDateTime = LocalDateTime.parse(datetimeString, dateTimeFormatter);
+					ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, ZoneOffset.UTC);
+					return Timestamp.valueOf(zonedDateTime.toLocalDateTime());
+				}
+				catch (Exception ignored)
+				{}
+			}
+			if (localDateTime == null)
+			{return TIMESTAMP_NULL_VALUE;}
+		}
+		return TIMESTAMP_NULL_VALUE;
 	}
 
 	@Override
@@ -279,5 +279,28 @@ public class CosmosDBResultSet extends ServiceResultSet<Object>
 			DateTimeFormatter.ofPattern("M/d/yyyy[ h:mm:ss a]"),
 			DateTimeFormatter.ofPattern("yyyy-M-d[ H:mm:ss.S]"),
 			DateTimeFormatter.ofPattern("yyyy-M-d[ H:mm:ss.S a]")
+		};
+	private static final String [] DATE_FORMATTERS = new String[]
+		{
+			"yyyy-MM-dd",
+			"yyyy-dd-MM",
+			"dd-MM-yyyy",
+			"MM/dd/yyyy",
+			"dd/MM/yyyy",
+			"yyyy/MM/dd",
+			"EEE, dd MMM yyyy",
+			"EEEE, dd MMMM yyyy",
+			"Month D, Yr",
+			"Yr, Month D",
+			"D Month, Yr",
+			"M/D/YY",
+			"D/M/YY",
+			"YY/M/D",
+			"Mon-DD-YYYY",
+			"DD-Mon-YYYY",
+			"YYYYY-Mon-DD",
+			"Mon DD, YYYY",
+			"DD Mon, YYYY",
+			"YYYY, Mon DD"
 		};
 }

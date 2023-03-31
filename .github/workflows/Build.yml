@@ -61,12 +61,6 @@ jobs:
     - name: Calculate build variables
       id: buildVariables
       run: |
-        LastCommitter=$(git log -1 --pretty=format:%an)
-        CommitMessage=$(git log -1 --pretty=%B)
-
-        echo "::set-output name=LAST_COMMITTER::$LastCommitter"
-        echo "::set-output name=COMMIT_MESSAGE::$CommitMessage"
-
         currentVersion="$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
         semVerComponents=( ${currentVersion//-/ } )
         semVerComponents=${semVerComponents[0]}
@@ -139,12 +133,23 @@ jobs:
 
         MAVEN_VERSION="$newVersion$versionChangelist"
         echo "Full project version: $MAVEN_VERSION"
+
+        LastCommitter=$(git log -1 --pretty=format:%an)
+        CommitMessage=$(git log -1 --pretty=%B)
+
+        echo "LAST_COMMITTER=$LastCommitter" >> $GITHUB_OUTPUT
         
-        echo "::set-output name=newVersion::$newVersion"
-        echo "::set-output name=versionChangelist::$versionChangelist"
-        echo "::set-output name=MAVEN_VERSION::$MAVEN_VERSION"
-        echo "::set-output name=SHOULD_DEPLOY::$SHOULD_DEPLOY"
-        echo "::set-output name=SHOULD_DEPLOY_MAVEN_CENTRAL::$SHOULD_DEPLOY_MAVEN_CENTRAL"
+        # Handling a multi-line output value
+        OUTPUT_MESSAGE_EOF="eof${MAVEN_VERSION}"
+        echo "COMMIT_MESSAGE<<$OUTPUT_MESSAGE_EOF" >> $GITHUB_OUTPUT
+        echo "$CommitMessage" >> $GITHUB_OUTPUT
+        echo "$OUTPUT_MESSAGE_EOF" >> $GITHUB_OUTPUT
+
+        echo "newVersion=$newVersion" >> $GITHUB_OUTPUT
+        echo "versionChangelist=$versionChangelist" >> $GITHUB_OUTPUT
+        echo "MAVEN_VERSION=$MAVEN_VERSION" >> $GITHUB_OUTPUT
+        echo "SHOULD_DEPLOY=$SHOULD_DEPLOY" >> $GITHUB_OUTPUT
+        echo "SHOULD_DEPLOY_MAVEN_CENTRAL=$SHOULD_DEPLOY_MAVEN_CENTRAL" >> $GITHUB_OUTPUT
 
     - name: Validate build
       run: mvn -B validate -Drevision=${{ steps.buildVariables.outputs.newVersion }} -Dchangelist=${{ steps.buildVariables.outputs.versionChangelist }} -Dsha1=${{ github.sha }} --file $POM_PATH -P ci-cd
