@@ -1,9 +1,9 @@
 package com.genexus.reports;
 
 import java.awt.Color;
+import java.awt.geom.AffineTransform;
 import java.io.*;
 import java.net.URL;
-import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.genexus.CommonUtil;
@@ -21,6 +21,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.*;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.graphics.state.RenderingMode;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionJavaScript;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationText;
 import org.apache.pdfbox.pdmodel.interactive.viewerpreferences.PDViewerPreferences;
@@ -615,6 +616,7 @@ public class PDFReportpdfbox extends GXReportPainter{
 						COSDictionary dict = new COSDictionary();
 						dict.setItem(COSName.TYPE, COSName.FONT);
 						dict.setItem(COSName.SUBTYPE, COSName.TYPE0);
+						dict.setItem(COSName.FONT, COSName.HELV);
 						dict.setItem(COSName.BASE_FONT, COSName.HELV);
 						dict.setItem(COSName.ENCODING, COSName.WIN_ANSI_ENCODING);
 						dict.setItem(COSName.DESCENDANT_FONTS, new COSArray());
@@ -631,10 +633,27 @@ public class PDFReportpdfbox extends GXReportPainter{
 					}
 					else
 					{
-						baseFont = PDType0Font.load(document,new File(fontPath + style));
-						COSDictionary dict = baseFont.getCOSObject();
-						dict.setItem(COSName.ENCODING, COSName.IDENTITY_H);
-						dict.setItem(COSName.FONT_FILE2, COSNull.NULL);
+						PDType0Font auxFont = PDType0Font.load(document,new File(fontPath));
+						COSDictionary dict = new COSDictionary(auxFont.getCOSObject());
+						baseFont = new PDType0Font(dict);
+						switch (style)
+						{
+							case ",Bold":
+								baseFont.getCOSObject().setInt(COSName.FONT_WEIGHT, 700);
+								break;
+							case ",Italic":
+								baseFont.getFontMatrix().setValue(0,1,0.2f);
+								baseFont.getFontDescriptor().setItalic(true);
+								break;
+							case ",BoldItalic":
+								baseFont.getCOSObject().setInt(COSName.FONT_WEIGHT, 700);
+								baseFont.getFontMatrix().setValue(0, 1, 0.2f);
+								baseFont.getFontDescriptor().setItalic(true);
+								break;
+							default: break;
+						}
+						baseFont.getCOSObject().setItem(COSName.ENCODING, COSName.IDENTITY_H);
+						baseFont.getCOSObject().setItem(COSName.FONT_FILE2, COSNull.NULL);
 					}
 				}
 			}
@@ -930,9 +949,7 @@ public class PDFReportpdfbox extends GXReportPainter{
 					annotation.setRectangle(annotationRectangle);
 					document.getPage(page).getAnnotations().add(annotation);
 					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page),PDPageContentStream.AppendMode.APPEND,false);
-					contentStream.beginText();
-					contentStream.showText(annotation.getContents());
-					contentStream.endText();
+					resolveTextStyling(contentStream,annotation.getContents(),leftAux + leftMargin,this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin);
 					contentStream.close();
 				}
 				else
@@ -968,18 +985,49 @@ public class PDFReportpdfbox extends GXReportPainter{
 		}
 	}
 
+	private void resolveTextStyling(PDPageContentStream contentStream, String text, float x, float y){
+		try {
+			if (this.fontBold && this.fontItalic){
+				contentStream.setRenderingMode(RenderingMode.FILL_STROKE);
+				Matrix tiltMatrix = new Matrix();
+				tiltMatrix.setValue(1, 0, 0.5f);
+				contentStream.setTextMatrix(tiltMatrix);
+
+				contentStream.beginText();
+				contentStream.moveTextPositionByAmount(-x + 104, y);
+				contentStream.showText(text);
+				contentStream.endText();
+			} else if (this.fontBold && !this.fontItalic){
+				contentStream.setRenderingMode(RenderingMode.FILL_STROKE);
+
+				contentStream.beginText();
+				contentStream.moveTextPositionByAmount(x, y);
+				contentStream.showText(text);
+				contentStream.endText();
+			} else if (!this.fontBold && this.fontItalic){
+				Matrix tiltMatrix = new Matrix();
+				tiltMatrix.setValue(1, 0, 0.2f);
+				contentStream.transform(tiltMatrix);
+
+				contentStream.beginText();
+				contentStream.moveTextPositionByAmount(-x + 104, y);
+				contentStream.showText(text);
+				contentStream.endText();
+			} else {
+				contentStream.beginText();
+				contentStream.moveTextPositionByAmount(x, y);
+				contentStream.showText(text);
+				contentStream.endText();
+			}
+		} catch (Exception e) {}
+	}
+
 	private void showTextAligned(PDType0Font font, String text, float x, float y){
 		try (PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page), PDPageContentStream.AppendMode.APPEND, false, false)){
 			contentStream.saveGraphicsState();
 			contentStream.setFont(font, fontSize);
 			contentStream.setLeading(2);
-			contentStream.beginText();
-			contentStream.moveTextPositionByAmount(x, y);
-			for (String line : text.split("\n")) {
-				contentStream.newLine();
-				contentStream.showText(line);
-			}
-			contentStream.endText();
+			resolveTextStyling(contentStream,text, x, y);
 			contentStream.restoreGraphicsState();
 		} catch (Exception e) { System.err.println(e.getMessage()); }
 	}
