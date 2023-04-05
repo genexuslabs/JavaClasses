@@ -22,6 +22,7 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -399,13 +400,18 @@ public class CosmosDBPreparedStatement extends ServicePreparedStatement
 	}
 
 	private PartitionKey toPartitionKey(Object value) throws Exception {
+
 		if (Double.class.isInstance(value))
 			return new PartitionKey((double)value);
 		if (value instanceof Boolean)
 			return new PartitionKey((boolean)value);
 		if (String.class.isInstance(value))
 			return new PartitionKey((String)value);
-			else throw new Exception("Partitionkey can be double, bool or string.");
+		if (value instanceof BigDecimal) {
+			Double doubleValue = ((BigDecimal) value).doubleValue();
+			return new PartitionKey(doubleValue);
+		}
+		else throw new Exception("Partitionkey can be double, bool or string.");
 	}
 
 	@Override
