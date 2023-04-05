@@ -408,18 +408,8 @@ public class CosmosDBPreparedStatement extends ServicePreparedStatement
 		if (String.class.isInstance(value))
 			return new PartitionKey((String)value);
 		if (value instanceof BigDecimal) {
-			try {
-				BigDecimal valueDecimal = (BigDecimal) value;
-				double doubleValue = Double.parseDouble(valueDecimal.toString());
-				BigDecimal convertedDecimalValue = new BigDecimal(Double.toString(doubleValue));
-				if (valueDecimal.compareTo(convertedDecimalValue) != 0) {
-					throw new Exception("Loss of precision converting from decimal to double. Partitionkey should be double.");
-				} else
-					return new PartitionKey(doubleValue);
-
-				} catch (Exception ex) {
-					throw new Exception("Loss of precision converting from decimal to double. Partitionkey should be double.");
-			}
+			Double doubleValue = ((BigDecimal) value).doubleValue();
+			return new PartitionKey(doubleValue);
 		}
 		else throw new Exception("Partitionkey can be double, bool or string.");
 	}
