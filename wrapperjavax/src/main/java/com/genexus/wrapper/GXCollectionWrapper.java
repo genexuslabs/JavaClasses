@@ -5,14 +5,9 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.simpleframework.xml.ElementList;
-import org.simpleframework.xml.Root;
-
-@Root
 @XmlRootElement
 public class GXCollectionWrapper<T> {
 
-    @ElementList(inline = true)
     @XmlAnyElement(lax = true)
     List<T> list;
 

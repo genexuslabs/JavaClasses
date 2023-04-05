@@ -283,18 +283,13 @@ public class CosmosDBResultSet extends ServiceResultSet<Object>
 	private static final String [] DATE_FORMATTERS = new String[]
 		{
 			"yyyy-MM-dd",
-			"yyyy-dd-MM",
-			"dd-MM-yyyy",
 			"MM/dd/yyyy",
-			"dd/MM/yyyy",
-			"yyyy/MM/dd",
 			"EEE, dd MMM yyyy",
 			"EEEE, dd MMMM yyyy",
 			"Month D, Yr",
 			"Yr, Month D",
 			"D Month, Yr",
 			"M/D/YY",
-			"D/M/YY",
 			"YY/M/D",
 			"Mon-DD-YYYY",
 			"DD-Mon-YYYY",
