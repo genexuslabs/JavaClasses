@@ -7,6 +7,7 @@ import com.genexus.db.service.VarValue;
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
 import java.sql.SQLException;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -17,10 +18,15 @@ import java.util.stream.Stream;
 public class CosmosDBHelper {
 
 	private static final String TABLE_ALIAS = "t";
-	private static final SimpleDateFormat ISO_DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
+	private static final String ISO_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+	private static final String ISO_DATE_FORMAT = "yyyy-MM-dd'T'00:00:00.000'Z'";
 	public static boolean formattedAsStringGXType(GXType gXType)
 	{
-		return (gXType == GXType.Date || gXType == GXType.DateTime || gXType == GXType.DateTime2 || gXType == GXType.VarChar || gXType == GXType.DateAsChar || gXType == GXType.NVarChar || gXType == GXType.LongVarChar || gXType == GXType.NChar ||  gXType == GXType.Char || gXType == GXType.Text || gXType == GXType.NText);
+		return (gXType == GXType.VarChar || gXType == GXType.DateAsChar || gXType == GXType.NVarChar || gXType == GXType.LongVarChar || gXType == GXType.NChar ||  gXType == GXType.Char || gXType == GXType.Text || gXType == GXType.NText);
+	}
+	public static boolean formattedAsStringDateGXType(GXType gXType)
+	{
+		return (gXType == GXType.Date || gXType == GXType.DateTime || gXType == GXType.DateTime2);
 	}
 	private static String setupQuery(String projectionList, String filterExpression, String tableName, String orderbys) throws Exception {
 		String sqlSelect = "";
@@ -91,9 +97,26 @@ public class CosmosDBHelper {
 						varValuestr = '"' + entryValue.value.toString()  + '"';
 					else
 					{
-						varValuestr = entryValue.value.toString();
-						varValuestr = varValuestr.equals("True") ? "true" : varValuestr;
-						varValuestr = varValuestr.equals("False") ? "false" : varValuestr;
+						if (formattedAsStringDateGXType(entryValue.type))
+						{
+							DateTimeFormatter dtf = DateTimeFormatter.ofPattern(ISO_DATETIME_FORMAT);
+							try {
+								java.sql.Timestamp ts = (java.sql.Timestamp)entryValue.value;
+								varValuestr = '"' + ts.toLocalDateTime().format(dtf) + '"';
+							}
+							catch (Exception ex)
+							{
+								java.sql.Date sqlDate = (java.sql.Date)entryValue.value;
+								SimpleDateFormat outputDateFormat = new SimpleDateFormat(ISO_DATE_FORMAT);
+								outputDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+								varValuestr = '"' + outputDateFormat.format(sqlDate) + '"';
+							}
+						}
+						else {
+							varValuestr = entryValue.value.toString();
+							varValuestr = varValuestr.equals("True") ? "true" : varValuestr;
+							varValuestr = varValuestr.equals("False") ? "false" : varValuestr;
+						}
 					}
 					filterProcess = filterProcess.replace(entryValue.name + ":", varValuestr);
 				}
@@ -163,7 +186,11 @@ public class CosmosDBHelper {
 			return true;
 		}
 		else if (parm.type == GXType.Date) {
-			dateStr[0] = ISO_DATE_FORMATTER.format(value);
+
+			java.sql.Date sqlDate = (java.sql.Date)value;
+			SimpleDateFormat outputDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'00:00:00.000'Z'");
+			outputDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+			dateStr[0] = outputDateFormat.format(sqlDate);
 			return true;
 		}
 		return false;
