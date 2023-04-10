@@ -45,9 +45,9 @@
 			<version>2.2.0</version>
 		</dependency>
 		<dependency>
-			<groupId>net.sf.jtidy</groupId>
-			<artifactId>jtidy</artifactId>
-			<version>r938</version>
+	    <groupId>com.github.jtidy</groupId>
+	    <artifactId>jtidy</artifactId>
+	    <version>1.0.3</version>
 		</dependency>
 	</dependencies>
 
