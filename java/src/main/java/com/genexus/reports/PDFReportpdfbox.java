@@ -1,7 +1,6 @@
 package com.genexus.reports;
 
 import java.awt.Color;
-import java.awt.geom.AffineTransform;
 import java.io.*;
 import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
@@ -242,7 +241,7 @@ public class PDFReportpdfbox extends GXReportPainter{
 	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue,
 						   int styleTop, int styleBottom, int styleRight, int styleLeft, int cornerRadioTL, int cornerRadioTR, int cornerRadioBL, int cornerRadioBR)
 	{
-		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page),PDPageContentStream.AppendMode.APPEND,false)){
+		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false)){
 
 			float penAux = (float)convertScale(pen);
 			float rightAux = (float)convertScale(right);
@@ -334,7 +333,7 @@ public class PDFReportpdfbox extends GXReportPainter{
 
 	public void GxDrawLine(int left, int top, int right, int bottom, int width, int foreRed, int foreGreen, int foreBlue, int style)
 	{
-		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page),PDPageContentStream.AppendMode.APPEND,false)){
+		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false)){
 
 			float widthAux = (float)convertScale(width);
 			float rightAux = (float)convertScale(right);
@@ -376,7 +375,7 @@ public class PDFReportpdfbox extends GXReportPainter{
 
 	public void GxDrawBitMap(String bitmap, int left, int top, int right, int bottom, int aspectRatio)
 	{
-		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page),PDPageContentStream.AppendMode.APPEND,false)){
+		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false)){
 			PDImageXObject image;
 			try
 			{
@@ -735,7 +734,7 @@ public class PDFReportpdfbox extends GXReportPainter{
 	}
 	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border, int valign)
 	{
-		try (PDPageContentStream cb =  new PDPageContentStream(document, document.getPage(page),PDPageContentStream.AppendMode.APPEND,false)){
+		try (PDPageContentStream cb =  new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false)){
 			boolean printRectangle = false;
 			if (props.getBooleanGeneralProperty(Const.BACK_FILL_IN_CONTROLS, true))
 				printRectangle = true;
@@ -818,7 +817,7 @@ public class PDFReportpdfbox extends GXReportPainter{
 							rectangle.setUpperRightY(this.pageSize.getUpperRightY() - topAux - topMargin -bottomMargin);
 							break;
 					}
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page),PDPageContentStream.AppendMode.APPEND,false);
+					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false);
 					contentStream.setNonStrokingColor(backColor);
 					contentStream.addRect(rectangle.getLowerLeftX(), rectangle.getLowerLeftY(),rectangle.getWidth(), rectangle.getHeight());
 					contentStream.fill();
@@ -854,8 +853,8 @@ public class PDFReportpdfbox extends GXReportPainter{
 							underline.setUpperRightY(this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);
 							break;
 					}
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page),PDPageContentStream.AppendMode.APPEND,false);
-					contentStream.setNonStrokingColor(foreColor); // set background color to yellow
+					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false);
+					contentStream.setNonStrokingColor(foreColor);
 					contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY(),underline.getWidth(), underline.getHeight());
 					contentStream.fill();
 					contentStream.close();
@@ -887,7 +886,7 @@ public class PDFReportpdfbox extends GXReportPainter{
 							underline.setUpperRightY(this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
 							break;
 					}
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page),PDPageContentStream.AppendMode.APPEND,false);
+					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false);
 					contentStream.setNonStrokingColor(foreColor);
 					contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY() - strikethruSeparation * 1/3, underline.getWidth(), underline.getHeight());
 					contentStream.fill();
@@ -905,7 +904,7 @@ public class PDFReportpdfbox extends GXReportPainter{
 						templateCreated = true;
 					}
 					PDFormXObject form = new PDFormXObject(document);
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page),PDPageContentStream.AppendMode.APPEND,false);
+					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false);
 					contentStream.transform(Matrix.getTranslateInstance(leftAux + leftMargin, leftAux + leftMargin));
 					contentStream.drawForm(form);
 					contentStream.close();
@@ -947,8 +946,8 @@ public class PDFReportpdfbox extends GXReportPainter{
 					annotationRectangle.setUpperRightX(rightAux + leftMargin);
 					annotationRectangle.setUpperRightY(this.pageSize.getUpperRightY() - topAux - topMargin - bottomMargin);
 					annotation.setRectangle(annotationRectangle);
-					document.getPage(page).getAnnotations().add(annotation);
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page),PDPageContentStream.AppendMode.APPEND,false);
+					document.getPage(page - 1).getAnnotations().add(annotation);
+					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false);
 					resolveTextStyling(contentStream,annotation.getContents(),leftAux + leftMargin,this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin);
 					contentStream.close();
 				}
@@ -988,31 +987,31 @@ public class PDFReportpdfbox extends GXReportPainter{
 	private void resolveTextStyling(PDPageContentStream contentStream, String text, float x, float y){
 		try {
 			if (this.fontBold && this.fontItalic){
-				contentStream.setRenderingMode(RenderingMode.FILL_STROKE);
-				Matrix tiltMatrix = new Matrix();
-				tiltMatrix.setValue(1, 0, 0.5f);
-				contentStream.setTextMatrix(tiltMatrix);
-
-				contentStream.beginText();
-				contentStream.moveTextPositionByAmount(-x + 104, y);
-				contentStream.showText(text);
-				contentStream.endText();
-			} else if (this.fontBold && !this.fontItalic){
-				contentStream.setRenderingMode(RenderingMode.FILL_STROKE);
-
 				contentStream.beginText();
 				contentStream.moveTextPositionByAmount(x, y);
+				//contentStream.setTextMatrix(1, 0, .2f, 1, 7, 5);
+				//contentStream.setTextMatrix(1, 0, .2f, 1, 0, 0);
+				contentStream.setTextMatrix(1, Math.tan(Math.toRadians(10)), 0, 1, 0, 0);
+				contentStream.appendRawCommands("2 Tr\n");
 				contentStream.showText(text);
+				contentStream.appendRawCommands("0 Tr\n");
+				contentStream.endText();
+			} else if (this.fontBold && !this.fontItalic){
+				contentStream.beginText();
+				contentStream.moveTextPositionByAmount(x, y);
+				contentStream.appendRawCommands("2 Tr\n");
+				contentStream.showText(text);
+				contentStream.appendRawCommands("0 Tr\n");
 				contentStream.endText();
 			} else if (!this.fontBold && this.fontItalic){
-				Matrix tiltMatrix = new Matrix();
-				tiltMatrix.setValue(1, 0, 0.2f);
-				contentStream.transform(tiltMatrix);
-
 				contentStream.beginText();
-				contentStream.moveTextPositionByAmount(-x + 104, y);
+				contentStream.moveTextPositionByAmount(x, y);
+				//contentStream.setTextMatrix(1, 0, .2f, 1, 7, 5);
+				//contentStream.setTextMatrix(1, 0, .2f, 1, 0, 0);
+				contentStream.setTextMatrix(1, Math.tan(Math.toRadians(10)), 0, 1, 0, 0);
 				contentStream.showText(text);
 				contentStream.endText();
+				contentStream.restoreGraphicsState();
 			} else {
 				contentStream.beginText();
 				contentStream.moveTextPositionByAmount(x, y);
@@ -1023,7 +1022,7 @@ public class PDFReportpdfbox extends GXReportPainter{
 	}
 
 	private void showTextAligned(PDType0Font font, String text, float x, float y){
-		try (PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page), PDPageContentStream.AppendMode.APPEND, false, false)){
+		try (PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1), PDPageContentStream.AppendMode.APPEND, false, false)){
 			contentStream.saveGraphicsState();
 			contentStream.setFont(font, fontSize);
 			contentStream.setLeading(2);
@@ -1297,7 +1296,8 @@ public class PDFReportpdfbox extends GXReportPainter{
 	public void GxStartPage()
 	{
 		document.addPage(new PDPage(this.pageSize));
-		pages++;
+		pages = pages + 1;
+		page = page + 1;
 	}
 
 	public void GxEndPage() {}
