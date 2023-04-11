@@ -3,18 +3,18 @@ package com.genexus.cloud.serverless.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class EventMessageResponse {
-	@JsonProperty("Handled")
-	private boolean handled = false;
+	@JsonProperty("HandleFailure")
+	private boolean hasFailed = false;
 
 	@JsonProperty("ErrorMessage")
 	private String errorMessage = "";
 
-	public boolean isHandled() {
-		return handled;
+	public boolean hasFailed() {
+		return hasFailed;
 	}
 
-	public void setHandled(boolean handled) {
-		this.handled = handled;
+	public void setAsFailed(boolean hasFailed) {
+		this.hasFailed = hasFailed;
 	}
 
 	public String getErrorMessage() {

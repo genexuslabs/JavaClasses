@@ -72,7 +72,7 @@
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
-			<version>2.10.4</version>
+			<version>2.12.2</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-net</groupId>
@@ -112,6 +112,11 @@
 		    <version>1.5.2</version>
 		</dependency>
 		<dependency>
+    		<groupId>org.apache.pdfbox</groupId>
+    		<artifactId>pdfbox</artifactId>
+    		<version>2.0.27</version>
+		</dependency>
+		<dependency>
 			<groupId>com.sap.conn.jco</groupId>
 			<artifactId>sapjco3</artifactId>
 			<version>3.0.14</version>
@@ -148,12 +153,6 @@
             <artifactId>opentelemetry-api</artifactId>
             <version>${io.opentelemetry.version}</version>
         </dependency>
-		<dependency>
-		    <groupId>org.bouncycastle</groupId>
-		    <artifactId>bcprov-jdk15on</artifactId>
-		    <version>1.69</version>
-		</dependency>
-        
     </dependencies>
 	
 	<build>

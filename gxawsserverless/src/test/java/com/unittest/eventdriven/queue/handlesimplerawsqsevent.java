@@ -34,7 +34,7 @@ public final class handlesimplerawsqsevent extends GXProcedure {
 		System.out.println(AV13RAWMessage);
 		System.out.println("END Queue Event received");
 		System.out.println((boolean) ((GXutil.len(AV13RAWMessage) > 0)));
-		AV9EventMessageResponse.setgxTv_SdtEventMessageResponse_Handled( AV13RAWMessage.startsWith("{\"records\":[{\"messageId\":\"1\",\"receiptHandle\":\"123123\",\"body\":\"") );
+		AV9EventMessageResponse.setgxTv_SdtEventMessageResponse_Handlefailure(!AV13RAWMessage.startsWith("{\"records\":[{\"messageId\":\"1\",\"receiptHandle\":\"123123\",\"body\":\"") );
 		cleanup();
 	}
 

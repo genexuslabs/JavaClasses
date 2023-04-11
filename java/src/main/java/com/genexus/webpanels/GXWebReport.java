@@ -4,9 +4,7 @@ import com.genexus.ModelContext;
 import com.genexus.ProcessInterruptedException;
 import com.genexus.db.UserInformation;
 import com.genexus.internet.HttpContext;
-import com.genexus.reports.GXReportMetadata;
-import com.genexus.reports.IReportHandler;
-import com.genexus.reports.PDFReportItext;
+import com.genexus.reports.*;
 
 public abstract class GXWebReport extends GXWebProcedure
 {
@@ -23,7 +21,7 @@ public abstract class GXWebReport extends GXWebProcedure
    	protected int gxXPage;
    	protected int gxYPage;
    	protected int Gx_page;
-   	protected String Gx_out = ""; // Esto est� asi porque no me pude deshacer de una comparacion contra Gx_out antes del ask.
+   	protected String Gx_out = ""; // Esto esto asi porque no me pude deshacer de una comparacion contra Gx_out antes del ask.
 	protected String filename;
 	protected String filetype;
 
@@ -34,13 +32,14 @@ public abstract class GXWebReport extends GXWebProcedure
 
 	protected void initState(ModelContext context, UserInformation ui)
 	{
+		String implementation = com.genexus.Application.getClientContext().getClientPreferences().getPDF_RPT_LIBRARY();
 		super.initState(context, ui);
-
 		httpContext.setBuffered(true);
 		httpContext.setBinary(true);
-
-                      reportHandler = new PDFReportItext(context);
-
+		if (implementation.equals("PDFBOX"))
+			reportHandler = new PDFReportPDFBox(context);
+		else
+			reportHandler = new PDFReportItext(context);
 		initValues();
 	}
 
@@ -48,10 +47,9 @@ public abstract class GXWebReport extends GXWebProcedure
 	{
 		httpContext.setContentType("application/pdf");
 		httpContext.setStream();
-
 		// Tiene que ir despues del setStream porque sino el getOutputStream apunta
 		// a otro lado.
-                 ((PDFReportItext) reportHandler).setOutputStream(httpContext.getOutputStream());
+		((GXReportPDFCommons) reportHandler).setOutputStream(httpContext.getOutputStream());
 	}
 
 	protected void setOutputFileName(String outputFileName){
@@ -108,7 +106,7 @@ public abstract class GXWebReport extends GXWebProcedure
 		setResponseOuputFileName();
 
 		getPrinter().GxRVSetLanguage(localUtil._language);
-      	boolean ret = getPrinter().GxPrintInit(output, x, y, iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
+		boolean ret = getPrinter().GxPrintInit(output, x, y, iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
 
 		this.gxXPage = x[0];
 		this.gxYPage = y[0];
@@ -137,7 +135,7 @@ public abstract class GXWebReport extends GXWebProcedure
 		throw new RuntimeException("Output stream not set");
 	}
 	
-	//M�todos para la implementaci�n de reportes din�micos
+	//Metodos para la implementacion de reportes dinamicos
 	protected void loadReportMetadata(String name)
 	{
 		reportMetadata = new GXReportMetadata(name, reportHandler);

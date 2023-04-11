@@ -529,4 +529,7 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 		return iniFile.getProperty(name, "JDBCLogEnabled", "0").equals("1");
 	}
 
+	public String getPDF_RPT_LIBRARY(){
+		return iniFile.getProperty(defaultSection, "PDF_RPT_LIBRARY", "ITEXT");
+	}
 }
