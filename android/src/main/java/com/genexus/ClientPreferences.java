@@ -532,4 +532,5 @@ public final class ClientPreferences extends Preferences implements IClientPrefe
 	public String getPDF_RPT_LIBRARY(){
 		return iniFile.getProperty(defaultSection, "PDF_RPT_LIBRARY", "ITEXT");
 	}
+
 }
