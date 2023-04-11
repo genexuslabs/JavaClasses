@@ -58,7 +58,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 
-public abstract class GXReportPainter implements IReportHandler{
+public abstract class GXReportPDFCommons implements IReportHandler{
 	protected int lineHeight, pageLines;
 	protected int pageOrientation;
 	protected boolean fontUnderline;
@@ -231,7 +231,7 @@ public abstract class GXReportPainter implements IReportHandler{
 			Runtime.getRuntime().exec(new String[] { acrobatLocation, filename});
 		}
 	}
-	public GXReportPainter(ModelContext context)
+	public GXReportPDFCommons(ModelContext context)
 	{
 		stringTotalPages = new Vector();
 		httpContext = (HttpContext) context.getHttpContext();

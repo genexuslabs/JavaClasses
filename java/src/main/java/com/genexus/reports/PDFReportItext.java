@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,7 +39,7 @@ import com.genexus.reports.fonts.PDFFont;
 import com.genexus.reports.fonts.PDFFontDescriptor;
 import com.genexus.reports.fonts.Type1FontMetrics;
 
-public class PDFReportItext extends GXReportPainter
+public class PDFReportItext extends GXReportPDFCommons
 {
     private com.lowagie.text.Rectangle pageSize;   // Contiene las dimensiones de la página
     private Font font;
