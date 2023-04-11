@@ -74,8 +74,9 @@ public class CosmosDBConnection extends ServiceConnection
 			.endpoint(maccountEndpoint)
 			.key(maccountKey)
 			.consistencyLevel(ConsistencyLevel.EVENTUAL)
-			.contentResponseOnWriteEnabled(true)
+			//.contentResponseOnWriteEnabled(true) Disabled for performance
 			.preferredRegions(Collections.singletonList(mregion))
+			.connectionSharingAcrossClientsEnabled(true)
 			.buildAsyncClient();
 
 			cosmosDatabase = cosmosClient.getDatabase(mdatabase);
