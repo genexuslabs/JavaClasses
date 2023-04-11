@@ -20,13 +20,12 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.*;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-import org.apache.pdfbox.pdmodel.graphics.state.RenderingMode;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionJavaScript;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationText;
 import org.apache.pdfbox.pdmodel.interactive.viewerpreferences.PDViewerPreferences;
 import org.apache.pdfbox.util.Matrix;
 
-public class PDFReportpdfbox extends GXReportPainter{
+public class PDFReportPDFBox extends GXReportPDFCommons{
 	private PDRectangle pageSize;
 	private PDType1Font font;
 	private PDType0Font baseFont;
@@ -42,7 +41,7 @@ public class PDFReportpdfbox extends GXReportPainter{
 	public int runDirection = 0;
 	private int page;
 
-	public PDFReportpdfbox(ModelContext context)
+	public PDFReportPDFBox(ModelContext context)
 	{
 		super(context);
 		try {
@@ -764,9 +763,9 @@ public class PDFReportpdfbox extends GXReportPainter{
 
 			if (linesCount >= 2 && !((align & 16) == 16) && htmlformat != 1)
 			{
-				if (valign == PDFReportpdfbox.VerticalAlign.TOP.value())
+				if (valign == PDFReportPDFBox.VerticalAlign.TOP.value())
 					bottom = top + (int)reconvertScale(lineHeight);
-				else if (valign == PDFReportpdfbox.VerticalAlign.BOTTOM.value())
+				else if (valign == PDFReportPDFBox.VerticalAlign.BOTTOM.value())
 					top = bottom - (int)reconvertScale(lineHeight);
 			}
 

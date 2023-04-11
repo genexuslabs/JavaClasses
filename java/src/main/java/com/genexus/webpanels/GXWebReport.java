@@ -5,7 +5,6 @@ import com.genexus.ProcessInterruptedException;
 import com.genexus.db.UserInformation;
 import com.genexus.internet.HttpContext;
 import com.genexus.reports.*;
-import com.genexus.util.IniFile;
 
 public abstract class GXWebReport extends GXWebProcedure
 {
@@ -33,32 +32,24 @@ public abstract class GXWebReport extends GXWebProcedure
 
 	protected void initState(ModelContext context, UserInformation ui)
 	{
-		try {
-			String filePath = com.genexus.ModelContext.getModelContext().getHttpContext().getDefaultPath() + "\\WEB-INF\\classes\\com\\" + com.genexus.ModelContext.getModelContext().getHttpContext().getTheme().toLowerCase() + "\\client.cfg";
-			IniFile iniFile = new IniFile(filePath);
-			String implementation = iniFile.getProperty("Client", "PDF_RPT_LIBRARY", "");
-			super.initState(context, ui);
-			httpContext.setBuffered(true);
-			httpContext.setBinary(true);
-			if (implementation.equals("ITEXT"))
-				reportHandler = new PDFReportItext(context);
-			else if (implementation.equals("PDFBOX"))
-				reportHandler = new PDFReportpdfbox(context);
-			initValues();
-		} catch (Exception e){
-			e.printStackTrace(System.err);
-		}
+		String implementation = com.genexus.Application.getClientContext().getClientPreferences().getPDF_RPT_LIBRARY();
+		super.initState(context, ui);
+		httpContext.setBuffered(true);
+		httpContext.setBinary(true);
+		if (implementation.equals("PDFBOX"))
+			reportHandler = new PDFReportPDFBox(context);
+		else
+			reportHandler = new PDFReportItext(context);
+		initValues();
 	}
 
 	protected void preExecute()
 	{
-		try {
-			httpContext.setContentType("application/pdf");
-			httpContext.setStream();
-			((GXReportPainter) reportHandler).setOutputStream(httpContext.getOutputStream());
-		} catch (Exception e){
-			e.printStackTrace(System.err);
-		}
+		httpContext.setContentType("application/pdf");
+		httpContext.setStream();
+		// Tiene que ir despues del setStream porque sino el getOutputStream apunta
+		// a otro lado.
+		((GXReportPDFCommons) reportHandler).setOutputStream(httpContext.getOutputStream());
 	}
 
 	protected void setOutputFileName(String outputFileName){
@@ -110,32 +101,23 @@ public abstract class GXWebReport extends GXWebProcedure
 
 	protected boolean initPrinter(String output, int gxXPage, int gxYPage, String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex)
 	{
-		try {
-			int x[] = {gxXPage};
-			int y[] = {gxYPage};
-			setResponseOuputFileName();
+		int x[] = {gxXPage};
+		int y[] = {gxYPage};
+		setResponseOuputFileName();
 
-			getPrinter().GxRVSetLanguage(localUtil._language);
-			boolean ret = getPrinter().GxPrintInit(output, x, y, iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
+		getPrinter().GxRVSetLanguage(localUtil._language);
+		boolean ret = getPrinter().GxPrintInit(output, x, y, iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
 
-			this.gxXPage = x[0];
-			this.gxYPage = y[0];
+		this.gxXPage = x[0];
+		this.gxYPage = y[0];
 
-			return ret;
-		} catch (Exception e){
-			e.printStackTrace(System.err);
-			return false;
-		}
+		return ret;
 	}
 
 	private void setResponseOuputFileName(){
-		try {
-			String outputFileName = filename!=null ? filename : getClass().getSimpleName();
-			String outputFileType = filetype!=null ? "." + filetype.toLowerCase(): ".pdf";
-			httpContext.getResponse().addHeader("content-disposition", "inline; filename=" + outputFileName + outputFileType);
-		} catch (Exception e) {
-			e.printStackTrace(System.err);
-		}
+		String outputFileName = filename!=null ? filename : getClass().getSimpleName();
+		String outputFileType = filetype!=null ? "." + filetype.toLowerCase(): ".pdf";
+		httpContext.getResponse().addHeader("content-disposition", "inline; filename=" + outputFileName + outputFileType);
 	}
 
 	protected void endPrinter()
@@ -153,7 +135,7 @@ public abstract class GXWebReport extends GXWebProcedure
 		throw new RuntimeException("Output stream not set");
 	}
 	
-	//M�todos para la implementaci�n de reportes din�micos
+	//Metodos para la implementacion de reportes dinamicos
 	protected void loadReportMetadata(String name)
 	{
 		reportMetadata = new GXReportMetadata(name, reportHandler);
@@ -197,10 +179,6 @@ public abstract class GXWebReport extends GXWebProcedure
 	
 	protected void cleanup( )
 	{
-		try {
-			super.cleanup();
-		} catch (Exception e) {
-			e.printStackTrace(System.err);
-		}
+		super.cleanup();
 	}
 }
