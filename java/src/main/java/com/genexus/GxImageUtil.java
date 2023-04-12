@@ -53,7 +53,6 @@ public class GxImageUtil {
 			try {
 				URL url = new URL(imageFile);
 				URLConnection connection = url.openConnection();
-				connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
 				return Long.parseLong(connection.getHeaderField("Content-Length"));
 			} catch (Exception e) {
 				log.error("getFileSize " + imageFile + " failed" , e);
