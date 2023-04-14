@@ -1,6 +1,8 @@
 package com.genexus.webpanels;
 
 import com.genexus.*;
+import com.genexus.common.interfaces.IGXWindow;
+import com.genexus.internet.HttpContext;
 
 public class WebFrontendUtils
 {
@@ -51,4 +53,16 @@ public class WebFrontendUtils
 			return new GXWebComponentNull(remoteHandle, context);
 		}
 	}
+
+	public static void popup(String url, Object[] returnParms, HttpContext httpContext) {
+		IGXWindow win = new GXWindow();
+		win.setUrl(url);
+		win.setReturnParms(returnParms);
+		newWindow(win, httpContext);
+	}
+
+	public static void newWindow(IGXWindow win, HttpContext httpContext) {
+		((HttpContextWeb) httpContext).redirect_impl(win.getUrl(), win);
+	}
+
 }
