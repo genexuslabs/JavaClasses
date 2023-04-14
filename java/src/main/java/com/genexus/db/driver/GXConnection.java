@@ -275,10 +275,12 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 				context.afterGetConnection(handle, dataSource);
 			}
 		}
-		String DBMSId = getDBMSId();
-		if (!DBMSId.equals("")) 
+		if	(DEBUG && isLogEnabled())
 		{
-			log(GXDBDebug.LOG_MIN, "Physical Id      : " + DBMSId);
+			String DBMSId = getDBMSId();
+			if (!DBMSId.equals("")) {
+				log(GXDBDebug.LOG_MIN, "Physical Id      : " + DBMSId);
+			}
 		}
 	}
 
