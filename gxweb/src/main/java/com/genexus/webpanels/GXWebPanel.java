@@ -1207,14 +1207,11 @@ public abstract class GXWebPanel extends GXWebObjectBase
 	}
 
 	public void popup(String url, Object[] returnParms) {
-		IGXWindow win = new GXWindow();
-		win.setUrl(url);
-		win.setReturnParms(returnParms);
-		newWindow(win);
+		WebFrontendUtils.popup(url, returnParms, httpContext);
 	}
 
 	public void newWindow(IGXWindow win) {
-		((HttpContextWeb) httpContext).redirect_impl(win.getUrl(), win);
+		WebFrontendUtils.newWindow(win, httpContext);
 	}
 
 }
