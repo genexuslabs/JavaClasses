@@ -51,7 +51,7 @@ public class GxImageUtil {
 		if (imageFile.toLowerCase().startsWith("http://") || imageFile.toLowerCase().startsWith("https://") ||
 			(httpContext.isHttpContextWeb() && imageFile.startsWith(httpContext.getContextPath()))){
 			try {
-				URL url = new URL(imageFile);
+				URL url = new URL(GXDbFile.pathToUrl(imageFile, httpContext));
 				URLConnection connection = url.openConnection();
 				return Long.parseLong(connection.getHeaderField("Content-Length"));
 			} catch (Exception e) {
