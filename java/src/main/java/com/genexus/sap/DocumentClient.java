@@ -75,6 +75,8 @@ public class DocumentClient {
                 }
             }
             catch (IOException e) {
+                // Unfortunately there is no way of transmitting error details back to SAP, so we better log it here,
+                // if we want to keep the chance of trouble-shooting later, what exactly went wrong...
                 e.printStackTrace();
                 function.getExportParameterList().setValue("ERROR", 3);
             }

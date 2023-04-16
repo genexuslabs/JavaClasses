@@ -1,6 +1,8 @@
 package com.genexus.sap;
 
+
 import java.util.Properties;
+
 import com.genexus.ModelContext;
 import com.genexus.diagnostics.Log;
 import com.sap.conn.jco.AbapException;
@@ -21,6 +23,7 @@ import com.sap.conn.jco.JCoCustomRepository;
 import com.sap.conn.jco.JCoFunctionTemplate;
 import com.sap.conn.jco.JCoListMetaData;
 import com.sap.conn.jco.JCo;
+
 
 public class SessionManager
 {
