@@ -119,8 +119,7 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 		MIDDLE(1),
 		BOTTOM(2);
 		private int intValue;
-		VerticalAlign(int val)
-		{
+		VerticalAlign(int val) {
 			this.intValue=val;
 		}
 		public int value(){
@@ -132,32 +131,27 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 	/** Setea el OutputStream a utilizar
 	 *  @param outputStream Stream a utilizar
 	 */
-	public void setOutputStream(OutputStream outputStream)
-	{
+	public void setOutputStream(OutputStream outputStream) {
 		this.outputStream = outputStream;
 	}
 
 	/** Busca la ubicación del Acrobat. Si no la encuentra tira una excepción
 	 */
-	protected static String getAcrobatLocation() throws Exception
-	{
+	protected static String getAcrobatLocation() throws Exception {
 		ParseINI props;
-		try
-		{
+		try {
 			props = new ParseINI(Const.INI_FILE);
 			if(new File(Const.INI_FILE).length() == 0)
 				new File(Const.INI_FILE).delete();
 		}
-		catch(IOException e)
-		{
+		catch(IOException e) {
 			props = new ParseINI();
 		}
 		// Primero debo obtener la ubicación + ejecutable del Acrobat
 		String acrobatLocation = props.getGeneralProperty(Const.ACROBAT_LOCATION); // Veo si esta fijada la ubicación del Acrobat en la property
 		if(acrobatLocation == null)
 		{
-			if(NativeFunctions.isUnix())
-			{ // Si estoy en Unix no puedo ir a buscar el registry ;)
+			if(NativeFunctions.isUnix()) { // Si estoy en Unix no puedo ir a buscar el registry ;)
 				throw new Exception("Try setting Acrobat location & executable in property '" + Const.ACROBAT_LOCATION + "' of PDFReport.ini");
 			}
 		}
@@ -171,22 +165,18 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 	 * @param silent Booleano que indica si se va a imprimir sin diálogo
 	 * @exception Exception si no se puede realizar la operación
 	 */
-	public static void printReport(String pdfFilename, boolean silent) throws Exception
-	{
-		if(NativeFunctions.isWindows())
-		{ // En Windows obtenemos el full path
+	public static void printReport(String pdfFilename, boolean silent) throws Exception {
+		if(NativeFunctions.isWindows()) { // En Windows obtenemos el full path
 			// En Linux esto no anda bien
 			pdfFilename = "\"" + new File(pdfFilename).getAbsolutePath() + "\"";
 		}
 
 		String [] cmd = {};
 		String acrobatLocation = null;
-		try
-		{
+		try {
 			// Primero debo obtener la ubicación + ejecutable del Acrobat
 			acrobatLocation = getAcrobatLocation();
-		}catch(Exception acrobatNotFound)
-		{
+		}catch(Exception acrobatNotFound) {
 			throw new Exception("Acrobat cannot be found in this machine: " + acrobatNotFound.getMessage());
 		}
 
@@ -205,59 +195,48 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 	 * @param modal indica si el PDF se va a mostrar en diálogo modal
 	 * @exception Exception no se puede encontrar el Acrobat
 	 */
-	public static void showReport(String filename, boolean modal) throws Exception
-	{
-		if(NativeFunctions.isWindows())
-		{ // En Windows obtenemos el full path
+	public static void showReport(String filename, boolean modal) throws Exception {
+		if(NativeFunctions.isWindows()) { // En Windows obtenemos el full path
 			// En Linux esto no anda bien
 			filename = "\"" + new File(filename).getAbsolutePath() + "\"";
 		}
 		String acrobatLocation;
-		try
-		{
+		try {
 			// Primero debo obtener la ubicación + ejecutable del Acrobat
 			acrobatLocation = getAcrobatLocation();
-		}catch(Exception acrobatNotFound)
-		{
+		}catch(Exception acrobatNotFound) {
 			throw new Exception("Acrobat cannot be found in this machine: " + acrobatNotFound.getMessage());
 		}
 
-		if(modal)
-		{
+		if(modal) {
 			nativeCode.executeModal(acrobatLocation + " " + filename, true);
 		}
-		else
-		{
+		else {
 			Runtime.getRuntime().exec(new String[] { acrobatLocation, filename});
 		}
 	}
-	public GXReportPDFCommons(ModelContext context)
-	{
+	public GXReportPDFCommons(ModelContext context) {
 		stringTotalPages = new Vector();
 		httpContext = (HttpContext) context.getHttpContext();
 
-		if(defaultRelativePrepend == null)
-		{
+		if(defaultRelativePrepend == null) {
 			defaultRelativePrepend = httpContext.getDefaultPath();
 			if(defaultRelativePrepend == null || defaultRelativePrepend.trim().equals(""))
 				defaultRelativePrepend = "";
 			else
 				defaultRelativePrepend = defaultRelativePrepend.replace(alternateSeparator, File.separatorChar) + File.separatorChar;
 			defaultRelativePrependINI = defaultRelativePrepend;
-			if(new File(defaultRelativePrepend + Const.WEB_INF).isDirectory())
-			{
+			if(new File(defaultRelativePrepend + Const.WEB_INF).isDirectory()) {
 				configurationFile = defaultRelativePrepend + Const.WEB_INF + File.separatorChar + Const.INI_FILE; // Esto es para que en aplicaciones web el PDFReport.INI no quede visible en el server
 				configurationTemplateFile = defaultRelativePrepend + Const.WEB_INF + File.separatorChar + Const.INI_TEMPLATE_FILE;
 			}
-			else
-			{
+			else {
 				configurationFile = defaultRelativePrepend + Const.INI_FILE;
 				configurationTemplateFile = defaultRelativePrepend + Const.INI_TEMPLATE_FILE;
 			}
 			webAppDir = defaultRelativePrepend;
 
-			if(httpContext instanceof HttpContextWeb || !httpContext.getDefaultPath().isEmpty())
-			{
+			if(httpContext instanceof HttpContextWeb || !httpContext.getDefaultPath().isEmpty()) {
 				// @cambio: 23/07/03
 				// Para los reportes en el web, debemos tener en cuenta la preference 'Static Content Base URL' del modelo
 				// Pero SOLO la tenemos en cuenta si es un directorio relativo
@@ -272,21 +251,16 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 				// (ese es el caso en el cual el getDefaultPath no es Empty)
 
 				String staticContentBase = httpContext.getStaticContentBase();
-				if(staticContentBase != null)
-				{
+				if(staticContentBase != null) {
 					staticContentBase = staticContentBase.trim();
-					if(staticContentBase.indexOf(':') == -1)
-					{ // Si la staticContentBase es una ruta relativa
+					if(staticContentBase.indexOf(':') == -1) { // Si la staticContentBase es una ruta relativa
 						staticContentBase = staticContentBase.replace(alternateSeparator, File.separatorChar);
-						if(staticContentBase.startsWith(File.separator))
-						{
+						if(staticContentBase.startsWith(File.separator)) {
 							staticContentBase = staticContentBase.substring(1);
 						}
-						if(!staticContentBase.equals(""))
-						{
+						if(!staticContentBase.equals("")) {
 							defaultRelativePrepend += staticContentBase;
-							if(!defaultRelativePrepend.endsWith(File.separator))
-							{
+							if(!defaultRelativePrepend.endsWith(File.separator)) {
 								defaultRelativePrepend += File.separator;
 							}
 						}
@@ -294,8 +268,7 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 				}
 			}
 		}
-		if (firstTime)
-		{
+		if (firstTime) {
 			loadProps();
 			firstTime = false;
 		}
@@ -303,17 +276,14 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 
 	protected void loadPrinterSettingsProps(String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex)
 	{
-		if(new File(defaultRelativePrependINI + Const.WEB_INF).isDirectory())
-		{
+		if(new File(defaultRelativePrependINI + Const.WEB_INF).isDirectory()) {
 			iniFile = defaultRelativePrependINI + Const.WEB_INF + File.separatorChar + iniFile;
 		}
-		else
-		{
+		else {
 			iniFile = defaultRelativePrependINI + iniFile;
 		}
 
-		try
-		{
+		try {
 			this.form = form;
 			printerSettings = new ParseINI(iniFile);
 		}
@@ -335,8 +305,7 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 		printerSettings.setupProperty(form, Const.DUPLEX, duplex+ "");
 	}
 
-	protected void loadProps()
-	{
+	protected void loadProps() {
 		try{
 			props = new ParseINI(configurationFile, configurationTemplateFile);
 		}catch(IOException e){ props = new ParseINI(); }
@@ -367,13 +336,11 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 
 		loadSubstituteTable(); // Cargo la tabla de substitutos de fonts
 
-		if(props.getBooleanGeneralProperty("DEBUG", false))
-		{
+		if(props.getBooleanGeneralProperty("DEBUG", false)) {
 			DEBUG = true;
 			DEBUG_STREAM = System.out;
 		}
-		else
-		{
+		else {
 			DEBUG = false;
 			DEBUG_STREAM = new PrintStream(new com.genexus.util.NullOutputStream());
 		}
@@ -382,8 +349,7 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 			System.getProperty("com.ms.windir", "c:\\windows") + "\\fonts"});
 	}
 
-	public static final void addPredefinedSearchPaths(String [] predefinedPaths)
-	{
+	public static final void addPredefinedSearchPaths(String [] predefinedPaths) {
 		String predefinedPath = "";
 		for(int i = 0; i < predefinedPaths.length; i++)
 			predefinedPath += predefinedPaths[i] + ";";
@@ -401,18 +367,14 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 
 	public void GxSetTextMode(int nHandle, int nGridX, int nGridY, int nPageLength) {}
 
-	protected float[] parsePattern(String patternStr)
-	{
-		if (patternStr!=null)
-		{
+	protected float[] parsePattern(String patternStr) {
+		if (patternStr!=null) {
 			StringTokenizer st = new StringTokenizer(patternStr.trim(), ";");
 			int length = st.countTokens();
-			if (length>0)
-			{
+			if (length>0) {
 				int i = 0;
 				float[] pattern = new float[length];
-				while(st.hasMoreTokens())
-				{
+				while(st.hasMoreTokens()) {
 					pattern[i] = Float.parseFloat(st.nextToken());
 					i++;
 				}
@@ -422,10 +384,8 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 		return null;
 	}
 
-	protected float [] getDashedPattern(int style)
-	{
-		switch(style)
-		{
+	protected float [] getDashedPattern(int style) {
+		switch(style) {
 			case 0: return STYLE_SOLID;
 			case 1: return STYLE_NONE;
 			case 2: return STYLE_DOTTED;
@@ -437,45 +397,37 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 		}
 	}
 
-	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue)
-	{
+	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue) {
 		GxDrawRect(left, top, right, bottom, pen, foreRed, foreGreen, foreBlue, backMode, backRed, backGreen, backBlue, 0, 0);
 	}
 
-	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue, int style, int cornerRadius)
-	{
+	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue, int style, int cornerRadius) {
 		GxDrawRect(left, top, right, bottom, pen, foreRed, foreGreen, foreBlue, backMode, backRed, backGreen, backBlue, style, style, style, style, cornerRadius, cornerRadius, cornerRadius, cornerRadius);
 	}
 	public abstract void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue,
 						   int styleTop, int styleBottom, int styleRight, int styleLeft, int cornerRadioTL, int cornerRadioTR, int cornerRadioBL, int cornerRadioBR);
 
-	public void GxDrawLine(int left, int top, int right, int bottom, int width, int foreRed, int foreGreen, int foreBlue)
-	{
+	public void GxDrawLine(int left, int top, int right, int bottom, int width, int foreRed, int foreGreen, int foreBlue) {
 		GxDrawLine(left, top, right, bottom, width, foreRed, foreGreen, foreBlue, 0);
 	}
 
 	public abstract void GxDrawLine(int left, int top, int right, int bottom, int width, int foreRed, int foreGreen, int foreBlue, int style);
 
-	public void GxDrawBitMap(String bitmap, int left, int top, int right, int bottom)
-	{
+	public void GxDrawBitMap(String bitmap, int left, int top, int right, int bottom) {
 		GxDrawBitMap(bitmap, left, top, right, bottom, 0);
 	}
 
 	public abstract void GxDrawBitMap(String bitmap, int left, int top, int right, int bottom, int aspectRatio);
 
-	public String getSubstitute(String fontName)
-	{
+	public String getSubstitute(String fontName) {
 		Vector<String> fontSubstitutesProcessed = new Vector<>();
 		String newFontName = fontName;
-		while( fontSubstitutes.containsKey(newFontName))
-		{
-			if (!fontSubstitutesProcessed.contains(newFontName))
-			{
+		while( fontSubstitutes.containsKey(newFontName)) {
+			if (!fontSubstitutesProcessed.contains(newFontName)) {
 				fontSubstitutesProcessed.addElement(newFontName);
 				newFontName = fontSubstitutes.get(newFontName);
 			}
-			else
-			{
+			else {
 				return fontSubstitutes.get(newFontName);
 			}
 		}
@@ -484,33 +436,26 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 
 	public abstract void GxAttris(String fontName, int fontSize, boolean fontBold, boolean fontItalic, boolean fontUnderline, boolean fontStrikethru, int Pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue);
 
-	protected String getFontLocation(String fontName)
-	{
+	protected String getFontLocation(String fontName) {
 		String fontPath = props.getProperty(Const.MS_FONT_LOCATION, fontName, "");
-		if (fontPath.equals(""))
-		{
+		if (fontPath.equals("")) {
 			fontPath = props.getProperty(Const.SUN_FONT_LOCATION, fontName, "");
 		}
 		return fontPath;
 	}
 	@SuppressWarnings("unchecked")
-	protected Hashtable getFontLocations()
-	{
+	protected Hashtable getFontLocations() {
 		Hashtable msLocations = props.getSection(Const.MS_FONT_LOCATION);
 		Hashtable sunLocations = props.getSection(Const.SUN_FONT_LOCATION);
 		Hashtable locations = new Hashtable();
-		if (msLocations != null)
-		{
-			for (Enumeration e = msLocations.keys(); e.hasMoreElements() ;)
-			{
+		if (msLocations != null) {
+			for (Enumeration e = msLocations.keys(); e.hasMoreElements() ;) {
 				Object key = e.nextElement();
 				locations.put(key, msLocations.get(key));
 			}
 		}
-		if (sunLocations != null)
-		{
-			for (Enumeration e = sunLocations.keys(); e.hasMoreElements() ;)
-			{
+		if (sunLocations != null) {
+			for (Enumeration e = sunLocations.keys(); e.hasMoreElements() ;) {
 				Object key = e.nextElement();
 				locations.put(key, sunLocations.get(key));
 			}
@@ -529,16 +474,13 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 	/**
 	 * @deprecated
 	 */
-	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align)
-	{
+	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align) {
 		GxDrawText(sTxt, left, top, right, bottom, align, 0);
 	}
-	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat)
-	{
+	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat) {
 		GxDrawText(sTxt, left, top, right, bottom, align, htmlformat, 0);
 	}
-	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border)
-	{
+	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border) {
 		GxDrawText(sTxt, left, top, right, bottom, align, htmlformat, border, 0);
 	}
 	public abstract void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border, int valign);
@@ -555,26 +497,22 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 	//Por ejemplo: si en genexus se tiene un reporte con Paper Height de 1169 (A4) centésimos de pulgada (1/100 inch),
 	//en el parámetro pageLength llega 16834 que esta en Twips (16834 = 1169*14.4). 1 twip = 1/1440 inch.
 	//Con el valor anterior 15.45 estaba quedando un margen bottom fijo que no se podia eliminar (incluso seteando mb 0).
-	private static double TO_CM_SCALE =28.6;  // Escala CM -> metricas PDF (utilizado en el pageMargin)
+	protected static double TO_CM_SCALE = 28.6;  // Escala CM -> metricas PDF (utilizado en el pageMargin)
 	public abstract boolean GxPrintInit(String output, int gxXPage[], int gxYPage[], String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex);
 
-	public int getPageLines()
-	{
+	public int getPageLines() {
 		if(DEBUG)DEBUG_STREAM.println("getPageLines: --> " + pageLines);
 		return pageLines;
 	}
-	public int getLineHeight()
-	{
+	public int getLineHeight() {
 		if(DEBUG)DEBUG_STREAM.println("getLineHeight: --> " + this.lineHeight);
 		return this.lineHeight;
 	}
-	public void setPageLines(int P_lines)
-	{
+	public void setPageLines(int P_lines) {
 		if(DEBUG)DEBUG_STREAM.println("setPageLines: " + P_lines);
 		pageLines = P_lines;
 	}
-	public void setLineHeight(int lineHeight)
-	{
+	public void setLineHeight(int lineHeight) {
 
 		if(DEBUG)DEBUG_STREAM.println("setLineHeight: " + lineHeight);
 		this.lineHeight = lineHeight;
@@ -613,30 +551,23 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 	public void GxStartDoc() {}
 	public void GxSetDocFormat(String format) {}
 
-	public void GxSetDocName(String docName)
-	{
+	public void GxSetDocName(String docName) {
 		this.docName = docName.trim();
 		if(this.docName.indexOf('.') < 0)
 			this.docName += ".pdf";
-		if(!new File(docName).isAbsolute())
-		{ // Si el nombre del documento es relativo, veo si hay que agregarle el outputDir
+		if(!new File(docName).isAbsolute()) { // Si el nombre del documento es relativo, veo si hay que agregarle el outputDir
 			String outputDir = props.getGeneralProperty(Const.OUTPUT_FILE_DIRECTORY, "").replace(alternateSeparator, File.separatorChar).trim();
-			if(!outputDir.equalsIgnoreCase("") && !outputDir.equalsIgnoreCase("."))
-			{
-				if(!outputDir.endsWith(File.separator))
-				{
+			if(!outputDir.equalsIgnoreCase("") && !outputDir.equalsIgnoreCase(".")) {
+				if(!outputDir.endsWith(File.separator)) {
 					outputDir += File.separator;
 				}
 				new File(outputDir).mkdirs();
 				this.docName = outputDir + this.docName;
 			}
-			else
-			{
-				if (ModelContext.getModelContext() != null)
-				{
+			else {
+				if (ModelContext.getModelContext() != null) {
 					HttpContext webContext = (HttpContext) ModelContext.getModelContext().getHttpContext();
-					if ((webContext != null) && (webContext instanceof HttpContextWeb))
-					{
+					if ((webContext != null) && (webContext instanceof HttpContextWeb)) {
 						outputDir = com.genexus.ModelContext.getModelContext().getHttpContext().getDefaultPath() + File.separator;
 						this.docName = outputDir + this.docName;
 					}
@@ -648,8 +579,7 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 		if(DEBUG)DEBUG_STREAM.println("GxSetDocName: '" + this.docName + "'");
 	}
 
-	public boolean GxPrTextInit(String ouput, int nxPage[], int nyPage[], String psIniFile, String psForm, String sPrinter, int nMode, int nPaperLength, int nPaperWidth, int nGridX, int nGridY, int nPageLines)
-	{
+	public boolean GxPrTextInit(String ouput, int nxPage[], int nyPage[], String psIniFile, String psForm, String sPrinter, int nMode, int nPaperLength, int nPaperWidth, int nGridX, int nGridY, int nPageLines) {
 		return true;
 	}
 
@@ -667,7 +597,6 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 	{
 		return true;
 	}
-
 
 	protected int page;
 	public int getPage()
@@ -696,8 +625,7 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 
 	/** Carga la tabla de substitutos
 	 */
-	protected void loadSubstituteTable()
-	{
+	protected void loadSubstituteTable() {
 		// Primero leemos la tabla de substitutos del Registry
 		Hashtable<String, Vector<String>> tempInverseMappings = new Hashtable<>();
 
@@ -710,12 +638,10 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 		// indicada por Const.FONT_SUBSTITUTES_SECTION y son pares oldFont -> newFont
 		Hashtable otherMappings = props.getSection(Const.FONT_SUBSTITUTES_SECTION);
 		if(otherMappings != null)
-			for(Enumeration enumera = otherMappings.keys(); enumera.hasMoreElements();)
-			{
+			for(Enumeration enumera = otherMappings.keys(); enumera.hasMoreElements();) {
 				String fontName = (String)enumera.nextElement();
 				fontSubstitutes.put(fontName, (String)otherMappings.get(fontName));
-				if(tempInverseMappings.containsKey(fontName)) // Con esto solucionamos el tema de la recursión de Fonts -> Fonts
-				{                                             // x ej: Si tenú} Font1-> Font2, y ahora tengo Font2->Font3, pongo cambio el 1º por Font1->Font3
+				if(tempInverseMappings.containsKey(fontName)) { // Con esto solucionamos el tema de la recursión de Fonts -> Fonts, x ej: Si tenú} Font1-> Font2, y ahora tengo Font2->Font3, pongo cambio el 1º por Font1->Font3
 					String fontSubstitute = (String)otherMappings.get(fontName);
 					for(Enumeration<String> enum2 = tempInverseMappings.get(fontName).elements(); enum2.hasMoreElements();)
 						fontSubstitutes.put(enum2.nextElement(), fontSubstitute);
@@ -738,26 +664,22 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 
 	public static final double SCALE_FACTOR = 72;
 	protected double PPP = 96;
-	protected double convertScale(int value)
-	{
+	protected double convertScale(int value) {
 		double result = value * SCALE_FACTOR / PPP;
 		return result;
 	}
 
-	protected double convertScale(double value)
-	{
+	protected double convertScale(double value) {
 		double result = value * SCALE_FACTOR / PPP;
 		return result;
 	}
 
-	protected float reconvertScale(float value)
-	{
+	protected float reconvertScale(float value) {
 		float result = value / (float)(SCALE_FACTOR / PPP);
 		return result;
 	}
 
-	class FontProps
-	{
+	class FontProps {
 		public int horizontal;
 		public int vertical;
 	}
