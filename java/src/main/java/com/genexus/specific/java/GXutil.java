@@ -4,15 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.time.DateTimeException;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoField;
+import java.time.*;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
-import java.time.ZonedDateTime;
-import java.time.ZoneId;
 
 import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
@@ -46,18 +43,23 @@ public class GXutil implements IExtensionGXutil {
 
 	@Override
 	public Date DateTimeToUTC(Date value, TimeZone tz) {
+		if (tz.getID() == "GMT")
+			return value;
+
 		ZonedDateTime zdt = getZonedDateTime(value, tz);
-		return Date.from(zdt.plusSeconds(-1 * zdt.getOffset().getTotalSeconds()).toInstant());
+		return Timestamp.valueOf(zdt.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime());
 	}
 
 	@Override
 	public Date DateTimeFromUTC(Date value, TimeZone tz) {
+		if (tz.getID() == "GMT")
+			return value;
+
 		if (com.genexus.CommonUtil.emptyDate(value))
 			return value;
 
-		ZonedDateTime zdtUTC = ZonedDateTime.ofInstant(value.toInstant(), ZoneId.of("UTC"));
-		ZonedDateTime zdt = getZonedDateTime(value, tz);
-		return Date.from(zdtUTC.plusSeconds(zdt.getOffset().getTotalSeconds()).toInstant());
+		ZonedDateTime zdtUTC = ZonedDateTime.of(value.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(), ZoneId.of("UTC"));
+		return Timestamp.valueOf(zdtUTC.withZoneSameInstant(ZoneId.of(tz.getID())).toLocalDateTime());
 	}
 
 	@Override
