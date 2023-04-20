@@ -80,8 +80,7 @@ public class PDFReportItext extends GXReportPDFCommons
 	 */
 	private void drawRectangle(PdfContentByte cb, float x, float y, float w, float h, 
 		int styleTop, int styleBottom, int styleRight, int styleLeft, 
-		float radioTL, float radioTR, float radioBL, float radioBR, float penAux, boolean hideCorners)
-	{
+		float radioTL, float radioTR, float radioBL, float radioBR, float penAux, boolean hideCorners) {
 
 	
 		float[] dashPatternTop = getDashedPattern(styleTop);
@@ -90,137 +89,109 @@ public class PDFReportItext extends GXReportPDFCommons
 		float[] dashPatternRight = getDashedPattern(styleRight);
 
 		//-------------------bottom line---------------------
-		if (styleBottom!=STYLE_NONE_CONST)
-		{
+		if (styleBottom!=STYLE_NONE_CONST) {
 			cb.setLineDash(dashPatternBottom, 0);
 		}
 
 		float b = 0.4477f;
-		if (radioBL>0)
-		{
+		if (radioBL>0) {
 			cb.moveTo(x + radioBL, y);
 		}
-		else
-		{
-			if (hideCorners && styleLeft==STYLE_NONE_CONST && radioBL==0)
-			{
+		else {
+			if (hideCorners && styleLeft==STYLE_NONE_CONST && radioBL==0) {
 				cb.moveTo(x + penAux, y);
 			}
-			else
-			{
+			else {
 				cb.moveTo(x, y);
 			}
 		}
 
 		//-------------------bottom right corner---------------------
 
-		if (styleBottom!=STYLE_NONE_CONST)//si es null es Style None y no traza la linea
-		{
-			if (hideCorners && styleRight==STYLE_NONE_CONST && radioBR==0)
-			{
+		if (styleBottom!=STYLE_NONE_CONST){ //si es null es Style None y no traza la linea
+
+			if (hideCorners && styleRight==STYLE_NONE_CONST && radioBR==0) {
 				cb.lineTo(x + w - penAux, y);
 			}
-			else
-			{
+			else {
 				cb.lineTo(x + w - radioBR, y);
 			}
-			if (radioBR>0 && styleRight!=STYLE_NONE_CONST)
-			{
+			if (radioBR>0 && styleRight!=STYLE_NONE_CONST) {
 				cb.curveTo(x + w - radioBR * b, y, x + w, y + radioBR * b, x + w, y + radioBR);
 			}
 		}
 
 		//-------------------right line---------------------
 
-		if (styleRight!=STYLE_NONE_CONST && dashPatternRight!=dashPatternBottom)
-		{
+		if (styleRight!=STYLE_NONE_CONST && dashPatternRight!=dashPatternBottom) {
 			cb.stroke();
 			cb.setLineDash(dashPatternRight, 0);
-			if (hideCorners && styleBottom==STYLE_NONE_CONST && radioBR==0)
-			{
+			if (hideCorners && styleBottom==STYLE_NONE_CONST && radioBR==0) {
 				cb.moveTo(x + w, y + penAux);
 			}
-			else
-			{
+			else {
 				cb.moveTo(x + w, y + radioBR);
 			}
 		}
 
 		//-------------------top right corner---------------------
-		if (styleRight!=STYLE_NONE_CONST)
-		{
-			if (hideCorners && styleTop==STYLE_NONE_CONST && radioTR==0)
-			{
+		if (styleRight!=STYLE_NONE_CONST) {
+			if (hideCorners && styleTop==STYLE_NONE_CONST && radioTR==0) {
 				cb.lineTo (x + w, y + h - penAux);
 			}
-			else
-			{
+			else {
 				cb.lineTo (x + w, y + h - radioTR);
 			}
-			if (radioTR>0 && styleTop!=STYLE_NONE_CONST)
-			{
+			if (radioTR>0 && styleTop!=STYLE_NONE_CONST) {
 				cb.curveTo(x + w, y + h - radioTR * b, x + w - radioTR * b, y + h, x + w - radioTR, y + h);
 			}
 		}
 
 		//-------------------top line---------------------
 
-		if (styleTop!=STYLE_NONE_CONST && dashPatternTop!=dashPatternRight)
-		{
+		if (styleTop!=STYLE_NONE_CONST && dashPatternTop!=dashPatternRight) {
 			cb.stroke();
 			cb.setLineDash(dashPatternTop, 0);
-			if (hideCorners && styleRight==STYLE_NONE_CONST && radioTR==0)
-			{
+			if (hideCorners && styleRight==STYLE_NONE_CONST && radioTR==0) {
 				cb.moveTo(x + w - penAux, y + h);
 			}
-			else
-			{
+			else {
 				cb.moveTo(x + w - radioTR, y + h);
 			}
 		}
 
 		//-------------------top left corner---------------------
-		if (styleTop!=STYLE_NONE_CONST)
-		{
-			if (hideCorners && styleLeft==STYLE_NONE_CONST && radioTL==0)
-			{
+		if (styleTop!=STYLE_NONE_CONST) {
+			if (hideCorners && styleLeft==STYLE_NONE_CONST && radioTL==0) {
 				cb.lineTo(x + penAux, y + h);
 			}
-			else
-			{
+			else {
 				cb.lineTo(x + radioTL, y + h);
 			}
-			if (radioTL>0 && styleLeft!=STYLE_NONE_CONST)
-			{
+			if (radioTL>0 && styleLeft!=STYLE_NONE_CONST) {
 				cb.curveTo(x + radioTL * b, y + h, x, y + h - radioTL * b, x, y + h - radioTL);
 			}
 		}
             
 		//-------------------left line---------------------
 
-		if (styleLeft!=STYLE_NONE_CONST  && dashPatternLeft!=dashPatternTop)
-		{
+		if (styleLeft!=STYLE_NONE_CONST  && dashPatternLeft!=dashPatternTop) {
 			cb.stroke();
 			cb.setLineDash(dashPatternLeft, 0);
-			if (hideCorners && styleTop==STYLE_NONE_CONST && radioTL==0)
-			{
+			if (hideCorners && styleTop==STYLE_NONE_CONST && radioTL==0) {
 				cb.moveTo(x, y + h - penAux);
 			}
-			else
-			{
+			else {
 				cb.moveTo(x, y + h - radioTL);
 			}
 		}
             
 		//-------------------bottom left corner---------------------
-		if (styleLeft!=STYLE_NONE_CONST)
-		{
-			if (hideCorners && styleBottom==STYLE_NONE_CONST && radioBL==0)
-			{
+		if (styleLeft!=STYLE_NONE_CONST) {
+			if (hideCorners && styleBottom==STYLE_NONE_CONST && radioBL==0) {
 				cb.lineTo(x, y + penAux);
 			}
-			else
-			{
+			else {
 				cb.lineTo(x, y + radioBL);
 			}
 			if (radioBL>0 && styleBottom!=STYLE_NONE_CONST)
@@ -232,52 +203,44 @@ public class PDFReportItext extends GXReportPDFCommons
             
 	}
 	private void roundRectangle(PdfContentByte cb, float x, float y, float w, float h, 
-		float radioTL, float radioTR, float radioBL, float radioBR)
-	{
+		float radioTL, float radioTR, float radioBL, float radioBR) {
 
 		//-------------------bottom line---------------------
 
 		float b = 0.4477f;
-		if (radioBL>0)
-		{
+		if (radioBL>0) {
 			cb.moveTo(x + radioBL, y);
 		}
-		else
-		{
+		else {
 			cb.moveTo(x, y);
 		}
 
 		//-------------------bottom right corner---------------------
 
 		cb.lineTo(x + w - radioBR, y);
-		if (radioBR>0)
-		{
+		if (radioBR>0) {
 			cb.curveTo(x + w - radioBR * b, y, x + w, y + radioBR * b, x + w, y + radioBR);
 		}
 		
 
 		cb.lineTo (x + w, y + h - radioTR);
-		if (radioTR>0)
-		{
+		if (radioTR>0) {
 			cb.curveTo(x + w, y + h - radioTR * b, x + w - radioTR * b, y + h, x + w - radioTR, y + h);
 		}
 
 		cb.lineTo(x + radioTL, y + h);
-		if (radioTL>0)
-		{
+		if (radioTL>0) {
 			cb.curveTo(x + radioTL * b, y + h, x, y + h - radioTL * b, x, y + h - radioTL);
 		}
 		cb.lineTo(x, y + radioBL);
-		if (radioBL>0)
-		{
+		if (radioBL>0) {
 			cb.curveTo(x, y + radioBL * b, x + radioBL * b, y, x + radioBL, y);
 		}
             
 	}
 
 	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue, 
-		int styleTop, int styleBottom, int styleRight, int styleLeft, int cornerRadioTL, int cornerRadioTR, int cornerRadioBL, int cornerRadioBR)
-	{
+		int styleTop, int styleBottom, int styleRight, int styleLeft, int cornerRadioTL, int cornerRadioTR, int cornerRadioBL, int cornerRadioBR) {
 
 		PdfContentByte cb = writer.getDirectContent();
 
@@ -298,8 +261,7 @@ public class PDFReportItext extends GXReportPDFCommons
 		cb.setLineWidth(penAux);		
 		cb.setLineCap(PdfContentByte.LINE_CAP_PROJECTING_SQUARE);
 
-		if (cornerRadioBL==0 && cornerRadioBR==0 && cornerRadioTL==0 && cornerRadioTR==0 && styleBottom==0 && styleLeft==0 && styleRight==0 && styleTop==0)
-		{
+		if (cornerRadioBL==0 && cornerRadioBR==0 && cornerRadioTL==0 && cornerRadioTR==0 && styleBottom==0 && styleLeft==0 && styleRight==0 && styleTop==0) {
 			//Tengo que hacer eso para que el borde quede del mismo color que el fill si se indica que no se quiere borde,
 			//porque no funciona el setLineWidth
 			if (pen > 0)
@@ -309,24 +271,20 @@ public class PDFReportItext extends GXReportPDFCommons
 
 			cb.rectangle(x1, y1, x2 - x1, y2 - y1);
 
-			if (backMode!=0)
-			{
+			if (backMode!=0) {
 				cb.setColorFill(new Color(backRed, backGreen, backBlue));
 				cb.fillStroke();
 			}
 			cb.closePathStroke();
 		}
-		else
-		{
+		else {
 			float w = x2 - x1;
 			float h = y2 - y1;
-			if (w < 0)
-			{
+			if (w < 0) {
 				x1 += w;
 				w = -w;
 			}
-			if (h < 0)
-			{
+			if (h < 0) {
 				y1 += h;
 				h = -h;
 			}
@@ -343,8 +301,7 @@ public class PDFReportItext extends GXReportPDFCommons
 			cRadioBL = Math.max(0, Math.min(cRadioBL, max/2));
 			cRadioBR = Math.max(0, Math.min(cRadioBR, max/2));
 
-			if (backMode!=0)
-			{
+			if (backMode!=0) {
 				//Interior del rectangulo
 				cb.setRGBColorStroke(backRed, backGreen, backBlue);
 				cb.setLineWidth(0);		
@@ -355,8 +312,7 @@ public class PDFReportItext extends GXReportPDFCommons
 				cb.fillStroke();
 				cb.setLineWidth(penAux);		
 			}
-			if (pen > 0)
-			{
+			if (pen > 0) {
 				//Bordes del rectangulo
 				cb.setRGBColorStroke(foreRed, foreGreen, foreBlue);
 					drawRectangle(cb, x1, y1, w, h, 
@@ -370,8 +326,7 @@ public class PDFReportItext extends GXReportPDFCommons
 		if(DEBUG)DEBUG_STREAM.println("GxDrawRect -> (" + left + "," + top + ") - (" + right + "," + bottom + ")  BackMode: " + backMode + " Pen:" + pen);
     }
 	
-    public void GxDrawLine(int left, int top, int right, int bottom, int width, int foreRed, int foreGreen, int foreBlue, int style)
-    {
+    public void GxDrawLine(int left, int top, int right, int bottom, int width, int foreRed, int foreGreen, int foreBlue, int style) {
 		PdfContentByte cb = writer.getDirectContent();
 
 		float widthAux = (float)convertScale(width);
@@ -393,12 +348,10 @@ public class PDFReportItext extends GXReportPDFCommons
 		cb.setRGBColorStroke(foreRed, foreGreen, foreBlue);
 		cb.setLineWidth(widthAux);
 
-		if (lineCapProjectingSquare)
-		{
+		if (lineCapProjectingSquare) {
 			cb.setLineCap(PdfContentByte.LINE_CAP_PROJECTING_SQUARE); //Hace que lineas de width 10 por ejemplo que forman una esquina no quedan igual que en disenio porque "rellena" la esquina.
 		}
-		if (style!=0)
-		{
+		if (style!=0) {
 			float[] dashPattern = getDashedPattern(style);
 			cb.setLineDash(dashPattern, 0);
 		}
@@ -409,63 +362,50 @@ public class PDFReportItext extends GXReportPDFCommons
 		cb.restoreState();
     }
 	
-    public void GxDrawBitMap(String bitmap, int left, int top, int right, int bottom, int aspectRatio)
-    {
-		try
-		{
+    public void GxDrawBitMap(String bitmap, int left, int top, int right, int bottom, int aspectRatio) {
+		try {
 			//java.awt.Image image;
 			com.lowagie.text.Image image;
 			com.lowagie.text.Image imageRef;
-			try
-			{
-				if (documentImages != null && documentImages.containsKey(bitmap))
-				{
+			try {
+				if (documentImages != null && documentImages.containsKey(bitmap)) {
 					image = documentImages.get(bitmap);
 				}
-				else
-				{
+				else {
 
-					if (!NativeFunctions.isWindows() && new File(bitmap).isAbsolute() && bitmap.startsWith(httpContext.getStaticContentBase()))
-					{
+					if (!NativeFunctions.isWindows() && new File(bitmap).isAbsolute() && bitmap.startsWith(httpContext.getStaticContentBase())) {
 						bitmap = bitmap.replace(httpContext.getStaticContentBase(), "");
 					}				
 				
-					if (!new File(bitmap).isAbsolute() && !bitmap.toLowerCase().startsWith("http:") && !bitmap.toLowerCase().startsWith("https:"))
-					{ 
-						if (bitmap.startsWith(httpContext.getStaticContentBase()))
-						{
+					if (!new File(bitmap).isAbsolute() && !bitmap.toLowerCase().startsWith("http:") && !bitmap.toLowerCase().startsWith("https:")) {
+						if (bitmap.startsWith(httpContext.getStaticContentBase())) {
 							bitmap = bitmap.replace(httpContext.getStaticContentBase(), "");
 						}					
 						// Si la ruta a la imagen NO es absoluta, en aplicaciones Web le agregamos al comienzo la ruta al root de la aplicación
 					// más la staticContentBaseURL si ésta es relativa.
 						image = com.lowagie.text.Image.getInstance(defaultRelativePrepend + bitmap);
 						//image = com.genexus.uifactory.awt.AWTUIFactory.getImageNoWait(defaultRelativePrepend + bitmap);
-						if(image == null)
-						{ // Si all\uFFFDEno se encuentra la imagen, entonces la buscamos bajo el webAppDir (para mantener compatibilidad)
+						if(image == null) { // Si all\uFFFDEno se encuentra la imagen, entonces la buscamos bajo el webAppDir (para mantener compatibilidad)
 							bitmap = webAppDir + bitmap;
 							image = com.lowagie.text.Image.getInstance(bitmap);
 							//image = com.genexus.uifactory.awt.AWTUIFactory.getImageNoWait(bitmap);
 						}
-						else
-						{
+						else {
 							bitmap = defaultRelativePrepend + bitmap;
 						}
 					}
-					else
-					{
+					else {
 						image = com.lowagie.text.Image.getInstance(bitmap);
 						//image = com.genexus.uifactory.awt.AWTUIFactory.getImageNoWait(bitmap);
 					}
 				}
 			}
-			catch(java.lang.IllegalArgumentException ex)//Puede ser una url absoluta
-			{
+			catch(java.lang.IllegalArgumentException ex) {//Puede ser una url absoluta
 				java.net.URL url= new java.net.URL(bitmap);
 				image = com.lowagie.text.Image.getInstance(url);
 			}
 
-			if (documentImages == null)
-			{
+			if (documentImages == null) {
 				documentImages = new ConcurrentHashMap<String, Image>();
 			}
 			documentImages.putIfAbsent(bitmap, image);
@@ -473,8 +413,7 @@ public class PDFReportItext extends GXReportPDFCommons
 
 			if(DEBUG)DEBUG_STREAM.println("GxDrawBitMap -> '" + bitmap + "' [" + left + "," + top + "] - Size: (" + (right - left) + "," + (bottom - top) + ")");
 
-	        if(image != null)
-			{ // Si la imagen NO se encuentra, no hago nada
+	        if(image != null) { // Si la imagen NO se encuentra, no hago nada
 				float rightAux = (float)convertScale(right);
 				float bottomAux = (float)convertScale(bottom);
 				float leftAux = (float)convertScale(left);
@@ -489,31 +428,25 @@ public class PDFReportItext extends GXReportPDFCommons
 				cb.addImage(image);
 			}
 		}
-		catch(DocumentException de) 
-		{
+		catch(DocumentException de) {
 			System.err.println(de.getMessage());
 		}
-		catch(IOException ioe) 
-		{
+		catch(IOException ioe) {
 			System.err.println(ioe.getMessage());
 		}
-		catch(Exception e) 
-		{
+		catch(Exception e) {
 			System.err.println(e.getMessage());
 		}
     }
 
-    public void GxAttris(String fontName, int fontSize, boolean fontBold, boolean fontItalic, boolean fontUnderline, boolean fontStrikethru, int Pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue)
-    {
+    public void GxAttris(String fontName, int fontSize, boolean fontBold, boolean fontItalic, boolean fontUnderline, boolean fontStrikethru, int Pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue) {
 		boolean isCJK = false;
 		boolean embeedFont = isEmbeddedFont(fontName);
 		String originalFontName = fontName;
-		if (!embeedFont)
-		{
+		if (!embeedFont) {
 			fontName = getSubstitute(fontName); // Veo si hay substitutos solo si el font no va a ir embebido
 		}
-        if(DEBUG)
-		{
+        if(DEBUG) {
 			String fontSubstitute = "";
 			if (!originalFontName.equals(fontName))
 			{
@@ -525,13 +458,11 @@ public class PDFReportItext extends GXReportPDFCommons
 			DEBUG_STREAM.println("\\-> Back (" + backRed + ", " + backGreen + ", " + backBlue + ")");
 		}
 
-		if (barcode128AsImage && fontName.toLowerCase().indexOf("barcode 128") >= 0 || fontName.toLowerCase().indexOf("barcode128") >= 0)
-		{
+		if (barcode128AsImage && fontName.toLowerCase().indexOf("barcode 128") >= 0 || fontName.toLowerCase().indexOf("barcode128") >= 0) {
 			barcode = new Barcode128();
 			barcode.setCodeType(Barcode128.CODE128);
 		}
-		else
-		{
+		else {
 			barcode = null;
 		}
 		this.fontUnderline = fontUnderline;        
@@ -544,19 +475,15 @@ public class PDFReportItext extends GXReportPDFCommons
 		
 		backFill = (backMode != 0);
 		try {
-			if (PDFFont.isType1(fontName))
-			{
+			if (PDFFont.isType1(fontName)) {
 				//Me fijo si es un Asian font
-				for(int i = 0; i < Type1FontMetrics.CJKNames.length; i++)
-				{
+				for(int i = 0; i < Type1FontMetrics.CJKNames.length; i++) {
 					if(Type1FontMetrics.CJKNames[i][0].equalsIgnoreCase(fontName) ||
-					   Type1FontMetrics.CJKNames[i][1].equalsIgnoreCase(fontName))
-					{
+					   Type1FontMetrics.CJKNames[i][1].equalsIgnoreCase(fontName)) {
 						String style = "";
 						if (fontBold && fontItalic)
 							style = "BoldItalic";
-						else
-						{
+						else {
 							if (fontItalic)
 								style = "Italic";
 							if (fontBold)
@@ -567,22 +494,18 @@ public class PDFReportItext extends GXReportPDFCommons
 						break;
 					}
 				}
-				if (!isCJK)
-				{
+				if (!isCJK) {
 					int style = 0;
 					if (fontBold && fontItalic)
 						style = style + 3;
-					else
-					{
+					else {
 						if (fontItalic)
 							style = style + 2;
 						if (fontBold)
 							style = style + 1;
 					}
-					for(int i=0;i<PDFFont.base14.length;i++)
-					{
-						if(PDFFont.base14[i][0].equalsIgnoreCase(fontName))
-						{
+					for(int i=0;i<PDFFont.base14.length;i++) {
+						if(PDFFont.base14[i][0].equalsIgnoreCase(fontName)) {
 							fontName =  PDFFont.base14[i][1+style].substring(1);
 							break;
 						}
@@ -590,13 +513,11 @@ public class PDFReportItext extends GXReportPDFCommons
 					baseFont = BaseFont.createFont(fontName, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
 				}
 			}
-			else
-			{//Si el Font es true type
+			else {//Si el Font es true type
 				String style = "";
 				if (fontBold && fontItalic)
 					style = ",BoldItalic";
-				else
-				{
+				else {
 					if (fontItalic)
 						style = ",Italic";
 					if (fontBold)
@@ -606,23 +527,18 @@ public class PDFReportItext extends GXReportPDFCommons
 				fontName = fontName + style;
 				String fontPath = getFontLocation(fontName);
 				boolean foundFont = true;
-				if (fontPath.equals(""))
-				{
+				if (fontPath.equals("")) {
 					fontPath = PDFFontDescriptor.getTrueTypeFontLocation(fontName, props);
-					if (fontPath.equals(""))
-					{
+					if (fontPath.equals("")) {
 						baseFont = BaseFont.createFont("Helvetica", BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
 						foundFont = false;
 					}
 				}
-				if (foundFont)
-				{
-					if (isEmbeddedFont(fontName))
-					{
+				if (foundFont) {
+					if (isEmbeddedFont(fontName)) {
 						baseFont = BaseFont.createFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
 					}
-					else
-					{//No se embebe el font
+					else {//No se embebe el font
 						baseFont = BaseFont.createFont(fontPath + style, BaseFont.WINANSI, BaseFont.NOT_EMBEDDED);
 					}
 				}
@@ -636,12 +552,9 @@ public class PDFReportItext extends GXReportPDFCommons
         }
     }
 
-	public void setAsianFont(String fontName, String style)
-	{
-		try
-		{
-			if (style.equals(""))
-			{
+	public void setAsianFont(String fontName, String style) {
+		try {
+			if (style.equals("")) {
 				if (fontName.equals("Japanese"))
 					baseFont = BaseFont.createFont("HeiseiMin-W3", "UniJIS-UCS2-HW-H", BaseFont.NOT_EMBEDDED);
 				if (fontName.equals("Japanese2"))
@@ -653,8 +566,7 @@ public class PDFReportItext extends GXReportPDFCommons
 				if (fontName.equals("Korean"))
 					baseFont = BaseFont.createFont("HYSMyeongJo-Medium", "UniKS-UCS2-H", BaseFont.NOT_EMBEDDED);
 			}
-			else
-			{
+			else {
 				if (fontName.equals("Japanese"))
 					baseFont = BaseFont.createFont("HeiseiMin-W3," + style, "UniJIS-UCS2-HW-H", BaseFont.NOT_EMBEDDED);
 				if (fontName.equals("Japanese2"))
@@ -674,14 +586,12 @@ public class PDFReportItext extends GXReportPDFCommons
             System.err.println(ioe.getMessage());
         }
 	}
-    public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border, int valign)
-    {
+    public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border, int valign) {
     	boolean printRectangle = false;
     	if (props.getBooleanGeneralProperty(Const.BACK_FILL_IN_CONTROLS, true))
     		printRectangle = true;
     		
-    	if (printRectangle && (border == 1 || backFill))
-    	{
+    	if (printRectangle && (border == 1 || backFill)) {
     		GxDrawRect(left, top, right, bottom, border, foreColor.getRed(), foreColor.getGreen(), foreColor.getBlue(), backFill ? 1 : 0, backColor.getRed(), backColor.getGreen(), backColor.getBlue(), 0, 0);
     	}    	
 		
@@ -702,8 +612,7 @@ public class PDFReportItext extends GXReportPDFCommons
 		
 		//Si se tiene un campo con mas de una linea y no tiene wrap, no es justify, y no es html, se simula que el campo tiene una sola linea
 		//asignando al bottom el top mas el lineHeight
-		if (linesCount >= 2 && !((align & 16) == 16) && htmlformat != 1)
-		{
+		if (linesCount >= 2 && !((align & 16) == 16) && htmlformat != 1) {
 			if (valign == VerticalAlign.TOP.value())
 				bottom = top + (int)reconvertScale(lineHeight);
 			else if (valign == VerticalAlign.BOTTOM.value())
@@ -726,20 +635,16 @@ public class PDFReportItext extends GXReportPDFCommons
 		int alignment = align & 3;
 		boolean autoResize = (align & 256) == 256;
 		
-        if (htmlformat == 1)
-        {
+        if (htmlformat == 1) {
             StyleSheet styles = new StyleSheet();
 			Hashtable locations = getFontLocations();
-			for (Enumeration e = locations.keys(); e.hasMoreElements() ;) 
-		   	{
+			for (Enumeration e = locations.keys(); e.hasMoreElements() ;) {
 				String fontName = (String)e.nextElement();
 				String fontPath = (String)locations.get(fontName);
-				if (fontPath.equals(""))
-				{
+				if (fontPath.equals("")) {
 					fontPath = PDFFontDescriptor.getTrueTypeFontLocation(fontName, props);
 				}
-				if (!fontPath.equals(""))
-				{
+				if (!fontPath.equals("")) {
 					FontFactory.register(fontPath, fontName);
 					styles.loadTagStyle("body", "face", fontName);
 
@@ -765,18 +670,14 @@ public class PDFReportItext extends GXReportPDFCommons
 			Col.setSimpleColumn(leftAux + leftMargin,drawingPageHeight - bottomAux,rightAux + leftMargin,drawingPageHeight - topAux);
 			simulationCol.setSimpleColumn(leftAux + leftMargin,drawingPageHeight - bottomAux,rightAux + leftMargin,drawingPageHeight - topAux);
 
-            try
-            {
+            try {
                 ArrayList objects = HTMLWorker.parseToList(new StringReader(sTxt), styles);
-                for (int k = 0; k < objects.size(); ++k)
-				{
-						if (pageHeightExceeded(bottomAux, drawingPageHeight))
-						{
+                for (int k = 0; k < objects.size(); ++k) {
+						if (pageHeightExceeded(bottomAux, drawingPageHeight)) {
 							simulationCol.addElement((Element)objects.get(k));
 							simulationCol.go(true);
 
-							if (simulationCol.getYLine() < bottomMargin)
-							{
+							if (simulationCol.getYLine() < bottomMargin) {
 								GxEndPage();
 								GxStartPage();
 								simulationCol = new ColumnText(null);
@@ -802,17 +703,14 @@ public class PDFReportItext extends GXReportPDFCommons
 			}
 		}
 		else 
-		if (barcode!=null)
-		{
+		if (barcode!=null) {
 			if(DEBUG)DEBUG_STREAM.println("Barcode: --> " + barcode.getClass().getName());
-			try
-			{
+			try {
 				barcode.setCode(sTxt);
 				barcode.setTextAlignment(alignment);
 				com.lowagie.text.Rectangle rectangle = new com.lowagie.text.Rectangle(0, 0);
 				//El rectangulo tiene tamaño ok.
-				switch (alignment)
-				{
+				switch (alignment) {
 					case 1: // Center Alignment
 						rectangle = new com.lowagie.text.Rectangle((leftAux + rightAux) / 2 + leftMargin - rectangleWidth / 2,
 							(float)this.pageSize.getTop() - (float)convertScale(bottom) - topMargin - bottomMargin,
@@ -847,21 +745,17 @@ public class PDFReportItext extends GXReportPDFCommons
 				imageCode.scaleToFit(rectangle.getWidth(), rectangle.getHeight());
 				document.add(imageCode);
 			}
-			catch (Exception ex)
-			{
+			catch (Exception ex) {
 				if(DEBUG)DEBUG_STREAM.println("Error generating Barcode: --> " + barcode.getClass().getName() + ex.getMessage());
 				if(DEBUG)ex.printStackTrace ();
 			}
 		}
-		else
-		{
+		else {
 
-			if(backFill)
-			{
+			if(backFill) {
 				com.lowagie.text.Rectangle rectangle = new com.lowagie.text.Rectangle(0,0);
 				//Si el texto tiene background lo dibujo de esta forma
-				switch(alignment)
-				{
+				switch(alignment) {
 				case 1: // Center Alignment
 					rectangle = new com.lowagie.text.Rectangle((leftAux + rightAux)/2 + leftMargin - rectangleWidth/2, (float)this.pageSize.getTop() -  bottomAux - topMargin -bottomMargin , (leftAux + rightAux)/2 + leftMargin + rectangleWidth/2, (float)this.pageSize.getTop() - topAux - topMargin -bottomMargin);				
 					break;
@@ -873,12 +767,10 @@ public class PDFReportItext extends GXReportPDFCommons
 					break;
 				}
 				rectangle.setBackgroundColor(backColor);
-				try
-				{
+				try {
 					document.add(rectangle);
 				}
-				catch(DocumentException de) 
-				{
+				catch(DocumentException de) {
 					System.err.println(de.getMessage());
 				}
 			}
@@ -888,12 +780,10 @@ public class PDFReportItext extends GXReportPDFCommons
 			com.lowagie.text.Rectangle underline;
 			
 			//Si el texto esta subrayado
-			if (fontUnderline)
-			{
+			if (fontUnderline) {
 				underline = new com.lowagie.text.Rectangle(0,0);
 				
-				switch(alignment)
-				{
+				switch(alignment) {
 				case 1: // Center Alignment
 						underline = new com.lowagie.text.Rectangle( 
 							(leftAux + rightAux)/2 + leftMargin - rectangleWidth/2, 
@@ -915,19 +805,16 @@ public class PDFReportItext extends GXReportPDFCommons
 					break;
 				}
 				underline.setBackgroundColor(foreColor);
-				try
-				{
+				try {
 					document.add(underline);
 				}
-				catch(DocumentException de) 
-				{
+				catch(DocumentException de) {
 					System.err.println(de.getMessage());
 				}
 			}
 			
 			//Si el texto esta tachado
-			if (fontStrikethru)
-			{
+			if (fontStrikethru) {
 				underline = new com.lowagie.text.Rectangle(0,0);
 				float strikethruSeparation = lineHeight / 2;
 				
@@ -964,10 +851,8 @@ public class PDFReportItext extends GXReportPDFCommons
 				}
 			}
 			
-			if(sTxt.trim().equalsIgnoreCase("{{Pages}}"))
-			{// Si el texto es la cantidad de páginas del documento
-				if (!templateCreated)
-				{
+			if(sTxt.trim().equalsIgnoreCase("{{Pages}}")) {// Si el texto es la cantidad de páginas del documento
+				if (!templateCreated) {
 					template = cb.createTemplate(right - left, bottom - top);
 					templateCreated = true;
 				}
@@ -984,8 +869,7 @@ public class PDFReportItext extends GXReportPDFCommons
 			boolean wrap = ((align & 16) == 16);
 
 			//Justified
-            if (wrap || justified)
-            {
+            if (wrap || justified) {
                 //Bottom y top son los absolutos, sin considerar la altura real a la que se escriben las letras.
                 bottomAux = (float)convertScale(bottomOri);
                 topAux = (float)convertScale(topOri);
@@ -1007,17 +891,14 @@ public class PDFReportItext extends GXReportPDFCommons
 			    	ex.printStackTrace(System.err);
 			    }
             }
-			else //no wrap
-			{
+			else{ //no wrap
 				startHeight=0;
-				if (!autoResize)
-				{
+				if (!autoResize) {
 					//Va quitando el ultimo char del texto hasta que llega a un string cuyo ancho se pasa solo por un caracter
 					//del ancho del textblock ("se pasa solo por un caracter": esto es porque en el caso general es ese el texto que
 					//mas se parece a lo que se disenia en genexus).
 					String newsTxt = sTxt;
-					while(TxtWidth > textBlockWidth && (newsTxt.length()-1>=0))
-					{
+					while(TxtWidth > textBlockWidth && (newsTxt.length()-1>=0)) {
 						sTxt = newsTxt;
 						newsTxt = newsTxt.substring(0, newsTxt.length()-1);
 						TxtWidth = baseFont.getWidthPoint(newsTxt, fontSize);
@@ -1025,8 +906,7 @@ public class PDFReportItext extends GXReportPDFCommons
 				}
 
 				Phrase phrase = new Phrase(sTxt, font);
-				switch(alignment)
-				{
+				switch(alignment) {
 				case 1: // Center Alignment
 					ColumnText.showTextAligned(cb, cb.ALIGN_CENTER, phrase, ((leftAux + rightAux) / 2) + leftMargin, this.pageSize.getTop() - bottomAux - topMargin - bottomMargin + startHeight, 0, runDirection, arabicOptions);
 					break;
@@ -1055,8 +935,7 @@ public class PDFReportItext extends GXReportPDFCommons
 		Col.go(true);
 		return Col;
 	}
-	void DrawColumnText(PdfContentByte cb, float llx, float lly, float urx, float ury, Paragraph p, float leading, int runDirection, int valign, int alignment) throws DocumentException
-	{
+	void DrawColumnText(PdfContentByte cb, float llx, float lly, float urx, float ury, Paragraph p, float leading, int runDirection, int valign, int alignment) throws DocumentException {
 		Rectangle rect = new Rectangle(llx, lly, urx, ury);
 		ColumnText ct = SimulateDrawColumnText(cb, rect, p, leading, runDirection, alignment);//add the column in simulation mode
 		float y = ct.getYLine();
@@ -1084,36 +963,24 @@ public class PDFReportItext extends GXReportPDFCommons
 		Col.addText(p);
 		Col.go();
 	}
-	private int columnAlignment(int alignment)
-	{
+	private int columnAlignment(int alignment) {
 		if (alignment == Element.ALIGN_JUSTIFIED)
 			return justifiedType;
 		else
 			return alignment;
 	}
 
-	public static final double PAGE_SCALE_Y = 20; // Indica la escala de la página
-    public static final double PAGE_SCALE_X = 20; // Indica la escala de la página
-	public static final double GX_PAGE_SCALE_Y_OLD = 15.45;
-    public static final double GX_PAGE_SCALE_Y = 14.4; // Indica la escala de la página, GeneXus lleva otra escala para el tamaño de la hoja, (variando este parametro, se agranda o achica el tamaño imprimible por GeneXus)
-    //Por ejemplo: si en genexus se tiene un reporte con Paper Height de 1169 (A4) centésimos de pulgada (1/100 inch), 
-    //en el parámetro pageLength llega 16834 que esta en Twips (16834 = 1169*14.4). 1 twip = 1/1440 inch.
-    //Con el valor anterior 15.45 estaba quedando un margen bottom fijo que no se podia eliminar (incluso seteando mb 0).
-	private static double TO_CM_SCALE =28.6;  // Escala CM -> metricas PDF (utilizado en el pageMargin)
-    public boolean GxPrintInit(String output, int gxXPage[], int gxYPage[], String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex)
-    {
+    public boolean GxPrintInit(String output, int gxXPage[], int gxYPage[], String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex) {
 		PPP = gxYPage[0];
 		loadPrinterSettingsProps(iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
 		
-        if(outputStream != null)
-		{
+        if(outputStream != null) {
 			if (output.equalsIgnoreCase("PRN"))
 				outputType = Const.OUTPUT_STREAM_PRINTER;
 			else
 				outputType = Const.OUTPUT_STREAM;
 		}
-        else
-        {
+        else {
             if(output.equalsIgnoreCase("SCR"))
                 outputType = Const.OUTPUT_SCREEN;
             else if(output.equalsIgnoreCase("PRN"))
@@ -1122,23 +989,19 @@ public class PDFReportItext extends GXReportPDFCommons
 
             if(outputType == Const.OUTPUT_FILE)
                 TemporaryFiles.getInstance().removeFileFromList(docName);
-            else
-            {
+            else {
                 String tempPrefix = docName;
                 String tempExtension = "pdf";
                 int tempIndex = docName.lastIndexOf('.');
-                if(tempIndex != -1)
-                {
+                if(tempIndex != -1) {
                     tempPrefix = docName.substring(0, tempIndex);
                     tempExtension = ((docName + " ").substring(tempIndex + 1)).trim();
                 }
                 docName = TemporaryFiles.getInstance().getTemporaryFile(tempPrefix, tempExtension);
             }
-            try
-            {
+            try {
                 setOutputStream(new FileOutputStream(docName));
-            }catch(IOException accessError)
-            { // Si no se puede generar el archivo, muestro el stackTrace y seteo el stream como NullOutputStream
+            }catch(IOException accessError) { // Si no se puede generar el archivo, muestro el stackTrace y seteo el stream como NullOutputStream
                 accessError.printStackTrace(System.err);
                 outputStream = new com.genexus.util.NullOutputStream();
                 outputType = Const.OUTPUT_FILE; // Hago esto para no tener lios con el Acrobat
@@ -1183,10 +1046,8 @@ public class PDFReportItext extends GXReportPDFCommons
         return true;
     }
 
-	private com.lowagie.text.Rectangle computePageSize(float leftMargin, float topMargin, int width, int length, boolean marginsInsideBorder)
-	{
-		if ((leftMargin == 0 && topMargin == 0)||marginsInsideBorder)
-		{
+	private com.lowagie.text.Rectangle computePageSize(float leftMargin, float topMargin, int width, int length, boolean marginsInsideBorder) {
+		if ((leftMargin == 0 && topMargin == 0)||marginsInsideBorder) {
 			if (length == 23818 && width == 16834)
 				return PageSize.A3;
 			else if (length == 16834 && width == 11909)
@@ -1209,16 +1070,13 @@ public class PDFReportItext extends GXReportPDFCommons
 		return new com.lowagie.text.Rectangle((int)(width / PAGE_SCALE_X) + leftMargin, (int)(length / PAGE_SCALE_Y) + topMargin);
 	}
 
-    public void GxEndDocument()
-    {
-      if(document.getPageNumber() == 0)
-      { // Si no hay ninguna página en el documento, agrego una vacia}
+    public void GxEndDocument() {
+      if(document.getPageNumber() == 0) { // Si no hay ninguna página en el documento, agrego una vacia}
         writer.setPageEmpty(false);
       }
 
         //Ahora proceso los comandos GeneXus {{Pages}}
-	    if (template != null)
-		{
+	    if (template != null) {
 	  		template.beginText();
 			template.setFontAndSize(templateFont, templateFontSize);
 			template.setTextMatrix(0,0);
@@ -1227,8 +1085,7 @@ public class PDFReportItext extends GXReportPDFCommons
 			template.endText();
 		}
 		int copies = 1;
-		try
-		{
+		try {
 			copies = Integer.parseInt(printerSettings.getProperty(form, Const.COPIES));
 			if(DEBUG)DEBUG_STREAM.println("Setting number of copies to " + copies);
 			writer.addViewerPreference(PdfName.NUMCOPIES, new PdfNumber(copies));
@@ -1245,40 +1102,32 @@ public class PDFReportItext extends GXReportPDFCommons
 			if(DEBUG)DEBUG_STREAM.println("Setting duplex to " + duplexValue.toString());
 				writer.addViewerPreference(PdfName.DUPLEX, duplexValue);
 		}
-		catch(Exception ex)
-		{
+		catch(Exception ex) {
 			ex.printStackTrace(System.err);
 		}
 
 		String serverPrinting = props.getGeneralProperty(Const.SERVER_PRINTING);
 		boolean fit= props.getGeneralProperty(Const.ADJUST_TO_PAPER).equals("true");
-		if ((outputType==Const.OUTPUT_PRINTER || outputType==Const.OUTPUT_STREAM_PRINTER) && (httpContext instanceof HttpContextWeb && serverPrinting.equals("false")))
-		{
+		if ((outputType==Const.OUTPUT_PRINTER || outputType==Const.OUTPUT_STREAM_PRINTER) && (httpContext instanceof HttpContextWeb && serverPrinting.equals("false"))) {
 			//writer.addJavaScript("if (this.external)\n");//Specifies whether the current document is being viewed in the Acrobat application or in an external window (such as a web browser).
 			//writer.addJavaScript("app.alert('SI es externa' + this.external);");
 
-			
 				writer.addJavaScript("var pp = this.getPrintParams();\n");
-				//writer.addJavaScript("pp.interactive = pp.constants.interactionLevel.automatic;\n");
 				String printerAux=printerSettings.getProperty(form, Const.PRINTER);
 				String printer = replace(printerAux, "\\", "\\\\");
 
-				if (printer!=null && !printer.equals(""))
-				{
+				if (printer!=null && !printer.equals("")) {
 	                writer.addJavaScript("pp.printerName = \"" + printer + "\";\n");
 				}
 
-			if (fit)
-			{
+			if (fit) {
 				writer.addJavaScript("pp.pageHandling = pp.constants.handling.fit;\n");
 			}
-			else
-			{
+			else {
 				writer.addJavaScript("pp.pageHandling = pp.constants.handling.none;\n");
 			}
 
-				if (printerSettings.getProperty(form, Const.MODE, "3").startsWith("0"))//Show printer dialog Never
-				{
+				if (printerSettings.getProperty(form, Const.MODE, "3").startsWith("0")){//Show printer dialog Never
 					writer.addJavaScript("pp.interactive = pp.constants.interactionLevel.automatic;\n");
 					//No print dialog is displayed. During printing a progress monitor and cancel
 					//dialog is displayed and removed automatically when printing is complete.
@@ -1287,8 +1136,7 @@ public class PDFReportItext extends GXReportPDFCommons
 						writer.addJavaScript("this.print(pp);\n");
 					}
 				}
-				else //Show printer dialog is sent directly to printer | always
-				{
+				else{ //Show printer dialog is sent directly to printer | always
 					writer.addJavaScript("pp.interactive = pp.constants.interactionLevel.full;\n");
 					//Displays the print dialog allowing the user to change print settings and requiring
 					//the user to press OK to continue. During printing a progress monitor and cancel
@@ -1304,14 +1152,11 @@ public class PDFReportItext extends GXReportPDFCommons
 
 		try{ props.save(); } catch(IOException e) { ; }
 
-
         // OK, ahora que ya terminamos el PDF, vemos si tenemos que mostrarlo en pantalla
-        switch(outputType)
-        {
+        switch(outputType) {
         case Const.OUTPUT_SCREEN:
             try{ outputStream.close(); } catch(IOException e) { ; } // Cierro el archivo
-            try{ showReport(docName, modal); } catch(Exception e)
-            { // Si no se puede mostrar el reporte
+            try{ showReport(docName, modal); } catch(Exception e) { // Si no se puede mostrar el reporte
                 e.printStackTrace();
             }
 //  Comento la próxima lú‹ea, porque por manejo interno del Acrobat, si ya habú} una instancia del
@@ -1322,8 +1167,7 @@ public class PDFReportItext extends GXReportPDFCommons
         case Const.OUTPUT_PRINTER:
             try{ outputStream.close(); } catch(IOException e) { ; } // Cierro el archivo
             try{
-				if (!(httpContext instanceof HttpContextWeb) || !serverPrinting.equals("false"))
-				{
+				if (!(httpContext instanceof HttpContextWeb) || !serverPrinting.equals("false")) {
 					printReport(docName, this.printerOutputMode == 1); 
 				}
 			} catch(Exception e){ // Si no se puede mostrar el reporte
@@ -1339,16 +1183,14 @@ public class PDFReportItext extends GXReportPDFCommons
         }
         outputStream = null;
     }
-    public void GxStartPage()
-    {
+    public void GxStartPage() {
 		boolean ret = document.newPage();
 		pages = pages +1;
 	}
 
 	public void GxEndPage() {}
 
-	class FontProps
-	{
+	class FontProps {
 		public int horizontal;
 		public int vertical;
 	}
