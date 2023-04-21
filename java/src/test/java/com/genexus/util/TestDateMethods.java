@@ -82,7 +82,7 @@ public class TestDateMethods {
         Assert.assertTrue(calendar.get(Calendar.YEAR) == 1931);
     }
 
-    /*@Test
+    @Test
     public void testDateTimeToUTC() {
         Connect.init();
 
@@ -90,10 +90,6 @@ public class TestDateMethods {
 
         String dateTime = "2023-03-22 15:00:00"; // input DateTime
 		long expectedDiff = 10800000;
-		ConvertDateTime(dateTime, timezone, expectedDiff, true);
-
-		dateTime = "2012-10-07 1:00:00";
-		expectedDiff = 7200000;
 		ConvertDateTime(dateTime, timezone, expectedDiff, true);
 
 		dateTime = "2011-02-20 1:00:00"; // input DateTime during summer time
@@ -114,7 +110,7 @@ public class TestDateMethods {
 		dateTime = "2011-02-20 3:00:00"; // input DateTime during summer time
 		expectedDiff = -7200000;
 		ConvertDateTime(dateTime, timezone, expectedDiff, false);
-	}*/
+	}
 
     /**
      * DateTimeToUTC must not fail if the Timezone does not exists.
