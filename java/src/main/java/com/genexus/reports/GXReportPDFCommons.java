@@ -53,6 +53,7 @@ import com.genexus.platform.INativeFunctions;
 import com.genexus.platform.NativeFunctions;
 import com.genexus.reports.fonts.Utilities;
 import com.genexus.webpanels.HttpContextWeb;
+import com.genexus.util.TemporaryFiles;
 
 import java.awt.*;
 import java.io.*;
@@ -498,7 +499,69 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 	//en el parámetro pageLength llega 16834 que esta en Twips (16834 = 1169*14.4). 1 twip = 1/1440 inch.
 	//Con el valor anterior 15.45 estaba quedando un margen bottom fijo que no se podia eliminar (incluso seteando mb 0).
 	protected static double TO_CM_SCALE = 28.6;  // Escala CM -> metricas PDF (utilizado en el pageMargin)
-	public abstract boolean GxPrintInit(String output, int gxXPage[], int gxYPage[], String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex);
+
+	private boolean preGxPrintInit(String output, int gxXPage[], int gxYPage[], String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex){
+		try {
+			PPP = gxYPage[0];
+			loadPrinterSettingsProps(iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
+
+			if(outputStream != null) {
+				if (output.equalsIgnoreCase("PRN"))
+					outputType = Const.OUTPUT_STREAM_PRINTER;
+				else
+					outputType = Const.OUTPUT_STREAM;
+			}
+			else {
+				if(output.equalsIgnoreCase("SCR"))
+					outputType = Const.OUTPUT_SCREEN;
+				else if(output.equalsIgnoreCase("PRN"))
+					outputType = Const.OUTPUT_PRINTER;
+				else outputType = Const.OUTPUT_FILE;
+
+				if(outputType == Const.OUTPUT_FILE)
+					TemporaryFiles.getInstance().removeFileFromList(docName);
+				else {
+					String tempPrefix = docName;
+					String tempExtension = "pdf";
+					int tempIndex = docName.lastIndexOf('.');
+					if(tempIndex != -1) {
+						tempPrefix = docName.substring(0, tempIndex);
+						tempExtension = ((docName + " ").substring(tempIndex + 1)).trim();
+					}
+					docName = TemporaryFiles.getInstance().getTemporaryFile(tempPrefix, tempExtension);
+				}
+				try {
+					setOutputStream(new FileOutputStream(docName));
+				}catch(IOException accessError) { // Si no se puede generar el archivo, muestro el stackTrace y seteo el stream como NullOutputStream
+					accessError.printStackTrace(System.err);
+					outputStream = new com.genexus.util.NullOutputStream();
+					outputType = Const.OUTPUT_FILE; // Hago esto para no tener lios con el Acrobat
+				}
+			}
+			printerOutputMode = mode;
+
+			boolean ret;
+			ret = props.setupGeneralProperty(Const.LEFT_MARGIN, Const.DEFAULT_LEFT_MARGIN);
+			ret = props.setupGeneralProperty(Const.TOP_MARGIN, Const.DEFAULT_TOP_MARGIN);
+			ret = props.setupGeneralProperty(Const.BOTTOM_MARGIN, Const.DEFAULT_BOTTOM_MARGIN);
+			leftMargin = (float) (TO_CM_SCALE * Double.valueOf(props.getGeneralProperty(Const.LEFT_MARGIN)).doubleValue());
+			topMargin = (float) (TO_CM_SCALE * Double.valueOf(props.getGeneralProperty(Const.TOP_MARGIN)).doubleValue());
+			bottomMargin = (float) (Double.valueOf(props.getGeneralProperty(Const.BOTTOM_MARGIN)).doubleValue());
+
+			lineCapProjectingSquare = props.getGeneralProperty(Const.LINE_CAP_PROJECTING_SQUARE).equals("true");
+			barcode128AsImage = props.getGeneralProperty(Const.BARCODE128_AS_IMAGE).equals("true");
+			STYLE_DOTTED = parsePattern(props.getGeneralProperty(Const.STYLE_DOTTED));
+			STYLE_DASHED = parsePattern(props.getGeneralProperty(Const.STYLE_DASHED));
+			STYLE_LONG_DASHED = parsePattern(props.getGeneralProperty(Const.STYLE_LONG_DASHED));
+			STYLE_LONG_DOT_DASHED = parsePattern(props.getGeneralProperty(Const.STYLE_LONG_DOT_DASHED));
+
+			return true;
+		} catch (Exception e) {return false;}
+	}
+
+	public boolean GxPrintInit(String output, int gxXPage[], int gxYPage[], String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex){
+		return preGxPrintInit(output, gxXPage, gxYPage, iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
+	}
 
 	public int getPageLines() {
 		if(DEBUG)DEBUG_STREAM.println("getPageLines: --> " + pageLines);
