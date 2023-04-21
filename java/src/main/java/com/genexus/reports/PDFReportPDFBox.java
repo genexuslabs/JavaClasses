@@ -21,6 +21,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.*;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.graphics.state.RenderingMode;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionJavaScript;
 import org.apache.pdfbox.pdmodel.interactive.viewerpreferences.PDViewerPreferences;
 import org.apache.pdfbox.util.Matrix;
@@ -853,36 +854,33 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	private void resolveTextStyling(PDPageContentStream contentStream, String text, float x, float y, boolean isWrapped){
 		try {
 			if (this.fontBold && this.fontItalic){
+				contentStream.setStrokingColor(foreColor);
+				contentStream.setLineWidth(fontSize * 0.1f);
+				contentStream.setRenderingMode(RenderingMode.FILL_STROKE);
 				contentStream.beginText();
 				contentStream.moveTextPositionByAmount(x, y);
-				contentStream.setTextMatrix(1, Math.tan(Math.toRadians(10)), 0, 1, 0, 0);
-				contentStream.appendRawCommands("2 Tr\n");
-				contentStream.showText(text);
-				if (isWrapped) contentStream.newLineAtOffset(-x, -(float)(Double.valueOf(props.getGeneralProperty(Const.LEADING)).doubleValue()));
-				contentStream.appendRawCommands("0 Tr\n");
-				contentStream.endText();
+				contentStream.setTextMatrix(new Matrix(1, 0, 0.2f, 1, x + 0.2f * y, y));
+				contentStream.newLineAtOffset(-0.2f * y, 0);
 			} else if (this.fontBold && !this.fontItalic){
+				contentStream.setStrokingColor(foreColor);
+				contentStream.setLineWidth(fontSize * 0.1f);
+				contentStream.setRenderingMode(RenderingMode.FILL_STROKE);
 				contentStream.beginText();
 				contentStream.moveTextPositionByAmount(x, y);
-				contentStream.appendRawCommands("2 Tr\n");
-				contentStream.showText(text);
-				if (isWrapped) contentStream.newLineAtOffset(-x, -(float)(Double.valueOf(props.getGeneralProperty(Const.LEADING)).doubleValue()));
-				contentStream.appendRawCommands("0 Tr\n");
-				contentStream.endText();
 			} else if (!this.fontBold && this.fontItalic){
 				contentStream.beginText();
 				contentStream.moveTextPositionByAmount(x, y);
-				contentStream.setTextMatrix(1, Math.tan(Math.toRadians(10)), 0, 1, 0, 0);
-				contentStream.showText(text);
-				if (isWrapped) contentStream.newLineAtOffset(-x, -(float)(Double.valueOf(props.getGeneralProperty(Const.LEADING)).doubleValue()));
-				contentStream.endText();
+				contentStream.setTextMatrix(new Matrix(1, 0, 0.2f, 1, x + 0.2f * y, y));
+				contentStream.newLineAtOffset(-0.2f * y, 0);
 			} else {
 				contentStream.beginText();
 				contentStream.newLineAtOffset(x, y);
-				contentStream.showText(text);
-				if (isWrapped) contentStream.newLineAtOffset(-x, -(float)(Double.valueOf(props.getGeneralProperty(Const.LEADING)).doubleValue()));
-				contentStream.endText();
 			}
+			contentStream.showText(text);
+			if (isWrapped) contentStream.newLineAtOffset(-x, -(float)(Double.valueOf(props.getGeneralProperty(Const.LEADING)).doubleValue()));
+			contentStream.endText();
+			contentStream.setLineWidth(1f); // Default line width for PDFBox 2.0.27
+			contentStream.setRenderingMode(RenderingMode.FILL); // Default text rendering mode for PDFBox 2.0.27
 		} catch (Exception e) {}
 	}
 
@@ -930,7 +928,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				resolveTextStyling(contentStream, line, startX, startY, true);
 				startY -= leading;
 			}
-		} catch (Exception e) {}
+		} catch (Exception e) {System.err.println(e.getMessage());}
 	}
 
 	private void showTextAligned(PDPageContentStream contentStream, PDType0Font font, int alignment, String text, float x, float y){
@@ -949,7 +947,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					break;
 			}
 			resolveTextStyling(contentStream,text, x, y,false);
-		} catch (Exception e) {}
+		} catch (Exception e) {System.err.println(e.getMessage());}
 	}
 
 	public boolean GxPrintInit(String output, int gxXPage[], int gxYPage[], String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex) {
