@@ -32,9 +32,19 @@ public class GXutil implements IExtensionGXutil {
 	private ZonedDateTime getZonedDateTime(Date value, TimeZone tz){
 		ZonedDateTime zdt;
 		try {
-			zdt = ZonedDateTime.ofInstant(value.toInstant(), tz.toZoneId());
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(value);
+			int year = calendar.get(Calendar.YEAR);
+			int month = calendar.get(Calendar.MONTH) + 1;
+			int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+			int hour = calendar.get(Calendar.HOUR_OF_DAY);
+			int minute = calendar.get(Calendar.MINUTE);
+			int second = calendar.get(Calendar.SECOND);
+			int nanoOfSecond = calendar.get(Calendar.MILLISECOND);
+
+			zdt = ZonedDateTime.of(LocalDateTime.of(year, month, dayOfMonth, hour, minute, second, nanoOfSecond), tz.toZoneId());
 		}
-		catch(DateTimeException e) {
+		catch(Exception e) {
 			zdt = ZonedDateTime.ofInstant(value.toInstant(), ZoneId.systemDefault());
 			logger.error(String.format("Failed to find TimeZone: %s. Using default Timezone", tz.getID()), e);
 		}
@@ -58,7 +68,7 @@ public class GXutil implements IExtensionGXutil {
 		if (com.genexus.CommonUtil.emptyDate(value))
 			return value;
 
-		ZonedDateTime zdtUTC = ZonedDateTime.of(value.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(), ZoneId.of("UTC"));
+		ZonedDateTime zdtUTC = getZonedDateTime(value, TimeZone.getTimeZone("UTC"));
 		return Timestamp.valueOf(zdtUTC.withZoneSameInstant(ZoneId.of(tz.getID())).toLocalDateTime());
 	}
 
