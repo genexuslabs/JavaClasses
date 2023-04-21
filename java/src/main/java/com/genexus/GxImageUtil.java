@@ -7,6 +7,7 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
+import java.net.URLConnection;
 
 import com.genexus.db.driver.ResourceAccessControlList;
 import com.genexus.util.GxFileInfoSourceType;
@@ -49,13 +50,10 @@ public class GxImageUtil {
 		IHttpContext httpContext = com.genexus.ModelContext.getModelContext().getHttpContext();
 		if (imageFile.toLowerCase().startsWith("http://") || imageFile.toLowerCase().startsWith("https://") ||
 			(httpContext.isHttpContextWeb() && imageFile.startsWith(httpContext.getContextPath()))){
-			try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-				BufferedImage image = ImageIO.read(new URL(GXDbFile.pathToUrl( imageFile, httpContext)).openStream());
-				String extension = imageFile.substring(imageFile.lastIndexOf(".") + 1);
-				ImageIO.write(image, extension, baos);
-				baos.flush();
-				byte[] imageInByte = baos.toByteArray();
-				return imageInByte.length;
+			try {
+				URL url = new URL(GXDbFile.pathToUrl(imageFile, httpContext));
+				URLConnection connection = url.openConnection();
+				return Long.parseLong(connection.getHeaderField("Content-Length"));
 			} catch (Exception e) {
 				log.error("getFileSize " + imageFile + " failed" , e);
 			}
@@ -114,11 +112,22 @@ public class GxImageUtil {
 
 	private static String writeImage(BufferedImage croppedImage, String destinationFilePathOrUrl) throws IOException {
 		String newFileName = PrivateUtilities.getTempFileName(CommonUtil.getFileType(destinationFilePathOrUrl));
-		try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
+		IHttpContext httpContext = com.genexus.ModelContext.getModelContext().getHttpContext();
+		try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()){
 			ImageIO.write(croppedImage, CommonUtil.getFileType(newFileName), outStream);
-			outStream.flush();
-			byte[] imageInByte = outStream.toByteArray();
-			return GXutil.blobFromBytes(imageInByte);
+			if (destinationFilePathOrUrl.toLowerCase().startsWith("http://") || destinationFilePathOrUrl.toLowerCase().startsWith("https://") ||
+				(httpContext.isHttpContextWeb() && destinationFilePathOrUrl.startsWith(httpContext.getContextPath()))){
+				try (ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray())) {
+					GXFile file = getGXFile(newFileName);
+					file.create(inStream, true);
+					file.close();
+					return file.getURI();
+				}
+			} else {
+				outStream.flush();
+				byte[] imageInByte = outStream.toByteArray();
+				return GXutil.blobFromBytes(imageInByte);
+			}
 		}
 	}
 
