@@ -2,7 +2,6 @@ package com.genexus.reports;
 
 import java.awt.Color;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
@@ -11,7 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
 import com.genexus.platform.NativeFunctions;
-import com.genexus.util.TemporaryFiles;
 import com.genexus.webpanels.HttpContextWeb;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
@@ -971,59 +969,8 @@ public class PDFReportItext extends GXReportPDFCommons
 	}
 
     public boolean GxPrintInit(String output, int gxXPage[], int gxYPage[], String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex) {
-		PPP = gxYPage[0];
-		loadPrinterSettingsProps(iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
-		
-        if(outputStream != null) {
-			if (output.equalsIgnoreCase("PRN"))
-				outputType = Const.OUTPUT_STREAM_PRINTER;
-			else
-				outputType = Const.OUTPUT_STREAM;
-		}
-        else {
-            if(output.equalsIgnoreCase("SCR"))
-                outputType = Const.OUTPUT_SCREEN;
-            else if(output.equalsIgnoreCase("PRN"))
-                outputType = Const.OUTPUT_PRINTER;
-            else outputType = Const.OUTPUT_FILE;
+		boolean preResult = super.GxPrintInit(output, gxXPage, gxYPage, iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
 
-            if(outputType == Const.OUTPUT_FILE)
-                TemporaryFiles.getInstance().removeFileFromList(docName);
-            else {
-                String tempPrefix = docName;
-                String tempExtension = "pdf";
-                int tempIndex = docName.lastIndexOf('.');
-                if(tempIndex != -1) {
-                    tempPrefix = docName.substring(0, tempIndex);
-                    tempExtension = ((docName + " ").substring(tempIndex + 1)).trim();
-                }
-                docName = TemporaryFiles.getInstance().getTemporaryFile(tempPrefix, tempExtension);
-            }
-            try {
-                setOutputStream(new FileOutputStream(docName));
-            }catch(IOException accessError) { // Si no se puede generar el archivo, muestro el stackTrace y seteo el stream como NullOutputStream
-                accessError.printStackTrace(System.err);
-                outputStream = new com.genexus.util.NullOutputStream();
-                outputType = Const.OUTPUT_FILE; // Hago esto para no tener lios con el Acrobat
-            }
-        }
-        printerOutputMode = mode;
-			
-			boolean ret;
-            ret = props.setupGeneralProperty(Const.LEFT_MARGIN, Const.DEFAULT_LEFT_MARGIN);
-            ret = props.setupGeneralProperty(Const.TOP_MARGIN, Const.DEFAULT_TOP_MARGIN);
-			ret = props.setupGeneralProperty(Const.BOTTOM_MARGIN, Const.DEFAULT_BOTTOM_MARGIN);
-			leftMargin = (float) (TO_CM_SCALE * Double.valueOf(props.getGeneralProperty(Const.LEFT_MARGIN)).doubleValue());
-			topMargin = (float) (TO_CM_SCALE * Double.valueOf(props.getGeneralProperty(Const.TOP_MARGIN)).doubleValue());
-			bottomMargin = (float) (Double.valueOf(props.getGeneralProperty(Const.BOTTOM_MARGIN)).doubleValue()); 
-
-			lineCapProjectingSquare = props.getGeneralProperty(Const.LINE_CAP_PROJECTING_SQUARE).equals("true");
-			barcode128AsImage = props.getGeneralProperty(Const.BARCODE128_AS_IMAGE).equals("true");
-		STYLE_DOTTED = parsePattern(props.getGeneralProperty(Const.STYLE_DOTTED));
-		STYLE_DASHED = parsePattern(props.getGeneralProperty(Const.STYLE_DASHED));
-		STYLE_LONG_DASHED = parsePattern(props.getGeneralProperty(Const.STYLE_LONG_DASHED));
-		STYLE_LONG_DOT_DASHED = parsePattern(props.getGeneralProperty(Const.STYLE_LONG_DOT_DASHED));
-		
 		runDirection = Integer.valueOf(props.getGeneralProperty(Const.RUN_DIRECTION)).intValue();
 
 		if (props.getBooleanGeneralProperty(Const.JUSTIFIED_TYPE_ALL, false))
@@ -1043,7 +990,10 @@ public class PDFReportItext extends GXReportPDFCommons
 
         init();
 
-        return true;
+		if (!preResult)
+			return !preResult;
+		else
+			return true;
     }
 
 	private com.lowagie.text.Rectangle computePageSize(float leftMargin, float topMargin, int width, int length, boolean marginsInsideBorder) {
