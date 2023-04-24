@@ -40,7 +40,7 @@ public class GXutil implements IExtensionGXutil {
 			int hour = calendar.get(Calendar.HOUR_OF_DAY);
 			int minute = calendar.get(Calendar.MINUTE);
 			int second = calendar.get(Calendar.SECOND);
-			int nanoOfSecond = calendar.get(Calendar.MILLISECOND);
+			int nanoOfSecond = calendar.get(Calendar.MILLISECOND) * 1000000;
 
 			zdt = ZonedDateTime.of(LocalDateTime.of(year, month, dayOfMonth, hour, minute, second, nanoOfSecond), tz.toZoneId());
 		}
