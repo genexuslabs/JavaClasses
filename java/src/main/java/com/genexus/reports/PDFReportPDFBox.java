@@ -28,8 +28,9 @@ import org.apache.pdfbox.util.Matrix;
 
 public class PDFReportPDFBox extends GXReportPDFCommons{
 	private PDRectangle pageSize;
-	private PDType1Font font;
-	private PDType0Font baseFont;
+	private PDFont font;
+	private PDFont baseFont;
+	private String baseFontName;
 	//private BarcodeUtil barcode = null; por ahora no soportamos barcode
 	private PDDocument document;
 	private PDDocumentCatalog writer;
@@ -159,7 +160,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			}
 			cb.stroke();
 		} catch (IOException ioe) {
-			System.err.println(ioe.getMessage());
+			log.error("drawRectangle failed: ", ioe);
 		}
 	}
 
@@ -190,7 +191,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				cb.curveTo(x, y + radioBL * b, x + radioBL * b, y, x + radioBL, y);
 			}
 		} catch (IOException ioe) {
-			System.err.println(ioe.getMessage());
+			log.error("roundRectangle failed: ", ioe);
 		}
 	}
 
@@ -273,9 +274,9 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			}
 			cb.restoreGraphicsState();
 
-			if(DEBUG)DEBUG_STREAM.println("GxDrawRect -> (" + left + "," + top + ") - (" + right + "," + bottom + ")  BackMode: " + backMode + " Pen:" + pen);
+			log.debug("GxDrawRect -> (" + left + "," + top + ") - (" + right + "," + bottom + ")  BackMode: " + backMode + " Pen:" + pen);
 		} catch (Exception e) {
-			System.err.println(e.getMessage());
+			log.error("GxDrawRect failed: ", e);
 		}
 	}
 
@@ -288,7 +289,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			float leftAux = (float)convertScale(left);
 			float topAux = (float)convertScale(top);
 
-			if(DEBUG)DEBUG_STREAM.println("GxDrawLine -> (" + left + "," + top + ") - (" + right + "," + bottom + ") Width: " + width);
+			log.debug("GxDrawLine -> (" + left + "," + top + ") - (" + right + "," + bottom + ") Width: " + width);
 
 			float x1, y1, x2, y2;
 
@@ -313,8 +314,8 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			cb.stroke();
 
 			cb.restoreGraphicsState();
-		} catch (Exception e){
-			System.err.println(e.getMessage());
+		} catch (IOException ioe){
+			log.error("GxDrawLine failed:", ioe);
 		}
 	}
 
@@ -360,8 +361,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			}
 			documentImages.putIfAbsent(bitmap, image);
 
-
-			if(DEBUG)DEBUG_STREAM.println("GxDrawBitMap -> '" + bitmap + "' [" + left + "," + top + "] - Size: (" + (right - left) + "," + (bottom - top) + ")");
+			log.debug("GxDrawBitMap -> '" + bitmap + "' [" + left + "," + top + "] - Size: (" + (right - left) + "," + (bottom - top) + ")");
 
 			if(image != null) {
 				float rightAux = (float)convertScale(right);
@@ -378,8 +378,8 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					cb.drawImage(image, x, y, (rightAux - leftAux) * aspectRatio, (bottomAux - topAux) * aspectRatio);
 			}
 		}
-		catch(Exception e) {
-			System.err.println(e.getMessage());
+		catch(IOException ioe) {
+			log.error("GxDrawBitMap failed:", ioe);
 		}
 	}
 
@@ -395,10 +395,10 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			if (!originalFontName.equals(fontName)) {
 				fontSubstitute = "Original Font: " + originalFontName + " Substitute";
 			}
-			DEBUG_STREAM.println("GxAttris: ");
-			DEBUG_STREAM.println("\\-> " + fontSubstitute + "Font: " + fontName + " (" + fontSize + ")" + (fontBold ? " BOLD" : "") + (fontItalic ? " ITALIC" : "") + (fontStrikethru ? " Strike" : ""));
-			DEBUG_STREAM.println("\\-> Fore (" + foreRed + ", " + foreGreen + ", " + foreBlue + ")");
-			DEBUG_STREAM.println("\\-> Back (" + backRed + ", " + backGreen + ", " + backBlue + ")");
+			log.debug("GxAttris: ");
+			log.debug("\\-> " + fontSubstitute + "Font: " + fontName + " (" + fontSize + ")" + (fontBold ? " BOLD" : "") + (fontItalic ? " ITALIC" : "") + (fontStrikethru ? " Strike" : ""));
+			log.debug("\\-> Fore (" + foreRed + ", " + foreGreen + ", " + foreBlue + ")");
+			log.debug("\\-> Back (" + backRed + ", " + backGreen + ", " + backBlue + ")");
 		}
 
 		if (barcode128AsImage && fontName.toLowerCase().indexOf("barcode 128") >= 0 || fontName.toLowerCase().indexOf("barcode128") >= 0) {
@@ -450,63 +450,15 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 							fontName =  PDFFont.base14[i][1+style].substring(1);
 							break;
 						}
-						COSDictionary dict = new COSDictionary();
-						dict.setItem(COSName.TYPE, COSName.FONT);
-						dict.setItem(COSName.SUBTYPE, COSName.TYPE0);
-						dict.setItem(COSName.BASE_FONT, COSName.getPDFName(fontName));
-						dict.setItem(COSName.ENCODING, COSName.WIN_ANSI_ENCODING);
-						dict.setItem(COSName.DESCENDANT_FONTS, new COSArray());
-						dict.setBoolean(COSName.getPDFName("Embedded"), false);
-						baseFont = new PDType0Font(dict);
+					}
+					baseFont = createPDType1FontFromName(fontName);
+					if (baseFont != null)
+						baseFontName = baseFont.getName();
+					if (baseFont == null){
+						baseFont = PDType0Font.load(document, new File(getFontLocation(fontName)));
+						baseFontName = fontName;
 					}
 
-					switch (fontName.trim().toUpperCase()) {
-						case "COURIER":
-							font = PDType1Font.COURIER;
-							break;
-						case "COURIER_BOLD":
-							font = PDType1Font.COURIER_BOLD;
-							break;
-						case "COURIER_BOLD_OBLIQUE":
-							font = PDType1Font.COURIER_BOLD_OBLIQUE;
-							break;
-						case "COURIER_OBLIQUE":
-							font = PDType1Font.COURIER_OBLIQUE;
-							break;
-						case "HELVETICA":
-							font = PDType1Font.HELVETICA;
-							break;
-						case "HELVETICA_BOLD":
-							font = PDType1Font.HELVETICA_BOLD;
-							break;
-						case "HELVETICA_BOLD_OBLIQUE":
-							font = PDType1Font.HELVETICA_BOLD_OBLIQUE;
-							break;
-						case "HELVETICA_OBLIQUE":
-							font = PDType1Font.HELVETICA_OBLIQUE;
-							break;
-						case "SYMBOL":
-							font = PDType1Font.SYMBOL;
-							break;
-						case "TIMES_BOLD":
-							font = PDType1Font.TIMES_BOLD;
-							break;
-						case "TIMES_BOLD_ITALIC":
-							font = PDType1Font.TIMES_BOLD_ITALIC;
-							break;
-						case "TIMES_ITALIC":
-							font = PDType1Font.TIMES_ITALIC;
-							break;
-						case "TIMES_ROMAN":
-							font = PDType1Font.TIMES_ROMAN;
-							break;
-						case "ZAPF_DINGBATS":
-							font = PDType1Font.ZAPF_DINGBATS;
-							break;
-						default:
-							font = PDType1Font.HELVETICA;
-							break;
-					}
 				}
 			}
 			else {
@@ -526,116 +478,70 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				if (fontPath.equals("")) {
 					fontPath = PDFFontDescriptor.getTrueTypeFontLocation(fontName, props);
 					if (fontPath.equals("")) {
-						COSDictionary dict = new COSDictionary();
-						dict.setItem(COSName.TYPE, COSName.FONT);
-						dict.setItem(COSName.SUBTYPE, COSName.TYPE0);
-						dict.setItem(COSName.FONT, COSName.HELV);
-						dict.setItem(COSName.BASE_FONT, COSName.HELV);
-						dict.setItem(COSName.ENCODING, COSName.WIN_ANSI_ENCODING);
-						dict.setItem(COSName.DESCENDANT_FONTS, new COSArray());
-						dict.setItem(COSName.FONT_FILE2, COSNull.NULL);
-						baseFont = new PDType0Font(dict);
+						baseFont = PDType1Font.HELVETICA;
+						baseFontName = baseFont.getName();
 						foundFont = false;
 					}
 				}
-				if (foundFont) {
-					if (isEmbeddedFont(fontName)) {
-						baseFont = PDType0Font.load(document,new File(fontPath));
-					}
-					else {
-						PDType0Font auxFont = PDType0Font.load(document,new File(fontPath));
-						COSDictionary dict = new COSDictionary(auxFont.getCOSObject());
-						baseFont = new PDType0Font(dict);
-						switch (style) {
-							case ",Bold":
-								baseFont.getCOSObject().setInt(COSName.FONT_WEIGHT, 700);
-								break;
-							case ",Italic":
-								baseFont.getFontMatrix().setValue(0,1,0.2f);
-								baseFont.getFontDescriptor().setItalic(true);
-								break;
-							case ",BoldItalic":
-								baseFont.getCOSObject().setInt(COSName.FONT_WEIGHT, 700);
-								baseFont.getFontMatrix().setValue(0, 1, 0.2f);
-								baseFont.getFontDescriptor().setItalic(true);
-								break;
-							default: break;
-						}
-						baseFont.getCOSObject().setItem(COSName.ENCODING, COSName.IDENTITY_H);
-						baseFont.getCOSObject().setItem(COSName.FONT_FILE2, COSNull.NULL);
+				if (foundFont){
+					baseFont = createPDType1FontFromName(fontName);
+					if (baseFont != null)
+						baseFontName = baseFont.getName();
+					else{
+						baseFont = PDType0Font.load(document, new File(getFontLocation(fontName)));
+						baseFontName = fontName;
 					}
 				}
 			}
 		}
 		catch(Exception e) {
-			System.err.println(e.getMessage());
+			log.error("GxAttris failed: ", e);
+		}
+	}
+
+	private static PDType1Font createPDType1FontFromName(String fontName) {
+		switch (fontName) {
+			case "Times-Roman":
+				return PDType1Font.TIMES_ROMAN;
+			case "Times-Bold":
+				return PDType1Font.TIMES_BOLD;
+			case "Times-Italic":
+				return PDType1Font.TIMES_ITALIC;
+			case "Times-BoldItalic":
+				return PDType1Font.TIMES_BOLD_ITALIC;
+			case "Helvetica":
+				return PDType1Font.HELVETICA;
+			case "Helvetica-Bold":
+				return PDType1Font.HELVETICA_BOLD;
+			case "Helvetica-Oblique":
+				return PDType1Font.HELVETICA_OBLIQUE;
+			case "Helvetica-BoldOblique":
+				return PDType1Font.HELVETICA_BOLD_OBLIQUE;
+			case "Courier":
+				return PDType1Font.COURIER;
+			case "Courier-Bold":
+				return PDType1Font.COURIER_BOLD;
+			case "Courier-Oblique":
+				return PDType1Font.COURIER_OBLIQUE;
+			case "Courier-BoldOblique":
+				return PDType1Font.COURIER_BOLD_OBLIQUE;
+			case "Symbol":
+				return PDType1Font.SYMBOL;
+			case "ZapfDingbats":
+				return PDType1Font.ZAPF_DINGBATS;
+			default:
+				return null;
 		}
 	}
 
 	public void setAsianFont(String fontName, String style) {
 		try {
-			COSDictionary fontDict = new COSDictionary();
-			fontDict.setName(COSName.TYPE, "Font");
-			fontDict.setName(COSName.SUBTYPE, "Type0");
-			fontDict.setName(COSName.STYLE, style);
-			COSArray differencesArray = new COSArray();
-			COSDictionary encodingDict = new COSDictionary();
-			encodingDict.setName(COSName.TYPE, "Encoding");
-			encodingDict.setName(COSName.BASE_ENCODING, "Identity-H");
-
-			if (style.equals("")) {
-				if (fontName.equals("Japanese")){
-					fontDict.setName(COSName.BASE_FONT, "HeiseiMin-W3");
-					differencesArray.add(COSName.getPDFName("UniJIS-UCS2-HW-H"));
-				}
-				if (fontName.equals("Japanese2")){
-					fontDict.setName(COSName.BASE_FONT, "HeiseiKakuGo-W5");
-					differencesArray.add(COSName.getPDFName("UniJIS-UCS2-HW-H"));
-				}
-				if (fontName.equals("SimplifiedChinese")){
-					fontDict.setName(COSName.BASE_FONT, "STSong-Light");
-					differencesArray.add(COSName.getPDFName("UniGB-UCS2-H"));
-				}
-				if (fontName.equals("TraditionalChinese")){
-					fontDict.setName(COSName.BASE_FONT, "MHei-Medium");
-					differencesArray.add(COSName.getPDFName("UniGB-UCS2-H"));
-				}
-				if (fontName.equals("Korean")) {
-					fontDict.setName(COSName.BASE_FONT, "HYSMyeongJo-Medium");
-					differencesArray.add(COSName.getPDFName("UniKS-UCS2-H"));
-				}
-				fontDict.setItem(COSName.ENCODING, encodingDict);
-				fontDict.setItem(COSName.DESC, null);
-				baseFont = new PDType0Font(fontDict);
-			}
-			else {
-				if (fontName.equals("Japanese")){
-					fontDict.setName(COSName.BASE_FONT, "HeiseiMin-W3" + style);
-					differencesArray.add(COSName.getPDFName("UniJIS-UCS2-HW-H"));
-				}
-				if (fontName.equals("Japanese2")){
-					fontDict.setName(COSName.BASE_FONT, "HeiseiKakuGo-W5" + style);
-					differencesArray.add(COSName.getPDFName("UniJIS-UCS2-HW-H" + style));
-				}
-				if (fontName.equals("SimplifiedChinese")){
-					fontDict.setName(COSName.BASE_FONT, "STSong-Light");
-					differencesArray.add(COSName.getPDFName("UniGB-UCS2-H" + style));
-				}
-				if (fontName.equals("TraditionalChinese")){
-					fontDict.setName(COSName.BASE_FONT, "MHei-Medium");
-					differencesArray.add(COSName.getPDFName("UniGB-UCS2-H" + style));
-				}
-				if (fontName.equals("Korean")) {
-					fontDict.setName(COSName.BASE_FONT, "HYSMyeongJo-Medium");
-					differencesArray.add(COSName.getPDFName("UniKS-UCS2-H" + style));
-				}
-				fontDict.setItem(COSName.ENCODING, encodingDict);
-				fontDict.setItem(COSName.DESC, null);
-				baseFont = new PDType0Font(fontDict);
-			}
+			String fontPath = getFontLocation(fontName);
+			baseFont = PDType0Font.load(document, new File(fontPath));
+			baseFontName = fontName;
 		}
 		catch(Exception e) {
-			System.err.println(e.getMessage());
+			log.error("setAsianFont failed: ", e);
 		}
 	}
 	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border, int valign) {
@@ -650,10 +556,9 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 
 			sTxt = CommonUtil.rtrim(sTxt);
 
-			COSDictionary fontDict = baseFont.getCOSObject();
-			COSDictionary newFontDict = new COSDictionary(fontDict);
-			newFontDict.setFloat(COSName.SIZE, fontSize);
-			PDType0Font font = new PDType0Font(newFontDict);
+			PDFont font = createPDType1FontFromName(baseFont.getFontDescriptor().getFontName());
+			if (font == null)
+				font = PDType0Font.load(document, new File(getFontLocation(baseFontName)));
 
 			cb.setFont(font,fontSize);
 			cb.setNonStrokingColor(foreColor);
@@ -674,7 +579,6 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 
 			float bottomAux = (float)convertScale(bottom) - ((float)convertScale(bottom-top) - captionHeight)/2;
 			float topAux = (float)convertScale(top) + ((float)convertScale(bottom-top) - captionHeight)/2;
-
 
 			float startHeight = bottomAux - topAux - captionHeight;
 
@@ -799,7 +703,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					contentStream.transform(Matrix.getTranslateInstance(leftAux + leftMargin, leftAux + leftMargin));
 					contentStream.drawForm(form);
 					contentStream.close();
-					templateFont = baseFont;
+					templateFont = new PDType0Font(baseFont.getCOSObject());
 					templateFontSize = fontSize;
 					templateColorFill = foreColor;
 					return;
@@ -846,8 +750,8 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					}
 				}
 			}
-		} catch (Exception e){
-			System.err.println(e.getMessage());
+		} catch (IOException ioe){
+			log.error("GxDrawText failed: ", ioe);
 		}
 	}
 
@@ -855,7 +759,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 		try {
 			if (this.fontBold && this.fontItalic){
 				contentStream.setStrokingColor(foreColor);
-				contentStream.setLineWidth(fontSize * 0.1f);
+				contentStream.setLineWidth(fontSize * 0.05f);
 				contentStream.setRenderingMode(RenderingMode.FILL_STROKE);
 				contentStream.beginText();
 				contentStream.moveTextPositionByAmount(x, y);
@@ -863,7 +767,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				contentStream.newLineAtOffset(-0.2f * y, 0);
 			} else if (this.fontBold && !this.fontItalic){
 				contentStream.setStrokingColor(foreColor);
-				contentStream.setLineWidth(fontSize * 0.1f);
+				contentStream.setLineWidth(fontSize * 0.05f);
 				contentStream.setRenderingMode(RenderingMode.FILL_STROKE);
 				contentStream.beginText();
 				contentStream.moveTextPositionByAmount(x, y);
@@ -881,12 +785,13 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			contentStream.endText();
 			contentStream.setLineWidth(1f); // Default line width for PDFBox 2.0.27
 			contentStream.setRenderingMode(RenderingMode.FILL); // Default text rendering mode for PDFBox 2.0.27
-		} catch (Exception e) {}
+		} catch (IOException ioe) {
+			log.error("failed to apply text styling: ", ioe);
+		}
 	}
 
-	private void showWrappedTextAligned(PDPageContentStream contentStream, PDType0Font font, int alignment, String text, float llx, float lly, float urx, float ury) {
+	private void showWrappedTextAligned(PDPageContentStream contentStream, PDFont font, int alignment, String text, float llx, float lly, float urx, float ury) {
 		try {
-
 			List<String> lines = new ArrayList<>();
 			String[] words = text.split(" ");
 			StringBuilder currentLine = new StringBuilder();
@@ -928,10 +833,12 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				resolveTextStyling(contentStream, line, startX, startY, true);
 				startY -= leading;
 			}
-		} catch (Exception e) {System.err.println(e.getMessage());}
+		} catch (IOException ioe) {
+			log.error("failed to draw wrapped text: ", ioe);
+		}
 	}
 
-	private void showTextAligned(PDPageContentStream contentStream, PDType0Font font, int alignment, String text, float x, float y){
+	private void showTextAligned(PDPageContentStream contentStream, PDFont font, int alignment, String text, float x, float y){
 		try {
 			contentStream.setLeading((float)(Double.valueOf(props.getGeneralProperty(Const.LEADING)).doubleValue()));
 			float textWidth = font.getStringWidth(text) / 1000 * fontSize;
@@ -947,7 +854,9 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					break;
 			}
 			resolveTextStyling(contentStream,text, x, y,false);
-		} catch (Exception e) {System.err.println(e.getMessage());}
+		} catch (IOException ioe) {
+			log.error("failed to draw aligned text: ", ioe);
+		}
 	}
 
 	public boolean GxPrintInit(String output, int gxXPage[], int gxYPage[], String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex) {
@@ -970,7 +879,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			else
 				return true;
 		} catch (Exception e) {
-			e.printStackTrace(System.err);
+			log.error("GxPrintInit failed" , e);
 			return false;
 		}
 	}
@@ -1021,12 +930,14 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 
 					}
 					template.close();
-				} catch (IOException e){ System.err.println(e.getMessage()); }
+				} catch (IOException e){
+					log.error("GxEndDocument: failed to apply template" , e);;
+				}
 			}
 			int copies = 1;
 			try {
 				copies = Integer.parseInt(printerSettings.getProperty(form, Const.COPIES));
-				if(DEBUG)DEBUG_STREAM.println("Setting number of copies to " + copies);
+				log.debug("Setting number of copies to " + copies);
 
 				writer = document.getDocumentCatalog();
 
@@ -1047,7 +958,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					case 4: duplexValue = COSName.DUPLEX; break;
 					default: duplexValue = COSName.NONE;
 				}
-				if(DEBUG)DEBUG_STREAM.println("Setting duplex to " + duplexValue);
+				log.debug("Setting duplex to " + duplexValue);
 				writer = document.getDocumentCatalog();
 				dict = writer.getViewerPreferences().getCOSObject();
 				if (dict == null) {dict = new COSDictionary();}
@@ -1056,8 +967,8 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				dict.setName(COSName.DUPLEX, duplexValue.toString());
 				writer.setViewerPreferences(viewerPreferences);
 			}
-			catch(Exception ex) {
-				ex.printStackTrace(System.err);
+			catch(Exception e) {
+				log.error("GxEndDocument: failed to apply viewer preferences ", e);
 			}
 
 			String serverPrinting = props.getGeneralProperty(Const.SERVER_PRINTING);
@@ -1097,11 +1008,11 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			try {
 				document.save(outputStream);
 				document.close();
-			} catch (IOException e) {
-				System.err.println(e.getMessage());
+			} catch (IOException ioe) {
+				log.error("GxEndDocument: failed to save document to the output stream", ioe);
 			}
 
-			if(DEBUG)DEBUG_STREAM.println("GxEndDocument!");
+			log.debug("GxEndDocument!");
 
 			try{ props.save(); } catch(IOException e) { ; }
 
@@ -1110,7 +1021,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					try{ outputStream.close(); } catch(IOException e) { }
 					try{ showReport(docName, modal); }
 					catch(Exception e) {
-						e.printStackTrace();
+						log.error("GxEndDocument: failed to show report ", e);
 					}
 					break;
 				case Const.OUTPUT_PRINTER:
@@ -1120,11 +1031,11 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 							printReport(docName, this.printerOutputMode == 1);
 						}
 					} catch(Exception e){
-						e.printStackTrace();
+						log.error("GxEndDocument: failed to print report ", e);
 					}
 					break;
 				case Const.OUTPUT_FILE:
-					try{ outputStream.close(); } catch(IOException e) { ; }
+					try{ outputStream.close(); } catch (IOException e) { log.error("GxEndDocument: failed to save report to file ", e); }
 					break;
 				case Const.OUTPUT_STREAM:
 				case Const.OUTPUT_STREAM_PRINTER:
@@ -1132,7 +1043,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			}
 			outputStream = null;
 		} catch (Exception e){
-			e.printStackTrace(System.err);
+			log.error("GxEndDocument failed: ", e);;
 		}
 	}
 	public void GxStartPage() {
@@ -1141,5 +1052,4 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 		page = page + 1;
 	}
 
-	public void GxEndPage() {}
 }

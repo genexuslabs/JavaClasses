@@ -54,6 +54,7 @@ import com.genexus.platform.NativeFunctions;
 import com.genexus.reports.fonts.Utilities;
 import com.genexus.webpanels.HttpContextWeb;
 import com.genexus.util.TemporaryFiles;
+import org.apache.logging.log4j.Logger;
 
 import java.awt.*;
 import java.io.*;
@@ -128,6 +129,8 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 		}
 	}
 	protected static char alternateSeparator = File.separatorChar == '/' ? '\\' : '/';
+
+	protected static Logger log = org.apache.logging.log4j.LogManager.getLogger(GXReportPDFCommons.class);
 
 	/** Setea el OutputStream a utilizar
 	 *  @param outputStream Stream a utilizar
@@ -533,7 +536,7 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 				try {
 					setOutputStream(new FileOutputStream(docName));
 				}catch(IOException accessError) { // Si no se puede generar el archivo, muestro el stackTrace y seteo el stream como NullOutputStream
-					accessError.printStackTrace(System.err);
+					log.error("preGxPrintInit: failed to set output stream", accessError);
 					outputStream = new com.genexus.util.NullOutputStream();
 					outputType = Const.OUTPUT_FILE; // Hago esto para no tener lios con el Acrobat
 				}
@@ -556,7 +559,10 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 			STYLE_LONG_DOT_DASHED = parsePattern(props.getGeneralProperty(Const.STYLE_LONG_DOT_DASHED));
 
 			return true;
-		} catch (Exception e) {return false;}
+		} catch (Exception e) {
+			log.error("preGxPrintInit failed" , e);
+			return false;
+		}
 	}
 
 	public boolean GxPrintInit(String output, int gxXPage[], int gxYPage[], String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex){
@@ -564,20 +570,19 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 	}
 
 	public int getPageLines() {
-		if(DEBUG)DEBUG_STREAM.println("getPageLines: --> " + pageLines);
+		log.debug("getPageLines: --> " + pageLines);
 		return pageLines;
 	}
 	public int getLineHeight() {
-		if(DEBUG)DEBUG_STREAM.println("getLineHeight: --> " + this.lineHeight);
+		log.debug("getLineHeight: --> " + this.lineHeight);
 		return this.lineHeight;
 	}
 	public void setPageLines(int P_lines) {
-		if(DEBUG)DEBUG_STREAM.println("setPageLines: " + P_lines);
+		log.debug("setPageLines: " + P_lines);
 		pageLines = P_lines;
 	}
 	public void setLineHeight(int lineHeight) {
-
-		if(DEBUG)DEBUG_STREAM.println("setLineHeight: " + lineHeight);
+		log.debug("setLineHeight: " + lineHeight);
 		this.lineHeight = lineHeight;
 	}
 
@@ -604,7 +609,7 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 		this.M_bot = M_bot;
 	}
 
-	public abstract void GxEndPage();
+	public void GxEndPage(){}
 
 	public abstract void GxEndDocument();
 
@@ -639,7 +644,7 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 		}
 		if(this.docName.indexOf('.') < 0)
 			this.docName += ".pdf";
-		if(DEBUG)DEBUG_STREAM.println("GxSetDocName: '" + this.docName + "'");
+		log.debug("GxSetDocName: '" + this.docName + "'");
 	}
 
 	public boolean GxPrTextInit(String ouput, int nxPage[], int nyPage[], String psIniFile, String psForm, String sPrinter, int nMode, int nPaperLength, int nPaperWidth, int nGridX, int nGridY, int nPageLines) {
@@ -684,7 +689,6 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 	public void cleanup() {}
 
 	public void setMetrics(String fontName, boolean bold, boolean italic, int ascent, int descent, int height, int maxAdvance, int[] sizes) {}
-
 
 	/** Carga la tabla de substitutos
 	 */
