@@ -40,12 +40,10 @@ import com.genexus.reports.fonts.Type1FontMetrics;
 public class PDFReportItext extends GXReportPDFCommons
 {
     private com.lowagie.text.Rectangle pageSize;   // Contiene las dimensiones de la página
-    private Font font;
 	private BaseFont baseFont;
 	private Barcode barcode = null;
     private Document document;
 	private PdfWriter writer;
-	private Paragraph chunk;
 	private PdfTemplate template;
 	private BaseFont templateFont;
 	public boolean lineCapProjectingSquare = true;
@@ -79,7 +77,6 @@ public class PDFReportItext extends GXReportPDFCommons
 	private void drawRectangle(PdfContentByte cb, float x, float y, float w, float h, 
 		int styleTop, int styleBottom, int styleRight, int styleLeft, 
 		float radioTL, float radioTR, float radioBL, float radioBR, float penAux, boolean hideCorners) {
-
 	
 		float[] dashPatternTop = getDashedPattern(styleTop);
 		float[] dashPatternBottom = getDashedPattern(styleBottom);
@@ -320,8 +317,8 @@ public class PDFReportItext extends GXReportPDFCommons
 			}
 		}
 		cb.restoreState();
-		
-		if(DEBUG)DEBUG_STREAM.println("GxDrawRect -> (" + left + "," + top + ") - (" + right + "," + bottom + ")  BackMode: " + backMode + " Pen:" + pen);
+
+		log.debug("GxDrawRect -> (" + left + "," + top + ") - (" + right + "," + bottom + ")  BackMode: " + backMode + " Pen:" + pen);
     }
 	
     public void GxDrawLine(int left, int top, int right, int bottom, int width, int foreRed, int foreGreen, int foreBlue, int style) {
@@ -332,8 +329,8 @@ public class PDFReportItext extends GXReportPDFCommons
 		float bottomAux = (float)convertScale(bottom);
 		float leftAux = (float)convertScale(left);
 		float topAux = (float)convertScale(top);
-		
-        if(DEBUG)DEBUG_STREAM.println("GxDrawLine -> (" + left + "," + top + ") - (" + right + "," + bottom + ") Width: " + width);
+
+		log.debug("GxDrawLine -> (" + left + "," + top + ") - (" + right + "," + bottom + ") Width: " + width);
 
 		float x1, y1, x2, y2;
 
@@ -362,9 +359,7 @@ public class PDFReportItext extends GXReportPDFCommons
 	
     public void GxDrawBitMap(String bitmap, int left, int top, int right, int bottom, int aspectRatio) {
 		try {
-			//java.awt.Image image;
 			com.lowagie.text.Image image;
-			com.lowagie.text.Image imageRef;
 			try {
 				if (documentImages != null && documentImages.containsKey(bitmap)) {
 					image = documentImages.get(bitmap);
@@ -380,13 +375,11 @@ public class PDFReportItext extends GXReportPDFCommons
 							bitmap = bitmap.replace(httpContext.getStaticContentBase(), "");
 						}					
 						// Si la ruta a la imagen NO es absoluta, en aplicaciones Web le agregamos al comienzo la ruta al root de la aplicación
-					// más la staticContentBaseURL si ésta es relativa.
+						// más la staticContentBaseURL si ésta es relativa.
 						image = com.lowagie.text.Image.getInstance(defaultRelativePrepend + bitmap);
-						//image = com.genexus.uifactory.awt.AWTUIFactory.getImageNoWait(defaultRelativePrepend + bitmap);
 						if(image == null) { // Si all\uFFFDEno se encuentra la imagen, entonces la buscamos bajo el webAppDir (para mantener compatibilidad)
 							bitmap = webAppDir + bitmap;
 							image = com.lowagie.text.Image.getInstance(bitmap);
-							//image = com.genexus.uifactory.awt.AWTUIFactory.getImageNoWait(bitmap);
 						}
 						else {
 							bitmap = defaultRelativePrepend + bitmap;
@@ -394,7 +387,6 @@ public class PDFReportItext extends GXReportPDFCommons
 					}
 					else {
 						image = com.lowagie.text.Image.getInstance(bitmap);
-						//image = com.genexus.uifactory.awt.AWTUIFactory.getImageNoWait(bitmap);
 					}
 				}
 			}
@@ -404,12 +396,11 @@ public class PDFReportItext extends GXReportPDFCommons
 			}
 
 			if (documentImages == null) {
-				documentImages = new ConcurrentHashMap<String, Image>();
+				documentImages = new ConcurrentHashMap<>();
 			}
 			documentImages.putIfAbsent(bitmap, image);
 
-
-			if(DEBUG)DEBUG_STREAM.println("GxDrawBitMap -> '" + bitmap + "' [" + left + "," + top + "] - Size: (" + (right - left) + "," + (bottom - top) + ")");
+			log.debug("GxDrawBitMap -> '" + bitmap + "' [" + left + "," + top + "] - Size: (" + (right - left) + "," + (bottom - top) + ")");
 
 	        if(image != null) { // Si la imagen NO se encuentra, no hago nada
 				float rightAux = (float)convertScale(right);
@@ -427,13 +418,13 @@ public class PDFReportItext extends GXReportPDFCommons
 			}
 		}
 		catch(DocumentException de) {
-			System.err.println(de.getMessage());
+			log.error("GxDrawBitMap failed:", de);
 		}
 		catch(IOException ioe) {
-			System.err.println(ioe.getMessage());
+			log.error("GxDrawBitMap failed:", ioe);
 		}
 		catch(Exception e) {
-			System.err.println(e.getMessage());
+			log.error("GxDrawBitMap failed:", e);
 		}
     }
 
@@ -450,10 +441,10 @@ public class PDFReportItext extends GXReportPDFCommons
 			{
 				fontSubstitute = "Original Font: " + originalFontName + " Substitute";
 			}
-			DEBUG_STREAM.println("GxAttris: ");
-			DEBUG_STREAM.println("\\-> " + fontSubstitute + "Font: " + fontName + " (" + fontSize + ")" + (fontBold ? " BOLD" : "") + (fontItalic ? " ITALIC" : "") + (fontStrikethru ? " Strike" : ""));
-			DEBUG_STREAM.println("\\-> Fore (" + foreRed + ", " + foreGreen + ", " + foreBlue + ")");
-			DEBUG_STREAM.println("\\-> Back (" + backRed + ", " + backGreen + ", " + backBlue + ")");
+			log.debug("GxAttris: ");
+			log.debug("\\-> " + fontSubstitute + "Font: " + fontName + " (" + fontSize + ")" + (fontBold ? " BOLD" : "") + (fontItalic ? " ITALIC" : "") + (fontStrikethru ? " Strike" : ""));
+			log.debug("\\-> Fore (" + foreRed + ", " + foreGreen + ", " + foreBlue + ")");
+			log.debug("\\-> Back (" + backRed + ", " + backGreen + ", " + backBlue + ")");
 		}
 
 		if (barcode128AsImage && fontName.toLowerCase().indexOf("barcode 128") >= 0 || fontName.toLowerCase().indexOf("barcode128") >= 0) {
@@ -543,10 +534,10 @@ public class PDFReportItext extends GXReportPDFCommons
 			}
 		}
 		catch(DocumentException de) {
-            System.err.println(de.getMessage());
+			log.error("GxAttris failed: ", de);
         }
         catch(IOException ioe) {
-            System.err.println(ioe.getMessage());
+			log.error("GxAttris failed: ", ioe);
         }
     }
 
@@ -578,10 +569,10 @@ public class PDFReportItext extends GXReportPDFCommons
 			}
 		}
 		catch(DocumentException de) {
-            System.err.println(de.getMessage());
+			log.error("setAsianFont failed: ", de);
         }
         catch(IOException ioe) {
-            System.err.println(ioe.getMessage());
+			log.error("setAsianFont failed: ", ioe);
         }
 	}
     public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border, int valign) {
@@ -697,12 +688,12 @@ public class PDFReportItext extends GXReportPDFCommons
 						Col.go();
 				}
 			}catch(Exception de){
-				System.out.println("ERROR printing HTML text " + de.getMessage());
+				log.error("ERROR printing HTML text ", de.getMessage());
 			}
 		}
 		else 
 		if (barcode!=null) {
-			if(DEBUG)DEBUG_STREAM.println("Barcode: --> " + barcode.getClass().getName());
+			log.debug("Barcode: --> " + barcode.getClass().getName());
 			try {
 				barcode.setCode(sTxt);
 				barcode.setTextAlignment(alignment);
@@ -730,7 +721,6 @@ public class PDFReportItext extends GXReportPDFCommons
 				}
 				barcode.setAltText("");
 				barcode.setBaseline(0);
-				//barcode.Size = 0;
 
 				if (fontSize < Const.LARGE_FONT_SIZE)
 					barcode.setX(Const.OPTIMAL_MINIMU_BAR_WIDTH_SMALL_FONT);
@@ -744,8 +734,7 @@ public class PDFReportItext extends GXReportPDFCommons
 				document.add(imageCode);
 			}
 			catch (Exception ex) {
-				if(DEBUG)DEBUG_STREAM.println("Error generating Barcode: --> " + barcode.getClass().getName() + ex.getMessage());
-				if(DEBUG)ex.printStackTrace ();
+				log.error("GxDrawText: Error generating Barcode " + barcode.getClass().getName(), ex);
 			}
 		}
 		else {
@@ -769,7 +758,7 @@ public class PDFReportItext extends GXReportPDFCommons
 					document.add(rectangle);
 				}
 				catch(DocumentException de) {
-					System.err.println(de.getMessage());
+					log.error("backfill in GxDrawText failed: ", de);
 				}
 			}
 			
@@ -807,7 +796,7 @@ public class PDFReportItext extends GXReportPDFCommons
 					document.add(underline);
 				}
 				catch(DocumentException de) {
-					System.err.println(de.getMessage());
+					log.error("fontUnderline in GxDrawText failed: ", de);
 				}
 			}
 			
@@ -845,7 +834,7 @@ public class PDFReportItext extends GXReportPDFCommons
 				}
 				catch(DocumentException de) 
 				{
-					System.err.println(de.getMessage());
+					log.error("fontStrikethru in GxDrawText failed: ", de);
 				}
 			}
 			
@@ -886,7 +875,7 @@ public class PDFReportItext extends GXReportPDFCommons
                 }
 			    catch (DocumentException ex)
 			    {
-			    	ex.printStackTrace(System.err);
+					log.error("wrap in GxDrawText failed: ", ex);
 			    }
             }
 			else{ //no wrap
@@ -1037,7 +1026,7 @@ public class PDFReportItext extends GXReportPDFCommons
 		int copies = 1;
 		try {
 			copies = Integer.parseInt(printerSettings.getProperty(form, Const.COPIES));
-			if(DEBUG)DEBUG_STREAM.println("Setting number of copies to " + copies);
+			log.debug("Setting number of copies to " + copies);
 			writer.addViewerPreference(PdfName.NUMCOPIES, new PdfNumber(copies));
 
 			int duplex= Integer.parseInt(printerSettings.getProperty(form, Const.DUPLEX));
@@ -1049,8 +1038,8 @@ public class PDFReportItext extends GXReportPDFCommons
 				case 4: duplexValue = PdfName.DUPLEXFLIPLONGEDGE;break;
 				default: duplexValue = PdfName.NONE;
 			}
-			if(DEBUG)DEBUG_STREAM.println("Setting duplex to " + duplexValue.toString());
-				writer.addViewerPreference(PdfName.DUPLEX, duplexValue);
+			log.debug("Setting duplex to " + duplexValue.toString());
+			writer.addViewerPreference(PdfName.DUPLEX, duplexValue);
 		}
 		catch(Exception ex) {
 			ex.printStackTrace(System.err);
@@ -1059,9 +1048,6 @@ public class PDFReportItext extends GXReportPDFCommons
 		String serverPrinting = props.getGeneralProperty(Const.SERVER_PRINTING);
 		boolean fit= props.getGeneralProperty(Const.ADJUST_TO_PAPER).equals("true");
 		if ((outputType==Const.OUTPUT_PRINTER || outputType==Const.OUTPUT_STREAM_PRINTER) && (httpContext instanceof HttpContextWeb && serverPrinting.equals("false"))) {
-			//writer.addJavaScript("if (this.external)\n");//Specifies whether the current document is being viewed in the Acrobat application or in an external window (such as a web browser).
-			//writer.addJavaScript("app.alert('SI es externa' + this.external);");
-
 				writer.addJavaScript("var pp = this.getPrintParams();\n");
 				String printerAux=printerSettings.getProperty(form, Const.PRINTER);
 				String printer = replace(printerAux, "\\", "\\\\");
@@ -1069,7 +1055,6 @@ public class PDFReportItext extends GXReportPDFCommons
 				if (printer!=null && !printer.equals("")) {
 	                writer.addJavaScript("pp.printerName = \"" + printer + "\";\n");
 				}
-
 			if (fit) {
 				writer.addJavaScript("pp.pageHandling = pp.constants.handling.fit;\n");
 			}
@@ -1098,7 +1083,7 @@ public class PDFReportItext extends GXReportPDFCommons
 
 		document.close();
 
-        if(DEBUG)DEBUG_STREAM.println("GxEndDocument!");
+        log.debug("GxEndDocument!");
 
 		try{ props.save(); } catch(IOException e) { ; }
 
@@ -1121,11 +1106,11 @@ public class PDFReportItext extends GXReportPDFCommons
 					printReport(docName, this.printerOutputMode == 1); 
 				}
 			} catch(Exception e){ // Si no se puede mostrar el reporte
-                e.printStackTrace(); 
+               	log.error("GxEndDocument: failed to show report ", e);
             }
             break;
         case Const.OUTPUT_FILE:
-            try{ outputStream.close(); } catch(IOException e) { ; } // Cierro el archivo
+            try{ outputStream.close(); } catch(IOException e) { log.error("GxEndDocument: failed to save report to file ", e); } // Cierro el archivo
             break;
         case Const.OUTPUT_STREAM:
 		case Const.OUTPUT_STREAM_PRINTER:
@@ -1136,13 +1121,6 @@ public class PDFReportItext extends GXReportPDFCommons
     public void GxStartPage() {
 		boolean ret = document.newPage();
 		pages = pages +1;
-	}
-
-	public void GxEndPage() {}
-
-	class FontProps {
-		public int horizontal;
-		public int vertical;
 	}
 
 }
