@@ -1568,7 +1568,16 @@ public final class GXutil
 		gxFile.fromBytes(bytesString);
 		com.genexus.webpanels.BlobsCleaner.getInstance().addBlobFile(filePath);
 		return filePath;
-	}	
+	}
+
+	public static String blobFromBytes(byte[] bytesString, String extension)
+	{
+		String filePath = Preferences.getDefaultPreferences().getBLOB_PATH() + com.genexus.PrivateUtilities.getTempFileName(extension);
+		com.genexus.util.GXFile gxFile = new com.genexus.util.GXFile(filePath);
+		gxFile.fromBytes(bytesString);
+		com.genexus.webpanels.BlobsCleaner.getInstance().addBlobFile(filePath);
+		return filePath;
+	}
 	
 	public static java.util.UUID strToGuid(String value)
 	{

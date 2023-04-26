@@ -62,7 +62,6 @@ import java.util.*;
 
 public abstract class GXReportPDFCommons implements IReportHandler{
 	protected int lineHeight, pageLines;
-	protected int pageOrientation;
 	protected boolean fontUnderline;
 	protected boolean fontStrikethru;
 	protected int fontSize;
@@ -75,7 +74,6 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 	protected ParseINI printerSettings;
 	protected String form;
 	protected Vector stringTotalPages;
-	protected boolean isPageDirty;
 	protected int outputType = -1;
 	protected int printerOutputMode = -1;
 	protected boolean modal = false;
@@ -88,8 +86,6 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 	protected static String defaultRelativePrependINI = null;
 	protected static String webAppDir = null;
 	public static boolean DEBUG = false;
-	protected int currLine;
-	protected int lastLine = 0;
 	private static String predefinedSearchPath = "";
 	protected float leftMargin;
 	protected float topMargin;
