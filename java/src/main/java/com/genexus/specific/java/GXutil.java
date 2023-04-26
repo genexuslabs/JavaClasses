@@ -57,7 +57,8 @@ public class GXutil implements IExtensionGXutil {
 			return value;
 
 		ZonedDateTime zdt = getZonedDateTime(value, tz);
-		return Timestamp.valueOf(zdt.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime());
+		Timestamp t = Timestamp.valueOf(zdt.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime());
+		return new Date(t.getTime());
 	}
 
 	@Override
@@ -69,7 +70,8 @@ public class GXutil implements IExtensionGXutil {
 			return value;
 
 		ZonedDateTime zdtUTC = getZonedDateTime(value, TimeZone.getTimeZone("UTC"));
-		return Timestamp.valueOf(zdtUTC.withZoneSameInstant(ZoneId.of(tz.getID())).toLocalDateTime());
+		Timestamp t =  Timestamp.valueOf(zdtUTC.withZoneSameInstant(ZoneId.of(tz.getID())).toLocalDateTime());
+		return new Date(t.getTime());
 	}
 
 	@Override
