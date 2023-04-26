@@ -16,6 +16,7 @@ import com.genexus.reports.fonts.PDFFontDescriptor;
 import com.genexus.reports.fonts.Type1FontMetrics;
 
 import org.apache.pdfbox.cos.*;
+import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.*;
@@ -28,7 +29,6 @@ import org.apache.pdfbox.util.Matrix;
 
 public class PDFReportPDFBox extends GXReportPDFCommons{
 	private PDRectangle pageSize;
-	private PDFont font;
 	private PDFont baseFont;
 	private String baseFontName;
 	//private BarcodeUtil barcode = null; por ahora no soportamos barcode
@@ -55,7 +55,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			document = new PDDocument();
 		}
 		catch(Exception e) {
-			System.err.println(e.getMessage());
+			log.error("failed to initialize new PDFBox document: ", e);
 		}
 	}
 
@@ -353,7 +353,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			}
 			catch(java.lang.IllegalArgumentException ex) {
 				URL url= new java.net.URL(bitmap);
-				image = PDImageXObject.createFromFile(url.toString(),document);
+				image = PDImageXObject.createFromByteArray(document, IOUtils.toByteArray(url.openStream()),bitmap);
 			}
 
 			if (documentImages == null) {

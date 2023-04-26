@@ -126,7 +126,7 @@ public class GxImageUtil {
 			} else {
 				outStream.flush();
 				byte[] imageInByte = outStream.toByteArray();
-				return GXutil.blobFromBytes(imageInByte);
+				return GXutil.blobFromBytes(imageInByte,CommonUtil.getFileType(newFileName));
 			}
 		}
 	}
