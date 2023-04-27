@@ -116,6 +116,11 @@
     		<version>2.0.27</version>
 		</dependency>
 		<dependency>
+    		<groupId>com.google.zxing</groupId>
+    		<artifactId>core</artifactId>
+    		<version>3.5.1</version>
+		</dependency>
+		<dependency>
 			<groupId>com.sap.conn.jco</groupId>
 			<artifactId>sapjco3</artifactId>
 			<version>3.0.14</version>
