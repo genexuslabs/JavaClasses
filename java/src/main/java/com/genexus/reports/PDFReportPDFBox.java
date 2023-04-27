@@ -1,6 +1,7 @@
 package com.genexus.reports;
 
 import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
@@ -15,12 +16,16 @@ import com.genexus.reports.fonts.PDFFont;
 import com.genexus.reports.fonts.PDFFontDescriptor;
 import com.genexus.reports.fonts.Type1FontMetrics;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.oned.Code128Writer;
 import org.apache.pdfbox.cos.*;
 import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.*;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
+import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.graphics.state.RenderingMode;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionJavaScript;
@@ -31,7 +36,8 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	private PDRectangle pageSize;
 	private PDFont baseFont;
 	private String baseFontName;
-	//private BarcodeUtil barcode = null; por ahora no soportamos barcode
+	private BitMatrix barcode = null;
+	private String barcodeType = null;
 	private PDDocument document;
 	private PDDocumentCatalog writer;
 	private PDPageContentStream template;
@@ -401,12 +407,9 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			log.debug("\\-> Back (" + backRed + ", " + backGreen + ", " + backBlue + ")");
 		}
 
-		if (barcode128AsImage && fontName.toLowerCase().indexOf("barcode 128") >= 0 || fontName.toLowerCase().indexOf("barcode128") >= 0) {
-			// Por ahora no soportamos barcode
-		}
-		else {
-			// Por ahora no soportamos barcode
-		}
+		if (barcode128AsImage && fontName.toLowerCase().indexOf("barcode 128") >= 0 || fontName.toLowerCase().indexOf("barcode128") >= 0)
+			barcodeType = "barcode128";
+
 		this.fontUnderline = fontUnderline;
 		this.fontStrikethru = fontStrikethru;
 		this.fontSize = fontSize;
@@ -588,11 +591,56 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			boolean autoResize = (align & 256) == 256;
 
 			if (htmlformat == 1) {
-				//Por ahora no soportamos la impresion de HTML
+				//As for now, HTML printing is not supported
 			}
 			else
-			if (1 == 2){ //(barcode!=null)
-				//Por ahora no soportamos la impresion de barcodes
+			if (barcodeType != null){
+				log.debug("Barcode: --> " + barcode.getClass().getName());
+				try {
+					PDRectangle rectangle = new PDRectangle();
+					switch (alignment) {
+						case 1: // Center Alignment
+							rectangle.setLowerLeftX( (leftAux + rightAux) / 2 + leftMargin - rectangleWidth / 2);
+							rectangle.setLowerLeftY(this.pageSize.getUpperRightY() - (float)convertScale(bottom) - topMargin - bottomMargin);
+							rectangle.setUpperRightX((leftAux + rightAux) / 2 + leftMargin + rectangleWidth / 2);
+							rectangle.setUpperRightY(this.pageSize.getUpperRightY() - (float)convertScale(top) - topMargin - bottomMargin);
+							break;
+						case 2: // Right Alignment
+							rectangle.setLowerLeftX( rightAux + leftMargin - rectangleWidth);
+							rectangle.setLowerLeftY(this.pageSize.getUpperRightY() - (float)convertScale(bottom) - topMargin - bottomMargin);
+							rectangle.setUpperRightX(rightAux + leftMargin);
+							rectangle.setUpperRightY(this.pageSize.getUpperRightY() - (float)convertScale(top) - topMargin - bottomMargin);
+							break;
+						case 0: // Left Alignment
+							rectangle.setLowerLeftX( leftAux + leftMargin);
+							rectangle.setLowerLeftY(this.pageSize.getUpperRightY() - (float)convertScale(bottom) - topMargin - bottomMargin);
+							rectangle.setUpperRightX(leftAux + leftMargin + rectangleWidth);
+							rectangle.setUpperRightY(this.pageSize.getUpperRightY() - (float)convertScale(top) - topMargin - bottomMargin);
+							break;
+					}
+					if (barcodeType.equals("barcode128")){
+						Code128Writer barcodeWriter = new Code128Writer();
+						barcode = barcodeWriter.encode(sTxt, BarcodeFormat.CODE_128, Math.round(rectangle.getWidth()), Math.round(rectangle.getHeight()));
+					}
+
+					BufferedImage imageCode = new BufferedImage(barcode.getWidth(), barcode.getHeight(), BufferedImage.TYPE_INT_RGB);
+					for (int x = 0; x < barcode.getWidth(); x++)
+						for (int y = 0; y < barcode.getHeight(); y++) {
+							int color;
+							if (foreColor == null || backColor == null)
+								color = Color.BLACK.getRGB();
+							else
+								color = barcode.get(x, y) ? foreColor.getRGB() : backColor.getRGB();
+							imageCode.setRGB(x, y, color);
+						}
+					float scale = Math.min(rectangle.getHeight() / imageCode.getHeight(), 1.0f);
+					float newImageWidth = imageCode.getWidth() * scale;
+					float newImageHeight = imageCode.getHeight() * scale;
+					cb.drawImage(LosslessFactory.createFromImage(document, imageCode),leftAux + leftMargin, rectangle.getLowerLeftY(),newImageWidth, newImageHeight);
+				}
+				catch (Exception ex) {
+					log.error("GxDrawText: Error generating Barcode " + barcode.getClass().getName(), ex);
+				}
 			}
 			else {
 
