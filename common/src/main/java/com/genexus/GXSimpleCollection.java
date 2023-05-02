@@ -1,22 +1,16 @@
 package com.genexus;
 
-import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.Iterator;
-import java.io.InputStream;
-import java.io.StringWriter;
 
 import com.genexus.common.classes.AbstractGXFile;
-import com.genexus.ModelContext;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.db.DynamicExecute;
 import com.genexus.internet.IGxJSONAble;
@@ -24,9 +18,7 @@ import com.genexus.internet.IGxJSONSerializable;
 import com.genexus.internet.StringCollection;
 import com.genexus.util.GXMap;
 import com.genexus.util.Quicksort;
-import com.genexus.xml.GXXMLSerializer;
 import com.genexus.xml.XMLReader;
-import com.genexus.xml.GXXMLSerializable;
 
 import com.genexus.xml.XMLWriter;
 
@@ -34,12 +26,8 @@ import json.org.json.IJsonFormattable;
 import json.org.json.JSONArray;
 import json.org.json.JSONException;
 
-import org.simpleframework.xml.*;
-
-@Root(name="Collection")
 public class GXSimpleCollection<T> extends GXBaseList<T> {
 
-	@ElementList(entry="item",inline=true)
     GXSimpleCollection<T> list;
 	protected Class<T> elementsType;
 	protected String elementsName;
@@ -266,28 +254,16 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 	}
 
     public String toxml(boolean includeHeader, boolean includeState, String header, String namespace) {
-		
-		if(SpecificImplementation.Application.getProperty("SIMPLE_XML_SUPPORT", "0").equals("1"))
-		{
-			try {
-				return GXXMLSerializer.serializeSimpleXml(includeHeader, SpecificImplementation.Application.createCollectionWrapper(this), header);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			return "";
-		}
-		else{
-			XMLWriter writer = new XMLWriter();
-			writer.setEncoding("UTF8");
-			writer.openToString();
-			if (includeHeader)
-				writer.writeStartDocument("UTF-8");
-			if (namespace == "")
-				namespace = "[*:nosend]";
-			writexml(writer, header, namespace, includeState);
-			writer.close();
-			return writer.getResultingString();
-		}
+		XMLWriter writer = new XMLWriter();
+		writer.setEncoding("UTF8");
+		writer.openToString();
+		if (includeHeader)
+			writer.writeStartDocument("UTF-8");
+		if (namespace == "")
+			namespace = "[*:nosend]";
+		writexml(writer, header, namespace, includeState);
+		writer.close();
+		return writer.getResultingString();
     }
 
 	public short readCollection( XMLReader oReader )
@@ -355,25 +331,18 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 	public boolean fromxml(String xml, GXBaseCollection<SdtMessages_Message> messages, String collName)
 	{
 		try{
-			if(SpecificImplementation.Application.getProperty("SIMPLE_XML_SUPPORT", "0").equals("1"))
-            {
-                xml=xml.replaceAll("<item>", "<item class=\""+elementsType.getName()+"\">");
-                GXXMLSerializer.deserializeSimpleXml(this, xml);
-                return true;
-            } else {
-				XMLReader reader = new XMLReader();
-				reader.openFromString(xml);
-				short result;
-				result = readIntegralCollectionFromXML(reader, "item");
+			XMLReader reader = new XMLReader();
+			reader.openFromString(xml);
+			short result;
+			result = readIntegralCollectionFromXML(reader, "item");
 
-				reader.close();
-				if (result <= 0) { 
-					CommonUtil.ErrorToMessages(String.valueOf(reader.getErrCode()), reader.getErrDescription(), messages);
-					return false;
-				}
-				else
-					return true;
+			reader.close();
+			if (result <= 0) {
+				CommonUtil.ErrorToMessages(String.valueOf(reader.getErrCode()), reader.getErrDescription(), messages);
+				return false;
 			}
+			else
+				return true;
 		}
 		catch(Exception ex)
 		{

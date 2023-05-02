@@ -42,8 +42,8 @@ public final class handlesimplesqsevent2 extends GXProcedure {
 		while (AV16GXV1 <= AV8EventMessages.getgxTv_SdtEventMessages_Eventmessage().size()) {
 			AV10EventMessage = (com.genexus.genexusserverlessapi.SdtEventMessage) ((com.genexus.genexusserverlessapi.SdtEventMessage) AV8EventMessages.getgxTv_SdtEventMessages_Eventmessage().elementAt(-1 + AV16GXV1));
 			System.out.println("Processing: " + AV10EventMessage.toJSonString(false, true));
-			AV9EventMessageResponse.setgxTv_SdtEventMessageResponse_Handled(AV11UserSDT.fromJSonString(AV10EventMessage.getgxTv_SdtEventMessage_Eventmessagedata(), AV12OutMessages));
-			if (!AV9EventMessageResponse.getgxTv_SdtEventMessageResponse_Handled()) {
+			AV9EventMessageResponse.setgxTv_SdtEventMessageResponse_Handlefailure(!AV11UserSDT.fromJSonString(AV10EventMessage.getgxTv_SdtEventMessage_Eventmessagedata(), AV12OutMessages));
+			if (AV9EventMessageResponse.getgxTv_SdtEventMessageResponse_Handlefailure()) {
 				System.out.println("EventMessageData could not be parsed: " + AV10EventMessage.getgxTv_SdtEventMessage_Eventmessagedata());
 				System.out.println(AV12OutMessages.toJSonString(false));
 				AV9EventMessageResponse.setgxTv_SdtEventMessageResponse_Errormessage(AV12OutMessages.toJSonString(false));

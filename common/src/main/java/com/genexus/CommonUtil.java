@@ -36,6 +36,7 @@ public final class CommonUtil
 	static TimeZone 	originalTimeZone;
 	public static IThreadLocal threadCalendar;
 
+	public static String SECURITY_HASH_ALGORITHM = "SHA-256";
 	public static final String [][] ENCODING_JAVA_IANA;
 	private static Random random;
 	private static Date nullDate;
@@ -1833,6 +1834,8 @@ public final class CommonUtil
 
 	public static byte dow(Date date)
 	{
+		if	(date == null || date.equals(nullDate()))
+			return 0;
 		Calendar cal = getCalendar();
 		synchronized (cal)
 		{
@@ -2325,12 +2328,11 @@ public final class CommonUtil
 	{
 		String[] vs = {v1, v2, v3, v4, v5, v6, v7, v8, v9};
 		StringBuffer stringBuilder = new StringBuffer();
+		int valueLength = value.length();
 		if (value != null && !value.equals(""))
 		{
-			StringTokenizer tokenizer = new StringTokenizer(value, "%", false);
 			int lastIndex = 0;
 			int index = 0;
-			int idx = 0;
 			while((index = value.indexOf('%', lastIndex)) != -1)
 			{
 				if(index > 0 && value.charAt(index - 1) == '\\')
@@ -2339,8 +2341,12 @@ public final class CommonUtil
 					stringBuilder.append("%");
 					lastIndex = index + 1;
 				}
-				else
+				else if (index > 0 && index < valueLength - 1 && value.charAt(index) == '%' && value.charAt(index + 1) == '%' )
 				{
+					stringBuilder.append(value.substring(lastIndex, index));
+					stringBuilder.append("%");
+					lastIndex = index + 1;
+				} else {
 					try
 					{
 						stringBuilder.append(value.substring(lastIndex, index));
@@ -2351,7 +2357,8 @@ public final class CommonUtil
 						stringBuilder.append("%").append(value.charAt(index+1));
 					}catch(StringIndexOutOfBoundsException e)
 					{ // Si el value termina con un %, lo ignoro
-						 lastIndex--;
+						lastIndex--;
+						stringBuilder.append("%");
 					}
 				}
 			}
@@ -2726,7 +2733,7 @@ public final class CommonUtil
 			try
             {
             	
-				if (objStr.isEmpty())
+				if (objStr.isEmpty() || objStr.equals("null"))
 					objStr ="0";
 				else 
 				{
@@ -2765,13 +2772,13 @@ public final class CommonUtil
         }
         else if (className.equals("string") || className.indexOf("java.lang.String") != -1)
         {
-            return objStr;
+            return objStr.equals("null") ? "" : objStr;
         }
         else if (className.equals("double") || className.equals("java.lang.Double") || className.equals("[D"))
         {
             try
             {
-            	if (objStr.isEmpty())
+            	if (objStr.isEmpty() || objStr.equals("null"))
             		objStr = "0";                	
                 return Double.valueOf(objStr);
             }
@@ -2786,7 +2793,7 @@ public final class CommonUtil
         {
             try
             {
-            	if (objStr.isEmpty())
+            	if (objStr.isEmpty() || objStr.equals("null"))
             		objStr = "0";                	
                 return Float.valueOf(objStr);
             }
@@ -2801,7 +2808,7 @@ public final class CommonUtil
         {
             try
             {
-                return Boolean.valueOf(objStr);
+                return objStr.equals("null") ? false : Boolean.valueOf(objStr);
             }
             catch(Exception e)
             {
@@ -2814,7 +2821,7 @@ public final class CommonUtil
         {
             try
             {
-            	if (objStr.isEmpty())
+            	if (objStr.isEmpty() || objStr.equals("null"))
             			objStr = "0";                	
                 return DecimalUtil.stringToDec(objStr);
             }
@@ -2828,7 +2835,9 @@ public final class CommonUtil
         else if (className.indexOf("java.util.Date") != -1)
         {
             try {
-				if (objStr.indexOf('/')>0) //Json CallAjax
+				if (objStr.equals("null"))
+					return nullDate();
+				else if (objStr.indexOf('/')>0) //Json CallAjax
 					return LocalUtil.getISO8601Date(objStr);
 				else
 					return new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss zzz Z").parse(objStr);
@@ -2839,7 +2848,7 @@ public final class CommonUtil
         else if(className.indexOf("java.util.UUID") != -1)
         {
 			try {
-				return UUID.fromString(objStr);
+				return objStr.equals("null") ? new UUID(0,0) : UUID.fromString(objStr);
 			}catch(IllegalArgumentException e)
 			{
 				if(fail)
