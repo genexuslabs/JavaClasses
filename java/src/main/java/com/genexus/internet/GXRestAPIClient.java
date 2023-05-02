@@ -285,6 +285,18 @@ public class GXRestAPIClient {
 		return Double.parseDouble(getJsonStr(varName));
 	}
 
+	public long getBodyLong(String varName) {
+		long value =0;
+		try{
+			value =  Long.parseLong(getJsonStr(varName));
+		}
+		catch(NumberFormatException ex)
+		{
+			value = Double.valueOf(getJsonStr(varName)).longValue();
+		}
+		return value;
+	}
+
 	public int getBodyInt(String varName) {
 		return Integer.parseInt(getJsonStr(varName));
 	}
