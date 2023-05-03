@@ -1,4 +1,5 @@
-name: Code scanning
+name: Code scanning by Fortify
+
 
 # TODO: Customize trigger events based on your DevSecOps processes and typical FoD SAST scan time
 on:
