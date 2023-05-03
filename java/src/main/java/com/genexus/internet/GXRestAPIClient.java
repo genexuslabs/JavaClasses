@@ -344,15 +344,24 @@ public class GXRestAPIClient {
             return null;
         }
 		try {
+			
 			if (jsonResponse != null) {
-				if (jsonResponse.has(varName)) {
-					sdt.fromJSonString(jsonResponse.getString(varName), null);
+				Boolean dSuccess = false;
+				if (jsonResponse.has(varName) && jsonResponse.length() == 1) {
+					dSuccess = sdt.fromJSonString(jsonResponse.getString(varName), null);
 				} 
 				else if (jsonResponse.length() == 1 && jsonResponse.has("")) {
-					sdt.fromJSonString(jsonResponse.getString(""), null);
+					dSuccess = sdt.fromJSonString(jsonResponse.getString(""), null);
 				} 
-				else if (jsonResponse.length()>= 1 && !jsonResponse.has(varName)) {
-					sdt.fromJSonString(httpClient.getString(), null);
+				else if (jsonResponse.length()>= 1) {
+					dSuccess = sdt.fromJSonString(httpClient.getString(), null);			
+				}
+				if (!dSuccess)
+				{
+					errorCode = RESPONSE_ERROR_CODE;
+					errorMessage = RESPONSE_ERROR_MSG;
+					logger.error(RESPONSE_ERROR_MSG + " " + sdtClass);			
+					return null;
 				}
 			}
 			else {
