@@ -281,8 +281,12 @@ public class GXRestAPIClient {
 		}		
 	}
 
-	public Double getBodyNum(String varName) {
+	public Double getBodyDouble(String varName) {
 		return Double.parseDouble(getJsonStr(varName));
+	}
+
+	public java.math.BigDecimal	getBodyNum(String varName) {
+		return new java.math.BigDecimal(getJsonStr(varName));
 	}
 
 	public long getBodyLong(String varName) {
