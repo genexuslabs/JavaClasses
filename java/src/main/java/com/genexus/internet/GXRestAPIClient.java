@@ -6,6 +6,7 @@ import json.org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.text.SimpleDateFormat;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Date;
 import json.org.json.IJsonFormattable;
@@ -137,6 +138,10 @@ public class GXRestAPIClient {
 		queryVars.put(varName, String.valueOf(varValue));
 	}
 		
+	public void addQueryVar(String varName, long varValue)	{
+		queryVars.put(varName, String.valueOf(varValue));
+	}
+
 	public void addQueryVar(String varName, double varValue) {
 		queryVars.put(varName, Double.toString(varValue));
 	}
@@ -162,7 +167,7 @@ public class GXRestAPIClient {
 		queryVars.put(varName, varValue.toString());
 	}
 
-	public void addQueryVar(String varName, java.math.BigDecimal varValue) {
+	public void addQueryVar(String varName, BigDecimal varValue) {
 		queryVars.put(varName, varValue.toString());
 	}
 
@@ -213,15 +218,23 @@ public class GXRestAPIClient {
 		bodyVars.put( varName, quoteString(df.format(varValue)));
 	}
 
+	public void addBodyVar(String varName, short varValue) {
+		bodyVars.put( varName, Short.toString(varValue));
+	}
+
 	public void addBodyVar(String varName, int varValue) {
 		bodyVars.put( varName, Integer.toString(varValue));
+	}
+
+	public void addBodyVar(String varName, long varValue) {
+		bodyVars.put( varName, Long.toString(varValue));
 	}
 
 	public void addBodyVar(String varName, Boolean varValue) {
 		bodyVars.put( varName, varValue.toString());
 	}
 
-	public void addBodyVar(String varName, java.math.BigDecimal varValue) {
+	public void addBodyVar(String varName, BigDecimal varValue) {
 		bodyVars.put( varName, varValue.toString());
 	}
 
@@ -285,8 +298,8 @@ public class GXRestAPIClient {
 		return Double.parseDouble(getJsonStr(varName));
 	}
 
-	public java.math.BigDecimal	getBodyNum(String varName) {
-		return new java.math.BigDecimal(getJsonStr(varName));
+	public BigDecimal	getBodyNum(String varName) {
+		return new BigDecimal(getJsonStr(varName));
 	}
 
 	public long getBodyLong(String varName) {
