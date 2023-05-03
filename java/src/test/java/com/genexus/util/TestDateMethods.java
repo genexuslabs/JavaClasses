@@ -83,25 +83,34 @@ public class TestDateMethods {
     }
 
     @Test
-    public void testValidTimezone() {
+    public void testDateTimeToUTC() {
         Connect.init();
-
-        String dateTime = "2023-03-22 15:00:00"; // input DateTime
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 		TimeZone timezone = TimeZone.getTimeZone("America/Montevideo");
 
-        try {
-            Date mvdDate = dateFormat.parse(dateTime); // convert String to Date
-			Date utcDate = CommonUtil.DateTimeToUTC(mvdDate, timezone);
+        String dateTime = "2023-03-22 15:00:00"; // input DateTime
+		long expectedDiff = 10800000;
+		ConvertDateTime(dateTime, timezone, expectedDiff, true);
 
-            long diff = utcDate.getTime() - mvdDate.getTime();
-            long expectedDiff = 10800000;
-            Assert.assertEquals("Timezone offset invalid", expectedDiff, diff);
-        } catch (Exception e) {
-			Assert.fail();
-        }
+		dateTime = "2011-02-20 1:00:00"; // input DateTime during summer time
+		expectedDiff = 7200000;
+		ConvertDateTime(dateTime, timezone, expectedDiff, true);
     }
+
+	@Test
+	public void DateTimeFromUTC() {
+		Connect.init();
+
+		TimeZone timezone = TimeZone.getTimeZone("America/Montevideo");
+
+		String dateTime = "2023-02-22 18:00:00"; // input DateTime
+		long expectedDiff = -10800000;
+		ConvertDateTime(dateTime, timezone, expectedDiff, false);
+
+		dateTime = "2011-02-20 3:00:00"; // input DateTime during summer time
+		expectedDiff = -7200000;
+		ConvertDateTime(dateTime, timezone, expectedDiff, false);
+	}
 
     /**
      * DateTimeToUTC must not fail if the Timezone does not exists.
@@ -110,20 +119,29 @@ public class TestDateMethods {
     public void testInvalidTimezone() {
         Connect.init();
 
+		TimeZone timezone = TimeZone.getTimeZone("America/DoesnotExists");
+
         String dateTime = "2023-03-22 15:00:00"; // input DateTime
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-        TimeZone timezone = TimeZone.getTimeZone("America/DoesnotExists");
-
-        try {
-            Date mvdDate = dateFormat.parse(dateTime); // convert String to Date
-            Date utcDate = CommonUtil.DateTimeToUTC(mvdDate, timezone);
-
-            long diff = utcDate.getTime() - mvdDate.getTime();
-            long expectedDiff = 0;
-            Assert.assertEquals("Timezone offset invalid", expectedDiff, diff);
-        } catch (Exception e) {
-            Assert.fail();
-        }
+		long expectedDiff = 0;
+		ConvertDateTime(dateTime, timezone, expectedDiff, true);
+		ConvertDateTime(dateTime, timezone, expectedDiff, false);
     }
+
+	private void ConvertDateTime(String dateTime, TimeZone timezone, long expectedDiff, boolean toUTC) {
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		try {
+			Date mvdDate = dateFormat.parse(dateTime); // convert String to Date
+			Date dateConverted;
+			if (toUTC)
+				dateConverted = CommonUtil.DateTimeToUTC(mvdDate, timezone);
+			else
+				dateConverted = CommonUtil.DateTimeFromUTC(mvdDate, timezone);
+
+			long diff = dateConverted.getTime() - mvdDate.getTime();
+			Assert.assertEquals("Timezone offset invalid", expectedDiff, diff);
+		} catch (Exception e) {
+			Assert.fail();
+		}
+	}
+
 }
