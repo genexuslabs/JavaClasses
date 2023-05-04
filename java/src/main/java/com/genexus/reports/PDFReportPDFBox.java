@@ -975,7 +975,6 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 						try (PDPageContentStream templatePainter = new PDPageContentStream(document, page,PDPageContentStream.AppendMode.APPEND,false)) {
 							templatePainter.drawForm(formXObjecttemplate);
 						}
-
 					}
 					template.close();
 				} catch (IOException e){

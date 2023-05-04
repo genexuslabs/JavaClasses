@@ -51,22 +51,20 @@ public class PDFReportItext extends GXReportPDFCommons
 	ConcurrentHashMap<String, Image> documentImages;
 	public int runDirection = PdfWriter.RUN_DIRECTION_LTR;
 
-	public PDFReportItext(ModelContext context)
-    {
+	public PDFReportItext(ModelContext context) {
 		super(context);
         document = null;
 		pageSize = null;
 		documentImages = new ConcurrentHashMap<>();
     }
 
-	protected void init()
-    {
+	protected void init() {
       Document.compress = true;
 	  try {
       writer = PdfWriter.getInstance(document, outputStream);
 	  }
 	  catch(DocumentException de) {
-            System.err.println(de.getMessage());
+            log.error("failed to initialize document: ", de);
       }
       document.open();
     }
@@ -189,8 +187,7 @@ public class PDFReportItext extends GXReportPDFCommons
 			else {
 				cb.lineTo(x, y + radioBL);
 			}
-			if (radioBL>0 && styleBottom!=STYLE_NONE_CONST)
-			{
+			if (radioBL>0 && styleBottom!=STYLE_NONE_CONST) {
 				cb.curveTo(x, y + radioBL * b, x + radioBL * b, y, x + radioBL, y);
 			}
 		}
@@ -437,8 +434,7 @@ public class PDFReportItext extends GXReportPDFCommons
 		}
         if(DEBUG) {
 			String fontSubstitute = "";
-			if (!originalFontName.equals(fontName))
-			{
+			if (!originalFontName.equals(fontName)) {
 				fontSubstitute = "Original Font: " + originalFontName + " Substitute";
 			}
 			log.debug("GxAttris: ");
@@ -828,12 +824,10 @@ public class PDFReportItext extends GXReportPDFCommons
 					break;
 				}
 				underline.setBackgroundColor(foreColor);
-				try
-				{
+				try {
 					document.add(underline);
 				}
-				catch(DocumentException de) 
-				{
+				catch(DocumentException de) {
 					log.error("fontStrikethru in GxDrawText failed: ", de);
 				}
 			}
@@ -873,8 +867,7 @@ public class PDFReportItext extends GXReportPDFCommons
                 try{
 					DrawColumnText(cb, llx, lly, urx, ury, p, leading, runDirection, valign, alignment);
                 }
-			    catch (DocumentException ex)
-			    {
+			    catch (DocumentException ex) {
 					log.error("wrap in GxDrawText failed: ", ex);
 			    }
             }
@@ -911,8 +904,7 @@ public class PDFReportItext extends GXReportPDFCommons
 	boolean pageHeightExceeded(float bottomAux, float drawingPageHeight){
 		return super.pageHeightExceeded(bottomAux,drawingPageHeight);
 	}
-	ColumnText SimulateDrawColumnText(PdfContentByte cb, Rectangle rect, Paragraph p, float leading, int runDirection, int alignment) throws DocumentException
-	{
+	ColumnText SimulateDrawColumnText(PdfContentByte cb, Rectangle rect, Paragraph p, float leading, int runDirection, int alignment) throws DocumentException {
 		ColumnText Col = new ColumnText(cb);
 		Col.setRunDirection(runDirection);
 		Col.setAlignment(alignment);
@@ -1042,7 +1034,7 @@ public class PDFReportItext extends GXReportPDFCommons
 			writer.addViewerPreference(PdfName.DUPLEX, duplexValue);
 		}
 		catch(Exception ex) {
-			ex.printStackTrace(System.err);
+			log.error("GxEndDocument failed to apply viewer preferences: ", ex);
 		}
 
 		String serverPrinting = props.getGeneralProperty(Const.SERVER_PRINTING);
@@ -1066,8 +1058,7 @@ public class PDFReportItext extends GXReportPDFCommons
 					writer.addJavaScript("pp.interactive = pp.constants.interactionLevel.automatic;\n");
 					//No print dialog is displayed. During printing a progress monitor and cancel
 					//dialog is displayed and removed automatically when printing is complete.
-					for(int i = 0; i < copies; i++)
-					{
+					for(int i = 0; i < copies; i++) {
 						writer.addJavaScript("this.print(pp);\n");
 					}
 				}
