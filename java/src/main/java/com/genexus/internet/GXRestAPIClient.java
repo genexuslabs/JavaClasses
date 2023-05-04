@@ -3,18 +3,16 @@ package com.genexus.internet;
 import java.util.*;
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
-import java.util.HashMap;
-import java.util.Iterator;
+
 import java.text.SimpleDateFormat;
 import java.math.BigDecimal;
 import java.text.ParseException;
-import java.util.Date;
+
 import json.org.json.IJsonFormattable;
 import json.org.json.JSONArray;
 import com.genexus.internet.IGxJSONAble;
 import com.genexus.xml.GXXMLSerializable;
 import com.genexus.internet.IGxJSONSerializable;
-import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.*;
 import com.genexus.diagnostics.core.ILogger;
@@ -47,10 +45,11 @@ public class GXRestAPIClient {
 	static final String DATE_FMT = "yyyy-MM-dd";
 	static final String DATETIME_FMT = "yyyy-MM-dd'T'HH:mm:ss";
 	static final String DATETIME_FMT_MS = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+	static final String DATE_NULL = "0000-00-00";
+	static final String DATETIME_NULL = "0000-00-00T00:00:00";
 
 	/* Error constants */
-
-	static final int RESPONSE_ERROR_CODE = 2;
+   	static final int RESPONSE_ERROR_CODE = 2;
 	static final int PARSING_ERROR_CODE = 3;
 	static final int DESERIALIZING_ERROR_CODE = 4;
 	
@@ -252,7 +251,11 @@ public class GXRestAPIClient {
 
 	public Date getBodyDate(String varName) {	
 		try {
-			return new SimpleDateFormat(DATE_FMT).parse(getJsonStr(varName));
+			String val = getJsonStr(varName);
+			if (val.startsWith(DATE_NULL))
+				return CommonUtil.newNullDate();
+			else	
+			return new SimpleDateFormat(DATE_FMT).parse(val);
 		}
 		catch (ParseException e) {
 		    return CommonUtil.newNullDate();
@@ -261,10 +264,15 @@ public class GXRestAPIClient {
 
 	public Date getBodyDateTime(String varName, Boolean hasMilliseconds) {	
 		try{
+			String val = getJsonStr(varName);
 			String fmt = DATETIME_FMT;
 			if (hasMilliseconds)
 				fmt = DATETIME_FMT_MS;
-			return new SimpleDateFormat(fmt).parse(getJsonStr(varName));
+			
+			if (val.startsWith(DATETIME_NULL))
+				return CommonUtil.newNullDate();
+			else	
+				return new SimpleDateFormat(fmt).parse(val);
 		}
 		catch (ParseException e) {
 		    return CommonUtil.newNullDate();
@@ -439,7 +447,7 @@ public class GXRestAPIClient {
 	}
 
 	public <T extends Object> GXSimpleCollection<T> getBodyCollection(String varName, Class<T> elementClasss) {	
-		GXSimpleCollection coll;
+		GXSimpleCollection<T> coll;
 		try {
             coll = new GXSimpleCollection<T>();
         } 
