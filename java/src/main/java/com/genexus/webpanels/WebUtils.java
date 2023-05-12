@@ -324,7 +324,7 @@ public class WebUtils
 		int filenameIdx = value.toLowerCase().indexOf("filename");
 		int eqIdx = value.toLowerCase().indexOf("=", filenameIdx);
 
-		if(filenameIdx == -1 || eqIdx == -1 || browserType == HttpContext.BROWSER_SAFARI) { //Safari does not support ContentDisposition Header encoded
+		if(filenameIdx == -1 || eqIdx == -1 || browserType == HttpContextWeb.BROWSER_SAFARI) { //Safari does not support ContentDisposition Header encoded
 			return value;
 		}
 		

@@ -4,59 +4,43 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import com.genexus.servlet.IServletContext;
-import com.genexus.servlet.http.IHttpServletRequest;
-import com.genexus.servlet.http.IHttpServletResponse;
-
 import com.genexus.diagnostics.core.ILogger;
-import com.genexus.internet.HttpContext;
 import com.genexus.internet.MsgList;
 import com.genexus.security.GXResult;
 import com.genexus.security.GXSecurityProvider;
-import com.genexus.webpanels.GXWebObjectBase;
+import com.genexus.servlet.IServletContext;
+import com.genexus.servlet.http.IHttpServletRequest;
+import com.genexus.servlet.http.IHttpServletResponse;
 import com.genexus.webpanels.HttpContextWeb;
 
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
 
-abstract public class GxRestService extends GXWebObjectBase 
-{
+abstract public class GxRestService extends GXObjectBase {
 	private static ILogger logger = null;
 	
 	protected JSONObject errorJson;
 	protected boolean error = false;
-	protected boolean useAuthentication = false;
 	protected String gamError;
 	protected boolean forbidden = false;
 	protected String permissionPrefix;
 	
 	protected abstract boolean IntegratedSecurityEnabled();
 	protected abstract int IntegratedSecurityLevel();
+
 	protected String ExecutePermissionPrefix(){
 		return "";
 	}
 
 	protected boolean IsSynchronizer()
-	{ 
-		return false;
-	}
-
-	public boolean isMasterPage()
 	{
 		return false;
 	}
 
-	
-	protected static final int SECURITY_HIGH = 2;
 	protected static final int SECURITY_LOW  = 1;
 	protected static final String POST  = "POST";
-
-	public GxRestService()
-	{
-		super();
-	}
-
-	protected HttpContext restHttpContext;
+	
+	protected HttpContextWeb restHttpContext;
 	protected com.genexus.ws.rs.core.IResponseBuilder builder;
 
 	protected void init(String requestMethod) {
@@ -101,15 +85,15 @@ abstract public class GxRestService extends GXWebObjectBase
 
 	public void webExecute( )
    {
-   }
+	}
 
    protected void cleanup()
    {
-   	 GXutil.setThreadTimeZone(ModelContext.getModelContext().getClientTimeZone());
-	   super.cleanup();
+		GXutil.setThreadTimeZone(ModelContext.getModelContext().getClientTimeZone());
+		super.cleanup();
 	   super.finallyCleanup();
-	   WrapperUtils.requestBodyThreadLocal.remove();
-   }
+		WrapperUtils.requestBodyThreadLocal.remove();
+	}
 	
 	public void ErrorCheck(IGxSilentTrn trn)
 	{
@@ -212,7 +196,7 @@ abstract public class GxRestService extends GXWebObjectBase
 	public boolean isAuthenticated(IHttpServletRequest myServletRequest, String synchronizer)
 	{
 		boolean validSynchronizer = false;
-		try{
+		try {
 			if (synchronizer!= null && !synchronizer.equals(""))
 			{
 				synchronizer = synchronizer.toLowerCase() + "_services_rest";
@@ -221,13 +205,13 @@ abstract public class GxRestService extends GXWebObjectBase
 					packageName += ".";
 				Class<?> synchronizerClass = Class.forName(packageName + synchronizer);
 				GxRestService synchronizerRestService = (GxRestService) synchronizerClass.getConstructor().newInstance();
-				if (synchronizerRestService!=null && synchronizerRestService.IsSynchronizer()){
+				if (synchronizerRestService!=null && synchronizerRestService.IsSynchronizer()) {
 					validSynchronizer = true;
 					return isAuthenticated(myServletRequest, synchronizerRestService.IntegratedSecurityLevel(), synchronizerRestService.IntegratedSecurityEnabled(), synchronizerRestService.ExecutePermissionPrefix());
 				}
 			}
 			return false;
-		} 
+		}
 		catch(Exception e)
 		{
 			logger.error("Could not check user authenticated", e);			
@@ -258,68 +242,41 @@ abstract public class GxRestService extends GXWebObjectBase
 		{
 			setTheme(theme);
 		}
-		String eTag = isPostRequest(myServletRequest) ? null : myServletRequest.getHeader("If-Modified-Since");
+		String etag = myServletRequest.getMethod().equalsIgnoreCase(POST) ? null : myServletRequest.getHeader("If-Modified-Since");
 		Date dt = Application.getStartDateTime();
 		Date newDt = new Date();
 		GXSmartCacheProvider.DataUpdateStatus status;
 		Date[] newDt_arr = new Date[] { newDt };
-		if (eTag == null)
+		if (etag == null)
 		{
 			status = GXSmartCacheProvider.DataUpdateStatus.Invalid;
-			GXSmartCacheProvider.checkDataStatus(queryId, dt, newDt_arr);
+			GXSmartCacheProvider.CheckDataStatus(queryId, dt, newDt_arr);
 		}
 		else
 		{
-			dt = HTMLDateToDatetime(eTag);
-			status = GXSmartCacheProvider.checkDataStatus(queryId, dt, newDt_arr);
+			dt = HTMLDateToDatetime(etag);
+			status = GXSmartCacheProvider.CheckDataStatus(queryId, dt, newDt_arr);
 		}
 		newDt = newDt_arr[0];
-		addHeader(myServletResponse, "Last-Modified", DateTimeToHTMLDate(newDt));
-		addCacheHeaders(myServletResponse);
+		if (myServletResponse != null) // Temporary: Jersey Service called through AWS Lambda where HttpResponse is null.
+			myServletResponse.addHeader("Last-Modified", DateTimeToHTMLDate(newDt)); 
 		if (status == GXSmartCacheProvider.DataUpdateStatus.UpToDate)
 		{
 			return false;
 		}
 		return true;
 	}
-
-	private void addCacheHeaders(IHttpServletResponse myServletResponse) {
-		/*
-		 * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
-		 * Specifying no-cache or max-age=0 indicates that
-		 * clients can cache a resource and must revalidate each time before using it.
-		 * This means HTTP request occurs each time, but it can skip downloading HTTP body if the content is valid.
-		 */
-		if (ClientInformation.getDeviceType() == ClientInformation.DeviceTypeEnum.Web) {
-			addHeader(myServletResponse, "Cache-Control", "no-cache, max-age=0");
-		}
-	}
-
-	boolean isPostRequest(IHttpServletRequest request)
-	{
-		return request.getMethod().equalsIgnoreCase(POST);
-	}
-
-	void addHeader(IHttpServletResponse response, String headerName, String headerValue)
-	{
-		if (response != null) {
-			// Temporary: Jersey Service called through AWS Lambda where HttpResponse is null.
-			response.addHeader(headerName, headerValue);
-		}
-		else {
-			logger.warn("Could add HttpHeader to Response");
-		}
-	}
-
+	
 	Date HTMLDateToDatetime(String s)
 	{
-		// Date Format: RFC 1123
+		// Formato fecha: RFC 1123
 		try
 		{
 			SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", java.util.Locale.US);
 			java.util.TimeZone tz = java.util.TimeZone.getTimeZone("GMT");
 			sdf.setTimeZone(tz);
 			return sdf.parse(s);
+			
 		}
 		catch(ParseException p)
 		{
@@ -335,6 +292,4 @@ abstract public class GxRestService extends GXWebObjectBase
 		sdf.setTimeZone(tz);		
 		return sdf.format(dt);
 	}
-
-
 }

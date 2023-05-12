@@ -3,7 +3,7 @@ package com.genexus.webpanels;
 import java.lang.reflect.Method;
 
 import com.genexus.ModelContext;
-import com.genexus.internet.HttpContext;
+import com.genexus.internet.HttpAjaxContext;
 
 public class GXWebStdMethods
 {
@@ -67,7 +67,7 @@ public class GXWebStdMethods
                 Class webStdFuncs = getWebStdClass(context);
                 if (webStdFuncs != null)
                 {
-                    HttpContext httpContext = (HttpContext) context.getHttpContext();
+					HttpAjaxContext httpContext = (HttpAjaxContext) context.getHttpContext();
                     if (httpContext != null)
                     {
                         boolean addCallerPgm = true;
@@ -202,7 +202,7 @@ public class GXWebStdMethods
 
     public static void openTag(ModelContext context, String tag, Object[] parms)
     {
-        HttpContext httpContext = (HttpContext) context.getHttpContext();
+		HttpAjaxContext httpContext = (HttpAjaxContext) context.getHttpContext();
         if (tag.equalsIgnoreCase("row"))
         {
             httpContext.writeTextNL("<tr>");
@@ -230,7 +230,7 @@ public class GXWebStdMethods
 
     public static void closeTag(ModelContext context, String tag)
     {
-        HttpContext httpContext = (HttpContext) context.getHttpContext();
+		HttpAjaxContext httpContext = (HttpAjaxContext) context.getHttpContext();
         if (tag.equalsIgnoreCase("table"))
         {
             httpContext.writeTextNL("</table>");

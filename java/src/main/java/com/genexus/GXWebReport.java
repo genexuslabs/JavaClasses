@@ -1,16 +1,19 @@
-package com.genexus.reports;
+package com.genexus;
 
-import com.genexus.GXProcedure;
-import com.genexus.ModelContext;
-import com.genexus.ProcessInterruptedException;
+import com.genexus.db.UserInformation;
+import com.genexus.internet.HttpContext;
+import com.genexus.reports.GXReportMetadata;
+import com.genexus.reports.IReportHandler;
+import com.genexus.reports.PDFReportItext;
+import com.genexus.webpanels.GXWebProcedure;
 
-public abstract class GXReport extends GXProcedure
+public abstract class GXWebReport extends GXWebProcedure
 {
-	protected static final int OUTPUT_RVIEWER = 1;
-	protected static final int OUTPUT_PDF     = 2;
+	public static final int OUTPUT_RVIEWER = 1;
+	public static final int OUTPUT_PDF     = 2;
 
 	// Tiene que ser protected porque se pasa como par�metro en los reports
-	protected GXReportMetadata reportMetadata;	
+	protected GXReportMetadata reportMetadata;
 	protected IReportHandler reportHandler;
 
 	protected int lineHeight;
@@ -20,46 +23,52 @@ public abstract class GXReport extends GXProcedure
    	protected int gxYPage;
    	protected int Gx_page;
    	protected String Gx_out = ""; // Esto est� asi porque no me pude deshacer de una comparacion contra Gx_out antes del ask.
+	protected String filename;
+	protected String filetype;
 
-	public GXReport(int remoteHandle, ModelContext context, String location)
+	public GXWebReport(HttpContext httpContext)
 	{
-		super(remoteHandle, context, location);
-	}
-	
-	public GXReport(boolean inNewUTL, int remoteHandle, ModelContext context, String location)
-	{
-		super(inNewUTL, remoteHandle, context, location);
+		super(httpContext);
 	}
 
-	public static byte openGXReport(String document)
+	protected void initState(ModelContext context, UserInformation ui)
 	{
-		if(document.toLowerCase().endsWith(".pdf"))
-		{ // Si es un .pdf
-			try
-			{
-				PDFReportItext.showReport(document, false);
-			}catch(Exception e)
-			{
-				System.err.println(e.toString());
-				return -1;
-			}							  
-		}else
-		{
-			GXReportViewerThreaded.GxOpenDoc(document);
-		}
-		return 0;
+		super.initState(context, ui);
+
+		httpContext.setBuffered(true);
+		httpContext.setBinary(true);
+
+                      reportHandler = new PDFReportItext(context);
+
+		initValues();
 	}
-		
-        public String setPrintAtClient()
-        {
-            String blobPath = com.genexus.Preferences.getDefaultPreferences().getBLOB_PATH();
-            String fileName = com.genexus.PrivateUtilities.getTempFileName(blobPath, "clientReport", getOutputType() == OUTPUT_PDF ? "pdf":"gxr");			
-			
-            getPrinter().GxSetDocName(fileName);
-            getPrinter().GxSetDocFormat("GXR");
-            com.genexus.webpanels.BlobsCleaner.getInstance().addBlobFile(fileName);
-			return fileName;
-        }
+
+	protected void preExecute()
+	{
+		httpContext.setContentType("application/pdf");
+		httpContext.setStream();
+
+		// Tiene que ir despues del setStream porque sino el getOutputStream apunta
+		// a otro lado.
+                 ((PDFReportItext) reportHandler).setOutputStream(httpContext.getOutputStream());
+	}
+
+	protected void setOutputFileName(String outputFileName){
+		filename = outputFileName;
+	}
+	protected void setOutputType(String outputType){
+		filetype = outputType.toLowerCase();
+	}
+	private void initValues()
+	{
+   		Gx_line = 0;
+   		P_lines = 0;
+   		gxXPage = 0;
+   		gxYPage = 0;
+   		Gx_page = 0;
+   		Gx_out = ""; // Esto est� asi porque no me pude deshacer de una comparacion contra Gx_out antes del ask.
+   		lineHeight = 0;
+	}
 
 	public void setPrinter(IReportHandler reportHandler)
 	{
@@ -68,53 +77,9 @@ public abstract class GXReport extends GXProcedure
 
 	public IReportHandler getPrinter()
 	{
-		if	(reportHandler == null)
-		{
-			if	(getOutputType() == OUTPUT_RVIEWER)
-			{
-  				reportHandler = new GXReportViewerThreaded();
-			}
-			else if  (getOutputType() == OUTPUT_PDF)
-			{
-                            reportHandler = new PDFReportItext(context);
-
-				try
-				{
-	                ((PDFReportItext) reportHandler).setOutputStream(getOutputStream());
-				}
-				catch (Exception e)
-				{
-				}
-			}
-			else
-			{
-				throw new RuntimeException("Unrecognized report type: " + getOutputType());
-			}
-		}
-
 		return reportHandler;
 	}
-/*
-	public String format(String value, String picture)
-	{
-		return PictureFormatter.format(value, picture);
-	}
 
-	public String format(long value, String picture)
-	{
-		return localUtil.format(value, picture);
-	}
-
-	public String format(java.util.Date value, String picture)
-	{
-		return localUtil.format(value, picture);
-	}
-
-	public String format(double value, String picture)
-	{
-		return localUtil.format(value, picture);
-	}
-*/
 	protected void GxEndPage() throws ProcessInterruptedException
 	{
 		if	(reportHandler != null)
@@ -139,6 +104,7 @@ public abstract class GXReport extends GXProcedure
 	{
 		int x[] = {gxXPage};
 		int y[] = {gxYPage};
+		setResponseOuputFileName();
 
 		getPrinter().GxRVSetLanguage(localUtil._language);
       	boolean ret = getPrinter().GxPrintInit(output, x, y, iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
@@ -149,31 +115,15 @@ public abstract class GXReport extends GXProcedure
 		return ret;
 	}
 
-	protected void endPrinter()
-	{
-		try
-		{
-			getPrinter().GxEndPrinter();
-			waitPrinterEnd();
-		}
-		catch (Exception e)
-		{
-		}
+	private void setResponseOuputFileName(){
+		String outputFileName = filename!=null ? filename : getClass().getSimpleName();
+		String outputFileType = filetype!=null ? "." + filetype.toLowerCase(): ".pdf";
+		httpContext.getResponse().addHeader("content-disposition", "inline; filename=" + outputFileName + outputFileType);
 	}
 
-	protected void waitPrinterEnd()
+	protected void endPrinter()
 	{
-		if	(reportHandler != null && Gx_out.equals("SCR") && reportHandler.getModal())
-		{
-			while	(reportHandler.GxIsAlive());
-		}
-
-/*		IGUIContext ctx = context.getGUIContext();
-		if	(ctx instanceof com.genexus.ui.GUIContext)
-		{
-			((com.genexus.ui.GUIContext) ctx).getWorkpanel().setFocus();
-		}
-*/
+		getPrinter().GxEndPrinter();
 	}
 
    	protected int getOutputType()
@@ -187,17 +137,16 @@ public abstract class GXReport extends GXProcedure
 	}
 	
 	//M�todos para la implementaci�n de reportes din�micos
-	
 	protected void loadReportMetadata(String name)
 	{
-		reportMetadata = new GXReportMetadata(name, getPrinter());
+		reportMetadata = new GXReportMetadata(name, reportHandler);
 		reportMetadata.load();
 	}
 	
 	protected int GxDrawDynamicGetPrintBlockHeight(int printBlock)
 	{
 		return reportMetadata.GxDrawGetPrintBlockHeight(printBlock);
-	}
+	}	
 	
 	protected void GxDrawDynamicText(int printBlock, int controlId, int Gx_line)
 	{
@@ -228,4 +177,9 @@ public abstract class GXReport extends GXProcedure
 	{
 		reportMetadata.GxDrawBitMap(printBlock, controlId, Gx_line, value, aspectRatio);
 	}	
+	
+	protected void cleanup( )
+	{
+		super.cleanup();
+	}
 }
