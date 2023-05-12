@@ -39,7 +39,7 @@ public class GXObjectUploadServices extends GXWebObjectStub
 				ModelContext.getModelContext().setHttpContext(context);
 				context.setContext(modelContext);
 
-			if (context.isMultipartContent())
+			if (((HttpContextWeb) context).isMultipartContent())
 			{
 				context.setContentType("text/plain");
 				FileItemCollection postedFiles = context.getHttpRequest().getPostedparts();
@@ -67,7 +67,7 @@ public class GXObjectUploadServices extends GXWebObjectStub
 				}
 				JSONObject jObjResponse = new JSONObject();
 				jObjResponse.put("files", jsonArray);
-				context.writeText(jObjResponse.toString());
+				((HttpContextWeb) context).writeText(jObjResponse.toString());
 				context.getResponse().flushBuffer();
 			}
 			else
@@ -86,7 +86,7 @@ public class GXObjectUploadServices extends GXWebObjectStub
 					context.getResponse().setContentType("application/json");
 					context.getResponse().setStatus(201);
 					context.getResponse().setHeader("GeneXus-Object-Id", keyId);
-					context.writeText(jObj.toString());
+					((HttpContextWeb) context).writeText(jObj.toString());
 					context.getResponse().flushBuffer();
 				}
 				else {

@@ -1,15 +1,7 @@
-/*
-               File: nonemasterpage_impl
-        Description: None Master Page
-             Author: GeneXus Java Generator version 15_0_12-126415
-       Generated on: April 26, 2019 17:13:47.18
-       Program type: Callable routine
-          Main DBMS: SQL Server
-*/
 package com.genexus.webpanels;
+
 import com.genexus.*;
-import com.genexus.internet.HttpContext;
-import com.genexus.webpanels.*;
+import com.genexus.internet.HttpAjaxContext;
 
 public final  class NoneMasterPage extends GXMasterPage
 {
@@ -206,7 +198,7 @@ public final  class NoneMasterPage extends GXMasterPage
         wbLoad = true ;
     }
 
-    public static void classAttribute( HttpContext httpContext ,
+    public static void classAttribute( HttpAjaxContext httpContext ,
                                        String sClass )
     {
         if ( ! (GXutil.strcmp("", sClass)==0) )
@@ -218,7 +210,7 @@ public final  class NoneMasterPage extends GXMasterPage
     }
 
 
-    public static void gx_div_start( HttpContext httpContext ,
+    public static void gx_div_start( HttpAjaxContext httpContext ,
                                      String sInternalName ,
                                      int nVisible ,
                                      int nWidth ,
@@ -284,7 +276,7 @@ public final  class NoneMasterPage extends GXMasterPage
         }
     }
 
-    public static void styleAttribute( HttpContext httpContext ,
+    public static void styleAttribute( HttpAjaxContext httpContext ,
                                        String sStyle )
     {
         if ( ! (GXutil.strcmp("", sStyle)==0) )
@@ -295,7 +287,7 @@ public final  class NoneMasterPage extends GXMasterPage
         }
     }
 
-    public static void gx_div_end( HttpContext httpContext ,
+    public static void gx_div_end( HttpAjaxContext httpContext ,
                                    String sAlign ,
                                    String sVAlign ,
                                    String sHtmlTag )
@@ -311,7 +303,7 @@ public final  class NoneMasterPage extends GXMasterPage
         httpContext.writeText( "</"+sHtmlTag+">") ;
     }
 
-    public static boolean gx_redirect( HttpContext httpContext )
+    public static boolean gx_redirect( HttpAjaxContext httpContext )
     {
         if ( httpContext.willRedirect( ) )
         {
