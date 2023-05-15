@@ -8,7 +8,9 @@ import com.genexus.internet.HttpContext;
 import com.genexus.webpanels.HttpContextWeb;
 import com.genexus.webpanels.WebApplicationStartup;
 
-public abstract class GXObjectBase extends GXRestServiceWrapper{
+import java.sql.SQLException;
+
+public abstract class GXObjectBase extends GXRestServiceWrapper implements ISubmitteable{
 	public static final ILogger logger = LogManager.getLogger(GXObjectBase.class);
 
 	protected ModelContext context;
@@ -199,5 +201,27 @@ public abstract class GXObjectBase extends GXRestServiceWrapper{
 	protected String formatLink(String jumpURL, String[] parms, String[] parmsName)
 	{
 		return URLRouter.getURLRoute(jumpURL, parms, parmsName, httpContext.getRequest().getContextPath(), context.getPackageName());
+	}
+
+	/**
+	 *  @Hack: Tenemos que ejecutar el submit esto en otro thread, pues el submit es asincrono,
+	 *        pero si creamos en el fuente generado el codigo del nuevo thread, se va a crear un
+	 *        archivo nuevo xxx$N.class al compilar el xxx, que deberia ser tratado especialmente
+	 *        en el makefile (copiado al directorio de servlets, etc); asi que delegamos la
+	 *        creacion del thread a la gxclassr donde se llama al metodo a ser ejecutado
+	 *		  Adem�s ahora manejamos un pool de threads en el submit
+	 */
+	public void callSubmit(final int id, Object [] submitParms)
+	{
+		com.genexus.util.SubmitThreadPool.submit(this, id, submitParms, context.submitCopy());
+	}
+
+	/** Este metodo es redefinido por la clase GX generada cuando hay submits
+	 */
+	public void submit(int id, Object [] submitParms, ModelContext ctx){
+	}
+	public void submit(int id, Object [] submitParms){
+	}
+	public void submitReorg(int id, Object [] submitParms) throws SQLException {
 	}
 }
