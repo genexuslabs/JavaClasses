@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.*;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -23,39 +25,53 @@ import com.genexus.db.IDataStoreProvider;
 import com.genexus.util.CacheAPI;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joda.time.DateTimeZone;
 
 public class GXutil implements IExtensionGXutil {
 	private static Logger logger = LogManager.getLogger(GXutil.class);
 
-	private static DateTimeZone Java2JodaTimeZone(TimeZone tz) {
-		DateTimeZone jodaTZ = DateTimeZone.getDefault();
+	private ZonedDateTime getZonedDateTime(Date value, TimeZone tz){
+		ZonedDateTime zdt;
 		try {
-			jodaTZ = DateTimeZone.forID(tz.getID());
-		} catch (IllegalArgumentException _) {
-			try {
-				jodaTZ = DateTimeZone.forTimeZone(tz);
-			} catch (IllegalArgumentException e) {
-				logger.error(String.format("Failed to find TimeZone: %s. Using default Timezone", tz.getID()), e);
-			}
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(value);
+			int year = calendar.get(Calendar.YEAR);
+			int month = calendar.get(Calendar.MONTH) + 1;
+			int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+			int hour = calendar.get(Calendar.HOUR_OF_DAY);
+			int minute = calendar.get(Calendar.MINUTE);
+			int second = calendar.get(Calendar.SECOND);
+			int nanoOfSecond = calendar.get(Calendar.MILLISECOND) * 1000000;
+
+			zdt = ZonedDateTime.of(LocalDateTime.of(year, month, dayOfMonth, hour, minute, second, nanoOfSecond), tz.toZoneId());
 		}
-		return jodaTZ;
+		catch(Exception e) {
+			zdt = ZonedDateTime.ofInstant(value.toInstant(), ZoneId.systemDefault());
+			logger.error(String.format("Failed to find TimeZone: %s. Using default Timezone", tz.getID()), e);
+		}
+		return zdt;
 	}
 
 	@Override
 	public Date DateTimeToUTC(Date value, TimeZone tz) {
-		org.joda.time.DateTime ret = new org.joda.time.DateTime(value.getTime());
-		ret = new org.joda.time.DateTime(Java2JodaTimeZone(tz).convertLocalToUTC(ret.getMillis(), false));
-		return ret.toDate();
+		if (tz.getID() == "GMT")
+			return value;
+
+		ZonedDateTime zdt = getZonedDateTime(value, tz);
+		Timestamp t = Timestamp.valueOf(zdt.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime());
+		return new Date(t.getTime());
 	}
 
 	@Override
 	public Date DateTimeFromUTC(Date value, TimeZone tz) {
+		if (tz.getID() == "GMT")
+			return value;
+
 		if (com.genexus.CommonUtil.emptyDate(value))
 			return value;
-		org.joda.time.DateTime ret = new org.joda.time.DateTime(value.getTime());
-		ret = new org.joda.time.DateTime(Java2JodaTimeZone(tz).convertUTCToLocal(ret.getMillis()));
-		return ret.toDate();
+
+		ZonedDateTime zdtUTC = getZonedDateTime(value, TimeZone.getTimeZone("UTC"));
+		Timestamp t =  Timestamp.valueOf(zdtUTC.withZoneSameInstant(ZoneId.of(tz.getID())).toLocalDateTime());
+		return new Date(t.getTime());
 	}
 
 	@Override
