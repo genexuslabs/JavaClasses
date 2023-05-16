@@ -149,8 +149,7 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 		}
 		// Primero debo obtener la ubicación + ejecutable del Acrobat
 		String acrobatLocation = props.getGeneralProperty(Const.ACROBAT_LOCATION); // Veo si esta fijada la ubicación del Acrobat en la property
-		if(acrobatLocation == null)
-		{
+		if(acrobatLocation == null) {
 			if(NativeFunctions.isUnix()) { // Si estoy en Unix no puedo ir a buscar el registry ;)
 				throw new Exception("Try setting Acrobat location & executable in property '" + Const.ACROBAT_LOCATION + "' of PDFReport.ini");
 			}
@@ -176,7 +175,7 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 		try {
 			// Primero debo obtener la ubicación + ejecutable del Acrobat
 			acrobatLocation = getAcrobatLocation();
-		}catch(Exception acrobatNotFound) {
+		} catch(Exception acrobatNotFound) {
 			throw new Exception("Acrobat cannot be found in this machine: " + acrobatNotFound.getMessage());
 		}
 
@@ -204,7 +203,7 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 		try {
 			// Primero debo obtener la ubicación + ejecutable del Acrobat
 			acrobatLocation = getAcrobatLocation();
-		}catch(Exception acrobatNotFound) {
+		} catch(Exception acrobatNotFound) {
 			throw new Exception("Acrobat cannot be found in this machine: " + acrobatNotFound.getMessage());
 		}
 
@@ -308,7 +307,7 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 	protected void loadProps() {
 		try{
 			props = new ParseINI(configurationFile, configurationTemplateFile);
-		}catch(IOException e){ props = new ParseINI(); }
+		} catch(IOException e){ props = new ParseINI(); }
 
 		props.setupGeneralProperty(Const.PDF_REPORT_INI_VERSION_ENTRY, Const.PDF_REPORT_INI_VERSION);
 		props.setupGeneralProperty(Const.EMBEED_SECTION, Const.EMBEED_DEFAULT);

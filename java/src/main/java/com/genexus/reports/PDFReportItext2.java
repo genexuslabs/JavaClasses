@@ -37,7 +37,7 @@ import com.genexus.reports.fonts.PDFFont;
 import com.genexus.reports.fonts.PDFFontDescriptor;
 import com.genexus.reports.fonts.Type1FontMetrics;
 
-public class PDFReportItext extends GXReportPDFCommons
+public class PDFReportItext2 extends GXReportPDFCommons
 {
     private com.lowagie.text.Rectangle pageSize;   // Contiene las dimensiones de la página
 	private BaseFont baseFont;
@@ -51,7 +51,7 @@ public class PDFReportItext extends GXReportPDFCommons
 	ConcurrentHashMap<String, Image> documentImages;
 	public int runDirection = PdfWriter.RUN_DIRECTION_LTR;
 
-	public PDFReportItext(ModelContext context) {
+	public PDFReportItext2(ModelContext context) {
 		super(context);
         document = null;
 		pageSize = null;

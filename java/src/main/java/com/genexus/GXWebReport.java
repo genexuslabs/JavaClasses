@@ -45,8 +45,7 @@ public abstract class GXWebReport extends GXWebProcedure
 		initValues();
 	}
 
-	protected void preExecute()
-	{
+	protected void preExecute() {
 		httpContext.setContentType("application/pdf");
 		httpContext.setStream();
 		((GXReportPDFCommons) reportHandler).setOutputStream(httpContext.getOutputStream());
@@ -58,8 +57,7 @@ public abstract class GXWebReport extends GXWebProcedure
 	protected void setOutputType(String outputType){
 		filetype = outputType.toLowerCase();
 	}
-	private void initValues()
-	{
+	private void initValues() {
    		Gx_line = 0;
    		P_lines = 0;
    		gxXPage = 0;
@@ -79,14 +77,11 @@ public abstract class GXWebReport extends GXWebProcedure
 		return reportHandler;
 	}
 
-	protected void GxEndPage() throws ProcessInterruptedException
-	{
-		if	(reportHandler != null)
-			reportHandler.GxEndPage();
+	protected void GxEndPage() throws ProcessInterruptedException {
+		if (reportHandler != null) reportHandler.GxEndPage();
 	}
 
-	protected boolean initTextPrinter(String output, int gxXPage, int gxYPage, String iniFile, String form, String printer, int mode, int nPaperLength, int nPaperWidth, int nGridX, int nGridY, int nPageLines)
-	{
+	protected boolean initTextPrinter(String output, int gxXPage, int gxYPage, String iniFile, String form, String printer, int mode, int nPaperLength, int nPaperWidth, int nGridX, int nGridY, int nPageLines) {
 		int x[] = {gxXPage};
 		int y[] = {gxYPage};
 
@@ -99,8 +94,7 @@ public abstract class GXWebReport extends GXWebProcedure
 		return ret;
 	}
 
-	protected boolean initPrinter(String output, int gxXPage, int gxYPage, String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex)
-	{
+	protected boolean initPrinter(String output, int gxXPage, int gxYPage, String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex) {
 		int x[] = {gxXPage};
 		int y[] = {gxYPage};
 		setResponseOuputFileName();
@@ -135,45 +129,37 @@ public abstract class GXWebReport extends GXWebProcedure
 		throw new RuntimeException("Output stream not set");
 	}
 	
-	//M�todos para la implementaci�n de reportes din�micos
-	protected void loadReportMetadata(String name)
-	{
+	//Metodos para la implementacion de reportes dinamicos
+	protected void loadReportMetadata(String name) {
 		reportMetadata = new GXReportMetadata(name, reportHandler);
 		reportMetadata.load();
 	}
 	
-	protected int GxDrawDynamicGetPrintBlockHeight(int printBlock)
-	{
+	protected int GxDrawDynamicGetPrintBlockHeight(int printBlock) {
 		return reportMetadata.GxDrawGetPrintBlockHeight(printBlock);
 	}	
 	
-	protected void GxDrawDynamicText(int printBlock, int controlId, int Gx_line)
-	{
+	protected void GxDrawDynamicText(int printBlock, int controlId, int Gx_line) {
 		reportMetadata.GxDrawText(printBlock, controlId, Gx_line);
 	}
 	
-	protected void GxDrawDynamicText(int printBlock, int controlId, String value, int Gx_line)
-	{
+	protected void GxDrawDynamicText(int printBlock, int controlId, String value, int Gx_line) {
 		reportMetadata.GxDrawText(printBlock, controlId, Gx_line, value);
 	}
 	
-	protected void GxDrawDynamicLine(int printBlock, int controlId, int Gx_line)
-	{
+	protected void GxDrawDynamicLine(int printBlock, int controlId, int Gx_line) {
 		reportMetadata.GxDrawLine(printBlock, controlId, Gx_line);
 	}
 	
-	protected void GxDrawDynamicRect(int printBlock, int controlId, int Gx_line)
-	{
+	protected void GxDrawDynamicRect(int printBlock, int controlId, int Gx_line) {
 		reportMetadata.GxDrawRect(printBlock, controlId, Gx_line);
 	}	
 	
-	protected void GxDrawDynamicBitMap(int printBlock, int controlId, String value, int Gx_line)
-	{
+	protected void GxDrawDynamicBitMap(int printBlock, int controlId, String value, int Gx_line) {
 		reportMetadata.GxDrawBitMap(printBlock, controlId, Gx_line, value, 0);
 	}
 	
-	protected void GxDrawDynamicBitMap(int printBlock, int controlId, String value, int aspectRatio, int Gx_line)
-	{
+	protected void GxDrawDynamicBitMap(int printBlock, int controlId, String value, int aspectRatio, int Gx_line) {
 		reportMetadata.GxDrawBitMap(printBlock, controlId, Gx_line, value, aspectRatio);
 	}	
 	
