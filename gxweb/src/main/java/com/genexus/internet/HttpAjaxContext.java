@@ -763,20 +763,6 @@ public class HttpAjaxContext extends HttpContextWeb
 		}
 	}
 
-	public void ajax_req_read_hidden_sdt(String jsonStr, Object SdtObj)
-	{
-		try
-		{
-			IJsonFormattable jsonObj;
-			if (jsonStr.startsWith("["))
-				jsonObj = new JSONArray(jsonStr);
-			else
-				jsonObj = new JSONObject(jsonStr);
-			((IGxJSONAble)SdtObj).FromJSONObject(jsonObj);
-		}
-		catch(JSONException exc) {}
-	}
-
 	public void ajax_rsp_assign_prop_as_hidden(String Control, String Property, String Value)
 	{
 		if (!this.isAjaxRequest())

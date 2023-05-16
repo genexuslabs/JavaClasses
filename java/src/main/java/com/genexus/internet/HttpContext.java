@@ -4,6 +4,10 @@ import java.io.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
+
+import json.org.json.IJsonFormattable;
+import json.org.json.JSONArray;
+import json.org.json.JSONException;
 import json.org.json.JSONObject;
 import org.apache.logging.log4j.Logger;
 
@@ -935,4 +939,18 @@ public abstract class HttpContext implements IHttpContext
 		{
 			return wjLoc != null && wjLoc.trim().length() != 0;
 		}
+
+	public void readJsonSdtValue(String jsonStr, Object SdtObj)
+	{
+		try
+		{
+			IJsonFormattable jsonObj;
+			if (jsonStr.startsWith("["))
+				jsonObj = new JSONArray(jsonStr);
+			else
+				jsonObj = new JSONObject(jsonStr);
+			((IGxJSONAble)SdtObj).FromJSONObject(jsonObj);
+		}
+		catch(JSONException exc) {}
+	}
 }
