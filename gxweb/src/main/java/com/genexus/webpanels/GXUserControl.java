@@ -1,6 +1,7 @@
 package com.genexus.webpanels;
+
 import com.genexus.ModelContext;
-import com.genexus.internet.HttpContext;
+import com.genexus.internet.HttpAjaxContext;
 import com.genexus.usercontrols.UserControlFactoryImpl;
 import com.genexus.util.GXMap;
 
@@ -32,13 +33,13 @@ public class GXUserControl
 	}
 	public void sendProperty(ModelContext context, String componentPrefix, boolean isMasterPage, String internalName, String propertyName, String propertyValue)
 	{
-		((HttpContext)context.getHttpContext()).ajax_rsp_assign_uc_prop(componentPrefix, isMasterPage, internalName, propertyName, propertyValue);
+		((HttpAjaxContext)context.getHttpContext()).ajax_rsp_assign_uc_prop(componentPrefix, isMasterPage, internalName, propertyName, propertyValue);
 		setProperty(propertyName, propertyValue);
 	}
 	public void render(ModelContext context, String controlType, String internalName, String htmlId)
 	{
 		propertyBag.put("ContainerName", htmlId);
 		String ucServerContent = UserControlFactoryImpl.getInstance().renderControl(controlType, internalName, propertyBag);
-		((HttpContext)context.getHttpContext()).writeText( String.format("<div class=\"gx_usercontrol\" id=\"%s\">%s</div>", htmlId, ucServerContent));
+		((HttpAjaxContext)context.getHttpContext()).writeText( String.format("<div class=\"gx_usercontrol\" id=\"%s\">%s</div>", htmlId, ucServerContent));
 	}
 }

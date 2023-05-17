@@ -2,7 +2,10 @@ package com.genexus.webpanels;
 
 import com.genexus.*;
 import com.genexus.common.interfaces.IGXWindow;
+import com.genexus.internet.HttpAjaxContext;
 import com.genexus.internet.HttpContext;
+import com.genexus.reports.GXReport;
+import com.genexus.reports.GXReportText;
 
 public class WebFrontendUtils
 {
@@ -63,6 +66,16 @@ public class WebFrontendUtils
 
 	public static void newWindow(IGXWindow win, HttpContext httpContext) {
 		((HttpContextWeb) httpContext).redirect_impl(win.getUrl(), win);
+	}
+
+	public static void printReportAtClient(GXProcedure reportClass, HttpContext httpContext, String printerRule) {
+		String fileName;
+		if (reportClass instanceof GXReport)
+			fileName = ((GXReport)reportClass).setPrintAtClient();
+		else
+			fileName = ((GXReportText)reportClass).setPrintAtClient();
+		if (httpContext != null)
+			((HttpAjaxContext) httpContext).printReportAtClient(fileName, printerRule);
 	}
 
 }

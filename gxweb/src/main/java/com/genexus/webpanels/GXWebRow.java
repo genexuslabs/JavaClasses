@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
+import com.genexus.internet.HttpAjaxContext;
 import com.genexus.internet.HttpContext;
 import com.genexus.internet.IGxJSONAble;
 import com.genexus.common.interfaces.IGXWebRow;
@@ -80,9 +81,9 @@ public class GXWebRow implements IGxJSONAble, IGXWebRow
                     this.firstRowAdded = true;
                     return;
             }
-            ((HttpContext)context.getHttpContext()).drawingGrid = true;
+            ((HttpAjaxContext)context.getHttpContext()).drawingGrid = true;
             GXWebStdMethods.callMethod(this.context, controlType, props, _parentGrid.getGridName());
-            ((HttpContext)context.getHttpContext()).drawingGrid = false;
+            ((HttpAjaxContext)context.getHttpContext()).drawingGrid = false;
             if (!this._parentGrid.isFreestyle())
             {
            		GXWebStdMethods.closeTag(this.context, "cell");
