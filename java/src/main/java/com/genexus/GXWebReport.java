@@ -2,9 +2,7 @@ package com.genexus;
 
 import com.genexus.db.UserInformation;
 import com.genexus.internet.HttpContext;
-import com.genexus.reports.GXReportMetadata;
-import com.genexus.reports.IReportHandler;
-import com.genexus.reports.PDFReportItext;
+import com.genexus.reports.*;
 import com.genexus.webpanels.GXWebProcedure;
 
 public abstract class GXWebReport extends GXWebProcedure
@@ -37,9 +35,13 @@ public abstract class GXWebReport extends GXWebProcedure
 
 		httpContext.setBuffered(true);
 		httpContext.setBinary(true);
-
-                      reportHandler = new PDFReportItext(context);
-
+		String implementation = com.genexus.Application.getClientContext().getClientPreferences().getPDF_RPT_LIBRARY();
+		if (implementation.equals("ITEXT2"))
+			reportHandler = new PDFReportItext2(context);
+		else if (implementation.equals("ITEXT7"))
+			reportHandler = new PDFReportItext7(context);
+		else
+			reportHandler = new PDFReportPDFBox(context);
 		initValues();
 	}
 
@@ -47,10 +49,7 @@ public abstract class GXWebReport extends GXWebProcedure
 	{
 		httpContext.setContentType("application/pdf");
 		httpContext.setStream();
-
-		// Tiene que ir despues del setStream porque sino el getOutputStream apunta
-		// a otro lado.
-                 ((PDFReportItext) reportHandler).setOutputStream(httpContext.getOutputStream());
+		((GXReportPDFCommons) reportHandler).setOutputStream(httpContext.getOutputStream());
 	}
 
 	protected void setOutputFileName(String outputFileName){
