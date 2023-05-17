@@ -40,7 +40,7 @@ public class GXOAuthLogout extends GXWebObjectStub
 			{
 				jObj.put("code", statusCode[0]);					
 			}
-			context.writeText(jObj.toString());
+			((HttpContextWeb) context).writeText(jObj.toString());
 			context.getResponse().flushBuffer();
 			return;			
 		}

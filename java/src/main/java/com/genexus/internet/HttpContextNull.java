@@ -409,18 +409,10 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 	      this.httprequest = httprequest;
 	}
 
-
 	public WebSession getWebSession()
 	{
 		return webSession;
 	}
-
-	public void redirect(String url) {}
-	public void redirect(String url, boolean SkipPushUrl) {}
-	public void ajax_rsp_command_close(){};
-	public void dispatchAjaxCommands() {};
-    public void closeHtmlHeader() {};
-	public boolean getHtmlHeaderClosed() { return false; }
 
 	public void setStream(){}
 	public void flushStream(){}
@@ -428,8 +420,9 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 	public String cgiGetFileType(String parm) {return "";}
 	public void getMultimediaValue(String internalName, String[] blobVar, String[] uriVar) { blobVar[0] = ""; uriVar[0] = ""; }
 	public void cleanup() {}
-	public boolean isMultipartContent() { return false; }
 
 	public boolean isHttpContextNull() {return true;}
 	public boolean isHttpContextWeb() {return false;}
+
+	public void redirect(String url) {}
 }

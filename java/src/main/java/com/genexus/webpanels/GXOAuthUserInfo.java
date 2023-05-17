@@ -29,7 +29,7 @@ public class GXOAuthUserInfo extends GXWebObjectStub
 			{
 				context.getResponse().setContentType("application/json");
 				context.getResponse().setStatus(200);
-				context.writeText(user[0]);
+				((HttpContextWeb) context).writeText(user[0]);
 				context.getResponse().flushBuffer();
 				return;				
 			}			

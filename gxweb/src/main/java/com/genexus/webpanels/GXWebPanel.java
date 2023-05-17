@@ -4,6 +4,7 @@ import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.*;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -15,14 +16,18 @@ import com.genexus.common.interfaces.IGXWindow;
 import com.genexus.db.UserInformation;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
+import com.genexus.internet.HttpAjaxContext;
 import com.genexus.internet.HttpContext;
 import com.genexus.internet.IGxJSONSerializable;
 import com.genexus.security.GXSecurityProvider;
 
+import com.genexus.security.web.SecureTokenHelper;
+import com.genexus.security.web.WebSecurityHelper;
 import json.org.json.IJsonFormattable;
 import json.org.json.JSONArray;
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 
 class DataIntegrityException extends Exception
 {
@@ -214,6 +219,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 	protected void initState(ModelContext context, UserInformation ui)
 	{
 		super.initState(context, ui);
+		httpContext = (HttpAjaxContext) context.getHttpContext();
 
 		staticDir	   = context.getClientPreferences().getWEB_STATIC_DIR();
 
@@ -433,7 +439,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		{
 			if (isSpaRequest() && !isSpaSupported())
 			{
-				httpContext.sendResponseStatus(SPA_NOT_SUPPORTED_STATUS_CODE, "SPA not supported by the object");
+				httpContext.sendResponseStatus(HttpContext.SPA_NOT_SUPPORTED_STATUS_CODE, "SPA not supported by the object");
 			}
 			else
 			{
@@ -446,7 +452,6 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		}
 		catch (Throwable e)
 		{
-			handleException(e.getClass().getName(), e.getMessage(), CommonUtil.getStackTraceAsString(e));
 			cleanup(); // Antes de hacer el rethrow, hago un cleanup del objeto
 			throw e;
 		}
@@ -475,13 +480,13 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		else
 			httpContext.setContentType("application/json");
 
-		if (!redirect((HttpContextWeb) httpContext)){
-			((HttpContextWeb)httpContext).sendFinalJSONResponse(jsonResponse);
+		if (!redirect(httpContext)){
+			httpContext.sendFinalJSONResponse(jsonResponse);
 		}
 		httpContext.setResponseCommited();
 	}
 
-	private boolean redirect(HttpContextWeb context)
+	private boolean redirect(HttpAjaxContext context)
 	{
 		if (context.wjLoc!=null && !context.wjLoc.equals("") )
 		{
@@ -1214,4 +1219,223 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		WebFrontendUtils.newWindow(win, httpContext);
 	}
 
+	protected String getSecureSignedToken(String cmpCtx, Object Value)
+	{
+		return getSecureSignedToken(cmpCtx, serialize(Value));
+	}
+
+	protected String getSecureSignedToken(String cmpCtx, boolean Value)
+	{
+		return getSecureSignedToken(cmpCtx, Boolean.toString(Value));
+	}
+
+	protected String getSecureSignedToken(String cmpCtx, com.genexus.xml.GXXMLSerializable Value)
+	{
+		return getSecureSignedToken(cmpCtx, Value.toJSonString(false));
+	}
+
+	protected String getSecureSignedToken(String cmpCtx, String Value)
+	{
+		return WebSecurityHelper.sign(getPgmInstanceId(cmpCtx), "", Value, SecureTokenHelper.SecurityMode.Sign, getSecretKey());
+	}
+
+	protected boolean verifySecureSignedToken(String cmpCtx, int Value, String picture, String token){
+		return verifySecureSignedToken(cmpCtx, serialize(Value, picture), token);
+	}
+
+	protected boolean verifySecureSignedToken(String cmpCtx, short Value, String picture, String token){
+		return verifySecureSignedToken(cmpCtx, serialize(Value, picture), token);
+	}
+
+	protected boolean verifySecureSignedToken(String cmpCtx, long Value, String picture, String token){
+		return verifySecureSignedToken(cmpCtx, serialize(Value, picture), token);
+	}
+
+	protected boolean verifySecureSignedToken(String cmpCtx, double Value, String picture, String token){
+		return verifySecureSignedToken(cmpCtx, serialize(Value, picture), token);
+	}
+
+	protected boolean verifySecureSignedToken(String cmpCtx, Object Value, String picture, String token){
+		return verifySecureSignedToken(cmpCtx, serialize(Value, picture), token);
+	}
+
+	protected boolean verifySecureSignedToken(String cmpCtx, Object Value, String token){
+		return verifySecureSignedToken(cmpCtx, serialize(Value), token);
+	}
+
+	protected boolean verifySecureSignedToken(String cmpCtx, boolean Value, String token){
+		return verifySecureSignedToken(cmpCtx, Boolean.toString(Value), token);
+	}
+
+	protected boolean verifySecureSignedToken(String cmpCtx, com.genexus.xml.GXXMLSerializable Value, String token){
+		return verifySecureSignedToken(cmpCtx, Value.toJSonString(false), token);
+	}
+
+	protected boolean verifySecureSignedToken(String cmpCtx, String value, String token){
+		return WebSecurityHelper.verify(getPgmInstanceId(cmpCtx), "", value, token, getSecretKey());
+	}
+
+	protected boolean validateObjectAccess(String cmpCtx)
+	{
+		if (this.httpContext.useSecurityTokenValidation()){
+			String jwtToken = this.httpContext.getHeader("X-GXAUTH-TOKEN");
+			jwtToken = (StringUtils.isBlank(jwtToken) && this.httpContext.isMultipartContent())?
+				this.httpContext.cgiGet("X-GXAUTH-TOKEN"):
+				jwtToken;
+
+			if (!verifySecureSignedToken(cmpCtx, "", jwtToken))
+			{
+				this.httpContext.sendResponseStatus(401, "Not Authorized");
+				if (this.httpContext.getBrowserType() != HttpContextWeb.BROWSER_INDEXBOT) {
+					logger.warn(String.format("Validation security token failed for program: %s - '%s'", getPgmInstanceId(cmpCtx), jwtToken ));
+				}
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private static String GX_SEC_TOKEN_PREFIX = "GX_AUTH";
+
+	//Generates only with FullAjax and GAM disabled.
+	public void sendSecurityToken(String cmpCtx)
+	{
+		if (this.httpContext.wjLoc == null || this.httpContext.wjLoc.equals("") )
+		{
+			this.httpContext.ajax_rsp_assign_hidden(getSecurityObjTokenId(cmpCtx), getObjectAccessWebToken(cmpCtx));
+		}
+	}
+
+	private String getSecurityObjTokenId(String cmpCtx)
+	{
+		return GX_SEC_TOKEN_PREFIX + "_" + cmpCtx + getPgmname().toUpperCase();
+	}
+
+	private String getObjectAccessWebToken(String cmpCtx)
+	{
+		return WebSecurityHelper.sign(getPgmInstanceId(cmpCtx), "", "", SecureTokenHelper.SecurityMode.Sign, getSecretKey());
+	}
+
+	private String getSecretKey()
+	{
+		//Some random SALT that is different in every GX App installation. Better if changes over time
+		String hashSalt = com.genexus.Application.getClientContext().getClientPreferences().getREORG_TIME_STAMP();
+		return WebUtils.getEncryptionKey(this.context, "") + hashSalt;
+	}
+
+	private String serialize(double Value, String Pic)
+	{
+		return serialize(localUtil.format(Value, Pic));
+	}
+
+	private String serialize(int Value, String Pic)
+	{
+		return serialize(localUtil.format(Value, Pic));
+	}
+
+	private String serialize(short Value, String Pic)
+	{
+		return serialize(localUtil.format(Value, Pic));
+	}
+
+	private String serialize(long Value, String Pic)
+	{
+		return serialize(localUtil.format(Value, Pic));
+	}
+
+	private String serialize(Object Value, String Pic)
+	{
+		if (!StringUtils.isBlank(Pic)) {
+			if (Value instanceof Byte)
+			{
+				return serialize(localUtil.format(((Byte)Value).intValue(), Pic));
+			}
+			else
+			{
+				if (Value instanceof BigDecimal)
+				{
+					return serialize(localUtil.format((BigDecimal)Value, Pic));
+				}
+				else
+				{
+					if (Value instanceof Integer)
+					{
+						return serialize(localUtil.format(((Integer)Value).intValue(), Pic));
+					}
+					else
+					{
+						if (Value instanceof Short)
+						{
+							return serialize(localUtil.format(((Short)Value).shortValue(), Pic));
+						}
+						else
+						{
+							if (Value instanceof Long)
+							{
+								return serialize(localUtil.format(((Long)Value).longValue(), Pic));
+							}
+							else
+							{
+								if (Value instanceof Double)
+								{
+									return serialize(localUtil.format(((Double)Value).doubleValue(), Pic));
+								}
+								else
+								{
+									if (Value instanceof Float)
+									{
+										return serialize(localUtil.format(((Float)Value).floatValue(), Pic));
+									}
+									else
+									{
+										if (Value instanceof java.util.Date)
+										{
+											return serialize(localUtil.format((java.util.Date)Value, Pic));
+										}
+										else
+										{
+											if (Value instanceof String)
+											{
+												return serialize(localUtil.format((String)Value, Pic));
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return serialize(Value);
+	}
+
+	private String serialize(Object Value) {
+		String strValue = "";
+		if (Value instanceof BigDecimal){
+			strValue = Value.toString();
+			if (strValue.indexOf(".") != -1)
+				strValue = strValue.replaceAll("0*$", "").replaceAll("\\.$", "");
+		}
+		else{
+			if (Value instanceof java.util.Date){
+				strValue = "    /  /   00:00:00";
+				if (!Value.equals(CommonUtil.resetTime( CommonUtil.nullDate()))) {
+					strValue = new java.text.SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(Value);
+				}
+			}
+			else{
+				if (Value instanceof com.genexus.xml.GXXMLSerializable) {
+					strValue = ((com.genexus.xml.GXXMLSerializable) Value).toJSonString(false);
+				}
+				else if (Value instanceof IGxJSONSerializable) {
+					strValue = ((IGxJSONSerializable) Value).toJSonString();
+				}
+				else {
+					strValue = Value.toString();
+				}
+			}
+		}
+		return strValue;
+	}
 }

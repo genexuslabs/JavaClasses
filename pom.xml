@@ -8,13 +8,13 @@
 	<artifactId>parent</artifactId>
 	<version>${revision}${changelist}</version>
 	<packaging>pom</packaging>
-
+	
 	<name>GeneXus Standard Classes (Parent)</name>
 	<description>Core classes for the runtime used by Java and Android apps generated with GeneXus</description>
 	<url>https://github.com/genexuslabs/JavaClasses</url>
 
 	<properties>
-		<revision>3.1</revision>
+		<revision>4.0</revision>
 		<changelist>-SNAPSHOT</changelist>
 		<sha1/>
 

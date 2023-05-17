@@ -2,6 +2,7 @@ package com.genexus.webpanels;
 
 import java.io.PrintWriter;
 
+import com.genexus.GXObjectBase;
 import com.genexus.servlet.IServletContext;
 import com.genexus.servlet.ServletContext;
 import com.genexus.servlet.http.IHttpServletRequest;
@@ -18,7 +19,7 @@ import com.genexus.diagnostics.core.LogManager;
 import com.genexus.internet.HttpContext;
 import com.genexus.ws.GXHandlerChain;
 
-public abstract class GXWebProcedure extends GXWebObjectBase
+public abstract class GXWebProcedure extends GXObjectBase
 {
 	private static final ILogger logger = LogManager.getLogger(GXWebProcedure.class);
 
