@@ -2,57 +2,42 @@ package com.genexus.internet;
 
 import java.io.*;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Vector;
 
-import com.genexus.common.interfaces.IGXWebRow;
-import com.genexus.servlet.http.ICookie;
-import com.genexus.servlet.http.IHttpServletRequest;
-import com.genexus.servlet.http.IHttpServletResponse;
-
-import com.genexus.*;
-
-import com.genexus.util.Codecs;
-import com.genexus.util.Encryption;
-import com.genexus.util.ThemeHelper;
-import com.genexus.webpanels.GXWebObjectBase;
-import com.genexus.webpanels.WebSession;
-
-import com.genexus.webpanels.WebUtils;
 import json.org.json.IJsonFormattable;
 import json.org.json.JSONArray;
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
 import org.apache.logging.log4j.Logger;
 
-public abstract class HttpContext 
-		extends HttpAjaxContext implements IHttpContext
+import com.genexus.*;
+import com.genexus.servlet.http.ICookie;
+import com.genexus.servlet.http.IHttpServletRequest;
+import com.genexus.servlet.http.IHttpServletResponse;
+import com.genexus.webpanels.WebSession;
+
+public abstract class HttpContext implements IHttpContext
 {
 	private static Logger logger = org.apache.logging.log4j.LogManager.getLogger(HttpContext.class);
 
-    private static String GX_AJAX_REQUEST_HEADER = "GxAjaxRequest";
+	public static int SPA_NOT_SUPPORTED_STATUS_CODE = 530;
     private static String GX_SPA_REQUEST_HEADER = "X-SPA-REQUEST";
     protected static String GX_SPA_REDIRECT_URL = "X-SPA-REDIRECT-URL";
 	private static String GX_SOAP_ACTION_HEADER = "SOAPAction";
 	public static String GXTheme = "GXTheme";
 	public static String GXLanguage = "GXLanguage";
 
-    private static String CACHE_INVALIDATION_TOKEN;
-
     protected boolean PortletMode = false;
     protected boolean AjaxCallMode = false;
     protected boolean AjaxEventMode = false;
     protected boolean fullAjaxMode = false;
-	public boolean drawingGrid = false;
+	protected boolean ajaxRefreshAsGET = false;
+	public MsgList GX_msglist = new MsgList();
 
-	public void setDrawingGrid(boolean drawingGrid)
-	{
-		this.drawingGrid = drawingGrid;
+	public MsgList getMessageList() {
+		return GX_msglist;
 	}
-	 
 	
 	public void setFullAjaxMode()
 	{	fullAjaxMode = true; }
@@ -110,24 +95,12 @@ public abstract class HttpContext
 		return getRequest() != null && getRequest().getHeader(GX_SOAP_ACTION_HEADER) != null;
 	}
 
-    public void ajax_sending_grid_row(IGXWebRow row)
-    {
-        if (isAjaxCallMode())
-        {
-            _currentGridRow = row;
-        }
-        else
-        {
-            _currentGridRow = null;
-        }
-    }
-
     public byte wbGlbDoneStart = 0;
 				//nSOAPErr
 	public HttpResponse GX_webresponse;
 
 
-	private String clientId = "";
+	protected String clientId = "";
 	public String wjLoc = "";
 	public int wjLocDisableFrm = 0;
 	public String sCallerURL = "";
@@ -141,56 +114,21 @@ public abstract class HttpContext
 	protected boolean doNotCompress;
 	protected ModelContext context;
 
-	private boolean isEnabled = true;
+	protected boolean isEnabled = true;
 	private OutputStream out;
 	private PrintWriter writer;
 	private String userId;
 	private boolean isBinary = false;
 	private Boolean mustUseWriter;
 	protected boolean isCrawlerRequest = false;
-	private boolean validEncryptedParm = true;        
-	private boolean encryptionKeySended = false;
 
-	private Vector<String> javascriptSources = new Vector<>();
-	private Vector<String> deferredFragments = new Vector<String>();
-
-	private Vector<String> styleSheets = new Vector<>();
-	private HashSet<String> deferredJavascriptSources = new HashSet<String>();
 	private boolean responseCommited = false;
-	private boolean wrapped = false;
-	private int drawGridsAtServer = -1;
+	protected boolean wrapped = false;
+	protected int drawGridsAtServer = -1;
 	private boolean ignoreSpa = false;
 
-	private String serviceWorkerFileName = "service-worker.js";
-	private Boolean isServiceWorkerDefinedFlag = null;
-
-	private String webAppManifestFileName = "manifest.json";
-	private Boolean isWebAppManifestDefinedFlag = null;
-
 	private static HashMap<String, Messages> cachedMessages = new HashMap<String, Messages>();
-	private String currentLanguage = null;
-	private Vector<Object> userStyleSheetFiles = new Vector<Object>();
-	private String themekbPrefix;
-	private String themestyleSheet;
-	private String themeurlBuildNumber;
-
-	private boolean isServiceWorkerDefined()
-	{
-		if (isServiceWorkerDefinedFlag == null)
-		{
-			isServiceWorkerDefinedFlag = Boolean.valueOf(checkFileExists(serviceWorkerFileName));
-		}
-		return isServiceWorkerDefinedFlag == Boolean.valueOf(true);
-	}
-
-	private boolean isWebAppManifestDefined()
-	{
-		if (isWebAppManifestDefinedFlag == null)
-		{
-			isWebAppManifestDefinedFlag = Boolean.valueOf(checkFileExists(webAppManifestFileName));
-		}
-		return isWebAppManifestDefinedFlag == Boolean.valueOf(true);
-	}
+	protected String currentLanguage = null;
 
 	public boolean isOutputEnabled()
 	{
@@ -247,22 +185,6 @@ public abstract class HttpContext
 		ctx.responseCommited = responseCommited;
 	}
 
-	public static final int TYPE_RESET		= 0;
-	public static final int TYPE_SUBMIT		= 1;
-	public static final int TYPE_BUTTON 		= 2;
-        
-	public static final int BROWSER_OTHER		= 0;
-	public static final int BROWSER_IE 		= 1;
-	public static final int BROWSER_NETSCAPE 	= 2;
-	public static final int BROWSER_OPERA		= 3;
-	public static final int BROWSER_UP			= 4;
-    public static final int BROWSER_POCKET_IE	= 5;
-    public static final int BROWSER_FIREFOX		= 6;
-    public static final int BROWSER_CHROME		= 7;
-    public static final int BROWSER_SAFARI		= 8;
-    public static final int BROWSER_EDGE		= 9;
-    public static final int BROWSER_INDEXBOT		= 20;
-
 	public abstract void cleanup();
 	public abstract String getResourceRelative(String path);
 	public abstract String getResourceRelative(String path, boolean includeBasePath);
@@ -295,7 +217,6 @@ public abstract class HttpContext
 	public abstract void setDefaultPath(String path);
 	public abstract String getBrowserVersion();
 	public abstract Object getSessionValue(String name);
-
 	public abstract void webPutSessionValue(String name, Object value);
 	public abstract void webPutSessionValue(String name, long value);
 	public abstract void webPutSessionValue(String name, double value);
@@ -326,11 +247,8 @@ public abstract class HttpContext
     public abstract void changePostValue(String ctrl, String value);
 	public abstract boolean isFileParm( String parm);
     public abstract void parseGXState(JSONObject tokenValues);
-
-      public abstract void deletePostValue(String ctrl);
-      public abstract void DeletePostValuePrefix(String sPrefix);
-
-
+	public abstract void deletePostValue(String ctrl);
+	public abstract void DeletePostValuePrefix(String sPrefix);
 	public abstract HttpResponse getHttpResponse();
 	public abstract HttpRequest getHttpRequest();
 	public abstract void setHttpRequest(HttpRequest httprequest);
@@ -339,246 +257,11 @@ public abstract class HttpContext
 	public abstract void setRequest(IHttpServletRequest request);
 	public abstract Hashtable getPostData();
 	public abstract WebSession getWebSession();
-	public abstract void redirect(String url);
-	public abstract void redirect(String url, boolean SkipPushUrl);
 	public abstract void setStream() ;
 	public abstract void flushStream();
-
-	public abstract void closeHtmlHeader();
-	public abstract boolean getHtmlHeaderClosed();
-	public abstract void ajax_rsp_command_close();
-	public abstract void dispatchAjaxCommands();
-
 	public abstract boolean isHttpContextNull();
 	public abstract boolean isHttpContextWeb();
-
-	public void AddDeferredFrags()
-	{
-		Enumeration<String> vEnum = deferredFragments.elements();
-		while(vEnum.hasMoreElements())
-		{
-			writeTextNL(vEnum.nextElement());
-		}
-	}
-
-	public void ClearJavascriptSources() {
-		javascriptSources.clear();
-	}
-	
-	public void AddJavascriptSource(String jsSrc, String urlBuildNumber, boolean userDefined, boolean isInlined)
-	{
-		if(!javascriptSources.contains(jsSrc))
-		{
-			urlBuildNumber = getURLBuildNumber(jsSrc, urlBuildNumber);
-			javascriptSources.add(jsSrc);
-			String queryString = urlBuildNumber;
-			String attributes = "";
-			if (userDefined)
-			{
-				queryString = "";
-				attributes = "data-gx-external-script";
-			}
-			String fragment = "<script type=\"text/javascript\" src=\"" + oldConvertURL(jsSrc) + queryString + "\" " + attributes + "></script>" ;
-            if (isAjaxRequest() || isInlined || jsSrc == "jquery.js" || jsSrc == "gxcore.js")
-			{
-	            writeTextNL(fragment);
-            }
-            else
-			{
-				deferredFragments.add(fragment);
-            }
-			// After including jQuery, include all the deferred Javascript files
-			if (jsSrc.equals("jquery.js"))
-			{
-				for (String deferredJsSrc : deferredJavascriptSources)
-				{
-					AddJavascriptSource(deferredJsSrc, "", false, true);
-				}
-			}
-			// After including gxgral, set the Service Worker Url if one is defined
-			if (jsSrc.equals("gxgral.js") && isServiceWorkerDefined())
-			{
-				writeTextNL("<script>gx.serviceWorkerUrl = \"" + oldConvertURL(serviceWorkerFileName) + "\";</script>");
-			}
-		}
-	}
-
-	public void addWebAppManifest()
-	{
-		if (isWebAppManifestDefined())
-		{
-			writeTextNL("<link rel=\"manifest\" href=\"" + oldConvertURL(webAppManifestFileName) + "\">");
-		}
-	}
-
-	private boolean checkFileExists(String fileName)
-	{
-		boolean fileExists = false;
-		try
-		{
-			File file = new File(getDefaultPath() + staticContentBase + fileName);
-			fileExists =  file.exists() && file.isFile();
-			com.genexus.diagnostics.Log.info("Searching if file exists (" + fileName + "). Found: " + String.valueOf(fileExists));
-		}
-		catch (Exception e)
-		{
-			fileExists = false;
-			com.genexus.diagnostics.Log.info("Failed searching for a file (" + fileName + ")");
-		}
-		return fileExists;
-	}
-
-
-	public void AddDeferredJavascriptSource(String jsSrc, String urlBuildNumber)
-	{
-		deferredJavascriptSources.add(oldConvertURL(jsSrc) + urlBuildNumber);
-	}
-
-
-	private String FetchCustomCSS()
-	{
-		String cssContent;
-		cssContent = ApplicationContext.getcustomCSSContent().get(getRequest().getServletPath());
-		if (cssContent == null)
-		{
-			String path = getRequest().getServletPath().replaceAll(".*/", "") + ".css";
-			try(InputStream istream = context.packageClass.getResourceAsStream(path))
-			{
-
-				if (istream == null)
-				{
-					cssContent = "";
-				}
-				else {
-					//BOMInputStream bomInputStream = new BOMInputStream(istream);// Avoid using BOMInputStream because of runtime error (java.lang.NoSuchMethodError: org.apache.commons.io.IOUtils.length([Ljava/lang/Object;)I) issue 94611
-					//cssContent = IOUtils.toString(bomInputStream, "UTF-8");
-					cssContent = PrivateUtilities.BOMInputStreamToStringUTF8(istream);
-				}
-			}
-			catch ( Exception e) {
-				cssContent = "";
-			}
-			ApplicationContext.getcustomCSSContent().put(getRequest().getServletPath(), cssContent);
-		}
-		return cssContent;
-	}
-
-	public void CloseStyles()
-	{
-		String cssContent = FetchCustomCSS();
-		boolean bHasCustomContent = ! cssContent.isEmpty();
-		if (bHasCustomContent && !styleSheets.contains(getRequest().getServletPath()))
-		{
-			writeTextNL("<style id=\"gx-inline-css\">" + cssContent + "</style>");
-			styleSheets.add(getRequest().getServletPath());
-		}
-		String[] referencedFiles = ThemeHelper.getThemeCssReferencedFiles(PrivateUtilities.removeExtension(themestyleSheet));
-		for (int i=0; i<referencedFiles.length; i++)
-		{
-			String file = referencedFiles[i];
-			String extension = PrivateUtilities.getExtension(file);
-			if (extension != null)
-			{
-				if (extension.equals("css"))
-					AddStyleSheetFile(file, themeurlBuildNumber, false, bHasCustomContent);
-				else if (extension.equals("js"))
-					AddDeferredJavascriptSource(file, themeurlBuildNumber);
-			}
-		}
-		for (Object data : this.userStyleSheetFiles)
-		{
-			String[] sdata = (String[]) data;
-			AddStyleSheetFile(sdata[0], sdata[1], false, false);
-		}
-		AddStyleSheetFile(themekbPrefix + "Resources/" + getLanguage() + "/" + themestyleSheet, themeurlBuildNumber, true, bHasCustomContent);
-	}
-	
-	public void AddThemeStyleSheetFile(String kbPrefix, String styleSheet)
-	{
-		AddThemeStyleSheetFile(kbPrefix, styleSheet, "");
-	}
-	public void AddThemeStyleSheetFile(String kbPrefix, String styleSheet, String urlBuildNumber)
-	{
-		this.themekbPrefix = kbPrefix;
-		this.themestyleSheet = styleSheet;
-		this.themeurlBuildNumber = urlBuildNumber;
-	}
-
-	public void AddStyleSheetFile(String styleSheet)
-	{
-		AddStyleSheetFile(styleSheet, "");
-	}
-
-	public void AddStyleSheetFile(String styleSheet, String urlBuildNumber)
-	{
-		urlBuildNumber = getURLBuildNumber(styleSheet, urlBuildNumber);
-		userStyleSheetFiles.add(new String[] { styleSheet, urlBuildNumber });
-	}
-
-	private String getURLBuildNumber(String resourcePath, String urlBuildNumber)
-	{
-		if(urlBuildNumber.isEmpty() && !GXutil.isAbsoluteURL(resourcePath) && !GXutil.hasUrlQueryString(resourcePath))
-		{
-			return "?" + getCacheInvalidationToken();
-		}
-		else
-		{
-			return urlBuildNumber;
-		}
-	}
-
-	private void AddStyleSheetFile(String styleSheet, String urlBuildNumber, boolean isGxThemeHidden)
-	{
-		AddStyleSheetFile( styleSheet, urlBuildNumber, isGxThemeHidden, false);
-	}
-
-	private void AddStyleSheetFile(String styleSheet, String urlBuildNumber, boolean isGxThemeHidden, boolean isDeferred)
-	{
-		if (!styleSheets.contains(styleSheet))
-		{
-			styleSheets.add(styleSheet);
-			String sUncachedURL = oldConvertURL(styleSheet) + urlBuildNumber;
-			String sLayerName = styleSheet.replace("/", "_").replace(".","_");
-			if (!this.getHtmlHeaderClosed() && this.isEnabled)
-			{
-				String sRelAtt = (isDeferred ? "rel=\"preload\" as=\"style\" " : "rel=\"stylesheet\"");
-				if (isGxThemeHidden)
-					writeTextNL("<link id=\"gxtheme_css_reference\" " + sRelAtt + " type=\"text/css\" href=\"" + sUncachedURL + "\" " + htmlEndTag(HTMLElement.LINK));
-				else
-				{
-					if (getThemeisDSO())
-					{
-						writeTextNL("<style data-gx-href=\""+ sUncachedURL + "\"> @import url(\"" + sUncachedURL + "\") layer(" + sLayerName + ");</style>");
-					}
-					else
-					{
-						writeTextNL("<link " + sRelAtt + " type=\"text/css\" href=\"" + sUncachedURL + "\" " + htmlEndTag(HTMLElement.LINK));
-					}
-				}
-			}
-			else
-			{
-				if (!isGxThemeHidden) this.StylesheetsToLoad.put(oldConvertURL(styleSheet) + urlBuildNumber);
-			}
-		}
-	}
-	
-	public String getCacheInvalidationToken()
-	{
-		if (CACHE_INVALIDATION_TOKEN == null || CACHE_INVALIDATION_TOKEN.trim().length() == 0)
-		{
-			String token = ((Preferences)this.context.getPreferences()).getProperty("CACHE_INVALIDATION_TOKEN", "");
-			if (token == null || token.trim().length() == 0)
-			{
-				CACHE_INVALIDATION_TOKEN = new java.text.DecimalFormat("#").format(CommonUtil.random() * 1000000);
-			}
-			else
-			{
-				CACHE_INVALIDATION_TOKEN = token;
-			}
-		}
-		return CACHE_INVALIDATION_TOKEN;
-	}
+	public abstract void redirect(String url);
 
 	public void setWrapped(boolean wrapped)
 	{
@@ -597,58 +280,6 @@ public abstract class HttpContext
 			return true;
 		}
 		return false;
-	}
-	public boolean drawGridsAtServer()
-	{
-		if (this.drawGridsAtServer == -1)
-		{
-			this.drawGridsAtServer = 0;
-			if( ((Preferences)this.getContext().getPreferences()).propertyExists("DrawGridsAtServer"))
-			{
-				String prop = ((Preferences)this.getContext().getPreferences()).getProperty("DrawGridsAtServer", "no");
-				if (prop.equalsIgnoreCase("always"))
-				{
-					this.drawGridsAtServer = 1;
-				}
-				else if (prop.equalsIgnoreCase("ie6"))
-				{
-					if (getBrowserType() == BROWSER_IE)
-					{
-						if (getBrowserVersion().startsWith("6"))
-						{
-							this.drawGridsAtServer = 1;
-						}
-					}
-				}
-			}
-		}
-		return (this.drawGridsAtServer == 1);
-	}
-			
-			public int getButtonType()
-			{
-				if (this.drawGridsAtServer())
-				{
-					return TYPE_SUBMIT;
-				}
-				return TYPE_BUTTON;
-			}
-			
-	public String getCssProperty(String propName, String propValue)
-	{
-			int browserType = getBrowserType();
-			if (propName.equalsIgnoreCase("align"))
-			{
-					if (browserType == BROWSER_FIREFOX)
-					{
-						return "-moz-" + propValue;
-					}
-					else if (browserType == BROWSER_CHROME || browserType == BROWSER_SAFARI)
-					{
-						return "-khtml-" + propValue;
-					}
-			}
-			return propValue;
 	}
 
 	public void setResponseCommited()
@@ -722,36 +353,6 @@ public abstract class HttpContext
 		deleteReferer(getNavigationHelper(false).getUrlPopupLevel(getRequestNavUrl()));            
 	}
 
-	public void pushReferer()
-	{
-	}
-	
-	public void pushReferer(String url)
-	{
-		getNavigationHelper().pushUrl(url);
-	}
-
-	public void popReferer()
-	{
-		getNavigationHelper().popUrl(getRequestNavUrl());
-	}
-	
-	public boolean isPopUpObject()
-	{
-		if (wrapped)
-			return false;
-		return !getNavigationHelper().getUrlPopupLevel(getRequestNavUrl()).equals("-1");
-	}
-
-	public void windowClosed()
-	{
-	String popupLevel = getNavigationHelper().getUrlPopupLevel(getRequestNavUrl());
-		if (popupLevel.equals("-1"))
-			popReferer();
-		else
-			deleteReferer(popupLevel);
-	}
-
 	public void pushCurrentUrl()
 	{
 		if (getRequestMethod().equals("GET") && !isAjaxRequest())
@@ -764,121 +365,13 @@ public abstract class HttpContext
 			}
 		}			
 	}
-
-	public void doAfterInit()
-	{
-	}
-	
-	public void printReportAtClient(String reportFile)
-	{
-		printReportAtClient(reportFile, "");
-	}
-	
-	public void printReportAtClient(String reportFile, String printerRule)
-	{
-		addPrintReportCommand(getResource(reportFile), printerRule);
-	}
-
-	public boolean isGxAjaxRequest()
-	{
-		if (this.isMultipartContent())
-		{
-			return true;
-		}
-		String gxHeader = getRequest().getHeader(GX_AJAX_REQUEST_HEADER);
-		if (gxHeader != null && gxHeader.trim().length() > 0)
-		{
-			return true;
-		}
-		return false;
-	}
-
-	private String getAjaxEncryptionKey()
-	{
-		if(getSessionValue(Encryption.AJAX_ENCRYPTION_KEY) == null)
-		{
-			if (!recoverEncryptionKey())
-			{
-				webPutSessionValue(Encryption.AJAX_ENCRYPTION_KEY, Encryption.getRijndaelKey());
-			}
-		}
-		return (String)getSessionValue(Encryption.AJAX_ENCRYPTION_KEY);
-	}
-	
-	private boolean recoverEncryptionKey()
-	{
-		if (getSessionValue(Encryption.AJAX_ENCRYPTION_KEY) == null)
-		{
-			String clientKey = getRequest().getHeader(Encryption.AJAX_SECURITY_TOKEN);
-			if (clientKey != null && clientKey.trim().length() > 0)
-			{
-				boolean candecrypt[]=new boolean[1];
-				clientKey = Encryption.decryptRijndael(Encryption.GX_AJAX_PRIVATE_IV + clientKey, Encryption.GX_AJAX_PRIVATE_KEY, candecrypt);
-				if (candecrypt[0])
-				{
-					webPutSessionValue(Encryption.AJAX_ENCRYPTION_KEY, clientKey);
-					return true;
-				}else
-				{
-					return false;
-				}
-			}
-		}
-		return false;
-	}
-
-	public String DecryptAjaxCall(String encrypted)
-	{            
-		validEncryptedParm = false;
-		if (isGxAjaxRequest())
-		{
-			String key = getAjaxEncryptionKey();
-			boolean candecrypt[] = new boolean[1];
-			String decrypted = Encryption.decryptRijndael(encrypted, key, candecrypt);
-			validEncryptedParm = candecrypt[0];
-			if (!validEncryptedParm)
-			{
-				CommonUtil.writeLogln( String.format("403 Forbidden error. Could not decrypt Ajax parameter: '%s' with key: '%s'", encrypted, key));
-				sendResponseStatus(403, "Forbidden action");
-				return "";
-			}
-			if (validEncryptedParm && !getRequestMethod().equalsIgnoreCase("post"))
-			{
-				setQueryString(decrypted);
-				decrypted = GetNextPar();
-			}
-			return decrypted;
-		}            
-		return encrypted;
-	}
-
-	public boolean IsValidAjaxCall()
-	{
-		return IsValidAjaxCall(true);
-	}
-
-	public boolean IsValidAjaxCall(boolean insideAjaxCall)
-	{         
-		if (insideAjaxCall && !validEncryptedParm)
-		{
-			CommonUtil.writeLogln( "Failed IsValidAjaxCall 403 Forbidden action");
-			sendResponseStatus(403, "Forbidden action");
-			return false;
-		}
-		else if (!insideAjaxCall && isGxAjaxRequest() && !isFullAjaxMode() && ajaxOnSessionTimeout().equalsIgnoreCase("Warn"))
-		{
-			sendResponseStatus(440, "Session timeout");
-			return false;
-		}            
-		return true;
-	}
 	
 	public void sendResponseStatus(int statusCode, String statusDescription)
 	{
 		if (statusCode < 200 || statusCode >= 300)
 		{
 			getResponse().setHeader("Content-Encoding", "");
-			if (statusCode != GXWebObjectBase.SPA_NOT_SUPPORTED_STATUS_CODE)
+			if (statusCode != SPA_NOT_SUPPORTED_STATUS_CODE)
 			{
 				CommonUtil.writeLog("sendResponseStatus " + Integer.toString(statusCode) + " " + statusDescription);
 			}
@@ -894,11 +387,6 @@ public abstract class HttpContext
 		}
 		setAjaxCallMode();
 		disableOutput();
-	}
-	
-	private void sendReferer()
-	{
-		ajax_rsp_assign_hidden("sCallerURL", org.owasp.encoder.Encode.forUri(getReferer()));
 	}
 	
 	private static String CLIENT_ID_HEADER = "GX_CLIENT_ID";
@@ -926,78 +414,10 @@ public abstract class HttpContext
 	{
 		return ((Preferences)this.context.getPreferences()).getProperty("ValidateSecurityToken", "y").equals("y");
 	}
-	
-	protected void addNavigationHidden()
-	{    			
-		if (this.isLocalStorageSupported())
-		{			
-			try {
-				HiddenValues.put("GX_CLI_NAV", "true");		
-			} catch (JSONException e) {						
-			}
-			GXNavigationHelper nav = this.getNavigationHelper();
-			if (nav.count() > 0)
-			{					
-				String sUrl = this.getRequestNavUrl().trim();
-				String popupLevel = nav.getUrlPopupLevel(sUrl);					
-				try {
-					HiddenValues.put("GX_NAV", nav.toJSonString(popupLevel));
-				} catch (JSONException e) {						
-				}
-				nav.deleteStack(popupLevel);
-			}
-		}
-	}
-
-	public void SendWebComponentState()
-	{
-		AddStylesheetsToLoad();
-	}
-
-	public void SendState()
-	{
-		sendReferer();
-		sendWebSocketParms();
-		addNavigationHidden();    
-		AddThemeHidden(this.getTheme());
-		AddStylesheetsToLoad();
-		if (isSpaRequest())
-		{
-			writeTextNL("<script>gx.ajax.saveJsonResponse(" + WebUtils.htmlEncode(JSONObject.quote(getJSONResponse()), true) + ");</script>");
-		}
-		else
-		{				
-			if (this.drawGridsAtServer())
-			{
-				writeTextNL("<script type=\"text/javascript\">gx.grid.drawAtServer=true;</script>");
-			}
-			skipLines(1);
-			String value = HiddenValues.toString();
-			if (useBase64ViewState())
-			{
-				try{
-					value = Codecs.base64Encode(value, "UTF8");
-				}catch(Exception ex){}
-				writeTextNL("<script type=\"text/javascript\">gx.http.useBase64State=true;</script>");
-			}
-			writeText("<div><input type=\"hidden\" name=\"GXState\" value='");
-			writeText(com.genexus.webpanels.WebUtils.htmlEncode(value, true));
-			writeTextNL("'" + htmlEndTag(HTMLElement.INPUT) + "</div>");
-		}
-	}
-
-	private void sendWebSocketParms()
-	{
-		if (!this.isAjaxRequest() || isSpaRequest())
-		{
-			ajax_rsp_assign_hidden("GX_WEBSOCKET_ID", clientId);
-		}
-	}
-	
 
 	public String getEncryptedSignature( String value, String key)
 	{
-		return encrypt64(CommonUtil.getHash( com.genexus.security.web.WebSecurityHelper.StripInvalidChars(value), CommonUtil.SECURITY_HASH_ALGORITHM), key);
+		return encrypt64(CommonUtil.getHash( GXutil.StripInvalidChars(value), CommonUtil.SECURITY_HASH_ALGORITHM), key);
 	}
 
 	public String encrypt64(String value, String key)
@@ -1031,85 +451,6 @@ public abstract class HttpContext
         }
         return sRet;
     }
-
-	public void SendAjaxEncryptionKey()
-	{
-		 if(!encryptionKeySended)
-		 {
-			 String key = getAjaxEncryptionKey();
-			 ajax_rsp_assign_hidden(Encryption.AJAX_ENCRYPTION_KEY, key);
-			 ajax_rsp_assign_hidden(Encryption.AJAX_ENCRYPTION_IV, Encryption.GX_AJAX_PRIVATE_IV);
-			 try
-			 {
-				ajax_rsp_assign_hidden(Encryption.AJAX_SECURITY_TOKEN, Encryption.encryptRijndael(key, Encryption.GX_AJAX_PRIVATE_KEY));
-			 }
-			 catch(Exception exc) {}
-			 encryptionKeySended = true;
-		 }
-	}
-
-	public void SendServerCommands()
-	{
-		try {
-			if (!isAjaxRequest() && commands.getCount() > 0)
-			{
-				HiddenValues.put("GX_SRV_COMMANDS", commands.getJSONArray());
-			}
-	  }
-	  catch (JSONException e) {
-	  }
-	}
-
-	public void ajax_req_read_hidden_sdt(String jsonStr, Object SdtObj)
-	{
-		try
-		{
-			IJsonFormattable jsonObj;
-			if (jsonStr.startsWith("["))
-				jsonObj = new JSONArray(jsonStr);
-			else
-				jsonObj = new JSONObject(jsonStr);
-			((IGxJSONAble)SdtObj).FromJSONObject(jsonObj);
-		}
-		catch(JSONException exc) {}
-	}
-
-	public void ajax_rsp_assign_prop_as_hidden(String Control, String Property, String Value)
-	{
-		if (!this.isAjaxRequest())
-		{
-			ajax_rsp_assign_hidden(Control + "_" + Property.substring(0, 1) + Property.substring(1).toLowerCase(), Value);
-		}
-	}
-
-	public boolean IsSameComponent(String oldName, String newName)
-	{
-		if(oldName.trim().equalsIgnoreCase(newName.trim()))
-		{
-			return true;
-		}
-		else 
-		{
-			if(newName.trim().toLowerCase().startsWith(oldName.trim().toLowerCase() + "?"))
-			{
-				return true;
-			}
-			else
-			{
-				String packageName = context.getPackageName();
-				String qoldName;
-				String qnewName;
-
-				if ( (oldName.indexOf(packageName) != 0) || (newName.indexOf(packageName) != 0)) 
-				{
-					qoldName = (oldName.indexOf(packageName) != 0) ? packageName + "." + oldName : oldName;
-					qnewName = (newName.indexOf(packageName) != 0) ? packageName + "." + newName : newName;
-					return IsSameComponent(qoldName, qnewName);
-				}
-			}
-		}
-		return false;
-	}
 
 	public void webGetSessionValue(String name, byte[] value)
 	{
@@ -1163,179 +504,10 @@ public abstract class HttpContext
 			value[0] = (String) o;
 		}
 	}
-/*
-	public void webGetSessionValue(String name, java.util.Date[] value)
-	{
-		Object o = getSessionValue(name);
-		if	(o != null)
-			System.arraycopy(o, 0, value, 0, value.length);
-	}
-
-	public void webGetSessionValue(String name, byte[][] value)
-	{
-		Object o = getSessionValue(name);
-		if	(o != null)
-			System.arraycopy(o, 0, value, 0, value.length);
-	}
-
-	public void webGetSessionValue(String name, short[][] value)
-	{
-		Object o = getSessionValue(name);
-		if	(o != null)
-			System.arraycopy(o, 0, value, 0, value.length);
-	}
-
-	public void webGetSessionValue(String name, int[][] value)
-	{
-		Object o = getSessionValue(name);
-		if	(o != null)
-			System.arraycopy(o, 0, value, 0, value.length);
-	}
-
-	public void webGetSessionValue(String name, long[][] value)
-	{
-		Object o = getSessionValue(name);
-		if	(o != null)
-			System.arraycopy(o, 0, value, 0, value.length);
-	}
-
-	public void webGetSessionValue(String name, float[][] value)
-	{
-		Object o = getSessionValue(name);
-		if	(o != null)
-			System.arraycopy(o, 0, value, 0, value.length);
-	}
-
-	public void webGetSessionValue(String name, double[][] value)
-	{
-		Object o = getSessionValue(name);
-		if	(o != null)
-			System.arraycopy(o, 0, value, 0, value.length);
-	}
-
-	public void webGetSessionValue(String name, String[][] value)
-	{
-		Object o = getSessionValue(name);
-		if	(o != null)
-			System.arraycopy(o, 0, value, 0, value.length);
-	}
-
-	public void webGetSessionValue(String name, java.util.Date[][] value)
-	{
-		Object o = getSessionValue(name);
-		if	(o != null)
-			System.arraycopy(o, 0, value, 0, value.length);
-	}
-*/
 
 	public String getSubscriberId()
 	{
 		return getHeader("HTTP_X_UP_SUBNO");
-	}
-
-	public byte isMobileBrowser()
-	{
-		String accept = getHeader("HTTP_ACCEPT");
-
-		return (accept.indexOf("wap") >= 0 || accept.indexOf("hdml") >= 0)?0: (byte) 1;
-	}
-
-	public void writeValueComplete(String text)
-	{
-		writeValueComplete(text, true, true, true);
-	}
-
-	public void writeValueSpace(String text)
-	{
-		writeValueComplete(text, false, false, true);
-	}
-
-	public void writeValueEnter(String text)
-	{
-		writeValueComplete(text, false, true, false);
-	}
-
-	/** Este writeValue tiene en consideracion los espacios consecutivos,
-	 * los enter y los tabs
-	 */
-	public void writeValueComplete(String text, boolean cvtTabs, boolean cvtEnters, boolean cvtSpaces)
-	{
-		StringBuilder sb = new StringBuilder();
-		boolean lastCharIsSpace = true; // Asumo que al comienzo el lastChar era space
-		for (int i = 0; i < text.length(); i++)
-		{
-			char currentChar = text.charAt(i);
-			switch (currentChar)
-			{
-				case (char) 34:
-					sb.append("&quot;");
-					break;
-				case (char) 38:
-					sb.append("&amp;");
-					break;
-				case (char) 60:
-					sb.append("&lt;");
-					break;
-				case (char) 62:
-					sb.append("&gt;");
-					break;
-				case '\t':
-					sb.append(cvtTabs ? "&nbsp;&nbsp;&nbsp;&nbsp;" : ("" + currentChar));
-					break;
-				case '\r':
-					if (cvtEnters && text.length() > i + 1 && text.charAt(i+1) == '\n'){
-						sb.append(cvtEnters ? "<br>" : ("" + currentChar));
-						i++;
-					}					
-					break;
-				case '\n':
-					sb.append(cvtEnters ? "<br>" : ("" + currentChar));
-					break;
-				case ' ':
-					sb.append((lastCharIsSpace && cvtSpaces) ? "&nbsp;" : " ");
-					break;
-				default:
-					sb.append("" + currentChar);
-			}
-			lastCharIsSpace = currentChar == ' ';
-		}
-		writeText(sb.toString());
-	}
-
-	public void writeValue(String text)
-	{
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < text.length(); i++)
-		{
-			char currentChar = text.charAt(i);
-
-			switch (currentChar)
-			{
-				case '"':
-					sb.append("&quot;");
-					break;
-				case '&':
-					sb.append("&amp;");
-					break;
-				case '<':
-					sb.append("&lt;");
-					break;
-				case '>':
-					sb.append("&gt;");
-					break;
-				default:
-					sb.append(currentChar);
-			}
-		}
-		writeText(sb.toString());
-	}
-
-	public void skipLines(long num)
-	{
-		for(; num > 0; num --)
-		{
-			 writeText("\n");
-		}
 	}
 
 	public void setOutputStream(OutputStream out)
@@ -1343,24 +515,7 @@ public abstract class HttpContext
 		this.out = out;
 	}
 
-	public void writeTextNL(String text)
-	{
-		writeText(text + "\n");
-	}
-
 	public boolean useUtf8 = false;
-
-	public void writeText(String text)
-	{
-            if (getResponseCommited())
-                return;
-		if (isEnabled == false)
-                {
-                    ajax_addCmpContent(text);
-                    return;
-                }
-		_writeText(text);
-	}
 
   public void _writeText(String text)
   {
@@ -1420,12 +575,6 @@ public abstract class HttpContext
 		this.writer = writer;
 	}
 
-/*	public PrintWriter getWriter()
-	{
-		return writer;
-	}
-
-*/
 	public void closeWriter()
 	{
 		if	(writer != null)
@@ -1445,11 +594,6 @@ public abstract class HttpContext
 				logger.debug("ERROR: When Closing Output Stream.", e);
 			}
 		}
-	}
-
-	public MsgList getMessageList()
-	{
-		return GX_msglist;
 	}
 
 	public void setBuffered(boolean buffered)
@@ -1480,7 +624,7 @@ public abstract class HttpContext
 		this.userId = userId;
 	}
 
-	private String staticContentBase = "";
+	protected String staticContentBase = "";
 	public void setStaticContentBase(String staticContentBase)
 	{
 		this.staticContentBase = staticContentBase;
@@ -1684,47 +828,6 @@ public abstract class HttpContext
 			}
 			return currentLanguage;
 		}
-		public String htmlEndTag(HTMLElement element)
-		{
-			HTMLDocType docType = context.getClientPreferences().getDOCTYPE();
-			if ((docType == HTMLDocType.HTML4 || docType == HTMLDocType.NONE || docType == HTMLDocType.HTML4S) &&
-				(element == HTMLElement.IMG ||
-				element == HTMLElement.INPUT ||
-				element == HTMLElement.META ||
-				element == HTMLElement.LINK))
-				return ">";
-			else if (element == HTMLElement.OPTION)
-				if (docType == HTMLDocType.XHTML1 || docType == HTMLDocType.HTML5)
-					return "</option>";
-				else
-					return "";
-			else
-				return "/>";
-		}
-		public String htmlDocType()
-		{
-			HTMLDocType docType = context.getClientPreferences().getDOCTYPE();
-			switch (docType)
-			{
-				case HTML4: 
-					if (context.getClientPreferences().getDOCTYPE_DTD())
-						return "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">";
-					else 
-						return "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">";
-				case HTML4S: 
-					if (context.getClientPreferences().getDOCTYPE_DTD())
-						return "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">";
-					else 
-						return "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\">";
-				case XHTML1: 
-					if (context.getClientPreferences().getDOCTYPE_DTD())
-						return "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">";
-					else 
-						return "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\">";
-				case HTML5: return "<!DOCTYPE html>";
-				default: return "";
-			}
-		}
 
 		public int setLanguage(String language)
 		{
@@ -1836,4 +939,18 @@ public abstract class HttpContext
 		{
 			return wjLoc != null && wjLoc.trim().length() != 0;
 		}
+
+	public void readJsonSdtValue(String jsonStr, Object SdtObj)
+	{
+		try
+		{
+			IJsonFormattable jsonObj;
+			if (jsonStr.startsWith("["))
+				jsonObj = new JSONArray(jsonStr);
+			else
+				jsonObj = new JSONObject(jsonStr);
+			((IGxJSONAble)SdtObj).FromJSONObject(jsonObj);
+		}
+		catch(JSONException exc) {}
+	}
 }

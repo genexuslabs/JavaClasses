@@ -1,12 +1,11 @@
-package com.genexus.webpanels;
+package com.genexus;
 
-import com.genexus.ModelContext;
-import com.genexus.ProcessInterruptedException;
 import com.genexus.db.UserInformation;
 import com.genexus.internet.HttpContext;
 import com.genexus.reports.GXReportMetadata;
 import com.genexus.reports.IReportHandler;
 import com.genexus.reports.PDFReportItext;
+import com.genexus.webpanels.GXWebProcedure;
 
 public abstract class GXWebReport extends GXWebProcedure
 {
