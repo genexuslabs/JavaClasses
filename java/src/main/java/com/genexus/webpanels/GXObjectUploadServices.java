@@ -7,6 +7,7 @@ import com.genexus.internet.HttpContext;
 import json.org.json.JSONArray;
 import json.org.json.JSONObject;
 import com.genexus.ws.rs.core.*;
+import org.apache.commons.io.FilenameUtils;
 
 
 public class GXObjectUploadServices extends GXWebObjectStub
@@ -74,8 +75,16 @@ public class GXObjectUploadServices extends GXWebObjectStub
 			{
 				keyId = HttpUtils.getUploadFileKey();
 				String contentType = context.getHeader("Content-Type");
-				ext = getExtension(contentType);
-				fileName = com.genexus.PrivateUtilities.getTempFileName("tmp");
+				String gxFileName = context.getHeader("x-gx-filename");
+				String fName = "";
+				if (!gxFileName.isEmpty()) {
+					ext = FilenameUtils.getExtension(gxFileName);
+					fName = FilenameUtils.getBaseName(gxFileName);
+				}
+				else {
+					ext = getExtension(contentType);
+				}
+				fileName = com.genexus.PrivateUtilities.getTempFileName("", fName, "tmp");
 				String filePath = fileDirPath + fileName;
 				fileName = fileName.replaceAll(".tmp", "." + ext);
 				FileItem fileItem = new FileItem(filePath, false, "", context.getRequest().getInputStream().getInputStream());
