@@ -70,292 +70,308 @@ public class PDFReportItext7 extends GXReportPDFCommons
 	}
 
 	protected void init() {
-		writer = new PdfWriter(outputStream);
-		writer.setCompressionLevel(Deflater.BEST_COMPRESSION);
-		pdfDocument = new PdfDocument(writer);
-		document = new Document(pdfDocument);
+		try {
+			writer = new PdfWriter(outputStream);
+			writer.setCompressionLevel(Deflater.BEST_COMPRESSION);
+			pdfDocument = new PdfDocument(writer);
+			document = new Document(pdfDocument);
+		} catch (Exception e){
+			log.error("Failed to initialize new iText7 document: ", e);
+		}
 	}
 
 	private void drawRectangle(PdfCanvas cb, float x, float y, float w, float h,
 							   int styleTop, int styleBottom, int styleRight, int styleLeft,
 							   float radioTL, float radioTR, float radioBL, float radioBR, float penAux, boolean hideCorners) {
+		try {
+			float[] dashPatternTop = getDashedPattern(styleTop);
+			float[] dashPatternBottom = getDashedPattern(styleBottom);
+			float[] dashPatternLeft = getDashedPattern(styleLeft);
+			float[] dashPatternRight = getDashedPattern(styleRight);
 
-		float[] dashPatternTop = getDashedPattern(styleTop);
-		float[] dashPatternBottom = getDashedPattern(styleBottom);
-		float[] dashPatternLeft = getDashedPattern(styleLeft);
-		float[] dashPatternRight = getDashedPattern(styleRight);
+			//-------------------bottom line---------------------
+			if (styleBottom!=STYLE_NONE_CONST) {
+				cb.setLineDash(dashPatternBottom, 0);
+			}
 
-		//-------------------bottom line---------------------
-		if (styleBottom!=STYLE_NONE_CONST) {
-			cb.setLineDash(dashPatternBottom, 0);
+			float b = 0.4477f;
+			if (radioBL>0) {
+				cb.moveTo(x + radioBL, y);
+			}
+			else {
+				if (hideCorners && styleLeft==STYLE_NONE_CONST && radioBL==0) {
+					cb.moveTo(x + penAux, y);
+				}
+				else {
+					cb.moveTo(x, y);
+				}
+			}
+
+			//-------------------bottom right corner---------------------
+
+			if (styleBottom!=STYLE_NONE_CONST){ //si es null es Style None y no traza la linea
+
+				if (hideCorners && styleRight==STYLE_NONE_CONST && radioBR==0) {
+					cb.lineTo(x + w - penAux, y);
+				}
+				else {
+					cb.lineTo(x + w - radioBR, y);
+				}
+				if (radioBR>0 && styleRight!=STYLE_NONE_CONST) {
+					cb.curveTo(x + w - radioBR * b, y, x + w, y + radioBR * b, x + w, y + radioBR);
+				}
+
+			}
+
+			//-------------------right line---------------------
+
+			if (styleRight!=STYLE_NONE_CONST && dashPatternRight!=dashPatternBottom) {
+				cb.stroke();
+				cb.setLineDash(dashPatternRight, 0);
+				if (hideCorners && styleBottom==STYLE_NONE_CONST && radioBR==0) {
+					cb.moveTo(x + w, y + penAux);
+				}
+				else {
+					cb.moveTo(x + w, y + radioBR);
+				}
+			}
+
+			//-------------------top right corner---------------------
+			if (styleRight!=STYLE_NONE_CONST) {
+				if (hideCorners && styleTop==STYLE_NONE_CONST && radioTR==0) {
+					cb.lineTo (x + w, y + h - penAux);
+				}
+				else {
+					cb.lineTo (x + w, y + h - radioTR);
+				}
+				if (radioTR>0 && styleTop!=STYLE_NONE_CONST) {
+					cb.curveTo(x + w, y + h - radioTR * b, x + w - radioTR * b, y + h, x + w - radioTR, y + h);
+				}
+			}
+
+			//-------------------top line---------------------
+
+			if (styleTop!=STYLE_NONE_CONST && dashPatternTop!=dashPatternRight) {
+				cb.stroke();
+				cb.setLineDash(dashPatternTop, 0);
+				if (hideCorners && styleRight==STYLE_NONE_CONST && radioTR==0) {
+					cb.moveTo(x + w - penAux, y + h);
+				}
+				else {
+					cb.moveTo(x + w - radioTR, y + h);
+				}
+			}
+
+			//-------------------top left corner---------------------
+			if (styleTop!=STYLE_NONE_CONST) {
+				if (hideCorners && styleLeft==STYLE_NONE_CONST && radioTL==0) {
+					cb.lineTo(x + penAux, y + h);
+				}
+				else {
+					cb.lineTo(x + radioTL, y + h);
+				}
+				if (radioTL>0 && styleLeft!=STYLE_NONE_CONST) {
+					cb.curveTo(x + radioTL * b, y + h, x, y + h - radioTL * b, x, y + h - radioTL);
+				}
+			}
+
+			//-------------------left line---------------------
+
+			if (styleLeft!=STYLE_NONE_CONST  && dashPatternLeft!=dashPatternTop) {
+				cb.stroke();
+				cb.setLineDash(dashPatternLeft, 0);
+				if (hideCorners && styleTop==STYLE_NONE_CONST && radioTL==0) {
+					cb.moveTo(x, y + h - penAux);
+				}
+				else {
+					cb.moveTo(x, y + h - radioTL);
+				}
+			}
+
+			//-------------------bottom left corner---------------------
+			if (styleLeft!=STYLE_NONE_CONST) {
+				if (hideCorners && styleBottom==STYLE_NONE_CONST && radioBL==0) {
+					cb.lineTo(x, y + penAux);
+				}
+				else {
+					cb.lineTo(x, y + radioBL);
+				}
+				if (radioBL>0 && styleBottom!=STYLE_NONE_CONST)
+				{
+					cb.curveTo(x, y + radioBL * b, x + radioBL * b, y, x + radioBL, y);
+				}
+			}
+			cb.stroke();
+		} catch (Exception e) {
+			log.error("drawRectangle failed: ", e);
 		}
+	}
+	private void roundRectangle(PdfCanvas cb, float x, float y, float w, float h,
+								float radioTL, float radioTR, float radioBL, float radioBR) {
+		try {
+			//-------------------bottom line---------------------
 
-		float b = 0.4477f;
-		if (radioBL>0) {
-			cb.moveTo(x + radioBL, y);
-		}
-		else {
-			if (hideCorners && styleLeft==STYLE_NONE_CONST && radioBL==0) {
-				cb.moveTo(x + penAux, y);
+			float b = 0.4477f;
+			if (radioBL>0) {
+				cb.moveTo(x + radioBL, y);
 			}
 			else {
 				cb.moveTo(x, y);
 			}
-		}
 
-		//-------------------bottom right corner---------------------
+			//-------------------bottom right corner---------------------
 
-		if (styleBottom!=STYLE_NONE_CONST){ //si es null es Style None y no traza la linea
-
-			if (hideCorners && styleRight==STYLE_NONE_CONST && radioBR==0) {
-				cb.lineTo(x + w - penAux, y);
-			}
-			else {
-				cb.lineTo(x + w - radioBR, y);
-			}
-			if (radioBR>0 && styleRight!=STYLE_NONE_CONST) {
+			cb.lineTo(x + w - radioBR, y);
+			if (radioBR>0) {
 				cb.curveTo(x + w - radioBR * b, y, x + w, y + radioBR * b, x + w, y + radioBR);
 			}
 
-		}
 
-		//-------------------right line---------------------
-
-		if (styleRight!=STYLE_NONE_CONST && dashPatternRight!=dashPatternBottom) {
-			cb.stroke();
-			cb.setLineDash(dashPatternRight, 0);
-			if (hideCorners && styleBottom==STYLE_NONE_CONST && radioBR==0) {
-				cb.moveTo(x + w, y + penAux);
-			}
-			else {
-				cb.moveTo(x + w, y + radioBR);
-			}
-		}
-
-		//-------------------top right corner---------------------
-		if (styleRight!=STYLE_NONE_CONST) {
-			if (hideCorners && styleTop==STYLE_NONE_CONST && radioTR==0) {
-				cb.lineTo (x + w, y + h - penAux);
-			}
-			else {
-				cb.lineTo (x + w, y + h - radioTR);
-			}
-			if (radioTR>0 && styleTop!=STYLE_NONE_CONST) {
+			cb.lineTo (x + w, y + h - radioTR);
+			if (radioTR>0) {
 				cb.curveTo(x + w, y + h - radioTR * b, x + w - radioTR * b, y + h, x + w - radioTR, y + h);
 			}
-		}
 
-		//-------------------top line---------------------
-
-		if (styleTop!=STYLE_NONE_CONST && dashPatternTop!=dashPatternRight) {
-			cb.stroke();
-			cb.setLineDash(dashPatternTop, 0);
-			if (hideCorners && styleRight==STYLE_NONE_CONST && radioTR==0) {
-				cb.moveTo(x + w - penAux, y + h);
-			}
-			else {
-				cb.moveTo(x + w - radioTR, y + h);
-			}
-		}
-
-		//-------------------top left corner---------------------
-		if (styleTop!=STYLE_NONE_CONST) {
-			if (hideCorners && styleLeft==STYLE_NONE_CONST && radioTL==0) {
-				cb.lineTo(x + penAux, y + h);
-			}
-			else {
-				cb.lineTo(x + radioTL, y + h);
-			}
-			if (radioTL>0 && styleLeft!=STYLE_NONE_CONST) {
+			cb.lineTo(x + radioTL, y + h);
+			if (radioTL>0) {
 				cb.curveTo(x + radioTL * b, y + h, x, y + h - radioTL * b, x, y + h - radioTL);
 			}
-		}
-
-		//-------------------left line---------------------
-
-		if (styleLeft!=STYLE_NONE_CONST  && dashPatternLeft!=dashPatternTop) {
-			cb.stroke();
-			cb.setLineDash(dashPatternLeft, 0);
-			if (hideCorners && styleTop==STYLE_NONE_CONST && radioTL==0) {
-				cb.moveTo(x, y + h - penAux);
-			}
-			else {
-				cb.moveTo(x, y + h - radioTL);
-			}
-		}
-
-		//-------------------bottom left corner---------------------
-		if (styleLeft!=STYLE_NONE_CONST) {
-			if (hideCorners && styleBottom==STYLE_NONE_CONST && radioBL==0) {
-				cb.lineTo(x, y + penAux);
-			}
-			else {
-				cb.lineTo(x, y + radioBL);
-			}
-			if (radioBL>0 && styleBottom!=STYLE_NONE_CONST)
-			{
+			cb.lineTo(x, y + radioBL);
+			if (radioBL>0) {
 				cb.curveTo(x, y + radioBL * b, x + radioBL * b, y, x + radioBL, y);
 			}
+		} catch (Exception e) {
+			log.error("drawRectangle failed: ", e);
 		}
-		cb.stroke();
-
-	}
-	private void roundRectangle(PdfCanvas cb, float x, float y, float w, float h,
-								float radioTL, float radioTR, float radioBL, float radioBR) {
-
-		//-------------------bottom line---------------------
-
-		float b = 0.4477f;
-		if (radioBL>0) {
-			cb.moveTo(x + radioBL, y);
-		}
-		else {
-			cb.moveTo(x, y);
-		}
-
-		//-------------------bottom right corner---------------------
-
-		cb.lineTo(x + w - radioBR, y);
-		if (radioBR>0) {
-			cb.curveTo(x + w - radioBR * b, y, x + w, y + radioBR * b, x + w, y + radioBR);
-		}
-
-
-		cb.lineTo (x + w, y + h - radioTR);
-		if (radioTR>0) {
-			cb.curveTo(x + w, y + h - radioTR * b, x + w - radioTR * b, y + h, x + w - radioTR, y + h);
-		}
-
-		cb.lineTo(x + radioTL, y + h);
-		if (radioTL>0) {
-			cb.curveTo(x + radioTL * b, y + h, x, y + h - radioTL * b, x, y + h - radioTL);
-		}
-		cb.lineTo(x, y + radioBL);
-		if (radioBL>0) {
-			cb.curveTo(x, y + radioBL * b, x + radioBL * b, y, x + radioBL, y);
-		}
-
 	}
 
 	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue,
 						   int styleTop, int styleBottom, int styleRight, int styleLeft, int cornerRadioTL, int cornerRadioTR, int cornerRadioBL, int cornerRadioBR) {
 
-		PdfCanvas cb = new PdfCanvas(pdfPage);
+		try {
+			PdfCanvas cb = new PdfCanvas(pdfPage);
 
-		float penAux = (float)convertScale(pen);
-		float rightAux = (float)convertScale(right);
-		float bottomAux = (float)convertScale(bottom);
-		float leftAux = (float)convertScale(left);
-		float topAux = (float)convertScale(top);
+			float penAux = (float)convertScale(pen);
+			float rightAux = (float)convertScale(right);
+			float bottomAux = (float)convertScale(bottom);
+			float leftAux = (float)convertScale(left);
+			float topAux = (float)convertScale(top);
 
-		cb.saveState();
+			cb.saveState();
 
-		float x1, y1, x2, y2;
-		x1 = leftAux + leftMargin;
-		y1 = pageSize.getTop() - bottomAux - topMargin - bottomMargin;
-		x2 = rightAux + leftMargin;
-		y2 = pageSize.getTop() - topAux - topMargin - bottomMargin;
+			float x1, y1, x2, y2;
+			x1 = leftAux + leftMargin;
+			y1 = pageSize.getTop() - bottomAux - topMargin - bottomMargin;
+			x2 = rightAux + leftMargin;
+			y2 = pageSize.getTop() - topAux - topMargin - bottomMargin;
 
-		cb.setLineWidth(penAux);
-		cb.setLineCapStyle(LineCapStyle.PROJECTING_SQUARE);
+			cb.setLineWidth(penAux);
+			cb.setLineCapStyle(LineCapStyle.PROJECTING_SQUARE);
 
-		if (cornerRadioBL==0 && cornerRadioBR==0 && cornerRadioTL==0 && cornerRadioTR==0 && styleBottom==0 && styleLeft==0 && styleRight==0 && styleTop==0) {
-			cb.setStrokeColorRgb(foreRed, foreGreen, foreBlue);
-
-			Rectangle rect = new Rectangle(x1, y1, x2 - x1, y2 - y1);
-			rect.increaseHeight((float) (fontSize * 0.15));
-			rect.increaseWidth((float) (fontSize * 0.15));
-			cb.rectangle(rect);
-
-			if (backMode!=0) {
-				cb.setFillColorRgb(backRed, backGreen, backBlue);
-				cb.fill();
-			} else {
-				cb.stroke();
-			}
-		}
-		else {
-			float w = x2 - x1;
-			float h = y2 - y1;
-			if (w < 0) {
-				x1 += w;
-				w = -w;
-			}
-			if (h < 0) {
-				y1 += h;
-				h = -h;
-			}
-
-			float cRadioTL = (float)convertScale(cornerRadioTL);
-			float cRadioTR = (float)convertScale(cornerRadioTR);
-			float cRadioBL = (float)convertScale(cornerRadioBL);
-			float cRadioBR = (float)convertScale(cornerRadioBR);
-
-			int max = (int)Math.min(w, h);
-			cRadioTL = Math.max(0, Math.min(cRadioTL, max/2));
-			cRadioTR = Math.max(0, Math.min(cRadioTR, max/2));
-			cRadioBL = Math.max(0, Math.min(cRadioBL, max/2));
-			cRadioBR = Math.max(0, Math.min(cRadioBR, max/2));
-
-			if (backMode!=0) {
-				cb.setFillColorRgb(backRed, backGreen, backBlue);
+			if (cornerRadioBL==0 && cornerRadioBR==0 && cornerRadioTL==0 && cornerRadioTR==0 && styleBottom==0 && styleLeft==0 && styleRight==0 && styleTop==0) {
 				cb.setStrokeColorRgb(foreRed, foreGreen, foreBlue);
-				cb.setLineWidth(0);
-				roundRectangle(cb, x1, y1, w, h,
-					cRadioTL, cRadioTR,
-					cRadioBL, cRadioBR);
-				cb.setFillColor(new DeviceRgb(new Color(backRed, backGreen, backBlue)));
-				cb.fillStroke();
-				cb.setLineWidth(penAux);
+
+				Rectangle rect = new Rectangle(x1, y1, x2 - x1, y2 - y1);
+				rect.increaseHeight((float) (fontSize * 0.15));
+				rect.increaseWidth((float) (fontSize * 0.15));
+				cb.rectangle(rect);
+
+				if (backMode!=0) {
+					cb.setFillColorRgb(backRed, backGreen, backBlue);
+					cb.fill();
+				} else {
+					cb.stroke();
+				}
 			}
-			if (pen > 0) {
-				cb.setFillColorRgb(foreRed, foreGreen, foreBlue);
-				cb.setStrokeColorRgb(foreRed, foreGreen, foreBlue);
-				drawRectangle(cb, x1, y1, w, h,
-					styleTop, styleBottom, styleRight, styleLeft,
-					cRadioTL, cRadioTR,
-					cRadioBL, cRadioBR, penAux, false);
+			else {
+				float w = x2 - x1;
+				float h = y2 - y1;
+				if (w < 0) {
+					x1 += w;
+					w = -w;
+				}
+				if (h < 0) {
+					y1 += h;
+					h = -h;
+				}
+
+				float cRadioTL = (float)convertScale(cornerRadioTL);
+				float cRadioTR = (float)convertScale(cornerRadioTR);
+				float cRadioBL = (float)convertScale(cornerRadioBL);
+				float cRadioBR = (float)convertScale(cornerRadioBR);
+
+				int max = (int)Math.min(w, h);
+				cRadioTL = Math.max(0, Math.min(cRadioTL, max/2));
+				cRadioTR = Math.max(0, Math.min(cRadioTR, max/2));
+				cRadioBL = Math.max(0, Math.min(cRadioBL, max/2));
+				cRadioBR = Math.max(0, Math.min(cRadioBR, max/2));
+
+				if (backMode!=0) {
+					cb.setFillColorRgb(backRed, backGreen, backBlue);
+					cb.setStrokeColorRgb(foreRed, foreGreen, foreBlue);
+					cb.setLineWidth(0);
+					roundRectangle(cb, x1, y1, w, h,
+						cRadioTL, cRadioTR,
+						cRadioBL, cRadioBR);
+					cb.setFillColor(new DeviceRgb(new Color(backRed, backGreen, backBlue)));
+					cb.fillStroke();
+					cb.setLineWidth(penAux);
+				}
+				if (pen > 0) {
+					cb.setFillColorRgb(foreRed, foreGreen, foreBlue);
+					cb.setStrokeColorRgb(foreRed, foreGreen, foreBlue);
+					drawRectangle(cb, x1, y1, w, h,
+						styleTop, styleBottom, styleRight, styleLeft,
+						cRadioTL, cRadioTR,
+						cRadioBL, cRadioBR, penAux, false);
+				}
 			}
+			cb.restoreState();
+		} catch (Exception e) {
+			log.error("GxDrawRect failed: ", e);
 		}
-		cb.restoreState();
 
 		log.debug("GxDrawRect -> (" + left + "," + top + ") - (" + right + "," + bottom + ")  BackMode: " + backMode + " Pen:" + pen);
 	}
 
 	public void GxDrawLine(int left, int top, int right, int bottom, int width, int foreRed, int foreGreen, int foreBlue, int style) {
-		PdfCanvas cb = new PdfCanvas(pdfPage);
+		try {
+			PdfCanvas cb = new PdfCanvas(pdfPage);
 
-		float widthAux = (float)convertScale(width);
-		float rightAux = (float)convertScale(right);
-		float bottomAux = (float)convertScale(bottom);
-		float leftAux = (float)convertScale(left);
-		float topAux = (float)convertScale(top);
+			float widthAux = (float)convertScale(width);
+			float rightAux = (float)convertScale(right);
+			float bottomAux = (float)convertScale(bottom);
+			float leftAux = (float)convertScale(left);
+			float topAux = (float)convertScale(top);
 
-		log.debug("GxDrawLine -> (" + left + "," + top + ") - (" + right + "," + bottom + ") Width: " + width);
+			log.debug("GxDrawLine -> (" + left + "," + top + ") - (" + right + "," + bottom + ") Width: " + width);
 
-		float x1, y1, x2, y2;
+			float x1, y1, x2, y2;
 
-		x1 = leftAux + leftMargin;
-		y1 = pageSize.getTop() - bottomAux - topMargin -bottomMargin;
-		x2 = rightAux + leftMargin;
-		y2 = pageSize.getTop() - topAux - topMargin -bottomMargin;
+			x1 = leftAux + leftMargin;
+			y1 = pageSize.getTop() - bottomAux - topMargin -bottomMargin;
+			x2 = rightAux + leftMargin;
+			y2 = pageSize.getTop() - topAux - topMargin -bottomMargin;
 
-		cb.saveState();
-		cb.setFillColorRgb(foreRed, foreGreen, foreBlue);
-		cb.setLineWidth(widthAux);
+			cb.saveState();
+			cb.setFillColorRgb(foreRed, foreGreen, foreBlue);
+			cb.setLineWidth(widthAux);
 
-		if (lineCapProjectingSquare) {
-			cb.setLineCapStyle(LineCapStyle.PROJECTING_SQUARE);
+			if (lineCapProjectingSquare) {
+				cb.setLineCapStyle(LineCapStyle.PROJECTING_SQUARE);
+			}
+			if (style!=0) {
+				float[] dashPattern = getDashedPattern(style);
+				cb.setLineDash(dashPattern, 0);
+			}
+			cb.moveTo(x1, y1);
+			cb.lineTo(x2, y2);
+			cb.stroke();
+
+			cb.restoreState();
+		} catch (Exception e) {
+			log.error("GxDrawLine failed:", e);
 		}
-		if (style!=0) {
-			float[] dashPattern = getDashedPattern(style);
-			cb.setLineDash(dashPattern, 0);
-		}
-		cb.moveTo(x1, y1);
-		cb.lineTo(x2, y2);
-		cb.stroke();
-
-		cb.restoreState();
 	}
 
 	public void GxDrawBitMap(String bitmap, int left, int top, int right, int bottom, int aspectRatio) {
@@ -431,16 +447,16 @@ public class PDFReportItext7 extends GXReportPDFCommons
 		if (!embeddedFont) {
 			fontName = getSubstitute(fontName);
 		}
-		if(DEBUG) {
-			String fontSubstitute = "";
-			if (!originalFontName.equals(fontName)) {
-				fontSubstitute = "Original Font: " + originalFontName + " Substitute";
-			}
-			log.debug("GxAttris: ");
-			log.debug("\\-> " + fontSubstitute + "Font: " + fontName + " (" + fontSize + ")" + (fontBold ? " BOLD" : "") + (fontItalic ? " ITALIC" : "") + (fontStrikethru ? " Strike" : ""));
-			log.debug("\\-> Fore (" + foreRed + ", " + foreGreen + ", " + foreBlue + ")");
-			log.debug("\\-> Back (" + backRed + ", " + backGreen + ", " + backBlue + ")");
+
+		String fontSubstitute = "";
+		if (!originalFontName.equals(fontName)) {
+			fontSubstitute = "Original Font: " + originalFontName + " Substitute";
 		}
+		log.debug("GxAttris: ");
+		log.debug("\\-> " + fontSubstitute + "Font: " + fontName + " (" + fontSize + ")" + (fontBold ? " BOLD" : "") + (fontItalic ? " ITALIC" : "") + (fontStrikethru ? " Strike" : ""));
+		log.debug("\\-> Fore (" + foreRed + ", " + foreGreen + ", " + foreBlue + ")");
+		log.debug("\\-> Back (" + backRed + ", " + backGreen + ", " + backBlue + ")");
+
 		if (barcode128AsImage && fontName.toLowerCase().indexOf("barcode 128") >= 0 || fontName.toLowerCase().indexOf("barcode128") >= 0) {
 			barcode = new Barcode128(pdfDocument);
 			barcode.setCodeType(Barcode128.CODE128);
@@ -663,7 +679,6 @@ public class PDFReportItext7 extends GXReportPDFCommons
 			style.setFontSize(fontSize);
 			style.setFontColor(new DeviceRgb(foreColor));
 
-
 			if (wrap || justified) {
 				bottomAux = (float)convertScale(bottomOri);
 				topAux = (float)convertScale(topOri);
@@ -680,29 +695,33 @@ public class PDFReportItext7 extends GXReportPDFCommons
 					log.error("Text wrap in GxDrawText failed: ", ex);
 				}
 			} else {
-				if (!autoResize) {
-					String newsTxt = sTxt;
-					while(TxtWidth > textBlockWidth && (newsTxt.length()-1>=0)) {
-						sTxt = newsTxt;
-						newsTxt = newsTxt.substring(0, newsTxt.length()-1);
-						TxtWidth = baseFont.getWidth(newsTxt, fontSize);
+				try {
+					if (!autoResize) {
+						String newsTxt = sTxt;
+						while(TxtWidth > textBlockWidth && (newsTxt.length()-1>=0)) {
+							sTxt = newsTxt;
+							newsTxt = newsTxt.substring(0, newsTxt.length()-1);
+							TxtWidth = baseFont.getWidth(newsTxt, fontSize);
+						}
 					}
-				}
 
-				Paragraph p = new Paragraph(sTxt);
-				p.addStyle(style);
+					Paragraph p = new Paragraph(sTxt);
+					p.addStyle(style);
 
-				switch(alignment) {
-					case 1: // Center Alignment
-						document.showTextAligned(p, ((leftAux + rightAux) / 2) + leftMargin, this.pageSize.getTop() - bottomAux - topMargin - bottomMargin, page, TextAlignment.CENTER, VerticalAlignment.MIDDLE,0);
-						break;
-					case 2: // Right Alignment
-						document.showTextAligned(p, rightAux + leftMargin, this.pageSize.getTop() - bottomAux - topMargin - bottomMargin, page, TextAlignment.RIGHT, VerticalAlignment.MIDDLE,0);
-						break;
-					case 0: // Left Alignment
-					case 3: // Justified, only one text line
-						document.showTextAligned(p, leftAux + leftMargin, this.pageSize.getTop() - bottomAux - topMargin - bottomMargin, page, TextAlignment.LEFT, VerticalAlignment.MIDDLE,0);
-						break;
+					switch(alignment) {
+						case 1: // Center Alignment
+							document.showTextAligned(p, ((leftAux + rightAux) / 2) + leftMargin, this.pageSize.getTop() - bottomAux - topMargin - bottomMargin, page, TextAlignment.CENTER, VerticalAlignment.MIDDLE,0);
+							break;
+						case 2: // Right Alignment
+							document.showTextAligned(p, rightAux + leftMargin, this.pageSize.getTop() - bottomAux - topMargin - bottomMargin, page, TextAlignment.RIGHT, VerticalAlignment.MIDDLE,0);
+							break;
+						case 0: // Left Alignment
+						case 3: // Justified, only one text line
+							document.showTextAligned(p, leftAux + leftMargin, this.pageSize.getTop() - bottomAux - topMargin - bottomMargin, page, TextAlignment.LEFT, VerticalAlignment.MIDDLE,0);
+							break;
+					}
+				} catch (Exception e) {
+					log.error("GxDrawText failed to draw simple text: ", e);
 				}
 			}
 		}
@@ -820,20 +839,24 @@ public class PDFReportItext7 extends GXReportPDFCommons
 
 	public boolean GxPrintInit(String output, int gxXPage[], int gxYPage[], String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex) {
 		boolean preResult = super.GxPrintInit(output, gxXPage, gxYPage, iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
+		try {
+			this.pageSize = computePageSize(leftMargin, topMargin, pageWidth, pageLength, props.getBooleanGeneralProperty(Const.MARGINS_INSIDE_BORDER, false));
+			gxXPage[0] = (int)this.pageSize.getRight();
+			if (props.getBooleanGeneralProperty(Const.FIX_SAC24437, true))
+				gxYPage[0] = (int)(pageLength / GX_PAGE_SCALE_Y);
+			else
+				gxYPage[0] = (int)(pageLength / GX_PAGE_SCALE_Y_OLD);
 
-		this.pageSize = computePageSize(leftMargin, topMargin, pageWidth, pageLength, props.getBooleanGeneralProperty(Const.MARGINS_INSIDE_BORDER, false));
-		gxXPage[0] = (int)this.pageSize.getRight();
-		if (props.getBooleanGeneralProperty(Const.FIX_SAC24437, true))
-			gxYPage[0] = (int)(pageLength / GX_PAGE_SCALE_Y);
-		else
-			gxYPage[0] = (int)(pageLength / GX_PAGE_SCALE_Y_OLD);
+			init();
 
-		init();
-
-		if (!preResult)
-			return !preResult;
-		else
-			return true;
+			if (!preResult)
+				return !preResult;
+			else
+				return true;
+		} catch (Exception e){
+			log.error("GxPrintInit faile" , e);
+			return false;
+		}
 	}
 
 	private Rectangle computePageSize(float leftMargin, float topMargin, int width, int length, boolean marginsInsideBorder) {
@@ -938,7 +961,7 @@ public class PDFReportItext7 extends GXReportPDFCommons
 			case Const.OUTPUT_SCREEN:
 				try{ outputStream.close(); } catch(IOException e) { ; }
 				try{ showReport(docName, modal); } catch(Exception e) {
-					e.printStackTrace();
+					log.error("GxEndDocument: failed to show report on screen ", e );
 				}
 				break;
 			case Const.OUTPUT_PRINTER:

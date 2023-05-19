@@ -64,7 +64,7 @@ public class PDFReportItext2 extends GXReportPDFCommons
       writer = PdfWriter.getInstance(document, outputStream);
 	  }
 	  catch(DocumentException de) {
-            log.error("failed to initialize document: ", de);
+            log.error("Failed to initialize new iText2 document: ", de);
       }
       document.open();
     }
@@ -432,16 +432,14 @@ public class PDFReportItext2 extends GXReportPDFCommons
 		if (!embeedFont) {
 			fontName = getSubstitute(fontName); // Veo si hay substitutos solo si el font no va a ir embebido
 		}
-        if(DEBUG) {
-			String fontSubstitute = "";
-			if (!originalFontName.equals(fontName)) {
-				fontSubstitute = "Original Font: " + originalFontName + " Substitute";
-			}
-			log.debug("GxAttris: ");
-			log.debug("\\-> " + fontSubstitute + "Font: " + fontName + " (" + fontSize + ")" + (fontBold ? " BOLD" : "") + (fontItalic ? " ITALIC" : "") + (fontStrikethru ? " Strike" : ""));
-			log.debug("\\-> Fore (" + foreRed + ", " + foreGreen + ", " + foreBlue + ")");
-			log.debug("\\-> Back (" + backRed + ", " + backGreen + ", " + backBlue + ")");
+
+		String fontSubstitute = "";
+		if (!originalFontName.equals(fontName)) {
+			fontSubstitute = "Original Font: " + originalFontName + " Substitute";
 		}
+		log.debug("GxAttris: ");
+		log.debug("\\-> " + fontSubstitute + "Font: " + fontName + " (" + fontSize + ")" + (fontBold ? " BOLD" : "") + (fontItalic ? " ITALIC" : "") + (fontStrikethru ? " Strike" : ""));
+		log.debug("\\-> Fore (" + foreRed + ", " + foreGreen + ", " + foreBlue + ")");log.debug("\\-> Back (" + backRed + ", " + backGreen + ", " + backBlue + ")");
 
 		if (barcode128AsImage && fontName.toLowerCase().indexOf("barcode 128") >= 0 || fontName.toLowerCase().indexOf("barcode128") >= 0) {
 			barcode = new Barcode128();

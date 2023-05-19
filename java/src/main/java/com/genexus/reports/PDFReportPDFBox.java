@@ -61,7 +61,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			document = new PDDocument();
 		}
 		catch(Exception e) {
-			log.error("failed to initialize new PDFBox document: ", e);
+			log.error("Failed to initialize new PDFBox document: ", e);
 		}
 	}
 
@@ -166,7 +166,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			}
 			cb.stroke();
 		} catch (IOException ioe) {
-			log.error("drawRectangle failed: ", ioe);
+			log.error("roundRectangle failed: ", ioe);
 		}
 	}
 
@@ -197,7 +197,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				cb.curveTo(x, y + radioBL * b, x + radioBL * b, y, x + radioBL, y);
 			}
 		} catch (IOException ioe) {
-			log.error("roundRectangle failed: ", ioe);
+			log.error("drawRectangle failed: ", ioe);
 		}
 	}
 
@@ -396,16 +396,15 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 		if (!embeedFont) {
 			fontName = getSubstitute(fontName);
 		}
-		if(DEBUG) {
-			String fontSubstitute = "";
-			if (!originalFontName.equals(fontName)) {
-				fontSubstitute = "Original Font: " + originalFontName + " Substitute";
-			}
-			log.debug("GxAttris: ");
-			log.debug("\\-> " + fontSubstitute + "Font: " + fontName + " (" + fontSize + ")" + (fontBold ? " BOLD" : "") + (fontItalic ? " ITALIC" : "") + (fontStrikethru ? " Strike" : ""));
-			log.debug("\\-> Fore (" + foreRed + ", " + foreGreen + ", " + foreBlue + ")");
-			log.debug("\\-> Back (" + backRed + ", " + backGreen + ", " + backBlue + ")");
+
+		String fontSubstitute = "";
+		if (!originalFontName.equals(fontName)) {
+			fontSubstitute = "Original Font: " + originalFontName + " Substitute";
 		}
+		log.debug("GxAttris: ");
+		log.debug("\\-> " + fontSubstitute + "Font: " + fontName + " (" + fontSize + ")" + (fontBold ? " BOLD" : "") + (fontItalic ? " ITALIC" : "") + (fontStrikethru ? " Strike" : ""));
+		log.debug("\\-> Fore (" + foreRed + ", " + foreGreen + ", " + foreBlue + ")");
+		log.debug("\\-> Back (" + backRed + ", " + backGreen + ", " + backBlue + ")");
 
 		if (barcode128AsImage && fontName.toLowerCase().indexOf("barcode 128") >= 0 || fontName.toLowerCase().indexOf("barcode128") >= 0)
 			barcodeType = "barcode128";
