@@ -35,7 +35,7 @@ public abstract class GXReport extends GXProcedure {
 		if(document.toLowerCase().endsWith(".pdf")) { // Si es un .pdf
 			try {
 				String implementation = com.genexus.Application.getClientContext().getClientPreferences().getPDF_RPT_LIBRARY();
-				if (implementation.equals("ITEXT2"))
+				if (implementation.equals("ITEXT"))
 					PDFReportItext2.showReport(document, false);
 				else if (implementation.equals("ITEXT7"))
 					PDFReportItext7.showReport(document, false);
@@ -79,7 +79,7 @@ public abstract class GXReport extends GXProcedure {
 			{
 				try {
 					String implementation = com.genexus.Application.getClientContext().getClientPreferences().getPDF_RPT_LIBRARY();
-					if (implementation.equals("ITEXT2"))
+					if (implementation.equals("ITEXT"))
 						reportHandler = new PDFReportPDFBox(context);
 					else if (implementation.equals("ITEXT7"))
 						reportHandler = new PDFReportItext7(context);
