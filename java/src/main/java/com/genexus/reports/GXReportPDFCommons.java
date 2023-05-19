@@ -68,7 +68,6 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 	protected boolean fontBold = false;
 	protected boolean fontItalic = false;
 	protected Color backColor, foreColor;
-	public static PrintStream DEBUG_STREAM = System.out;
 	protected OutputStream outputStream = null;
 	protected static ParseINI props = new ParseINI();
 	protected ParseINI printerSettings;
@@ -85,7 +84,6 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 	protected static String defaultRelativePrepend = null;
 	protected static String defaultRelativePrependINI = null;
 	protected static String webAppDir = null;
-	public static boolean DEBUG = false;
 	private static String predefinedSearchPath = "";
 	protected float leftMargin;
 	protected float topMargin;
@@ -334,15 +332,6 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 		props.setupGeneralProperty(Const.STYLE_LONG_DOT_DASHED, Const.DEFAULT_STYLE_LONG_DOT_DASHED);
 
 		loadSubstituteTable(); // Cargo la tabla de substitutos de fonts
-
-		if(props.getBooleanGeneralProperty("DEBUG", false)) {
-			DEBUG = true;
-			DEBUG_STREAM = System.out;
-		}
-		else {
-			DEBUG = false;
-			DEBUG_STREAM = new PrintStream(new com.genexus.util.NullOutputStream());
-		}
 
 		Utilities.addPredefinedSearchPaths(new String[]{System.getProperty("java.awt.fonts", "c:\\windows\\fonts"),
 			System.getProperty("com.ms.windir", "c:\\windows") + "\\fonts"});

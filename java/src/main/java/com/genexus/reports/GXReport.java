@@ -34,13 +34,7 @@ public abstract class GXReport extends GXProcedure {
 	public static byte openGXReport(String document) {
 		if(document.toLowerCase().endsWith(".pdf")) { // Si es un .pdf
 			try {
-				String implementation = com.genexus.Application.getClientContext().getClientPreferences().getPDF_RPT_LIBRARY();
-				if (implementation.equals("ITEXT"))
-					PDFReportItext2.showReport(document, false);
-				else if (implementation.equals("ITEXT7"))
-					PDFReportItext7.showReport(document, false);
-				else
-					PDFReportPDFBox.showReport(document, false);
+				GXReportPDFCommons.showReport(document, false);
 			} catch(Exception e) {
 				log.error("GXReport failed to open report " + document + " : ", e);
 				return -1;
@@ -78,15 +72,10 @@ public abstract class GXReport extends GXProcedure {
 			else if  (getOutputType() == OUTPUT_PDF)
 			{
 				try {
-					String implementation = com.genexus.Application.getClientContext().getClientPreferences().getPDF_RPT_LIBRARY();
-					if (implementation.equals("ITEXT"))
-						reportHandler = new PDFReportPDFBox(context);
-					else if (implementation.equals("ITEXT7"))
-						reportHandler = new PDFReportItext7(context);
-					else
-						reportHandler = new PDFReportPDFBox(context);
 					((GXReportPDFCommons) reportHandler).setOutputStream(httpContext.getOutputStream());
-				} catch (Exception e) {}
+				} catch (Exception e) {
+					log.error("Failed to set output stream: ", e);
+				}
 			}
 			else {
 				throw new RuntimeException("Unrecognized report type: " + getOutputType());
