@@ -72,6 +72,13 @@ public abstract class GXReport extends GXProcedure {
 			else if  (getOutputType() == OUTPUT_PDF)
 			{
 				try {
+					String implementation = com.genexus.Application.getClientContext().getClientPreferences().getPDF_RPT_LIBRARY();
+					if (implementation.equals("ITEXT"))
+						reportHandler = new PDFReportPDFBox(context);
+					else if (implementation.equals("ITEXT7"))
+						reportHandler = new PDFReportItext7(context);
+					else
+						reportHandler = new PDFReportPDFBox(context);
 					((GXReportPDFCommons) reportHandler).setOutputStream(httpContext.getOutputStream());
 				} catch (Exception e) {
 					log.error("Failed to set output stream: ", e);
