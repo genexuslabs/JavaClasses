@@ -37,6 +37,7 @@ import com.itextpdf.layout.properties.*;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.layout.splitting.DefaultSplitCharacters;
 import com.itextpdf.layout.Canvas;
+import org.opensaml.xml.signature.P;
 
 import java.awt.*;
 import java.io.File;
@@ -46,9 +47,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.Deflater;
 
-public class PDFReportItext7 extends GXReportPDFCommons
-{
-	private Rectangle pageSize;
+public class PDFReportItext7 extends GXReportPDFCommons {
+	private PageSize pageSize;
 	private PdfFont baseFont;
 	private Barcode128 barcode = null;
 	private Document document;
@@ -78,7 +78,9 @@ public class PDFReportItext7 extends GXReportPDFCommons
 			writer = new PdfWriter(outputStream);
 			writer.setCompressionLevel(Deflater.BEST_COMPRESSION);
 			pdfDocument = new PdfDocument(writer);
+			pdfDocument.setDefaultPageSize(this.pageSize);
 			document = new Document(pdfDocument);
+
 		} catch (Exception e){
 			log.error("Failed to initialize new iText7 document: ", e);
 		}
@@ -863,7 +865,7 @@ public class PDFReportItext7 extends GXReportPDFCommons
 		}
 	}
 
-	private Rectangle computePageSize(float leftMargin, float topMargin, int width, int length, boolean marginsInsideBorder) {
+	private PageSize computePageSize(float leftMargin, float topMargin, int width, int length, boolean marginsInsideBorder) {
 		if ((leftMargin == 0 && topMargin == 0)||marginsInsideBorder) {
 			if (length == 23818 && width == 16834)
 				return PageSize.A3;
@@ -882,9 +884,9 @@ public class PDFReportItext7 extends GXReportPDFCommons
 			else if (length == 15840 && width == 12240)
 				return PageSize.LETTER;
 			else
-				return new Rectangle((int)(width / PAGE_SCALE_X) , (int)(length / PAGE_SCALE_Y) );
+				return new PageSize(new Rectangle((int)(width / PAGE_SCALE_X) , (int)(length / PAGE_SCALE_Y) ));
 		}
-		return new Rectangle((int)(width / PAGE_SCALE_X) + leftMargin, (int)(length / PAGE_SCALE_Y) + topMargin);
+		return new PageSize(new Rectangle((int)(width / PAGE_SCALE_X) + leftMargin, (int)(length / PAGE_SCALE_Y) + topMargin));
 	}
 
 	public void GxEndDocument() {
