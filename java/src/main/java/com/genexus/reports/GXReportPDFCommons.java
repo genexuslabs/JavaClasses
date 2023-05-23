@@ -124,7 +124,7 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 	}
 	protected static char alternateSeparator = File.separatorChar == '/' ? '\\' : '/';
 
-	protected static Logger log = org.apache.logging.log4j.LogManager.getLogger(GXReportPDFCommons.class);
+	protected static Logger log;
 
 	/** Setea el OutputStream a utilizar
 	 *  @param outputStream Stream a utilizar

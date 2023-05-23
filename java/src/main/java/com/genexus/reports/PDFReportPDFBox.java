@@ -49,6 +49,10 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	public int runDirection = 0;
 	private int page;
 
+	static {
+		log = org.apache.logging.log4j.LogManager.getLogger(PDFReportPDFBox.class);
+	}
+
 	public PDFReportPDFBox(ModelContext context) {
 		super(context);
 		document = null;
