@@ -61,6 +61,10 @@ public class PDFReportItext7 extends GXReportPDFCommons
 	public boolean barcode128AsImage = true;
 	ConcurrentHashMap<String, Image> documentImages;
 
+	static {
+		log = org.apache.logging.log4j.LogManager.getLogger(PDFReportItext7.class);
+	}
+
 	public PDFReportItext7(ModelContext context) {
 		super(context);
 		document = null;

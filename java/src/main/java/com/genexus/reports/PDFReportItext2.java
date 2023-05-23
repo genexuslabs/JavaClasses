@@ -51,6 +51,10 @@ public class PDFReportItext2 extends GXReportPDFCommons
 	ConcurrentHashMap<String, Image> documentImages;
 	public int runDirection = PdfWriter.RUN_DIRECTION_LTR;
 
+	static {
+		log = org.apache.logging.log4j.LogManager.getLogger(PDFReportItext2.class);
+	}
+
 	public PDFReportItext2(ModelContext context) {
 		super(context);
         document = null;
