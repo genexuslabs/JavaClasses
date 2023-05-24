@@ -3,6 +3,7 @@ package com.genexus.webpanels;
 import java.util.ArrayList;
 
 import com.genexus.ModelContext;
+import com.genexus.internet.HttpAjaxContext;
 import com.genexus.internet.HttpContext;
 import com.genexus.internet.IGxJSONAble;
 import com.genexus.common.interfaces.IGXWebGrid;
@@ -62,7 +63,7 @@ public class GXWebGrid implements IGxJSONAble, IGXWebGrid
 
     public void SetWrapped(int wrapped)
     {
-        HttpContext httpContext = (HttpContext) this.context.getHttpContext();
+		HttpAjaxContext httpContext = (HttpAjaxContext) context.getHttpContext();
         this.wrapped = (wrapped==1);
         if (!this.wrapped)
         {

@@ -127,8 +127,8 @@ public class GXOAuthAccessToken extends GXWebObjectStub
 					}
 					String OauthRealm = "OAuth realm=\"" + context.getRequest().getServerName() + "\"" + ",error_code=\"" + gamError + "\"" + ",error_description=\"" + messagePermissionEncoded + "\"";
 					context.getResponse().addHeader("WWW-Authenticate", OauthRealm);				
-					SetError(gamError, messagePermission);				
-					context.writeText(errorJson.toString());
+					SetError(gamError, messagePermission);
+					((HttpContextWeb) context).writeText(errorJson.toString());
 					context.getResponse().flushBuffer();
 					return;
 				}
@@ -144,7 +144,7 @@ public class GXOAuthAccessToken extends GXWebObjectStub
 						context.getResponse().addHeader("location", redirectURL[0]); 
 						JSONObject jObj = new JSONObject();
 						jObj.put("Location", redirectURL[0]);
-						context.writeText(jObj.toString());
+						((HttpContextWeb) context).writeText(jObj.toString());
 						context.getResponse().flushBuffer();
 						return;					
 					}
@@ -152,7 +152,7 @@ public class GXOAuthAccessToken extends GXWebObjectStub
 					{
 						context.getResponse().setContentType("application/json");
 						context.getResponse().setStatus(200);
-						context.writeText((String)gamout.getjsonString());
+						((HttpContextWeb) context).writeText((String)gamout.getjsonString());
 						context.getResponse().flushBuffer();
 						return;			
 					}
