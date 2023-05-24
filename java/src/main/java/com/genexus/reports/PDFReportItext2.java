@@ -65,10 +65,10 @@ public class PDFReportItext2 extends GXReportPDFCommons
 	protected void init() {
       Document.compress = true;
 	  try {
-      writer = PdfWriter.getInstance(document, outputStream);
+		  writer = PdfWriter.getInstance(document, outputStream);
 	  }
 	  catch(DocumentException de) {
-            log.error("Failed to initialize new iText2 document: ", de);
+		  log.error("Failed to initialize new iText2 document: ", de);
       }
       document.open();
     }

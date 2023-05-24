@@ -37,7 +37,6 @@ import com.itextpdf.layout.properties.*;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.layout.splitting.DefaultSplitCharacters;
 import com.itextpdf.layout.Canvas;
-import org.opensaml.xml.signature.P;
 
 import java.awt.*;
 import java.io.File;
@@ -430,7 +429,7 @@ public class PDFReportItext7 extends GXReportPDFCommons {
 				float topAux = (float)convertScale(top);
 
 				Image image = new Image(imageData);
-				image.setFixedPosition(leftAux + leftMargin, this.pageSize.getTop() - bottomAux - topMargin - bottomMargin);
+				image.setFixedPosition(page,leftAux + leftMargin, this.pageSize.getTop() - bottomAux - topMargin - bottomMargin);
 				if (aspectRatio == 0)
 					image.scaleAbsolute(rightAux - leftAux , bottomAux - topAux);
 				else
@@ -587,6 +586,8 @@ public class PDFReportItext7 extends GXReportPDFCommons {
 		boolean autoResize = (align & 256) == 256;
 
 		if (htmlformat == 1) {
+			//As of now, you might experience unexpected behaviour since not all possible
+			//HTML code is supported
 			try {
 				bottomAux = (float)convertScale(bottom);
 				topAux = (float)convertScale(top);
@@ -748,7 +749,9 @@ public class PDFReportItext7 extends GXReportPDFCommons {
 			// check if the currentYPosition has enough space for the new Paragraph
 			if ((currentYPosition.getCurrentYPosition() - height) < htmlRectangle.getBottom()) {
 				// add new page and reset the currentYPosition
-				canvas = new Canvas(new PdfCanvas(pdfDocument.addNewPage()), htmlRectangle);
+				pdfPage = pdfDocument.addNewPage();
+				pages++;
+				canvas = new Canvas(new PdfCanvas(pdfPage), htmlRectangle);
 				currentYPosition.setCurrentYPosition(htmlRectangle.getTop());
 			}
 
@@ -891,7 +894,8 @@ public class PDFReportItext7 extends GXReportPDFCommons {
 
 	public void GxEndDocument() {
 		if(pdfDocument.getNumberOfPages() == 0) {
-			pdfDocument.addNewPage();
+			pdfPage = pdfDocument.addNewPage();
+			pages++;
 		}
 
 		if (template != null) {
