@@ -49,24 +49,16 @@ public abstract class GXReport extends GXProcedure
 		}
 		return 0;
 	}
-     
-		protected void setPrintAtClient()
-		{
-			setPrintAtClient("");
-		}
 		
-        protected void setPrintAtClient(String printerRule)
+        public String setPrintAtClient()
         {
             String blobPath = com.genexus.Preferences.getDefaultPreferences().getBLOB_PATH();
             String fileName = com.genexus.PrivateUtilities.getTempFileName(blobPath, "clientReport", getOutputType() == OUTPUT_PDF ? "pdf":"gxr");			
 			
             getPrinter().GxSetDocName(fileName);
             getPrinter().GxSetDocFormat("GXR");
-            if (httpContext != null)
-            {
-                httpContext.printReportAtClient(fileName, printerRule);
-            }
             com.genexus.webpanels.BlobsCleaner.getInstance().addBlobFile(fileName);
+			return fileName;
         }
 
 	public void setPrinter(IReportHandler reportHandler)

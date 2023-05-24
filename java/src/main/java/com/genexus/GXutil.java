@@ -15,6 +15,7 @@ import com.genexus.platform.NativeFunctions;
 import com.genexus.util.*;
 
 import json.org.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 
 public final class GXutil
 {
@@ -1704,11 +1705,19 @@ public final class GXutil
 
 	public static String getEncryptedSignature( String value, String key)
 	{
-		return Encryption.encrypt64(CommonUtil.getHash( com.genexus.security.web.WebSecurityHelper.StripInvalidChars(value), CommonUtil.SECURITY_HASH_ALGORITHM), key);
+		return Encryption.encrypt64(CommonUtil.getHash( StripInvalidChars(value), CommonUtil.SECURITY_HASH_ALGORITHM), key);
 	}
 	public static boolean checkEncryptedSignature( String value, String hash, String key)
 	{
-		return CommonUtil.getHash( com.genexus.security.web.WebSecurityHelper.StripInvalidChars(value), CommonUtil.SECURITY_HASH_ALGORITHM).equals(Encryption.decrypt64(hash, key));
+		return CommonUtil.getHash( StripInvalidChars(value), CommonUtil.SECURITY_HASH_ALGORITHM).equals(Encryption.decrypt64(hash, key));
+	}
+
+	public static String StripInvalidChars(String input)
+	{
+		if (input == null)
+			return input;
+		String output = input.replaceAll("[\u0000-\u001f]", "");
+		return StringUtils.strip(output);
 	}
 
 	public static String buildWSDLFromHttpClient(com.genexus.internet.HttpClient GXSoapHTTPClient, String wsdlURL)

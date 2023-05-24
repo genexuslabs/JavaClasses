@@ -26,7 +26,7 @@ public class DynamicExecute
 		if (SpecificImplementation.DynamicExecute != null)
 			isWebContext = SpecificImplementation.DynamicExecute.getIsWebContext(context);
 
-		if (isWebContext && c.getSuperclass().equals(SpecificImplementation.Application.getGXWebObjectStubClass()))
+		if (isWebContext && c.getSuperclass().getSuperclass().equals(SpecificImplementation.Application.getGXWebObjectStubClass()))
 		{
 			// Es un call a un webpanel
 			String objetName;

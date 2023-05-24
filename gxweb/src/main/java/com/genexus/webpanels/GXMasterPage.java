@@ -1,6 +1,7 @@
 package com.genexus.webpanels;
 
 import com.genexus.ModelContext;
+import com.genexus.internet.HttpAjaxContext;
 import com.genexus.internet.HttpContext;
 
 public abstract class GXMasterPage extends GXWebPanel
@@ -29,14 +30,14 @@ public abstract class GXMasterPage extends GXWebPanel
 	public void setDataArea( GXDataArea DataAreaObject)
 	{
 	  this.DataAreaObject = DataAreaObject;
-	  this.httpContext = DataAreaObject.getHttpContext();
+	  this.httpContext = (HttpAjaxContext) DataAreaObject.getHttpContext();
 	  _ShowMPWhenPopUp = true;
 	}
 
 	public void setDataArea( GXDataArea DataAreaObject, boolean ShowMPWhenPopUp)
 	{
 	  this.DataAreaObject = DataAreaObject;
-	  this.httpContext = DataAreaObject.getHttpContext();
+	  this.httpContext = (HttpAjaxContext)DataAreaObject.getHttpContext();
 	  _ShowMPWhenPopUp = ShowMPWhenPopUp;
 	}
 	

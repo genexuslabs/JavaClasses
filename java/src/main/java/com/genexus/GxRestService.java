@@ -4,59 +4,43 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import com.genexus.servlet.IServletContext;
-import com.genexus.servlet.http.IHttpServletRequest;
-import com.genexus.servlet.http.IHttpServletResponse;
-
 import com.genexus.diagnostics.core.ILogger;
-import com.genexus.internet.HttpContext;
 import com.genexus.internet.MsgList;
 import com.genexus.security.GXResult;
 import com.genexus.security.GXSecurityProvider;
-import com.genexus.webpanels.GXWebObjectBase;
+import com.genexus.servlet.IServletContext;
+import com.genexus.servlet.http.IHttpServletRequest;
+import com.genexus.servlet.http.IHttpServletResponse;
 import com.genexus.webpanels.HttpContextWeb;
 
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
 
-abstract public class GxRestService extends GXWebObjectBase 
-{
+abstract public class GxRestService extends GXObjectBase {
 	private static ILogger logger = null;
 	
 	protected JSONObject errorJson;
 	protected boolean error = false;
-	protected boolean useAuthentication = false;
 	protected String gamError;
 	protected boolean forbidden = false;
 	protected String permissionPrefix;
 	
 	protected abstract boolean IntegratedSecurityEnabled();
 	protected abstract int IntegratedSecurityLevel();
+
 	protected String ExecutePermissionPrefix(){
 		return "";
 	}
 
 	protected boolean IsSynchronizer()
-	{ 
-		return false;
-	}
-
-	public boolean isMasterPage()
 	{
 		return false;
 	}
 
-	
-	protected static final int SECURITY_HIGH = 2;
 	protected static final int SECURITY_LOW  = 1;
 	protected static final String POST  = "POST";
-
-	public GxRestService()
-	{
-		super();
-	}
 	
-	protected HttpContext restHttpContext;
+	protected HttpContextWeb restHttpContext;
 	protected com.genexus.ws.rs.core.IResponseBuilder builder;
 
 	protected void init(String requestMethod) {
@@ -101,15 +85,15 @@ abstract public class GxRestService extends GXWebObjectBase
 
 	public void webExecute( )
    {
-   }
+	}
 
    protected void cleanup()
    {
-   	 GXutil.setThreadTimeZone(ModelContext.getModelContext().getClientTimeZone());
-	   super.cleanup();
+		GXutil.setThreadTimeZone(ModelContext.getModelContext().getClientTimeZone());
+		super.cleanup();
 	   super.finallyCleanup();
-	   WrapperUtils.requestBodyThreadLocal.remove();
-   }
+		WrapperUtils.requestBodyThreadLocal.remove();
+	}
 	
 	public void ErrorCheck(IGxSilentTrn trn)
 	{
@@ -212,7 +196,7 @@ abstract public class GxRestService extends GXWebObjectBase
 	public boolean isAuthenticated(IHttpServletRequest myServletRequest, String synchronizer)
 	{
 		boolean validSynchronizer = false;
-		try{
+		try {
 			if (synchronizer!= null && !synchronizer.equals(""))
 			{
 				synchronizer = synchronizer.toLowerCase() + "_services_rest";
@@ -221,13 +205,13 @@ abstract public class GxRestService extends GXWebObjectBase
 					packageName += ".";
 				Class<?> synchronizerClass = Class.forName(packageName + synchronizer);
 				GxRestService synchronizerRestService = (GxRestService) synchronizerClass.getConstructor().newInstance();
-				if (synchronizerRestService!=null && synchronizerRestService.IsSynchronizer()){
+				if (synchronizerRestService!=null && synchronizerRestService.IsSynchronizer()) {
 					validSynchronizer = true;
 					return isAuthenticated(myServletRequest, synchronizerRestService.IntegratedSecurityLevel(), synchronizerRestService.IntegratedSecurityEnabled(), synchronizerRestService.ExecutePermissionPrefix());
 				}
 			}
 			return false;
-		} 
+		}
 		catch(Exception e)
 		{
 			logger.error("Could not check user authenticated", e);			
