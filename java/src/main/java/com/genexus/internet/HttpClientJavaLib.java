@@ -106,6 +106,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private RequestConfig reqConfig = null;		// Atributo usado en la ejecucion del metodo (por ejemplo, httpGet, httpPost)
 	private CookieStore cookies;
 	private ByteArrayEntity entity = null;	// Para mantener el stream luego de cerrada la conexion en la lectura de la response
+	BufferedReader reader = null;
 	private Boolean lastAuthIsBasic = null;
 	private Boolean lastAuthProxyIsBasic = null;
 	private static IniFile clientCfg = new com.genexus.ModelContext(com.genexus.ModelContext.getModelContextPackageClass()).getPreferences().getIniFile();
@@ -596,8 +597,14 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	private void setEntity() throws IOException {
-		if (entity == null)
-			entity = new ByteArrayEntity(EntityUtils.toByteArray(response.getEntity()));
+		if (processUsingReader) {
+			if (reader == null)
+				reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+		}
+		else {
+			if (entity == null)
+				entity = new ByteArrayEntity(EntityUtils.toByteArray(response.getEntity()));
+		}
 	}
 
 	public String getString() {
@@ -605,7 +612,15 @@ public class HttpClientJavaLib extends GXHttpClient {
 			return "";
 		try {
 			this.setEntity();
-			String res = EntityUtils.toString(entity, "UTF-8");
+			String res = null;
+			if (processUsingReader) {
+				res = reader.readLine();
+				if (res == null)
+					res = "EOF";
+			}
+			else {
+				res = EntityUtils.toString(entity, "UTF-8");
+			}
 			return res;
 		} catch (IOException e) {
 			setExceptionsCatch(e);

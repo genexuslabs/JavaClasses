@@ -563,6 +563,8 @@ public abstract class HttpContext implements IHttpContext
 	public void writeBytes(byte[] bytes) throws IOException
 	{
             out.write(bytes);
+			if (getHttpResponse().getHeader("Content-Type").equalsIgnoreCase("text/event-stream"))
+				out.flush();
 	}
 
 	public OutputStream getOutputStream()
