@@ -51,7 +51,7 @@ public abstract class GXHttpClient implements IHttpClient{
 	private boolean isURL = false;
 	private boolean authorizationChanged = false; // Indica si se agregó alguna autorización
 	private boolean authorizationProxyChanged = false; // Indica si se agregó alguna autorización
-	protected boolean processUsingReader;
+	protected boolean isChunkedResponse;
 
 
 	private Vector<HttpClientPrincipal> basicAuthorization = new Vector<>();
@@ -382,9 +382,6 @@ public abstract class GXHttpClient implements IHttpClient{
 				value = multipartTemplate.contentType;
 			}
 		}
-
-		if(name.equalsIgnoreCase("Accept") && value.equalsIgnoreCase("text/event-stream"))
-			processUsingReader = true;
 
 		if (this.headersToSend == null)
 			this.headersToSend =new Hashtable<>();

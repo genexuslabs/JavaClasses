@@ -560,10 +560,11 @@ public abstract class HttpContext implements IHttpContext
 		return mustUseWriter.booleanValue();
 	}
 
+
 	public void writeBytes(byte[] bytes) throws IOException
 	{
             out.write(bytes);
-			if (getHttpResponse().getHeader("Content-Type").equalsIgnoreCase("text/event-stream"))
+			if (getHttpResponse().getHeader("Transfer-Encoding").equalsIgnoreCase("chunked"))
 				out.flush();
 	}
 

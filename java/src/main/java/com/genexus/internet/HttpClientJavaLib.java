@@ -555,6 +555,10 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 			SetCookieAtr(cookiesToSend);		// Se setean las cookies devueltas en la lista de cookies
 
+			if (response.containsHeader("Transfer-Encoding")) {
+				isChunkedResponse = response.getFirstHeader("Transfer-Encoding").getValue().equalsIgnoreCase("chunked");
+			}
+
 		} catch (IOException e) {
 			setExceptionsCatch(e);
 			this.statusCode = 0;
@@ -647,7 +651,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	private void setEntity() throws IOException {
-		if (processUsingReader) {
+		if (isChunkedResponse) {
 			if (reader == null)
 				reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 		}
@@ -663,7 +667,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		try {
 			this.setEntity();
 			String res = null;
-			if (processUsingReader) {
+			if (isChunkedResponse) {
 				res = reader.readLine();
 				if (res == null)
 					res = "EOF";
