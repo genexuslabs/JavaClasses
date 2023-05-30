@@ -451,6 +451,9 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public byte setHeader(String header, String value) {
+		if (getResponse() == null)
+			return 0;
+
 		response.setHeader(header, value.replace("\n", "%0a").replace("\r", "%0d"));
 		return 0;
 	}
@@ -485,6 +488,9 @@ public class HttpContextWeb extends HttpContext {
 	private String contextPath;
 
 	public String getContextPath() {
+		if (getResponse() == null)
+			return "";
+
 		if (contextPath == null) {
 			if (servletContext.getServerInfo().startsWith("ApacheJServ")) {
 				contextPath = "";
@@ -1011,6 +1017,9 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public byte setContentType(String type) {
+		if (getResponse() == null)
+			return 1;
+
 		contentType = type;
 		if (type.equalsIgnoreCase("text/html") && useUtf8) {
 			type += "; charset=utf-8";
@@ -1246,6 +1255,9 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getDefaultPath() {
+		if (servletContext == null)
+			return "";
+
 		String path = servletContext.getRealPath("/");
 
 		if (path == null && servletContext.getAttribute(servletContext.getTEMPDIR()) != null) {
@@ -1350,6 +1362,9 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public void setStream() {
+		if (getResponse() == null)
+			return;
+
 		try {
 			if (streamSet) {
 				return;

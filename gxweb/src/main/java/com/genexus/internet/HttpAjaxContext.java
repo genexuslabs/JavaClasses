@@ -85,6 +85,10 @@ public class HttpAjaxContext extends HttpContextWeb
 
 	private boolean isJsOutputEnabled = true;
 
+	public HttpAjaxContext(IHttpServletRequest req) throws IOException{
+		this("GET", req, null, null);
+	}
+
 	public HttpAjaxContext(String requestMethod, IHttpServletRequest req, IHttpServletResponse res,
 						  IServletContext servletContext) throws IOException {
 		super(requestMethod, req, res, servletContext);
