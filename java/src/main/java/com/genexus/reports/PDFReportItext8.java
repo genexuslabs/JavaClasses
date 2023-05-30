@@ -46,7 +46,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.Deflater;
 
-public class PDFReportItext7 extends GXReportPDFCommons {
+public class PDFReportItext8 extends GXReportPDFCommons {
 	private PageSize pageSize;
 	private PdfFont baseFont;
 	private Barcode128 barcode = null;
@@ -61,10 +61,10 @@ public class PDFReportItext7 extends GXReportPDFCommons {
 	ConcurrentHashMap<String, Image> documentImages;
 
 	static {
-		log = org.apache.logging.log4j.LogManager.getLogger(PDFReportItext7.class);
+		log = org.apache.logging.log4j.LogManager.getLogger(PDFReportItext8.class);
 	}
 
-	public PDFReportItext7(ModelContext context) {
+	public PDFReportItext8(ModelContext context) {
 		super(context);
 		document = null;
 		pdfDocument = null;
@@ -757,6 +757,20 @@ public class PDFReportItext7 extends GXReportPDFCommons {
 
 			canvas.showTextAligned(p, htmlRectangle.getLeft(), currentYPosition.getCurrentYPosition() - p.getMarginTop().getValue(), txtAlignment);
 			currentYPosition.setCurrentYPosition(currentYPosition.getCurrentYPosition() - (height + padding));
+		} else if (blockElement instanceof Table){
+			Table table = (Table) blockElement;
+			table.setFixedPosition(page, htmlRectangle.getX(), htmlRectangle.getY(), htmlRectangle.getWidth());
+			if ((currentYPosition.getCurrentYPosition() - table.getHeight().getValue()) < htmlRectangle.getBottom()) {
+				pdfPage = pdfDocument.addNewPage();
+				pages++;
+				currentYPosition.setCurrentYPosition(htmlRectangle.getTop());
+			}
+			document.add(table);
+
+		} else if (blockElement instanceof com.itextpdf.layout.element.List){
+			com.itextpdf.layout.element.List list = (com.itextpdf.layout.element.List) blockElement;
+			list.setFixedPosition(page, htmlRectangle.getX(), htmlRectangle.getY(), htmlRectangle.getWidth());
+			document.add(list);
 		} else if (blockElement instanceof Div) {
 			Div div = (Div) blockElement;
 			// Iterate through the children of the Div
