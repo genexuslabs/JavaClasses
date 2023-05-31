@@ -31,27 +31,13 @@ public class UserControlGenerator
 		if (getTemplateDateTime() > lastRenderTime)
 		{
 			MustacheFactory mf = new DefaultMustacheFactory();
-			Reader reader = null;
-			try
+			try (Reader reader = new InputStreamReader(new FileInputStream(getTemplateFile(this.controlType)), "utf-8");)
 			{
-				reader = new InputStreamReader(new FileInputStream(getTemplateFile(this.controlType)), "utf-8");
 				mustache = mf.compile(reader, getTemplateFile(this.controlType));
 			}
 			catch (Exception e)
 			{
 				mustache = mf.compile(getTemplateFile(this.controlType));
-			}
-			finally
-			{
-				try
-				{
-					reader.close();
-				}
-				catch (IOException e)
-				{
-					logger.error("Failed to render UserControl ", e);
-					return "";
-				}
 			}
 			lastRenderTime = new Date().getTime();
 		}
