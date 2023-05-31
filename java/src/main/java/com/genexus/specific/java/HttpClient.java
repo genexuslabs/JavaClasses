@@ -1,5 +1,6 @@
 package com.genexus.specific.java;
 
+import java.io.InputStream;
 import java.util.Hashtable;
 
 import com.genexus.CommonUtil;
@@ -7,6 +8,7 @@ import com.genexus.common.interfaces.IExtensionHttpClient;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.internet.HttpClientJavaLib;
 import com.genexus.internet.HttpClientManual;
+import com.genexus.util.Base64;
 
 import javax.net.ssl.SSLSocket;
 
@@ -48,9 +50,9 @@ public class HttpClient implements IExtensionHttpClient {
 	@Override
 	public com.genexus.internet.IHttpClient initHttpClientImpl() {
 		com.genexus.internet.IHttpClient client = null;
-		try {
+		try (InputStream is = com.genexus.ResourceReader.getResourceAsStream("useoldhttpclient.txt")){
 
-			if (com.genexus.ResourceReader.getResourceAsStream("useoldhttpclient.txt") == null) {
+			if (is == null) {
 				Class.forName("org.apache.http.impl.conn.PoolingHttpClientConnectionManager");    // httpclient-4.5.14.jar dectected by reflection
 				client = new HttpClientJavaLib();
 			} else
