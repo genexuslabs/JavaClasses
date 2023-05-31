@@ -1,10 +1,12 @@
 package com.genexus.specific.java;
 
+import java.io.InputStream;
 import java.util.Hashtable;
 
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.IExtensionHttpClient;
 import com.genexus.internet.HttpClientJavaLib;
+import com.genexus.internet.HttpClientManual;
 
 import javax.net.ssl.SSLSocket;
 
@@ -40,16 +42,16 @@ public class HttpClient implements IExtensionHttpClient {
 	@Override
 	public com.genexus.internet.IHttpClient initHttpClientImpl() {
 		com.genexus.internet.IHttpClient client = null;
-		try {
-			Class.forName("org.apache.http.impl.conn.PoolingHttpClientConnectionManager");    // httpclient-4.5.14.jar dectected by reflection
-			client = new HttpClientJavaLib();
-
+		try (InputStream is = com.genexus.ResourceReader.getResourceAsStream("useoldhttpclient.txt")){
+			if (is == null) {
+				Class.forName("org.apache.http.impl.conn.PoolingHttpClientConnectionManager");    // httpclient-4.5.14.jar dectected by reflection
+				client = new HttpClientJavaLib();
+			} else
+				client = useHttpClientOldImplementation();
 		} catch (ClassNotFoundException e) {
-			org.apache.logging.log4j.LogManager.getLogger(HttpClient.class).error("HttpClient jars not detected. Check if httpclient-4.5.*.jar and httpcore-4.4.*.jar are added in the classpath",e);
+			client = useHttpClientOldImplementation();
 		} finally {
-
 			return client;
-
 		}
 	}
 }

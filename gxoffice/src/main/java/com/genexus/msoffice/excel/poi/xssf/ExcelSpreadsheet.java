@@ -3,6 +3,7 @@ package com.genexus.msoffice.excel.poi.xssf;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,21 +45,25 @@ public class ExcelSpreadsheet implements IExcelSpreadsheet {
             fileName += ".xlsx";
         }
 
-        if (!template.equals("")) {
-            GXFile templateFile = new GXFile(template);
-            if (templateFile.exists()) {
-                _workbook = new XSSFWorkbook(templateFile.getStream());
-            } else {
-                throw new ExcelTemplateNotFoundException();
-            }
-        } else {
-			GXFile file = new GXFile(fileName, Constants.EXTERNAL_PRIVATE_UPLOAD);
-			if (file.exists()) {
-				_workbook = new XSSFWorkbook(file.getStream());
+		InputStream is = null;
+        try {
+			if (!template.equals("")) {
+				GXFile templateFile = new GXFile(template);
+				if (templateFile.exists()) {
+					is = templateFile.getStream();
+					_workbook = new XSSFWorkbook();
+				} else {
+					throw new ExcelTemplateNotFoundException();
+				}
 			} else {
-				_workbook = new XSSFWorkbook();
+				GXFile file = new GXFile(fileName, Constants.EXTERNAL_PRIVATE_UPLOAD);
+				if (file.exists()) {
+					_workbook = new XSSFWorkbook(file.getStream());
+				} else {
+					_workbook = new XSSFWorkbook();
+				}
 			}
-        }
+		} finally { if (is != null) is.close(); }
 
         _documentFileName = fileName;
 
