@@ -506,7 +506,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 				SetCookieAtr(cookiesToSend);        // Se setean las cookies devueltas en la lista de cookies
 
 				if (response.containsHeader("Transfer-Encoding")) {
-					isChunkedResponse = response.getFirstHeader("Transfer-Encoding").getValue().equalsIgnoreCase("chunked");
+					isChunkedResponse = System.getenv("HTTP_CLIENT_CHUNKED_RESPONSE_SUPPORT") != null && response.getFirstHeader("Transfer-Encoding").getValue().equalsIgnoreCase("chunked");
 				}
 			}
 		} catch (IOException e) {
