@@ -50,18 +50,11 @@ public class HttpClient implements IExtensionHttpClient {
 	@Override
 	public com.genexus.internet.IHttpClient initHttpClientImpl() {
 		com.genexus.internet.IHttpClient client = null;
-		try (InputStream is = com.genexus.ResourceReader.getResourceAsStream("useoldhttpclient.txt")){
-
-			if (is == null) {
+		try {
 				Class.forName("org.apache.http.impl.conn.PoolingHttpClientConnectionManager");    // httpclient-4.5.14.jar dectected by reflection
 				client = new HttpClientJavaLib();
-			} else
-				client = useHttpClientOldImplementation();
-
 		} catch (ClassNotFoundException e) {
-
-			client = useHttpClientOldImplementation();
-
+			org.apache.logging.log4j.LogManager.getLogger(HttpClient.class).error("HttpClient jars not detected. Check if httpclient-4.5.*.jar and httpcore-4.4.*.jar are added in the classpath",e);
 		}
 		return client;
 	}
