@@ -123,22 +123,6 @@ public class Encryption
 		return out;
 	}
 
-	private static byte toHexa(char c)
-	{
-		byte b;
-
-		if ((c >= '0') && (c <= '9'))
-			b = (byte) (c-'0');
-		else if ((c >= 'a') && (c <= 'f'))
-			b = (byte) (c-'a'+10);
-		else if ((c >= 'A') && (c <= 'F'))
-			b = (byte) (c-'A'+10);
-		else
-			throw new InvalidGXKeyException(c);
-		
-		return b;
-	}
-
 	public static String encrypt16(String value, String key)
 	{
 		return "";
