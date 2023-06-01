@@ -75,8 +75,8 @@ public abstract class GXReport extends GXProcedure {
 					String implementation = com.genexus.Application.getClientContext().getClientPreferences().getPDF_RPT_LIBRARY();
 					if (implementation.equals("ITEXT"))
 						reportHandler = new PDFReportItext2(context);
-					else if (implementation.equals("ITEXT7"))
-						reportHandler = new PDFReportItext7(context);
+					else if (implementation.equals("ITEXT8"))
+						reportHandler = new PDFReportItext8(context);
 					else
 						reportHandler = new PDFReportPDFBox(context);
 					((GXReportPDFCommons) reportHandler).setOutputStream(httpContext.getOutputStream());

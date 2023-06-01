@@ -46,7 +46,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.Deflater;
 
-public class PDFReportItext7 extends GXReportPDFCommons {
+public class PDFReportItext8 extends GXReportPDFCommons {
 	private PageSize pageSize;
 	private PdfFont baseFont;
 	private Barcode128 barcode = null;
@@ -61,10 +61,10 @@ public class PDFReportItext7 extends GXReportPDFCommons {
 	ConcurrentHashMap<String, Image> documentImages;
 
 	static {
-		log = org.apache.logging.log4j.LogManager.getLogger(PDFReportItext7.class);
+		log = org.apache.logging.log4j.LogManager.getLogger(PDFReportItext8.class);
 	}
 
-	public PDFReportItext7(ModelContext context) {
+	public PDFReportItext8(ModelContext context) {
 		super(context);
 		document = null;
 		pdfDocument = null;
