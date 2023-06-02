@@ -60,10 +60,7 @@ public class HttpClient implements IExtensionHttpClient {
 
 			client = useHttpClientOldImplementation();
 
-		} finally {
-
-			return client;
-
 		}
+		return client;
 	}
 }
