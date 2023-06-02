@@ -16,6 +16,23 @@ public class TestCommonUtil {
 	}
 
 	@Test
+	public void testSanitize() {
+		initialize();
+
+		//Test case 1: Sanitize using LogUserEntryWhiteList
+		String value = "This is a string without Sanitize %@, let's see what happens ";
+		String expectedResult = "This is a string without Sanitize , lets see what happens ";
+		String result = CommonUtil.Sanitize(value, CommonUtil.LOG_USER_ENTRY_WHITELIST);
+		Assert.assertEquals(expectedResult, result);
+
+		//Test case 2: Sanitize using HttpHeaderWhiteList
+		value = "This is a string without Sanitize %@, let's see what happens ";
+		expectedResult = "ThisisastringwithoutSanitize@,letsseewhathappens";
+		result = CommonUtil.Sanitize(value, CommonUtil.HTTP_HEADER_WHITELIST);
+		Assert.assertEquals(expectedResult, result);
+	}
+
+	@Test
 	public void testFormat() {
 		initialize();
 
