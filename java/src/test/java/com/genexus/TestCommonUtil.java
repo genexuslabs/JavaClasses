@@ -1,5 +1,7 @@
 package com.genexus;
 
+import com.genexus.db.UserInformation;
+import com.genexus.sampleapp.GXcfg;
 import com.genexus.specific.java.Connect;
 import com.genexus.specific.java.LogManager;
 import org.junit.Assert;
@@ -14,6 +16,7 @@ public class TestCommonUtil {
 	{
 		Connect.init();
 		LogManager.initialize(".");
+		Application.init(GXcfg.class);
 	}
 
 	@Test
@@ -132,6 +135,46 @@ public class TestCommonUtil {
 		expectedResult = "Alex is 26 years old";
 		result = CommonUtil.format(value, "Alex", "26", "10", "10", "", "", "", "", "");
 		Assert.assertEquals(expectedResult, result);
+
+		UserInformation ui = (UserInformation) GXObjectHelper.getUserInformation(ModelContext.getModelContext(GXcfg.class), -1);
+		long decimalValue = -150;
+		String picture = "$ZZZ,ZZZ,ZZ9";
+		expectedResult = "-$        150";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		result = ui.getLocalUtil().format(DecimalUtil.doubleToDec(decimalValue), picture);
+		Assert.assertEquals(expectedResult, result);
+
+		picture = "$ ZZZ,ZZZ,ZZ9";
+		expectedResult = "-$         150";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		result = ui.getLocalUtil().format(DecimalUtil.doubleToDec(decimalValue), picture);
+		Assert.assertEquals(expectedResult, result);
+
+		picture = "ZZZ,ZZZ,ZZ9";
+		expectedResult = "        -150";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		result = ui.getLocalUtil().format(DecimalUtil.doubleToDec(decimalValue), picture);
+		Assert.assertEquals(expectedResult, result);
+
+		decimalValue = -123456789;
+		picture = "ZZZ,ZZZ,ZZ9";
+		expectedResult = "-123,456,789";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		result = ui.getLocalUtil().format(DecimalUtil.doubleToDec(decimalValue), picture);
+		Assert.assertEquals(expectedResult, result);
+
 	}
 
 	@Test
