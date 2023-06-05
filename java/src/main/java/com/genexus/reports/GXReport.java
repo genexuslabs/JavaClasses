@@ -79,7 +79,7 @@ public abstract class GXReport extends GXProcedure {
 						reportHandler = new PDFReportItext8(context);
 					else
 						reportHandler = new PDFReportPDFBox(context);
-					((GXReportPDFCommons) reportHandler).setOutputStream(httpContext.getOutputStream());
+					((GXReportPDFCommons) reportHandler).setOutputStream(getOutputStream());
 				} catch (Exception e) {
 					log.error("Failed to set output stream: ", e);
 				}
