@@ -148,7 +148,7 @@ public class GXutil implements IExtensionGXutil {
 
 	@Override
 	public String getRelativeURL(String path) {
-		if (com.genexus.CommonUtil.isAbsoluteURL(path)) {
+		if (com.genexus.CommonUtil.isAbsoluteURL(path) || CommonUtil.isUploadPrefix(path)) {
 			return path;
 		} else {
 			String baseName = org.apache.commons.io.FilenameUtils.getBaseName(path);
