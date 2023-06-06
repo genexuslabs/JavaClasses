@@ -115,30 +115,12 @@ public class Encryption
 	private static byte[] convertKey(String a)
 	{
 		byte[] out = new byte[a.length() / 2];
-
-		int i = 0;
-		int j = 0;
-		for (; i < a.length(); i+=2, j++)
-		{
-			out[j] = (byte) (toHexa(a.charAt(i)) * 16 + toHexa(a.charAt(i+ 1))) ;
+		try {
+			out = Hex.decode(a);
+		} catch (Exception e) {
+			throw new InvalidGXKeyException(e.getMessage());
 		}
 		return out;
-	}
-
-	private static byte toHexa(char c)
-	{
-		byte b;
-
-		if ((c >= '0') && (c <= '9'))
-			b = (byte) (c-'0');
-		else if ((c >= 'a') && (c <= 'f'))
-			b = (byte) (c-'a'+10);
-		else if ((c >= 'A') && (c <= 'F'))
-			b = (byte) (c-'A'+10);
-		else
-			throw new InvalidGXKeyException(c);
-		
-		return b;
 	}
 
 	public static String encrypt16(String value, String key)

@@ -614,7 +614,6 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 				List<IElement> elements = HtmlConverter.convertToElements(sTxt, converterProperties);
 				for (IElement element : elements)
 					processHTMLElement(htmlRectangle, yPosition, txtAlignment, (IBlockElement) element);
-
 			} catch (Exception e) {
 				log.error("GxDrawText failed to print HTML text : ", e);
 			}
@@ -782,7 +781,7 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 		throw new RuntimeException("getBlockElementHeight failed to calculate the height of the block element");
 	}
 
-	private class YPosition {
+	public class YPosition {
 		float currentYPosition;
 
 		public YPosition(float currentYPosition) {
