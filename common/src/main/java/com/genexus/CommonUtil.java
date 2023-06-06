@@ -48,7 +48,7 @@ public final class CommonUtil
 	private static final Object http_parse_lock  = new Object();
 
 	private static final String LOG_USER_ENTRY_WHITELIST_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789+-_=/[]{}\":, ";
-	private static final String HTTP_HEADER_WHITELIST_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789./;-@(){}[]?,<>\\";
+	private static final String HTTP_HEADER_WHITELIST_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789.;+-_=/[]{}\"':, @()?<>\\";
 	public static final HashMap<Character, Character> LOG_USER_ENTRY_WHITELIST;
 	public static final HashMap<Character, Character> HTTP_HEADER_WHITELIST;
 

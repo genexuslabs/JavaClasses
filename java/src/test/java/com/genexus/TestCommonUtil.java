@@ -31,7 +31,7 @@ public class TestCommonUtil {
 
 		//Test case 2: Sanitize using HttpHeaderWhiteList
 		value = "This is a string without Sanitize %@, let's see what happens ";
-		expectedResult = "ThisisastringwithoutSanitize@,letsseewhathappens";
+		expectedResult = "This is a string without Sanitize @, let's see what happens ";
 		result = CommonUtil.Sanitize(value, CommonUtil.HTTP_HEADER_WHITELIST);
 		Assert.assertEquals(expectedResult, result);
 	}
