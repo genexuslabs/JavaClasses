@@ -3466,10 +3466,10 @@ public final class CommonUtil
 
 		for (char c : input.toCharArray()) {
 			if (whiteList.containsKey(c)) {
-				sanitizedInput.append(c);
+				char safeC = whiteList.get(c);
+				sanitizedInput.append(safeC);
 			}
 		}
-
 		return sanitizedInput.toString();
 	}
 }
