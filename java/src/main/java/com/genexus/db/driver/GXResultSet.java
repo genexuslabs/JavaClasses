@@ -935,9 +935,9 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 
 	private String getBLOBFile(int columnIndex, String extension, String name, String fileName, boolean temporary) throws SQLException
 	{
-		try
+		try (InputStream source = getBinaryStream(columnIndex);)
 		{
-			InputStream source = getBinaryStream(columnIndex);
+
 
             byte[] xbuffer = new byte[1];
 			int firstByte = 0;

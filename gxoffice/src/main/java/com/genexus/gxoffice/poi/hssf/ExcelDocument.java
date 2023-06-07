@@ -11,7 +11,7 @@ import com.genexus.gxoffice.IGxError;
 import com.genexus.util.GXFile;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-
+import java.io.InputStream;
 
 
 /**
@@ -53,9 +53,10 @@ public class ExcelDocument implements IGxError,IExcelDocument{
 				boolean isAbsolute = new java.io.File(fileName).isAbsolute();
 				GXFile file = new GXFile(fileName, Constants.EXTERNAL_UPLOAD_ACL, isAbsolute);
 				if (file.exists()) {
-					//System.out.println("Opening..");
-					POIFSFileSystem poifs = new POIFSFileSystem(file.getStream());
-					workBook = new HSSFWorkbook(poifs);
+					try (InputStream is = file.getStream()) {
+						POIFSFileSystem poifs = new POIFSFileSystem(is);
+						workBook = new HSSFWorkbook(poifs);
+					}
 				}
 				else {
 					//System.out.println("Creating..");
