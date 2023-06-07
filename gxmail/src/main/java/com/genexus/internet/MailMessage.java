@@ -174,27 +174,31 @@ class MailMessage
 		
 		String oldSeparator = reader.getSeparator();
 		reader.setSeparator(separator);
-		OutputStream out;
+		OutputStream out = null;
 
-		if	(isAttachment)
-		{			
-			if (this.downloadAttachments){
-				String name     = partProps.getKeyProperty(GXInternetConstants.CONTENT_TYPE, GXInternetConstants.NAME);
-				String fileName = partProps.getKeyProperty(GXInternetConstants.CONTENT_DISPOSITION, GXInternetConstants.FILENAME);
-				String outname = getFileName(attachmentsPath, fileName.length() == 0?name:fileName, partProps.getMimeMediaSubtype());
-	
-				attachments += outname + ";";
-				out = new FileOutputStream(attachmentsPath + outname);
-			}
-			else				
+		try{
+			if	(isAttachment)
 			{
-				out = new DummyOutputStream();
+				if (this.downloadAttachments){
+					String name     = partProps.getKeyProperty(GXInternetConstants.CONTENT_TYPE, GXInternetConstants.NAME);
+					String fileName = partProps.getKeyProperty(GXInternetConstants.CONTENT_DISPOSITION, GXInternetConstants.FILENAME);
+					String outname = getFileName(attachmentsPath, fileName.length() == 0?name:fileName, partProps.getMimeMediaSubtype());
+
+					attachments += outname + ";";
+					out = new FileOutputStream(attachmentsPath + outname);
+				}
+				else
+				{
+					out = new DummyOutputStream();
+				}
+
 			}
-			
-		}
-		else
-		{
-			out = new ByteArrayOutputStream();
+			else
+			{
+				out = new ByteArrayOutputStream();
+			}
+		} finally {
+			if (out == null) out.close();
 		}
 
 		getDecoder(partProps.getField(GXInternetConstants.CONTENT_TRANSFER_ENCODING)).decode(reader, out);
