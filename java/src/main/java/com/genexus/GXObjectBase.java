@@ -10,7 +10,7 @@ import com.genexus.webpanels.WebApplicationStartup;
 
 import java.sql.SQLException;
 
-public abstract class GXObjectBase extends GXRestServiceWrapper implements ISubmitteable{
+public abstract class GXObjectBase extends GXRestServiceWrapper implements IErrorHandler, ISubmitteable{
 	public static final ILogger logger = LogManager.getLogger(GXObjectBase.class);
 
 	protected ModelContext context;
