@@ -1,5 +1,6 @@
 package com.genexus.servlet.http;
 
+import com.genexus.CommonUtil;
 import com.genexus.servlet.ServletOutputStream;
 import com.genexus.servlet.IServletOutputStream;
 
@@ -23,7 +24,7 @@ public class HttpServletResponse implements IHttpServletResponse {
 	}
 
 	public void setHeader(String name, String value) {
-		resp.setHeader(name, value);
+		resp.setHeader(name, CommonUtil.Sanitize(value, CommonUtil.HTTP_HEADER_WHITELIST));
 	}
 
 	public void addDateHeader(String name, long date) {
