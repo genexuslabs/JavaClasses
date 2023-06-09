@@ -198,7 +198,7 @@ class MailMessage
 				out = new ByteArrayOutputStream();
 			}
 		} finally {
-			if (out == null) out.close();
+			if (out != null) out.close();
 		}
 
 		getDecoder(partProps.getField(GXInternetConstants.CONTENT_TRANSFER_ENCODING)).decode(reader, out);

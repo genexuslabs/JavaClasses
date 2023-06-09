@@ -57,10 +57,11 @@ public class ExcelSpreadsheet implements IExcelSpreadsheet {
 				}
 			} else {
 				GXFile file = new GXFile(fileName, Constants.EXTERNAL_PRIVATE_UPLOAD);
-				if (file.exists()) {
-					_workbook = new XSSFWorkbook(file.getStream());
-				} else {
-					_workbook = new XSSFWorkbook();
+				try (InputStream fileStream = file.getStream()) {
+					if (file.exists())
+						_workbook = new XSSFWorkbook(fileStream);
+					else
+						_workbook = new XSSFWorkbook();
 				}
 			}
 		} finally { if (is != null) is.close(); }
