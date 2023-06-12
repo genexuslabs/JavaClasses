@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.db.DataStoreProvider;
 import com.genexus.internet.HttpContext;
 import com.genexus.internet.StringCollection;
 import com.genexus.platform.INativeFunctions;
@@ -974,16 +975,22 @@ public final class GXutil
 
 	public static Date serverNow(ModelContext context, int handle, com.genexus.db.IDataStoreProvider dataStore)
 	{
+		if (dataStore == null)
+			dataStore = new DataStoreProvider(context, handle);
 		return serverNow( context, handle, dataStore, false);
 	}	
 
 	public static Date serverNowMs(ModelContext context, int handle, com.genexus.db.IDataStoreProvider dataStore)
 	{
+		if (dataStore == null)
+			dataStore = new DataStoreProvider(context, handle);
 		return serverNow( context, handle, dataStore, true);
 	}	
 
 	public static Date serverNow(ModelContext context, int handle, com.genexus.db.IDataStoreProvider dataStore, boolean millisecond)
 	{
+		if (dataStore == null)
+			dataStore = new DataStoreProvider(context, handle);
 		return SpecificImplementation.GXutil.serverNow(context, handle, dataStore, millisecond);
 	}
 
