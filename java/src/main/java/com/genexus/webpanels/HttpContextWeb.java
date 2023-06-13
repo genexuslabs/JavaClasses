@@ -1442,7 +1442,7 @@ public class HttpContextWeb extends HttpContext {
 		boolean firstHeader = true;
 		for (String header : headers) {
 			if (firstHeader) {
-				response.setHeader(SET_COOKIE, String.format("%s; %s", header, "SameSite="+sameSiteMode));
+				response.setHeader(SET_COOKIE, String.format("%s; %s", header, "SameSite="+sameSiteMode), false);
 				firstHeader = false;
 				continue;
 			}
