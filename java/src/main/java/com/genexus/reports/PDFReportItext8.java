@@ -745,8 +745,9 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 		if (blockElement instanceof Paragraph){
 			Paragraph p = (Paragraph) blockElement;
 			float paragraphHeight = getBlockElementHeight(blockElement, htmlRectangle);
-			document.showTextAligned(p, htmlRectangle.getLeft(), currentYPosition.getCurrentYPosition(), txtAlignment);
+			p.setFixedPosition(page, htmlRectangle.getX(), currentYPosition.getCurrentYPosition() - paragraphHeight, htmlRectangle.getWidth());
 			currentYPosition.setCurrentYPosition(currentYPosition.getCurrentYPosition() - paragraphHeight);
+			document.add(p);
 		} else if (blockElement instanceof Table){
 			Table table = (Table) blockElement;
 			float tableHeight = getBlockElementHeight(blockElement, htmlRectangle);
