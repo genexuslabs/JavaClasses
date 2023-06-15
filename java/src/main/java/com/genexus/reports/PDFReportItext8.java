@@ -591,7 +591,7 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 		boolean autoResize = (align & 256) == 256;
 
 		if (htmlformat == 1) {
-			log.info("As of now, you might experience unexpected behaviour since not all possible HTML code is supported");
+			log.debug("As of now, you might experience unexpected behaviour since not all possible HTML code is supported");
 			try {
 				bottomAux = (float)convertScale(bottom);
 				topAux = (float)convertScale(top);
@@ -604,16 +604,14 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 
 				// Define the rectangle where the content will be displayed
 				Rectangle htmlRectangle = new Rectangle(llx, lly, urx - llx, ury - lly);
-				Canvas canvas = new Canvas(pdfDocument.getPage(page), htmlRectangle);
 				YPosition yPosition = new YPosition(htmlRectangle.getTop());
-				TextAlignment txtAlignment = getTextAlignment(alignment);
 
 				ConverterProperties converterProperties = new ConverterProperties();
 				converterProperties.setFontProvider(document.getFontProvider());
 				//Iterate over the elements (a.k.a the parsed HTML string) and handle each case accordingly
 				List<IElement> elements = HtmlConverter.convertToElements(sTxt, converterProperties);
 				for (IElement element : elements)
-					processHTMLElement(htmlRectangle, yPosition, txtAlignment, (IBlockElement) element);
+					processHTMLElement(htmlRectangle, yPosition, (IBlockElement) element);
 			} catch (Exception e) {
 				log.error("GxDrawText failed to print HTML text : ", e);
 			}
@@ -701,12 +699,8 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 				float urx = rightAux + leftMargin;
 				float ury = this.pageSize.getTop() - topAux - topMargin - bottomMargin;
 
-				try{
-					DrawTextColumn(llx, lly, urx, ury, sTxt, leading, valign, alignment, style, wrap);
-				}
-				catch (Exception ex) {
-					log.error("Text wrap in GxDrawText failed: ", ex);
-				}
+				DrawTextColumn(llx, lly, urx, ury, leading, sTxt, valign, alignment, style, wrap);
+
 			} else {
 				try {
 					if (!autoResize) {
@@ -740,32 +734,36 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 		}
 	}
 
-	void processHTMLElement(Rectangle htmlRectangle, YPosition currentYPosition, TextAlignment txtAlignment, IBlockElement blockElement){
-		if (blockElement instanceof Paragraph){
-			Paragraph p = (Paragraph) blockElement;
-			float paragraphHeight = getBlockElementHeight(blockElement, htmlRectangle);
-			p.setFixedPosition(page, htmlRectangle.getX(), currentYPosition.getCurrentYPosition() - paragraphHeight, htmlRectangle.getWidth());
-			currentYPosition.setCurrentYPosition(currentYPosition.getCurrentYPosition() - paragraphHeight);
-			document.add(p);
-		} else if (blockElement instanceof Table){
-			Table table = (Table) blockElement;
-			float tableHeight = getBlockElementHeight(blockElement, htmlRectangle);
-			table.setFixedPosition(page, htmlRectangle.getX(), currentYPosition.getCurrentYPosition() - tableHeight, htmlRectangle.getWidth());
-			currentYPosition.setCurrentYPosition(currentYPosition.getCurrentYPosition() - tableHeight);
-			document.add(table);
-		} else if (blockElement instanceof com.itextpdf.layout.element.List){
-			com.itextpdf.layout.element.List list = (com.itextpdf.layout.element.List) blockElement;
-			float listHeight = getBlockElementHeight(blockElement, htmlRectangle);
-			list.setFixedPosition(page, htmlRectangle.getX(),currentYPosition.getCurrentYPosition() - listHeight, htmlRectangle.getWidth());
-			currentYPosition.setCurrentYPosition(currentYPosition.getCurrentYPosition() - listHeight);
-			document.add(list);
-		} else if (blockElement instanceof Div) {
+	void processHTMLElement(Rectangle htmlRectangle, YPosition currentYPosition, IBlockElement blockElement){
+		if (blockElement instanceof Div) {
 			Div div = (Div) blockElement;
 			// Iterate through the children of the Div and process each child element recursively
 			for (IElement child : div.getChildren())
 				if (child instanceof IBlockElement)
-					processHTMLElement(htmlRectangle, currentYPosition, txtAlignment, (IBlockElement) child);
+					processHTMLElement(htmlRectangle, currentYPosition, (IBlockElement) child);
 		}
+
+		float blockElementHeight = getBlockElementHeight(blockElement, htmlRectangle);
+		float availableSpace = currentYPosition.getCurrentYPosition() - htmlRectangle.getBottom();
+		if (blockElementHeight > availableSpace){
+			log.error("You are trying to render an element of height " + blockElementHeight + " in a space of height " + availableSpace);
+			return;
+		}
+
+		if (blockElement instanceof Paragraph){
+			Paragraph p = (Paragraph) blockElement;
+			p.setFixedPosition(page, htmlRectangle.getX(), currentYPosition.getCurrentYPosition() - blockElementHeight, htmlRectangle.getWidth());
+			document.add(p);
+		} else if (blockElement instanceof Table){
+			Table table = (Table) blockElement;
+			table.setFixedPosition(page, htmlRectangle.getX(), currentYPosition.getCurrentYPosition() - blockElementHeight, htmlRectangle.getWidth());
+			document.add(table);
+		} else if (blockElement instanceof com.itextpdf.layout.element.List){
+			com.itextpdf.layout.element.List list = (com.itextpdf.layout.element.List) blockElement;
+			list.setFixedPosition(page, htmlRectangle.getX(),currentYPosition.getCurrentYPosition() - blockElementHeight, htmlRectangle.getWidth());
+			document.add(list);
+		}
+		currentYPosition.setCurrentYPosition(currentYPosition.getCurrentYPosition() - blockElementHeight);
 	}
 
 	private float getBlockElementHeight(IBlockElement blockElement, Rectangle htmlRectangle) throws RuntimeException{
@@ -778,8 +776,11 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 		} else if (blockElement instanceof com.itextpdf.layout.element.List){
 			com.itextpdf.layout.element.List list = (com.itextpdf.layout.element.List) blockElement;
 			return list.createRendererSubTree().setParent(document.getRenderer()).layout(new LayoutContext(new LayoutArea(page, htmlRectangle))).getOccupiedArea().getBBox().getHeight();
+		} else if (blockElement instanceof Div){
+			Div div = (Div) blockElement;
+			return div.createRendererSubTree().setParent(document.getRenderer()).layout(new LayoutContext(new LayoutArea(page, htmlRectangle))).getOccupiedArea().getBBox().getHeight();
 		}
-		throw new RuntimeException("getBlockElementHeight failed to calculate the height of the block element");
+		throw new RuntimeException("getBlockElementHeight failed, you might be trying to render something that is not a <p>, <table> or a <li>");
 	}
 
 	public class YPosition {
@@ -816,33 +817,46 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 		}
 	}
 
-	void DrawTextColumn(float llx, float lly, float urx, float ury, String text, float leading, int valign, int alignment, Style style, boolean wrap){
-		float y = lly;
-		if (valign == VerticalAlign.MIDDLE.value())
-			ury = ury - ((y - lly) / 2) + leading;
-		else if (valign == VerticalAlign.BOTTOM.value())
-			ury = ury - (y - lly- leading);
-		else if (valign == VerticalAlign.TOP.value())
-			ury = ury + leading/2;
-
+	void DrawTextColumn(float llx, float lly, float urx, float ury, float leading, String text, int valign, int alignment, Style style, boolean wrap){
 		Paragraph p = new Paragraph(text);
+
+		Rectangle rect = new Rectangle(llx, lly, urx - llx, ury - lly);
+		float y = rect.getY();
+		if (valign == VerticalAlign.MIDDLE.value()){
+			ury = ury - ((y - lly) / 2) + leading;
+			p.setVerticalAlignment(VerticalAlignment.MIDDLE);
+		}
+		else if (valign == VerticalAlign.BOTTOM.value()){
+			ury = ury - (y - lly- leading);
+			p.setVerticalAlignment(VerticalAlignment.BOTTOM);
+		}
+		else if (valign == VerticalAlign.TOP.value()){
+			ury = ury + leading/2;
+			p.setVerticalAlignment(VerticalAlignment.TOP);
+		}
+		rect = new Rectangle(llx, lly, urx - llx, ury - lly);
+
 		p.addStyle(style);
-		TextAlignment txtAlignment = getTextAlignment(alignment);
-		p.setTextAlignment(txtAlignment);
 		if (wrap) {
 			p.setProperty(Property.SPLIT_CHARACTERS, new CustomSplitCharacters());
 			Table table = new Table(1);
-			table.setFixedPosition(page,llx, lly, urx - llx);
+			table.setFixedPosition(page,rect.getX(), rect.getY(), rect.getWidth());
 			Cell cell = new Cell();
-			cell.setWidth(urx - llx);
-			cell.setHeight(ury - lly);
+			cell.setWidth(rect.getWidth());
+			cell.setHeight(rect.getHeight());
 			cell.setBorder(Border.NO_BORDER);
 			cell.setVerticalAlignment(VerticalAlignment.MIDDLE);
 			cell.add(p);
 			table.addCell(cell);
 			document.add(table);
-		} else
-			document.showTextAligned(p, llx, lly, this.page, txtAlignment, VerticalAlignment.MIDDLE,0);
+		} else{
+			try{
+				PdfCanvas pdfCanvas = new PdfCanvas(pdfPage);
+				Canvas canvas = new Canvas(pdfCanvas, rect);
+				canvas.add(p);
+				canvas.close();
+			} catch (Exception e) { log.error("GxDrawText failed to justify text column: ", e); }
+		}
 	}
 
 	private static class CustomSplitCharacters extends DefaultSplitCharacters {
@@ -878,7 +892,7 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 			else
 				return true;
 		} catch (Exception e){
-			log.error("GxPrintInit faile" , e);
+			log.error("GxPrintInit failed" , e);
 			return false;
 		}
 	}
