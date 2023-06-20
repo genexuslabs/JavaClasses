@@ -835,6 +835,7 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 			p.setVerticalAlignment(VerticalAlignment.TOP);
 		}
 		rect = new Rectangle(llx, lly, urx - llx, ury - lly);
+		p.setTextAlignment(getTextAlignment(alignment));
 
 		p.addStyle(style);
 		if (wrap) {
