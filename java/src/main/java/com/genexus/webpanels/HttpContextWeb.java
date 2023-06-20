@@ -1320,7 +1320,7 @@ public class HttpContextWeb extends HttpContext {
 				} else {
 					pushUrlSessionStorage();
 					if (useCustomRedirect()) {
-						getResponse().setHeader("Location", url);
+						getResponse().setHeader("Location", url, false);
 						getRequest().setAttribute("gx_webcall_method", "customredirect");
 						getResponse().setStatus(HttpServletResponse.getSC_MOVED_TEMPORARILY());
 					} else {
@@ -1338,7 +1338,7 @@ public class HttpContextWeb extends HttpContext {
 		getRequest().setAttribute("gx_webcall_method", "redirect");
 		// getResponse().sendRedirect(url); No retornamos 302 sino 301, debido al SEO.
 		response.setStatus(HttpServletResponse.getSC_MOVED_PERMANENTLY());
-		response.setHeader("Location", url);
+		response.setHeader("Location", url, false);
 		sendCacheHeaders();
 	}
 
