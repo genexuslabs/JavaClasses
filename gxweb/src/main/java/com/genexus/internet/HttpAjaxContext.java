@@ -1358,7 +1358,7 @@ public class HttpAjaxContext extends HttpContextWeb
 
 			if (isSpaRequest(true)) {
 				pushUrlSessionStorage();
-				getResponse().setHeader(GX_SPA_REDIRECT_URL, url + popLvlParm);
+				getResponse().setHeader(GX_SPA_REDIRECT_URL, url + popLvlParm, false);
 				sendCacheHeaders();
 			} else {
 				redirect_http(url + popLvlParm);
