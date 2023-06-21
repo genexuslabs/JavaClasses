@@ -28,9 +28,9 @@ public class HttpServletResponse implements IHttpServletResponse {
 	}
 
 	public void setHeader(String name, String value, boolean sanitize) {
-		if (sanitize)
-			resp.setHeader(name, CommonUtil.Sanitize(value, CommonUtil.HTTP_HEADER_WHITELIST));
-		else
+		//if (sanitize)
+		//	resp.setHeader(name, CommonUtil.Sanitize(value, CommonUtil.HTTP_HEADER_WHITELIST));
+		//else
 			resp.setHeader(name, value);
 	}
 
