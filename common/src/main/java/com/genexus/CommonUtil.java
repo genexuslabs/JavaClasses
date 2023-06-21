@@ -2714,16 +2714,16 @@ public final class CommonUtil
 	}
 
 
-	private static Pattern pagingSelectPattern;
+	private static Pattern PAGING_SELECT_PATTERN;
 	public static String pagingSelect(String select)
 	{
 		String pagingSelect = ltrim(select);
 		if(pagingSelect.startsWith("DISTINCT"))
 			pagingSelect = pagingSelect.substring(9);
 		pagingSelect = pagingSelect.replaceAll("T\\d+\\.", "GX_ICTE.");
-		if(pagingSelectPattern == null)
-			pagingSelectPattern = Pattern.compile("GX_ICTE\\.(\\[\\w+\\]) AS \\b(\\w+)\\b");
-		Matcher match = pagingSelectPattern.matcher(pagingSelect);
+		if(PAGING_SELECT_PATTERN == null)
+			PAGING_SELECT_PATTERN = Pattern.compile("GX_ICTE\\.(\\[\\w+\\]) AS \\b(\\w+)\\b");
+		Matcher match = PAGING_SELECT_PATTERN.matcher(pagingSelect);
 		HashMap<String, String> maps = new HashMap<>();
 		while(match.find())
 		{
