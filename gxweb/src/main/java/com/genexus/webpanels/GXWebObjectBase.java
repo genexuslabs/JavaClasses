@@ -14,7 +14,7 @@ import com.genexus.internet.HttpContext;
 import com.genexus.ModelContext;
 import com.genexus.security.GXSecurityProvider;
 
-public abstract class GXWebObjectBase extends GXObjectBase implements IErrorHandler, GXInternetConstants
+public abstract class GXWebObjectBase extends GXObjectBase implements GXInternetConstants
 {
 	public static final ILogger logger = LogManager.getLogger(GXWebObjectBase.class);
 

@@ -9,7 +9,9 @@ import com.genexus.reports.fonts.Type1FontMetrics;
 import com.genexus.webpanels.HttpContextWeb;
 
 import com.itextpdf.barcodes.Barcode128;
+import com.itextpdf.html2pdf.ConverterProperties;
 import com.itextpdf.html2pdf.HtmlConverter;
+import com.itextpdf.html2pdf.resolver.font.DefaultFontProvider;
 import com.itextpdf.io.font.PdfEncodings;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.io.font.otf.Glyph;
@@ -33,6 +35,8 @@ import com.itextpdf.layout.Style;
 import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.element.*;
 import com.itextpdf.layout.element.Image;
+import com.itextpdf.layout.layout.LayoutArea;
+import com.itextpdf.layout.layout.LayoutContext;
 import com.itextpdf.layout.properties.*;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.layout.splitting.DefaultSplitCharacters;
@@ -46,7 +50,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.Deflater;
 
-public class PDFReportItext7 extends GXReportPDFCommons {
+public class PDFReportItext8 extends GXReportPDFCommons {
 	private PageSize pageSize;
 	private PdfFont baseFont;
 	private Barcode128 barcode = null;
@@ -61,10 +65,10 @@ public class PDFReportItext7 extends GXReportPDFCommons {
 	ConcurrentHashMap<String, Image> documentImages;
 
 	static {
-		log = org.apache.logging.log4j.LogManager.getLogger(PDFReportItext7.class);
+		log = org.apache.logging.log4j.LogManager.getLogger(PDFReportItext8.class);
 	}
 
-	public PDFReportItext7(ModelContext context) {
+	public PDFReportItext8(ModelContext context) {
 		super(context);
 		document = null;
 		pdfDocument = null;
@@ -79,7 +83,7 @@ public class PDFReportItext7 extends GXReportPDFCommons {
 			pdfDocument = new PdfDocument(writer);
 			pdfDocument.setDefaultPageSize(this.pageSize);
 			document = new Document(pdfDocument);
-
+			document.setFontProvider(new DefaultFontProvider());
 		} catch (Exception e){
 			log.error("Failed to initialize new iText7 document: ", e);
 		}
@@ -525,6 +529,7 @@ public class PDFReportItext7 extends GXReportPDFCommons {
 				else
 					baseFont = PdfFontFactory.createFont(fontPath, PdfEncodings.IDENTITY_H, EmbeddingStrategy.PREFER_EMBEDDED);
 			}
+		document.getFontProvider().addFont(baseFont.getFontProgram());
 		}
 		catch(IOException ioe) {
 			log.error("GxAttris failed: ", ioe);
@@ -586,8 +591,7 @@ public class PDFReportItext7 extends GXReportPDFCommons {
 		boolean autoResize = (align & 256) == 256;
 
 		if (htmlformat == 1) {
-			//As of now, you might experience unexpected behaviour since not all possible
-			//HTML code is supported
+			log.info("As of now, you might experience unexpected behaviour since not all possible HTML code is supported");
 			try {
 				bottomAux = (float)convertScale(bottom);
 				topAux = (float)convertScale(top);
@@ -604,10 +608,12 @@ public class PDFReportItext7 extends GXReportPDFCommons {
 				YPosition yPosition = new YPosition(htmlRectangle.getTop());
 				TextAlignment txtAlignment = getTextAlignment(alignment);
 
+				ConverterProperties converterProperties = new ConverterProperties();
+				converterProperties.setFontProvider(document.getFontProvider());
 				//Iterate over the elements (a.k.a the parsed HTML string) and handle each case accordingly
-				List<IElement> elements = HtmlConverter.convertToElements(sTxt);
+				List<IElement> elements = HtmlConverter.convertToElements(sTxt, converterProperties);
 				for (IElement element : elements)
-					processHTMLElement(canvas,htmlRectangle, yPosition, txtAlignment, (IBlockElement) element);
+					processHTMLElement(htmlRectangle, yPosition, txtAlignment, (IBlockElement) element);
 			} catch (Exception e) {
 				log.error("GxDrawText failed to print HTML text : ", e);
 			}
@@ -734,37 +740,45 @@ public class PDFReportItext7 extends GXReportPDFCommons {
 		}
 	}
 
-	void processHTMLElement(Canvas canvas, Rectangle htmlRectangle, YPosition currentYPosition, TextAlignment txtAlignment, IBlockElement blockElement){
-		float padding = 5f;
+	void processHTMLElement(Rectangle htmlRectangle, YPosition currentYPosition, TextAlignment txtAlignment, IBlockElement blockElement){
 		if (blockElement instanceof Paragraph){
 			Paragraph p = (Paragraph) blockElement;
-
-			// calculate the height of the Paragraph
-			float marginTop = (p.getMarginTop() != null) ? p.getMarginTop().getValue() : 0;
-			float marginBottom = (p.getMarginBottom() != null) ? p.getMarginBottom().getValue() : 0;
-			float paddingTop = (p.getPaddingTop() != null) ? p.getPaddingTop().getValue() : 0;
-			float paddingBottom = (p.getPaddingBottom() != null) ? p.getPaddingBottom().getValue() : 0;
-			float height = marginTop + marginBottom + paddingTop + paddingBottom;
-
-			// check if the currentYPosition has enough space for the new Paragraph
-			if ((currentYPosition.getCurrentYPosition() - height) < htmlRectangle.getBottom()) {
-				// add new page and reset the currentYPosition
-				pdfPage = pdfDocument.addNewPage();
-				pages++;
-				canvas = new Canvas(new PdfCanvas(pdfPage), htmlRectangle);
-				currentYPosition.setCurrentYPosition(htmlRectangle.getTop());
-			}
-
-			canvas.showTextAligned(p, htmlRectangle.getLeft(), currentYPosition.getCurrentYPosition() - p.getMarginTop().getValue(), txtAlignment);
-			currentYPosition.setCurrentYPosition(currentYPosition.getCurrentYPosition() - (height + padding));
+			float paragraphHeight = getBlockElementHeight(blockElement, htmlRectangle);
+			document.showTextAligned(p, htmlRectangle.getLeft(), currentYPosition.getCurrentYPosition(), txtAlignment);
+			currentYPosition.setCurrentYPosition(currentYPosition.getCurrentYPosition() - paragraphHeight);
+		} else if (blockElement instanceof Table){
+			Table table = (Table) blockElement;
+			float tableHeight = getBlockElementHeight(blockElement, htmlRectangle);
+			table.setFixedPosition(page, htmlRectangle.getX(), currentYPosition.getCurrentYPosition() - tableHeight, htmlRectangle.getWidth());
+			currentYPosition.setCurrentYPosition(currentYPosition.getCurrentYPosition() - tableHeight);
+			document.add(table);
+		} else if (blockElement instanceof com.itextpdf.layout.element.List){
+			com.itextpdf.layout.element.List list = (com.itextpdf.layout.element.List) blockElement;
+			float listHeight = getBlockElementHeight(blockElement, htmlRectangle);
+			list.setFixedPosition(page, htmlRectangle.getX(),currentYPosition.getCurrentYPosition() - listHeight, htmlRectangle.getWidth());
+			currentYPosition.setCurrentYPosition(currentYPosition.getCurrentYPosition() - listHeight);
+			document.add(list);
 		} else if (blockElement instanceof Div) {
 			Div div = (Div) blockElement;
-			// Iterate through the children of the Div
+			// Iterate through the children of the Div and process each child element recursively
 			for (IElement child : div.getChildren())
 				if (child instanceof IBlockElement)
-					// Process the child element recursively
-					processHTMLElement(canvas,htmlRectangle, currentYPosition, txtAlignment, (IBlockElement) child);
+					processHTMLElement(htmlRectangle, currentYPosition, txtAlignment, (IBlockElement) child);
 		}
+	}
+
+	private float getBlockElementHeight(IBlockElement blockElement, Rectangle htmlRectangle) throws RuntimeException{
+		if (blockElement instanceof Paragraph){
+			Paragraph p = (Paragraph) blockElement;
+			return p.createRendererSubTree().setParent(document.getRenderer()).layout(new LayoutContext(new LayoutArea(page, htmlRectangle))).getOccupiedArea().getBBox().getHeight();
+		} else if (blockElement instanceof Table){
+			Table table = (Table) blockElement;
+			return table.createRendererSubTree().setParent(document.getRenderer()).layout(new LayoutContext(new LayoutArea(page, htmlRectangle))).getOccupiedArea().getBBox().getHeight();
+		} else if (blockElement instanceof com.itextpdf.layout.element.List){
+			com.itextpdf.layout.element.List list = (com.itextpdf.layout.element.List) blockElement;
+			return list.createRendererSubTree().setParent(document.getRenderer()).layout(new LayoutContext(new LayoutArea(page, htmlRectangle))).getOccupiedArea().getBBox().getHeight();
+		}
+		throw new RuntimeException("getBlockElementHeight failed to calculate the height of the block element");
 	}
 
 	public class YPosition {

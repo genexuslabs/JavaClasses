@@ -594,7 +594,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			boolean autoResize = (align & 256) == 256;
 
 			if (htmlformat == 1) {
-				//As for now, HTML printing is not supported
+				log.info("As for now, HTML printing is not supported while generating reports using PDFBox");
 			}
 			else
 			if (barcodeType != null){
