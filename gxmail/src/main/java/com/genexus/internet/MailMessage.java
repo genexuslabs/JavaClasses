@@ -188,15 +188,11 @@ class MailMessage
 					out = new FileOutputStream(attachmentsPath + outname);
 				}
 				else
-				{
 					out = new DummyOutputStream();
-				}
 
 			}
 			else
-			{
 				out = new ByteArrayOutputStream();
-			}
 		} finally {
 			if (out == null) out.close();
 		}
