@@ -89,6 +89,11 @@ public abstract class HttpContext implements IHttpContext
 	{
 		ignoreSpa = true;
 	}
+
+	public void setChunked()
+	{
+		isChunked = true;
+	}
 	
 	public boolean isSoapRequest()
 	{
@@ -126,6 +131,7 @@ public abstract class HttpContext implements IHttpContext
 	protected boolean wrapped = false;
 	protected int drawGridsAtServer = -1;
 	private boolean ignoreSpa = false;
+	private boolean isChunked = false;
 
 	private static HashMap<String, Messages> cachedMessages = new HashMap<String, Messages>();
 	protected String currentLanguage = null;
@@ -564,7 +570,7 @@ public abstract class HttpContext implements IHttpContext
 	public void writeBytes(byte[] bytes) throws IOException
 	{
             out.write(bytes);
-			if (getHttpResponse().getHeader("Transfer-Encoding").equalsIgnoreCase("chunked"))
+			if (isChunked || getHttpResponse().getHeader("Transfer-Encoding").equalsIgnoreCase("chunked"))
 				out.flush();
 	}
 
