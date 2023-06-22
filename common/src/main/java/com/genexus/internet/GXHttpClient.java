@@ -484,6 +484,10 @@ public abstract class GXHttpClient implements IHttpClient{
 
 	public abstract String getString();
 
+	public abstract String readChunk();
+
+	public abstract boolean getEof();
+
 	public abstract void toFile(String fileName);
 
 	public abstract void cleanup();
