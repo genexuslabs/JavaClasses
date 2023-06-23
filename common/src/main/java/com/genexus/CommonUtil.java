@@ -2722,7 +2722,7 @@ public final class CommonUtil
 			pagingSelect = pagingSelect.substring(9);
 		pagingSelect = pagingSelect.replaceAll("T\\d+\\.", "GX_ICTE.");
 		if(pagingSelectPattern == null)
-			pagingSelectPattern = Pattern.compile("GX_ICTE\\.(\\[\\w+]) AS \\b(\\w+)\\b");
+			pagingSelectPattern = Pattern.compile("GX_ICTE\\.(\\[\\w+]) AS \\b(\\w+)\\b(?=,|$)");
 		Matcher match = pagingSelectPattern.matcher(pagingSelect);
 		HashMap<String, String> maps = new HashMap<>();
 		while(match.find())
