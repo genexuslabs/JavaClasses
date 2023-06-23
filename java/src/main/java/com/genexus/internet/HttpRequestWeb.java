@@ -57,13 +57,13 @@ public class HttpRequestWeb extends HttpRequest
 			}
 		}
 		
-		try
+		try (InputStream is = getInputStream())
 		{
 			String requestEncoding = "UTF-8";
 			if (httpContext.getRequest().getCharacterEncoding() != null && httpContext.getRequest().getCharacterEncoding().length() > 0)
 				requestEncoding = httpContext.getRequest().getCharacterEncoding();
 			
-			return new String(PrivateUtilities.readToByteArray(getInputStream()), requestEncoding);
+			return new String(PrivateUtilities.readToByteArray(is), requestEncoding);
 		}
 		catch (IOException e)
 		{

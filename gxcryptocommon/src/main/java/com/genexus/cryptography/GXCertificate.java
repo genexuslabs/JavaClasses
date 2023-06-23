@@ -300,10 +300,9 @@ public class GXCertificate {
 	}
 
 	private boolean verifyCertificateFromCaCerts() {
-		try {
-			String filename = System.getProperty("java.home")
-					+ "/lib/security/cacerts".replace('/', File.separatorChar);
-			FileInputStream is = new FileInputStream(filename);
+		String filename = System.getProperty("java.home")
+			+ "/lib/security/cacerts".replace('/', File.separatorChar);
+		try (FileInputStream is = new FileInputStream(filename);){
 			KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
 			String password = "changeit";
 			keystore.load(is, password.toCharArray());
