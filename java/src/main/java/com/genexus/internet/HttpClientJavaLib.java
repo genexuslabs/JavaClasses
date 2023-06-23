@@ -8,6 +8,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.*;
 import com.genexus.ModelContext;
 import com.genexus.util.IniFile;
@@ -16,6 +18,7 @@ import com.genexus.CommonUtil;
 import com.genexus.specific.java.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
@@ -227,16 +230,28 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	private static SSLConnectionSocketFactory getSSLSecureInstance() {
 		try {
-			SSLContext sslContext = SSLContextBuilder
+			SSLContextBuilder sslContextBuilder = SSLContextBuilder
 				.create()
-				.loadTrustMaterial(new TrustSelfSignedStrategy())
-				.build();
+				.loadTrustMaterial(new TrustSelfSignedStrategy());
+
+			String pathToKeystore = System.getProperty("javax.net.ssl.keyStore");
+			String keystorePassword = System.getProperty("javax.net.ssl.keyStorePassword");
+			if (pathToKeystore != null && keystorePassword != null)
+				sslContextBuilder.loadKeyMaterial(new File(pathToKeystore), keystorePassword.toCharArray(), keystorePassword.toCharArray());
+
+			String pathToTruststore = System.getProperty("javax.net.ssl.trustStore");
+			String truststorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
+			if (pathToTruststore != null && truststorePassword != null)
+				sslContextBuilder.loadTrustMaterial(new File(pathToTruststore), truststorePassword.toCharArray());
+
+			SSLContext sslContext = sslContextBuilder.build();
+
 			return new SSLConnectionSocketFactory(
 				sslContext,
 				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2" },
 				null,
-				SSLConnectionSocketFactory.getDefaultHostnameVerifier());
-		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
+				NoopHostnameVerifier.INSTANCE);
+		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException | UnrecoverableKeyException | CertificateException | IOException e) {
 			e.printStackTrace();
 		}
 		return new SSLConnectionSocketFactory(
