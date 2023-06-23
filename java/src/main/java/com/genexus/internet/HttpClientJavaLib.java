@@ -6,6 +6,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.*;
 import com.genexus.util.IniFile;
 import org.apache.http.*;
@@ -13,6 +18,8 @@ import com.genexus.CommonUtil;
 import com.genexus.specific.java.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
@@ -29,6 +36,7 @@ import org.apache.http.config.SocketConfig;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.auth.NTLMSchemeFactory;
@@ -38,8 +46,12 @@ import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
+
+import javax.net.ssl.SSLContext;
 
 public class HttpClientJavaLib extends GXHttpClient {
 
@@ -55,7 +67,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		if(connManager == null) {
 			Registry<ConnectionSocketFactory> socketFactoryRegistry =
 				RegistryBuilder.<ConnectionSocketFactory>create()
-					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https",SSLConnConstructor.getSSLSecureInstance(new String[] { "TLSv1", "TLSv1.1", "TLSv1.2" }))
+					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https",getSSLSecureInstance())
 					.build();
 			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
 			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_SIZE", "1000")));
@@ -194,6 +206,39 @@ public class HttpClientJavaLib extends GXHttpClient {
 		{
 		}
 		return url;
+	}
+
+	private static SSLConnectionSocketFactory getSSLSecureInstance() {
+		try {
+			SSLContextBuilder sslContextBuilder = SSLContextBuilder
+				.create()
+				.loadTrustMaterial(new TrustSelfSignedStrategy());
+
+			String pathToKeystore = System.getProperty("javax.net.ssl.keyStore");
+			String keystorePassword = System.getProperty("javax.net.ssl.keyStorePassword");
+			if (pathToKeystore != null && keystorePassword != null)
+				sslContextBuilder.loadKeyMaterial(new File(pathToKeystore), keystorePassword.toCharArray(), keystorePassword.toCharArray());
+
+			String pathToTruststore = System.getProperty("javax.net.ssl.trustStore");
+			String truststorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
+			if (pathToTruststore != null && truststorePassword != null)
+				sslContextBuilder.loadTrustMaterial(new File(pathToTruststore), truststorePassword.toCharArray());
+
+			SSLContext sslContext = sslContextBuilder.build();
+
+			return new SSLConnectionSocketFactory(
+				sslContext,
+				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2" },
+				null,
+				NoopHostnameVerifier.INSTANCE);
+		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException | UnrecoverableKeyException | CertificateException | IOException e) {
+			e.printStackTrace();
+		}
+		return new SSLConnectionSocketFactory(
+			SSLContexts.createDefault(),
+			new String[] { "TLSv1", "TLSv1.1", "TLSv1.2"},
+			null,
+			SSLConnectionSocketFactory.getDefaultHostnameVerifier());
 	}
 
 	private CookieStore setAllStoredCookies() {
