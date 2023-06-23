@@ -343,9 +343,8 @@ System.err.println("Sigo...");
 	
    private void processExternalScript(String fileName) throws Exception
    {
-	   try
+	   try (BufferedReader input = new BufferedReader( new FileReader(fileName) );)
 	   {
-		   BufferedReader input = new BufferedReader( new FileReader(fileName) );
 		   String line = readSentence(input);
 		   while (!line.equals(""))
 		   {

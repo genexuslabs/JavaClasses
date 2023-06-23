@@ -630,9 +630,9 @@ public abstract class GXHttpClient implements IHttpClient{
 				{
 					file = (File) curr;
 				}
-				try
+				try (BufferedInputStream bis = new java.io.BufferedInputStream(new FileInputStream(file)))
 				{
-					out = addToArray(out, CommonUtil.readToByteArray(new java.io.BufferedInputStream(new FileInputStream(file))));
+					out = addToArray(out, CommonUtil.readToByteArray(bis));
 				}
 				catch (FileNotFoundException e)
 				{

@@ -2,6 +2,7 @@ package com.genexus.gxoffice.poi.xssf;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import com.genexus.util.GxFileInfoSourceType;
 import org.apache.poi.ss.usermodel.Row;
@@ -26,6 +27,7 @@ public class ExcelDocument implements IGxError, IExcelDocument {
 			fileName += ".xlsx";
 		}
 
+		workBook = null;
 		try {
 			if (!template.equals("")) {
 				GXFile templateFile = new GXFile(template);
@@ -56,6 +58,9 @@ public class ExcelDocument implements IGxError, IExcelDocument {
 			errDescription = "Could not open file.";
 			System.err.println("GXOffice Error: " + e.toString());
 			return errCod;
+		}
+		finally {
+			try{ if (workBook != null) workBook.close(); } catch (IOException ioe) { System.err.println("Failed to close source buffered input stream " + ioe); }
 		}
 		return 0;
 	}

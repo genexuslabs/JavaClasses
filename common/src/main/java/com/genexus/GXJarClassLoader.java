@@ -170,6 +170,7 @@ public class GXJarClassLoader extends ClassLoader
 		className = className.replace('.', '/') + ".class";
 
         logger.debug("## GXJarClassLoader: Loading class: " + className + " [" + source + "]");
+		BufferedInputStream bis = null;
         try
         {
             if(sourceIsJAR)
@@ -196,6 +197,10 @@ public class GXJarClassLoader extends ClassLoader
                 }
             }
         }catch(IOException e) { ; }
+		finally
+		{
+			try{ if (bis != null) bis.close(); } catch (IOException ioe) { logger.error("## GXJarClassLoader: Failed to close buffered input stream", ioe ); }
+		}
 		return result;
 	}
 	

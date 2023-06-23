@@ -316,7 +316,9 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
 			gxmessage.setHtmltext(newHTML);
 		}
 
-		saveFile(fileName, part.getContent() instanceof MimeMessage ? ((MimeMessage) part.getContent()).getInputStream() : part.getInputStream());
+		try (InputStream is = part.getContent() instanceof MimeMessage ? ((MimeMessage) part.getContent()).getInputStream() : part.getInputStream()){
+			saveFile(fileName, is);
+		}
 		attachs.add(attachmentsPath + fileName);
 		gxmessage.setAttachments(attachs);
     }
