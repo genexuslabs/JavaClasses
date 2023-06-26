@@ -137,14 +137,13 @@ public class URLRouter
 
 					if (is != null)
 					{
-						BufferedReader bufread = new BufferedReader(new InputStreamReader(is, "UTF8"));
-						line = bufread.readLine();
-						while (line != null)
-						{
-							parseLine(line);
+						try (BufferedReader bufread = new BufferedReader(new InputStreamReader(is, "UTF8"))) {
 							line = bufread.readLine();
+							while (line != null) {
+								parseLine(line);
+								line = bufread.readLine();
+							}
 						}
-						bufread.close();
 					}
 				}
 				catch (UnsupportedEncodingException e)

@@ -89,14 +89,13 @@ public class ImagesPath
 				if (is != null)
 				{
 					parseLocations = false;
-					BufferedReader bufread = new BufferedReader(new InputStreamReader(is, "UTF8"));
-					line = bufread.readLine();
-					while (line != null)
-					{
-						parseLine(line, KBId);
+					try (BufferedReader bufread = new BufferedReader(new InputStreamReader(is, "UTF8"))) {
 						line = bufread.readLine();
+						while (line != null) {
+							parseLine(line, KBId);
+							line = bufread.readLine();
+						}
 					}
-					bufread.close();
 				}
 			}
 			catch (UnsupportedEncodingException e)
