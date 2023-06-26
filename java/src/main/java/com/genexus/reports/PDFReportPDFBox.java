@@ -920,6 +920,8 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			for (Element listItem : blockElement.select("li")){
 				String text = (tagName.equals("ul")) ? "• " + listItem.text() : i + ". " + listItem.text();
 				i++;
+				if (listItem.normalName().equals("ol") || listItem.normalName().equals("ul")) //arreglar esta porqueria
+					processHTMLElement(cb, htmlRectangle, spaceHandler, listItem);
 				float lines = renderHTMLContent(cb, text, fontSize, llx, lly, urx, spaceHandler.getCurrentYPosition());
 				float totalTextHeight = lineHeight * lines * DEFAULT_PDFBOX_LEADING;
 				spaceHandler.setCurrentYPosition(spaceHandler.getCurrentYPosition() - totalTextHeight);
@@ -1025,6 +1027,8 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				contentStream.newLineAtOffset(0, startY);
 			}
 			contentStream.endText();
+			contentStream.setLineWidth(1f); // Default line width for PDFBox 2.0.27
+			contentStream.setRenderingMode(RenderingMode.FILL); // Default text rendering mode for PDFBox 2.0.27
 			return lines.size();
 		} catch (IOException ioe) {
 			log.error("failed to draw wrapped text: ", ioe);
