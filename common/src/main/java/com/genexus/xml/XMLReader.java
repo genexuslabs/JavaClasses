@@ -834,12 +834,12 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	public void openResponse(com.genexus.internet.HttpClient client)
 	{
 		reset();
-		try
+		try (InputStream is = client.getInputStream())
 		{
 			if (documentEncoding.length() > 0)
-				inputSource = new XMLInputSource(null, null, null, client.getInputStream(), documentEncoding);
+				inputSource = new XMLInputSource(null, null, null, is, documentEncoding);
 			else
-				inputSource = new XMLInputSource(null, null, null, client.getInputStream(), null);
+				inputSource = new XMLInputSource(null, null, null, is, null);
 			parserConfiguration.setInputSource(inputSource);
 		}
 		catch (IOException e)

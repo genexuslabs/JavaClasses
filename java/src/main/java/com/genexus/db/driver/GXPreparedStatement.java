@@ -1342,10 +1342,9 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		{
 			if(con.getDBMS().getId() == GXDBMS.DBMS_ORACLE || con.getDBMS().getId() == GXDBMS.DBMS_DAMENG)
 			{
-				try
+				try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(fileName)))
 				{
 					File file = new File(fileName);
-					BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file));
 					if(con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
 						((GXDBMSoracle7)con.getDBMS()).setBlobData(blob, inputStream, (int) file.length());
 					else

@@ -75,11 +75,9 @@ public class ParseINI
 
 	private void init(String filename) throws IOException{
 		this.filename = new File(filename).getAbsolutePath();
-		try
+		try (FileInputStream inputStream = new FileInputStream(filename);)
 		{
-			FileInputStream inputStream = new FileInputStream(filename);
 			load(inputStream);
-			inputStream.close();
 		}
 		catch(FileNotFoundException fnfe)
 		{ // Si debo crear el archivo

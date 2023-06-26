@@ -158,10 +158,9 @@ public abstract class GXReportText extends GXProcedure
 				}
 				else
 				{
-					try
+					try (FileInputStream fInput = new FileInputStream(fileName))
 					{
 						PrintService ps = getDefaultPrinter();
-						FileInputStream fInput = new FileInputStream(fileName);
 						DocFlavor flavor = DocFlavor.INPUT_STREAM.AUTOSENSE;
 						DocPrintJob pj = ps.createPrintJob();
 						Doc doc = new SimpleDoc(fInput, flavor, null);			
@@ -174,7 +173,11 @@ public abstract class GXReportText extends GXProcedure
 					catch (PrintException e) 
 					{
 						System.out.println("Error printing report " + fileName + " " + e.getMessage());
-					}					
+					}
+					catch (IOException ioe)
+					{
+						System.out.println("Error opening file input stream of file " + fileName + " " + ioe.getMessage());
+					}
 				}
 			}				
 		}

@@ -18,9 +18,9 @@ public class Template
 		t.addPattern("ENABLE_CAB_IE"	, "true");
 		t.addPattern("IE_PLUGIN_URL"	, "http://algo");
 		
-		try
+		try (FileReader fileReader = new FileReader("deployment.htm"); FileWriter fileWriter = new FileWriter("out.htm"))
 		{
-			t.applyTemplate(new BufferedReader(new FileReader("deployment.htm")), new BufferedWriter(new FileWriter("out.htm")));
+			t.applyTemplate(new BufferedReader(fileReader), new BufferedWriter(fileWriter));
 		}
 		catch (IOException e)
 		{
