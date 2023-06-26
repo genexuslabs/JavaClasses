@@ -338,8 +338,10 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
   private void saveFile(String filename, InputStream input) throws IOException 
   {
     File file = new File(attachmentsPath + filename);
-    FileOutputStream fos = new FileOutputStream(file);
-    BufferedOutputStream bos = new BufferedOutputStream(fos);
+	BufferedOutputStream bos;
+    try (FileOutputStream fos = new FileOutputStream(file)) {
+		bos = new BufferedOutputStream(fos);
+	}
 
     BufferedInputStream bis = new BufferedInputStream(input);
     int aByte;

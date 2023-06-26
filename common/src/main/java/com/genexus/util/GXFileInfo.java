@@ -151,9 +151,9 @@ public class GXFileInfo implements IGXFileInfo {
 	}
 	public void fromBytes(byte[] data) throws IOException
 	{
-		OutputStream destination = new BufferedOutputStream(new FileOutputStream(fileSource));
-		destination.write(data, 0, data.length);
-		destination.close();	
+		try (OutputStream destination = new BufferedOutputStream(new FileOutputStream(fileSource))) {
+			destination.write(data, 0, data.length);
+		}
 	}
 	public String readAllText(String encoding)throws IOException{
 		return SpecificImplementation.FileUtils.readFileToString(fileSource, CommonUtil.normalizeEncodingName(encoding));

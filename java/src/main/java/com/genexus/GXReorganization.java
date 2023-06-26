@@ -13,6 +13,7 @@ import com.genexus.db.UserInformation;
 import com.genexus.platform.INativeFunctions;
 import com.genexus.platform.NativeFunctions;
 import com.genexus.util.ReorgSubmitThreadPool;
+import com.sun.xml.ws.policy.privateutil.PolicyUtils;
 
 public abstract class GXReorganization
 {
@@ -401,6 +402,8 @@ System.err.println("Sigo...");
 	
 	private void beginResume()
 	{
+		FileReader reader = null;
+		BufferedReader input = null;
 		try
 		{
 			if (createDataBase || ignoreresume)
@@ -414,8 +417,8 @@ System.err.println("Sigo...");
 				}				
 			}
 			
-			FileReader reader = new FileReader(resumeFileName);
-			BufferedReader input = new BufferedReader(reader);
+			reader = new FileReader(resumeFileName);
+			input = new BufferedReader(reader);
 			String statement = input.readLine();
 			if (statement != null)
 			{
@@ -450,6 +453,10 @@ System.err.println("Sigo...");
 		finally
 		{
 			serializeExecutedStatements();
+			try {
+				if (reader != null) reader.close();
+				if (input != null) input.close();
+			} catch (IOException ioe) {ioe.printStackTrace();}
 		}
 	}
 	

@@ -72,8 +72,7 @@ public class GXCertificate {
 	}
 	public int load(String certPath, String storePassword, String pKeyPassword) {
 		setError(0);
-		try {
-			FileInputStream inStream = new FileInputStream(certPath);
+		try (FileInputStream inStream = new FileInputStream(certPath)){
 			String lowerCertPath = certPath.toLowerCase();
 			if (lowerCertPath.endsWith(".pfx") || lowerCertPath.endsWith(".jks") || lowerCertPath.endsWith(".bks") || lowerCertPath.endsWith(".p12")) {
 				KeyStore ks = null;
@@ -264,10 +263,11 @@ public class GXCertificate {
 
 	public KeyStore getTrustStore() {
 		if (trustStore == null) {
+			FileInputStream is = null;
 			try {
 				String filename = System.getProperty("java.home")
 						+ "/lib/security/cacerts".replace('/', File.separatorChar);
-				FileInputStream is = new FileInputStream(filename);
+				is = new FileInputStream(filename);
 				KeyStore keyStore = KeyStore.getInstance("JKS");
 				keyStore.load(is, "changeit".toCharArray());
 				is.close();
@@ -287,6 +287,9 @@ public class GXCertificate {
 			} catch (CertificateException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			}
+			finally {
+				try {if (is != null) is.close();} catch (IOException e) {e.printStackTrace();}
 			}
 		}
 		return trustStore;
