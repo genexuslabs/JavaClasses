@@ -1216,11 +1216,9 @@ loop:	while (true)
 	
 		public void run()
 		{
-			try
+			try (FileInputStream in = new FileInputStream(fileName);)
 			{
-	    		FileInputStream in = new FileInputStream(fileName);
     			props.load(new BufferedInputStream(in));
-    			in.close();
 			}
 			catch (IOException e)
 			{
