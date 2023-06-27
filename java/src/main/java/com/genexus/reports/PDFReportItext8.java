@@ -64,6 +64,8 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 	public boolean barcode128AsImage = true;
 	ConcurrentHashMap<String, Image> documentImages;
 
+	float DEFAULT_LEADING_FACTOR = 1.2f;
+
 	static {
 		log = org.apache.logging.log4j.LogManager.getLogger(PDFReportItext8.class);
 	}
@@ -570,7 +572,8 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 		cb.setFillColor(new DeviceRgb(foreColor));
 		float captionHeight = baseFont.getAscent(sTxt,fontSize) / 1000;
 		float rectangleWidth = baseFont.getWidth(sTxt, fontSize);
-		float lineHeight = (1 / 1000) * (baseFont.getAscent(sTxt,fontSize) - baseFont.getDescent(sTxt,fontSize)) + (fontSize * 1.2f);
+		float lineHeight = (1 / 1000) * (baseFont.getAscent(sTxt,fontSize) - baseFont.getDescent(sTxt,fontSize)) // Multiply by (1/1000) to convert from thousands of text spaces per unit to just text spaces per unit
+			+ (fontSize * DEFAULT_LEADING_FACTOR);
 		float textBlockHeight = (float)convertScale(bottom-top);
 		int linesCount =   (int)(textBlockHeight/lineHeight);
 		int bottomOri = bottom;
@@ -820,21 +823,19 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 	void DrawTextColumn(float llx, float lly, float urx, float ury, float leading, String text, int valign, int alignment, Style style, boolean wrap){
 		Paragraph p = new Paragraph(text);
 
-		Rectangle rect = new Rectangle(llx, lly, urx - llx, ury - lly);
-		float y = rect.getY();
 		if (valign == VerticalAlign.MIDDLE.value()){
-			ury = ury - ((y - lly) / 2) + leading;
+			ury = ury + leading;
 			p.setVerticalAlignment(VerticalAlignment.MIDDLE);
 		}
 		else if (valign == VerticalAlign.BOTTOM.value()){
-			ury = ury - (y - lly- leading);
+			ury = ury + leading;
 			p.setVerticalAlignment(VerticalAlignment.BOTTOM);
 		}
 		else if (valign == VerticalAlign.TOP.value()){
 			ury = ury + leading/2;
 			p.setVerticalAlignment(VerticalAlignment.TOP);
 		}
-		rect = new Rectangle(llx, lly, urx - llx, ury - lly);
+		Rectangle rect = new Rectangle(llx, lly, urx - llx, ury - lly);
 		p.setTextAlignment(getTextAlignment(alignment));
 
 		p.addStyle(style);
