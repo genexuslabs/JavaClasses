@@ -32,13 +32,19 @@ public abstract class DataStoreProviderBase extends AbstractDataStoreProviderBas
 
 	public GXConnection getConnection() throws SQLException
 	{
+		if (getHelper() == null)
+			return getConnection("DEFAULT", false);
+
 		return getConnection(getHelper().getDataStoreName(), getHelper().needsReadOnlyConnection());
 	}
 	protected GXConnection getConnection(String dataStoreName, boolean needsReadOnlyConnection) throws SQLException
 	{
 		if	(connectionProvider == null)
 		{
-			connectionProvider = getHelper().getConnectionProvider();
+			if (getHelper() == null)
+				connectionProvider = new DefaultConnectionProvider();
+			else
+				connectionProvider = getHelper().getConnectionProvider();
 		}
 		
 		con = (GXConnection) connectionProvider.getConnection(context, remoteHandle, dataStoreName, needsReadOnlyConnection, true);
