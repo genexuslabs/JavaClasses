@@ -24,10 +24,11 @@ abstract public class GxRestService extends GXObjectBase {
 	protected String gamError;
 	protected boolean forbidden = false;
 	protected String permissionPrefix;
+	protected String permissionMethod;
 	
 	protected abstract boolean IntegratedSecurityEnabled();
 	protected abstract int IntegratedSecurityLevel();
-
+	
 	protected String ExecutePermissionPrefix(){
 		return "";
 	}
