@@ -28,7 +28,7 @@
 		<software.awssdk.version>2.17.272</software.awssdk.version>
 		<software.azure.cosmos.version>4.42.0</software.azure.cosmos.version>
 		<log4j.version>2.19.0</log4j.version>
-		<io.opentelemetry.version>1.19.0</io.opentelemetry.version>
+		<io.opentelemetry.version>1.27.0</io.opentelemetry.version>
 	</properties>
 
 	<organization>
