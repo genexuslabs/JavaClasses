@@ -477,10 +477,8 @@ public final class GXParameterUnpacker
 		for (int i = data.length - 1; i >=0 ; i--)
 			data[i] = readByte();
 	
-		try
-		{
-			File file = new File(fileName);
-			OutputStream destination = new BufferedOutputStream(new FileOutputStream(file));
+		try (FileOutputStream fos = new FileOutputStream(new File(fileName))){
+			OutputStream destination = new BufferedOutputStream(fos);
 			destination.write(data, 0, data.length);
 			destination.close();
 		}

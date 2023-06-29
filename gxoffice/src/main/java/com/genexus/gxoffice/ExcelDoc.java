@@ -86,9 +86,7 @@ public class ExcelDoc {
 	}
 
 	private boolean isXlsx(String fileName) throws Throwable {
-		try {
-			GXFile file = new GXFile(fileName);
-			java.io.InputStream is = new BufferedInputStream(file.getStream());
+		try (java.io.InputStream is = new BufferedInputStream(new GXFile(fileName).getStream());) {
 			boolean isXlsx = FileMagic.valueOf(is) == FileMagic.OOXML;
 			is.close();
 			return isXlsx;

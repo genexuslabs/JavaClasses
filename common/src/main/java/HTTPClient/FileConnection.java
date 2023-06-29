@@ -84,10 +84,13 @@ class FileResponse extends HTTPResponse
     public synchronized byte [] getData() throws IOException
     {
         if(Data != null)return Data;
-        Data = new byte[(int)size];
+        	Data = new byte[(int)size];
         if(inp == null)
-        getInputStream().read(Data);
-        getInputStream().close();
+			try {
+				getInputStream().read(Data);
+			} finally {
+				getInputStream().close();
+			}
         return Data;
     }
 
