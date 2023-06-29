@@ -565,8 +565,9 @@ public class GXDebugManager
 
         static GXDebugStream getStream(String fileName) throws IOException
         {
-            FileOutputStream stream = new FileOutputStream(fileName, true);
-            return new GXDebugStream(new BufferedOutputStream(stream), stream.getChannel());
+            try (FileOutputStream stream = new FileOutputStream(fileName, true)){
+				return new GXDebugStream(new BufferedOutputStream(stream), stream.getChannel());
+			}
         }
 
         private GXDebugStream(OutputStream stream, FileChannel channel) throws IOException

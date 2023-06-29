@@ -109,10 +109,8 @@ public class Messages
 	private void load(String resourceName)
 	{
 		String line;
-		InputStream is = null;
-		try
+		try (InputStream is = SpecificImplementation.Messages.getInputStream(resourceName);)
 		{
-			is = SpecificImplementation.Messages.getInputStream(resourceName);
 
             if (is != null)
             {
