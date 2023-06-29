@@ -444,9 +444,8 @@ public class WebUtils
 
 	public static void getGXApplicationClasses(Class<?> gxAppClass, Set<Class<?>> rrcs) 
 	{
-		try 
+		try (InputStream is = getInputStreamFile(gxAppClass, gxApplicationClassesFileName);)
 		{
-			InputStream is = getInputStreamFile(gxAppClass, gxApplicationClassesFileName);
 			BufferedReader input = new BufferedReader(new InputStreamReader(is, "UTF8"));
 			String restClass = input.readLine();
 			while (restClass != null) 

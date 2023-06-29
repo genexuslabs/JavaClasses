@@ -6,10 +6,9 @@ public class TextHandler implements IDocumentHandler
 {
         public String getText(String filename)
         {
-			try
+			try (FileReader rd = new FileReader(filename))
 			{
 				File f = new File(filename);
-				FileReader rd = new FileReader(f);
 				char[] buf = new char[(int)f.length()];
 				rd.read(buf);
 				rd.close();
