@@ -1467,21 +1467,17 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 					{
 							GXFile gxFile = new GXFile(fileName, ResourceAccessControlList.Private);
 							if (gxFile.exists())
-							{							
-								try (InputStream is= gxFile.getStream();)
-								{
-									setBinaryStream(index, is, (int) gxFile.getLength());
-								}
-								catch (IOException e)
-								{
-									throw new SQLException("Fail to set binary stream for " + fileName);
-								}
+							{
+								InputStream is= gxFile.getStream();
+								setBinaryStream(index, is, (int) gxFile.getLength());
 							}
 							else
 							{
-								try (BufferedInputStream localInputStream = new BufferedInputStream(new FileInputStream(fileName));)
+								try
 								{
-									setBinaryStream(index, localInputStream, (int) new File(fileName).length());
+									File localFile = new File(fileName);
+									BufferedInputStream localInputStream = new BufferedInputStream(new FileInputStream(localFile));
+									setBinaryStream(index, localInputStream, (int) localFile.length());
 								}
 								catch (IOException e)
 								{
