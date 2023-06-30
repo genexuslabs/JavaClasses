@@ -120,6 +120,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private RequestConfig reqConfig = null;		// Atributo usado en la ejecucion del metodo (por ejemplo, httpGet, httpPost)
 	private CookieStore cookies;
 	private ByteArrayEntity entity = null;	// Para mantener el stream luego de cerrada la conexion en la lectura de la response
+	BufferedReader reader = null;
 	private Boolean lastAuthIsBasic = null;
 	private Boolean lastAuthProxyIsBasic = null;
 	private static IniFile clientCfg = new ModelContext(ModelContext.getModelContextPackageClass()).getPreferences().getIniFile();
@@ -569,6 +570,10 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 			SetCookieAtr(cookiesToSend);		// Se setean las cookies devueltas en la lista de cookies
 
+			if (response.containsHeader("Transfer-Encoding")) {
+				isChunkedResponse = response.getFirstHeader("Transfer-Encoding").getValue().equalsIgnoreCase("chunked");
+			}
+
 		} catch (IOException e) {
 			setExceptionsCatch(e);
 			this.statusCode = 0;
@@ -665,16 +670,47 @@ public class HttpClientJavaLib extends GXHttpClient {
 			entity = new ByteArrayEntity(EntityUtils.toByteArray(response.getEntity()));
 	}
 
+	private void setEntityReader() throws IOException {
+		if (reader == null)
+			reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+	}
+
 	public String getString() {
 		if (response == null)
 			return "";
 		try {
 			this.setEntity();
 			String res = EntityUtils.toString(entity, "UTF-8");
+			eof = true;
 			return res;
 		} catch (IOException e) {
 			setExceptionsCatch(e);
 		} catch (IllegalArgumentException e) {
+		}
+		return "";
+	}
+
+	private	boolean eof;
+	public boolean getEof() {
+		return eof;
+	}
+
+	public String readChunk() {
+		if (!isChunkedResponse)
+			return getString();
+
+		if (response == null)
+			return "";
+		try {
+			this.setEntityReader();
+			String res = reader.readLine();
+			if (res == null) {
+				eof = true;
+				res = "";
+			}
+			return res;
+		} catch (IOException e) {
+			setExceptionsCatch(e);
 		}
 		return "";
 	}
