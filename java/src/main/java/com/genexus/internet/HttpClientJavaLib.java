@@ -634,10 +634,9 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	public InputStream getInputStream(String stringURL) throws IOException
 	{
-		try {
-			java.net.URI url = new java.net.URI(stringURL);
+		try (CloseableHttpClient gISHttpClient = HttpClients.createDefault()) {
+			java.net.URI url = new URI(stringURL);
 			HttpGet gISHttpGet = new HttpGet(String.valueOf(url));
-			CloseableHttpClient gISHttpClient = HttpClients.createDefault();
 			return gISHttpClient.execute(gISHttpGet).getEntity().getContent();
 
 		} catch (URISyntaxException e) {

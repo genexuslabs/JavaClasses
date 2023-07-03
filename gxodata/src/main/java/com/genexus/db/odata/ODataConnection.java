@@ -501,7 +501,7 @@ public class ODataConnection extends ServiceConnection
 
 		private void loginBO()
 		{
-			try
+			try (DefaultHttpClient webClient = new DefaultHttpClient();)
 			{
 				doLogin = false;
 				B1_sessionIds.remove(loginBase);
@@ -509,7 +509,6 @@ public class ODataConnection extends ServiceConnection
 				HttpPost login = new HttpPost(loginURI);
 				StringEntity sloginInfo = new StringEntity(String.format("{\"UserName\":\"%s\", \"Password\":\"%s\", \"CompanyDB\":\"%s\"}", user, password, sapLoginBO));
 				login.setEntity(sloginInfo);
-				DefaultHttpClient webClient = new DefaultHttpClient();
 				HttpResponse loginResponse = webClient.execute(login);
 				Header cookieHdr = loginResponse.getFirstHeader("Set-Cookie");
 				if(cookieHdr != null)
