@@ -77,7 +77,7 @@ public class CosmosDBHelper {
 		String[] projection = query.projection;
 		String element;
 		String projectionList = "";
-		String pattern = "[^a-zA-Z0-9]+";
+		String pattern = "[^a-zA-Z0-9]+"; //Special characters supported for property names
 		Pattern regexPattern = Pattern.compile(pattern);
 
 		for (String key : projection) {
