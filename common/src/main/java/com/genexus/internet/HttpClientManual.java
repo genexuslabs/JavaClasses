@@ -437,6 +437,14 @@ public class HttpClientManual extends GXHttpClient {
 		return "";
 	}
 
+	public boolean getEof() {
+		return true;
+	}
+
+	public String readChunk() {
+		return getString();
+	}
+
 	@Override
 	public void toFile(String fileName)
 	{
