@@ -19,6 +19,8 @@ import java.security.*;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.genexus.common.interfaces.SpecificImplementation;
 
@@ -2712,14 +2714,27 @@ public final class CommonUtil
 	}
 
 
+	private static Pattern pagingSelectPattern;
 	public static String pagingSelect(String select)
 	{
 		String pagingSelect = ltrim(select);
-		// Quita distinct
 		if(pagingSelect.startsWith("DISTINCT"))
 			pagingSelect = pagingSelect.substring(9);
-		// Renombra referencias a tablas por GXICTE
 		pagingSelect = pagingSelect.replaceAll("T\\d+\\.", "GX_ICTE.");
+		if(pagingSelectPattern == null)
+			pagingSelectPattern = Pattern.compile("GX_ICTE\\.(\\[\\w+]) AS \\b(\\w+)\\b(?=,|$)");
+		Matcher match = pagingSelectPattern.matcher(pagingSelect);
+		HashMap<String, String> maps = new HashMap<>();
+		while(match.find())
+		{
+			if(match.groupCount() == 2)
+			{
+				maps.put(match.group(0), String.format("GX_ICTE.[%s]", match.group(2)));
+				maps.put(match.group(1), String.format("[%s]", match.group(2)));
+			}
+		}
+		for(Map.Entry<String, String> map : maps.entrySet())
+			pagingSelect = pagingSelect.replace(map.getKey(), map.getValue());
 		return pagingSelect;
 	}
 
