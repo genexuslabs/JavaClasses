@@ -64,7 +64,7 @@ public class CosmosDBHelper {
 		return sqlSelect + " " + sqlFrom + " " + sqlWhere + " " + sqlOrder;
 	}
 
-	private static String GetScapedProperty(Pattern regexPattern, String key)
+	private static String GetEscapedProperty(Pattern regexPattern, String key)
 	{
 		Matcher matcher = regexPattern.matcher(key);
 		if (matcher.find())
@@ -82,7 +82,7 @@ public class CosmosDBHelper {
 
 		for (String key : projection) {
 			Matcher matcher = regexPattern.matcher(key);
-			element = GetScapedProperty(regexPattern,key);
+			element = GetEscapedProperty(regexPattern,key);
 			if (!projectionList.isEmpty())
 				projectionList = element + "," + projectionList;
 			else
