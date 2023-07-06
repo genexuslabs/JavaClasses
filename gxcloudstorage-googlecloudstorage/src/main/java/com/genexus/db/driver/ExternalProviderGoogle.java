@@ -145,8 +145,7 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 	}
 
 	public void download(String externalFileName, String localFile, ResourceAccessControlList acl) {
-		try {
-			OutputStream out = new FileOutputStream(localFile);
+		try (OutputStream out = new FileOutputStream(localFile);) {
 			com.google.api.services.storage.Storage.Objects.Get request = legacyClient.objects().get(bucket, externalFileName);
 			request.getMediaHttpDownloader().setDirectDownloadEnabled(true).download(new GenericUrl(url + StorageUtils.encodeName(externalFileName)), out);
 			out.close();

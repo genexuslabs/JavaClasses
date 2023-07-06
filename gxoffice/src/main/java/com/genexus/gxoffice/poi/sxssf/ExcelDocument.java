@@ -10,6 +10,9 @@ import com.genexus.gxoffice.IGxError;
 import com.genexus.gxoffice.poi.xssf.StylesCache;
 import com.genexus.util.GXFile;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 public class ExcelDocument extends com.genexus.gxoffice.poi.xssf.ExcelDocument {
 
 	public short Open(String fileName) {
@@ -18,11 +21,13 @@ public class ExcelDocument extends com.genexus.gxoffice.poi.xssf.ExcelDocument {
 			fileName += ".xlsx";
 		}
 
+		InputStream is = null;
 		try {
 			if (!template.equals("")) {
 				GXFile templateFile = new GXFile(template);
 				if (templateFile.exists()) {
-					workBook = new SXSSFWorkbook(new XSSFWorkbook(templateFile.getStream()));
+					is = templateFile.getStream();
+					workBook = new SXSSFWorkbook(new XSSFWorkbook(is));
 				} else {
 					errCod = 4; // Invalid template
 					errDescription = "Invalid template.";
@@ -32,7 +37,8 @@ public class ExcelDocument extends com.genexus.gxoffice.poi.xssf.ExcelDocument {
 				GXFile file = new GXFile("", fileName, Constants.EXTERNAL_UPLOAD_ACL, GxFileInfoSourceType.Unknown);
 				if (file.exists()) {
 					// System.out.println("Opening..");
-					workBook = new SXSSFWorkbook(new XSSFWorkbook(file.getStream()));
+					is = file.getStream();
+					workBook = new SXSSFWorkbook(new XSSFWorkbook(is));
 				} else {
 					// System.out.println("Creating..");
 					workBook = new SXSSFWorkbook();
@@ -48,6 +54,10 @@ public class ExcelDocument extends com.genexus.gxoffice.poi.xssf.ExcelDocument {
 			errDescription = "Could not open file.";
 			System.err.println("GXOffice Error: " + e.toString());
 			return errCod;
+		}
+
+		finally {
+			try {if (is != null) is.close();} catch (IOException e) {System.err.println("GXOffice produced an error while closing the input stream: " + e);}
 		}
 		return 0;
 	}
