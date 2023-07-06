@@ -11,6 +11,7 @@ import com.genexus.gxoffice.IGxError;
 import com.genexus.util.GXFile;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 
@@ -30,7 +31,8 @@ public class ExcelDocument implements IGxError,IExcelDocument{
 		{
 			fileName += ".xls";
 		}
-		
+
+		InputStream is = null;
 		try	
 		{			
             if(!template.equals(""))
@@ -38,7 +40,8 @@ public class ExcelDocument implements IGxError,IExcelDocument{
                 GXFile templateFile = new GXFile(template);
 				if (templateFile.exists())
 				{
-					POIFSFileSystem poifs = new POIFSFileSystem(templateFile.getStream());
+					is = templateFile.getStream();
+					POIFSFileSystem poifs = new POIFSFileSystem(is);
 					workBook = new HSSFWorkbook(poifs);
 				}
 				else
@@ -53,10 +56,9 @@ public class ExcelDocument implements IGxError,IExcelDocument{
 				boolean isAbsolute = new java.io.File(fileName).isAbsolute();
 				GXFile file = new GXFile(fileName, Constants.EXTERNAL_UPLOAD_ACL, isAbsolute);
 				if (file.exists()) {
-					try (InputStream is = file.getStream()) {
-						POIFSFileSystem poifs = new POIFSFileSystem(is);
-						workBook = new HSSFWorkbook(poifs);
-					}
+					is = file.getStream();
+					POIFSFileSystem poifs = new POIFSFileSystem(is);
+					workBook = new HSSFWorkbook(poifs);
 				}
 				else {
 					//System.out.println("Creating..");
@@ -74,7 +76,12 @@ public class ExcelDocument implements IGxError,IExcelDocument{
 			errDescription = "Could not open file.";			
 			System.err.println("GXOffice Error: "+ e.toString());
 			return errCod;
-		}		
+		}
+
+		finally
+		{
+			try {if (is != null) is.close();} catch (IOException e) {System.err.println("GXOffice Error: "+ e);}
+		}
 		return 0;
 	}
 

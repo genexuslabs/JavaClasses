@@ -121,9 +121,9 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 
 		if 	(System.getProperty("gx.jdbclog") != null)
 		{
-			try
+			try (java.io.FileOutputStream fis = new java.io.FileOutputStream("_gx_jdbc_driver_log.log"))
 			{
-				DriverManager.setLogWriter(new java.io.PrintWriter(new java.io.FileOutputStream("_gx_jdbc_driver_log.log")));
+				DriverManager.setLogWriter(new java.io.PrintWriter(fis));
 			} catch (java.io.IOException e){}
 		}
 

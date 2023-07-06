@@ -432,8 +432,7 @@ public class IniFile {
 	}
 
 	public void saveFile(File fileHandle) {
-		try {
-			BufferedWriter bw = new BufferedWriter(new FileWriter(fileHandle));
+		try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileHandle))){
 
 			for (Enumeration eSec = sections.elements(); eSec.hasMoreElements();) {
 				Section section = (Section) eSec.nextElement();
