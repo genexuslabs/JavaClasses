@@ -19,6 +19,8 @@ import java.security.*;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.genexus.common.interfaces.SpecificImplementation;
 
@@ -46,6 +48,11 @@ public final class CommonUtil
 	private static DateFormat parse_850;
 	private static DateFormat parse_asctime;
 	private static final Object http_parse_lock  = new Object();
+
+	private static final String LOG_USER_ENTRY_WHITELIST_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890+-_=/[]{}\":, ";
+	private static final String HTTP_HEADER_WHITELIST_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890.;+-_=/[]{}\"':, @()?<>\\";
+	public static final HashMap<Character, Character> LOG_USER_ENTRY_WHITELIST;
+	public static final HashMap<Character, Character> HTTP_HEADER_WHITELIST;
 
 	public static final ILogger logger = LogManager.getLogger(CommonUtil.class);
 
@@ -159,6 +166,9 @@ public final class CommonUtil
 					{"Big5_HKSCS","Big5-HKSCS"},
 					{"EncodingWrapper","EncodingWrapper"}
 				};
+
+			LOG_USER_ENTRY_WHITELIST = stringToHashMap(LOG_USER_ENTRY_WHITELIST_STRING);
+			HTTP_HEADER_WHITELIST    = stringToHashMap(HTTP_HEADER_WHITELIST_STRING);
 		}
 		catch (Exception e)
 		{
@@ -2704,14 +2714,27 @@ public final class CommonUtil
 	}
 
 
+	private static Pattern pagingSelectPattern;
 	public static String pagingSelect(String select)
 	{
 		String pagingSelect = ltrim(select);
-		// Quita distinct
 		if(pagingSelect.startsWith("DISTINCT"))
 			pagingSelect = pagingSelect.substring(9);
-		// Renombra referencias a tablas por GXICTE
 		pagingSelect = pagingSelect.replaceAll("T\\d+\\.", "GX_ICTE.");
+		if(pagingSelectPattern == null)
+			pagingSelectPattern = Pattern.compile("GX_ICTE\\.(\\[\\w+]) AS \\b(\\w+)\\b(?=,|$)");
+		Matcher match = pagingSelectPattern.matcher(pagingSelect);
+		HashMap<String, String> maps = new HashMap<>();
+		while(match.find())
+		{
+			if(match.groupCount() == 2)
+			{
+				maps.put(match.group(0), String.format("GX_ICTE.[%s]", match.group(2)));
+				maps.put(match.group(1), String.format("[%s]", match.group(2)));
+			}
+		}
+		for(Map.Entry<String, String> map : maps.entrySet())
+			pagingSelect = pagingSelect.replace(map.getKey(), map.getValue());
 		return pagingSelect;
 	}
 
@@ -3442,5 +3465,26 @@ public final class CommonUtil
 			classPackage += ".";
 
 		return classPackage + pgmName.replace('\\', '.').trim();
+	}
+
+	private static HashMap<Character, Character> stringToHashMap(String input) {
+		HashMap<Character, Character> hashMap = new HashMap<>();
+
+		for (char c : input.toCharArray()) {
+			hashMap.put(c, c);
+		}
+		return hashMap;
+	}
+
+	public static String Sanitize(String input, HashMap<Character, Character> whiteList) {
+		StringBuilder sanitizedInput  = new StringBuilder();
+
+		for (char c : input.toCharArray()) {
+			if (whiteList.containsKey(c)) {
+				char safeC = whiteList.get(c);
+				sanitizedInput.append(safeC);
+			}
+		}
+		return sanitizedInput.toString();
 	}
 }

@@ -615,12 +615,14 @@ final class SMTPSession implements GXInternetConstants,ISMTPSession
 	{
 		InputStream is = null;
 		String fileName = fileNamePath;
+		FileInputStream fis = null;
 
 		if	(fileNamePath.lastIndexOf(File.separator) != -1)
 			fileName = fileNamePath.substring(fileNamePath.lastIndexOf(File.separator) + 1);
 
    		try {
-   			is = new FileInputStream(attachmentPath + fileNamePath);
+			   fis = new FileInputStream(attachmentPath + fileNamePath);
+			   is = fis;
 		}
 		catch (FileNotFoundException e) {
 			log ("11 - FileNotFound " + e.getMessage());
@@ -628,6 +630,8 @@ final class SMTPSession implements GXInternetConstants,ISMTPSession
 		} finally {
 			   if (is != null)
 				   is.close();
+			   if (fis != null)
+				   fis.close();
 		}
 
 		println(getNextMessageIdMixed(sTime, false));

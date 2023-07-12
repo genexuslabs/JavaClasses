@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
+import com.genexus.opentelemetry.OpenTelemetryHelper;
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
 import org.apache.commons.io.IOUtils;
@@ -15,6 +16,8 @@ public class WrapperUtils {
     private static Logger log = org.apache.logging.log4j.LogManager.getLogger(WrapperUtils.class);
 
     public static String getJsonFromRestException(int[] statusCode, String reasonPhrase, boolean applicationException, Throwable ex) {
+		OpenTelemetryHelper.recordException(ex);
+
         int localStatusCode = statusCode[0];
         if (!applicationException) {
             localStatusCode = 500;

@@ -253,6 +253,16 @@ public class HttpClient
 		return session.getString();
 	}
 
+	public String readChunk()
+	{
+		return session.readChunk();
+	}
+
+	public boolean getEof()
+	{
+		return session.getEof();
+	}
+
 	public void toFile(String fileName)
 	{
 		session.toFile(fileName);

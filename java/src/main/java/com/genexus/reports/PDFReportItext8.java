@@ -9,7 +9,9 @@ import com.genexus.reports.fonts.Type1FontMetrics;
 import com.genexus.webpanels.HttpContextWeb;
 
 import com.itextpdf.barcodes.Barcode128;
+import com.itextpdf.html2pdf.ConverterProperties;
 import com.itextpdf.html2pdf.HtmlConverter;
+import com.itextpdf.html2pdf.resolver.font.DefaultFontProvider;
 import com.itextpdf.io.font.PdfEncodings;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.io.font.otf.Glyph;
@@ -33,6 +35,8 @@ import com.itextpdf.layout.Style;
 import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.element.*;
 import com.itextpdf.layout.element.Image;
+import com.itextpdf.layout.layout.LayoutArea;
+import com.itextpdf.layout.layout.LayoutContext;
 import com.itextpdf.layout.properties.*;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.layout.splitting.DefaultSplitCharacters;
@@ -60,6 +64,8 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 	public boolean barcode128AsImage = true;
 	ConcurrentHashMap<String, Image> documentImages;
 
+	float DEFAULT_LEADING_FACTOR = 1.2f;
+
 	static {
 		log = org.apache.logging.log4j.LogManager.getLogger(PDFReportItext8.class);
 	}
@@ -79,7 +85,7 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 			pdfDocument = new PdfDocument(writer);
 			pdfDocument.setDefaultPageSize(this.pageSize);
 			document = new Document(pdfDocument);
-
+			document.setFontProvider(new DefaultFontProvider());
 		} catch (Exception e){
 			log.error("Failed to initialize new iText7 document: ", e);
 		}
@@ -525,6 +531,7 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 				else
 					baseFont = PdfFontFactory.createFont(fontPath, PdfEncodings.IDENTITY_H, EmbeddingStrategy.PREFER_EMBEDDED);
 			}
+		document.getFontProvider().addFont(baseFont.getFontProgram());
 		}
 		catch(IOException ioe) {
 			log.error("GxAttris failed: ", ioe);
@@ -565,7 +572,8 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 		cb.setFillColor(new DeviceRgb(foreColor));
 		float captionHeight = baseFont.getAscent(sTxt,fontSize) / 1000;
 		float rectangleWidth = baseFont.getWidth(sTxt, fontSize);
-		float lineHeight = (1 / 1000) * (baseFont.getAscent(sTxt,fontSize) - baseFont.getDescent(sTxt,fontSize)) + (fontSize * 1.2f);
+		float lineHeight = (1 / 1000) * (baseFont.getAscent(sTxt,fontSize) - baseFont.getDescent(sTxt,fontSize)) // Multiply by (1/1000) to convert from thousands of text spaces per unit to just text spaces per unit
+			+ (fontSize * DEFAULT_LEADING_FACTOR);
 		float textBlockHeight = (float)convertScale(bottom-top);
 		int linesCount =   (int)(textBlockHeight/lineHeight);
 		int bottomOri = bottom;
@@ -586,8 +594,7 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 		boolean autoResize = (align & 256) == 256;
 
 		if (htmlformat == 1) {
-			//As of now, you might experience unexpected behaviour since not all possible
-			//HTML code is supported
+			log.debug("As of now, you might experience unexpected behaviour since not all possible HTML code is supported");
 			try {
 				bottomAux = (float)convertScale(bottom);
 				topAux = (float)convertScale(top);
@@ -600,14 +607,14 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 
 				// Define the rectangle where the content will be displayed
 				Rectangle htmlRectangle = new Rectangle(llx, lly, urx - llx, ury - lly);
-				Canvas canvas = new Canvas(pdfDocument.getPage(page), htmlRectangle);
 				YPosition yPosition = new YPosition(htmlRectangle.getTop());
-				TextAlignment txtAlignment = getTextAlignment(alignment);
 
+				ConverterProperties converterProperties = new ConverterProperties();
+				converterProperties.setFontProvider(document.getFontProvider());
 				//Iterate over the elements (a.k.a the parsed HTML string) and handle each case accordingly
-				List<IElement> elements = HtmlConverter.convertToElements(sTxt);
+				List<IElement> elements = HtmlConverter.convertToElements(sTxt, converterProperties);
 				for (IElement element : elements)
-					processHTMLElement(canvas,htmlRectangle, yPosition, txtAlignment, (IBlockElement) element);
+					processHTMLElement(htmlRectangle, yPosition, (IBlockElement) element);
 			} catch (Exception e) {
 				log.error("GxDrawText failed to print HTML text : ", e);
 			}
@@ -695,12 +702,8 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 				float urx = rightAux + leftMargin;
 				float ury = this.pageSize.getTop() - topAux - topMargin - bottomMargin;
 
-				try{
-					DrawTextColumn(llx, lly, urx, ury, sTxt, leading, valign, alignment, style, wrap);
-				}
-				catch (Exception ex) {
-					log.error("Text wrap in GxDrawText failed: ", ex);
-				}
+				DrawTextColumn(llx, lly, urx, ury, leading, sTxt, valign, alignment, style, wrap);
+
 			} else {
 				try {
 					if (!autoResize) {
@@ -734,37 +737,53 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 		}
 	}
 
-	void processHTMLElement(Canvas canvas, Rectangle htmlRectangle, YPosition currentYPosition, TextAlignment txtAlignment, IBlockElement blockElement){
-		float padding = 5f;
-		if (blockElement instanceof Paragraph){
-			Paragraph p = (Paragraph) blockElement;
-
-			// calculate the height of the Paragraph
-			float marginTop = (p.getMarginTop() != null) ? p.getMarginTop().getValue() : 0;
-			float marginBottom = (p.getMarginBottom() != null) ? p.getMarginBottom().getValue() : 0;
-			float paddingTop = (p.getPaddingTop() != null) ? p.getPaddingTop().getValue() : 0;
-			float paddingBottom = (p.getPaddingBottom() != null) ? p.getPaddingBottom().getValue() : 0;
-			float height = marginTop + marginBottom + paddingTop + paddingBottom;
-
-			// check if the currentYPosition has enough space for the new Paragraph
-			if ((currentYPosition.getCurrentYPosition() - height) < htmlRectangle.getBottom()) {
-				// add new page and reset the currentYPosition
-				pdfPage = pdfDocument.addNewPage();
-				pages++;
-				canvas = new Canvas(new PdfCanvas(pdfPage), htmlRectangle);
-				currentYPosition.setCurrentYPosition(htmlRectangle.getTop());
-			}
-
-			canvas.showTextAligned(p, htmlRectangle.getLeft(), currentYPosition.getCurrentYPosition() - p.getMarginTop().getValue(), txtAlignment);
-			currentYPosition.setCurrentYPosition(currentYPosition.getCurrentYPosition() - (height + padding));
-		} else if (blockElement instanceof Div) {
+	void processHTMLElement(Rectangle htmlRectangle, YPosition currentYPosition, IBlockElement blockElement){
+		if (blockElement instanceof Div) {
 			Div div = (Div) blockElement;
-			// Iterate through the children of the Div
+			// Iterate through the children of the Div and process each child element recursively
 			for (IElement child : div.getChildren())
 				if (child instanceof IBlockElement)
-					// Process the child element recursively
-					processHTMLElement(canvas,htmlRectangle, currentYPosition, txtAlignment, (IBlockElement) child);
+					processHTMLElement(htmlRectangle, currentYPosition, (IBlockElement) child);
 		}
+
+		float blockElementHeight = getBlockElementHeight(blockElement, htmlRectangle);
+		float availableSpace = currentYPosition.getCurrentYPosition() - htmlRectangle.getBottom();
+		if (blockElementHeight > availableSpace){
+			log.error("You are trying to render an element of height " + blockElementHeight + " in a space of height " + availableSpace);
+			return;
+		}
+
+		if (blockElement instanceof Paragraph){
+			Paragraph p = (Paragraph) blockElement;
+			p.setFixedPosition(page, htmlRectangle.getX(), currentYPosition.getCurrentYPosition() - blockElementHeight, htmlRectangle.getWidth());
+			document.add(p);
+		} else if (blockElement instanceof Table){
+			Table table = (Table) blockElement;
+			table.setFixedPosition(page, htmlRectangle.getX(), currentYPosition.getCurrentYPosition() - blockElementHeight, htmlRectangle.getWidth());
+			document.add(table);
+		} else if (blockElement instanceof com.itextpdf.layout.element.List){
+			com.itextpdf.layout.element.List list = (com.itextpdf.layout.element.List) blockElement;
+			list.setFixedPosition(page, htmlRectangle.getX(),currentYPosition.getCurrentYPosition() - blockElementHeight, htmlRectangle.getWidth());
+			document.add(list);
+		}
+		currentYPosition.setCurrentYPosition(currentYPosition.getCurrentYPosition() - blockElementHeight);
+	}
+
+	private float getBlockElementHeight(IBlockElement blockElement, Rectangle htmlRectangle) throws RuntimeException{
+		if (blockElement instanceof Paragraph){
+			Paragraph p = (Paragraph) blockElement;
+			return p.createRendererSubTree().setParent(document.getRenderer()).layout(new LayoutContext(new LayoutArea(page, htmlRectangle))).getOccupiedArea().getBBox().getHeight();
+		} else if (blockElement instanceof Table){
+			Table table = (Table) blockElement;
+			return table.createRendererSubTree().setParent(document.getRenderer()).layout(new LayoutContext(new LayoutArea(page, htmlRectangle))).getOccupiedArea().getBBox().getHeight();
+		} else if (blockElement instanceof com.itextpdf.layout.element.List){
+			com.itextpdf.layout.element.List list = (com.itextpdf.layout.element.List) blockElement;
+			return list.createRendererSubTree().setParent(document.getRenderer()).layout(new LayoutContext(new LayoutArea(page, htmlRectangle))).getOccupiedArea().getBBox().getHeight();
+		} else if (blockElement instanceof Div){
+			Div div = (Div) blockElement;
+			return div.createRendererSubTree().setParent(document.getRenderer()).layout(new LayoutContext(new LayoutArea(page, htmlRectangle))).getOccupiedArea().getBBox().getHeight();
+		}
+		throw new RuntimeException("getBlockElementHeight failed, you might be trying to render something that is not a <p>, <table> or a <li>");
 	}
 
 	public class YPosition {
@@ -801,33 +820,45 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 		}
 	}
 
-	void DrawTextColumn(float llx, float lly, float urx, float ury, String text, float leading, int valign, int alignment, Style style, boolean wrap){
-		float y = lly;
-		if (valign == VerticalAlign.MIDDLE.value())
-			ury = ury - ((y - lly) / 2) + leading;
-		else if (valign == VerticalAlign.BOTTOM.value())
-			ury = ury - (y - lly- leading);
-		else if (valign == VerticalAlign.TOP.value())
-			ury = ury + leading/2;
-
+	void DrawTextColumn(float llx, float lly, float urx, float ury, float leading, String text, int valign, int alignment, Style style, boolean wrap){
 		Paragraph p = new Paragraph(text);
+
+		if (valign == VerticalAlign.MIDDLE.value()){
+			ury = ury + leading;
+			p.setVerticalAlignment(VerticalAlignment.MIDDLE);
+		}
+		else if (valign == VerticalAlign.BOTTOM.value()){
+			ury = ury + leading;
+			p.setVerticalAlignment(VerticalAlignment.BOTTOM);
+		}
+		else if (valign == VerticalAlign.TOP.value()){
+			ury = ury + leading/2;
+			p.setVerticalAlignment(VerticalAlignment.TOP);
+		}
+		Rectangle rect = new Rectangle(llx, lly, urx - llx, ury - lly);
+		p.setTextAlignment(getTextAlignment(alignment));
+
 		p.addStyle(style);
-		TextAlignment txtAlignment = getTextAlignment(alignment);
-		p.setTextAlignment(txtAlignment);
 		if (wrap) {
 			p.setProperty(Property.SPLIT_CHARACTERS, new CustomSplitCharacters());
 			Table table = new Table(1);
-			table.setFixedPosition(page,llx, lly, urx - llx);
+			table.setFixedPosition(page,rect.getX(), rect.getY(), rect.getWidth());
 			Cell cell = new Cell();
-			cell.setWidth(urx - llx);
-			cell.setHeight(ury - lly);
+			cell.setWidth(rect.getWidth());
+			cell.setHeight(rect.getHeight());
 			cell.setBorder(Border.NO_BORDER);
 			cell.setVerticalAlignment(VerticalAlignment.MIDDLE);
 			cell.add(p);
 			table.addCell(cell);
 			document.add(table);
-		} else
-			document.showTextAligned(p, llx, lly, this.page, txtAlignment, VerticalAlignment.MIDDLE,0);
+		} else{
+			try{
+				PdfCanvas pdfCanvas = new PdfCanvas(pdfPage);
+				Canvas canvas = new Canvas(pdfCanvas, rect);
+				canvas.add(p);
+				canvas.close();
+			} catch (Exception e) { log.error("GxDrawText failed to justify text column: ", e); }
+		}
 	}
 
 	private static class CustomSplitCharacters extends DefaultSplitCharacters {
@@ -863,7 +894,7 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 			else
 				return true;
 		} catch (Exception e){
-			log.error("GxPrintInit faile" , e);
+			log.error("GxPrintInit failed" , e);
 			return false;
 		}
 	}

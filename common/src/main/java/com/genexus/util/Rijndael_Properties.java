@@ -4,6 +4,7 @@
  */
 package com.genexus.util;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -55,26 +56,27 @@ public class Rijndael_Properties // implicit no-argument constructor
 	{
 		if (GLOBAL_DEBUG) System.err.println(">>> " + NAME + ": Looking for " + ALGORITHM + " properties");
 		String it = ALGORITHM + ".properties";
-		InputStream is = Rijndael_Properties.class.getResourceAsStream(it);
-		boolean ok = is != null;
-        if (ok)
-            try {
-                properties.load(is);
-                is.close();
-if (GLOBAL_DEBUG) System.err.println(">>> " + NAME + ": Properties file loaded OK...");
-            } catch (Exception x) {
-                ok = false;
-            }
-        if (!ok) {
-if (GLOBAL_DEBUG) System.err.println(">>> " + NAME + ": WARNING: Unable to load \"" + it + "\" from CLASSPATH.");
-if (GLOBAL_DEBUG) System.err.println(">>> " + NAME + ":          Will use default values instead...");
-            int n = DEFAULT_PROPERTIES.length;
-            for (int i = 0; i < n; i++)
-                properties.put(
-                    DEFAULT_PROPERTIES[i][0], DEFAULT_PROPERTIES[i][1]);
-if (GLOBAL_DEBUG) System.err.println(">>> " + NAME + ": Default properties now set...");
-        }
-
+		try (InputStream is = Rijndael_Properties.class.getResourceAsStream(it);) {
+			boolean ok = is != null;
+			if (ok)
+				try {
+					properties.load(is);
+					is.close();
+					if (GLOBAL_DEBUG) System.err.println(">>> " + NAME + ": Properties file loaded OK...");
+				} catch (Exception x) {
+					ok = false;
+				}
+			if (!ok) {
+				if (GLOBAL_DEBUG)
+					System.err.println(">>> " + NAME + ": WARNING: Unable to load \"" + it + "\" from CLASSPATH.");
+				if (GLOBAL_DEBUG) System.err.println(">>> " + NAME + ":          Will use default values instead...");
+				int n = DEFAULT_PROPERTIES.length;
+				for (int i = 0; i < n; i++)
+					properties.put(
+						DEFAULT_PROPERTIES[i][0], DEFAULT_PROPERTIES[i][1]);
+				if (GLOBAL_DEBUG) System.err.println(">>> " + NAME + ": Default properties now set...");
+			}
+		} catch (IOException ioe) { if (GLOBAL_DEBUG) System.err.println(">>> Failed to open input stream"); }
 	}
 
 // Properties methods (excluding load and save, which are deliberately not

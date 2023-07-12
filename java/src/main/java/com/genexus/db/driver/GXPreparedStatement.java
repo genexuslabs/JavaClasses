@@ -1467,8 +1467,8 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 					{
 							GXFile gxFile = new GXFile(fileName, ResourceAccessControlList.Private);
 							if (gxFile.exists())
-							{							
-								InputStream is= gxFile.getStream();							
+							{
+								InputStream is= gxFile.getStream();
 								setBinaryStream(index, is, (int) gxFile.getLength());
 							}
 							else
@@ -1482,7 +1482,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 								catch (IOException e)
 								{
 									throw new SQLException("The filename does not exists in url " + fileName);
-								}								
+								}
 							}							
 					}
 			}

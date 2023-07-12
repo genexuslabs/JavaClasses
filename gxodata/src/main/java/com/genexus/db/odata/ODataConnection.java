@@ -507,7 +507,7 @@ public class ODataConnection extends ServiceConnection
 				B1_sessionIds.remove(loginBase);
 				URI loginURI = new URI(String.format("%s/Login", loginBase));
 				HttpPost login = new HttpPost(loginURI);
-				StringEntity sloginInfo = new StringEntity(String.format("{\"UserName\":\"%s\", \"Password\":\"%s\", \"CompanyDB\":\"%s\"}", user, password, sapLoginBO));
+				StringEntity sloginInfo = new StringEntity(String.format("{\"UserName\":\"%s\", \"CompanyDB\":\"%s\"}", user, sapLoginBO));
 				login.setEntity(sloginInfo);
 				DefaultHttpClient webClient = new DefaultHttpClient();
 				HttpResponse loginResponse = webClient.execute(login);
