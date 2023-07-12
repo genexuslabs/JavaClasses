@@ -59,17 +59,16 @@ public class JavaInspector
 	private void processJarFile(XMLWriter writer, String jarFile) throws Throwable
 	{
 		System.out.println("Inspecting " + jarFile);
-		JarInputStream jis = new JarInputStream(new FileInputStream(jarFile), true); 
-		JarEntry je;
-		while ((je = jis.getNextJarEntry()) != null) 
-		{ 
-			String classMain = je.getName();
-			if(classMain.endsWith(".class"))
-			{ 
-				classMain = classMain.replace('/', '.').substring(0, classMain.length() -6);
-				System.out.print("Inspecting " + classMain + "...");
-				Class cl = Class.forName(classMain, false, this.getClass().getClassLoader());
-				printClass(writer, cl);
+		try (JarInputStream jis = new JarInputStream(new FileInputStream(jarFile), true);) {
+			JarEntry je;
+			while ((je = jis.getNextJarEntry()) != null) {
+				String classMain = je.getName();
+				if (classMain.endsWith(".class")) {
+					classMain = classMain.replace('/', '.').substring(0, classMain.length() - 6);
+					System.out.print("Inspecting " + classMain + "...");
+					Class cl = Class.forName(classMain, false, this.getClass().getClassLoader());
+					printClass(writer, cl);
+				}
 			}
 		}
 	}
