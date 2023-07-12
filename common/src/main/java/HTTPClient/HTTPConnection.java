@@ -3192,11 +3192,11 @@ static
 
 	while (try_count-- > 0)
 	{
+		Socket sock = null;
 	    try
 	    {
 		// get a client socket
 
-		Socket sock;
 		if (input_demux == null  ||
 		    (sock = input_demux.getSocket()) == null)
 		{
@@ -3323,6 +3323,10 @@ static
 		Log.write(Log.CONN, "Conn:  Retrying request");
 		continue;
 	    }
+		finally
+		{
+			if (sock != null) sock.close();
+		}
 
 	    break;
 	}
@@ -3402,39 +3406,40 @@ static
      */
     private Socket getSocket(int con_timeout)  throws IOException
     {
-	Socket sock = null;
+		Socket sock = null;
+		try {
 
-	String actual_host;
-	int    actual_port;
+			String actual_host;
+			int    actual_port;
 
-	if (Proxy_Host != null)
-	{
-	    actual_host = Proxy_Host;
-	    actual_port = Proxy_Port;
-	}
-	else
-	{
-	    actual_host = Host;
-	    actual_port = Port;
-	}
-
-	Log.write(Log.CONN, "Conn:  Creating Socket: " + actual_host + ":" +
-			    actual_port);
-
-	if (con_timeout == 0)		// normal connection establishment
-	{
-	    if (Socks_client != null)
-		sock = Socks_client.getSocket(actual_host, actual_port);
-	    else
-	    {
-		// try all A records
-		InetAddress[] addr_list = InetAddress.getAllByName(actual_host);
-		for (int idx=0; idx<addr_list.length; idx++)
-		{
-		    try
-		    {
-			if (Protocol == HTTPS)
+			if (Proxy_Host != null)
 			{
+				actual_host = Proxy_Host;
+				actual_port = Proxy_Port;
+			}
+			else
+			{
+				actual_host = Host;
+				actual_port = Port;
+			}
+
+			Log.write(Log.CONN, "Conn:  Creating Socket: " + actual_host + ":" +
+				actual_port);
+
+			if (con_timeout == 0)		// normal connection establishment
+			{
+				if (Socks_client != null)
+					sock = Socks_client.getSocket(actual_host, actual_port);
+				else
+				{
+					// try all A records
+					InetAddress[] addr_list = InetAddress.getAllByName(actual_host);
+					for (int idx=0; idx<addr_list.length; idx++)
+					{
+						try
+						{
+							if (Protocol == HTTPS)
+							{
 //@gusbro
 /*			    if (LocalAddr == null)
 				sock = new SSLSocket(addr_list[idx], actual_port,
@@ -3445,58 +3450,63 @@ static
 						     ssl_ctxt);
 			    ((SSLSocket) sock).setAutoHandshake(false);
 */
-                            if(LocalAddr == null)
-                              sock = sslConnection.getSSLSocket(addr_list[idx], actual_port);
-                            else sock = sslConnection.getSSLSocket(addr_list[idx], actual_port, LocalAddr, LocalPort);
+								if(LocalAddr == null)
+									sock = sslConnection.getSSLSocket(addr_list[idx], actual_port);
+								else sock = sslConnection.getSSLSocket(addr_list[idx], actual_port, LocalAddr, LocalPort);
 
-							//@iroqueta
-							sock.setTcpNoDelay(tcpNoDelay);
+								//@iroqueta
+								sock.setTcpNoDelay(tcpNoDelay);
 //@gusbro\
+							}
+							else
+							{
+								if (LocalAddr == null)
+									sock = new Socket(addr_list[idx], actual_port);
+								else
+									sock = new Socket(addr_list[idx], actual_port,
+										LocalAddr, LocalPort);
+								//@iroqueta
+								sock.setTcpNoDelay(tcpNoDelay);
+							}
+							break;		// success
+						}
+						catch (SocketException se)
+						{
+							if (idx == addr_list.length-1)
+								throw se;	// we tried them all
+						}
+					}
+				}
 			}
 			else
 			{
-			    if (LocalAddr == null)
-				sock = new Socket(addr_list[idx], actual_port);
-			    else
-				sock = new Socket(addr_list[idx], actual_port,
-						  LocalAddr, LocalPort);
+				EstablishConnection con =
+					new EstablishConnection(actual_host, actual_port, Socks_client);
 				//@iroqueta
-				sock.setTcpNoDelay(tcpNoDelay);
+				con.setTcpNoDelay(tcpNoDelay);
+
+				con.start();
+				try
+				{ con.join((long) con_timeout); }
+				catch (InterruptedException ie)
+				{ }
+
+				if (con.getException() != null)
+					throw con.getException();
+				if ((sock = con.getSocket()) == null)
+				{
+					con.forget();
+					if ((sock = con.getSocket()) == null)
+						throw new InterruptedIOException("Connection establishment timed out");
+				}
 			}
-			break;		// success
-		    }
-		    catch (SocketException se)
-		    {
-			if (idx == addr_list.length-1)
-			    throw se;	// we tried them all
-		    }
+
+			return sock;
 		}
-	    }
-	}
-	else
-	{
-	    EstablishConnection con =
-		new EstablishConnection(actual_host, actual_port, Socks_client);
-		//@iroqueta
-		con.setTcpNoDelay(tcpNoDelay);
-
-	    con.start();
-	    try
-		{ con.join((long) con_timeout); }
-	    catch (InterruptedException ie)
-		{ }
-
-	    if (con.getException() != null)
-		throw con.getException();
-	    if ((sock = con.getSocket()) == null)
-	    {
-		con.forget();
-		if ((sock = con.getSocket()) == null)
-		    throw new InterruptedIOException("Connection establishment timed out");
-	    }
-	}
-
-	return sock;
+		finally
+		{
+			if (sock != null) sock.close();
+		}
     }
 
 
