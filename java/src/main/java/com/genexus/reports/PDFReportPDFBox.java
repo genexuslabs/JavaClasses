@@ -27,8 +27,6 @@ import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.*;
-import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
-import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
@@ -42,6 +40,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
+
+import javax.imageio.IIOException;
 
 public class PDFReportPDFBox extends GXReportPDFCommons{
 	private PDRectangle pageSize;
@@ -626,8 +626,6 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					htmlRectangle.setLowerLeftY(lly);
 					htmlRectangle.setUpperRightX(urx);
 					htmlRectangle.setUpperRightY(ury);
-					cb.addRect(llx, lly, urx - llx, ury - lly);
-					cb.stroke();
 					SpaceHandler spaceHandler = new SpaceHandler(htmlRectangle.getUpperRightY(), htmlRectangle.getHeight());
 
 					loadSupportedHTMLTags();
@@ -920,8 +918,6 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			for (Element listItem : blockElement.select("li")){
 				String text = (tagName.equals("ul")) ? "• " + listItem.text() : i + ". " + listItem.text();
 				i++;
-				if (listItem.normalName().equals("ol") || listItem.normalName().equals("ul")) //arreglar esta porqueria
-					processHTMLElement(cb, htmlRectangle, spaceHandler, listItem);
 				float lines = renderHTMLContent(cb, text, fontSize, llx, lly, urx, spaceHandler.getCurrentYPosition());
 				float totalTextHeight = lineHeight * lines * DEFAULT_PDFBOX_LEADING;
 				spaceHandler.setCurrentYPosition(spaceHandler.getCurrentYPosition() - totalTextHeight);
@@ -952,7 +948,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				}
 				else
 					image = PDImageXObject.createFromFile(bitmap,document);
-			} catch(java.lang.IllegalArgumentException | FileNotFoundException e) {
+			} catch(java.lang.IllegalArgumentException | FileNotFoundException |IIOException e) {
 				URL url= new java.net.URL(bitmap);
 				image = PDImageXObject.createFromByteArray(document, IOUtils.toByteArray(url.openStream()),bitmap);
 			}
