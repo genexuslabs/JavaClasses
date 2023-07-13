@@ -126,8 +126,14 @@ public class GXOAuthAccessToken extends GXWebObjectStub
 						messagePermissionEncoded = "Encoded:" + messagePermissionEncoded; 
 					}
 					String OauthRealm = "OAuth realm=\"" + context.getRequest().getServerName() + "\"" + ",error_code=\"" + gamError + "\"" + ",error_description=\"" + messagePermissionEncoded + "\"";
-					context.getResponse().addHeader("WWW-Authenticate", OauthRealm);				
-					SetError(gamError, messagePermission);
+					context.getResponse().addHeader("WWW-Authenticate", OauthRealm);
+
+					JSONObject obj = new JSONObject();
+					obj.put("code", gamError);
+					obj.put("message", messagePermission);
+					JSONObject errorJson = new JSONObject();
+					errorJson.put("error", obj);
+
 					((HttpContextWeb) context).writeText(errorJson.toString());
 					context.getResponse().flushBuffer();
 					return;
@@ -164,25 +170,6 @@ public class GXOAuthAccessToken extends GXWebObjectStub
 				context.sendResponseStatus(404, e.getMessage());
 			}
    	}
-	
-   
-    
-    private JSONObject errorJson;
-    public void SetError(String code, String message)
-		{
-			try
-			{
-				JSONObject obj = new JSONObject();
-				obj.put("code", code);
-				obj.put("message", message);
-				errorJson = new JSONObject();
-				errorJson.put("error", obj);
-			}
-			catch(JSONException e)
-			{
-				System.out.println(e.toString());
-			}
-		}
     
     protected boolean IntegratedSecurityEnabled( )
    	{
