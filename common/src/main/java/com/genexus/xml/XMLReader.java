@@ -785,9 +785,9 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	public void openResource(String url)
 	{
 		reset();
-		try (InputStream stream = ResourceReader.getFile(url);)
+		try
 		{
-
+			InputStream stream = ResourceReader.getFile(url);
 			if	(stream == null)
 			{
 				errCode = ERROR_IO;
@@ -833,8 +833,9 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	public void openResponse(com.genexus.internet.HttpClient client)
 	{
 		reset();
-		try (InputStream is = client.getInputStream())
+		try
 		{
+			InputStream is = client.getInputStream();
 			if (documentEncoding.length() > 0)
 				inputSource = new XMLInputSource(null, null, null, is, documentEncoding);
 			else
@@ -851,8 +852,9 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	public void openRequest(IHttpRequest client)
 	{
 		reset();
-		try (InputStream is = client.getInputStream())
+		try
 		{
+			InputStream is = client.getInputStream();
 			if (documentEncoding.length() > 0)
 				inputSource = new XMLInputSource(null, null, null, is, documentEncoding);
 			else
@@ -882,8 +884,9 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 						is.close();
 					}
 				}
+				if (inputSource.getByteStream() != null) inputSource.getByteStream().close();
 			}
-			parserConfiguration.cleanup();			
+			parserConfiguration.cleanup();
         }
         catch (IOException e) 
 		{
