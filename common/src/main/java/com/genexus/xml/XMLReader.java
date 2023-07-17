@@ -884,9 +884,8 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 						is.close();
 					}
 				}
-				if (inputSource.getByteStream() != null) inputSource.getByteStream().close();
 			}
-			parserConfiguration.cleanup();
+			if (parserConfiguration != null) parserConfiguration.cleanup();
         }
         catch (IOException e) 
 		{
@@ -894,6 +893,11 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 			errDescription = e.getMessage();
 	    }
 		inputSource = null;
+	}
+
+	@Override
+	protected void finalize() {
+		this.close();
 	}
 
 	public void addSchema(String url, String schema)
