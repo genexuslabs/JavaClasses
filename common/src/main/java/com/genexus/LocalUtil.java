@@ -1573,10 +1573,12 @@ public class LocalUtil
 		for (int i = originalPicture.length() - 1; i >= 0;)
 		{
 			char a = originalPicture.charAt(i--);
-			while( (a!='Z') && (a!='9') && (a!=',') && (a!=' ') && ((a!='.')  || (a=='.' && dotAsLiteral)) && (a!='%') && (a!=')') && (a!='('))
+			while( (a!='Z') && (a!='9') && (a!=',') && ((a!='.')  || (a=='.' && dotAsLiteral)) && (a!='%') && (a!=')') && (a!='('))
 			{
 				if (!(a =='+' && text.startsWith("-")))
 					formattedText.append(a);
+				if (a == ' ')
+					textIdx--;
 				if( i >= 0) a = originalPicture.charAt(i--);
 				else break;
 			}
