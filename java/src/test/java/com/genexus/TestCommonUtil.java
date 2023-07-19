@@ -128,9 +128,9 @@ public class TestCommonUtil {
 
 		result = ui.getLocalUtil().format(DecimalUtil.doubleToDec(decimalValue), picture);
 		Assert.assertEquals(expectedResult, result);
-
-		picture = "$ ZZZ,ZZZ,ZZ9";
-		expectedResult = "-$         150";
+		
+		picture  = "$ ZZZ,ZZZ,ZZ9";
+		expectedResult  = "-$         150";
 
 		result = ui.getLocalUtil().format(decimalValue, picture);
 		Assert.assertEquals(expectedResult, result);
@@ -145,6 +145,20 @@ public class TestCommonUtil {
 		Assert.assertEquals(expectedResult, result);
 
 		result = ui.getLocalUtil().format(DecimalUtil.doubleToDec(decimalValue), picture);
+		Assert.assertEquals(expectedResult, result);
+
+		decimalValue = 150;
+		picture  = "$ZZZ,ZZZ,ZZ9";
+		expectedResult  = "$        150";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		decimalValue = 5;
+		picture = "$ 9.99";
+		expectedResult = "$ 5.00";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
 		Assert.assertEquals(expectedResult, result);
 
 		decimalValue = -123456789;
