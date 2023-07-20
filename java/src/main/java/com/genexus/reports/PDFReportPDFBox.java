@@ -858,15 +858,17 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 		this.supportedHTMLTags.add("h1");
 		this.supportedHTMLTags.add("h2");
 		this.supportedHTMLTags.add("h3");
+		this.supportedHTMLTags.add("h4");
 		this.supportedHTMLTags.add("img");
 		this.supportedHTMLTags.add("a");
 	}
 
 	private void processHTMLElement(PDPageContentStream cb, PDRectangle htmlRectangle, SpaceHandler spaceHandler, Element blockElement) throws Exception{
+		this.fontBold = false;
 		String tagName = blockElement.normalName();
 		PDFont htmlFont = PDType1Font.TIMES_ROMAN;
 
-		if (tagName.equals("div")) {
+		if (tagName.equals("div") || tagName.equals("span")) {
 			for (Node child : blockElement.childNodes())
 				if (child instanceof Element)
 					processHTMLElement(cb, htmlRectangle, spaceHandler, (Element) child);
@@ -886,7 +888,6 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 
 		float fontSize = 16f; // Default font size for the HTML <p> tag
 		cb.setFont(htmlFont, 16f);
-		this.fontBold = false;
 		if (tagName.equals("h1")){
 			cb.setFont(htmlFont, 32f);
 			fontSize = 32f;
@@ -904,6 +905,11 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			fontSize = 16.5f;
 			tagName = "h";
 		}
+
+		//fontsize / 2 is subtracted from the current Y position so that the rendered item fits within the specified rectangle in the canvas. This is because
+		//PDFBox renders text from left to right and bottom to top
+		spaceHandler.setCurrentYPosition(spaceHandler.getCurrentYPosition() - fontSize / 2);
+
 		if (tagName.equals("h")){
 			this.fontBold = true;
 			float lines = renderHTMLContent(cb, blockElement.text(), fontSize, llx, lly, urx, spaceHandler.getCurrentYPosition());
@@ -930,6 +936,9 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			cb.setStrokingColor(new Color(0, 0, 0));
 		} else if (tagName.equals("img")){
 			String bitmap = blockElement.attr("src");
+			float height = blockElement.attr("height") != "" ? Float.parseFloat(blockElement.attr("height")) : 0;
+			float width = blockElement.attr("width") != "" ? Float.parseFloat(blockElement.attr("width")) : 0;
+
 			PDImageXObject image;
 
 			try {
@@ -952,8 +961,10 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				URL url= new java.net.URL(bitmap);
 				image = PDImageXObject.createFromByteArray(document, IOUtils.toByteArray(url.openStream()),bitmap);
 			}
-			cb.drawImage(image, llx, spaceHandler.getCurrentYPosition() - image.getHeight(), image.getWidth(), image.getHeight());
-			spaceHandler.setCurrentYPosition(spaceHandler.getCurrentYPosition() - image.getHeight() - 10f);
+			if (height == 0) height = image.getHeight();
+			if (width == 0) width = image.getWidth();
+			cb.drawImage(image, llx, spaceHandler.getCurrentYPosition() - height, width, height);
+			spaceHandler.setCurrentYPosition(spaceHandler.getCurrentYPosition() - height - 10f);
 		}
 
 		float availableSpace = spaceHandler.getCurrentYPosition() - lly;
