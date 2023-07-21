@@ -61,6 +61,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
 		cookies = new BasicCookieStore();
 		logger.info("Using apache http client implementation");
+		streamsToClose = new Vector<>();
 	}
 
 	private static void getPoolInstance() {
@@ -123,6 +124,24 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private Boolean lastAuthProxyIsBasic = null;
 	private static IniFile clientCfg = new com.genexus.ModelContext(com.genexus.ModelContext.getModelContextPackageClass()).getPreferences().getIniFile();
 
+	private java.util.Vector<InputStream> streamsToClose;
+
+	private void closeOpenedStreams()
+	{
+		Enumeration<InputStream> e = streamsToClose.elements();
+		while(e.hasMoreElements())
+		{
+			try
+			{
+				(e.nextElement()).close();
+			}
+			catch(java.io.IOException ioex)
+			{
+				logger.error("Error closing stream: " + ioex.getMessage());
+			}
+		}
+		streamsToClose.removeAllElements();
+	}
 
 	private void resetExecParams() {
 		statusCode = 0;
@@ -627,6 +646,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 	public InputStream getInputStream() throws IOException {
 		if (response != null) {
 			this.setEntity();
+			streamsToClose.addElement(entity.getContent());
 			return entity.getContent();
 		} else
 			return null;
@@ -637,7 +657,9 @@ public class HttpClientJavaLib extends GXHttpClient {
 		try (CloseableHttpClient gISHttpClient = HttpClients.createDefault()) {
 			java.net.URI url = new URI(stringURL);
 			HttpGet gISHttpGet = new HttpGet(String.valueOf(url));
-			return gISHttpClient.execute(gISHttpGet).getEntity().getContent();
+			InputStream is = gISHttpClient.execute(gISHttpGet).getEntity().getContent();
+			streamsToClose.addElement(is);
+			return is;
 
 		} catch (URISyntaxException e) {
 			throw new IOException("Malformed URL " + e.getMessage());
@@ -705,9 +727,14 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 	}
 
-
 	public void cleanup() {
 		resetErrorsAndConnParams();
+	}
+
+	@Override
+	protected void finalize()
+	{
+		this.closeOpenedStreams();
 	}
 
 }
