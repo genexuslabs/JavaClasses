@@ -1585,7 +1585,7 @@ public class LocalUtil
 			if( textIdx >= 0)
 			{
 				char textChar = text.charAt(textIdx--);
-				if (textChar != '-' || !hasSymbol)
+				if (textChar != '-' || !hasSymbol || textIdx < 0)
 					formattedText.append(textChar);
 				else
 				{
@@ -1702,7 +1702,7 @@ public class LocalUtil
 		{
 			negativeSign = -1;
 		}
-		else if (value.signum() == -1)
+		else if (value.signum() == -1 && !originalPicture.startsWith("+"))
 		{
 			negativeSign = 1;
 		}

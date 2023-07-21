@@ -6,6 +6,8 @@ import com.genexus.specific.java.Connect;
 import com.genexus.specific.java.LogManager;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.UUID;
 
@@ -161,6 +163,13 @@ public class TestCommonUtil {
 		result = ui.getLocalUtil().format(decimalValue, picture);
 		Assert.assertEquals(expectedResult, result);
 
+		decimalValue = -666;
+		picture = "+ZZZ9";
+		expectedResult = "-666";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result.trim());
+
 		decimalValue = -123456789;
 		picture = "ZZZ,ZZZ,ZZ9";
 		expectedResult = "-123,456,789";
@@ -171,6 +180,19 @@ public class TestCommonUtil {
 		result = ui.getLocalUtil().format(DecimalUtil.doubleToDec(decimalValue), picture);
 		Assert.assertEquals(expectedResult, result);
 
+		BigDecimal bigDecimalValue = new BigDecimal(-12.5);
+		picture = "+99.9";
+		expectedResult = "-12.5";
+
+		result = ui.getLocalUtil().format(bigDecimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		bigDecimalValue = new BigDecimal(-12.5);
+		picture = "$Z9.9";
+		expectedResult = "-$12.5";
+
+		result = ui.getLocalUtil().format(bigDecimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
 	}
 
 	@Test
