@@ -2,6 +2,7 @@ package com.genexus.gxoffice.poi.xssf;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 
 import com.genexus.util.GxFileInfoSourceType;
 import org.apache.poi.ss.usermodel.Row;
@@ -30,7 +31,9 @@ public class ExcelDocument implements IGxError, IExcelDocument {
 			if (!template.equals("")) {
 				GXFile templateFile = new GXFile(template);
 				if (templateFile.exists()) {
-					workBook = new XSSFWorkbook(templateFile.getStream());
+					try (InputStream is = templateFile.getStream()) {
+						workBook = new XSSFWorkbook(templateFile.getStream());
+					}
 				} else {
 					errCod = 4; // Invalid template
 					errDescription = "Invalid template.";
@@ -40,7 +43,9 @@ public class ExcelDocument implements IGxError, IExcelDocument {
 				GXFile file = new GXFile("", fileName, Constants.EXTERNAL_UPLOAD_ACL, GxFileInfoSourceType.Unknown);
 				if (file.exists()) {
 					// System.out.println("Opening..");
-					workBook = new XSSFWorkbook(file.getStream());
+					try (InputStream is = file.getStream()) {
+						workBook = new XSSFWorkbook(is);
+					}
 				} else {
 					// System.out.println("Creating..");
 					workBook = new XSSFWorkbook();
