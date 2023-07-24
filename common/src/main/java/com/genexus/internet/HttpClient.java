@@ -243,6 +243,11 @@ public class HttpClient
 		session.getHeader(name,value);
 	}
 
+	public InputStream getInputStream() throws IOException
+	{
+		return session.getInputStream();
+	}
+
 	public String getString()
 	{	
 		return session.getString();
