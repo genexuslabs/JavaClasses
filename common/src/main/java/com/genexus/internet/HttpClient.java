@@ -243,11 +243,6 @@ public class HttpClient
 		session.getHeader(name,value);
 	}
 
-	public InputStream getInputStream() throws IOException
-	{
-		return session.getInputStream();
-	}
-
 	public String getString()
 	{	
 		return session.getString();
@@ -266,11 +261,6 @@ public class HttpClient
 	public void toFile(String fileName)
 	{
 		session.toFile(fileName);
-	}
-
-	public InputStream getInputStream(String stringURL) throws IOException
-	{
-		return session.getInputStream(stringURL);
 	}
 	
 	public void cleanup()
