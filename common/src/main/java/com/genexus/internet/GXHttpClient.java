@@ -480,8 +480,6 @@ public abstract class GXHttpClient implements IHttpClient{
 
 	public abstract InputStream getInputStream() throws IOException;
 
-	public abstract InputStream getInputStream(String stringURL) throws IOException;
-
 	public abstract String getString();
 
 	public abstract String readChunk();
