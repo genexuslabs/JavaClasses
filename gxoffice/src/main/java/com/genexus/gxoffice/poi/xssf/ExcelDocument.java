@@ -32,7 +32,7 @@ public class ExcelDocument implements IGxError, IExcelDocument {
 				GXFile templateFile = new GXFile(template);
 				if (templateFile.exists()) {
 					try (InputStream is = templateFile.getStream()) {
-						workBook = new XSSFWorkbook(templateFile.getStream());
+						workBook = new XSSFWorkbook(is);
 					}
 				} else {
 					errCod = 4; // Invalid template

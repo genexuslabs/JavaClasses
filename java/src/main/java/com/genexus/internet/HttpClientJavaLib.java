@@ -672,20 +672,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 			return null;
 	}
 
-	public InputStream getInputStream(String stringURL) throws IOException
-	{
-		try (CloseableHttpClient gISHttpClient = HttpClients.createDefault()) {
-			URI url = new URI(stringURL);
-			HttpGet gISHttpGet = new HttpGet(String.valueOf(url));
-			InputStream is = gISHttpClient.execute(gISHttpGet).getEntity().getContent();
-			streamsToClose.addElement(is);
-			return is;
-
-		} catch (URISyntaxException e) {
-			throw new IOException("Malformed URL " + e.getMessage());
-		}
-	}
-
 	private void setEntity() throws IOException {
 		if (entity == null)
 			entity = new ByteArrayEntity(EntityUtils.toByteArray(response.getEntity()));
