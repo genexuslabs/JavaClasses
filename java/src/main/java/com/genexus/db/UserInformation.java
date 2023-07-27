@@ -295,9 +295,9 @@ public abstract class UserInformation extends AbstractUserInformation
 		String user = dataSource.defaultUser;
 		String password = dataSource.defaultPassword;
 
-		GXConnection con = new GXConnection(context, user, password, dataSource);
-		con.getJDBCConnection().close();
-		con.close();
+		try (GXConnection con = new GXConnection(context, user, password, dataSource)) {
+			con.getJDBCConnection().close();
+		}
 	}
 }
 

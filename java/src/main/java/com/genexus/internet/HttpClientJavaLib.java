@@ -8,6 +8,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.*;
 import com.genexus.ModelContext;
 import com.genexus.util.IniFile;
@@ -16,6 +18,7 @@ import com.genexus.CommonUtil;
 import com.genexus.specific.java.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
@@ -60,6 +63,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
 		cookies = new BasicCookieStore();
 		logger.info("Using apache http client implementation");
+		streamsToClose = new Vector<>();
 	}
 
 	private static void getPoolInstance() {
@@ -117,12 +121,31 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private RequestConfig reqConfig = null;		// Atributo usado en la ejecucion del metodo (por ejemplo, httpGet, httpPost)
 	private CookieStore cookies;
 	private ByteArrayEntity entity = null;	// Para mantener el stream luego de cerrada la conexion en la lectura de la response
+	BufferedReader reader = null;
 	private Boolean lastAuthIsBasic = null;
 	private Boolean lastAuthProxyIsBasic = null;
 	private static IniFile clientCfg = new ModelContext(ModelContext.getModelContextPackageClass()).getPreferences().getIniFile();
 	private static final String SET_COOKIE = "Set-Cookie";
 	private static final String COOKIE = "Cookie";
 
+	private java.util.Vector<InputStream> streamsToClose;
+
+	private void closeOpenedStreams()
+	{
+		Enumeration<InputStream> e = streamsToClose.elements();
+		while(e.hasMoreElements())
+		{
+			try
+			{
+				(e.nextElement()).close();
+			}
+			catch(java.io.IOException ioex)
+			{
+				logger.error("Error closing stream: " + ioex.getMessage());
+			}
+		}
+		streamsToClose.removeAllElements();
+	}
 
 	private void resetExecParams() {
 		statusCode = 0;
@@ -227,16 +250,28 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	private static SSLConnectionSocketFactory getSSLSecureInstance() {
 		try {
-			SSLContext sslContext = SSLContextBuilder
+			SSLContextBuilder sslContextBuilder = SSLContextBuilder
 				.create()
-				.loadTrustMaterial(new TrustSelfSignedStrategy())
-				.build();
+				.loadTrustMaterial(new TrustSelfSignedStrategy());
+
+			String pathToKeystore = System.getProperty("javax.net.ssl.keyStore");
+			String keystorePassword = System.getProperty("javax.net.ssl.keyStorePassword");
+			if (pathToKeystore != null && keystorePassword != null)
+				sslContextBuilder.loadKeyMaterial(new File(pathToKeystore), keystorePassword.toCharArray(), keystorePassword.toCharArray());
+
+			String pathToTruststore = System.getProperty("javax.net.ssl.trustStore");
+			String truststorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
+			if (pathToTruststore != null && truststorePassword != null)
+				sslContextBuilder.loadTrustMaterial(new File(pathToTruststore), truststorePassword.toCharArray());
+
+			SSLContext sslContext = sslContextBuilder.build();
+
 			return new SSLConnectionSocketFactory(
 				sslContext,
 				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2" },
 				null,
-				SSLConnectionSocketFactory.getDefaultHostnameVerifier());
-		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
+				NoopHostnameVerifier.INSTANCE);
+		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException | UnrecoverableKeyException | CertificateException | IOException e) {
 			e.printStackTrace();
 		}
 		return new SSLConnectionSocketFactory(
@@ -554,6 +589,10 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 			SetCookieAtr(cookiesToSend);		// Se setean las cookies devueltas en la lista de cookies
 
+			if (response.containsHeader("Transfer-Encoding")) {
+				isChunkedResponse = response.getFirstHeader("Transfer-Encoding").getValue().equalsIgnoreCase("chunked");
+			}
+
 		} catch (IOException e) {
 			setExceptionsCatch(e);
 			this.statusCode = 0;
@@ -627,27 +666,21 @@ public class HttpClientJavaLib extends GXHttpClient {
 	public InputStream getInputStream() throws IOException {
 		if (response != null) {
 			this.setEntity();
-			return entity.getContent();
+			InputStream content = entity.getContent();
+			streamsToClose.addElement(content);
+			return content;
 		} else
 			return null;
-	}
-
-	public InputStream getInputStream(String stringURL) throws IOException
-	{
-		try {
-			URI url = new URI(stringURL);
-			HttpGet gISHttpGet = new HttpGet(String.valueOf(url));
-			CloseableHttpClient gISHttpClient = HttpClients.createDefault();
-			return gISHttpClient.execute(gISHttpGet).getEntity().getContent();
-
-		} catch (URISyntaxException e) {
-			throw new IOException("Malformed URL " + e.getMessage());
-		}
 	}
 
 	private void setEntity() throws IOException {
 		if (entity == null)
 			entity = new ByteArrayEntity(EntityUtils.toByteArray(response.getEntity()));
+	}
+
+	private void setEntityReader() throws IOException {
+		if (reader == null)
+			reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 	}
 
 	public String getString() {
@@ -656,10 +689,36 @@ public class HttpClientJavaLib extends GXHttpClient {
 		try {
 			this.setEntity();
 			String res = EntityUtils.toString(entity, "UTF-8");
+			eof = true;
 			return res;
 		} catch (IOException e) {
 			setExceptionsCatch(e);
 		} catch (IllegalArgumentException e) {
+		}
+		return "";
+	}
+
+	private	boolean eof;
+	public boolean getEof() {
+		return eof;
+	}
+
+	public String readChunk() {
+		if (!isChunkedResponse)
+			return getString();
+
+		if (response == null)
+			return "";
+		try {
+			this.setEntityReader();
+			String res = reader.readLine();
+			if (res == null) {
+				eof = true;
+				res = "";
+			}
+			return res;
+		} catch (IOException e) {
+			setExceptionsCatch(e);
 		}
 		return "";
 	}
@@ -675,9 +734,14 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 	}
 
-
 	public void cleanup() {
 		resetErrorsAndConnParams();
+	}
+
+	@Override
+	protected void finalize()
+	{
+		this.closeOpenedStreams();
 	}
 
 }

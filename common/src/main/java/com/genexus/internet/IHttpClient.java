@@ -47,8 +47,9 @@ public interface IHttpClient {
 	public void getHeader(String name, java.util.Date[] value);
 	public void getHeader(String name, double[] value);
 	public InputStream getInputStream() throws IOException;
-	public InputStream getInputStream(String stringURL) throws IOException;
 	public String getString();
+	public String readChunk();
+	public boolean getEof();
 	public void toFile(String fileName);
 	public void cleanup();
 }

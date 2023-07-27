@@ -12,6 +12,8 @@ import java.util.*;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.ZoneOffset;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -62,14 +64,25 @@ public class CosmosDBHelper {
 		return sqlSelect + " " + sqlFrom + " " + sqlWhere + " " + sqlOrder;
 	}
 
+	private static String GetEscapedProperty(Pattern regexPattern, String key)
+	{
+		Matcher matcher = regexPattern.matcher(key);
+		if (matcher.find())
+			return TABLE_ALIAS + "[\"" + key + "\"]";
+		else
+			return TABLE_ALIAS + "." + key;
+	}
 	public static String createCosmosQuery(CosmosDBQuery query, ServiceCursorBase cursorDef, Object[] parms) throws Exception {
 		String tableName = query.tableName;
 		String[] projection = query.projection;
 		String element;
 		String projectionList = "";
+		String pattern = "[^a-zA-Z0-9]+"; //Special characters supported for property names
+		Pattern regexPattern = Pattern.compile(pattern);
 
 		for (String key : projection) {
-			element = TABLE_ALIAS + "." + key;
+			Matcher matcher = regexPattern.matcher(key);
+			element = GetEscapedProperty(regexPattern,key);
 			if (!projectionList.isEmpty())
 				projectionList = element + "," + projectionList;
 			else
@@ -124,7 +137,11 @@ public class CosmosDBHelper {
 			filterProcess = filterProcess.replace("Func.", "");
 			for (String d : projection) {
 				String wholeWordPattern = String.format("\\b%s\\b", d);
-				filterProcess = filterProcess.replaceAll(wholeWordPattern, TABLE_ALIAS + "." + d);
+				Matcher matcher = regexPattern.matcher(wholeWordPattern);
+				if (matcher.find())
+					filterProcess = filterProcess.replaceAll(wholeWordPattern, TABLE_ALIAS + "[\"" + d + "\"]");
+				else
+					filterProcess = filterProcess.replaceAll(wholeWordPattern, TABLE_ALIAS + "." + d);
 			}
 			keyFilterQ = Arrays.asList(filterProcess);
 			allFiltersQuery.addAll(keyFilterQ);
@@ -134,8 +151,13 @@ public class CosmosDBHelper {
 		String expression = "";
 
 		for (String orderAtt : query.orderBys) {
-			expression = orderAtt.startsWith("(") ? TABLE_ALIAS + "." + orderAtt.substring(1, orderAtt.length() - 1) + " DESC"
-				: TABLE_ALIAS + "." + orderAtt + " ASC";
+			Matcher matcher = regexPattern.matcher(orderAtt);
+			if (!matcher.find())
+				expression = orderAtt.startsWith("(") ? TABLE_ALIAS + "." + orderAtt.substring(1, orderAtt.length() - 1) + " DESC"
+					: TABLE_ALIAS + "." + orderAtt + " ASC";
+			else
+				expression = orderAtt.startsWith("(") ? TABLE_ALIAS + "[\"" + orderAtt.substring(1, orderAtt.length() - 1) + "\"]" + " DESC"
+				: TABLE_ALIAS + "[\"" + orderAtt + "\"]" + "ASC";
 			orderExpressionList.add(expression);
 		}
 		String orderExpression = String.join(",", orderExpressionList);

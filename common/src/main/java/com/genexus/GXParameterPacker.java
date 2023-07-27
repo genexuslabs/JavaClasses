@@ -422,9 +422,9 @@ public final class GXParameterPacker
 
 		if (fileName.trim().length() > 0)
 		{
-			try
+			try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(fileName))))
 			{
-				data = CommonUtil.readToByteArray(new BufferedInputStream(new FileInputStream(new File(fileName))));
+				data = CommonUtil.readToByteArray(bis);
 			}
 			catch (IOException e)
 			{

@@ -86,12 +86,17 @@ public final class GXDBDebug implements ICleanedup
 		}
 	}
 	private PrintWriter createWriter(String filename) throws IOException {
-		Writer baseWriter = new FileWriter(fileName);
-		if	(cfg.buffered)
-		{
-			baseWriter = new BufferedWriter(baseWriter);
+		BufferedWriter buffWriter = null;
+		try (Writer baseWriter = new FileWriter(fileName)){
+			if (cfg.buffered){
+				buffWriter = new BufferedWriter(baseWriter);
+				return new PrintWriter(buffWriter);
+			} else {
+				return new PrintWriter(baseWriter);
+			}
+		} finally {
+			if (buffWriter != null) buffWriter.close();
 		}
-		return new PrintWriter(baseWriter);
 	}
 
 	public void closeLog()

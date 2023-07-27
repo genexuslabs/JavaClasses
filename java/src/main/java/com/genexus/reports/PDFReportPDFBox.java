@@ -5,7 +5,9 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.genexus.CommonUtil;
@@ -19,6 +21,7 @@ import com.genexus.reports.fonts.Type1FontMetrics;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.oned.Code128Writer;
+
 import org.apache.pdfbox.cos.*;
 import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdmodel.*;
@@ -31,6 +34,14 @@ import org.apache.pdfbox.pdmodel.graphics.state.RenderingMode;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionJavaScript;
 import org.apache.pdfbox.pdmodel.interactive.viewerpreferences.PDViewerPreferences;
 import org.apache.pdfbox.util.Matrix;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.select.Elements;
+
+import javax.imageio.IIOException;
 
 public class PDFReportPDFBox extends GXReportPDFCommons{
 	private PDRectangle pageSize;
@@ -48,6 +59,10 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	ConcurrentHashMap<String, PDImageXObject> documentImages;
 	public int runDirection = 0;
 	private int page;
+
+	private final float DEFAULT_PDFBOX_LEADING = 1.2f;
+
+	private Set<String> supportedHTMLTags = new HashSet<>();
 
 	static {
 		log = org.apache.logging.log4j.LogManager.getLogger(PDFReportPDFBox.class);
@@ -594,7 +609,36 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			boolean autoResize = (align & 256) == 256;
 
 			if (htmlformat == 1) {
-				log.info("As for now, HTML printing is not supported while generating reports using PDFBox");
+				log.debug("WARNING: HTML rendering is not natively supported by PDFBOX 2.0.27. Handcrafted support is provided but it is not intended to cover all possible use cases");
+				try {
+					bottomAux = (float)convertScale(bottom);
+					topAux = (float)convertScale(top);
+					float drawingPageHeight = this.pageSize.getUpperRightY() - topMargin - bottomMargin;
+
+					float llx = leftAux + leftMargin;
+					float lly = drawingPageHeight - bottomAux;
+					float urx = rightAux + leftMargin;
+					float ury = drawingPageHeight - topAux;
+
+					// Define the rectangle where the content will be displayed
+					PDRectangle htmlRectangle = new PDRectangle();
+					htmlRectangle.setLowerLeftX(llx);
+					htmlRectangle.setLowerLeftY(lly);
+					htmlRectangle.setUpperRightX(urx);
+					htmlRectangle.setUpperRightY(ury);
+					SpaceHandler spaceHandler = new SpaceHandler(htmlRectangle.getUpperRightY(), htmlRectangle.getHeight());
+
+					loadSupportedHTMLTags();
+
+					Document document = Jsoup.parse(sTxt);
+					Elements allElements = document.getAllElements();
+					for (Element element : allElements)
+						if (this.supportedHTMLTags.contains(element.normalName()))
+							processHTMLElement(cb, htmlRectangle, spaceHandler, element);
+
+				} catch (Exception e) {
+					log.error("GxDrawText failed to print HTML text : ", e);
+				}
 			}
 			else
 			if (barcodeType != null){
@@ -801,8 +845,201 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					}
 				}
 			}
-		} catch (IOException ioe){
+		} catch (Exception ioe){
 			log.error("GxDrawText failed: ", ioe);
+		}
+	}
+
+	private void loadSupportedHTMLTags(){
+		this.supportedHTMLTags.add("p");
+		this.supportedHTMLTags.add("ol");
+		this.supportedHTMLTags.add("ul");
+		this.supportedHTMLTags.add("div");
+		this.supportedHTMLTags.add("h1");
+		this.supportedHTMLTags.add("h2");
+		this.supportedHTMLTags.add("h3");
+		this.supportedHTMLTags.add("h4");
+		this.supportedHTMLTags.add("img");
+		this.supportedHTMLTags.add("a");
+	}
+
+	private void processHTMLElement(PDPageContentStream cb, PDRectangle htmlRectangle, SpaceHandler spaceHandler, Element blockElement) throws Exception{
+		this.fontBold = false;
+		String tagName = blockElement.normalName();
+		PDFont htmlFont = PDType1Font.TIMES_ROMAN;
+
+		if (tagName.equals("div") || tagName.equals("span")) {
+			for (Node child : blockElement.childNodes())
+				if (child instanceof Element)
+					processHTMLElement(cb, htmlRectangle, spaceHandler, (Element) child);
+		}
+
+		if (spaceHandler.getAvailableSpace() <= 0){
+			log.error("You ran out of available space while rendering HTML");
+			return;
+		}
+
+		float lineHeight = (PDType1Font.TIMES_ROMAN.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * fontSize) * DEFAULT_PDFBOX_LEADING;
+		float leading = (float)(Double.valueOf(props.getGeneralProperty(Const.LEADING)).doubleValue());
+
+		float llx = htmlRectangle.getLowerLeftX();
+		float lly = htmlRectangle.getLowerLeftY();
+		float urx = htmlRectangle.getUpperRightX();
+
+		float fontSize = 16f; // Default font size for the HTML <p> tag
+		cb.setFont(htmlFont, 16f);
+		if (tagName.equals("h1")){
+			cb.setFont(htmlFont, 32f);
+			fontSize = 32f;
+			tagName = "h";
+		} else if (tagName.equals("h2")){
+			cb.setFont(htmlFont, 24f);
+			fontSize = 24f;
+			tagName = "h";
+		} else if (tagName.equals("h3")){
+			cb.setFont(htmlFont, 18.72f);
+			fontSize = 18.72f;
+			tagName = "h";
+		} else if (tagName.equals("h4")){
+			cb.setFont(htmlFont, 16f);
+			fontSize = 16.5f;
+			tagName = "h";
+		}
+
+		//fontsize / 2 is subtracted from the current Y position so that the rendered item fits within the specified rectangle in the canvas. This is because
+		//PDFBox renders text from left to right and bottom to top
+		spaceHandler.setCurrentYPosition(spaceHandler.getCurrentYPosition() - fontSize / 2);
+
+		if (tagName.equals("h")){
+			this.fontBold = true;
+			float lines = renderHTMLContent(cb, blockElement.text(), fontSize, llx, lly, urx, spaceHandler.getCurrentYPosition());
+			float totalTextHeight = lineHeight * lines * DEFAULT_PDFBOX_LEADING * leading;
+			spaceHandler.setCurrentYPosition(spaceHandler.getCurrentYPosition() - totalTextHeight);
+		} else if (tagName.equals("p")) {
+			float lines = renderHTMLContent(cb, blockElement.text(), fontSize, llx, lly, urx, spaceHandler.getCurrentYPosition());
+			float totalTextHeight = lineHeight * lines * DEFAULT_PDFBOX_LEADING * leading;
+			spaceHandler.setCurrentYPosition(spaceHandler.getCurrentYPosition() - totalTextHeight);
+		} else if (tagName.equals("ul") || tagName.equals("ol")){
+			int i = 0;
+			for (Element listItem : blockElement.select("li")){
+				String text = (tagName.equals("ul")) ? "• " + listItem.text() : i + ". " + listItem.text();
+				i++;
+				float lines = renderHTMLContent(cb, text, fontSize, llx, lly, urx, spaceHandler.getCurrentYPosition());
+				float totalTextHeight = lineHeight * lines * DEFAULT_PDFBOX_LEADING;
+				spaceHandler.setCurrentYPosition(spaceHandler.getCurrentYPosition() - totalTextHeight);
+			}
+		} else if (tagName.equals("a")){
+			cb.setNonStrokingColor(new Color(0, 0, 255));
+			float lines = renderHTMLContent(cb, blockElement.attr("href"), fontSize, llx, lly, urx, spaceHandler.getCurrentYPosition());
+			float totalTextHeight = lineHeight * lines * DEFAULT_PDFBOX_LEADING * leading;
+			spaceHandler.setCurrentYPosition(spaceHandler.getCurrentYPosition() - totalTextHeight);
+			cb.setStrokingColor(new Color(0, 0, 0));
+		} else if (tagName.equals("img")){
+			String bitmap = blockElement.attr("src");
+			float height = blockElement.attr("height") != "" ? Float.parseFloat(blockElement.attr("height")) : 0;
+			float width = blockElement.attr("width") != "" ? Float.parseFloat(blockElement.attr("width")) : 0;
+
+			PDImageXObject image;
+
+			try {
+				if (!NativeFunctions.isWindows() && new File(bitmap).isAbsolute() && bitmap.startsWith(httpContext.getStaticContentBase()))
+					bitmap = bitmap.replace(httpContext.getStaticContentBase(), "");
+				if (!new File(bitmap).isAbsolute() && !bitmap.toLowerCase().startsWith("http:") && !bitmap.toLowerCase().startsWith("https:")) {
+					if (bitmap.startsWith(httpContext.getStaticContentBase()))
+						bitmap = bitmap.replace(httpContext.getStaticContentBase(), "");
+					image = PDImageXObject.createFromFile(defaultRelativePrepend + bitmap,document);
+					if(image == null) {
+						bitmap = webAppDir + bitmap;
+						image = PDImageXObject.createFromFile(bitmap,document);
+					}
+					else
+						bitmap = defaultRelativePrepend + bitmap;
+				}
+				else
+					image = PDImageXObject.createFromFile(bitmap,document);
+			} catch(java.lang.IllegalArgumentException | FileNotFoundException |IIOException e) {
+				URL url= new java.net.URL(bitmap);
+				image = PDImageXObject.createFromByteArray(document, IOUtils.toByteArray(url.openStream()),bitmap);
+			}
+			if (height == 0) height = image.getHeight();
+			if (width == 0) width = image.getWidth();
+			cb.drawImage(image, llx, spaceHandler.getCurrentYPosition() - height, width, height);
+			spaceHandler.setCurrentYPosition(spaceHandler.getCurrentYPosition() - height - 10f);
+		}
+
+		float availableSpace = spaceHandler.getCurrentYPosition() - lly;
+		spaceHandler.setAvailableSpace(availableSpace);
+	}
+
+	private class SpaceHandler {
+		float currentYPosition;
+		float availableSpace;
+
+		public SpaceHandler(float currentYPosition, float availableSpace) {
+			this.currentYPosition = currentYPosition;
+			this.availableSpace = availableSpace;
+		}
+
+		public float getCurrentYPosition() {
+			return currentYPosition;
+		}
+
+		public void setCurrentYPosition(float currentYPosition) {
+			this.currentYPosition = currentYPosition;
+		}
+
+		public float getAvailableSpace() {
+			return availableSpace;
+		}
+
+		public void setAvailableSpace(float availableSpace) {
+			this.availableSpace = availableSpace;
+		}
+	}
+
+	private float renderHTMLContent(PDPageContentStream contentStream, String text, float fontSize, float llx, float lly, float urx, float ury) {
+		try {
+			PDFont defaultHTMLFont = PDType1Font.TIMES_ROMAN;
+			List<String> lines = new ArrayList<>();
+			String[] words = text.split(" ");
+			StringBuilder currentLine = new StringBuilder();
+			for (String word : words) {
+				float currentLineWidth = defaultHTMLFont.getStringWidth(currentLine + " " + word) / 1000 * fontSize;
+				if (currentLineWidth < urx - llx) {
+					if (currentLine.length() > 0) {
+						currentLine.append(" ");
+					}
+					currentLine.append(word);
+				} else {
+					lines.add(currentLine.toString());
+					currentLine.setLength(0);
+					currentLine.append(word);
+				}
+			}
+			lines.add(currentLine.toString());
+
+			float leading = lines.size() == 1 ? fontSize : DEFAULT_PDFBOX_LEADING * fontSize;
+			float startY = ury;
+
+			if (fontSize > 16f){
+				contentStream.setLineWidth(fontSize * 0.05f);
+				contentStream.setRenderingMode(RenderingMode.FILL_STROKE);
+			}
+			contentStream.beginText();
+			float lineHeight = (defaultHTMLFont.getFontDescriptor().getFontBoundingBox().getUpperRightY() - defaultHTMLFont.getFontDescriptor().getFontBoundingBox().getLowerLeftY())/ 1000 * fontSize;
+			contentStream.newLineAtOffset(llx, startY);
+			for (String line : lines) {
+				contentStream.showText(line);
+				startY = startY - leading - lineHeight;
+				contentStream.newLineAtOffset(0, startY);
+			}
+			contentStream.endText();
+			contentStream.setLineWidth(1f); // Default line width for PDFBox 2.0.27
+			contentStream.setRenderingMode(RenderingMode.FILL); // Default text rendering mode for PDFBox 2.0.27
+			return lines.size();
+		} catch (IOException ioe) {
+			log.error("failed to draw wrapped text: ", ioe);
+			return -1;
 		}
 	}
 
@@ -836,6 +1073,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			contentStream.endText();
 			contentStream.setLineWidth(1f); // Default line width for PDFBox 2.0.27
 			contentStream.setRenderingMode(RenderingMode.FILL); // Default text rendering mode for PDFBox 2.0.27
+			contentStream.moveTo(x,y);
 		} catch (IOException ioe) {
 			log.error("failed to apply text styling: ", ioe);
 		}
@@ -861,7 +1099,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			}
 			lines.add(currentLine.toString());
 
-			float leading = lines.size() == 1 ? fontSize : 1.2f * fontSize;
+			float leading = lines.size() == 1 ? fontSize : DEFAULT_PDFBOX_LEADING * fontSize;
 			float totalTextHeight = fontSize * lines.size() + leading * (lines.size() - 1);
 			float startY = lines.size() == 1 ? lly + (ury - lly - totalTextHeight) / 2 : lly + (ury - lly - totalTextHeight) / 2 + (lines.size() - 1) * (fontSize + leading) + font.getFontDescriptor().getDescent() / 1000 * fontSize;
 
