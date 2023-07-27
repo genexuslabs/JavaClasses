@@ -267,11 +267,6 @@ public class HttpClient
 	{
 		session.toFile(fileName);
 	}
-
-	public InputStream getInputStream(String stringURL) throws IOException
-	{
-		return session.getInputStream(stringURL);
-	}
 	
 	public void cleanup()
 	{
