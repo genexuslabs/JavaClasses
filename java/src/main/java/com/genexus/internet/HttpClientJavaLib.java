@@ -63,6 +63,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
 		cookies = new BasicCookieStore();
 		logger.info("Using apache http client implementation");
+		streamsToClose = new Vector<>();
 	}
 
 	private static void getPoolInstance() {
@@ -127,6 +128,24 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private static final String SET_COOKIE = "Set-Cookie";
 	private static final String COOKIE = "Cookie";
 
+	private java.util.Vector<InputStream> streamsToClose;
+
+	private void closeOpenedStreams()
+	{
+		Enumeration<InputStream> e = streamsToClose.elements();
+		while(e.hasMoreElements())
+		{
+			try
+			{
+				(e.nextElement()).close();
+			}
+			catch(java.io.IOException ioex)
+			{
+				logger.error("Error closing stream: " + ioex.getMessage());
+			}
+		}
+		streamsToClose.removeAllElements();
+	}
 
 	private void resetExecParams() {
 		statusCode = 0;
@@ -647,21 +666,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 	public InputStream getInputStream() throws IOException {
 		if (response != null) {
 			this.setEntity();
-			return entity.getContent();
+			InputStream content = entity.getContent();
+			streamsToClose.addElement(content);
+			return content;
 		} else
 			return null;
-	}
-
-	public InputStream getInputStream(String stringURL) throws IOException
-	{
-		try (CloseableHttpClient gISHttpClient = HttpClients.createDefault()) {
-			URI url = new URI(stringURL);
-			HttpGet gISHttpGet = new HttpGet(String.valueOf(url));
-			return gISHttpClient.execute(gISHttpGet).getEntity().getContent();
-
-		} catch (URISyntaxException e) {
-			throw new IOException("Malformed URL " + e.getMessage());
-		}
 	}
 
 	private void setEntity() throws IOException {
@@ -725,9 +734,14 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 	}
 
-
 	public void cleanup() {
 		resetErrorsAndConnParams();
+	}
+
+	@Override
+	protected void finalize()
+	{
+		this.closeOpenedStreams();
 	}
 
 }

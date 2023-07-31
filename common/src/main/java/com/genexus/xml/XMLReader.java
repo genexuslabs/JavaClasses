@@ -785,9 +785,8 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	public void openResource(String url)
 	{
 		reset();
-		try
+		try (InputStream stream = ResourceReader.getFile(url);)
 		{
-			InputStream stream = ResourceReader.getFile(url);
 			if	(stream == null)
 			{
 				errCode = ERROR_IO;
@@ -795,7 +794,7 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 				return;
 			}
 
-			Reader 		reader = new BufferedReader(new InputStreamReader(stream));
+			Reader reader = new BufferedReader(new InputStreamReader(stream));
 			if (documentEncoding.length() > 0)
 				inputSource = new XMLInputSource(null, null, null, reader, documentEncoding);
 			else
