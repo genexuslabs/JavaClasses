@@ -25,7 +25,7 @@
                 </exclusion>
                 <exclusion>  <!-- exclude bouncycastle from android -->
                     <groupId>org.bouncycastle</groupId>
-                    <artifactId>bcprov-jdk15on</artifactId>
+                    <artifactId>bcprov-jdk18on</artifactId>
                 </exclusion>
             </exclusions>
 		</dependency>
@@ -40,7 +40,7 @@
                 </exclusion>
                 <exclusion>  <!-- exclude bouncycastle from android -->
                     <groupId>org.bouncycastle</groupId>
-                    <artifactId>bcprov-jdk15on</artifactId>
+                    <artifactId>bcprov-jdk18on</artifactId>
                 </exclusion>
             </exclusions>
 		</dependency>
