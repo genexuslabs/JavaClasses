@@ -122,6 +122,11 @@
     		<version>2.0.27</version>
 		</dependency>
 		<dependency>
+    		<groupId>org.jsoup</groupId>
+    		<artifactId>jsoup</artifactId>
+    		<version>1.16.1</version>
+		</dependency>
+		<dependency>
     		<groupId>com.google.zxing</groupId>
     		<artifactId>core</artifactId>
     		<version>3.5.1</version>
@@ -158,11 +163,6 @@
     	    <version>3.36.0.3</version>
     	    <scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-api</artifactId>
-            <version>${io.opentelemetry.version}</version>
-        </dependency>
     </dependencies>
 	
 	<build>

@@ -45,7 +45,12 @@
 			<artifactId>bcprov-jdk15on</artifactId>
 			<version>1.69</version>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+            <version>${io.opentelemetry.version}</version>
+        </dependency>
+    </dependencies>
 
 	<build>
 		<finalName>gxcommon</finalName>

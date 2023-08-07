@@ -143,16 +143,17 @@ public class GXFileInfo implements IGXFileInfo {
 
 	public byte[] toBytes() throws IOException{
 		byte[] data = new byte[0];
-		BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileSource));
-		data = CommonUtil.readToByteArray(bis);
-		bis.close();
-		return data;		
+		try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileSource));) {
+			data = CommonUtil.readToByteArray(bis);
+			bis.close();
+			return data;
+		}
 	}
 	public void fromBytes(byte[] data) throws IOException
 	{
-		OutputStream destination = new BufferedOutputStream(new FileOutputStream(fileSource));
-		destination.write(data, 0, data.length);
-		destination.close();	
+		try (OutputStream destination = new BufferedOutputStream(new FileOutputStream(fileSource))) {
+			destination.write(data, 0, data.length);
+		}
 	}
 	public String readAllText(String encoding)throws IOException{
 		return SpecificImplementation.FileUtils.readFileToString(fileSource, CommonUtil.normalizeEncodingName(encoding));

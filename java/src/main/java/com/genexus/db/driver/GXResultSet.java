@@ -213,9 +213,9 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		if(clob == null) return "";
 
 		char[] cbuf = new char[(int)clob.length()];
-		try
+		try (Reader reader = clob.getCharacterStream())
 		{
-			clob.getCharacterStream().read(cbuf);
+			reader.read(cbuf);
 		}
 		catch(IOException ioException)
 		{

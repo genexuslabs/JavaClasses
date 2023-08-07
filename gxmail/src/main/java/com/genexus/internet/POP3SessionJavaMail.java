@@ -316,7 +316,9 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
 			gxmessage.setHtmltext(newHTML);
 		}
 
-		saveFile(fileName, part.getContent() instanceof MimeMessage ? ((MimeMessage) part.getContent()).getInputStream() : part.getInputStream());
+		try (InputStream is = part.getContent() instanceof MimeMessage ? ((MimeMessage) part.getContent()).getInputStream() : part.getInputStream()){
+			saveFile(fileName, is);
+		}
 		attachs.add(attachmentsPath + fileName);
 		gxmessage.setAttachments(attachs);
     }
@@ -336,8 +338,10 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
   private void saveFile(String filename, InputStream input) throws IOException 
   {
     File file = new File(attachmentsPath + filename);
-    FileOutputStream fos = new FileOutputStream(file);
-    BufferedOutputStream bos = new BufferedOutputStream(fos);
+	BufferedOutputStream bos;
+    try (FileOutputStream fos = new FileOutputStream(file)) {
+		bos = new BufferedOutputStream(fos);
+	}
 
     BufferedInputStream bis = new BufferedInputStream(input);
     int aByte;
