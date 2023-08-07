@@ -5,6 +5,7 @@ package com.genexus.xml;
 import java.io.*;
 import java.util.*;
 
+import com.genexus.ApplicationContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
@@ -30,6 +31,7 @@ import com.genexus.util.*;
 import com.genexus.ResourceReader;
 import com.genexus.internet.IHttpRequest;
 import com.genexus.CommonUtil;
+import org.springframework.core.io.ClassPathResource;
 
 public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHandler
 {
@@ -770,7 +772,23 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 		reset();
 		try
 		{
-			inputSource = new XMLInputSource(null, url, null, new FileInputStream(new File(url)), null);
+			File xmlFile = new File(url);
+			if (ApplicationContext.getInstance().isSpringBootApp())
+			{
+				ClassPathResource resource = new ClassPathResource(url);
+				if (resource.exists())
+					xmlFile = resource.getFile();
+				else
+				{
+					if (url.startsWith(ApplicationContext.getInstance().getServletEngineDefaultPath()))
+					{
+						resource = new ClassPathResource(url.replace(ApplicationContext.getInstance().getServletEngineDefaultPath(), ""));
+						if (resource.exists())
+							xmlFile = resource.getFile();
+					}
+				}
+			}
+			inputSource = new XMLInputSource(null, url, null, new FileInputStream(xmlFile), null);
 			if (documentEncoding.length() > 0)
 				inputSource.setEncoding(CommonUtil.normalizeEncodingName(documentEncoding));
 			parserConfiguration.setInputSource(inputSource);
