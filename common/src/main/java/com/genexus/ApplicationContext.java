@@ -14,7 +14,8 @@ public class ApplicationContext
 	private boolean isGXUtility			= false;
 	private boolean isMsgsToUI		    = true ;
 	private boolean isServletEngine 	= false;
-	private boolean isEJBEngine 	= false;
+	private boolean isSpringBootApp 	= false;
+	private boolean isEJBEngine 		= false;
 	private boolean isDeveloperMenu 	= false;
 	private static Object  syncObject = new Object();
 
@@ -110,6 +111,16 @@ public class ApplicationContext
 	public boolean isServletEngine()
 	{
 		return isServletEngine;
+	}
+
+	public void setSpringBootApp(boolean isSpringBootApp)
+	{
+		this.isSpringBootApp = isSpringBootApp;
+	}
+
+	public boolean isSpringBootApp()
+	{
+		return isSpringBootApp;
 	}
 
 	public void setEJBEngine(boolean isEJBEngine)
