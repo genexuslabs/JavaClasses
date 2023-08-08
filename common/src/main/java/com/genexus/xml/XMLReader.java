@@ -84,7 +84,7 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	
 	private boolean inDocument = false;
 
-	private Vector<InputStream> streamsToClose;
+	private InputStream streamToClose;
 	
 	
 	private void reset()
@@ -758,7 +758,7 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	{
 		nodesQueue = new NodesQueue();
 		inputSource = null;
-		streamsToClose = new Vector<>();
+		streamToClose = null;
 		
 		parserConfiguration = new StandardParserConfiguration();
 		parserConfiguration.setDocumentHandler(this);
@@ -789,7 +789,7 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	{
 		reset();
 		InputStream stream = ResourceReader.getFile(url);
-		streamsToClose.add(stream);
+		streamToClose = stream;
 		try
 		{
 			if	(stream == null)
@@ -875,7 +875,8 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	public void close()
 	{
 		try 
-		{	
+		{
+			if (streamToClose != null) streamToClose.close();
 			if (inputSource != null)
 			{
 				Reader reader = inputSource.getCharacterStream();			
@@ -899,27 +900,8 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 		inputSource = null;
 	}
 
-	private void closeOpenedStreams()
-	{
-		Enumeration<InputStream> e = streamsToClose.elements();
-		while(e.hasMoreElements())
-		{
-			try
-			{
-				(e.nextElement()).close();
-			}
-			catch(IOException ioe)
-			{
-				errCode = ERROR_IO;
-				errDescription = "Failed to close open streams: " + ioe.getMessage();
-			}
-		}
-		streamsToClose.removeAllElements();
-	}
-
 	@Override
 	protected void finalize() {
-		this.closeOpenedStreams();
 		this.close();
 	}
 
