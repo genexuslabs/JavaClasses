@@ -789,6 +789,7 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	{
 		reset();
 		InputStream stream = ResourceReader.getFile(url);
+		streamsToClose.add(stream);
 		try
 		{
 			if	(stream == null)
