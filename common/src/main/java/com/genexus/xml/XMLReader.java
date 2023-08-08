@@ -85,6 +85,8 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	private int readExternalEntities = 1;
 	
 	private boolean inDocument = false;
+
+	private Vector<InputStream> streamsToClose;
 	
 	
 	private void reset()
@@ -758,6 +760,7 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	{
 		nodesQueue = new NodesQueue();
 		inputSource = null;
+		streamsToClose = new Vector<>();
 		
 		parserConfiguration = new StandardParserConfiguration();
 		parserConfiguration.setDocumentHandler(this);
@@ -803,7 +806,8 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	public void openResource(String url)
 	{
 		reset();
-		try (InputStream stream = ResourceReader.getFile(url);)
+		InputStream stream = ResourceReader.getFile(url);
+		try
 		{
 			if	(stream == null)
 			{
@@ -912,8 +916,27 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 		inputSource = null;
 	}
 
+	private void closeOpenedStreams()
+	{
+		Enumeration<InputStream> e = streamsToClose.elements();
+		while(e.hasMoreElements())
+		{
+			try
+			{
+				(e.nextElement()).close();
+			}
+			catch(IOException ioe)
+			{
+				errCode = ERROR_IO;
+				errDescription = "Failed to close open streams: " + ioe.getMessage();
+			}
+		}
+		streamsToClose.removeAllElements();
+	}
+
 	@Override
 	protected void finalize() {
+		this.closeOpenedStreams();
 		this.close();
 	}
 
