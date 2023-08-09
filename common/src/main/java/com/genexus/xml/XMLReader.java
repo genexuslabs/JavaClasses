@@ -83,6 +83,8 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	private int readExternalEntities = 1;
 	
 	private boolean inDocument = false;
+
+	private InputStream streamToClose;
 	
 	
 	private void reset()
@@ -756,6 +758,7 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	{
 		nodesQueue = new NodesQueue();
 		inputSource = null;
+		streamToClose = null;
 		
 		parserConfiguration = new StandardParserConfiguration();
 		parserConfiguration.setDocumentHandler(this);
@@ -785,7 +788,9 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	public void openResource(String url)
 	{
 		reset();
-		try (InputStream stream = ResourceReader.getFile(url);)
+		InputStream stream = ResourceReader.getFile(url);
+		streamToClose = stream;
+		try
 		{
 			if	(stream == null)
 			{
@@ -870,7 +875,8 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	public void close()
 	{
 		try 
-		{	
+		{
+			if (streamToClose != null) streamToClose.close();
 			if (inputSource != null)
 			{
 				Reader reader = inputSource.getCharacterStream();			
