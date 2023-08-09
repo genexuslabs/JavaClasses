@@ -3,6 +3,7 @@ package com.genexus;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -163,6 +164,53 @@ public class GxImageUtil {
 			log.error("flip vertical " + imageFile + " failed" , e);
 		}
 		return "";
+	}
+
+	public static String roundBorders(String imageFile, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius) {
+		if (!isValidInput(imageFile)) return "";
+		try {
+			// Rounded images are basically images with transparent rounded borders and jpg and jpeg formats do not
+			// support transparency, so we have to create a new identical image but in png format
+			BufferedImage originalImage = createBufferedImageFromURI(imageFile);
+			if (imageFile.indexOf(".jpg") > 0 || imageFile.indexOf(".jpeg") > 0)
+				try (ByteArrayOutputStream baos = new ByteArrayOutputStream()){
+					ImageIO.write(originalImage, "png", baos);
+					byte[] bytes = baos.toByteArray();
+					try (InputStream is = new ByteArrayInputStream(bytes)) {originalImage = ImageIO.read(is);}
+					imageFile = imageFile.replace(".jpg",".png").replace(".jpeg",".png");
+				}
+
+			int w = originalImage.getWidth();
+			int h = originalImage.getHeight();
+
+			BufferedImage roundedImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+			Graphics2D g2 = roundedImage.createGraphics();
+			g2.setComposite(AlphaComposite.Src);
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g2.setColor(Color.WHITE);
+
+			GeneralPath path = new GeneralPath();
+			path.moveTo(0, topLeftRadius);
+			path.quadTo(0, 0, topLeftRadius, 0);
+			path.lineTo(w - topRightRadius, 0);
+			path.quadTo(w, 0, w, topRightRadius);
+			path.lineTo(w, h - bottomRightRadius);
+			path.quadTo(w, h, w - bottomRightRadius, h);
+			path.lineTo(bottomLeftRadius, h);
+			path.quadTo(0, h, 0, h - bottomLeftRadius);
+			path.closePath();
+
+			g2.fill(path);
+			g2.setComposite(AlphaComposite.SrcIn);
+			g2.drawImage(originalImage, 0, 0, null);
+			g2.dispose();
+
+			return writeImage(roundedImage,imageFile);
+
+		} catch (Exception e){
+			log.error("round borders for " + imageFile + " failed" , e);
+			return "";
+		}
 	}
 
 	public static String resize(String imageFile, int width, int height, boolean keepAspectRatio) {
