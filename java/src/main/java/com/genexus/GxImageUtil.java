@@ -171,18 +171,14 @@ public class GxImageUtil {
 		try {
 			// Rounded images are basically images with transparent rounded borders and jpg and jpeg formats do not
 			// support transparency, so we have to create a new identical image but in png format
-			BufferedImage originalImage;
-			if (imageFile.indexOf(".jpg") > 0 || imageFile.indexOf(".jpeg") > 0){
-				originalImage = createBufferedImageFromURI(imageFile);
+			BufferedImage originalImage = createBufferedImageFromURI(imageFile);
+			if (imageFile.indexOf(".jpg") > 0 || imageFile.indexOf(".jpeg") > 0)
 				try (ByteArrayOutputStream baos = new ByteArrayOutputStream()){
 					ImageIO.write(originalImage, "png", baos);
 					byte[] bytes = baos.toByteArray();
 					try (InputStream is = new ByteArrayInputStream(bytes)) {originalImage = ImageIO.read(is);}
 					imageFile = imageFile.replace(".jpg",".png").replace(".jpeg",".png");
 				}
-			} else {
-				originalImage = createBufferedImageFromURI(imageFile);
-			}
 
 			int w = originalImage.getWidth();
 			int h = originalImage.getHeight();
