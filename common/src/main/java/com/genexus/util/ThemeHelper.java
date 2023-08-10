@@ -1,6 +1,7 @@
 package com.genexus.util;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Collections;
@@ -11,6 +12,7 @@ import json.org.json.JSONObject;
 
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
+import org.springframework.core.io.ClassPathResource;
 
 public class ThemeHelper
 {
@@ -34,7 +36,11 @@ public class ThemeHelper
 			ThemeData themeData;
 			try
 			{
-				String json =  SpecificImplementation.GXutil.readFileToString(themesJsonFile, CommonUtil.normalizeEncodingName("UTF-8"));
+				String json;
+				if (com.genexus.ApplicationContext.getInstance().isSpringBootApp())
+					json = new ClassPathResource("themes/" + themeName + ".json").getContentAsString(StandardCharsets.UTF_8);
+				else
+					json =  SpecificImplementation.GXutil.readFileToString(themesJsonFile, CommonUtil.normalizeEncodingName("UTF-8"));
 				themeData = ThemeData.fromJson(json);
 			}
 			catch (Exception ex)

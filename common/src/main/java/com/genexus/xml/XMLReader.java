@@ -775,23 +775,28 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 		reset();
 		try
 		{
-			File xmlFile = new File(url);
+			InputStream fileInputStream = null;
 			if (ApplicationContext.getInstance().isSpringBootApp())
 			{
 				ClassPathResource resource = new ClassPathResource(url);
 				if (resource.exists())
-					xmlFile = resource.getFile();
+					fileInputStream = resource.getInputStream();
 				else
 				{
 					if (url.startsWith(ApplicationContext.getInstance().getServletEngineDefaultPath()))
 					{
 						resource = new ClassPathResource(url.replace(ApplicationContext.getInstance().getServletEngineDefaultPath(), ""));
 						if (resource.exists())
-							xmlFile = resource.getFile();
+							fileInputStream = resource.getInputStream();
 					}
 				}
 			}
-			inputSource = new XMLInputSource(null, url, null, new FileInputStream(xmlFile), null);
+			else
+			{
+				File xmlFile = new File(url);
+				fileInputStream = new FileInputStream(xmlFile);
+			}
+			inputSource = new XMLInputSource(null, url, null, fileInputStream, null);
 			if (documentEncoding.length() > 0)
 				inputSource.setEncoding(CommonUtil.normalizeEncodingName(documentEncoding));
 			parserConfiguration.setInputSource(inputSource);
