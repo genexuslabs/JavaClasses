@@ -392,11 +392,6 @@ public class HttpClientManual extends GXHttpClient {
 
 	}
 
-	public InputStream getInputStream(String stringURL) throws IOException
-	{ // for this request always create a new HTTPConnection
-		return getInputStreamStaticMethod(stringURL);
-	}
-
 	private static InputStream getInputStreamStaticMethod(String stringURL) throws IOException {
 		try
 		{
