@@ -1,6 +1,10 @@
 
 package com.genexus;
 
+import org.springframework.core.io.ClassPathResource;
+
+import java.io.File;
+
 public class ApplicationContext
 {
 	private static ApplicationContext instance;
@@ -123,6 +127,14 @@ public class ApplicationContext
 		return isSpringBootApp;
 	}
 
+	public boolean checkIfResourceExist(String path)
+	{
+		if (isSpringBootApp())
+			return new ClassPathResource(path).exists();
+		else
+			return new File(path).exists();
+	}
+
 	public void setEJBEngine(boolean isEJBEngine)
 	{
 		this.isEJBEngine = isEJBEngine;
@@ -137,7 +149,7 @@ public class ApplicationContext
 	private String servletEngineDefaultPath = "";
 	public void setServletEngineDefaultPath(String servletEngineDefaultPath)
 	{
-		if (servletEngineDefaultPath != null) {
+		if (servletEngineDefaultPath != null && !isSpringBootApp()) {
 			this.servletEngineDefaultPath = servletEngineDefaultPath.trim();
 			if(this.servletEngineDefaultPath.endsWith(java.io.File.separator))
 			{

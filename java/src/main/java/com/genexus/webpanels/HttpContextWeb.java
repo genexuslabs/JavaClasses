@@ -1257,6 +1257,9 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getDefaultPath() {
+		if (ApplicationContext.getInstance().isSpringBootApp())
+			return "";
+
 		if (servletContext == null)
 			return "";
 

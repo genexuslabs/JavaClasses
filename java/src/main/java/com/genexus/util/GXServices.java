@@ -75,6 +75,9 @@ public class GXServices {
 	}
 
 	public String configBaseDirectory() {
+		if (ApplicationContext.getInstance().isSpringBootApp())
+			return "";
+		
 		String baseDir = "";
 		String envVariable = System.getenv("LAMBDA_TASK_ROOT");
 		if (envVariable != null && envVariable.length() > 0)
@@ -102,10 +105,10 @@ public class GXServices {
 
 		if (basePath.equals(""))
 			basePath = configBaseDirectory();
-		if (new File(basePath + SERVICES_DEV_FILE).exists()){
+		if (ApplicationContext.getInstance().checkIfResourceExist(basePath + SERVICES_DEV_FILE)){
 			loadFromFile(basePath, SERVICES_DEV_FILE, this);
 		}
-		if (new File(basePath + SERVICES_FILE).exists()){
+		if (ApplicationContext.getInstance().checkIfResourceExist(basePath + SERVICES_FILE)){
 			loadFromFile(basePath, SERVICES_FILE, this);
 		}
 	}

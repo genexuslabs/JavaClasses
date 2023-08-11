@@ -778,18 +778,9 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 			InputStream fileInputStream = null;
 			if (ApplicationContext.getInstance().isSpringBootApp())
 			{
-				ClassPathResource resource = new ClassPathResource(url);
+				ClassPathResource resource = new ClassPathResource(url.replace(".\\", ""));
 				if (resource.exists())
 					fileInputStream = resource.getInputStream();
-				else
-				{
-					if (url.startsWith(ApplicationContext.getInstance().getServletEngineDefaultPath()))
-					{
-						resource = new ClassPathResource(url.replace(ApplicationContext.getInstance().getServletEngineDefaultPath(), ""));
-						if (resource.exists())
-							fileInputStream = resource.getInputStream();
-					}
-				}
 			}
 			else
 			{
