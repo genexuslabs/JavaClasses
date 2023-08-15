@@ -86,17 +86,12 @@ public final class GXDBDebug implements ICleanedup
 		}
 	}
 	private PrintWriter createWriter(String filename) throws IOException {
-		BufferedWriter buffWriter = null;
-		try (Writer baseWriter = new FileWriter(fileName)){
-			if (cfg.buffered){
-				buffWriter = new BufferedWriter(baseWriter);
-				return new PrintWriter(buffWriter);
-			} else {
-				return new PrintWriter(baseWriter);
-			}
-		} finally {
-			if (buffWriter != null) buffWriter.close();
+		Writer baseWriter = new FileWriter(fileName);
+		if	(cfg.buffered)
+		{
+			baseWriter = new BufferedWriter(baseWriter);
 		}
+		return new PrintWriter(baseWriter);
 	}
 
 	public void closeLog()
@@ -247,6 +242,11 @@ public final class GXDBDebug implements ICleanedup
 			System.err.println("Closing " + fileName + "...");
 			log.close();
 		}
+	}
+
+	@Override
+	protected void finalize() {
+		closeLog();
 	}
 
 }
