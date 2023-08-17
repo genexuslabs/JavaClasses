@@ -11,8 +11,8 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 abstract public class GxSpringBootRestService extends GxRestService {
 	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(GxSpringBootRestService.class);
 
-	@ExceptionHandler(HttpMessageNotReadableException.class)
-	protected ResponseEntity<Object> handleException(HttpMessageNotReadableException ex) {
+	@ExceptionHandler(value = {HttpMessageNotReadableException.class, NullPointerException.class})
+	protected ResponseEntity<Object> handleException(Exception ex) {
 		log.error("Error executing REST service", ex);
 		JSONObject errorJson = new JSONObject();
 		try
