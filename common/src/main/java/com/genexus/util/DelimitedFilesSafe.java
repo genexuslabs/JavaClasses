@@ -30,7 +30,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 	private static final byte GX_ASCDEL_NOTENOUGHMEMORY	= -8;
 	private static final byte GX_ASCDEL_WRITEERROR		= -9;
 	private static final byte GX_ASCDEL_BADFMTSTR		= -10;
-	
+
 	public static final String CRLF = "\r\n";
 
 	protected String filename;
@@ -45,14 +45,27 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 	private String toWrite;
 	private String encoding = "";
 	private String newLineBehavior = null;
-	
+
 	private String currString;
 	private boolean readingString = false;
 	protected boolean lengthInBytes = false;
-	
+
 	private String lastLineRead;
 	private boolean lastFieldRead;
 	private boolean isCsv;
+
+	private String getFileName(String pfilename)
+	{
+		String fileName = pfilename;
+		if (ModelContext.getModelContext() != null && ! new File(fileName).isAbsolute())
+		{
+			IHttpContext webContext = ModelContext.getModelContext().getHttpContext();
+			if((webContext != null) && (webContext.isHttpContextWeb() || !webContext.getDefaultPath().isEmpty()))
+				fileName = ModelContext.getModelContext().getHttpContext().getDefaultPath() + File.separator + fileName;
+		}
+		return fileName;
+	}
+
 
 	public String getEncoding()
 	{
@@ -63,8 +76,8 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 	{
 		byte lastTrace = 1;
 		return lastTrace;
-	}	
-	
+	}
+
 // dfropen
 
 	public byte dfropen(String filename)
@@ -86,11 +99,11 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 	{
 		return dfropen(filename, len, fdel, psdel, "");
 	}
-	
+
 	public byte dfropen(String pfilename, int plen, String pfdel, String psdel, String enc)
 	{
 		byte retval = GX_ASCDEL_SUCCESS;
-		
+
 		if	(pfdel.equals("\\t"))
 		{
 			pfdel = "\t";
@@ -100,7 +113,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		{
 			this.encoding = enc;
 			dfropen_in_use = true;
-			filename=pfilename;
+			filename= getFileName(pfilename);
 			len=plen;
 			fdel=pfdel;
 
@@ -120,7 +133,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 								{
 									encoding = "UTF8";
 								}
-								
+
 								try
 								{
 									lengthInBytes = true;
@@ -186,7 +199,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		}else{
 			retval = GX_ASCDEL_INVALIDSEQUENCE;
 		}
-		
+
 		return retval;
 	}
 
@@ -201,11 +214,11 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		if (dfropen_in_use)
 		{
 			try
-            {
+			{
 				String stringDelimitedField = actline.nextToken(fdel);
 				if(fdel.equals(stringDelimitedField) || stringDelimitedField.equals(""))
 				{ // Si el token debe estar vac�o...
-				    stringDelimitedField = "";
+					stringDelimitedField = "";
 				}
 				retnum = new Double(stringDelimitedField);
 			}
@@ -222,13 +235,13 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		}
 
 		num[0] = retnum.doubleValue();
-		try 
+		try
 		{
 			String stringDelimitedField = actline.nextToken(fdel);
 		}
 		catch(Exception e)
 		{//Se sabe que se puede leer un token que no existe al final de la linea
-		}		
+		}
 		return retval;
 	}
 
@@ -242,14 +255,14 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		{
 			try
 			{
-                String stringDelimitedField = actline.nextToken(fdel);
-                if(fdel.equals(stringDelimitedField) || stringDelimitedField.equals(""))
-                { // Si el token debe estar vac�o...
-                    stringDelimitedField = "";
-                }
-                if (!stringDelimitedField.equals(""))
-                	new BigDecimal(stringDelimitedField);                
-                retnum = DecimalUtil.stringToDec(stringDelimitedField);
+				String stringDelimitedField = actline.nextToken(fdel);
+				if(fdel.equals(stringDelimitedField) || stringDelimitedField.equals(""))
+				{ // Si el token debe estar vac�o...
+					stringDelimitedField = "";
+				}
+				if (!stringDelimitedField.equals(""))
+					new BigDecimal(stringDelimitedField);
+				retnum = DecimalUtil.stringToDec(stringDelimitedField);
 			}
 			catch (Exception e)
 			{
@@ -264,7 +277,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		}
 
 		num[0] = retnum;
-		try 
+		try
 		{
 			String stringDelimitedField = actline.nextToken(fdel);
 		}
@@ -282,113 +295,113 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		return dfrgtxt(str, 20000);
 	}
 
-        public byte dfrgtxt(String[] str, int len)
-        {
-                byte retval = GX_ASCDEL_SUCCESS;
-                
-            	if (!fdel.equals("") && !actline.hasMoreTokens() && lastLineRead.endsWith(fdel) && !lastFieldRead)
-            	{
-            		lastFieldRead = true;
-            		str[0] = "";
-            		return retval;
-            	}                
+	public byte dfrgtxt(String[] str, int len)
+	{
+		byte retval = GX_ASCDEL_SUCCESS;
 
-                String retstr = "";
+		if (!fdel.equals("") && !actline.hasMoreTokens() && lastLineRead.endsWith(fdel) && !lastFieldRead)
+		{
+			lastFieldRead = true;
+			str[0] = "";
+			return retval;
+		}
 
-                if (dfropen_in_use)
-                {
-                        try
-                        {
-							if(!readingString)
-							{//Si no estoy leyendo una linea sin delimitador de campo
-							    String stringDelimitedField = actline.nextToken(fdel);
-                                if (fdel.equals(sdel))
-                                {
-                                        if(fdel.equals(stringDelimitedField))
-                                          retstr = new String(actline.nextToken(fdel));
-                                        else
-                                          retstr = stringDelimitedField;
-                                }
-                                else
-                                {
-                                        if(fdel.equals(stringDelimitedField) || stringDelimitedField.equals(""))
-                                        { // Si es un field vacio.
-                                            stringDelimitedField = "";
-                                            str[0] = retstr;
-                                            return retval;
-                                        }
-										
-                                        int lIndex = 0;
-                                        int rIndex = stringDelimitedField.length();
-										
-                                        if(sdel.length() != 0 )
-                                        {
-                                                if(stringDelimitedField.trim().startsWith(sdel))
-                                                {
-                                                        lIndex = stringDelimitedField.indexOf(sdel) + 1;
-														
-														//pongo eso para considerar el caso ",texto"
-														if (stringDelimitedField.trim().endsWith(sdel) && stringDelimitedField.length()==1)
-															stringDelimitedField = stringDelimitedField + actline.nextToken(fdel);
-														
-                                                        while (!stringDelimitedField.trim().endsWith(sdel))
-                                                        {
-                                                           stringDelimitedField = stringDelimitedField + actline.nextToken(fdel);
-                                                        }
-                                                        rIndex = stringDelimitedField.lastIndexOf(sdel);
-                                                }
-                                        }
-                                        retstr = stringDelimitedField.substring(lIndex, rIndex);
-                                }
-							}
-							else
-							{//Estoy leyendo una linea sin delimitador de campo y no se ha finalizado de leer la misma
-							 //Lo que resta por leer esta en currString
-								retstr = currString;
-							}
-							String[] strParm = new String[1];
-							strParm[0] = retstr;
-							retval = processStringToRead(strParm, len);
-							retstr = strParm[0];
-                        }
-                        catch (Exception e)
-                        {
-                                retval = GX_ASCDEL_INVALIDFORMAT;
-								logger.error("Error ADF0009: " + e);
-                        }
-                }
-                else
-                {
-                        retval = GX_ASCDEL_INVALIDSEQUENCE;
-						logger.error("Error ADF0004 o ADF0006");
-                }
+		String retstr = "";
 
-								if (isCsv && ((sdel.equals("") || sdel.equals("\"")) && (retstr.contains("\"\"") || (!fdel.equals("") && retstr.contains(fdel)))))
-								{
-									retstr = retstr.replace("\"\"", "\"");
-									if (sdel.equals(""))
-									{
-										retstr = retstr.substring(1, retstr.length() -1);
-									}
-								}
-
-                str[0] = retstr;
-				try 
-				{
+		if (dfropen_in_use)
+		{
+			try
+			{
+				if(!readingString)
+				{//Si no estoy leyendo una linea sin delimitador de campo
 					String stringDelimitedField = actline.nextToken(fdel);
+					if (fdel.equals(sdel))
+					{
+						if(fdel.equals(stringDelimitedField))
+							retstr = new String(actline.nextToken(fdel));
+						else
+							retstr = stringDelimitedField;
+					}
+					else
+					{
+						if(fdel.equals(stringDelimitedField) || stringDelimitedField.equals(""))
+						{ // Si es un field vacio.
+							stringDelimitedField = "";
+							str[0] = retstr;
+							return retval;
+						}
+
+						int lIndex = 0;
+						int rIndex = stringDelimitedField.length();
+
+						if(sdel.length() != 0 )
+						{
+							if(stringDelimitedField.trim().startsWith(sdel))
+							{
+								lIndex = stringDelimitedField.indexOf(sdel) + 1;
+
+								//pongo eso para considerar el caso ",texto"
+								if (stringDelimitedField.trim().endsWith(sdel) && stringDelimitedField.length()==1)
+									stringDelimitedField = stringDelimitedField + actline.nextToken(fdel);
+
+								while (!stringDelimitedField.trim().endsWith(sdel))
+								{
+									stringDelimitedField = stringDelimitedField + actline.nextToken(fdel);
+								}
+								rIndex = stringDelimitedField.lastIndexOf(sdel);
+							}
+						}
+						retstr = stringDelimitedField.substring(lIndex, rIndex);
+					}
 				}
-				catch(Exception e)
-				{//Se sabe que se puede leer un token que no existe al final de la linea
+				else
+				{//Estoy leyendo una linea sin delimitador de campo y no se ha finalizado de leer la misma
+					//Lo que resta por leer esta en currString
+					retstr = currString;
 				}
-                return retval;
-        }
-		
+				String[] strParm = new String[1];
+				strParm[0] = retstr;
+				retval = processStringToRead(strParm, len);
+				retstr = strParm[0];
+			}
+			catch (Exception e)
+			{
+				retval = GX_ASCDEL_INVALIDFORMAT;
+				logger.error("Error ADF0009: " + e);
+			}
+		}
+		else
+		{
+			retval = GX_ASCDEL_INVALIDSEQUENCE;
+			logger.error("Error ADF0004 o ADF0006");
+		}
+
+		if (isCsv && ((sdel.equals("") || sdel.equals("\"")) && (retstr.contains("\"\"") || (!fdel.equals("") && retstr.contains(fdel)))))
+		{
+			retstr = retstr.replace("\"\"", "\"");
+			if (sdel.equals(""))
+			{
+				retstr = retstr.substring(1, retstr.length() -1);
+			}
+		}
+
+		str[0] = retstr;
+		try
+		{
+			String stringDelimitedField = actline.nextToken(fdel);
+		}
+		catch(Exception e)
+		{//Se sabe que se puede leer un token que no existe al final de la linea
+		}
+		return retval;
+	}
+
 	private byte processStringToRead(String[] currToken, int len)
 	{
 		byte retval = GX_ASCDEL_SUCCESS;
 		if(!fdel.equals(""))
 		{//Si hay un delimitador de campos, leo la cantidad de caracteres o bytes especificados
-		 //truncando el string en caso que sea mas largo
+			//truncando el string en caso que sea mas largo
 			readingString = false;
 			if (!lengthInBytes)
 			{
@@ -396,7 +409,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 				if(strLength > len)
 				{
 					retval = GX_ASCDEL_OVERFLOW;
-				    currToken[0] = currToken[0].substring(0, len);
+					currToken[0] = currToken[0].substring(0, len);
 				}
 			}
 			else
@@ -417,10 +430,10 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 					}
 				}catch(UnsupportedEncodingException e){ System.err.println(e.toString()); }
 			}
-        }
+		}
 		else
 		{//Si no hay un delimitador de campos, leo la cantidad de caracteres o bytes especificados y guardo en
-		 //currString el resto de los caracteres o bytes que quedan por leer de la linea
+			//currString el resto de los caracteres o bytes que quedan por leer de la linea
 			if(!lengthInBytes)
 			{
 				int strLength = currToken[0].length();
@@ -428,7 +441,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 				{
 					readingString = true;
 					currString = currToken[0].substring(len, strLength);
-				    currToken[0] = currToken[0].substring(0, len);
+					currToken[0] = currToken[0].substring(0, len);
 				}
 				else
 				{//Se finalizo de leer la linea
@@ -490,11 +503,11 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		{
 			try
 			{
-                          String stringDelimitedField = actline.nextToken(fdel);
-                          if(fdel.equals(stringDelimitedField) || stringDelimitedField.equals(""))
-                          { // Si el token debe estar vac�o...
-                              stringDelimitedField = "";
-                          }
+				String stringDelimitedField = actline.nextToken(fdel);
+				if(fdel.equals(stringDelimitedField) || stringDelimitedField.equals(""))
+				{ // Si el token debe estar vac�o...
+					stringDelimitedField = "";
+				}
 
 				retstr = stringDelimitedField;
 
@@ -506,14 +519,14 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 					switch (fmt.charAt(i))
 					{
 						case 'y':
-							   year  = value;
-								break;
+							year  = value;
+							break;
 						case 'm':
-							   	month = value;
-								break;
+							month = value;
+							break;
 						case 'd':
-							   	day   = value;
-								break;
+							day   = value;
+							break;
 						default:
 							return GX_ASCDEL_BADFMTSTR;
 					}
@@ -548,13 +561,13 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		}
 
 		date[0] = retdate;
-		try 
+		try
 		{
 			String stringDelimitedField = actline.nextToken(fdel);
 		}
 		catch(Exception e)
 		{//Se sabe que se puede leer un token que no existe al final de la linea
-		}		
+		}
 		return retval;
 	}
 
@@ -605,7 +618,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		return dfwopen(pfilename, pfdel, psdel, append, "");
 	}
 
-	public byte dfwopen(final String filename, String fdel, final String sdel, final int append, final String enc)
+	public byte dfwopen(final String pfilename, String fdel, final String sdel, final int append, final String enc)
 	{
 		byte retval = GX_ASCDEL_SUCCESS;
 
@@ -620,9 +633,9 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 
 			this.sdel = sdel;
 			this.fdel = fdel;
-			this.filename = filename;
+			this.filename = getFileName(pfilename);
 			this.encoding = enc;
-			this.isCsv = filename.toUpperCase().endsWith(".CSV");
+			this.isCsv = pfilename.toUpperCase().endsWith(".CSV");
 
 			try
 			{
@@ -668,27 +681,27 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 
 		return retval;
 	}
-	
-	private String getByteOrderMark(String enc) throws UnsupportedEncodingException 
-	{  
-		if (enc!=null && enc.toUpperCase().equals("UTF-8 BOM")) { 
-			byte[] bom = new byte[3];  
-			bom[0] = (byte) 0xEF;  
-			bom[1] = (byte) 0xBB;  
-			bom[2] = (byte) 0xBF;  
-			return new String(bom, "UTF8");  
-		}else if (enc!=null && enc.toUpperCase().equals("UTF-16LE BOM")) { 
-			byte[] bom = new byte[2];  
-			bom[0] = (byte) 0xFF;  
-			bom[1] = (byte) 0xFE;  
-			return new String(bom, "UTF-16LE");  
-		}else if (enc!=null && enc.toUpperCase().equals("UTF-16BE BOM")) { 
-			byte[] bom = new byte[2];  
-			bom[0] = (byte) 0xFE;  
-			bom[1] = (byte) 0xFF;  
-			return new String(bom, "UTF-16BE");  
-		} else {  
-			return null;  
+
+	private String getByteOrderMark(String enc) throws UnsupportedEncodingException
+	{
+		if (enc!=null && enc.toUpperCase().equals("UTF-8 BOM")) {
+			byte[] bom = new byte[3];
+			bom[0] = (byte) 0xEF;
+			bom[1] = (byte) 0xBB;
+			bom[2] = (byte) 0xBF;
+			return new String(bom, "UTF8");
+		}else if (enc!=null && enc.toUpperCase().equals("UTF-16LE BOM")) {
+			byte[] bom = new byte[2];
+			bom[0] = (byte) 0xFF;
+			bom[1] = (byte) 0xFE;
+			return new String(bom, "UTF-16LE");
+		}else if (enc!=null && enc.toUpperCase().equals("UTF-16BE BOM")) {
+			byte[] bom = new byte[2];
+			bom[0] = (byte) 0xFE;
+			bom[1] = (byte) 0xFF;
+			return new String(bom, "UTF-16BE");
+		} else {
+			return null;
 		}
 	}
 
@@ -791,11 +804,11 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 	public byte dfwptxt(String txt, int len)
 	{
 		byte retval = GX_ASCDEL_SUCCESS;
-		
+
 		if (dfwopen_in_use)
 		{
 			//txt = txt.trim();
-			
+
 			if (len == 0)
 			{
 				int strlen = txt.length();
@@ -803,10 +816,10 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 				{
 					if(lengthInBytes) strlen = txt.getBytes(encoding).length;
 				}catch(UnsupportedEncodingException e){ System.err.println(e.toString()); }
-				
+
 				len = strlen;
 			}
-			
+
 			if (toWrite == null)
 				toWrite = sdel + processStringToWrite(txt, len) + sdel ;
 			else
@@ -857,7 +870,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 			if	(toWrite == null)
 				toWrite = "";
 			else
-			 	toWrite += fdel;
+				toWrite += fdel;
 
 			for (int i = 0; i < 3; i++)
 			{
@@ -875,7 +888,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 					default:
 						logger.error("ADF0012");
 
-						 return GX_ASCDEL_BADFMTSTR;
+						return GX_ASCDEL_BADFMTSTR;
 				}
 			}
 		}
@@ -910,19 +923,19 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		}
 		return retval;
 	}
-	
+
 	private String processStringToWrite(String currToken, int len)
 	{//En el caso que el string sea mas corto que el largo especificado, agrego los caracteres o bytes que falten
 		int lenDiff = 0;
 		int tokenLength;
 		if (!lengthInBytes)
-        {
-        	tokenLength = currToken.length();
-        	if (tokenLength > len)
-        		currToken = currToken.substring(0, len);
-        	else
-        		lenDiff = len - tokenLength;
-        }
+		{
+			tokenLength = currToken.length();
+			if (tokenLength > len)
+				currToken = currToken.substring(0, len);
+			else
+				lenDiff = len - tokenLength;
+		}
 		else
 		{
 			try
@@ -937,7 +950,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 				}
 				else
 					lenDiff = len - tokenLength;
-					
+
 			}catch(UnsupportedEncodingException e){ System.err.println(e.toString()); }
 		}
 		for(int i = 0; i < lenDiff; i++)
@@ -948,70 +961,10 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 			currToken = currToken.replace("\"", "\"\"");
 			if (sdel.equals(""))
 			{
-				currToken = '"' + currToken + '"'; 
+				currToken = '"' + currToken + '"';
 			}
-		}	
-			
+		}
+
 		return currToken;
 	}
-	
-/*
-// main
-	static public void main(String[] args)
-	{
-		   int i;
-		   int CliCod = 0,CliCId = 0;
-		   String CliNom = null;
-		   Date CliFecNac = null;
-
-//		   ascii.dfropen( "clients.txt", 80, ",");
-//		   i=ascii.dfrnext( );
-//		   while (i == 0)
-//		   {
-//		       ascii.dfrgnum( CliCod );
-//		       ascii.dfrgtxt( CliNom );
-//			   ascii.dfrgnum( CliCId );
-//			   ascii.dfrgdate( CliFecNac, "ymd", "-" );
-//		       i=ascii.dfrnext( );
-//		   }
-//		   ascii.dfrclose( );
-
-//////////////////////////////
-
-		   ascii.dfwopen( "prueba.txt");
-
-	       ascii.dfwpnum( 10 );
-	       ascii.dfwptxt( "Pepe");
-	       ascii.dfwpnum( 1020 );
-	       ascii.dfwpdate( new Date(1999-1900,10-1,15), "ymd", "-" );
-		   i=ascii.dfwnext( );
-
-	       ascii.dfwpnum( 20 );
-	       ascii.dfwptxt( "Luis");
-	       ascii.dfwpnum( 1030.567 , 0 );
-	       ascii.dfwpdate( new Date(1998-1900,11-1,16), "ymd", "-" );
-		   i=ascii.dfwnext( );
-
-	       ascii.dfwpnum( 30 );
-	       ascii.dfwptxt( "Pedro");
-	       ascii.dfwpnum( 1040);
-	       ascii.dfwpdate( new Date(1999-1900,12-1,31), "ymd", "-" );
-	       i=ascii.dfwnext( );
-		   ascii.dfwclose( );
-
-//////////////////////////////
-
-		   ascii.dfropen( "prueba.txt");
-		   i=ascii.dfrnext( );
-		   while (i == 0)
-		   {
-		       ascii.dfrgnum( CliCod );
-		       ascii.dfrgtxt( CliNom );
-			   ascii.dfrgnum( CliCId );
-			   ascii.dfrgdate( CliFecNac, "ymd", "-" );
-		       i=ascii.dfrnext( );
-		   }
-		   ascii.dfrclose( );
-	}
-*/
 }
