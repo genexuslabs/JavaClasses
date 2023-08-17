@@ -7,8 +7,10 @@ import java.awt.geom.GeneralPath;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.regex.Pattern;
 
 import com.genexus.db.driver.ResourceAccessControlList;
 import com.genexus.util.GxFileInfoSourceType;
@@ -111,20 +113,41 @@ public class GxImageUtil {
 		return "";
 	}
 
-	private static String writeImage(BufferedImage croppedImage, String destinationFilePathOrUrl) throws IOException {
-		String newFileName = PrivateUtilities.getTempFileName(CommonUtil.getFileType(destinationFilePathOrUrl));
+	private static final Pattern IMAGE_PATTERN = Pattern.compile("\\.(jpg|jpeg|png|bmp|webp|jfif)([/?]|$)", Pattern.CASE_INSENSITIVE);
+
+	private static String writeImage(BufferedImage bufferedImage, String destinationFilePathOrUrl) throws IOException {
 		IHttpContext httpContext = com.genexus.ModelContext.getModelContext().getHttpContext();
-		try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()){
-			ImageIO.write(croppedImage, CommonUtil.getFileType(newFileName), outStream);
-			if (destinationFilePathOrUrl.toLowerCase().startsWith("http://") || destinationFilePathOrUrl.toLowerCase().startsWith("https://") ||
-				(httpContext.isHttpContextWeb() && destinationFilePathOrUrl.startsWith(httpContext.getContextPath()))){
+		if (destinationFilePathOrUrl.toLowerCase().startsWith("http://") || destinationFilePathOrUrl.toLowerCase().startsWith("https://") || (httpContext.isHttpContextWeb() && destinationFilePathOrUrl.startsWith(httpContext.getContextPath()))){
+
+			String newFileName;
+			if (!IMAGE_PATTERN.matcher(destinationFilePathOrUrl).find()) {
+				URL imageUrl = new URL(destinationFilePathOrUrl);
+				HttpURLConnection connection = null;
+				String format;
+				try {
+					connection = (HttpURLConnection) imageUrl.openConnection();
+					format = connection.getContentType().split("/")[1];
+				} finally {
+					if (connection != null) connection.disconnect();
+				}
+				newFileName = PrivateUtilities.getTempFileName(format);
+			} else
+				newFileName = PrivateUtilities.getTempFileName(CommonUtil.getFileType(destinationFilePathOrUrl));
+
+			try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
+				ImageIO.write(bufferedImage, CommonUtil.getFileType(newFileName), outStream);
 				try (ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray())) {
 					GXFile file = getGXFile(newFileName);
 					file.create(inStream, true);
 					file.close();
 					return file.getURI();
 				}
-			} else {
+			}
+
+		} else {
+			String newFileName = PrivateUtilities.getTempFileName(CommonUtil.getFileType(destinationFilePathOrUrl));
+			try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
+				ImageIO.write(bufferedImage, CommonUtil.getFileType(newFileName), outStream);
 				outStream.flush();
 				byte[] imageInByte = outStream.toByteArray();
 				return GXutil.blobFromBytes(imageInByte);
@@ -166,19 +189,33 @@ public class GxImageUtil {
 		return "";
 	}
 
-	public static String roundBorders(String imageFile, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius) {
-		if (!isValidInput(imageFile)) return "";
+	private static BufferedImage jpgToPng(String imageFile){
 		try {
-			// Rounded images are basically images with transparent rounded borders and jpg and jpeg formats do not
-			// support transparency, so we have to create a new identical image but in png format
 			BufferedImage originalImage = createBufferedImageFromURI(imageFile);
 			if (imageFile.indexOf(".jpg") > 0 || imageFile.indexOf(".jpeg") > 0)
 				try (ByteArrayOutputStream baos = new ByteArrayOutputStream()){
 					ImageIO.write(originalImage, "png", baos);
 					byte[] bytes = baos.toByteArray();
 					try (InputStream is = new ByteArrayInputStream(bytes)) {originalImage = ImageIO.read(is);}
-					imageFile = imageFile.replace(".jpg",".png").replace(".jpeg",".png");
 				}
+			return originalImage;
+		} catch (IOException ioe) {
+			log.error("format conversion for " + imageFile + " failed" , ioe);
+			return null;
+		}
+	}
+
+	public static String roundBorders(String imageFile, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius) {
+		if (!isValidInput(imageFile)) return "";
+		try {
+			// Rounded images are basically images with transparent rounded borders and jpg and jpeg formats do not
+			// support transparency, so we have to create a new identical image but in png format if working with a jpg image
+			BufferedImage originalImage = jpgToPng(imageFile);
+			String newImageFile = imageFile;
+			if (imageFile.indexOf(".jpg") != -1)
+				newImageFile = imageFile.substring(0, imageFile.indexOf(".jpg")) + ".png";
+			else if (imageFile.indexOf(".jpeg") != -1)
+				newImageFile = imageFile.substring(0, imageFile.indexOf(".jpeg")) + ".png";
 
 			int w = originalImage.getWidth();
 			int h = originalImage.getHeight();
@@ -205,7 +242,7 @@ public class GxImageUtil {
 			g2.drawImage(originalImage, 0, 0, null);
 			g2.dispose();
 
-			return writeImage(roundedImage,imageFile);
+			return writeImage(roundedImage,newImageFile);
 
 		} catch (Exception e){
 			log.error("round borders for " + imageFile + " failed" , e);
@@ -258,9 +295,17 @@ public class GxImageUtil {
 		if (!isValidInput(imageFile))
 			return "";
 		try {
-			BufferedImage image = createBufferedImageFromURI(imageFile);
-			BufferedImage rotatedImage = rotateImage(image, angle);
-			return writeImage(rotatedImage, imageFile);
+			// The process of rotating an image implies fitting it inside a rectangle and filling the excess
+			// with transparent background and jpg and jpeg formats do not transparency, so we have to create a new
+			// identical image but in png format if working with a jpg image
+			BufferedImage originalImage = jpgToPng(imageFile);
+			String newImageFile = imageFile;
+			if (imageFile.indexOf(".jpg") != -1)
+				newImageFile = imageFile.substring(0, imageFile.indexOf(".jpg")) + ".png";
+			else if (imageFile.indexOf(".jpeg") != -1)
+				newImageFile = imageFile.substring(0, imageFile.indexOf(".jpeg")) + ".png";
+			BufferedImage rotatedImage = rotateImage(originalImage, angle);
+			return writeImage(rotatedImage, newImageFile);
 		}
 		catch (Exception e) {
 			log.error("rotate " + imageFile + " failed" , e);
