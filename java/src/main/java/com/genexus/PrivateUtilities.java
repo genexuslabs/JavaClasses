@@ -524,7 +524,7 @@ public final class PrivateUtilities
 				}
 				c = c.getSuperclass();
 
-				if (c.getSimpleName().equals("GXRestServiceWrapper")) {
+				if (c == null || c.getSimpleName().equals("GXRestServiceWrapper")) {
 					return null;
 				}
 			}
@@ -558,7 +558,7 @@ public final class PrivateUtilities
 			}
 			c = c.getSuperclass();
 
-			if (c.getSimpleName().equals("GXRestServiceWrapper")) {
+			if (c == null || c.getSimpleName().equals("GXRestServiceWrapper")) {
 				return null;
 			}
 		}
