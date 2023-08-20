@@ -163,6 +163,11 @@
     	    <version>3.36.0.3</version>
     	    <scope>test</scope>
 		</dependency>
+		<dependency>
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-instrumentation-annotations</artifactId>
+            <version>${io.opentelemetry.instrumentation.version}</version>
+        </dependency>
     </dependencies>
 	
 	<build>
