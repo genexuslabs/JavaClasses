@@ -163,6 +163,11 @@
             <artifactId>opentelemetry-api</artifactId>
             <version>${io.opentelemetry.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-instrumentation-annotations</artifactId>
+            <version>${io.opentelemetry.instrumentation.version}</version>
+        </dependency>
     </dependencies>
 	
 	<build>
