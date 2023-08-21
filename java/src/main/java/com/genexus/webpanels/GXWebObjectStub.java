@@ -82,10 +82,22 @@ public abstract class GXWebObjectStub extends HttpServlet
 		logger.debug(sBuffer.toString());
 	}
 
-	protected void callExecute(String method, IHttpServletRequest req, IHttpServletResponse res) throws ServletException
+	protected void callExecute(String method, IHttpServletRequest req, IHttpServletResponse res) throws ServletException {
+		HttpContext httpContext = null;
+		try
+		{
+			httpContext = new HttpContextWeb(method, req, res, getWrappedServletContext());
+			callExecute(method, req, res, httpContext);
+		}
+		catch (Exception e)
+		{
+			handleException(e, httpContext);
+		}
+	}
+
+	protected void callExecute(String method, IHttpServletRequest req, IHttpServletResponse res, HttpContext httpContext) throws ServletException
 	{
 		initialize(req, res);
-		HttpContext httpContext = null;
 		try
 		{
 			String gxcfg = getWrappedServletContext().getInitParameter("gxcfg");
@@ -97,7 +109,6 @@ public abstract class GXWebObjectStub extends HttpServlet
 				appContext.setServletEngine(true);
 				Application.init(gxcfgClass);
 			}
-			httpContext = new HttpContextWeb(method, req, res, getWrappedServletContext());
 			if (logger.isDebugEnabled())
 				dumpRequestInfo(httpContext);
 			boolean useAuthentication = IntegratedSecurityEnabled();
@@ -166,7 +177,7 @@ public abstract class GXWebObjectStub extends HttpServlet
 					GXSecurityProvider.getInstance().checksession(-2, modelContext, reqUrl, flag);
 					if(!flag[0])
 					{
-						httpContext.redirect(loginObjectURL, true);
+						((HttpContextWeb)httpContext).redirect(loginObjectURL, true);
 					}
 					else
 					{
@@ -187,11 +198,11 @@ public abstract class GXWebObjectStub extends HttpServlet
 						String notAuthorizedObjectURL = URLRouter.getURLRoute(notAuthorizedObject.toLowerCase(), new String[]{}, new String[]{}, httpContext.getRequest().getContextPath(), modelContext.getPackageName());
 						if (flag[0])
 						{
-							httpContext.redirect(notAuthorizedObjectURL, true);
+							((HttpContextWeb)httpContext).redirect(notAuthorizedObjectURL, true);
 						}
 						else
 						{
-							httpContext.redirect(loginObjectURL, true);
+							((HttpContextWeb)httpContext).redirect(loginObjectURL, true);
 						}
 					}
 				}
@@ -203,11 +214,16 @@ public abstract class GXWebObjectStub extends HttpServlet
 		{
 			if (!res.isCommitted())
 				res.reset();
-			logger.error("Web Execution Error", e);
-			if (logger.isDebugEnabled() && httpContext != null)
-				dumpRequestInfo(httpContext);
-			throw new ServletException(com.genexus.PrivateUtilities.getStackTraceAsString(e));
+			handleException(e, httpContext);
 		}
+	}
+
+	protected void handleException(Throwable e, HttpContext httpContext) throws ServletException
+	{
+		logger.error("Web Execution Error", e);
+		if (logger.isDebugEnabled() && httpContext != null)
+			dumpRequestInfo(httpContext);
+		throw new ServletException(com.genexus.PrivateUtilities.getStackTraceAsString(e));
 	}
 
 	private void initialize(IHttpServletRequest req, IHttpServletResponse res) {

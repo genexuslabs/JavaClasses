@@ -53,4 +53,6 @@ public interface IClientPreferences {
 	String getPRINT_LAYOUT_METADATA_DIR();
 
 	boolean getEXPOSE_METADATA();
+
+	String getPDF_RPT_LIBRARY();
 }

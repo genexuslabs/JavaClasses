@@ -121,9 +121,9 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 
 		if 	(System.getProperty("gx.jdbclog") != null)
 		{
-			try
+			try (java.io.FileOutputStream fis = new java.io.FileOutputStream("_gx_jdbc_driver_log.log"))
 			{
-				DriverManager.setLogWriter(new java.io.PrintWriter(new java.io.FileOutputStream("_gx_jdbc_driver_log.log")));
+				DriverManager.setLogWriter(new java.io.PrintWriter(fis));
 			} catch (java.io.IOException e){}
 		}
 
@@ -275,10 +275,12 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 				context.afterGetConnection(handle, dataSource);
 			}
 		}
-		String DBMSId = getDBMSId();
-		if (!DBMSId.equals("")) 
+		if	(DEBUG && isLogEnabled())
 		{
-			log(GXDBDebug.LOG_MIN, "Physical Id      : " + DBMSId);
+			String DBMSId = getDBMSId();
+			if (!DBMSId.equals("")) {
+				log(GXDBDebug.LOG_MIN, "Physical Id      : " + DBMSId);
+			}
 		}
 	}
 
@@ -624,9 +626,9 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 
 	public static void check(String jdbcDriver, String jdbcURL, String jdbcUser, String jdbcPassword, String DBMS)
 	{
-		try
+		try (GXConnection c = new GXConnection();)
 		{
-			GXConnection c = new GXConnection();
+			
 			JDBCLogConfig jdbcLogConfig = new JDBCLogConfig("check", false, false, 0, false, "", 0);
 			c.setLog(new GXDBDebug(jdbcLogConfig));
 			c.dataSource = new DataSource("check", jdbcDriver, jdbcURL, jdbcUser, jdbcPassword, jdbcLogConfig, false, false, "", "", 1, 0, false, DBMS, "", false, "", "", 0, 0, false, 0, false, false, 0, false, 0, false, false, false, false, false, 0, false, 0, 1);

@@ -214,13 +214,13 @@ class SocksClient
 	}
 	catch (IOException ioe)
 	{
-	    if (sock != null)
-	    {
-		try { sock.close(); }
-		catch (IOException ee) {}
-	    }
+		if (sock != null)
+		{
+			try { sock.close(); }
+			catch (IOException ee) {}
+		}
 
-	    throw ioe;
+		throw ioe;
 	}
     }
 

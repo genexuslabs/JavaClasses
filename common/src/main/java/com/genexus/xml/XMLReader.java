@@ -83,6 +83,8 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	private int readExternalEntities = 1;
 	
 	private boolean inDocument = false;
+
+	private InputStream streamToClose;
 	
 	
 	private void reset()
@@ -756,6 +758,7 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	{
 		nodesQueue = new NodesQueue();
 		inputSource = null;
+		streamToClose = null;
 		
 		parserConfiguration = new StandardParserConfiguration();
 		parserConfiguration.setDocumentHandler(this);
@@ -785,10 +788,10 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	public void openResource(String url)
 	{
 		reset();
+		InputStream stream = ResourceReader.getFile(url);
+		streamToClose = stream;
 		try
 		{
-			InputStream stream = ResourceReader.getFile(url);
-
 			if	(stream == null)
 			{
 				errCode = ERROR_IO;
@@ -796,7 +799,7 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 				return;
 			}
 
-			Reader 		reader = new BufferedReader(new InputStreamReader(stream));
+			Reader reader = new BufferedReader(new InputStreamReader(stream));
 			if (documentEncoding.length() > 0)
 				inputSource = new XMLInputSource(null, null, null, reader, documentEncoding);
 			else
@@ -836,10 +839,11 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 		reset();
 		try
 		{
+			InputStream is = client.getInputStream();
 			if (documentEncoding.length() > 0)
-				inputSource = new XMLInputSource(null, null, null, client.getInputStream(), documentEncoding);
+				inputSource = new XMLInputSource(null, null, null, is, documentEncoding);
 			else
-				inputSource = new XMLInputSource(null, null, null, client.getInputStream(), null);
+				inputSource = new XMLInputSource(null, null, null, is, null);
 			parserConfiguration.setInputSource(inputSource);
 		}
 		catch (IOException e)
@@ -854,10 +858,11 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 		reset();
 		try
 		{
+			InputStream is = client.getInputStream();
 			if (documentEncoding.length() > 0)
-				inputSource = new XMLInputSource(null, null, null, client.getInputStream(), documentEncoding);
+				inputSource = new XMLInputSource(null, null, null, is, documentEncoding);
 			else
-				inputSource = new XMLInputSource(null, null, null, client.getInputStream(), null);
+				inputSource = new XMLInputSource(null, null, null, is, null);
 			parserConfiguration.setInputSource(inputSource);
 		}
 		catch (IOException e)
@@ -870,7 +875,8 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	public void close()
 	{
 		try 
-		{	
+		{
+			if (streamToClose != null) streamToClose.close();
 			if (inputSource != null)
 			{
 				Reader reader = inputSource.getCharacterStream();			
@@ -884,7 +890,7 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 					}
 				}
 			}
-			parserConfiguration.cleanup();			
+			if (parserConfiguration != null) parserConfiguration.cleanup();
         }
         catch (IOException e) 
 		{
@@ -892,6 +898,11 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 			errDescription = e.getMessage();
 	    }
 		inputSource = null;
+	}
+
+	@Override
+	protected void finalize() {
+		this.close();
 	}
 
 	public void addSchema(String url, String schema)

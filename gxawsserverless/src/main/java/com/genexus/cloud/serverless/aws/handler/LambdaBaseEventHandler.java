@@ -80,7 +80,7 @@ public class LambdaBaseEventHandler {
 			throw e;
 		}
 
-		if (!response.isHandled()) {
+		if (response.hasFailed()) {
 			logger.info("dispatchEventmessages - messages not handled with success: " + response.getErrorMessage());
 		} else {
 			logger.debug("dispatchEventmessages - message handled with success");

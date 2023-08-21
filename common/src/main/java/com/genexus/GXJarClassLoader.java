@@ -170,6 +170,8 @@ public class GXJarClassLoader extends ClassLoader
 		className = className.replace('.', '/') + ".class";
 
         logger.debug("## GXJarClassLoader: Loading class: " + className + " [" + source + "]");
+		BufferedInputStream bis = null;
+		InputStream theStream = null;
         try
         {
             if(sourceIsJAR)
@@ -178,7 +180,7 @@ public class GXJarClassLoader extends ClassLoader
                 if((theEntry = zipFile.getEntry(className)) != null)
                 {
                     result = new byte[(int)theEntry.getSize()];
-                    InputStream theStream = zipFile.getInputStream(theEntry);
+                    theStream = zipFile.getInputStream(theEntry);
                     new DataInputStream(new BufferedInputStream(theStream)).readFully(result);
                     theStream.close();
                 }
@@ -189,13 +191,21 @@ public class GXJarClassLoader extends ClassLoader
                 if(theFile.exists())
                 {
                     result = new byte[(int)theFile.length()];
-                    FileInputStream theStream = new FileInputStream(theFile);
+					theStream = new FileInputStream(theFile);
                     new DataInputStream(new BufferedInputStream(theStream)).readFully(result);
                     theStream.close();
                     classTimeStamps.put(className, new Long(theFile.lastModified()));
                 }
             }
         }catch(IOException e) { ; }
+		finally
+		{
+			try{
+				if (bis != null) bis.close();
+				if (theStream != null) theStream.close();
+			}
+			catch (IOException ioe) { logger.error("## GXJarClassLoader: Failed to close buffered input stream", ioe ); }
+		}
 		return result;
 	}
 	

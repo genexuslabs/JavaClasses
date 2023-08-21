@@ -19,6 +19,8 @@ import java.security.*;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.genexus.common.interfaces.SpecificImplementation;
 
@@ -36,6 +38,7 @@ public final class CommonUtil
 	static TimeZone 	originalTimeZone;
 	public static IThreadLocal threadCalendar;
 
+	public static String SECURITY_HASH_ALGORITHM = "SHA-256";
 	public static final String [][] ENCODING_JAVA_IANA;
 	private static Random random;
 	private static Date nullDate;
@@ -45,6 +48,11 @@ public final class CommonUtil
 	private static DateFormat parse_850;
 	private static DateFormat parse_asctime;
 	private static final Object http_parse_lock  = new Object();
+
+	private static final String LOG_USER_ENTRY_WHITELIST_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890+-_=/[]{}\":, ";
+	private static final String HTTP_HEADER_WHITELIST_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890.;+-_=/[]{}\"':, @()?<>\\";
+	public static final HashMap<Character, Character> LOG_USER_ENTRY_WHITELIST;
+	public static final HashMap<Character, Character> HTTP_HEADER_WHITELIST;
 
 	public static final ILogger logger = LogManager.getLogger(CommonUtil.class);
 
@@ -158,6 +166,9 @@ public final class CommonUtil
 					{"Big5_HKSCS","Big5-HKSCS"},
 					{"EncodingWrapper","EncodingWrapper"}
 				};
+
+			LOG_USER_ENTRY_WHITELIST = stringToHashMap(LOG_USER_ENTRY_WHITELIST_STRING);
+			HTTP_HEADER_WHITELIST    = stringToHashMap(HTTP_HEADER_WHITELIST_STRING);
 		}
 		catch (Exception e)
 		{
@@ -1833,6 +1844,8 @@ public final class CommonUtil
 
 	public static byte dow(Date date)
 	{
+		if	(date == null || date.equals(nullDate()))
+			return 0;
 		Calendar cal = getCalendar();
 		synchronized (cal)
 		{
@@ -2325,12 +2338,11 @@ public final class CommonUtil
 	{
 		String[] vs = {v1, v2, v3, v4, v5, v6, v7, v8, v9};
 		StringBuffer stringBuilder = new StringBuffer();
+		int valueLength = value.length();
 		if (value != null && !value.equals(""))
 		{
-			StringTokenizer tokenizer = new StringTokenizer(value, "%", false);
 			int lastIndex = 0;
 			int index = 0;
-			int idx = 0;
 			while((index = value.indexOf('%', lastIndex)) != -1)
 			{
 				if(index > 0 && value.charAt(index - 1) == '\\')
@@ -2339,8 +2351,12 @@ public final class CommonUtil
 					stringBuilder.append("%");
 					lastIndex = index + 1;
 				}
-				else
+				else if (index > 0 && index < valueLength - 1 && value.charAt(index) == '%' && value.charAt(index + 1) == '%' )
 				{
+					stringBuilder.append(value.substring(lastIndex, index));
+					stringBuilder.append("%");
+					lastIndex = index + 1;
+				} else {
 					try
 					{
 						stringBuilder.append(value.substring(lastIndex, index));
@@ -2351,7 +2367,8 @@ public final class CommonUtil
 						stringBuilder.append("%").append(value.charAt(index+1));
 					}catch(StringIndexOutOfBoundsException e)
 					{ // Si el value termina con un %, lo ignoro
-						 lastIndex--;
+						lastIndex--;
+						stringBuilder.append("%");
 					}
 				}
 			}
@@ -2697,14 +2714,27 @@ public final class CommonUtil
 	}
 
 
+	private static Pattern pagingSelectPattern;
 	public static String pagingSelect(String select)
 	{
 		String pagingSelect = ltrim(select);
-		// Quita distinct
 		if(pagingSelect.startsWith("DISTINCT"))
 			pagingSelect = pagingSelect.substring(9);
-		// Renombra referencias a tablas por GXICTE
 		pagingSelect = pagingSelect.replaceAll("T\\d+\\.", "GX_ICTE.");
+		if(pagingSelectPattern == null)
+			pagingSelectPattern = Pattern.compile("GX_ICTE\\.(\\[\\w+]) AS \\b(\\w+)\\b(?=,|$)");
+		Matcher match = pagingSelectPattern.matcher(pagingSelect);
+		HashMap<String, String> maps = new HashMap<>();
+		while(match.find())
+		{
+			if(match.groupCount() == 2)
+			{
+				maps.put(match.group(0), String.format("GX_ICTE.[%s]", match.group(2)));
+				maps.put(match.group(1), String.format("[%s]", match.group(2)));
+			}
+		}
+		for(Map.Entry<String, String> map : maps.entrySet())
+			pagingSelect = pagingSelect.replace(map.getKey(), map.getValue());
 		return pagingSelect;
 	}
 
@@ -2726,7 +2756,7 @@ public final class CommonUtil
 			try
             {
             	
-				if (objStr.isEmpty())
+				if (objStr.isEmpty() || objStr.equals("null"))
 					objStr ="0";
 				else 
 				{
@@ -2765,13 +2795,13 @@ public final class CommonUtil
         }
         else if (className.equals("string") || className.indexOf("java.lang.String") != -1)
         {
-            return objStr;
+            return objStr.equals("null") ? "" : objStr;
         }
         else if (className.equals("double") || className.equals("java.lang.Double") || className.equals("[D"))
         {
             try
             {
-            	if (objStr.isEmpty())
+            	if (objStr.isEmpty() || objStr.equals("null"))
             		objStr = "0";                	
                 return Double.valueOf(objStr);
             }
@@ -2786,7 +2816,7 @@ public final class CommonUtil
         {
             try
             {
-            	if (objStr.isEmpty())
+            	if (objStr.isEmpty() || objStr.equals("null"))
             		objStr = "0";                	
                 return Float.valueOf(objStr);
             }
@@ -2801,7 +2831,7 @@ public final class CommonUtil
         {
             try
             {
-                return Boolean.valueOf(objStr);
+                return objStr.equals("null") ? false : Boolean.valueOf(objStr);
             }
             catch(Exception e)
             {
@@ -2814,7 +2844,7 @@ public final class CommonUtil
         {
             try
             {
-            	if (objStr.isEmpty())
+            	if (objStr.isEmpty() || objStr.equals("null"))
             			objStr = "0";                	
                 return DecimalUtil.stringToDec(objStr);
             }
@@ -2828,7 +2858,9 @@ public final class CommonUtil
         else if (className.indexOf("java.util.Date") != -1)
         {
             try {
-				if (objStr.indexOf('/')>0) //Json CallAjax
+				if (objStr.equals("null"))
+					return nullDate();
+				else if (objStr.indexOf('/')>0) //Json CallAjax
 					return LocalUtil.getISO8601Date(objStr);
 				else
 					return new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss zzz Z").parse(objStr);
@@ -2839,7 +2871,7 @@ public final class CommonUtil
         else if(className.indexOf("java.util.UUID") != -1)
         {
 			try {
-				return UUID.fromString(objStr);
+				return objStr.equals("null") ? new UUID(0,0) : UUID.fromString(objStr);
 			}catch(IllegalArgumentException e)
 			{
 				if(fail)
@@ -3222,7 +3254,7 @@ public final class CommonUtil
 			{
 				try
 				{
-					String encoded = URLEncoder.encode( Character.toString(ch), "UTF-8" );
+					String encoded = URLEncoder.encode( Character.toString(ch), "UTF-8" ).replaceAll("\\+", "%20");
 					for (int i = 0; i < encoded.length(); i++)
 						buf[dst++] = encoded.charAt(i);
 				}
@@ -3433,5 +3465,26 @@ public final class CommonUtil
 			classPackage += ".";
 
 		return classPackage + pgmName.replace('\\', '.').trim();
+	}
+
+	private static HashMap<Character, Character> stringToHashMap(String input) {
+		HashMap<Character, Character> hashMap = new HashMap<>();
+
+		for (char c : input.toCharArray()) {
+			hashMap.put(c, c);
+		}
+		return hashMap;
+	}
+
+	public static String Sanitize(String input, HashMap<Character, Character> whiteList) {
+		StringBuilder sanitizedInput  = new StringBuilder();
+
+		for (char c : input.toCharArray()) {
+			if (whiteList.containsKey(c)) {
+				char safeC = whiteList.get(c);
+				sanitizedInput.append(safeC);
+			}
+		}
+		return sanitizedInput.toString();
 	}
 }

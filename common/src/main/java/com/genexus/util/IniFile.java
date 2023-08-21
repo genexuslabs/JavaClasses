@@ -7,12 +7,14 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.genexus.*;
-import com.genexus.util.*;
 
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 import json.org.json.*;
 
 
 public class IniFile {
+	public static final ILogger logger = LogManager.getLogger(IniFile.class);
 	private static final int SECTION = 1;
 	private static final int PROPERTY = 2;
 	private static final int COMMENT = 3;
@@ -29,8 +31,8 @@ public class IniFile {
 	private String defaultSiteKey = "7E2E22D26FF2989E2444852A85E57867";
 	private String defaultServerKey = "7E2E22D26FF2989E2444852A85E57867";
 
-	private String realSiteKey;
-	private String realServerKey;
+	private String siteKey;
+	private String serverKey;
 
 	private static ConcurrentHashMap<String, String> s_confMapping;
 	private static String CONFMAPPING_FILE = "confmapping.json";
@@ -57,46 +59,64 @@ public class IniFile {
 
 	public void setEncryptionStream(InputStream is) {
 		this.encryptionIs = is;
+		ensureServerKey();
+		ensureSiteKey();
 	}
 
 	public String getServerKey() {
-		if (realServerKey != null)
-			return realServerKey;
+		if (serverKey != null) {
+			return serverKey;
+		}
+		ensureServerKey();
+		return serverKey;
+	}
 
-		realServerKey = getFromKeyFile(0);
-		if (realServerKey != null)
-			return realServerKey;
+	private void ensureServerKey() {
+		serverKey = getFromKeyFile(0);
+		if (serverKey != null) {
+			return;
+		}
 
-		if (encryptionIs == null)
-			return defaultServerKey;
+		if (encryptionIs == null) {
+			serverKey = defaultServerKey;
+			return;
+		}
 
 		try {
 			IniFile crypto = new IniFile(encryptionIs);
-			realServerKey = crypto.getProperty("Encryption", "ServerKey", null);
+			serverKey = crypto.getProperty("Encryption", "ServerKey", null);
 		} catch (Exception e) {
+			logger.debug("Could not read ServerKey from InputStream" , e);
 		}
-
-		return realServerKey == null ? defaultServerKey : realServerKey;
+		serverKey = serverKey == null ? defaultServerKey: serverKey;
 	}
 
 	public String getSiteKey() {
-		if (realSiteKey != null)
-			return realSiteKey;
+		if (siteKey != null) {
+			return siteKey;
+		}
+		ensureSiteKey();
+		return siteKey;
+	}
 
-		realSiteKey = getFromKeyFile(1);
-		if (realSiteKey != null)
-			return realSiteKey;
+	private void ensureSiteKey() {
+		siteKey = getFromKeyFile(1);
+		if (siteKey != null) {
+			return;
+		}
 
-		if (encryptionIs == null)
-			return defaultSiteKey;
+		if (encryptionIs == null) {
+			siteKey = defaultSiteKey;
+			return;
+		}
 
 		try {
 			IniFile crypto = new IniFile(encryptionIs);
-			realSiteKey = crypto.getProperty("Encryption", "SiteKey", null);
+			siteKey = crypto.getProperty("Encryption", "SiteKey", null);
 		} catch (Exception e) {
 		}
 
-		return realSiteKey == null ? defaultSiteKey : realSiteKey;
+		siteKey = siteKey == null ? defaultSiteKey : siteKey;
 	}
 
 	String getFromKeyFile(int lineNo) {
@@ -412,8 +432,7 @@ public class IniFile {
 	}
 
 	public void saveFile(File fileHandle) {
-		try {
-			BufferedWriter bw = new BufferedWriter(new FileWriter(fileHandle));
+		try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileHandle))){
 
 			for (Enumeration eSec = sections.elements(); eSec.hasMoreElements();) {
 				Section section = (Section) eSec.nextElement();

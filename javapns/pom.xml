@@ -22,12 +22,12 @@
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20180813</version>
+			<version>20230618</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.64</version>
+			<artifactId>bcprov-jdk18on</artifactId>
+			<version>1.75</version>
 		</dependency>
 	</dependencies>
 

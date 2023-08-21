@@ -130,7 +130,7 @@ public class GXDBMShana implements GXDBMS
 
 	public java.util.Date serverDateTime(GXConnection con) throws SQLException
 	{
-		ResultSet rslt = con.getStatement("_ServerDT_", "SELECT NOW()", false).executeQuery();
+		ResultSet rslt = con.getStatement("_ServerDT_", "SELECT CURRENT_TIMESTAMP FROM DUMMY", false).executeQuery();
 
 		rslt.next();
 		Date value = rslt.getTimestamp(1);
@@ -141,7 +141,7 @@ public class GXDBMShana implements GXDBMS
 	
 	public String serverVersion(GXConnection con) throws SQLException
 	{
-		ResultSet rslt = con.getStatement("_ServerVERSION_", "SELECT VERSION()", false).executeQuery();
+		ResultSet rslt = con.getStatement("_ServerVERSION_", "SELECT VERSION FROM M_DATABASE", false).executeQuery();
 		
 		rslt.next();
 		String value = rslt.getString(1);
@@ -154,7 +154,7 @@ public class GXDBMShana implements GXDBMS
 	{
 		try
 		{
-			ResultSet rslt = con.getStatement("_ConnectionID_", "SELECT CONNECTION_ID()", false).executeQuery();
+			ResultSet rslt = con.getStatement("_ConnectionID_", "SELECT CURRENT_CONNECTION FROM DUMMY", false).executeQuery();
 
 			rslt.next();
 			String value = rslt.getString(1);

@@ -18,17 +18,17 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>gxcommon</artifactId>
 			<version>${project.version}</version>
-		</dependency>
+		</dependency>		
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>gxwrapperjavax</artifactId>
 			<version>${project.version}</version> 			
-		</dependency>		
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>gxcryptocommon</artifactId>
-			<version>${project.version}</version>
 		</dependency>
+    <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>gxcryptocommon</artifactId>
+        <version>${project.version}</version>
+    </dependency>		
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>gxmail</artifactId>
@@ -59,12 +59,6 @@
             <artifactId>log4j-1.2-api</artifactId>
             <version>${log4j.version}</version>
         </dependency>
-        <dependency>
-			<groupId>javax.ejb</groupId>
-			<artifactId>ejb-api</artifactId>
-			<version>3.0</version>
-			<scope>provided</scope>
-		</dependency>
 		<dependency>
 			<groupId>org.glassfish.main.javaee-api</groupId>
 			<artifactId>javax.jms</artifactId>
@@ -76,29 +70,14 @@
 			<version>2.11.0</version>
 		</dependency>
 		<dependency>
-			<groupId>joda-time</groupId>
-			<artifactId>joda-time</artifactId>
-			<version>2.10.4</version>
-		</dependency>
-		<dependency>
-			<groupId>com.github.spullara.mustache.java</groupId>
-			<artifactId>compiler</artifactId>
-			<version>0.9.7</version>
-		</dependency>
-		<dependency>
 			<groupId>commons-net</groupId>
 			<artifactId>commons-net</artifactId>
-			<version>3.3</version>
+			<version>3.9.0</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.transaction</groupId>
 			<artifactId>jta</artifactId>
 			<version>1.1</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-			<version>${jackson.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -108,12 +87,7 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-            <version>2.13.2.1</version>
-		</dependency>
-		<dependency>
-			<groupId>net.spy</groupId>
-			<artifactId>spymemcached</artifactId>
-			<version>2.10.3</version>
+           	<version>${jackson.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.lowagie</groupId>
@@ -127,14 +101,35 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+    		<groupId>com.itextpdf</groupId>
+    		<artifactId>itext7-core</artifactId>
+    		<version>8.0.0</version>
+    		<type>pom</type>
+		</dependency>
+		<dependency>
+    		<groupId>com.itextpdf</groupId>
+    		<artifactId>html2pdf</artifactId>
+    		<version>5.0.0</version>
+		</dependency>
+		<dependency>
 		    <groupId>com.lowagie</groupId>
 		    <artifactId>itextasian</artifactId>
 		    <version>1.5.2</version>
-		</dependency>		
+		</dependency>
 		<dependency>
-			<groupId>redis.clients</groupId>
-			<artifactId>jedis</artifactId>
-			<version>2.9.0</version>
+    		<groupId>org.apache.pdfbox</groupId>
+    		<artifactId>pdfbox</artifactId>
+    		<version>2.0.27</version>
+		</dependency>
+		<dependency>
+    		<groupId>org.jsoup</groupId>
+    		<artifactId>jsoup</artifactId>
+    		<version>1.16.1</version>
+		</dependency>
+		<dependency>
+    		<groupId>com.google.zxing</groupId>
+    		<artifactId>core</artifactId>
+    		<version>3.5.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sap.conn.jco</groupId>
@@ -144,7 +139,7 @@
 		</dependency>
 		<dependency>
 		    <groupId>org.owasp.encoder</groupId>
-		    <artifactId>encoder-jsp</artifactId>
+		    <artifactId>encoder</artifactId>
 		    <version>1.2.2</version>
 		</dependency>
         <dependency>
@@ -168,11 +163,6 @@
     	    <version>3.36.0.3</version>
     	    <scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-api</artifactId>
-            <version>${io.opentelemetry.version}</version>
-        </dependency>
     </dependencies>
 	
 	<build>

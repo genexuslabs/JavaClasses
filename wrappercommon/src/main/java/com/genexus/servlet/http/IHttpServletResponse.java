@@ -9,6 +9,7 @@ import com.genexus.servlet.IServletOutputStream;
 
 public interface IHttpServletResponse {
 	void setHeader(String name, String value);
+	void setHeader(String name, String value, boolean sanitize);
 	void addDateHeader(String name, long date);
 	void setDateHeader(String name, long date);
 	void addHeader(String name, String value);

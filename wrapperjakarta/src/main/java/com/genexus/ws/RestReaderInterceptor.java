@@ -13,11 +13,11 @@ public class RestReaderInterceptor implements ReaderInterceptor {
 
 	@Override
 	public Object aroundReadFrom(ReaderInterceptorContext context) throws IOException, WebApplicationException {
-		InputStream is = context.getInputStream();
+		try (InputStream is = context.getInputStream();){
+			InputStream isBody = com.genexus.WrapperUtils.storeRestRequestBody(is);
 
-		InputStream isBody = com.genexus.WrapperUtils.storeRestRequestBody(is);
-
-		context.setInputStream(isBody);
-		return context.proceed();
+			context.setInputStream(isBody);
+			return context.proceed();
+		}
 	}
 }

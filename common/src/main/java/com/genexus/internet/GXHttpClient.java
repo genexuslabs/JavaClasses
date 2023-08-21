@@ -4,6 +4,16 @@ import HTTPClient.ParseException;
 import HTTPClient.URI;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -41,6 +51,8 @@ public abstract class GXHttpClient implements IHttpClient{
 	private boolean isURL = false;
 	private boolean authorizationChanged = false; // Indica si se agregó alguna autorización
 	private boolean authorizationProxyChanged = false; // Indica si se agregó alguna autorización
+	protected boolean isChunkedResponse;
+
 
 	private Vector<HttpClientPrincipal> basicAuthorization = new Vector<>();
 	private Vector<HttpClientPrincipal> digestAuthorization = new Vector<>();
@@ -370,6 +382,7 @@ public abstract class GXHttpClient implements IHttpClient{
 				value = multipartTemplate.contentType;
 			}
 		}
+
 		if (this.headersToSend == null)
 			this.headersToSend =new Hashtable<>();
 		for (String elem: headersToSend.keySet()) {
@@ -468,9 +481,11 @@ public abstract class GXHttpClient implements IHttpClient{
 
 	public abstract InputStream getInputStream() throws IOException;
 
-	public abstract InputStream getInputStream(String stringURL) throws IOException;
-
 	public abstract String getString();
+
+	public abstract String readChunk();
+
+	public abstract boolean getEof();
 
 	public abstract void toFile(String fileName);
 
@@ -620,9 +635,9 @@ public abstract class GXHttpClient implements IHttpClient{
 				{
 					file = (File) curr;
 				}
-				try
+				try (BufferedInputStream bis = new java.io.BufferedInputStream(new FileInputStream(file)))
 				{
-					out = addToArray(out, CommonUtil.readToByteArray(new java.io.BufferedInputStream(new FileInputStream(file))));
+					out = addToArray(out, CommonUtil.readToByteArray(bis));
 				}
 				catch (FileNotFoundException e)
 				{
@@ -776,8 +791,40 @@ public abstract class GXHttpClient implements IHttpClient{
 			return "Content-Disposition: form-data; name=\""+ name + "\"; filename=\""+ fileName + "\"\r\n" + "Content-Type: " + mimeType + "\r\n\r\n";
 		}
 		String getFormDataTemplate(String varName, String value){
-			return "\r\n--" + boundary + "\r\nContent-Disposition: form-data; name=\"" + varName + "\";\r\n\r\n" + value;
+			String contentType = getContentTypeFromString(value);
+			return "\r\n--" + boundary + "\r\nContent-Disposition: form-data; name=\"" + varName + "\";\r\n" + ((contentType != null)? "Content-Type: " + contentType + "\r\n" : "") + "\r\n" + value;
+		}
+
+		private String getContentTypeFromString(String value){
+			if (isJsonString(value))
+				return "application/json";
+
+			if (isXMLString(value))
+				return "text/xml";
+
+			return null;
+		}
+
+		private boolean isJsonString(String value){
+			try {
+				JSONObject json = new JSONObject(value);
+				return true;
+			} catch (JSONException e) {
+				return false;
+			}
+		}
+
+		private boolean isXMLString(String value){
+			try {
+				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder builder = factory.newDocumentBuilder();
+				InputSource inputSource = new InputSource(new StringReader(value));
+				builder.setErrorHandler(new DefaultHandler());
+				Document document = builder.parse(inputSource);
+				return true;
+			} catch (ParserConfigurationException | SAXException | IOException e) {
+				return false;
+			}
 		}
 	}
-
 }

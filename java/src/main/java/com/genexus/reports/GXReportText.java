@@ -84,25 +84,17 @@ public abstract class GXReportText extends GXProcedure
 			setOutput(System.out);
 		}
 	}
-	
-		protected void setPrintAtClient()
-		{
-			setPrintAtClient("");
-		}
 		
-        protected void setPrintAtClient(String printerRule)
-        {
-			printAtClient = true;
-            String blobPath = com.genexus.Preferences.getDefaultPreferences().getBLOB_PATH();
-            String fileName = com.genexus.PrivateUtilities.getTempFileName(blobPath, "clientReport", "txt");			
-			
-			setOutput(fileName);
-            if (httpContext != null)
-            {
-                httpContext.printReportAtClient(fileName, printerRule);
-            }
-            com.genexus.webpanels.BlobsCleaner.getInstance().addBlobFile(fileName);
-        }	
+	public String setPrintAtClient()
+	{
+		printAtClient = true;
+		String blobPath = com.genexus.Preferences.getDefaultPreferences().getBLOB_PATH();
+		String fileName = com.genexus.PrivateUtilities.getTempFileName(blobPath, "clientReport", "txt");
+
+		setOutput(fileName);
+		com.genexus.webpanels.BlobsCleaner.getInstance().addBlobFile(fileName);
+		return fileName;
+	}
 	
 	class AsciiPrintWriter extends PrintWriter
 	{
@@ -166,10 +158,9 @@ public abstract class GXReportText extends GXProcedure
 				}
 				else
 				{
-					try
+					try (FileInputStream fInput = new FileInputStream(fileName))
 					{
 						PrintService ps = getDefaultPrinter();
-						FileInputStream fInput = new FileInputStream(fileName);
 						DocFlavor flavor = DocFlavor.INPUT_STREAM.AUTOSENSE;
 						DocPrintJob pj = ps.createPrintJob();
 						Doc doc = new SimpleDoc(fInput, flavor, null);			
@@ -182,7 +173,11 @@ public abstract class GXReportText extends GXProcedure
 					catch (PrintException e) 
 					{
 						System.out.println("Error printing report " + fileName + " " + e.getMessage());
-					}					
+					}
+					catch (IOException ioe)
+					{
+						System.out.println("Error opening file input stream of file " + fileName + " " + ioe.getMessage());
+					}
 				}
 			}				
 		}

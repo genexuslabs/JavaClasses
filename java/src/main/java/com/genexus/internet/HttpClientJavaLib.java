@@ -8,6 +8,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.*;
 import com.genexus.ModelContext;
 import com.genexus.util.IniFile;
@@ -16,6 +18,7 @@ import com.genexus.CommonUtil;
 import com.genexus.specific.java.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
@@ -60,6 +63,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
 		cookies = new BasicCookieStore();
 		logger.info("Using apache http client implementation");
+		streamsToClose = new Vector<>();
 	}
 
 	private static void getPoolInstance() {
@@ -112,18 +116,36 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private String reasonLine = "";
 	private HttpClientBuilder httpClientBuilder;
 	private HttpClientContext httpClientContext = null;
-	private CloseableHttpClient httpClient = null;
 	private CloseableHttpResponse response = null;
 	private CredentialsProvider credentialsProvider = null;
 	private RequestConfig reqConfig = null;		// Atributo usado en la ejecucion del metodo (por ejemplo, httpGet, httpPost)
 	private CookieStore cookies;
 	private ByteArrayEntity entity = null;	// Para mantener el stream luego de cerrada la conexion en la lectura de la response
+	BufferedReader reader = null;
 	private Boolean lastAuthIsBasic = null;
 	private Boolean lastAuthProxyIsBasic = null;
 	private static IniFile clientCfg = new ModelContext(ModelContext.getModelContextPackageClass()).getPreferences().getIniFile();
 	private static final String SET_COOKIE = "Set-Cookie";
 	private static final String COOKIE = "Cookie";
 
+	private java.util.Vector<InputStream> streamsToClose;
+
+	private void closeOpenedStreams()
+	{
+		Enumeration<InputStream> e = streamsToClose.elements();
+		while(e.hasMoreElements())
+		{
+			try
+			{
+				(e.nextElement()).close();
+			}
+			catch(java.io.IOException ioex)
+			{
+				logger.error("Error closing stream: " + ioex.getMessage());
+			}
+		}
+		streamsToClose.removeAllElements();
+	}
 
 	private void resetExecParams() {
 		statusCode = 0;
@@ -188,51 +210,68 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	private String getURLValid(String url) {
-		URI uri;
 		try
 		{
-			uri = new URI(url);
-			if (!uri.isAbsolute())		// En caso que la URL pasada por parametro no sea una URL valida (en este caso seria que no sea un URL absoluta), salta una excepcion en esta linea, y se continua haciendo todo el proceso con los datos ya guardados como atributos
-				return url;
-			else {
-				setPrevURLhost(getHost());
-				setPrevURLbaseURL(getBaseURL());
-				setPrevURLport(getPort());
-				setPrevURLsecure(getSecure());
-				setIsURL(true);
-				setURL(url);
-
-				StringBuilder relativeUri = new StringBuilder();
-				if (uri.getPath() != null) {
-					relativeUri.append(uri.getPath());
-				}
-				if (uri.getQuery() != null) {
-					relativeUri.append('?').append(uri.getQuery());
-				}
-				if (uri.getFragment() != null) {
-					relativeUri.append('#').append(uri.getFragment());
-				}
-				return relativeUri.toString();
+			URI uri;
+			try {
+				uri = new URI(url);
 			}
+			catch (URISyntaxException _) {
+				url = CommonUtil.escapeUnsafeChars(url);
+				uri = new URI(url);
+			}
+			if (!uri.isAbsolute()) {        // En caso que la URL pasada por parametro no sea una URL valida (en este caso seria que no sea un URL absoluta), salta una excepcion en esta linea, y se continua haciendo todo el proceso con los datos ya guardados como atributos
+				return url;
+			}
+			setPrevURLhost(getHost());
+			setPrevURLbaseURL(getBaseURL());
+			setPrevURLport(getPort());
+			setPrevURLsecure(getSecure());
+			setIsURL(true);
+			setURL(url);
+
+			StringBuilder relativeUri = new StringBuilder();
+			if (uri.getRawPath() != null) {
+				relativeUri.append(uri.getRawPath());
+			}
+			if (uri.getRawQuery() != null) {
+				relativeUri.append('?').append(uri.getRawQuery());
+			}
+			if (uri.getRawFragment() != null) {
+				relativeUri.append('#').append(uri.getRawFragment());
+			}
+			return relativeUri.toString();
 		}
-		catch (URISyntaxException e)
+		catch (URISyntaxException _)
 		{
-			return url;
 		}
+		return url;
 	}
 
 	private static SSLConnectionSocketFactory getSSLSecureInstance() {
 		try {
-			SSLContext sslContext = SSLContextBuilder
+			SSLContextBuilder sslContextBuilder = SSLContextBuilder
 				.create()
-				.loadTrustMaterial(new TrustSelfSignedStrategy())
-				.build();
+				.loadTrustMaterial(new TrustSelfSignedStrategy());
+
+			String pathToKeystore = System.getProperty("javax.net.ssl.keyStore");
+			String keystorePassword = System.getProperty("javax.net.ssl.keyStorePassword");
+			if (pathToKeystore != null && keystorePassword != null)
+				sslContextBuilder.loadKeyMaterial(new File(pathToKeystore), keystorePassword.toCharArray(), keystorePassword.toCharArray());
+
+			String pathToTruststore = System.getProperty("javax.net.ssl.trustStore");
+			String truststorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
+			if (pathToTruststore != null && truststorePassword != null)
+				sslContextBuilder.loadTrustMaterial(new File(pathToTruststore), truststorePassword.toCharArray());
+
+			SSLContext sslContext = sslContextBuilder.build();
+
 			return new SSLConnectionSocketFactory(
 				sslContext,
 				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2" },
 				null,
-				SSLConnectionSocketFactory.getDefaultHostnameVerifier());
-		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
+				NoopHostnameVerifier.INSTANCE);
+		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException | UnrecoverableKeyException | CertificateException | IOException e) {
 			e.printStackTrace();
 		}
 		return new SSLConnectionSocketFactory(
@@ -328,21 +367,23 @@ public class HttpClientJavaLib extends GXHttpClient {
 				this.httpClientBuilder.setDefaultCookieStore(cookiesToSend);    // Cookies Seteo CookieStore
 			}
 
+			int msTimeout = getTimeout() * 1000;
+
+			RequestConfig.Builder requestConfigBuilder = RequestConfig.custom()
+				.setCookieSpec(CookieSpecs.STANDARD)
+				.setSocketTimeout(msTimeout)
+				.setConnectionRequestTimeout(msTimeout)
+				.setConnectTimeout(msTimeout);
+
+			this.httpClientBuilder.setRoutePlanner(null);
+
 			if (getProxyInfoChanged() && !getProxyServerHost().isEmpty() && getProxyServerPort() != 0) {
 				HttpHost proxy = new HttpHost(getProxyServerHost(), getProxyServerPort());
 				this.httpClientBuilder.setRoutePlanner(new DefaultProxyRoutePlanner(proxy));
-				this.reqConfig = RequestConfig.custom()
-					.setSocketTimeout(getTimeout() * 1000)    // Se multiplica por 1000 ya que tiene que ir en ms y se recibe en segundos
-					.setCookieSpec(CookieSpecs.STANDARD)
-					.setProxy(proxy)
-					.build();
-			} else {
-				this.httpClientBuilder.setRoutePlanner(null);
-				this.reqConfig = RequestConfig.custom()
-					.setConnectTimeout(getTimeout() * 1000)   	// Se multiplica por 1000 ya que tiene que ir en ms y se recibe en segundos
-					.setCookieSpec(CookieSpecs.STANDARD)
-					.build();
+				requestConfigBuilder.setProxy(proxy);
 			}
+
+			this.reqConfig = requestConfigBuilder.build();
 
 			if (getHostChanged() || getAuthorizationChanged()) { // Si el host cambio o si se agrego alguna credencial
 				this.credentialsProvider = new BasicCredentialsProvider();
@@ -429,125 +470,128 @@ public class HttpClientJavaLib extends GXHttpClient {
 			else
 				url = url.startsWith("http://") ? url : "http://" + getHost() + ":" + (getPort() == -1? "80" :getPort()) + url;
 
-			httpClient = this.httpClientBuilder.build();
+			try (CloseableHttpClient httpClient = this.httpClientBuilder.build()) {
+				if (method.equalsIgnoreCase("GET")) {
+					HttpGetWithBody httpget = new HttpGetWithBody(url.trim());
+					httpget.setConfig(reqConfig);
+					Set<String> keys = getheadersToSend().keySet();
+					for (String header : keys) {
+						httpget.addHeader(header, getheadersToSend().get(header));
+					}
 
-			if (method.equalsIgnoreCase("GET")) {
-				HttpGetWithBody httpget = new HttpGetWithBody(url.trim());
-				httpget.setConfig(reqConfig);
-				Set<String> keys = getheadersToSend().keySet();
-				for (String header : keys) {
-					httpget.addHeader(header,getheadersToSend().get(header));
+					httpget.setEntity(new ByteArrayEntity(getData()));
+
+					response = httpClient.execute(httpget, httpClientContext);
+
+				} else if (method.equalsIgnoreCase("POST")) {
+					HttpPost httpPost = new HttpPost(url.trim());
+					httpPost.setConfig(reqConfig);
+					Set<String> keys = getheadersToSend().keySet();
+					boolean hasConentType = false;
+					for (String header : keys) {
+						httpPost.addHeader(header, getheadersToSend().get(header));
+						if (header.equalsIgnoreCase("Content-type"))
+							hasConentType = true;
+					}
+					if (!hasConentType)        // Si no se setea Content-type, se pone uno default
+						httpPost.addHeader("Content-type", "application/x-www-form-urlencoded");
+
+					ByteArrayEntity dataToSend;
+					if (!getIsMultipart() && getVariablesToSend().size() > 0)
+						dataToSend = new ByteArrayEntity(CommonUtil.hashtable2query(getVariablesToSend()).getBytes());
+					else
+						dataToSend = new ByteArrayEntity(getData());
+					httpPost.setEntity(dataToSend);
+
+					response = httpClient.execute(httpPost, httpClientContext);
+
+				} else if (method.equalsIgnoreCase("PUT")) {
+					HttpPut httpPut = new HttpPut(url.trim());
+					httpPut.setConfig(reqConfig);
+					Set<String> keys = getheadersToSend().keySet();
+					for (String header : keys) {
+						httpPut.addHeader(header, getheadersToSend().get(header));
+					}
+
+					httpPut.setEntity(new ByteArrayEntity(getData()));
+
+					response = httpClient.execute(httpPut, httpClientContext);
+
+				} else if (method.equalsIgnoreCase("DELETE")) {
+					HttpDeleteWithBody httpDelete = new HttpDeleteWithBody(url.trim());
+					httpDelete.setConfig(reqConfig);
+					Set<String> keys = getheadersToSend().keySet();
+					for (String header : keys) {
+						httpDelete.addHeader(header, getheadersToSend().get(header));
+					}
+
+					if (getVariablesToSend().size() > 0 || getContentToSend().size() > 0)
+						httpDelete.setEntity(new ByteArrayEntity(getData()));
+
+					response = httpClient.execute(httpDelete, httpClientContext);
+
+				} else if (method.equalsIgnoreCase("HEAD")) {
+					HttpHeadWithBody httpHead = new HttpHeadWithBody(url.trim());
+					httpHead.setConfig(reqConfig);
+					Set<String> keys = getheadersToSend().keySet();
+					for (String header : keys) {
+						httpHead.addHeader(header, getheadersToSend().get(header));
+					}
+
+					httpHead.setEntity(new ByteArrayEntity(getData()));
+
+					response = httpClient.execute(httpHead, httpClientContext);
+
+				} else if (method.equalsIgnoreCase("CONNECT")) {
+					HttpConnectMethod httpConnect = new HttpConnectMethod(url.trim());
+					httpConnect.setConfig(reqConfig);
+					Set<String> keys = getheadersToSend().keySet();
+					for (String header : keys) {
+						httpConnect.addHeader(header, getheadersToSend().get(header));
+					}
+					response = httpClient.execute(httpConnect, httpClientContext);
+
+				} else if (method.equalsIgnoreCase("OPTIONS")) {
+					HttpOptionsWithBody httpOptions = new HttpOptionsWithBody(url.trim());
+					httpOptions.setConfig(reqConfig);
+					Set<String> keys = getheadersToSend().keySet();
+					for (String header : keys) {
+						httpOptions.addHeader(header, getheadersToSend().get(header));
+					}
+
+					httpOptions.setEntity(new ByteArrayEntity(getData()));
+
+					response = httpClient.execute(httpOptions, httpClientContext);
+
+				} else if (method.equalsIgnoreCase("TRACE")) {        // No lleva payload
+					HttpTrace httpTrace = new HttpTrace(url.trim());
+					httpTrace.setConfig(reqConfig);
+					Set<String> keys = getheadersToSend().keySet();
+					for (String header : keys) {
+						httpTrace.addHeader(header, getheadersToSend().get(header));
+					}
+					response = httpClient.execute(httpTrace, httpClientContext);
+
+				} else if (method.equalsIgnoreCase("PATCH")) {
+					HttpPatch httpPatch = new HttpPatch(url.trim());
+					httpPatch.setConfig(reqConfig);
+					Set<String> keys = getheadersToSend().keySet();
+					for (String header : keys) {
+						httpPatch.addHeader(header, getheadersToSend().get(header));
+					}
+					ByteArrayEntity dataToSend = new ByteArrayEntity(getData());
+					httpPatch.setEntity(dataToSend);
+					response = httpClient.execute(httpPatch, httpClientContext);
 				}
-
-				httpget.setEntity(new ByteArrayEntity(getData()));
-
-				response = httpClient.execute(httpget, httpClientContext);
-
-			} else if (method.equalsIgnoreCase("POST")) {
-				HttpPost httpPost = new HttpPost(url.trim());
-				httpPost.setConfig(reqConfig);
-				Set<String> keys = getheadersToSend().keySet();
-				boolean hasConentType = false;
-				for (String header : keys) {
-					httpPost.addHeader(header,getheadersToSend().get(header));
-					if (header.equalsIgnoreCase("Content-type"))
-						hasConentType = true;
-				}
-				if (!hasConentType)		// Si no se setea Content-type, se pone uno default
-					httpPost.addHeader("Content-type", "application/x-www-form-urlencoded");
-
-				ByteArrayEntity dataToSend;
-				if (!getIsMultipart() && getVariablesToSend().size() > 0)
-					dataToSend = new ByteArrayEntity(CommonUtil.hashtable2query(getVariablesToSend()).getBytes());
-				else
-					dataToSend = new ByteArrayEntity(getData());
-				httpPost.setEntity(dataToSend);
-
-				response = httpClient.execute(httpPost, httpClientContext);
-
-			} else if (method.equalsIgnoreCase("PUT")) {
-				HttpPut httpPut = new HttpPut(url.trim());
-				httpPut.setConfig(reqConfig);
-				Set<String> keys = getheadersToSend().keySet();
-				for (String header : keys) {
-					httpPut.addHeader(header,getheadersToSend().get(header));
-				}
-
-				httpPut.setEntity(new ByteArrayEntity(getData()));
-
-				response = httpClient.execute(httpPut, httpClientContext);
-
-			} else if (method.equalsIgnoreCase("DELETE")) {
-				HttpDeleteWithBody httpDelete = new HttpDeleteWithBody(url.trim());
-				httpDelete.setConfig(reqConfig);
-				Set<String> keys = getheadersToSend().keySet();
-				for (String header : keys) {
-					httpDelete.addHeader(header,getheadersToSend().get(header));
-				}
-
-				if (getVariablesToSend().size() > 0 || getContentToSend().size() > 0)
-					httpDelete.setEntity(new ByteArrayEntity(getData()));
-
-				response = httpClient.execute(httpDelete, httpClientContext);
-
-			} else if (method.equalsIgnoreCase("HEAD")) {
-				HttpHeadWithBody httpHead = new HttpHeadWithBody(url.trim());
-				httpHead.setConfig(reqConfig);
-				Set<String> keys = getheadersToSend().keySet();
-				for (String header : keys) {
-					httpHead.addHeader(header,getheadersToSend().get(header));
-				}
-
-				httpHead.setEntity(new ByteArrayEntity(getData()));
-
-				response = httpClient.execute(httpHead, httpClientContext);
-
-			} else if (method.equalsIgnoreCase("CONNECT")) {
-				HttpConnectMethod httpConnect = new HttpConnectMethod(url.trim());
-				httpConnect.setConfig(reqConfig);
-				Set<String> keys = getheadersToSend().keySet();
-				for (String header : keys) {
-					httpConnect.addHeader(header,getheadersToSend().get(header));
-				}
-				response = httpClient.execute(httpConnect, httpClientContext);
-
-			} else if (method.equalsIgnoreCase("OPTIONS")) {
-				HttpOptionsWithBody httpOptions = new HttpOptionsWithBody(url.trim());
-				httpOptions.setConfig(reqConfig);
-				Set<String> keys = getheadersToSend().keySet();
-				for (String header : keys) {
-					httpOptions.addHeader(header,getheadersToSend().get(header));
-				}
-
-				httpOptions.setEntity(new ByteArrayEntity(getData()));
-
-				response = httpClient.execute(httpOptions, httpClientContext);
-
-			} else if (method.equalsIgnoreCase("TRACE")) {		// No lleva payload
-				HttpTrace httpTrace = new HttpTrace(url.trim());
-				httpTrace.setConfig(reqConfig);
-				Set<String> keys = getheadersToSend().keySet();
-				for (String header : keys) {
-					httpTrace.addHeader(header,getheadersToSend().get(header));
-				}
-				response = httpClient.execute(httpTrace, httpClientContext);
-
-			} else if (method.equalsIgnoreCase("PATCH")) {
-				HttpPatch httpPatch = new HttpPatch(url.trim());
-				httpPatch.setConfig(reqConfig);
-				Set<String> keys = getheadersToSend().keySet();
-				for (String header : keys) {
-					httpPatch.addHeader(header,getheadersToSend().get(header));
-				}
-				ByteArrayEntity dataToSend = new ByteArrayEntity(getData());
-				httpPatch.setEntity(dataToSend);
-				response = httpClient.execute(httpPatch, httpClientContext);
 			}
-
 			statusCode =  response.getStatusLine().getStatusCode();
 			reasonLine =  response.getStatusLine().getReasonPhrase();
 
 			SetCookieAtr(cookiesToSend);		// Se setean las cookies devueltas en la lista de cookies
+
+			if (response.containsHeader("Transfer-Encoding")) {
+				isChunkedResponse = response.getFirstHeader("Transfer-Encoding").getValue().equalsIgnoreCase("chunked");
+			}
 
 		} catch (IOException e) {
 			setExceptionsCatch(e);
@@ -622,27 +666,21 @@ public class HttpClientJavaLib extends GXHttpClient {
 	public InputStream getInputStream() throws IOException {
 		if (response != null) {
 			this.setEntity();
-			return entity.getContent();
+			InputStream content = entity.getContent();
+			streamsToClose.addElement(content);
+			return content;
 		} else
 			return null;
-	}
-
-	public InputStream getInputStream(String stringURL) throws IOException
-	{
-		try {
-			URI url = new URI(stringURL);
-			HttpGet gISHttpGet = new HttpGet(String.valueOf(url));
-			CloseableHttpClient gISHttpClient = HttpClients.createDefault();
-			return gISHttpClient.execute(gISHttpGet).getEntity().getContent();
-
-		} catch (URISyntaxException e) {
-			throw new IOException("Malformed URL " + e.getMessage());
-		}
 	}
 
 	private void setEntity() throws IOException {
 		if (entity == null)
 			entity = new ByteArrayEntity(EntityUtils.toByteArray(response.getEntity()));
+	}
+
+	private void setEntityReader() throws IOException {
+		if (reader == null)
+			reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 	}
 
 	public String getString() {
@@ -651,10 +689,36 @@ public class HttpClientJavaLib extends GXHttpClient {
 		try {
 			this.setEntity();
 			String res = EntityUtils.toString(entity, "UTF-8");
+			eof = true;
 			return res;
 		} catch (IOException e) {
 			setExceptionsCatch(e);
 		} catch (IllegalArgumentException e) {
+		}
+		return "";
+	}
+
+	private	boolean eof;
+	public boolean getEof() {
+		return eof;
+	}
+
+	public String readChunk() {
+		if (!isChunkedResponse)
+			return getString();
+
+		if (response == null)
+			return "";
+		try {
+			this.setEntityReader();
+			String res = reader.readLine();
+			if (res == null) {
+				eof = true;
+				res = "";
+			}
+			return res;
+		} catch (IOException e) {
+			setExceptionsCatch(e);
 		}
 		return "";
 	}
@@ -670,9 +734,14 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 	}
 
-
 	public void cleanup() {
 		resetErrorsAndConnParams();
+	}
+
+	@Override
+	protected void finalize()
+	{
+		this.closeOpenedStreams();
 	}
 
 }

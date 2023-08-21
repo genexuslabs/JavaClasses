@@ -80,7 +80,6 @@ public class GXProcedureExecutor {
 				break;
 			case 2:
 				parameters = new Object[]{rawJsonEvent};
-				response.setHandled(true);
 				returnsValue = false;
 				break;
 			case 3:
@@ -89,7 +88,6 @@ public class GXProcedureExecutor {
 			default:
 				parameters = new Object[]{};
 				returnsValue = false;
-				response.setHandled(true);
 				break;
 		}
 

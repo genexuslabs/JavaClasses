@@ -787,16 +787,17 @@ public class GXFile extends AbstractGXFile {
                 setUnknownError(e);
             }
         }
-        if (lineIterator != null) {
-           	try {
+		try {
+			if (this.getStream() != null)
+				this.getStream().close();
+			if (this.lineIterator != null){
 				lineIterator.close();
 				lineIterator = null;
 			}
-			catch (java.io.IOException e) {
-				setUnknownError();
-				e.printStackTrace();
-			}
-        }
+		} catch (java.io.IOException e) {
+			setUnknownError();
+			e.printStackTrace();
+		}
     }
 }
 

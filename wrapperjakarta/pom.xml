@@ -106,13 +106,7 @@
             <artifactId>jackson-module-jaxb-annotations</artifactId>
             <version>2.12.2</version>
             <classifier>jakarta</classifier>
-        </dependency>
-
-		<dependency>
-			<groupId>org.apache.ws.security</groupId>
-			<artifactId>wss4j</artifactId>
-			<version>1.6.19</version>
-		</dependency>
+        </dependency>      			
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>

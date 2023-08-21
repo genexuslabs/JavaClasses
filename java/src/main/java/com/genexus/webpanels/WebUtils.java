@@ -9,12 +9,10 @@ import java.util.Set;
 
 import com.genexus.*;
 import com.genexus.internet.HttpContext;
-import org.apache.commons.io.IOUtils;
 
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.xml.XMLReader;
-import org.apache.commons.lang.StringUtils;
 
 import static com.genexus.util.Encryption.decrypt64;
 
@@ -90,13 +88,13 @@ public class WebUtils
 		return buffer.toString();
 	}
 	
-		public static String htmlEncode(String str)
-		{
-			return htmlEncode(str, false);
-		}
-	        
-        public static String htmlEncode(String str, boolean inputValue)
-        {
+	public static String htmlEncode(String str)
+	{
+		return htmlEncode(str, false);
+	}
+
+	public static String htmlEncode(String str, boolean inputValue)
+	{
             final StringBuilder buffer = new StringBuilder();
             final StringCharacterIterator iterator = new StringCharacterIterator(str);
             char character =  iterator.current();
@@ -326,7 +324,7 @@ public class WebUtils
 		int filenameIdx = value.toLowerCase().indexOf("filename");
 		int eqIdx = value.toLowerCase().indexOf("=", filenameIdx);
 
-		if(filenameIdx == -1 || eqIdx == -1 || browserType == HttpContext.BROWSER_SAFARI) { //Safari does not support ContentDisposition Header encoded
+		if(filenameIdx == -1 || eqIdx == -1 || browserType == HttpContextWeb.BROWSER_SAFARI) { //Safari does not support ContentDisposition Header encoded
 			return value;
 		}
 		
@@ -334,54 +332,6 @@ public class WebUtils
 		value = value.substring(0, filenameIdx) + String.format("filename*=UTF-8''%1$s; filename=\"%1$s\"", PrivateUtilities.URLEncode(filename, "UTF8"));
 
 		return value;
-	}
-
-	public static GXWebComponent getWebComponent(Class caller, String name, int remoteHandle, com.genexus.ModelContext context)
-	{
-		try
-		{
-						//En el caso de en el name venga mas de una vez el packageName.
-						if (!context.getPackageName().equals(""))
-						{
-							String packageWithDot = context.getPackageName() + ".";
-							int index = name.lastIndexOf(packageWithDot);
-							if (index != -1)
-							{
-								name = name.substring(index);
-							}
-						}
-						else
-						{
-							name = name.substring(name.lastIndexOf("/") + 1);
-						}
-                        Object[] parmsArray = null;
-                        int questIdx = name.indexOf("?");
-                        int endClass = name.indexOf("_impl");
-                        if (questIdx != -1)
-                        {
-                            String parmsStr = name.substring(questIdx+1, endClass);
-                            parmsArray = parmsToObjectArray(context, parmsStr, name);
-                            name = name.substring(0, questIdx) + "_impl";
-                        }
-                        name = CommonUtil.lower(name);
-			Class<?> webComponentClass;
-
-			if	(caller.getClassLoader() != null)
-			{
-				webComponentClass = caller.getClassLoader().loadClass(name);
-			}
-			else
-			{
-				webComponentClass = Class.forName(name);
-			}
-			GXWebComponent newComp = (GXWebComponent) webComponentClass.getConstructor(new Class[] { int.class, ModelContext.class }).newInstance(new Object[] {new Integer(remoteHandle), context});
-			newComp.setParms(parmsArray);
-            return newComp;
-		}
-		catch (Exception e)
-		{
-			return new GXWebComponentNull(remoteHandle, context);
-		}
 	}
 
         protected static Object[] parmsToObjectArray(com.genexus.ModelContext context, String parms, String url)
@@ -494,9 +444,8 @@ public class WebUtils
 
 	public static void getGXApplicationClasses(Class<?> gxAppClass, Set<Class<?>> rrcs) 
 	{
-		try 
+		try (InputStream is = getInputStreamFile(gxAppClass, gxApplicationClassesFileName);)
 		{
-			InputStream is = getInputStreamFile(gxAppClass, gxApplicationClassesFileName);
 			BufferedReader input = new BufferedReader(new InputStreamReader(is, "UTF8"));
 			String restClass = input.readLine();
 			while (restClass != null) 

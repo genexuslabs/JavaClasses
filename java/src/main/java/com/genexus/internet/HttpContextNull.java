@@ -7,7 +7,7 @@ import com.genexus.servlet.http.IHttpServletResponse;
 
 import com.genexus.Application;
 import com.genexus.GXutil;
-import com.genexus.GxEjbContext;
+import com.genexus.common.interfaces.IGxEjbContext;
 import com.genexus.ModelContext;
 import com.genexus.common.interfaces.IHttpContextNull;
 import com.genexus.db.DBConnectionManager;
@@ -148,7 +148,7 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 	public String getUserId(String key, ModelContext context, int handle, String dataSource)
 	{
           if (context.getSessionContext() != null) //Si estoy en el contexto de un EJB
-             return ((GxEjbContext)context.getSessionContext()).getUserId();
+             return ((IGxEjbContext)context.getSessionContext()).getUserId();
 
 		if	(key.toLowerCase().equals("server") &&  !Application.getUserIdServerAsUserId(handle))
 		{
@@ -166,7 +166,7 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 	public String getUserId(String key, ModelContext context, int handle, com.genexus.db.IDataStoreProvider dataStore)
 	{
         if (context.getSessionContext() != null) //Si estoy en el contexto de un EJB
-             return ((GxEjbContext)context.getSessionContext()).getUserId();
+             return ((IGxEjbContext)context.getSessionContext()).getUserId();
 
 		if	(key.toLowerCase().equals("server") &&  !Application.getUserIdServerAsUserId(handle))
 		{
@@ -409,21 +409,10 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 	      this.httprequest = httprequest;
 	}
 
-
 	public WebSession getWebSession()
 	{
 		return webSession;
 	}
-
-	public void redirect(String url) {}
-	public void redirect(String url, boolean SkipPushUrl) {}
-	public void popup(String url) {}
-	public void popup(String url, Object[] returnParms) {}
-	public void newWindow(com.genexus.webpanels.GXWindow win) {}
-	public void ajax_rsp_command_close(){};
-	public void dispatchAjaxCommands() {};
-    public void closeHtmlHeader() {};
-	public boolean getHtmlHeaderClosed() { return false; }
 
 	public void setStream(){}
 	public void flushStream(){}
@@ -431,8 +420,9 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 	public String cgiGetFileType(String parm) {return "";}
 	public void getMultimediaValue(String internalName, String[] blobVar, String[] uriVar) { blobVar[0] = ""; uriVar[0] = ""; }
 	public void cleanup() {}
-	public boolean isMultipartContent() { return false; }
 
 	public boolean isHttpContextNull() {return true;}
 	public boolean isHttpContextWeb() {return false;}
+
+	public void redirect(String url) {}
 }

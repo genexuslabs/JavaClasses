@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.db.DataStoreProvider;
 import com.genexus.internet.HttpContext;
 import com.genexus.internet.StringCollection;
 import com.genexus.platform.INativeFunctions;
@@ -15,6 +16,7 @@ import com.genexus.platform.NativeFunctions;
 import com.genexus.util.*;
 
 import json.org.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 
 public final class GXutil
 {
@@ -306,13 +308,13 @@ public final class GXutil
    	public static int strcmp( String left ,
                              String right )
    	{
-        return rtrim(left).compareTo(rtrim(right));
+        return CommonUtil.strcmp(left, right);
    	}
 
    	public static boolean strcmp2( String left ,
                              String right )
    	{
-        return left.compareTo(right) == 0;
+        return CommonUtil.strcmp2(left, right);
    	}
 
 	public static int guidCompare(java.util.UUID guidA, java.util.UUID guidB, int mode)
@@ -973,16 +975,22 @@ public final class GXutil
 
 	public static Date serverNow(ModelContext context, int handle, com.genexus.db.IDataStoreProvider dataStore)
 	{
+		if (dataStore == null)
+			dataStore = new DataStoreProvider(context, handle);
 		return serverNow( context, handle, dataStore, false);
 	}	
 
 	public static Date serverNowMs(ModelContext context, int handle, com.genexus.db.IDataStoreProvider dataStore)
 	{
+		if (dataStore == null)
+			dataStore = new DataStoreProvider(context, handle);
 		return serverNow( context, handle, dataStore, true);
 	}	
 
 	public static Date serverNow(ModelContext context, int handle, com.genexus.db.IDataStoreProvider dataStore, boolean millisecond)
 	{
+		if (dataStore == null)
+			dataStore = new DataStoreProvider(context, handle);
 		return SpecificImplementation.GXutil.serverNow(context, handle, dataStore, millisecond);
 	}
 
@@ -1568,7 +1576,16 @@ public final class GXutil
 		gxFile.fromBytes(bytesString);
 		com.genexus.webpanels.BlobsCleaner.getInstance().addBlobFile(filePath);
 		return filePath;
-	}	
+	}
+
+	public static String blobFromBytes(byte[] bytesString, String extension)
+	{
+		String filePath = Preferences.getDefaultPreferences().getBLOB_PATH() + com.genexus.PrivateUtilities.getTempFileName(extension);
+		com.genexus.util.GXFile gxFile = new com.genexus.util.GXFile(filePath);
+		gxFile.fromBytes(bytesString);
+		com.genexus.webpanels.BlobsCleaner.getInstance().addBlobFile(filePath);
+		return filePath;
+	}
 	
 	public static java.util.UUID strToGuid(String value)
 	{
@@ -1669,15 +1686,7 @@ public final class GXutil
 
 	public static void ErrorToMessages(String errorId, String errorDescription, GXBaseCollection<SdtMessages_Message> messages)
 	{
-		if (messages != null)
-		{
-			StructSdtMessages_Message struct = new StructSdtMessages_Message();
-			struct.setId(errorId);
-			struct.setDescription(errorDescription);
-			struct.setType((byte)1); //error
-			SdtMessages_Message msg = new SdtMessages_Message(struct);
-			messages.add(msg);
-		}
+		CommonUtil.ErrorToMessages(errorId, errorDescription, messages);
 	}
 	
 	public static String encodeJSON(String in)
@@ -1712,11 +1721,19 @@ public final class GXutil
 
 	public static String getEncryptedSignature( String value, String key)
 	{
-		return Encryption.encrypt64(CommonUtil.getHash( com.genexus.security.web.WebSecurityHelper.StripInvalidChars(value), com.genexus.cryptography.Constants.SECURITY_HASH_ALGORITHM), key);
+		return Encryption.encrypt64(CommonUtil.getHash( StripInvalidChars(value), CommonUtil.SECURITY_HASH_ALGORITHM), key);
 	}
 	public static boolean checkEncryptedSignature( String value, String hash, String key)
 	{
-		return CommonUtil.getHash( com.genexus.security.web.WebSecurityHelper.StripInvalidChars(value), com.genexus.cryptography.Constants.SECURITY_HASH_ALGORITHM).equals(Encryption.decrypt64(hash, key));
+		return CommonUtil.getHash( StripInvalidChars(value), CommonUtil.SECURITY_HASH_ALGORITHM).equals(Encryption.decrypt64(hash, key));
+	}
+
+	public static String StripInvalidChars(String input)
+	{
+		if (input == null)
+			return input;
+		String output = input.replaceAll("[\u0000-\u001f]", "");
+		return StringUtils.strip(output);
 	}
 
 	public static String buildWSDLFromHttpClient(com.genexus.internet.HttpClient GXSoapHTTPClient, String wsdlURL)

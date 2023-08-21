@@ -8,6 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
+import com.genexus.common.interfaces.IGXWindow;
 import com.genexus.fileupload.servlet.IServletFileUpload;
 import com.genexus.servlet.*;
 import com.genexus.servlet.http.Cookie;
@@ -32,7 +33,6 @@ import com.genexus.internet.HttpResponse;
 import com.genexus.internet.MsgList;
 import com.genexus.util.Base64;
 import com.genexus.util.GXFile;
-import com.genexus.util.GXServices;
 
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
@@ -42,27 +42,27 @@ public class HttpContextWeb extends HttpContext {
 
 	HttpResponse httpRes;
 	HttpRequest httpReq;
-	IServletContext servletContext;
+	protected IServletContext servletContext;
 
-	boolean useOldQueryStringFormat;
+	protected boolean useOldQueryStringFormat;
 	protected Vector<String> parms;
 	private Hashtable<String, String> namedParms;
 	private Hashtable<String, String[]> postData;
 	private boolean useNamedParameters;
 	private int currParameter;
 
-	private IHttpServletRequest request;
-	private IHttpServletResponse response;
-	private String requestMethod;
+	protected IHttpServletRequest request;
+	protected IHttpServletResponse response;
+	protected String requestMethod;
 	protected String contentType = "";
-	private boolean SkipPushUrl = false;
+	protected boolean SkipPushUrl = false;
+	protected boolean Redirected = false;
 	private Hashtable<String, String> cookies;
 	private boolean streamSet = false;
 	private WebSession webSession;
 	private FileItemCollection fileItemCollection;
 	private IFileItemIterator lstParts;
 	private boolean ajaxCallAsPOST = false;
-	private boolean htmlHeaderClosed = false;
 	private String sTmpDir;
 	private boolean firstParConsumed = false;
 
@@ -79,6 +79,18 @@ public class HttpContextWeb extends HttpContext {
 	private static final String SAME_SITE_LAX = "Lax";
 	private static final String SAME_SITE_STRICT = "Strict";
 	private static final String SET_COOKIE = "Set-Cookie";
+
+	public static final int BROWSER_OTHER		= 0;
+	public static final int BROWSER_IE 		= 1;
+	public static final int BROWSER_NETSCAPE 	= 2;
+	public static final int BROWSER_OPERA		= 3;
+	public static final int BROWSER_UP			= 4;
+	public static final int BROWSER_POCKET_IE	= 5;
+	public static final int BROWSER_FIREFOX		= 6;
+	public static final int BROWSER_CHROME		= 7;
+	public static final int BROWSER_SAFARI		= 8;
+	public static final int BROWSER_EDGE		= 9;
+	public static final int BROWSER_INDEXBOT		= 20;
 
 	public boolean isMultipartContent() {
 		return ServletFileUpload.isMultipartContent(request);
@@ -183,21 +195,25 @@ public class HttpContextWeb extends HttpContext {
 	public HttpContext copy() {
 		try {
 			HttpContextWeb o = new HttpContextWeb(requestMethod, request, response, servletContext);
-			o.cookies = cookies;
-			o.webSession = webSession;
-			o.httpRes = httpRes;
-			o.httpReq = httpReq;
-			o.postData = postData;
-			o.parms = parms;
-			o.namedParms = namedParms;
-			o.streamSet = streamSet;
-			o.isCrawlerRequest = o.isCrawlerRequest();
 			copyCommon(o);
+			super.copyCommon(o);
 
 			return o;
 		} catch (java.io.IOException e) {
 			return null;
 		}
+	}
+
+	protected void copyCommon(HttpContextWeb o) {
+		o.cookies = cookies;
+		o.webSession = webSession;
+		o.httpRes = httpRes;
+		o.httpReq = httpReq;
+		o.postData = postData;
+		o.parms = parms;
+		o.namedParms = namedParms;
+		o.streamSet = streamSet;
+		o.isCrawlerRequest = o.isCrawlerRequest();
 	}
 
 	public HttpContextWeb(String requestMethod, IHttpServletRequest req, IHttpServletResponse res,
@@ -435,6 +451,9 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public byte setHeader(String header, String value) {
+		if (getResponse() == null)
+			return 0;
+
 		response.setHeader(header, value.replace("\n", "%0a").replace("\r", "%0d"));
 		return 0;
 	}
@@ -469,6 +488,9 @@ public class HttpContextWeb extends HttpContext {
 	private String contextPath;
 
 	public String getContextPath() {
+		if (getResponse() == null)
+			return "";
+
 		if (contextPath == null) {
 			if (servletContext.getServerInfo().startsWith("ApacheJServ")) {
 				contextPath = "";
@@ -995,6 +1017,9 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public byte setContentType(String type) {
+		if (getResponse() == null)
+			return 1;
+
 		contentType = type;
 		if (type.equalsIgnoreCase("text/html") && useUtf8) {
 			type += "; charset=utf-8";
@@ -1230,6 +1255,9 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getDefaultPath() {
+		if (servletContext == null)
+			return "";
+
 		String path = servletContext.getRealPath("/");
 
 		if (path == null && servletContext.getAttribute(servletContext.getTEMPDIR()) != null) {
@@ -1256,7 +1284,23 @@ public class HttpContextWeb extends HttpContext {
 		return webSession;
 	}
 
-	private void redirect_http(String url) {
+	public void redirect(String url) {
+		redirect(url, false);
+	}
+
+	public void redirect(String url, boolean bSkipPushUrl) {
+		SkipPushUrl = bSkipPushUrl;
+		if (!Redirected) {
+			redirect_impl(url, null);
+		}
+	}
+
+	public void redirect_impl(String url, IGXWindow win) {
+		redirect_http(url);
+	}
+
+
+	protected void redirect_http(String url) {
 		Redirected = true;
 		if (getResponseCommited())
 			return;
@@ -1274,7 +1318,7 @@ public class HttpContextWeb extends HttpContext {
 				} else {
 					pushUrlSessionStorage();
 					if (useCustomRedirect()) {
-						getResponse().setHeader("Location", url);
+						getResponse().setHeader("Location", url, false);
 						getRequest().setAttribute("gx_webcall_method", "customredirect");
 						getResponse().setStatus(HttpServletResponse.getSC_MOVED_TEMPORARILY());
 					} else {
@@ -1292,7 +1336,7 @@ public class HttpContextWeb extends HttpContext {
 		getRequest().setAttribute("gx_webcall_method", "redirect");
 		// getResponse().sendRedirect(url); No retornamos 302 sino 301, debido al SEO.
 		response.setStatus(HttpServletResponse.getSC_MOVED_PERMANENTLY());
-		response.setHeader("Location", url);
+		response.setHeader("Location", url, false);
 		sendCacheHeaders();
 	}
 
@@ -1310,145 +1354,17 @@ public class HttpContextWeb extends HttpContext {
 		dispatcher.forward(getRequest(), getResponse());
 	}
 
-	public void ajax_rsp_command_close() {
-		bCloseCommand = true;
-		try {
-			JSONObject closeParms = new JSONObject();
-			closeParms.put("values", ObjArrayToJSONArray(this.getWebReturnParms()));
-			closeParms.put("metadata", ObjArrayToJSONArray(this.getWebReturnParmsMetadata()));
-			appendAjaxCommand("close", closeParms);
-		} catch (JSONException ex) {
-		}
-	}
-
-	private void pushUrlSessionStorage() {
+	protected void pushUrlSessionStorage() {
 		if (context != null && context.getHttpContext().isLocalStorageSupported() && !SkipPushUrl) {
 			context.getHttpContext().pushCurrentUrl();
 		}
 		SkipPushUrl = false;
 	}
 
-	public boolean getHtmlHeaderClosed() {
-		return this.htmlHeaderClosed;
-	}
-
-	public void closeHtmlHeader() {
-		this.htmlHeaderClosed = true;
-		this.writeTextNL("</head>");
-	}
-
-	public void redirect_impl(String url, GXWindow win) {
-		if (!isGxAjaxRequest() && !isAjaxRequest() && win == null) {
-			String popupLvl = getNavigationHelper(false).getUrlPopupLevel(getRequestNavUrl());
-			String popLvlParm = "";
-			if (popupLvl != "-1") {
-				popLvlParm = (url.indexOf('?') != -1) ? (useOldQueryStringFormat? "," : "&") : "?";
-				popLvlParm += com.genexus.util.Encoder.encodeURL("gxPopupLevel=" + popupLvl + ";");
-			}
-
-			if (isSpaRequest(true)) {
-				pushUrlSessionStorage();
-				getResponse().setHeader(GX_SPA_REDIRECT_URL, url + popLvlParm);
-				sendCacheHeaders();
-			} else {
-				redirect_http(url + popLvlParm);
-			}
-		} else {
-
-			try {
-				if (win != null) {
-					appendAjaxCommand("popup", win.GetJSONObject());
-				} else if (!Redirected) {
-					JSONObject jsonCmd = new JSONObject();
-					jsonCmd.put("url", url);
-					if (this.wjLocDisableFrm > 0) {
-						jsonCmd.put("forceDisableFrm", this.wjLocDisableFrm);
-					}
-					appendAjaxCommand("redirect", jsonCmd);
-					if (isGxAjaxRequest())
-						dispatchAjaxCommands();
-					Redirected = true;
-				}
-			} catch (JSONException e) {
-				redirect_http(url);
-			}
-		}
-	}
-
-	private boolean isDocument(String url) {
-		try {
-			int idx = Math.max(url.lastIndexOf('/'), url.lastIndexOf('\\'));
-			if (idx >= 0 && idx < url.length()) {
-				url = url.substring(idx + 1);
-			}
-			idx = url.indexOf('?');
-			String ext = url;
-			if (idx >= 0) {
-				ext = ext.substring(0, idx);
-			}
-			idx = url.lastIndexOf('.');
-			if (idx >= 0) {
-				ext = ext.substring(idx);
-			} else {
-				ext = "";
-			}
-			return (!ext.equals("") && !ext.startsWith(".aspx"));
-		} catch (Exception ex) {
-			log.error("isDocument error, url:" + url, ex);
-			return false;
-		}
-	}
-
-	public void redirect(String url) {
-		redirect(url, false);
-	}
-
-	public void redirect(String url, boolean bSkipPushUrl) {
-		SkipPushUrl = bSkipPushUrl;
-		if (!Redirected) {
-			redirect_impl(url, null);
-		}
-	}
-
-	public void popup(String url) {
-		popup(url, new Object[] {});
-	}
-
-	public void popup(String url, Object[] returnParms) {
-		GXWindow win = new GXWindow();
-		win.setUrl(url);
-		win.setReturnParms(returnParms);
-		newWindow(win);
-	}
-
-	public void newWindow(GXWindow win) {
-		redirect_impl(win.getUrl(), win);
-	}
-
-	public void dispatchAjaxCommands() {
-		Boolean isResponseCommited = getResponseCommited();
-		if (!getResponseCommited()) {
-			String res = getJSONResponsePrivate("");
-			if (!isMultipartContent()) {
-				response.setContentType("application/json");
-			}
-			sendFinalJSONResponse(res);
-			setResponseCommited();
-		}
-	}
-
-	public void sendFinalJSONResponse(String json) {
-		boolean isMultipartResponse = !getResponseCommited() && isMultipartContent();
-		if (isMultipartResponse) {
-			_writeText(
-					"<html><head></head><body><input type='hidden' data-response-content-type='application/json' value='");
-		}
-		_writeText(json);
-		if (isMultipartResponse)
-			_writeText("'/></body></html>");
-	}
-
 	public void setStream() {
+		if (getResponse() == null)
+			return;
+
 		try {
 			if (streamSet) {
 				return;
@@ -1526,7 +1442,7 @@ public class HttpContextWeb extends HttpContext {
 		boolean firstHeader = true;
 		for (String header : headers) {
 			if (firstHeader) {
-				response.setHeader(SET_COOKIE, String.format("%s; %s", header, "SameSite="+sameSiteMode));
+				response.setHeader(SET_COOKIE, String.format("%s; %s", header, "SameSite="+sameSiteMode), false);
 				firstHeader = false;
 				continue;
 			}
@@ -1550,6 +1466,13 @@ public class HttpContextWeb extends HttpContext {
 			fileItemCollection = null;
 			lstParts = null;
 		}
+	}
+
+	public void writeText(String text)
+	{
+		if (getResponseCommited())
+			return;
+		_writeText(text);
 	}
 
 	public boolean isHttpContextNull() {return false;}

@@ -3,9 +3,14 @@ package com.genexus;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.regex.Pattern;
 
 import com.genexus.db.driver.ResourceAccessControlList;
 import com.genexus.util.GxFileInfoSourceType;
@@ -22,13 +27,19 @@ public class GxImageUtil {
 
 	private static BufferedImage createBufferedImageFromURI(String filePathOrUrl) throws IOException
 	{
-		try (InputStream is = getGXFile(filePathOrUrl).getStream()) {
+		IHttpContext httpContext = com.genexus.ModelContext.getModelContext().getHttpContext();
+		InputStream is = null;
+		try{
+			if (filePathOrUrl.toLowerCase().startsWith("http://") || filePathOrUrl.toLowerCase().startsWith("https://") ||
+				(httpContext.isHttpContextWeb() && filePathOrUrl.startsWith(httpContext.getContextPath())))
+				is = new URL(GXDbFile.pathToUrl( filePathOrUrl, httpContext)).openStream();
+			else
+				is = getGXFile(filePathOrUrl).getStream();
 			return ImageIO.read(is);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			log.error("Failed to read image stream: " + filePathOrUrl);
 			throw e;
-		}
+		} finally {is.close();}
 	}
 
 	private static GXFile getGXFile(String filePathOrUrl) {
@@ -39,8 +50,19 @@ public class GxImageUtil {
 	public static long getFileSize(String imageFile){
 		if (!isValidInput(imageFile))
 			return INVALID_CODE;
-
-		return new GXFile(imageFile).getLength();
+		IHttpContext httpContext = com.genexus.ModelContext.getModelContext().getHttpContext();
+		if (imageFile.toLowerCase().startsWith("http://") || imageFile.toLowerCase().startsWith("https://") ||
+			(httpContext.isHttpContextWeb() && imageFile.startsWith(httpContext.getContextPath()))){
+			try {
+				URL url = new URL(GXDbFile.pathToUrl(imageFile, httpContext));
+				URLConnection connection = url.openConnection();
+				return Long.parseLong(connection.getHeaderField("Content-Length"));
+			} catch (Exception e) {
+				log.error("getFileSize " + imageFile + " failed" , e);
+			}
+		} else
+			return getGXFile(imageFile).getLength();
+		return INVALID_CODE;
 	}
 
 	public static int getImageHeight(String imageFile) {
@@ -80,25 +102,55 @@ public class GxImageUtil {
 	public static String crop(String imageFile, int x, int y, int width, int height) {
 		if (!isValidInput(imageFile))
 			return "";
-
 		try {
 			BufferedImage image = createBufferedImageFromURI(imageFile);
 			BufferedImage croppedImage = image.getSubimage(x, y, width, height);
-			writeImage(croppedImage, imageFile);
+			return writeImage(croppedImage, imageFile);
 		}
 		catch (Exception e) {
 			log.error("crop " + imageFile + " failed" , e);
 		}
-		return imageFile;
+		return "";
 	}
 
-	private static void writeImage(BufferedImage croppedImage, String destinationFilePathOrUrl) throws IOException {
-		try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
-			ImageIO.write(croppedImage, CommonUtil.getFileType(destinationFilePathOrUrl), outStream);
-			try (ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray())) {
-				GXFile file = getGXFile(destinationFilePathOrUrl);
-				file.create(inStream, true);
-				file.close();
+	private static final Pattern IMAGE_PATTERN = Pattern.compile("\\.(jpg|jpeg|png|bmp|webp|jfif)([/?]|$)", Pattern.CASE_INSENSITIVE);
+
+	private static String writeImage(BufferedImage bufferedImage, String destinationFilePathOrUrl) throws IOException {
+		IHttpContext httpContext = com.genexus.ModelContext.getModelContext().getHttpContext();
+		if (destinationFilePathOrUrl.toLowerCase().startsWith("http://") || destinationFilePathOrUrl.toLowerCase().startsWith("https://") || (httpContext.isHttpContextWeb() && destinationFilePathOrUrl.startsWith(httpContext.getContextPath()))){
+
+			String newFileName;
+			if (!IMAGE_PATTERN.matcher(destinationFilePathOrUrl).find()) {
+				URL imageUrl = new URL(destinationFilePathOrUrl);
+				HttpURLConnection connection = null;
+				String format;
+				try {
+					connection = (HttpURLConnection) imageUrl.openConnection();
+					format = connection.getContentType().split("/")[1];
+				} finally {
+					if (connection != null) connection.disconnect();
+				}
+				newFileName = PrivateUtilities.getTempFileName(format);
+			} else
+				newFileName = PrivateUtilities.getTempFileName(CommonUtil.getFileType(destinationFilePathOrUrl));
+
+			try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
+				ImageIO.write(bufferedImage, CommonUtil.getFileType(newFileName), outStream);
+				try (ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray())) {
+					GXFile file = getGXFile(newFileName);
+					file.create(inStream, true);
+					file.close();
+					return file.getURI();
+				}
+			}
+
+		} else {
+			String newFileName = PrivateUtilities.getTempFileName(CommonUtil.getFileType(destinationFilePathOrUrl));
+			try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
+				ImageIO.write(bufferedImage, CommonUtil.getFileType(newFileName), outStream);
+				outStream.flush();
+				byte[] imageInByte = outStream.toByteArray();
+				return GXutil.blobFromBytes(imageInByte,CommonUtil.getFileType(newFileName));
 			}
 		}
 	}
@@ -106,43 +158,101 @@ public class GxImageUtil {
 	public static String flipHorizontally(String imageFile) {
 		if (!isValidInput(imageFile))
 			return "";
-
 		try {
 			BufferedImage image = createBufferedImageFromURI(imageFile);
 			AffineTransform tx = AffineTransform.getScaleInstance(-1, 1);
 			tx.translate(-image.getWidth(null), 0);
 			AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 			BufferedImage flippedImage = op.filter(image, null);
-			writeImage(flippedImage, imageFile);
+			return writeImage(flippedImage, imageFile);
 		}
 		catch (Exception e) {
 			log.error("flip horizontal " + imageFile + " failed" , e);
 		}
-		return imageFile;
+		return "";
 	}
 
 	public static String flipVertically(String imageFile) {
 		if (!isValidInput(imageFile))
 			return "";
-
 		try {
 			BufferedImage image = createBufferedImageFromURI(imageFile);
 			AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
 			tx.translate(0, -image.getHeight(null));
 			AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 			BufferedImage flippedImage = op.filter(image, null);
-			writeImage(flippedImage, imageFile);
+			return writeImage(flippedImage, imageFile);
 		}
 		catch (Exception e) {
 			log.error("flip vertical " + imageFile + " failed" , e);
 		}
-		return imageFile;
+		return "";
+	}
+
+	private static BufferedImage jpgToPng(String imageFile){
+		try {
+			BufferedImage originalImage = createBufferedImageFromURI(imageFile);
+			if (imageFile.indexOf(".jpg") > 0 || imageFile.indexOf(".jpeg") > 0)
+				try (ByteArrayOutputStream baos = new ByteArrayOutputStream()){
+					ImageIO.write(originalImage, "png", baos);
+					byte[] bytes = baos.toByteArray();
+					try (InputStream is = new ByteArrayInputStream(bytes)) {originalImage = ImageIO.read(is);}
+				}
+			return originalImage;
+		} catch (IOException ioe) {
+			log.error("format conversion for " + imageFile + " failed" , ioe);
+			return null;
+		}
+	}
+
+	public static String roundBorders(String imageFile, int topLeftRadius, int topRightRadius, int bottomLeftRadius, int bottomRightRadius) {
+		if (!isValidInput(imageFile)) return "";
+		try {
+			// Rounded images are basically images with transparent rounded borders and jpg and jpeg formats do not
+			// support transparency, so we have to create a new identical image but in png format if working with a jpg image
+			BufferedImage originalImage = jpgToPng(imageFile);
+			String newImageFile = imageFile;
+			if (imageFile.indexOf(".jpg") != -1)
+				newImageFile = imageFile.substring(0, imageFile.indexOf(".jpg")) + ".png";
+			else if (imageFile.indexOf(".jpeg") != -1)
+				newImageFile = imageFile.substring(0, imageFile.indexOf(".jpeg")) + ".png";
+
+			int w = originalImage.getWidth();
+			int h = originalImage.getHeight();
+
+			BufferedImage roundedImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+			Graphics2D g2 = roundedImage.createGraphics();
+			g2.setComposite(AlphaComposite.Src);
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g2.setColor(Color.WHITE);
+
+			GeneralPath path = new GeneralPath();
+			path.moveTo(0, topLeftRadius);
+			path.quadTo(0, 0, topLeftRadius, 0);
+			path.lineTo(w - topRightRadius, 0);
+			path.quadTo(w, 0, w, topRightRadius);
+			path.lineTo(w, h - bottomRightRadius);
+			path.quadTo(w, h, w - bottomRightRadius, h);
+			path.lineTo(bottomLeftRadius, h);
+			path.quadTo(0, h, 0, h - bottomLeftRadius);
+			path.closePath();
+
+			g2.fill(path);
+			g2.setComposite(AlphaComposite.SrcIn);
+			g2.drawImage(originalImage, 0, 0, null);
+			g2.dispose();
+
+			return writeImage(roundedImage,newImageFile);
+
+		} catch (Exception e){
+			log.error("round borders for " + imageFile + " failed" , e);
+			return "";
+		}
 	}
 
 	public static String resize(String imageFile, int width, int height, boolean keepAspectRatio) {
 		if (!isValidInput(imageFile))
 			return "";
-
 		try {
 			BufferedImage image = createBufferedImageFromURI(imageFile);
 			if (keepAspectRatio) {
@@ -159,12 +269,12 @@ public class GxImageUtil {
 			Graphics2D g2d = resizedImage.createGraphics();
 			g2d.drawImage(image, 0, 0, width, height, null);
 			g2d.dispose();
-			writeImage(resizedImage, imageFile);
+			return writeImage(resizedImage, imageFile);
 		}
 		catch (Exception e) {
 			log.error("resize " + imageFile + " failed" , e);
 		}
-		return imageFile;
+		return "";
 	}
 
 	public static String scale(String imageFile, short percent) {
@@ -185,14 +295,22 @@ public class GxImageUtil {
 		if (!isValidInput(imageFile))
 			return "";
 		try {
-			BufferedImage image = createBufferedImageFromURI(imageFile);
-			BufferedImage rotatedImage = rotateImage(image, angle);
-			writeImage(rotatedImage, imageFile);
+			// The process of rotating an image implies fitting it inside a rectangle and filling the excess
+			// with transparent background and jpg and jpeg formats do not transparency, so we have to create a new
+			// identical image but in png format if working with a jpg image
+			BufferedImage originalImage = jpgToPng(imageFile);
+			String newImageFile = imageFile;
+			if (imageFile.indexOf(".jpg") != -1)
+				newImageFile = imageFile.substring(0, imageFile.indexOf(".jpg")) + ".png";
+			else if (imageFile.indexOf(".jpeg") != -1)
+				newImageFile = imageFile.substring(0, imageFile.indexOf(".jpeg")) + ".png";
+			BufferedImage rotatedImage = rotateImage(originalImage, angle);
+			return writeImage(rotatedImage, newImageFile);
 		}
 		catch (Exception e) {
 			log.error("rotate " + imageFile + " failed" , e);
 		}
-		return imageFile;
+		return "";
 	}
 
 	private static BufferedImage rotateImage(BufferedImage buffImage, double angle) {

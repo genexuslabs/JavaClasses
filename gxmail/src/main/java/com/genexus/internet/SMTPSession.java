@@ -613,20 +613,25 @@ final class SMTPSession implements GXInternetConstants,ISMTPSession
 
 	private void sendAttachment(String sTime, String fileNamePath, String attachmentPath) throws GXMailException, IOException
 	{
-		InputStream is;
+		InputStream is = null;
 		String fileName = fileNamePath;
+		FileInputStream fis = null;
 
 		if	(fileNamePath.lastIndexOf(File.separator) != -1)
 			fileName = fileNamePath.substring(fileNamePath.lastIndexOf(File.separator) + 1);
 
-   		try
-   		{
-   			is = new FileInputStream(attachmentPath + fileNamePath);
+   		try {
+			   fis = new FileInputStream(attachmentPath + fileNamePath);
+			   is = fis;
 		}
-		catch (FileNotFoundException e)
-		{
+		catch (FileNotFoundException e) {
 			log ("11 - FileNotFound " + e.getMessage());
 			throw new GXMailException("Can't find " + attachmentPath + fileNamePath, MAIL_InvalidAttachment);
+		} finally {
+			   if (is != null)
+				   is.close();
+			   if (fis != null)
+				   fis.close();
 		}
 
 		println(getNextMessageIdMixed(sTime, false));

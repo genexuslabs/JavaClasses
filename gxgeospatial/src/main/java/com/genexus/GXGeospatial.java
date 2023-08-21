@@ -1,25 +1,20 @@
 package com.genexus;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.io.StringWriter;
 import java.lang.Double;
 import java.util.Locale;
 import java.math.*;
 import com.genexus.internet.IGxJSONSerializable;
-import org.simpleframework.xml.*;
-import org.noggit.JSONParser.*;
 import org.locationtech.spatial4j.context.SpatialContext;
 import org.locationtech.spatial4j.context.SpatialContextFactory;
 import org.locationtech.spatial4j.context.jts.JtsSpatialContextFactory;
 import org.locationtech.spatial4j.exception.InvalidShapeException;
 import org.locationtech.spatial4j.distance.DistanceCalculator;
 import org.locationtech.spatial4j.distance.DistanceUtils;
-import org.locationtech.spatial4j.distance.GeodesicSphereDistCalc;
 import org.locationtech.spatial4j.io.*;
 import org.locationtech.spatial4j.shape.*;
 import org.locationtech.spatial4j.shape.impl.BufferedLineString;
-import org.locationtech.spatial4j.shape.jts.*;
 
 import net.sf.geographiclib.PolygonArea;
 import net.sf.geographiclib.PolygonResult;
@@ -29,7 +24,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 
-@Root
 public final class GXGeospatial implements java.io.Serializable, IGxJSONSerializable {
 
 	private Shape innerShape;
@@ -394,13 +388,11 @@ public final class GXGeospatial implements java.io.Serializable, IGxJSONSerializ
 			return false;
 		}
 	}
-	
-	@Text
+
 	public String getXML(){
 		return toWKT();
 	}
-	
-	 @Text
+
 	public void setXML(String xml){
 		fromWKT(xml);
 	}
