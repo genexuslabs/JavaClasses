@@ -4,9 +4,7 @@ import java.io.PrintStream;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import com.genexus.Application;
-
-public class DataStoreProviderInfo
+public class DataStoreProviderInfo implements IDataStoreProviderInfo
 {
 	private long sentenceCount;
 	private long sentenceSelectCount;
@@ -16,20 +14,26 @@ public class DataStoreProviderInfo
 	private long sentenceCallCount;	
 	private long sentenceDirectSQLCount;
 	private Hashtable<String, SentenceInfo> sentenceInfo = new Hashtable<>();
-	
 	private String name;
+	private IApplication application;
 	
-  public DataStoreProviderInfo(String name)
+  public DataStoreProviderInfo(String name, IApplication application)
   {
 	  this.name = name;
+	  this.application = application;
   }
   
   public String getName()
   {
 	  return name;
   }
-    
-  public long getSentenceCount()
+
+	@Override
+	public DataStoreProviderInfo getDataStoreProviderInfo(String key) {
+		return null;
+	}
+
+	public long getSentenceCount()
   {
 	  return sentenceCount;
   }
@@ -93,7 +97,7 @@ public class DataStoreProviderInfo
   {
 	  return sentenceDirectSQLCount;
   }
-  
+
   public void incSentenceDirectSQLCount()
   {
 	  sentenceDirectSQLCount ++;
@@ -143,9 +147,9 @@ public class DataStoreProviderInfo
   {
 	  if (!sentenceInfo.containsKey(key))
 	  {
-		  SentenceInfo sInfo = new SentenceInfo(sqlSentence);
+		  SentenceInfo sInfo = new SentenceInfo(sqlSentence, application);
 		  sentenceInfo.put(key, sInfo);
-		  if (Application.isJMXEnabled())
+		  if (this.application.isJMXEnabled())
 		  {
 				  SentenceJMX.CreateSentenceJMX(this, key);
 		  }
