@@ -11,6 +11,8 @@ public class MBeanUtils {
 	
 	private static MBeanServer mbs = null;
 	private static Vector<ObjectName> registeredObjects = new Vector<>();
+
+
 	
   public MBeanUtils() {
   }
@@ -34,7 +36,7 @@ public class MBeanUtils {
 		return mbs;
 	}  
 
-  public static void createMBeanDataStoreProviders()
+  public static void createMBeanDataStoreProviders(IDataStoreProviderInfo dataStoreProviderInfo)
   {
     MBeanServer mbs = getMBeanServer();
 	if (mbs == null)
@@ -45,7 +47,7 @@ public class MBeanUtils {
       ObjectName name = new ObjectName("com.genexus.performance:type=DataStoreProviders");
 	  registeredObjects.addElement(name);
 
-      DataStoreProvidersJMX mbean = new DataStoreProvidersJMX();
+      DataStoreProvidersJMX mbean = new DataStoreProvidersJMX(dataStoreProviderInfo);
 	  
       mbs.registerMBean(mbean, name);
     }
@@ -67,7 +69,7 @@ public class MBeanUtils {
     }
   }  
   
-  public static void createMBeanDataStoreProvider(String dsName)
+  public static void createMBeanDataStoreProvider(String dsName, IDataStoreProviderInfo dataStoreProviderInfo)
   {
     MBeanServer mbs = getMBeanServer();
 	if (mbs == null)
@@ -78,7 +80,7 @@ public class MBeanUtils {
       ObjectName name = new ObjectName("com.genexus.performance:type=DataStoreProviders.DataStoreProvider,name= " + dsName);
 	  registeredObjects.addElement(name);
 
-      DataStoreProviderJMX mbean = new DataStoreProviderJMX(dsName);
+      DataStoreProviderJMX mbean = new DataStoreProviderJMX(dsName, dataStoreProviderInfo);
 	  
       mbs.registerMBean(mbean, name);
     }
