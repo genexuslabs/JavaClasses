@@ -1,6 +1,5 @@
 package com.genexus.webpanels;
 
-import java.io.InputStream;
 import java.lang.reflect.Method;
 
 import com.genexus.Application;
@@ -28,6 +27,27 @@ public class GXMultiCall extends GxRestService
     public Object gxMultiCall(String jsonStr) throws Exception
     {
 		super.init( "POST" );
+
+		try
+		{
+			GXMultiCall.callProcRest(context, jsonStr);
+		}
+		catch(ClassNotFoundException cnf)
+		{
+			builder = Response.notFound();
+			cleanup();
+			return builder.build() ;
+		}
+
+		builder = Response.okWrapped();
+		builder.type("application/json");
+		builder.entity("");
+		cleanup();
+		return builder.build() ;
+    }
+
+	public static void callProcRest(ModelContext context, String jsonStr) throws Exception
+	{
 		String procName = ((HttpContextWeb) context.getHttpContext()).GetNextPar().toLowerCase();
 
 		ModelContext modelContext = ModelContext.getModelContext(Application.gxCfg);
@@ -36,19 +56,10 @@ public class GXMultiCall extends GxRestService
 		{
 			appPackage = appPackage + ".";
 		}
-		
+
 		String restProcName = procName + "_services_rest";
-		try
-		{
-			Class myClassRest = Class.forName(appPackage + restProcName);
-		}
-		catch(ClassNotFoundException cnf)
-		{
-			builder = Response.notFound();
-			cleanup();
-			return builder.build() ;
-		}
-		
+
+		Class myClassRest = Class.forName(appPackage + restProcName);
 
 		Class myClass = Class.forName(appPackage + procName);
 		Method[] methods = myClass.getMethods();
@@ -66,7 +77,7 @@ public class GXMultiCall extends GxRestService
 		JSONArray jsonArr = new JSONArray(jsonStr);
 		UserInformation ui = Application.getConnectionManager().createUserInformation(Namespace.getNamespace(modelContext.getNAME_SPACE()));
 		int remoteHandle = ui.getHandle();
-		
+
 		for(int i = 0; i < jsonArr.length(); i++)
 		{
 			JSONArray procParms = new JSONArray(jsonArr.getJSONArray(i).toString());
@@ -76,17 +87,11 @@ public class GXMultiCall extends GxRestService
 			{
 				params[j] = GXutil.convertObjectTo(procParms.getString(j), parameters[j]);
 			}
-			com.genexus.db.DynamicExecute.dynamicExecute(modelContext, remoteHandle, modelContext.packageClass, appPackage + procName, params);			
+			com.genexus.db.DynamicExecute.dynamicExecute(modelContext, remoteHandle, modelContext.packageClass, appPackage + procName, params);
 		}
-		
-		Application.cleanupConnection(remoteHandle);
 
-		builder = Response.okWrapped();
-		builder.type("application/json");
-		builder.entity("");
-		cleanup();
-		return builder.build() ;
-    }
+		Application.cleanupConnection(remoteHandle);
+	}
 	
    protected boolean IntegratedSecurityEnabled( )
    {
@@ -96,40 +101,5 @@ public class GXMultiCall extends GxRestService
    protected int IntegratedSecurityLevel( )
    {
       return 0;
-   }
-   
-   private String parsePostData(int len, InputStream in)
-   {
-	   if(len <= 0)
-		   return new String();
-	   if(in == null)
-		   throw new IllegalArgumentException();	
-	   byte postedBytes[] = new byte[len];
-	   try
-	   {
-		   int offset = 0;
-		   do
-		   {
-			   int inputLen = in.read(postedBytes, offset, len - offset);
-			   if(inputLen <= 0)
-			   {
-				   throw new IllegalArgumentException ("err.io.short_read : length " + len + " read : " + offset + " Content: \n" + new String(postedBytes));
-			   }
-			   offset += inputLen;
-		   } while(len - offset > 0);
-	   }
-	   catch(java.io.IOException e)
-	   {
-		   throw new IllegalArgumentException(e.getMessage());
-	   }
-	   try
-	   {
-		   String postedBody = new String(postedBytes, 0, len, "8859_1");
-		   return postedBody;
-	   }
-	   catch(java.io.UnsupportedEncodingException e)
-	   {
-		   throw new IllegalArgumentException(e.getMessage());
-	   }
    }
 }
