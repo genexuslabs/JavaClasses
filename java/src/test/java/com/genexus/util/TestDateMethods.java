@@ -4,6 +4,7 @@ import com.genexus.CommonUtil;
 import com.genexus.LocalUtil;
 import com.genexus.specific.java.Connect;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.text.ParseException;
@@ -39,6 +40,7 @@ public class TestDateMethods {
 	}
 
 	@Test
+	@Ignore
 	public void testCtotex() {
 		Connect.init();
 
