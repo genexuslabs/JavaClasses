@@ -60,13 +60,15 @@ public class TestDateMethods {
 		catch (Exception e)
 		{ }
 
-		Calendar calendar = GregorianCalendar.getInstance();
+		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(testDate1);
-		Assert.assertTrue(calendar.get(Calendar.YEAR) == 1930);
+		Assert.assertEquals(1930, calendar.get(Calendar.YEAR));
+
 		calendar.setTime(testDate2);
-		Assert.assertTrue(calendar.get(Calendar.YEAR) == 2023);
+		Assert.assertEquals(2023, calendar.get(Calendar.YEAR));
+
 		calendar.setTime(testDate3);
-		Assert.assertTrue(calendar.get(Calendar.YEAR) == 2200);
+		Assert.assertEquals(2200, calendar.get(Calendar.YEAR));
 
 		testDate1 = CommonUtil.nullDate();
 		testDate2 = CommonUtil.nullDate();
@@ -80,12 +82,12 @@ public class TestDateMethods {
 		catch (Exception e)
 		{ }
 
-		calendar = GregorianCalendar.getInstance();
+		calendar = new GregorianCalendar();
 		calendar.setTime(testDate1);
-		Assert.assertTrue(calendar.get(Calendar.YEAR) == 2029);
+		Assert.assertEquals(2029, calendar.get(Calendar.YEAR));
 		calendar.setTime(testDate2);
-		Assert.assertTrue(calendar.get(Calendar.YEAR) == 1930);
+		Assert.assertEquals(1930, calendar.get(Calendar.YEAR));
 		calendar.setTime(testDate3);
-		Assert.assertTrue(calendar.get(Calendar.YEAR) == 1931);
+		Assert.assertEquals(1931, calendar.get(Calendar.YEAR));
 	}
 }
