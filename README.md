@@ -13,7 +13,6 @@ These are the source of the GeneXus Standard Classes for Java, valid since GeneX
 |---|---
 | common | Classes common to Android and Java
 | gxcryptocommon | Classes common to Android and Java related to Cryptography
-| apacheandroid | Android apache class dependence. These were separated by size issues. They are candidates to disappear in the near future
 | gxmail | Classes related to mail handling
 | java | Java standard classes,  output is gxclassr.jar
 | wrappercommon | Interfaces to encapsulate Java EE and Jakarta EE support,  output is gxwrappercommon.jar
