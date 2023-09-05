@@ -755,7 +755,7 @@ public abstract class HttpContext implements IHttpContext
 
 		if	(file.startsWith("/"))
 		{
-			if (file.startsWith(getContextPath()) || file.startsWith(getDefaultPath()))
+			if (file.startsWith(getContextPath()) || (!getDefaultPath().isEmpty() && file.startsWith(getDefaultPath())))
 				return out;
 			return getContextPath() + out;
 		}
