@@ -239,15 +239,32 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
 	private MailRecipientCollection processRecipients(Message message, Message.RecipientType rType) throws MessagingException
 	{
 		MailRecipientCollection mailRecipient = new MailRecipientCollection();
-		if (message.getRecipients(rType) != null)
-		{
-			for (int i = 0 ; i < message.getRecipients(rType).length; i++)
+		try {
+			if (message.getRecipients(rType) != null)
 			{
-				InternetAddress address = (InternetAddress)message.getRecipients(rType)[i];					
-				mailRecipient.addNew(address.getPersonal(), address.getAddress());
-			}			
+				for (int i = 0 ; i < message.getRecipients(rType).length; i++)
+				{
+					InternetAddress address = (InternetAddress)message.getRecipients(rType)[i];
+					mailRecipient.addNew(address.getPersonal(), address.getAddress());
+				}
+			}
+			return mailRecipient;
+		} catch (Exception e) {
+			/*
+				Some email clients like Gmail separate the list of addresses using commas while others like Outlook separate them using
+				semicolons. This is a hack to consider the case where the list of addresses is separated with semicolons which produces
+				an exception because the InternetAddress class used by jakarta mail to parse the addresses expects the list to be separated by commas
+			 */
+			String[] addresses  = message.getHeader(rType.toString());
+			if (addresses != null && addresses.length > 0) {
+				for (String address : addresses) {
+					String[] splitAddresses = address.split(";");
+					for (String splitAddress : splitAddresses)
+						mailRecipient.addNew(splitAddress.substring(0,splitAddress.lastIndexOf(" ") - 1), splitAddress.substring(splitAddress.indexOf("<") + 1,splitAddress.indexOf(">") - 1));
+				}
+			}
+			return mailRecipient;
 		}
-		return mailRecipient;
 	}
 	
   private void handleMultipart(Multipart multipart, GXMailMessage gxmessage) throws MessagingException, IOException 
