@@ -21,6 +21,7 @@ import jakarta.mail.Multipart;
 import jakarta.mail.NoSuchProviderException;
 import jakarta.mail.Part;
 import jakarta.mail.Session;
+import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeUtility;
@@ -249,7 +250,7 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
 				}
 			}
 			return mailRecipient;
-		} catch (Exception e) {
+		} catch (AddressException e) {
 			/*
 				Some email clients like Gmail separate the list of addresses using commas while others like Outlook separate them using
 				semicolons. This is a hack to consider the case where the list of addresses is separated with semicolons which produces
@@ -259,8 +260,10 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
 			if (addresses != null && addresses.length > 0) {
 				for (String address : addresses) {
 					String[] splitAddresses = address.split(";");
-					for (String splitAddress : splitAddresses)
-						mailRecipient.addNew(splitAddress.substring(0,splitAddress.lastIndexOf(" ") - 1), splitAddress.substring(splitAddress.indexOf("<") + 1,splitAddress.indexOf(">") - 1));
+					for (String splitAddress : splitAddresses){
+						InternetAddress ia = new InternetAddress(splitAddress);
+						mailRecipient.addNew(ia.getPersonal(),ia.getAddress());
+					}
 				}
 			}
 			return mailRecipient;
