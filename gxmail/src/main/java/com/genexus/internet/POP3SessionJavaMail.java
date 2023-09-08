@@ -21,6 +21,7 @@ import jakarta.mail.Multipart;
 import jakarta.mail.NoSuchProviderException;
 import jakarta.mail.Part;
 import jakarta.mail.Session;
+import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeUtility;
@@ -235,15 +236,34 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
 	private MailRecipientCollection processRecipients(Message message, Message.RecipientType rType) throws MessagingException
 	{
 		MailRecipientCollection mailRecipient = new MailRecipientCollection();
-		if (message.getRecipients(rType) != null)
-		{
-			for (int i = 0 ; i < message.getRecipients(rType).length; i++)
+		try {
+			if (message.getRecipients(rType) != null)
 			{
-				InternetAddress address = (InternetAddress)message.getRecipients(rType)[i];					
-				mailRecipient.addNew(address.getPersonal(), address.getAddress());
-			}			
+				for (int i = 0 ; i < message.getRecipients(rType).length; i++)
+				{
+					InternetAddress address = (InternetAddress)message.getRecipients(rType)[i];
+					mailRecipient.addNew(address.getPersonal(), address.getAddress());
+				}
+			}
+			return mailRecipient;
+		} catch (AddressException e) {
+			/*
+				Some email clients like Gmail separate the list of addresses using commas while others like Outlook separate them using
+				semicolons. This is a hack to consider the case where the list of addresses is separated with semicolons which produces
+				an exception because the InternetAddress class used by jakarta mail to parse the addresses expects the list to be separated by commas
+			 */
+			String[] addresses  = message.getHeader(rType.toString());
+			if (addresses != null && addresses.length > 0) {
+				for (String address : addresses) {
+					String[] splitAddresses = address.split(";");
+					for (String splitAddress : splitAddresses){
+						InternetAddress ia = new InternetAddress(splitAddress);
+						mailRecipient.addNew(ia.getPersonal(),ia.getAddress());
+					}
+				}
+			}
+			return mailRecipient;
 		}
-		return mailRecipient;
 	}
 	
   private void handleMultipart(Multipart multipart, GXMailMessage gxmessage) throws MessagingException, IOException 
