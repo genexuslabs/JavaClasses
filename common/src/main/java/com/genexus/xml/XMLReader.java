@@ -922,6 +922,16 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	public void addSchema(String url, String schema)
 	{
 		url = url.replaceAll(" ", "%20");
+		if (ApplicationContext.getInstance().isSpringBootApp())
+		{
+			if (!new ClassPathResource(url.replace(".\\", "")).exists())
+			{
+				parserConfiguration.setFeature("http://apache.org/xml/features/validation/dynamic", true);
+				parserConfiguration.setFeature("http://xml.org/sax/features/validation", false);
+				parserConfiguration.setFeature("http://apache.org/xml/features/validation/schema",false);
+				return;
+			}
+		}
 		String externalSchema = schema + " " + url;
 		parserConfiguration.setProperty("http://apache.org/xml/properties/schema/external-schemaLocation", externalSchema);
 
