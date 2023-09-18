@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.genexus.ApplicationContext;
 import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
 import com.genexus.platform.NativeFunctions;
@@ -40,6 +41,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
+import org.springframework.core.io.ClassPathResource;
 
 import javax.imageio.IIOException;
 
@@ -362,13 +364,16 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 						{
 							bitmap = bitmap.replace(httpContext.getStaticContentBase(), "");
 						}
-						image = PDImageXObject.createFromFile(defaultRelativePrepend + bitmap,document);
-						if(image == null) {
-							bitmap = webAppDir + bitmap;
-							image = PDImageXObject.createFromFile(bitmap,document);
+						bitmap = defaultRelativePrepend + bitmap;
+						if (ApplicationContext.getInstance().isSpringBootApp() && !new File(bitmap).exists()) {
+							image = PDImageXObject.createFromByteArray(document, new ClassPathResource(bitmap).getContentAsByteArray(), bitmap);
 						}
 						else {
-							bitmap = defaultRelativePrepend + bitmap;
+							image = PDImageXObject.createFromFile(bitmap, document);
+							if (image == null) {
+								bitmap = webAppDir + bitmap;
+								image = PDImageXObject.createFromFile(bitmap, document);
+							}
 						}
 					}
 					else {
