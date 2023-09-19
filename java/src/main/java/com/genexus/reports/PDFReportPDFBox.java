@@ -952,13 +952,17 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				if (!new File(bitmap).isAbsolute() && !bitmap.toLowerCase().startsWith("http:") && !bitmap.toLowerCase().startsWith("https:")) {
 					if (bitmap.startsWith(httpContext.getStaticContentBase()))
 						bitmap = bitmap.replace(httpContext.getStaticContentBase(), "");
-					image = PDImageXObject.createFromFile(defaultRelativePrepend + bitmap,document);
-					if(image == null) {
-						bitmap = webAppDir + bitmap;
-						image = PDImageXObject.createFromFile(bitmap,document);
+					bitmap = defaultRelativePrepend + bitmap;
+					if (ApplicationContext.getInstance().isSpringBootApp() && !new File(bitmap).exists()) {
+						image = PDImageXObject.createFromByteArray(document, new ClassPathResource(bitmap).getContentAsByteArray(), bitmap);
 					}
-					else
-						bitmap = defaultRelativePrepend + bitmap;
+					else {
+						image = PDImageXObject.createFromFile(bitmap, document);
+						if (image == null) {
+							bitmap = webAppDir + bitmap;
+							image = PDImageXObject.createFromFile(bitmap, document);
+						}
+					}
 				}
 				else
 					image = PDImageXObject.createFromFile(bitmap,document);
