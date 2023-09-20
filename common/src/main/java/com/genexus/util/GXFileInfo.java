@@ -1,11 +1,14 @@
 package com.genexus.util;
 import java.io.*;
 import java.util.Vector;
+
+import com.genexus.ApplicationContext;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.db.driver.ResourceAccessControlList;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.commons.io.IOCase;
+import org.springframework.core.io.ClassPathResource;
 
 import java.util.Date;
 
@@ -33,6 +36,12 @@ public class GXFileInfo implements IGXFileInfo {
 		}
 	}
 	public boolean exists(){
+		if (ApplicationContext.getInstance().isSpringBootApp() && !isDirectory) {
+			if (!fileSource.exists() && !new ClassPathResource(fileSource.getPath()).exists())
+				return false;
+			return true;
+		}
+
 		if ((isDirectory && fileSource.isDirectory()) || (!isDirectory && fileSource.isFile())) {
 			return fileSource.exists();
 		}
@@ -130,8 +139,12 @@ public class GXFileInfo implements IGXFileInfo {
         
         public InputStream getStream(){
             try {
+				if (ApplicationContext.getInstance().isSpringBootApp()) {
+					return new ClassPathResource(fileSource.getPath()).getInputStream();
+				}
+
                 return new FileInputStream(fileSource);
-            } catch (FileNotFoundException ex) {
+            } catch (Exception ex) {
                 return null;
             }
         }
