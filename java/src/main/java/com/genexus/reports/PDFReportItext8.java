@@ -1,5 +1,6 @@
 package com.genexus.reports;
 
+import com.genexus.ApplicationContext;
 import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
 import com.genexus.platform.NativeFunctions;
@@ -41,6 +42,7 @@ import com.itextpdf.layout.properties.*;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.layout.splitting.DefaultSplitCharacters;
 import com.itextpdf.layout.Canvas;
+import org.springframework.core.io.ClassPathResource;
 
 import java.awt.*;
 import java.io.File;
@@ -402,13 +404,16 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 						if (bitmap.startsWith(httpContext.getStaticContentBase())) {
 							bitmap = bitmap.replace(httpContext.getStaticContentBase(), "");
 						}
-						imageData = ImageDataFactory.create(defaultRelativePrepend + bitmap);
-						if(imageData == null) {
-							bitmap = webAppDir + bitmap;
-							imageData = ImageDataFactory.create(bitmap);
+						bitmap = defaultRelativePrepend + bitmap;
+						if (ApplicationContext.getInstance().isSpringBootApp() && !new File(bitmap).exists()) {
+							imageData = ImageDataFactory.create(new ClassPathResource(bitmap).getContentAsByteArray());
 						}
 						else {
-							bitmap = defaultRelativePrepend + bitmap;
+							imageData = ImageDataFactory.create(bitmap);
+							if (imageData == null) {
+								bitmap = webAppDir + bitmap;
+								imageData = ImageDataFactory.create(bitmap);
+							}
 						}
 					}
 					else {
