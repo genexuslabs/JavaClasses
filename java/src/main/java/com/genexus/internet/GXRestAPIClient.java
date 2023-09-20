@@ -297,7 +297,7 @@ public class GXRestAPIClient {
 		catch (Exception e) {
 			errorCode = DESERIALIZING_ERROR_CODE;
 			errorMessage = DESERIALIZING_ERROR_MSG;
-			logger.error(DESERIALIZING_ERROR_MSG + " " + sdtClass, e);
+			logError(DESERIALIZING_ERROR_CODE, DESERIALIZING_ERROR_MSG + " " + sdtClass, e);
 			return null;
 		}		
 	}
@@ -342,13 +342,13 @@ public class GXRestAPIClient {
 			else {
 				errorCode = RESPONSE_ERROR_CODE;
 				errorMessage = RESPONSE_ERROR_MSG;
-				logger.error(RESPONSE_ERROR_MSG );							
+				logError(RESPONSE_ERROR_CODE, RESPONSE_ERROR_MSG);
 			}
 		}
 		catch( JSONException e) {
 			errorCode = PARSING_ERROR_CODE;
 			errorMessage = PARSING_ERROR_MSG;
-			logger.error(PARSING_ERROR_MSG, e);			
+			logError(PARSING_ERROR_CODE, PARSING_ERROR_MSG, e);
 		}
 		return jsonstr;	
 	}
@@ -381,21 +381,21 @@ public class GXRestAPIClient {
 				{
 					errorCode = RESPONSE_ERROR_CODE;
 					errorMessage = RESPONSE_ERROR_MSG;
-					logger.error(RESPONSE_ERROR_MSG + " " + sdtClass);			
+					logError( RESPONSE_ERROR_CODE, RESPONSE_ERROR_MSG + " " + sdtClass);
 					return null;
 				}
 			}
 			else {
 				errorCode = RESPONSE_ERROR_CODE;
 				errorMessage = RESPONSE_ERROR_MSG;
-				logger.error(RESPONSE_ERROR_MSG + " " + sdtClass);			
+				logError( RESPONSE_ERROR_CODE,RESPONSE_ERROR_MSG + " " + sdtClass);
 				return null;
 			}
 		} 
 		catch (json.org.json.JSONException e) {
 			errorCode = PARSING_ERROR_CODE;
 			errorMessage = PARSING_ERROR_MSG;
-			logger.error(PARSING_ERROR_MSG + " " + sdtClass, e);
+			logError(PARSING_ERROR_CODE, PARSING_ERROR_MSG + " " + sdtClass, e);
 			return null;
 		}
 		return sdt;
@@ -431,18 +431,18 @@ public class GXRestAPIClient {
 			else {
 				errorCode = RESPONSE_ERROR_CODE;
 				errorMessage = RESPONSE_ERROR_MSG;
-				logger.error(RESPONSE_ERROR_MSG + " " + elementClass);
+				logError(RESPONSE_ERROR_CODE,RESPONSE_ERROR_MSG + " " + elementClass);
 			}	
 		} 
 		catch (json.org.json.JSONException e) {
 			errorCode = PARSING_ERROR_CODE;
 			errorMessage = PARSING_ERROR_MSG;
-			logger.error(PARSING_ERROR_MSG + " " + elementClass ,e );
+			logError(PARSING_ERROR_CODE,PARSING_ERROR_MSG + " " + elementClass ,e );
 		}
 		catch (Exception e) {
 			errorCode = DESERIALIZING_ERROR_CODE;
 			errorMessage = DESERIALIZING_ERROR_MSG;
-			logger.error(DESERIALIZING_ERROR_MSG + " " + elementClass, e);
+			logError(DESERIALIZING_ERROR_CODE, DESERIALIZING_ERROR_MSG + " " + elementClass, e);
 		}
 	}
 
@@ -465,7 +465,7 @@ public class GXRestAPIClient {
 		catch (json.org.json.JSONException e) {
 			errorCode = PARSING_ERROR_CODE;
 			errorMessage = PARSING_ERROR_MSG;
-			logger.error(PARSING_ERROR_MSG + " " + elementClasss, e);			
+			logError(PARSING_ERROR_CODE,PARSING_ERROR_MSG + " " + elementClasss, e);
 		}
 		return coll;
 	}
@@ -523,14 +523,27 @@ public class GXRestAPIClient {
 		else {
 			statusCode = httpClient.getStatusCode();
 			try {
-				jsonResponse = new JSONObject(httpClient.getString());
+				String response = httpClient.getString();
+				if (response.trim().startsWith("["))
+				{
+					// unwrapped list response
+					response = "{\"\":" + response + "}";
+				}
+				jsonResponse = new JSONObject(response);
 			}
 			catch( JSONException e) {
 				errorCode = PARSING_ERROR_CODE;
 				errorMessage = PARSING_ERROR_MSG;
-				logger.error(PARSING_ERROR_MSG, e);
+				logError(PARSING_ERROR_CODE, PARSING_ERROR_MSG, e);
 				jsonResponse = new JSONObject();
 			}
 		}
+	}
+
+	private void logError(int code, String msg)	{
+		logger.error("Error: " + Integer.toString(code) + " " + msg);
+	}
+	private void logError(int code, String msg, Exception e)	{
+		logger.error("Error: " + Integer.toString(code) + " " + msg, e);
 	}
 }
