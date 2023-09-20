@@ -500,20 +500,20 @@ public class GXRestAPIClient {
 			httpClient.addHeader( "Content-Type", contentType);
 		}
 		else {
-			if (this.httpMethod == "POST" || this.httpMethod == "PUT") {
+			if (httpMethod == "POST" || httpMethod == "PUT") {
 				bodyString = "{}";
 				httpClient.addString(bodyString);
 				httpClient.addHeader("Content-Type", contentType);
 			}
 		}
-		if (this.location.getAuthenticationMethod() == 4 && this.location.getAccessToken() != null &&  ! this.location.getAccessToken().trim().isEmpty())  {
-			httpClient.addHeader("Authorization", this.location.getAccessToken());
+		if (location.getAuthenticationMethod() == 4 && location.getAccessToken() != null &&  ! location.getAccessToken().trim().isEmpty())  {
+			httpClient.addHeader("Authorization", location.getAccessToken());
 		}
-		String serviceuri = ((this.location.getSecure() > 0) ? "https" : "http") + "://" + this.location.getHost();
-		serviceuri += (this.location.getPort() != 80) ? ":" + Integer.toString(this.location.getPort()): "";
-		serviceuri += "/" + this.location.getBaseURL() + "/" + this.location.getResourceName();
+		String serviceuri = ((location.getSecure() > 0) ? "https" : "http") + "://" + location.getHost();
+		serviceuri += (location.getPort() != 80) ? ":" + Integer.toString(location.getPort()): "";
+		serviceuri += "/" + location.getBaseURL() + "/" + location.getResourceName();
 		serviceuri += queryString;
-		httpClient.execute( this.httpMethod, serviceuri);
+		httpClient.execute( httpMethod, serviceuri);
 
 		if (httpClient.getStatusCode() >= 300 || httpClient.getErrCode() > 0) {	
 			errorCode = (httpClient.getErrCode() == 0)? 1 : httpClient.getErrCode();
