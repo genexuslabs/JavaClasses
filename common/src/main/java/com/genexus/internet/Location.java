@@ -23,6 +23,7 @@ public class Location
 	private String proxyAuthenticationUser  = "";
 	private String proxyAuthenticationRealm  = "";
 	private String proxyAuthenticationPassword  = "";
+	private String accessToken  = "";
 	private IGXWSAddressing wsAddressing;
 	private IGXWSSecurity wsSecurity;
 	private String certificate = "";
@@ -120,7 +121,10 @@ public class Location
 	{
 		return proxyAuthenticationPassword;
 	}
-	
+	public String getAccessToken()
+	{
+		return accessToken;
+	}
 	public IGXWSAddressing getWSAddressing()
 	{
 		return wsAddressing;
@@ -220,7 +224,9 @@ public class Location
 	{
 		this.proxyAuthenticationPassword = authenticationPassword;
 	}
-	
+
+	public void setAccessToken(String token) {	this.accessToken = token; }
+
 	public void setWSAddressing(IGXWSAddressing wsAddressing)
 	{
 		this.wsAddressing = wsAddressing;

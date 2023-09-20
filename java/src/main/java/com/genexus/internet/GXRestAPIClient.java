@@ -506,6 +506,9 @@ public class GXRestAPIClient {
 				httpClient.addHeader("Content-Type", contentType);
 			}
 		}
+		if (this.location.getAuthenticationMethod() == 4 && this.location.getAccessToken() != null &&  ! this.location.getAccessToken().trim().isEmpty())  {
+			httpClient.addHeader("Authorization", this.location.getAccessToken());
+		}
 		String serviceuri = ((this.location.getSecure() > 0) ? "https" : "http") + "://" + this.location.getHost();
 		serviceuri += (this.location.getPort() != 80) ? ":" + Integer.toString(this.location.getPort()): "";
 		serviceuri += "/" + this.location.getBaseURL() + "/" + this.location.getResourceName();
