@@ -7,6 +7,7 @@ import java.io.StringReader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.genexus.ApplicationContext;
 import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
 import com.genexus.platform.NativeFunctions;
@@ -36,6 +37,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.genexus.reports.fonts.PDFFont;
 import com.genexus.reports.fonts.PDFFontDescriptor;
 import com.genexus.reports.fonts.Type1FontMetrics;
+import org.springframework.core.io.ClassPathResource;
 
 public class PDFReportItext2 extends GXReportPDFCommons
 {
@@ -377,13 +379,16 @@ public class PDFReportItext2 extends GXReportPDFCommons
 						}					
 						// Si la ruta a la imagen NO es absoluta, en aplicaciones Web le agregamos al comienzo la ruta al root de la aplicación
 						// más la staticContentBaseURL si ésta es relativa.
-						image = com.lowagie.text.Image.getInstance(defaultRelativePrepend + bitmap);
-						if(image == null) { // Si all\uFFFDEno se encuentra la imagen, entonces la buscamos bajo el webAppDir (para mantener compatibilidad)
-							bitmap = webAppDir + bitmap;
-							image = com.lowagie.text.Image.getInstance(bitmap);
+						bitmap = defaultRelativePrepend + bitmap;
+						if (ApplicationContext.getInstance().isSpringBootApp() && !new File(bitmap).exists()) {
+							image = com.lowagie.text.Image.getInstance(new ClassPathResource(bitmap).getContentAsByteArray());
 						}
 						else {
-							bitmap = defaultRelativePrepend + bitmap;
+							image = com.lowagie.text.Image.getInstance(bitmap);
+							if (image == null) { // Si all\uFFFDEno se encuentra la imagen, entonces la buscamos bajo el webAppDir (para mantener compatibilidad)
+								bitmap = webAppDir + bitmap;
+								image = com.lowagie.text.Image.getInstance(bitmap);
+							}
 						}
 					}
 					else {

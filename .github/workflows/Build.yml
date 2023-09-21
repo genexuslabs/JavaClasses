@@ -38,7 +38,7 @@ jobs:
     - name: Setup Java JDK
       uses: actions/setup-java@v1.4.3
       with:
-        java-version: 1.9
+        java-version: 17
         gpg-private-key: ${{ secrets.MAVEN_GPG_BUILDER_PRIVATE_KEY }}
         gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
