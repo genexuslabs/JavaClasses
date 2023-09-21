@@ -82,6 +82,7 @@
 	<modules>
 		<module>common</module>
 		<module>gxweb</module>
+		<module>gxspringboot</module>
 		<module>wrapperjavax</module>
 		<module>wrapperjakarta</module>
 		<module>wrappercommon</module>
