@@ -5,6 +5,7 @@ package com.genexus.xml;
 import java.io.*;
 import java.util.*;
 
+import com.genexus.ApplicationContext;
 import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLAttributes;
 import org.apache.xerces.xni.XMLDocumentHandler;
@@ -30,6 +31,7 @@ import com.genexus.util.*;
 import com.genexus.ResourceReader;
 import com.genexus.internet.IHttpRequest;
 import com.genexus.CommonUtil;
+import org.springframework.core.io.ClassPathResource;
 
 public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHandler
 {
@@ -773,7 +775,19 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 		reset();
 		try
 		{
-			inputSource = new XMLInputSource(null, url, null, new FileInputStream(new File(url)), null);
+			InputStream fileInputStream = null;
+			if (ApplicationContext.getInstance().isSpringBootApp())
+			{
+				ClassPathResource resource = new ClassPathResource(url.replace(".\\", ""));
+				if (resource.exists())
+					fileInputStream = resource.getInputStream();
+			}
+			else
+			{
+				File xmlFile = new File(url);
+				fileInputStream = new FileInputStream(xmlFile);
+			}
+			inputSource = new XMLInputSource(null, url, null, fileInputStream, null);
 			if (documentEncoding.length() > 0)
 				inputSource.setEncoding(CommonUtil.normalizeEncodingName(documentEncoding));
 			parserConfiguration.setInputSource(inputSource);
@@ -908,6 +922,16 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 	public void addSchema(String url, String schema)
 	{
 		url = url.replaceAll(" ", "%20");
+		if (ApplicationContext.getInstance().isSpringBootApp())
+		{
+			if (!new ClassPathResource(url.replace(".\\", "")).exists())
+			{
+				parserConfiguration.setFeature("http://apache.org/xml/features/validation/dynamic", true);
+				parserConfiguration.setFeature("http://xml.org/sax/features/validation", false);
+				parserConfiguration.setFeature("http://apache.org/xml/features/validation/schema",false);
+				return;
+			}
+		}
 		String externalSchema = schema + " " + url;
 		parserConfiguration.setProperty("http://apache.org/xml/properties/schema/external-schemaLocation", externalSchema);
 

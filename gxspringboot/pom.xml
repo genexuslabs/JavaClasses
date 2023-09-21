@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.genexus</groupId>
+		<artifactId>parent</artifactId>
+		<version>${revision}${changelist}</version>
+	</parent>
+
+	<artifactId>gxspringboot</artifactId>
+	<name>GeneXus Spring Boot</name>
+
+	<dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>gxclassR</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<version>5.0.0</version>
+			<scope>provided</scope>
+		</dependency>				
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-web</artifactId>
+		    <version>3.1.2</version>
+		    <scope>provided</scope>
+		</dependency>		
+	</dependencies>
+
+	<build>
+		<finalName>gxspringboot</finalName>
+	</build>
+</project>
