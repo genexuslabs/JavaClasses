@@ -58,27 +58,44 @@ import javax.net.ssl.SSLContext;
 public class HttpClientJavaLib extends GXHttpClient {
 
 	public HttpClientJavaLib() {
-		getPoolInstance();
-		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();
-		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
-		cookies = new BasicCookieStore();
 		logger.info("Using apache http client implementation");
+		httpClientBuilder = HttpClients.custom();
+		int poolSize = clientCfg.getIntegerProperty("Client", "HTTPCLIENT_MAX_SIZE", "1000");
+		if (poolSize > 0) {
+			ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();
+			httpClientBuilder.setConnectionManager(initConnectionManager(poolSize)).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
+		}
+		else {
+			logger.info("Http Connection Pooling is disabled");
+		}
+
+		cookies = new BasicCookieStore();
 		streamsToClose = new Vector<>();
 	}
 
-	private static void getPoolInstance() {
-		if(connManager == null) {
-			Registry<ConnectionSocketFactory> socketFactoryRegistry =
-				RegistryBuilder.<ConnectionSocketFactory>create()
-					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
-					.build();
-			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
-			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_SIZE", "1000")));
-			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_PER_ROUTE", "1000")));
+	private static PoolingHttpClientConnectionManager httpConnectionPoolManager = null;
+
+	private static PoolingHttpClientConnectionManager initConnectionManager(int maxPoolSize) {
+		if (httpConnectionPoolManager == null) {
+			synchronized (HttpClientJavaLib.class) {
+				if (httpConnectionPoolManager == null) {
+					Registry<ConnectionSocketFactory> socketFactoryRegistry =
+						RegistryBuilder.<ConnectionSocketFactory>create()
+							.register("http", PlainConnectionSocketFactory.INSTANCE)
+							.register("https", getSSLSecureInstance())
+							.build();
+					httpConnectionPoolManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+					httpConnectionPoolManager.setMaxTotal(maxPoolSize);
+					int maxPoolSizePerRoute = clientCfg.getIntegerProperty("Client", "HTTPCLIENT_MAX_PER_ROUTE", "1000");
+					if (maxPoolSizePerRoute > 0)
+						httpConnectionPoolManager.setDefaultMaxPerRoute(maxPoolSizePerRoute);
+					}
+				}
 		}
 		else {
-			connManager.closeExpiredConnections();
+			httpConnectionPoolManager.closeExpiredConnections();
 		}
+		return httpConnectionPoolManager;
 	}
 
 	private ConnectionKeepAliveStrategy generateKeepAliveStrategy() {
@@ -111,7 +128,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	private static Logger logger = org.apache.logging.log4j.LogManager.getLogger(HttpClientJavaLib.class);
 
-	private static PoolingHttpClientConnectionManager connManager = null;
 	private Integer statusCode = 0;
 	private String reasonLine = "";
 	private HttpClientBuilder httpClientBuilder;
