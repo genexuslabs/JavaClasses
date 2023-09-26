@@ -1170,13 +1170,14 @@ public class Codecs
 		res[pos++] = (byte) '\n';
 
 		nlen = (int) file.length();
-		try(FileInputStream fin = new FileInputStream(file)) {
-			while (nlen > 0) {
-				int got = fin.read(res, pos, nlen);
-				nlen -= got;
-				pos += got;
-			}
+		FileInputStream fin = new FileInputStream(file);
+		while (nlen > 0)
+		{
+		    int got = fin.read(res, pos, nlen);
+		    nlen -= got;
+		    pos += got;
 		}
+		fin.close();
 
 		if ((pos-start) >= boundary.length  &&
 		    Util.findStr(boundary, bnd_cmp, res, start, pos) != -1)
