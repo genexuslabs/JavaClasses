@@ -319,29 +319,6 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 
     private ISSLConnection sslConnection = new DefaultSSLConnection();
 
-	private static Vector socketsToClose = new Vector<>();
-
-	private void closeOpenedSockets()
-	{
-		java.util.Enumeration e = socketsToClose.elements();
-		while(e.hasMoreElements())
-		{
-			try
-			{
-				((java.io.InputStream)e.nextElement()).close();
-			}
-			catch(IOException ioe)
-			{
-				Log.write(Log.CONN,"Error closing stream: " + ioe.getMessage());
-			}
-		}
-		socketsToClose.removeAllElements();
-	}
-
-	protected void finalize() {
-		closeOpenedSockets();
-	}
-
 //@iroqueta
 	private boolean tcpNoDelay = false;
 	private boolean includeCookies = true;
@@ -3221,7 +3198,6 @@ static
 		    (sock = input_demux.getSocket()) == null)
 		{
 		    sock = getSocket(con_timeout);
-			socketsToClose.addElement(sock);
 
 		    if (Protocol == HTTPS)
 		    {
@@ -3481,7 +3457,6 @@ static
 							else
 								sock = new Socket(addr_list[idx], actual_port,
 									LocalAddr, LocalPort);
-							socketsToClose.add(sock);
 							//@iroqueta
 							sock.setTcpNoDelay(tcpNoDelay);
 						}

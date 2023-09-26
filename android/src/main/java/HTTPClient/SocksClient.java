@@ -40,7 +40,6 @@ import java.net.Socket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.Vector;
 
 /**
  * This class implements a SOCKS Client. Supports both versions 4 and 5.
@@ -87,29 +86,6 @@ class SocksClient
     private final static byte IP_V4   = 1,
 			      DMNAME  = 3,
 			      IP_V6   = 4;
-
-	private static Vector socketsToClose = new Vector<>();
-
-	private void closeOpenedSockets()
-	{
-		java.util.Enumeration e = socketsToClose.elements();
-		while(e.hasMoreElements())
-		{
-			try
-			{
-				((java.io.InputStream)e.nextElement()).close();
-			}
-			catch(IOException ioe)
-			{
-				Log.write(Log.SOCKS,"Error closing stream: " + ioe.getMessage());
-			}
-		}
-		socketsToClose.removeAllElements();
-	}
-
-	protected void finalize() {
-		closeOpenedSockets();
-	}
 
 
     // Constructors
@@ -191,7 +167,6 @@ class SocksClient
 	    // create socket and streams
 
 	    sock = connect(socks_host, socks_port, localAddr, localPort);
-		socketsToClose.addElement(sock);
 	    InputStream  inp = sock.getInputStream();
 	    OutputStream out = sock.getOutputStream();
 
