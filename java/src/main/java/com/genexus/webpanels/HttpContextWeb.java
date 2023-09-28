@@ -1380,7 +1380,7 @@ public class HttpContextWeb extends HttpContext {
 			if (mustUseWriter()) {
 				setWriter(getResponse().getWriter());
 			} else {
-				if (buffered) {
+				if (bufferMode == ResponseBufferMode.ENABLED) {
 					buffer = new com.genexus.util.FastByteArrayOutputStream();
 					setOutputStream(buffer);
 				} else {
@@ -1391,7 +1391,7 @@ public class HttpContextWeb extends HttpContext {
 					String accepts = getHeader("Accept-Encoding");
 					if (accepts != null && accepts.indexOf("gzip") >= 0) {
 						setHeader("Content-Encoding", "gzip");
-						setOutputStream(new GZIPOutputStream(getOutputStream()));
+						setOutputStream(new GZIPOutputStream(getOutputStream(), true));
 					}
 				}
 			}
@@ -1403,7 +1403,7 @@ public class HttpContextWeb extends HttpContext {
 	public void flushStream() {
 		proxyCookieValues();
 		try {
-			if (buffered) {
+			if (bufferMode == ResponseBufferMode.ENABLED) {
 				// Esto en realidad cierra el ZipOutputStream, o el ByteOutputStream, no cierra
 				// el del
 				// servlet... Es necesario hacerlo, dado que sino el GZip no hace el flush de

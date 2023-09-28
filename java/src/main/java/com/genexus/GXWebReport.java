@@ -33,7 +33,7 @@ public abstract class GXWebReport extends GXWebProcedure
 	{
 		super.initState(context, ui);
 
-		httpContext.setBuffered(true);
+		httpContext.setResponseBufferMode(HttpContext.ResponseBufferMode.ENABLED);
 		httpContext.setBinary(true);
 		String implementation = com.genexus.Application.getClientContext().getClientPreferences().getPDF_RPT_LIBRARY();
 		if (implementation.equals("ITEXT"))
