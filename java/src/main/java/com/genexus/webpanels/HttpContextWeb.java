@@ -1389,7 +1389,7 @@ public class HttpContextWeb extends HttpContext {
 					String accepts = getHeader("Accept-Encoding");
 					if (accepts != null && accepts.indexOf("gzip") >= 0) {
 						setHeader("Content-Encoding", "gzip");
-						setOutputStream(new GZIPOutputStream(getOutputStream(), bufferMode == ResponseBufferMode.DISABLED));
+						setOutputStream(new GZIPOutputStream(getOutputStream(), true));
 					}
 				}
 			}
