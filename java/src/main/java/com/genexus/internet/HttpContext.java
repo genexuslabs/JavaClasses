@@ -613,10 +613,6 @@ public abstract class HttpContext implements IHttpContext
 
 	public void setResponseBufferMode(ResponseBufferMode bufferMode)
 	{
-		if (bufferMode == ResponseBufferMode.DISABLED) {
-		//	setCompression(false); //TODO: Check why we need to disable compression. This shouldn't be required
-		}
-
 		this.bufferMode = bufferMode;
 	}
 
