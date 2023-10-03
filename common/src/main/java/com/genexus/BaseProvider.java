@@ -19,9 +19,11 @@ import com.genexus.util.GXFileCollection;
 
 public abstract class BaseProvider implements IGXSmartCacheProvider
 	{
-		ConcurrentHashMap<String, Vector<String>> queryTables;	
+		private static final ILogger logger = LogManager.getLogger(BaseProvider.class);
+
+		volatile ConcurrentHashMap<String, Vector<String>> queryTables;
 		protected Date startupDate;
-		Object syncLock = new Object();
+		static Object syncLock = new Object();
 		protected static final String FORCED_INVALIDATE = "SD";
 
 

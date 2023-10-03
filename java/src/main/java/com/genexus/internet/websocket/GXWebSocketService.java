@@ -23,7 +23,7 @@ import com.genexus.websocket.ISession;
 
 public class GXWebSocketService {
 	public static final ILogger logger = LogManager.getLogger(GXWebSocketService.class);
-	private static GXWebSocketService instance;
+	private volatile static GXWebSocketService instance;
 
 	private String[] handlerCache = new String[HandlerType.values().length];
 	private GXWebSocketSessionCollection wsClients = new GXWebSocketSessionCollection();
