@@ -635,11 +635,33 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 
 					loadSupportedHTMLTags();
 
+					boolean createdNewPage = false;
+					PDPageContentStream newPageStream = null;
+
 					Document document = Jsoup.parse(sTxt);
 					Elements allElements = document.getAllElements();
-					for (Element element : allElements)
+					for (Element element : allElements){
+						if (pageHeightExceeded(bottomMargin, spaceHandler.getCurrentYPosition())) {
+							llx = leftAux + leftMargin;
+							lly = drawingPageHeight - bottomAux;
+							urx = rightAux + leftMargin;
+							ury = drawingPageHeight - topAux;
+							htmlRectangle = new PDRectangle(llx, lly, urx - llx, ury - lly);
+							spaceHandler = new SpaceHandler(htmlRectangle.getUpperRightY(), htmlRectangle.getHeight());
+							bottomAux -= drawingPageHeight;
+							GxEndPage();
+							GxStartPage();
+
+							newPageStream = new PDPageContentStream(this.document, this.document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false);
+							createdNewPage = true;
+						}
+
 						if (this.supportedHTMLTags.contains(element.normalName()))
-							processHTMLElement(cb, htmlRectangle, spaceHandler, element);
+							if (createdNewPage)
+								processHTMLElement(newPageStream, htmlRectangle, spaceHandler, element);
+							else
+								processHTMLElement(cb, htmlRectangle, spaceHandler, element);
+					}
 
 				} catch (Exception e) {
 					log.error("GxDrawText failed to print HTML text : ", e);
@@ -880,7 +902,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 		}
 
 		if (spaceHandler.getAvailableSpace() <= 0){
-			log.error("You ran out of available space while rendering HTML");
+			log.debug("You ran out of available space in page #" + this.page + " while rendering HTML");
 			return;
 		}
 
@@ -1047,7 +1069,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			contentStream.setRenderingMode(RenderingMode.FILL); // Default text rendering mode for PDFBox 2.0.27
 			return lines.size();
 		} catch (IOException ioe) {
-			log.error("failed to draw wrapped text: ", ioe);
+			log.error("failed to render HTML text: ", ioe);
 			return -1;
 		}
 	}
