@@ -7,6 +7,8 @@ import java.util.ListIterator;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 import com.genexus.xml.XMLReader;
 import org.apache.commons.lang.StringUtils;
 
