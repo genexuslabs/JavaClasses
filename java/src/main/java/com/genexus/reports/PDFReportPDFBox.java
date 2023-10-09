@@ -571,7 +571,9 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 		}
 	}
 	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border, int valign) {
-		try (PDPageContentStream cb =  new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false)){
+		PDPageContentStream cb =  null;
+		try {
+			cb =  new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false);
 			boolean printRectangle = false;
 			if (props.getBooleanGeneralProperty(Const.BACK_FILL_IN_CONTROLS, true))
 				printRectangle = true;
@@ -635,9 +637,6 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 
 					loadSupportedHTMLTags();
 
-					boolean createdNewPage = false;
-					PDPageContentStream newPageStream = null;
-
 					Document document = Jsoup.parse(sTxt);
 					Elements allElements = document.getAllElements();
 					for (Element element : allElements){
@@ -652,15 +651,11 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 							GxEndPage();
 							GxStartPage();
 
-							newPageStream = new PDPageContentStream(this.document, this.document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false);
-							createdNewPage = true;
+							cb.close();
+							cb = new PDPageContentStream(this.document, this.document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false);
 						}
-
 						if (this.supportedHTMLTags.contains(element.normalName()))
-							if (createdNewPage)
-								processHTMLElement(newPageStream, htmlRectangle, spaceHandler, element);
-							else
-								processHTMLElement(cb, htmlRectangle, spaceHandler, element);
+							processHTMLElement(cb, htmlRectangle, spaceHandler, element);
 					}
 
 				} catch (Exception e) {
@@ -874,6 +869,8 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			}
 		} catch (Exception ioe){
 			log.error("GxDrawText failed: ", ioe);
+		} finally {
+			try {if (cb != null) cb.close();} catch (IOException ioe) {}
 		}
 	}
 
