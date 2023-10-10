@@ -637,8 +637,8 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 
 					loadSupportedHTMLTags();
 
-					Document document = Jsoup.parse(sTxt);
-					Elements allElements = document.getAllElements();
+					Document htmlDocument = Jsoup.parse(sTxt);
+					Elements allElements = htmlDocument.getAllElements();
 					for (Element element : allElements){
 						if (pageHeightExceeded(bottomMargin, spaceHandler.getCurrentYPosition())) {
 							llx = leftAux + leftMargin;
@@ -652,7 +652,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 							GxStartPage();
 
 							cb.close();
-							cb = new PDPageContentStream(this.document, this.document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false);
+							cb = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false);
 						}
 						if (this.supportedHTMLTags.contains(element.normalName()))
 							processHTMLElement(cb, htmlRectangle, spaceHandler, element);
@@ -870,7 +870,12 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 		} catch (Exception ioe){
 			log.error("GxDrawText failed: ", ioe);
 		} finally {
-			try {if (cb != null) cb.close();} catch (IOException ioe) {}
+			try {
+				if (cb != null) cb.close();
+			}
+			catch (IOException ioe) {
+				log.error("GxDrawText failed to close a content stream to one of it's pages: ", ioe);
+			}
 		}
 	}
 
@@ -1324,8 +1329,8 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			try {
 				document.save(outputStream);
 				document.close();
-			} catch (IOException ioe) {
-				log.error("GxEndDocument: failed to save document to the output stream", ioe);
+			} catch (IOException | IllegalStateException e) {
+				log.error("GxEndDocument: failed to save document to the output stream", e);
 			}
 
 			log.debug("GxEndDocument!");
