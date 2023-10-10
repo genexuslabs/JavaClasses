@@ -635,8 +635,7 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 				Rectangle htmlRectangle = new Rectangle(llx, lly, urx - llx, ury - lly);
 				YPosition yPosition = new YPosition(htmlRectangle.getTop());
 
-				Canvas htmlCanvas = new Canvas(cb, htmlRectangle);
-				htmlCanvas.setFontProvider(fontProvider);
+				Canvas htmlCanvas = getNewCanvas(cb, htmlRectangle, fontProvider);
 
 				//Iterate over the elements (a.k.a the parsed HTML string) and handle each case accordingly
 				List<IElement> elements = HtmlConverter.convertToElements(sTxt, converterProperties);
@@ -659,8 +658,7 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 						cb.setFontAndSize(this.baseFont, fontSize);
 						cb.setFillColor(new DeviceRgb(foreColor));
 
-						htmlCanvas = new Canvas(cb, htmlRectangle);
-						htmlCanvas.setFontProvider(fontProvider);
+						htmlCanvas = getNewCanvas(cb, htmlRectangle, fontProvider);
 					}
 					processHTMLElement((IBlockElement)element, alignment, htmlCanvas);
 					yPosition.setCurrentYPosition(yPosition.getCurrentYPosition() - blockElementHeight);
@@ -786,6 +784,12 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 				}
 			}
 		}
+	}
+
+	private Canvas getNewCanvas(PdfCanvas pdfCanvas, Rectangle rectangle, FontProvider fontProvider) {
+		Canvas canvas = new Canvas(pdfCanvas, rectangle);
+		canvas.setFontProvider(fontProvider);
+		return canvas;
 	}
 
 	void processHTMLElement(IBlockElement blockElement, int alignment, Canvas htmlCanvas){
