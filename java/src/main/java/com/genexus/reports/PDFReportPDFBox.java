@@ -86,6 +86,10 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 		}
 	}
 
+	private PDPageContentStream getNewPDPageContentStream() throws IOException {
+		return new PDPageContentStream(document, document.getPage(page - 1), PDPageContentStream.AppendMode.APPEND,false);
+	}
+
 	private void drawRectangle(PDPageContentStream cb, float x, float y, float w, float h,
 							   int styleTop, int styleBottom, int styleRight, int styleLeft,
 							   float radioTL, float radioTR, float radioBL, float radioBR, float penAux, boolean hideCorners) {
@@ -224,7 +228,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 
 	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue,
 						   int styleTop, int styleBottom, int styleRight, int styleLeft, int cornerRadioTL, int cornerRadioTR, int cornerRadioBL, int cornerRadioBR) {
-		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false)){
+		try (PDPageContentStream cb = getNewPDPageContentStream()){
 
 			float penAux = (float)convertScale(pen);
 			float rightAux = (float)convertScale(right);
@@ -308,7 +312,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	}
 
 	public void GxDrawLine(int left, int top, int right, int bottom, int width, int foreRed, int foreGreen, int foreBlue, int style) {
-		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false)){
+		try (PDPageContentStream cb = getNewPDPageContentStream()){
 
 			float widthAux = (float)convertScale(width);
 			float rightAux = (float)convertScale(right);
@@ -347,7 +351,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	}
 
 	public void GxDrawBitMap(String bitmap, int left, int top, int right, int bottom, int aspectRatio) {
-		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false)){
+		try (PDPageContentStream cb = getNewPDPageContentStream()){
 			PDImageXObject image;
 			try {
 				if (documentImages != null && documentImages.containsKey(bitmap)) {
@@ -573,7 +577,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border, int valign) {
 		PDPageContentStream cb =  null;
 		try {
-			cb =  new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false);
+			cb = getNewPDPageContentStream();
 			boolean printRectangle = false;
 			if (props.getBooleanGeneralProperty(Const.BACK_FILL_IN_CONTROLS, true))
 				printRectangle = true;
@@ -652,7 +656,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 							GxStartPage();
 
 							cb.close();
-							cb = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false);
+							cb = getNewPDPageContentStream();
 						}
 						if (this.supportedHTMLTags.contains(element.normalName()))
 							processHTMLElement(cb, htmlRectangle, spaceHandler, element);
@@ -735,7 +739,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 							rectangle.setUpperRightY(this.pageSize.getUpperRightY() - topAux - topMargin -bottomMargin);
 							break;
 					}
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false);
+					PDPageContentStream contentStream = getNewPDPageContentStream();
 					contentStream.setNonStrokingColor(backColor);
 					contentStream.addRect(rectangle.getLowerLeftX(), rectangle.getLowerLeftY(),rectangle.getWidth(), rectangle.getHeight());
 					contentStream.fill();
@@ -769,7 +773,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 							underline.setUpperRightY(this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);
 							break;
 					}
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false);
+					PDPageContentStream contentStream = getNewPDPageContentStream();
 					contentStream.setNonStrokingColor(foreColor);
 					contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY(),underline.getWidth(), underline.getHeight());
 					contentStream.fill();
@@ -800,7 +804,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 							underline.setUpperRightY(this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
 							break;
 					}
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false);
+					PDPageContentStream contentStream = getNewPDPageContentStream();
 					contentStream.setNonStrokingColor(foreColor);
 					contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY() - strikethruSeparation * 1/3, underline.getWidth(), underline.getHeight());
 					contentStream.fill();
@@ -816,7 +820,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 						templateCreated = true;
 					}
 					PDFormXObject form = new PDFormXObject(document);
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false);
+					PDPageContentStream contentStream = getNewPDPageContentStream();
 					contentStream.transform(Matrix.getTranslateInstance(leftAux + leftMargin, leftAux + leftMargin));
 					contentStream.drawForm(form);
 					contentStream.close();
@@ -1246,7 +1250,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					template.endText();
 					template.close();
 					for (PDPage page : document.getPages()){
-						try (PDPageContentStream templatePainter = new PDPageContentStream(document, page,PDPageContentStream.AppendMode.APPEND,false)) {
+						try (PDPageContentStream templatePainter = new PDPageContentStream(document, page, PDPageContentStream.AppendMode.APPEND,false)) {
 							templatePainter.drawForm(formXObjecttemplate);
 						}
 					}
