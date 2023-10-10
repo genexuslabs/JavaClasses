@@ -14,7 +14,7 @@ import java.io.InputStream;
 public class GXObjectUploadServices extends GXWebObjectStub
 {
 
-	public String doInternalRestExecute(HttpContext context)
+	public String doInternalRestExecute(HttpContext context) throws Exception
 	{
 		return doRestExecute(context);
 	}
@@ -116,7 +116,7 @@ public class GXObjectUploadServices extends GXWebObjectStub
 		}
     }
 
-	protected String doRestExecute(HttpContext context)
+	protected String doRestExecute(HttpContext context) throws Exception
 	{
 		String savedFileName = "";
 		String fileName = "";
