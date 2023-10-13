@@ -12,7 +12,7 @@ import java.io.InputStream;
 
 
 public class GXObjectUploadServices extends GXWebObjectStub
-{
+{   
 	boolean isRestCall = false;
 	String keyId;
 	String jsonResponse = null;
@@ -33,20 +33,20 @@ public class GXObjectUploadServices extends GXWebObjectStub
 	{
 		doExecute(context);
 	}
-	protected void doExecute(HttpContext context) throws Exception
-	{
+    protected void doExecute(HttpContext context) throws Exception
+    {
 		String savedFileName = "";
 		String fileName = "";
 		String ext = "";
-		WebApplicationStartup.init(com.genexus.Application.gxCfg, context);
-		context.setStream();
+        WebApplicationStartup.init(com.genexus.Application.gxCfg, context);
+        context.setStream();
 		try
 		{
 			String fileDirPath = Preferences.getDefaultPreferences().getPRIVATE_PATH();
-			ModelContext modelContext =  new ModelContext(com.genexus.Application.gxCfg);
-			modelContext.setHttpContext(context);
-			ModelContext.getModelContext().setHttpContext(context);
-			context.setContext(modelContext);
+				ModelContext modelContext =  new ModelContext(com.genexus.Application.gxCfg);
+				modelContext.setHttpContext(context);
+				ModelContext.getModelContext().setHttpContext(context);
+				context.setContext(modelContext);
 
 			if (((HttpContextWeb) context).isMultipartContent())
 			{
@@ -122,10 +122,10 @@ public class GXObjectUploadServices extends GXWebObjectStub
 		}
 		finally {
 			if (!isRestCall)
-				ModelContext.deleteThreadContext();
+			ModelContext.deleteThreadContext();
 		}
-	}
-
+    }
+	
 	protected boolean IntegratedSecurityEnabled( )
 	{
 		return com.genexus.Application.getClientPreferences().getProperty("EnableIntegratedSecurity", "0").equals("1");
@@ -172,7 +172,7 @@ public class GXObjectUploadServices extends GXWebObjectStub
 		if (contentType.startsWith("video/quicktime"))
 		{
 			return "mov";
-		}
+		}	   
 		if (contentType.startsWith("audio/x-caf"))
 		{
 			return "caf";
@@ -192,11 +192,11 @@ public class GXObjectUploadServices extends GXWebObjectStub
 		if (contentType.startsWith("application/pdf"))
 		{
 			return "pdf";
-		}
+		}	   
 		if (contentType.startsWith("text/rtf"))
 		{
 			return "rtf";
-		}
+		}	   
 		if (contentType.startsWith("text/plain"))
 		{
 			return "txt";
@@ -204,11 +204,11 @@ public class GXObjectUploadServices extends GXWebObjectStub
 		if (contentType.startsWith("image/bmp"))
 		{
 			return "bmp";
-		}
+		}	   
 		if (contentType.startsWith("image/gif"))
 		{
 			return "gif";
-		}
+		}	   
 		if (contentType.startsWith("audio/mp4"))
 		{
 			return "m4a";
@@ -224,19 +224,19 @@ public class GXObjectUploadServices extends GXWebObjectStub
 		if (contentType.startsWith("audio/3gpp"))
 		{
 			return "a3gpp";
-		}
+		}	   
 		if (contentType.startsWith("video/3gpp2"))
 		{
 			return "3g2";
-		}
+		}	   
 		if (contentType.startsWith("video/3gpp"))
 		{
 			return "3gp";
-		}
+		}	   
 		if (contentType.startsWith("video/mp4"))
 		{
 			return "mp4";
-		}
+		}	   
 		if (contentType.startsWith("video/x-msvideo"))
 		{
 			return "avi";
@@ -244,26 +244,26 @@ public class GXObjectUploadServices extends GXWebObjectStub
 		if (contentType.startsWith("video/x-divx"))
 		{
 			return "divx";
-		}
+		}	   
 		if (contentType.startsWith("application/zip"))
 		{
 			return "zip";
-		}
+		}	   
 		if (contentType.startsWith("application/x-gzip"))
 		{
 			return "gz";
-		}
+		}	   
 		if (contentType.startsWith("application/x-tar"))
 		{
 			return "tar";
-		}
+		}	   
 		if (contentType.startsWith("application/x-rar-compressed"))
 		{
 			return "rar";
 		}
 		return "tmp";
 	}
-	protected void init(HttpContext context )
-	{
-	}
+   protected void init(HttpContext context )
+   {
+   }	   
 }
