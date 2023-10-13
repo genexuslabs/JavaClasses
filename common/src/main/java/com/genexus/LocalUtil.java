@@ -1378,7 +1378,10 @@ public class LocalUtil
 			}
 			else
 			{
-				return (alignRight(text, picture.length()));
+				if (text.length() < picture.length())
+					return (alignRight(text, picture.length()));
+				else
+					return text;
 			}
 		}
 
@@ -1443,6 +1446,7 @@ public class LocalUtil
 		int originalPictLength = picture.length();
 		picture = takeSymbolsFromPicture(picture);
 		int newPictLength = picture.length();
+		boolean hasSymbol = originalPictLength > newPictLength;
 		int j = 0;
 		String valueStr = String.valueOf(value);
 		int valueStrLength = valueStr.length();
@@ -1502,7 +1506,7 @@ public class LocalUtil
 			}
 		}
 
-		if( originalPictLength > newPictLength && !floating) formatted = addSymbolsToText(formatted, originalPicture);
+		if( originalPictLength > newPictLength && !floating) formatted = addSymbolsToText(formatted, originalPicture, hasSymbol);
 		int negativeSign = 0;
 		if (preffix.startsWith("("))
 		{
@@ -1529,7 +1533,7 @@ public class LocalUtil
 		for (int i = 0; i < picture.length(); i++)
 		{
 			char a = picture.charAt(i);
-			if( (a=='Z') || (a=='9') || (a==',')  || (a=='%') || (a==')') || (a=='('))
+			if( (a=='Z') || (a=='9') || (a==',')  || (a=='%') || (a==')') || (a=='(') || (a==' '))
 			{
 				pictureWithoutSymbols.append(a);
 			}
@@ -1559,12 +1563,13 @@ public class LocalUtil
 		return false;
 	}
 
-	private String addSymbolsToText(String text, String originalPicture)
+	private String addSymbolsToText(String text, String originalPicture, boolean hasSymbol)
 	{
 		StringBuffer formattedText = new StringBuffer();
 		int textIdx = text.length() - 1;
 		
 		boolean dotAsLiteral = dotAsLiteral(originalPicture);
+		boolean isNegative = false;
 		for (int i = originalPicture.length() - 1; i >= 0;)
 		{
 			char a = originalPicture.charAt(i--);
@@ -1572,12 +1577,28 @@ public class LocalUtil
 			{
 				if (!(a =='+' && text.startsWith("-")))
 					formattedText.append(a);
+				if (a == ' ')
+					textIdx--;
 				if( i >= 0) a = originalPicture.charAt(i--);
 				else break;
 			}
-			if( textIdx >= 0 ) formattedText.append(text.charAt(textIdx--));
+			if( textIdx >= 0)
+			{
+				char textChar = text.charAt(textIdx--);
+				if (textChar != '-' || !hasSymbol || textIdx < 0)
+					formattedText.append(textChar);
+				else
+				{
+					formattedText.append(' ');
+					isNegative = true;
+				}
+			}
 		}
 		while( textIdx >= 0 ) formattedText.append(text.charAt(textIdx--));
+
+		if (isNegative)
+			formattedText.append('-');
+
 		String formattedString = formattedText.reverse().toString();
 		if (formattedString.endsWith("DB"))
 		{
@@ -1616,6 +1637,7 @@ public class LocalUtil
 		int originalPictLength = picture.length();
 		picture = takeSymbolsFromPicture(picture);
 		int newPictLength = picture.length();
+		boolean hasSymbol = originalPictLength > newPictLength;
 		int j = 0;
 		String valueStr = String.valueOf(value);
 		int valueStrLength = valueStr.length();
@@ -1674,13 +1696,13 @@ public class LocalUtil
 				formatted = df.format(value);
 			}
 		}
-		if( originalPictLength > newPictLength && !floating) formatted = addSymbolsToText(formatted, originalPicture);
+		if( originalPictLength > newPictLength && !floating) formatted = addSymbolsToText(formatted, originalPicture, hasSymbol);
 		int negativeSign = 0;
 		if (preffix.startsWith("("))
 		{
 			negativeSign = -1;
 		}
-		else if (value.signum() == -1)
+		else if (value.signum() == -1 && !originalPicture.startsWith("+"))
 		{
 			negativeSign = 1;
 		}
@@ -1785,7 +1807,7 @@ public class LocalUtil
 
 			while(i < len)
 			{
-				if (GXPicture.isSeparator(picture.charAt(i)))
+				if (GXPicture.isSeparator(picture.charAt(i)) && picture.charAt(i) != ' ')
 				{
 					preffix = preffix + picture.charAt(i);
 				}
