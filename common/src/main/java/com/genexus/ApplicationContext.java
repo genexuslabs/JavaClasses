@@ -7,7 +7,7 @@ import java.io.File;
 
 public class ApplicationContext
 {
-	private static ApplicationContext instance;
+	private volatile static ApplicationContext instance;
 
 	private String  currentLocation = "";
 

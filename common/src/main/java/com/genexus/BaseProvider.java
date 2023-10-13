@@ -27,9 +27,9 @@ public abstract class BaseProvider implements IGXSmartCacheProvider
 	{
 		private static final ILogger logger = LogManager.getLogger(BaseProvider.class);
 
-		ConcurrentHashMap<String, Vector<String>> queryTables;	
+		volatile ConcurrentHashMap<String, Vector<String>> queryTables;
 		protected Date startupDate;
-		Object syncLock = new Object();
+		static Object syncLock = new Object();
 		protected static final String FORCED_INVALIDATE = "SD";
 
 
