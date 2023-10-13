@@ -524,7 +524,7 @@ public final class PrivateUtilities
 				}
 				c = c.getSuperclass();
 
-				if (c.getSimpleName().equals("GXRestServiceWrapper")) {
+				if (c == null || c.getSimpleName().equals("GXRestServiceWrapper")) {
 					return null;
 				}
 			}
@@ -558,7 +558,7 @@ public final class PrivateUtilities
 			}
 			c = c.getSuperclass();
 
-			if (c.getSimpleName().equals("GXRestServiceWrapper")) {
+			if (c == null || c.getSimpleName().equals("GXRestServiceWrapper")) {
 				return null;
 			}
 		}
@@ -713,20 +713,17 @@ public final class PrivateUtilities
 				}
 				else {
 
-					try {
-						source = new FileInputStream(target);
+					try (FileInputStream fis = new FileInputStream(target)) {
 						destination = new FileOutputStream(targetdest);
 						buffer = new byte[1024];
 					 
 						while(true) {
-							bytes_read = source.read(buffer);
+							bytes_read = fis.read(buffer);
 							if (bytes_read == -1) break;
 							destination.write(buffer, 0, bytes_read);
 						}
 					}
 					finally {
-						if (source != null) 
-							try { source.close(); } catch (IOException e) { ; }
 						if (destination != null) 
 							try { destination.close(); } catch (IOException e) { ; }
 					}
@@ -1216,11 +1213,9 @@ loop:	while (true)
 	
 		public void run()
 		{
-			try
+			try (FileInputStream in = new FileInputStream(fileName);)
 			{
-	    		FileInputStream in = new FileInputStream(fileName);
     			props.load(new BufferedInputStream(in));
-    			in.close();
 			}
 			catch (IOException e)
 			{

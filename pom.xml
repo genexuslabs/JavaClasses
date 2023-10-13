@@ -14,7 +14,7 @@
 	<url>https://github.com/genexuslabs/JavaClasses</url>
 
 	<properties>
-		<revision>4.0</revision>
+		<revision>4.3</revision>
 		<changelist>-SNAPSHOT</changelist>
 		<sha1/>
 
@@ -28,7 +28,7 @@
 		<software.awssdk.version>2.17.272</software.awssdk.version>
 		<software.azure.cosmos.version>4.42.0</software.azure.cosmos.version>
 		<log4j.version>2.19.0</log4j.version>
-		<io.opentelemetry.version>1.19.0</io.opentelemetry.version>
+                <io.opentelemetry.version>1.28.0</io.opentelemetry.version>
 	</properties>
 
 	<organization>
@@ -82,6 +82,7 @@
 	<modules>
 		<module>common</module>
 		<module>gxweb</module>
+		<module>gxspringboot</module>
 		<module>wrapperjavax</module>
 		<module>wrapperjakarta</module>
 		<module>wrappercommon</module>
@@ -93,7 +94,6 @@
 		<module>gxoffice</module>
 		<module>gxsearch</module>
 		<module>javapns</module>
-		<module>apacheandroid</module>
 		<module>android</module>
 		<module>gxgeospatial</module>
 		<module>gxodata</module>
@@ -352,7 +352,7 @@
 					<plugin>
 						<groupId>org.sonatype.plugins</groupId>
 						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.6.7</version>
+						<version>1.6.13</version>
 						<extensions>true</extensions>
 						<configuration>
 							<serverId>ossrh</serverId>

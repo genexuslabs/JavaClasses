@@ -141,11 +141,11 @@ public class NetComponentsFTPClient implements IFTPClient
 		if	(ftp.isConnected())
 		{
 			target = normalizeName(source, target, '/', File.separatorChar);
-			try
+			try (FileOutputStream targetOutputStream = new FileOutputStream(target))
 			{
 				setFileType(mode);
 
-				OutputStream o = new BufferedOutputStream(new FileOutputStream(target));
+				OutputStream o = new BufferedOutputStream(targetOutputStream);
 				if	(ftp.retrieveFile(source, o))
 				{
 					o.close();
@@ -192,10 +192,10 @@ public class NetComponentsFTPClient implements IFTPClient
 		if	(ftp.isConnected())
 		{
 			target = normalizeName(source, target, File.separatorChar, '/');
-			try
+			try (FileInputStream fileInputStream = new FileInputStream(source))
 			{
 				setFileType(mode);
-                                InputStream file = new BufferedInputStream(new FileInputStream(source));
+				InputStream file = new BufferedInputStream(fileInputStream);
 
 				if	(ftp.storeFile(target, file))
 				{

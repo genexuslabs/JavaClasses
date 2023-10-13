@@ -6,20 +6,29 @@ import com.genexus.internet.HttpContext;
 
 import json.org.json.JSONArray;
 import json.org.json.JSONObject;
-import com.genexus.ws.rs.core.*;
 import org.apache.commons.io.FilenameUtils;
+
+import java.io.InputStream;
 
 
 public class GXObjectUploadServices extends GXWebObjectStub
 {   
 	boolean isRestCall = false;
-	IResponseBuilder builder = null;
-	public IResponseBuilder doInternalRestExecute(HttpContext context) throws Exception
+	String keyId;
+	String jsonResponse = null;
+
+	public String doInternalRestExecute(HttpContext context) throws Exception
 	{
 		isRestCall = true;
 		doExecute(context);
-		return builder;
+		return jsonResponse;
 	}
+
+	public String getKeyId()
+	{
+		return keyId;
+	}
+
 	public void doInternalExecute(HttpContext context) throws Exception
 	{
 		doExecute(context);
@@ -31,7 +40,6 @@ public class GXObjectUploadServices extends GXWebObjectStub
 		String ext = "";
         WebApplicationStartup.init(com.genexus.Application.gxCfg, context);
         context.setStream();
-		String keyId;
 		try
 		{
 			String fileDirPath = Preferences.getDefaultPreferences().getPRIVATE_PATH();
@@ -87,24 +95,24 @@ public class GXObjectUploadServices extends GXWebObjectStub
 				fileName = com.genexus.PrivateUtilities.getTempFileName("", fName, "tmp");
 				String filePath = fileDirPath + fileName;
 				fileName = fileName.replaceAll(".tmp", "." + ext);
-				FileItem fileItem = new FileItem(filePath, false, "", context.getRequest().getInputStream().getInputStream());
-				savedFileName = fileItem.getPath();
-				JSONObject jObj = new JSONObject();
-				jObj.put("object_id", HttpUtils.getUploadFileId(keyId));
-				if (!isRestCall) {
-					context.getResponse().setContentType("application/json");
-					context.getResponse().setStatus(201);
-					context.getResponse().setHeader("GeneXus-Object-Id", keyId);
-					((HttpContextWeb) context).writeText(jObj.toString());
-					context.getResponse().flushBuffer();
-				}
-				else {
-					String jsonResponse = jObj.toString();
-					builder = Response.statusWrapped(201).entityWrapped(jsonResponse);
-					builder.header("GeneXus-Object-Id", keyId);
-				}
-				if (!savedFileName.isEmpty()) {
-					HttpUtils.CacheUploadFile(keyId, savedFileName, fileName, ext);
+				try (InputStream is = context.getRequest().getInputStream().getInputStream()) {
+					FileItem fileItem = new FileItem(filePath, false, "", is);
+					savedFileName = fileItem.getPath();
+					JSONObject jObj = new JSONObject();
+					jObj.put("object_id", HttpUtils.getUploadFileId(keyId));
+					if (!isRestCall) {
+						context.getResponse().setContentType("application/json");
+						context.getResponse().setStatus(201);
+						context.getResponse().setHeader("GeneXus-Object-Id", keyId);
+						((HttpContextWeb) context).writeText(jObj.toString());
+						context.getResponse().flushBuffer();
+					}
+					else {
+						jsonResponse = jObj.toString();
+					}
+					if (!savedFileName.isEmpty()) {
+						HttpUtils.CacheUploadFile(keyId, savedFileName, fileName, ext);
+					}
 				}
 			}
 		}

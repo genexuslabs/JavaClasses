@@ -51,6 +51,8 @@ public abstract class GXHttpClient implements IHttpClient{
 	private boolean isURL = false;
 	private boolean authorizationChanged = false; // Indica si se agregó alguna autorización
 	private boolean authorizationProxyChanged = false; // Indica si se agregó alguna autorización
+	protected boolean isChunkedResponse;
+
 
 	private Vector<HttpClientPrincipal> basicAuthorization = new Vector<>();
 	private Vector<HttpClientPrincipal> digestAuthorization = new Vector<>();
@@ -380,6 +382,7 @@ public abstract class GXHttpClient implements IHttpClient{
 				value = multipartTemplate.contentType;
 			}
 		}
+
 		if (this.headersToSend == null)
 			this.headersToSend =new Hashtable<>();
 		for (String elem: headersToSend.keySet()) {
@@ -478,9 +481,11 @@ public abstract class GXHttpClient implements IHttpClient{
 
 	public abstract InputStream getInputStream() throws IOException;
 
-	public abstract InputStream getInputStream(String stringURL) throws IOException;
-
 	public abstract String getString();
+
+	public abstract String readChunk();
+
+	public abstract boolean getEof();
 
 	public abstract void toFile(String fileName);
 
@@ -630,9 +635,9 @@ public abstract class GXHttpClient implements IHttpClient{
 				{
 					file = (File) curr;
 				}
-				try
+				try (BufferedInputStream bis = new java.io.BufferedInputStream(new FileInputStream(file)))
 				{
-					out = addToArray(out, CommonUtil.readToByteArray(new java.io.BufferedInputStream(new FileInputStream(file))));
+					out = addToArray(out, CommonUtil.readToByteArray(bis));
 				}
 				catch (FileNotFoundException e)
 				{

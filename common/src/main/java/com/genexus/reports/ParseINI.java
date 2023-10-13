@@ -75,11 +75,9 @@ public class ParseINI
 
 	private void init(String filename) throws IOException{
 		this.filename = new File(filename).getAbsolutePath();
-		try
+		try (FileInputStream inputStream = new FileInputStream(filename);)
 		{
-			FileInputStream inputStream = new FileInputStream(filename);
 			load(inputStream);
-			inputStream.close();
 		}
 		catch(FileNotFoundException fnfe)
 		{ // Si debo crear el archivo
@@ -469,7 +467,7 @@ public class ParseINI
 	public void save() throws IOException
 	{
 		if(need2Save && filename != null)
-			save(new FileOutputStream(filename));
+			try (FileOutputStream fos = new FileOutputStream(filename)) {save(fos);}
 	}
 
 	/** Setea que si se quiere actualizar el archivo del INI automaticamente

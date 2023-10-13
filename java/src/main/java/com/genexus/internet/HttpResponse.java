@@ -11,7 +11,10 @@ import com.genexus.PrivateUtilities;
 import com.genexus.com.IHttpResponse;
 import com.genexus.webpanels.FileItemCollection;
 import com.genexus.webpanels.HttpContextWeb;
+import com.genexus.webpanels.HttpUtils;
 import com.genexus.webpanels.WebUtils;
+
+import org.apache.logging.log4j.Logger;
 
 /**
 * Esta clase esta disponible en los webprocs para grabar informacion en el response
@@ -19,6 +22,8 @@ import com.genexus.webpanels.WebUtils;
 
 public class HttpResponse implements IHttpResponse
 {
+	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(HttpResponse.class);
+
 	private final int ERROR_IO = 1;
 
 	private Hashtable<String, String> headers = new Hashtable<>();
@@ -88,8 +93,10 @@ public class HttpResponse implements IHttpResponse
 	{
 		resetErrors();
 
+		InputStream source = null;
 		try
 		{
+
 			if (ModelContext.getModelContext() != null && ! new File(fileName).isAbsolute())
 			{
 				IHttpContext webContext = ModelContext.getModelContext().getHttpContext();
@@ -99,7 +106,7 @@ public class HttpResponse implements IHttpResponse
 				}
 			}
 
-			InputStream source = new BufferedInputStream(new FileInputStream(fileName));
+			source = new BufferedInputStream(new FileInputStream(fileName));
 
 			int bytes_read;
 			byte[] buffer = new byte[1024];
@@ -121,6 +128,10 @@ public class HttpResponse implements IHttpResponse
 		{
 			errCode = ERROR_IO;
 			errDescription = e.getMessage();
+		}
+		finally
+		{
+			try{ if (source != null) source.close(); } catch (IOException ioe) { log.error("Failed to close source buffered input stream ", ioe); }
 		}
 	}
 

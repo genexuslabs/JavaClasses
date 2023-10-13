@@ -8,6 +8,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -120,9 +121,9 @@ public class HttpUtils
     {
 		if(in == null)
 			throw new IllegalArgumentException();
-		try
+		try (InputStream is = in.getInputStream())
 		{
-			return parseQueryString(IOUtils.toString(in.getInputStream(), "8859_1"));
+			return parseQueryString(IOUtils.toString(is, "8859_1"));
 		}
 		catch(IOException e)
 		{

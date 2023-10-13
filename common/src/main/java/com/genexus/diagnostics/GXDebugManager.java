@@ -18,9 +18,9 @@ public class GXDebugManager
     static final int PGM_INFO_NO_PARENT = 0;
     private static final long MICRO_FREQ = 1000;
 
-    private static GXDebugManager instance;
+    private volatile static GXDebugManager instance;
     private static final Object sessionLock = new Object();
-    private static boolean initialized = false;
+    private volatile static boolean initialized = false;
     public static GXDebugManager getInstance()
     {
         if(!initialized)
@@ -565,8 +565,9 @@ public class GXDebugManager
 
         static GXDebugStream getStream(String fileName) throws IOException
         {
-            FileOutputStream stream = new FileOutputStream(fileName, true);
-            return new GXDebugStream(new BufferedOutputStream(stream), stream.getChannel());
+            try (FileOutputStream stream = new FileOutputStream(fileName, true)){
+				return new GXDebugStream(new BufferedOutputStream(stream), stream.getChannel());
+			}
         }
 
         private GXDebugStream(OutputStream stream, FileChannel channel) throws IOException

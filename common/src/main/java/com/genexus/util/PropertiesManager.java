@@ -11,7 +11,7 @@ import com.genexus.*;
 
 public final class PropertiesManager
 {
-	private static PropertiesManager instance;
+	private volatile static PropertiesManager instance;
 
 	private Hashtable propertyFiles;
 
@@ -44,11 +44,9 @@ public final class PropertiesManager
    		for (Enumeration e = propertyFiles.keys(); e.hasMoreElements() ;) 
    		{
 			String fileName = (String) e.nextElement();
-			try
+			try (FileOutputStream outputStream = new FileOutputStream(fileName);)
 			{
-			  	FileOutputStream outputStream = new FileOutputStream(fileName);
 				((Properties) propertyFiles.get(fileName)).store(outputStream, "");
-				outputStream.close();
 			}
 			catch (IOException ex)
 			{

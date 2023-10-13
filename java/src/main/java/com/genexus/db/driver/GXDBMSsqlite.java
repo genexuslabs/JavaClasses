@@ -1,6 +1,8 @@
 package com.genexus.db.driver;
 
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import com.genexus.CommonUtil;
@@ -120,13 +122,24 @@ public class GXDBMSsqlite implements GXDBMS
 	
 	public java.util.Date serverDateTime(GXConnection con) throws SQLException
 	{
-		ResultSet rslt = con.getStatement("_ServerDT_", "SELECT GETDATE()", false).executeQuery();
+		ResultSet rslt = con.getStatement("_ServerDT_", "SELECT datetime('now')", false).executeQuery();
 		
 		rslt.next();
-		Date value = rslt.getTimestamp(1);
+		String value = rslt.getString(1);
 		rslt.close();
 
-		return value;
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Date dateValue;
+		try
+		{
+			dateValue = sdf.parse(value);
+		}
+		catch (ParseException e)
+		{
+			dateValue = nullDate();
+		}
+
+		return dateValue;
 	}
 	
 	public String serverVersion(GXConnection con) throws SQLException

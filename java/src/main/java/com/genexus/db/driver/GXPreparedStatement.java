@@ -1342,10 +1342,9 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		{
 			if(con.getDBMS().getId() == GXDBMS.DBMS_ORACLE || con.getDBMS().getId() == GXDBMS.DBMS_DAMENG)
 			{
-				try
+				try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(fileName)))
 				{
 					File file = new File(fileName);
-					BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file));
 					if(con.getDBMS().getId() == GXDBMS.DBMS_ORACLE)
 						((GXDBMSoracle7)con.getDBMS()).setBlobData(blob, inputStream, (int) file.length());
 					else
@@ -1468,8 +1467,8 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 					{
 							GXFile gxFile = new GXFile(fileName, ResourceAccessControlList.Private);
 							if (gxFile.exists())
-							{							
-								InputStream is= gxFile.getStream();							
+							{
+								InputStream is= gxFile.getStream();
 								setBinaryStream(index, is, (int) gxFile.getLength());
 							}
 							else
@@ -1483,7 +1482,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 								catch (IOException e)
 								{
 									throw new SQLException("The filename does not exists in url " + fileName);
-								}								
+								}
 							}							
 					}
 			}

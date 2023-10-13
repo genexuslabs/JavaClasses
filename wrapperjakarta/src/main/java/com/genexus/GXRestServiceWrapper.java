@@ -10,16 +10,20 @@ import com.genexus.servlet.http.IHttpServletResponse;
 import com.genexus.ws.rs.core.IUriInfo;
 
 import jakarta.ws.rs.core.Context;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class GXRestServiceWrapper {
 
 	@Context
 	private jakarta.ws.rs.core.UriInfo uriInfo;
 	@Context
+	@Autowired
 	private jakarta.servlet.ServletContext myContext;
 	@Context
+	@Autowired
 	private jakarta.servlet.http.HttpServletRequest myServletRequest;
 	@Context
+	@Autowired
 	private jakarta.servlet.http.HttpServletResponse myServletResponse;
 
 	protected IHttpServletRequest myServletRequestWrapper;

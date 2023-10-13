@@ -213,9 +213,9 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		if(clob == null) return "";
 
 		char[] cbuf = new char[(int)clob.length()];
-		try
+		try (Reader reader = clob.getCharacterStream())
 		{
-			clob.getCharacterStream().read(cbuf);
+			reader.read(cbuf);
 		}
 		catch(IOException ioException)
 		{
@@ -935,9 +935,9 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 
 	private String getBLOBFile(int columnIndex, String extension, String name, String fileName, boolean temporary) throws SQLException
 	{
-		try
+		try (InputStream source = getBinaryStream(columnIndex);)
 		{
-			InputStream source = getBinaryStream(columnIndex);
+
 
             byte[] xbuffer = new byte[1];
 			int firstByte = 0;

@@ -109,21 +109,18 @@ public class Messages
 	private void load(String resourceName)
 	{
 		String line;
-		InputStream is = null;
-		try
+		try (InputStream is = SpecificImplementation.Messages.getInputStream(resourceName);)
 		{
-			is = SpecificImplementation.Messages.getInputStream(resourceName);
 
             if (is != null)
             {
-              BufferedReader bufread = new BufferedReader(new InputStreamReader(is, "UTF8"));
-              line = bufread.readLine();
-              while (line != null)
-              {
-                parseLine(line);
-                line = bufread.readLine();
-              }
-              bufread.close();
+              try (BufferedReader bufread = new BufferedReader(new InputStreamReader(is, "UTF8"))) {
+				  line = bufread.readLine();
+				  while (line != null) {
+					  parseLine(line);
+					  line = bufread.readLine();
+				  }
+			  }
             }
           }
           catch(UnsupportedEncodingException e)

@@ -727,8 +727,7 @@ public class HttpAjaxContext extends HttpContextWeb
 		boolean fileExists = false;
 		try
 		{
-			File file = new File(getDefaultPath() + staticContentBase + fileName);
-			fileExists =  file.exists() && file.isFile();
+			fileExists = ApplicationContext.getInstance().checkIfResourceExist(getDefaultPath() + staticContentBase + fileName);
 			com.genexus.diagnostics.Log.info("Searching if file exists (" + fileName + "). Found: " + String.valueOf(fileExists));
 		}
 		catch (Exception e)
@@ -1358,7 +1357,7 @@ public class HttpAjaxContext extends HttpContextWeb
 
 			if (isSpaRequest(true)) {
 				pushUrlSessionStorage();
-				getResponse().setHeader(GX_SPA_REDIRECT_URL, url + popLvlParm);
+				getResponse().setHeader(GX_SPA_REDIRECT_URL, url + popLvlParm, false);
 				sendCacheHeaders();
 			} else {
 				redirect_http(url + popLvlParm);

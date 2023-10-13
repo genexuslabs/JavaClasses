@@ -244,4 +244,9 @@ public final class GXDBDebug implements ICleanedup
 		}
 	}
 
+	@Override
+	protected void finalize() {
+		closeLog();
+	}
+
 }

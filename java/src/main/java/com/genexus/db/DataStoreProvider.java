@@ -37,6 +37,11 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 
 	private static AtomicBoolean firstTime = new AtomicBoolean(true);
 
+	public DataStoreProvider(ModelContext context, int remoteHandle)
+	{
+		super(context, remoteHandle);
+	}
+
 	public DataStoreProvider(ModelContext context, int remoteHandle, ILocalDataStoreHelper helper, Object[] buffers)
 	{
 		super(context, remoteHandle);

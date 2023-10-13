@@ -21,12 +21,14 @@ import org.apache.commons.io.output.FileWriterWithEncoding;
 
 import com.genexus.common.classes.AbstractGXFile;
 import org.apache.logging.log4j.Logger;
+import org.springframework.core.io.ClassPathResource;
 
 public class GXFile extends AbstractGXFile {
 
 	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(HttpContextWeb.class);
 
     private IGXFileInfo FileSource;
+	private String source;
     private int ErrCode;
     private String ErrDescription;
     private boolean ret;
@@ -138,10 +140,11 @@ public class GXFile extends AbstractGXFile {
         		    if (ModelContext.getModelContext() != null && ! new File(absoluteFileName).isAbsolute())
                     {
                         IHttpContext webContext = ModelContext.getModelContext().getHttpContext();
-                        if((webContext != null) && (webContext instanceof HttpContextWeb || !webContext.getDefaultPath().isEmpty()) && !FileName.isEmpty()) {
+                        if((webContext != null) && !webContext.getDefaultPath().isEmpty() && webContext instanceof HttpContextWeb && !FileName.isEmpty()) {
                             absoluteFileName = ModelContext.getModelContext().getHttpContext().getDefaultPath() + File.separator + FileName;
                         }
                     }
+					source = absoluteFileName;
         			URI uriFile = URI.create(absoluteFileName);
         			FileSource = new GXFileInfo(new File(uriFile));
         		} catch(Exception e) {
@@ -234,6 +237,10 @@ public class GXFile extends AbstractGXFile {
         if (sourceSeted()) {
             try {
                 resetErrors();
+				if (ApplicationContext.getInstance().isSpringBootApp() && new ClassPathResource(source).exists())
+				{
+					return true;
+				}
                 return FileSource.exists();
             } catch (SecurityException e) {
                 ErrCode = 100;
@@ -787,16 +794,17 @@ public class GXFile extends AbstractGXFile {
                 setUnknownError(e);
             }
         }
-        if (lineIterator != null) {
-           	try {
+		try {
+			if (this.getStream() != null)
+				this.getStream().close();
+			if (this.lineIterator != null){
 				lineIterator.close();
 				lineIterator = null;
 			}
-			catch (java.io.IOException e) {
-				setUnknownError();
-				e.printStackTrace();
-			}
-        }
+		} catch (java.io.IOException e) {
+			setUnknownError();
+			e.printStackTrace();
+		}
     }
 }
 
