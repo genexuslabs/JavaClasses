@@ -11,7 +11,7 @@ import com.genexus.*;
 
 public final class PropertiesManager
 {
-	private static PropertiesManager instance;
+	private volatile static PropertiesManager instance;
 
 	private Hashtable propertyFiles;
 
