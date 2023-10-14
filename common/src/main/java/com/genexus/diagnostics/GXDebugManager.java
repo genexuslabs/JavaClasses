@@ -54,7 +54,7 @@ public class GXDebugManager
         }
         sessionGuid = UUID.randomUUID();
         lastSId = new AtomicInteger();
-        executorService =  new ThreadPoolExecutor(0, 1, 5, TimeUnit.MINUTES, new SynchronousQueue<Runnable>());
+        executorService =  new ThreadPoolExecutor(0, 1, 5, TimeUnit.MINUTES, new SynchronousQueue<Runnable>(), Executors.defaultThreadFactory(), new ThreadPoolExecutor.CallerRunsPolicy());
         pushSystem(GXDebugMsgCode.INITIALIZE.toByteInt(), new Date());
     }
 
@@ -88,7 +88,7 @@ public class GXDebugManager
 
     private GXDebugItem [] current, next, toSave;
     private boolean saving = false;
-    private int dbgIndex = 0;
+    private volatile int dbgIndex = 0;
     private final Object saveLock = new Object();
     private final Object mSaveLock = new Object();
     private final ConcurrentHashMap<String, GXDebugInfo> parentTable = new ConcurrentHashMap<String, GXDebugInfo>();
@@ -119,7 +119,7 @@ public class GXDebugManager
 		else return mPush(dbgInfo, GXDebugMsgType.PGM_TRACE_RANGE, lineNro, lineNro2, null);
 	}
 
-    private GXDebugItem mPush(GXDebugInfo dbgInfo, GXDebugMsgType msgType, int arg1, int arg2, Object argObj)
+	private GXDebugItem mPush(GXDebugInfo dbgInfo, GXDebugMsgType msgType, int arg1, int arg2, Object argObj)
     {
         synchronized (saveLock)
         {
@@ -240,12 +240,13 @@ public class GXDebugManager
             executorService.execute(new Runnable(){public void run(){mSave(mToSave, mSaveTop, mSaveCount);}});
         }
         else mSave(toSave, saveTop, saveCount );
-    }
+	}
 
     protected void onExit(GXDebugInfo dbgInfo)
     {
         pushSystem(GXDebugMsgCode.EXIT.toByteInt());
         save();
+        executorService.shutdown();
     }
 
     protected void onCleanup(GXDebugInfo dbgInfo)
@@ -288,7 +289,7 @@ public class GXDebugManager
 
     private void mSave(GXDebugItem [] data, int saveTop, int saveCount)
     {
-        synchronized(mSaveLock)
+		synchronized(mSaveLock)
         {
             // Obtengo chunk a grabar
             int idx = 0;
@@ -302,37 +303,38 @@ public class GXDebugManager
                     for (; idx < saveTop; idx++)
                     {
                         GXDebugItem dbgItem = data[idx];
-                        switch (dbgItem.msgType)
-                        {
-                            case SYSTEM:
-                            {
-                                stream.writeByte((dbgItem.msgType.toByteInt() | (GXDebugMsgCode.valueOf(dbgItem.arg1).toByteInt())));
-                                switch (GXDebugMsgCode.valueOf(dbgItem.arg1))
-                                {
-                                    case INITIALIZE:
-                                        stream.writeLong(ToTicks((Date) dbgItem.argObj));
-                                        break;
-                                    case OBJ_CLEANUP:
-                                        stream.writeVLUInt((Integer) dbgItem.argObj);
-                                        break;
-                                    case EXIT:
+						switch (dbgItem.msgType)
+						{
+							case SYSTEM:
+							{
+								stream.writeByte((dbgItem.msgType.toByteInt() | (GXDebugMsgCode.valueOf(dbgItem.arg1).toByteInt())));
+								switch (GXDebugMsgCode.valueOf(dbgItem.arg1))
+								{
+									case INITIALIZE:
+										stream.writeLong(ToTicks((Date) dbgItem.argObj));
+										break;
+									case OBJ_CLEANUP:
+										stream.writeVLUInt((Integer) dbgItem.argObj);
+										break;
+									case EXIT:
+										break;
 									case PGM_INFO:
-										Object [] info = (Object[])dbgItem.argObj;
-										stream.writeVLUInt(((IntPair)info[0]).left);
-										stream.writeVLUInt(((IntPair)info[0]).right);
-										stream.writeVLUInt(((PgmInfo)info[1]).dbgLines);
-										stream.writeInt(((PgmInfo)info[1]).hash);
-                                        break;
-                                    default:
-                                        throw new IllegalArgumentException(String.format("Invalid DbgItem: %s", dbgItem));
-                                }
-                            }
-                            break;
-                            case PGM_TRACE:
-                            {
-                                stream.writePgmTrace(dbgItem.dbgInfo.sId, dbgItem.arg1, dbgItem.arg2, dbgItem.ticks);
-                            }
-                            break;
+										Object[] info = (Object[]) dbgItem.argObj;
+										stream.writeVLUInt(((IntPair) info[0]).left);
+										stream.writeVLUInt(((IntPair) info[0]).right);
+										stream.writeVLUInt(((PgmInfo) info[1]).dbgLines);
+										stream.writeInt(((PgmInfo) info[1]).hash);
+										break;
+									default:
+										throw new IllegalArgumentException(String.format("Invalid DbgItem: %s", dbgItem));
+								}
+							}
+							break;
+							case PGM_TRACE:
+							{
+								stream.writePgmTrace(dbgItem.dbgInfo.sId, dbgItem.arg1, dbgItem.arg2, dbgItem.ticks);
+							}
+							break;
 							case PGM_TRACE_RANGE:
 							case PGM_TRACE_RANGE_WITH_COLS:
 							{
@@ -340,27 +342,27 @@ public class GXDebugManager
 								stream.writeVLUInt(dbgItem.dbgInfo.sId);
 								stream.writeVLUInt(dbgItem.arg1);
 								stream.writeVLUInt(dbgItem.arg2);
-								if(dbgItem.msgType == GXDebugMsgType.PGM_TRACE_RANGE_WITH_COLS)
+								if (dbgItem.msgType == GXDebugMsgType.PGM_TRACE_RANGE_WITH_COLS)
 								{
-									stream.writeVLUInt(((IntPair)dbgItem.argObj).left);
-									stream.writeVLUInt(((IntPair)dbgItem.argObj).right);
+									stream.writeVLUInt(((IntPair) dbgItem.argObj).left);
+									stream.writeVLUInt(((IntPair) dbgItem.argObj).right);
 								}
 							}
 							break;
-                        	case REGISTER_PGM:
-                            {
-                                stream.writeByte(dbgItem.msgType.toByteInt());
-                                stream.writeVLUInt(dbgItem.dbgInfo.sId);
-                                stream.writeVLUInt(dbgItem.arg1);
-                                stream.writeVLUInt(((IntPair) dbgItem.argObj).left);
-                                stream.writeVLUInt(((IntPair) dbgItem.argObj).right);
-                            }
-                            break;
-                            case SKIP:
-                                continue;
-                        }
-                        clearDebugItem(dbgItem);
-                    }
+							case REGISTER_PGM:
+							{
+								stream.writeByte(dbgItem.msgType.toByteInt());
+								stream.writeVLUInt(dbgItem.dbgInfo.sId);
+								stream.writeVLUInt(dbgItem.arg1);
+								stream.writeVLUInt(((IntPair) dbgItem.argObj).left);
+								stream.writeVLUInt(((IntPair) dbgItem.argObj).right);
+							}
+							break;
+							case SKIP:
+								continue;
+						}
+						clearDebugItem(dbgItem);
+					}
                 } finally
                 {
                     if (stream != null)
@@ -565,15 +567,12 @@ public class GXDebugManager
 
         static GXDebugStream getStream(String fileName) throws IOException
         {
-            try (FileOutputStream stream = new FileOutputStream(fileName, true)){
-				return new GXDebugStream(new BufferedOutputStream(stream), stream.getChannel());
-			}
+        	return new GXDebugStream(fileName);
         }
 
-        private GXDebugStream(OutputStream stream, FileChannel channel) throws IOException
+        private GXDebugStream(String fileName) throws IOException
         {
-            this(stream);
-            channel.lock();
+        	this(new BufferedOutputStream(new FileOutputStream(fileName, true)));
         }
 
         GXDebugStream(OutputStream stream)
@@ -588,8 +587,8 @@ public class GXDebugManager
         public void close() throws IOException
         {
             writeEpilog();
-            super.close();
-        }
+			super.close();
+		}
 
         private void writeProlog(short version) throws IOException
         {
@@ -610,7 +609,11 @@ public class GXDebugManager
 
         void writeRaw(byte[] data, int from, int length) throws IOException
         {
-            super.write(data, from, length);
+        	if ((from | length | (data.length - (length + from)) | (from + length)) < 0)
+        		throw new IndexOutOfBoundsException();
+
+        	while (length-- > 0)
+        		writeRaw(data[from++]);
         }
 
         void writeRaw(byte value) throws IOException
@@ -625,16 +628,17 @@ public class GXDebugManager
                 writeByte(data[offset++]);
         }
 
-        private int last, lastLast;
+        private volatile int last, lastLast;
 
         @Override
-        public void write(int value)throws IOException
+        public void write(int value) throws IOException
         {
             writeByte(value);
         }
 
         void writeByte(int value) throws IOException
         {
+            value &= 0xFF;
             super.write(value);
             if (value == 0xFF &&
                     value == last &&
@@ -703,7 +707,7 @@ public class GXDebugManager
 			}
 		}
 
-		private int LastSId, LastLine1;
+		private volatile int LastSId, LastLine1;
 
         void writePgmTrace(int SId, int line1, int col, long ticks) throws IOException
         {
