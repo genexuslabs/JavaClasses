@@ -3,10 +3,9 @@ package com.genexus.diagnostics;
 import com.genexus.ModelContext;
 
 import java.io.*;
-import java.nio.channels.FileChannel;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.UUID;
-import java.util.Date;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -37,7 +36,7 @@ public class GXDebugManager
         return instance;
     }
 
-    private static int BUFFER_INITIAL_SIZE = 16383;
+    private static final int BUFFER_INITIAL_SIZE = 16383;
     private static final long TICKS_NOT_SET = Long.MAX_VALUE;
     private static final long TICKS_NOT_NEEDED = 0;
     private static String fileName = "gxperf.gxd";
@@ -54,7 +53,7 @@ public class GXDebugManager
         }
         sessionGuid = UUID.randomUUID();
         lastSId = new AtomicInteger();
-        executorService =  new ThreadPoolExecutor(0, 1, 5, TimeUnit.MINUTES, new SynchronousQueue<Runnable>(), Executors.defaultThreadFactory(), new ThreadPoolExecutor.CallerRunsPolicy());
+        executorService =  new ThreadPoolExecutor(0, 1, 5, TimeUnit.MINUTES, new SynchronousQueue<>(), Executors.defaultThreadFactory(), new ThreadPoolExecutor.CallerRunsPolicy());
         pushSystem(GXDebugMsgCode.INITIALIZE.toByteInt(), new Date());
     }
 
@@ -91,8 +90,8 @@ public class GXDebugManager
     private volatile int dbgIndex = 0;
     private final Object saveLock = new Object();
     private final Object mSaveLock = new Object();
-    private final ConcurrentHashMap<String, GXDebugInfo> parentTable = new ConcurrentHashMap<String, GXDebugInfo>();
-	private final HashSet<IntPair> pgmInfoTable = new HashSet<IntPair>();
+    private final ConcurrentHashMap<String, GXDebugInfo> parentTable = new ConcurrentHashMap<>();
+	private final HashSet<IntPair> pgmInfoTable = new HashSet<>();
 
     private static ExecutorService executorService;
 
@@ -125,7 +124,7 @@ public class GXDebugManager
         {
             if (toSave != null)
             {
-                save(toSave);
+				save(toSave, -1, true);
                 toSave = null;
             }
             GXDebugItem currentItem = current[dbgIndex];
@@ -183,13 +182,9 @@ public class GXDebugManager
 
     }
 
-    private void save(GXDebugItem[] toSave)
-    {
-        save(toSave, -1, true);
-    }
-
     private void save(GXDebugItem[] toSave, int saveTop, boolean saveInThread)
     {
+		// This method always runs inside the critical section defined by saveLock
         int saveCount = 0;
         if (saveTop == -1)
         {
@@ -237,7 +232,7 @@ public class GXDebugManager
             final GXDebugItem[] mToSave = toSave;
             final int mSaveTop = saveTop;
             final int mSaveCount = saveCount;
-            executorService.execute(new Runnable(){public void run(){mSave(mToSave, mSaveTop, mSaveCount);}});
+            executorService.execute(() -> mSave(mToSave, mSaveTop, mSaveCount));
         }
         else mSave(toSave, saveTop, saveCount );
 	}
@@ -271,7 +266,7 @@ public class GXDebugManager
 		{
 			if (toSave != null)
 			{
-				save(toSave);
+				save(toSave, -1, true);
 				toSave = null;
 			}
 			save(current, dbgIndex, false);
@@ -462,7 +457,7 @@ public class GXDebugManager
     }
 
 
-    class GXDebugItem
+    static class GXDebugItem
     {
         GXDebugInfo dbgInfo;
         int arg1;
@@ -480,7 +475,7 @@ public class GXDebugManager
         private String toStringTicks(){ return (msgType == GXDebugMsgType.PGM_TRACE ? String.format(" elapsed:%d", ticks) : ""); }
     }
 
-	class IntPair
+	static class IntPair
 	{
 		final int left;
 		final int right;
@@ -507,7 +502,7 @@ public class GXDebugManager
 
 	}
 
-	class PgmInfo
+	static class PgmInfo
 	{
 		final int dbgLines;
 		final long hash;
@@ -554,7 +549,7 @@ public class GXDebugManager
 
     static class GXDebugStream extends FilterOutputStream
     {
-        class ESCAPE
+        static class ESCAPE
         {
             static final byte PROLOG = 0;
             static final byte EPILOG = 1;
