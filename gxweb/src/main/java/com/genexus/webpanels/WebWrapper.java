@@ -40,7 +40,7 @@ public class WebWrapper
 			((HttpContext) context.getHttpContext()).setContext(context);
 			panel.httpContext = (HttpAjaxContext)context.getHttpContext();
 			panel.httpContext.setCompression(false);
-			panel.httpContext.setBuffered(false);
+			panel.httpContext.setResponseBufferMode(HttpContext.ResponseBufferMode.SERVER_DEFAULT);
 			panel.httpContext.useUtf8 = true;
 			panel.httpContext.setOutputStream(new java.io.ByteArrayOutputStream());
 		}
