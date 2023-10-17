@@ -80,6 +80,8 @@ public abstract class GXReport extends GXProcedure {
 					else
 						reportHandler = new PDFReportPDFBox(context);
 					((GXReportPDFCommons) reportHandler).setOutputStream(getOutputStream());
+				} catch (RuntimeException e) {
+					log.debug("getPrinter may have failed to set the output stream for the report: ", e);
 				} catch (Exception e) {
 					log.error("Failed to set output stream: ", e);
 				}
