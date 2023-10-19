@@ -127,7 +127,8 @@ public class Preferences implements IPreferences {
 	public String getPRIVATE_PATH() {
 		synchronized (objLock) {
 			if (PRIVATE_PATH == null) {
-				PRIVATE_PATH = getProperty_PATH(getProperty("TMPMEDIA_DIR", "").trim(), "WEB-INF");
+				String webInternalPath = ApplicationContext.getInstance().isSpringBootApp()? "" : "WEB-INF";
+				PRIVATE_PATH = getProperty_PATH(getProperty("TMPMEDIA_DIR", "").trim(), webInternalPath);
 			}
 		}
 		return PRIVATE_PATH;
