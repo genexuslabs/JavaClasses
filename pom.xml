@@ -115,8 +115,7 @@
 		<module>gxcloudstorage-azureblob</module>
 		<module>gxcloudstorage-ibmcos</module>
 		<module>gxcloudstorage-tests</module>
-        <module>gxperformance</module>
-    </modules>
+	</modules>
 
 	<dependencies>
 		<dependency>

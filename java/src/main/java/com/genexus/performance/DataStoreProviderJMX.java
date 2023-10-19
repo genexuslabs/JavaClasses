@@ -4,21 +4,22 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 
 import com.genexus.CommonUtil;
+import com.genexus.db.DataStoreProvider;
 
 public class DataStoreProviderJMX implements DataStoreProviderJMXMBean{
 	
 	DataStoreProviderInfo dataStoreProvider;
 	
-  public DataStoreProviderJMX(String name, IDataStoreProviderInfo dataStoreProviderInfo)
+  public DataStoreProviderJMX(String name)
   {
-	  dataStoreProvider = dataStoreProviderInfo.getDataStoreProviderInfo(name);
+	  dataStoreProvider = DataStoreProvider.getDataStoreProviderInfo(name);
   }
   
-  static public void CreateDataStoreProviderJMX(String name, IDataStoreProviderInfo dataStoreProviderInfo)
+  static public void CreateDataStoreProviderJMX(String name)
   {
     try
     {
-      MBeanUtils.createMBeanDataStoreProvider(name, dataStoreProviderInfo);
+      MBeanUtils.createMBeanDataStoreProvider(name);
     }
     catch(Exception e)
     {

@@ -3,6 +3,8 @@ package com.genexus.performance;
 import java.io.PrintStream;
 import java.util.Date;
 
+import com.genexus.Application;
+
 public class SentenceInfo
 {
 	private long sentenceCount;  
@@ -14,13 +16,12 @@ public class SentenceInfo
 	private long bestTimeExecute;
 	private long maxTimeForNotification = 10000;
 	private boolean enableNotifications = true;
-	private IApplication application;
+	
 	public SentenceJMX sentenceJMX = null;
 	
-	public SentenceInfo(String sqlSentence, IApplication application)
+	public SentenceInfo(String sqlSentence)
 	{
 		this.sqlSentence = sqlSentence;
-		this.application = application;
 	}	
 	
 	public long getSentenceCount()
@@ -112,7 +113,7 @@ public class SentenceInfo
 	
 	public void setTimeExecute(long time)
 	{
-		if (this.application.isJMXEnabled())
+		if (Application.isJMXEnabled())
 			if (time > maxTimeForNotification && enableNotifications)
 			{
 					sentenceJMX.SentencePoorPerformance();

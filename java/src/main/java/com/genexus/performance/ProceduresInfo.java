@@ -4,10 +4,11 @@ import java.io.PrintStream;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import com.genexus.Application;
+
 public class ProceduresInfo
 {
 	static private Hashtable<String, ProcedureInfo> procedureInfo = new Hashtable<>();
-	static private IApplication application;
 	
   public ProceduresInfo()
   {
@@ -30,7 +31,7 @@ public class ProceduresInfo
 	  {
 		  ProcedureInfo pInfo = new ProcedureInfo(name);
 		  procedureInfo.put(name, pInfo);
-		  if (IApplication.staticIsJMXEnabled())
+		  if (Application.isJMXEnabled())
 			ProcedureJMX.CreateProcedureJMX(pInfo);
 	  }
 	  return procedureInfo.get(name);

@@ -16,7 +16,10 @@ import com.genexus.db.driver.GXCallableStatement;
 import com.genexus.db.driver.GXConnection;
 import com.genexus.db.driver.GXDBMS;
 import com.genexus.db.driver.GXResultSet;
-import com.genexus.performance.*;
+import com.genexus.performance.DataStoreProviderInfo;
+import com.genexus.performance.DataStoreProviderJMX;
+import com.genexus.performance.DataStoreProvidersJMX;
+import com.genexus.performance.SentenceInfo;
 
 public class DataStoreProvider extends DataStoreProviderBase implements
 		IDataStoreProvider {
@@ -47,7 +50,7 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 		if (Application.isJMXEnabled())
 			if (firstTime.get())
 			{
-				DataStoreProvidersJMX.CreateDataStoreProvidersJMX(new DataStoreProviderWrapper());
+				DataStoreProvidersJMX.CreateDataStoreProvidersJMX();
 				firstTime.set(false);
 			}
 
@@ -686,12 +689,12 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 
 ////////////////////////////////////////JMX Operations/////////////////////////////////////
 	public static void addDataStoreProviderInfo(String key) {
-		DataStoreProviderInfo dsInfo = new DataStoreProviderInfo(key, new ApplicationWrapper());
+		DataStoreProviderInfo dsInfo = new DataStoreProviderInfo(key);
 		DataStoreProviderInfo dsInfoPrev = dataStoreProviders.putIfAbsent(key,
 				dsInfo);
 		if (dsInfoPrev == null) {
 			if (Application.isJMXEnabled())
-				DataStoreProviderJMX.CreateDataStoreProviderJMX(key, getDataStoreProviderInfo(key));
+				DataStoreProviderJMX.CreateDataStoreProviderJMX(key);
 		}
 	}
 
