@@ -1,5 +1,7 @@
 package com.genexus.db.driver;
 
+import com.genexus.IDataStoreProviderFactory;
+import com.genexus.db.DataStoreProvider;
 import com.genexus.sampleapp.GXcfg;
 import com.mockdb.*;
 import com.genexus.Application;
@@ -21,9 +23,9 @@ public class TestMockDataAccess {
 	}
 
 	@Test
-	public void testMockDataAccess(){
+	public void testMockDataAccess(IDataStoreProviderFactory factory){
 		Application.init(GXcfg.class);
-		ausemockdataaccess pgm = new ausemockdataaccess (-1);
+		ausemockdataaccess pgm = new ausemockdataaccess (-1, factory);
 		Application.realMainProgram = pgm;
 		pgm.execute();
 

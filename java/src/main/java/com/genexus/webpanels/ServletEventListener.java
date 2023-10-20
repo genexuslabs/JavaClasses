@@ -1,4 +1,6 @@
 package com.genexus.webpanels;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -25,8 +27,21 @@ public class ServletEventListener extends ServletContextListener
 
 		if (Application.isJMXEnabled())
 		{
-			com.genexus.management.MBeanUtils.unregisterObjects();
-			com.genexus.performance.MBeanUtils.unregisterObjects();
+			try
+			{
+				Class<?> clazz = Class.forName("com.genexus.management.MBeanUtils");
+				Method method = clazz.getMethod("unregisterObjects");
+				method.invoke(null);
+
+				clazz = Class.forName("com.genexus.performance.MBeanUtils");
+				method = clazz.getMethod("unregisterObjects");
+				method.invoke(null);
+			}
+			catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e)
+			{
+				System.out.println("Failed to unregister bean objects");
+				e.printStackTrace();
+			}
 		}
 
 		//Singletons

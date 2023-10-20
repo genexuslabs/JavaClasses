@@ -34,7 +34,6 @@ import com.genexus.db.DBConnectionManager;
 import com.genexus.db.UserInformation;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
-import com.genexus.management.ConnectionJMX;
 import com.genexus.platform.INativeFunctions;
 import com.genexus.platform.NativeFunctions;
 
@@ -86,6 +85,8 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 	String sentenceLastRequest;
 	String lastObjectExecuted;
 	boolean finishExecute = true;
+
+	private final String connectionJMXClassName = "com.genexus.management.ConnectionJMX";
 
 	public GXConnection(DataSource dataSource, Connection con)
 	{
@@ -263,7 +264,17 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 
 		//Enable JMX
 		if (Application.isJMXEnabled() && context != null)
-			ConnectionJMX.CreateConnectionJMX(this);
+		{
+			try
+			{
+				Class<?> clazz = Class.forName(connectionJMXClassName);
+				Method method = clazz.getMethod("CreateConnectionJMX");
+				method.invoke(this);
+			} catch (Exception e)
+			{
+				logger.error("Failed to create JMX connection", e);
+			}
+		}
 
 		if (!com.genexus.ApplicationContext.getInstance().getReorganization())
 		{
@@ -1116,7 +1127,17 @@ public void rollback() throws SQLException
 			{
 				//Destroy JMX
 				if (Application.isJMXEnabled())
-					ConnectionJMX.DestroyConnectionJMX(this);
+				{
+					try
+					{
+						Class<?> clazz = Class.forName(connectionJMXClassName);
+						Method method = clazz.getMethod("DestroyConnectionJMX");
+						method.invoke(this);
+					} catch (Exception e)
+					{
+						logger.error("Failed to destroy JMX connection", e);
+					}
+				}
 				close_impl();
 			}
 			catch (SQLException sqlException)
@@ -1132,7 +1153,17 @@ public void rollback() throws SQLException
 		{
 			//Destroy JMX
 			if (Application.isJMXEnabled())
-				ConnectionJMX.DestroyConnectionJMX(this);
+			{
+				try
+				{
+					Class<?> clazz = Class.forName(connectionJMXClassName);
+					Method method = clazz.getMethod("DestroyConnectionJMX");
+					method.invoke(this);
+				} catch (Exception e)
+				{
+					logger.error("Failed to destroy JMX connection", e);
+				}
+			}
 
 			// We don't rollback, because some DB don't support the command (Not-Logged Informix), and
 			// it's supposed to be done implicitly.
@@ -1152,7 +1183,17 @@ public void rollback() throws SQLException
 			{
 				//Destroy JMX
 				if (Application.isJMXEnabled())
-					ConnectionJMX.DestroyConnectionJMX(this);
+				{
+					try
+					{
+						Class<?> clazz = Class.forName(connectionJMXClassName);
+						Method method = clazz.getMethod("DestroyConnectionJMX");
+						method.invoke(this);
+					} catch (Exception e)
+					{
+						logger.error("Failed to destroy JMX connection", e);
+					}
+				}
 				con.close();
 			}
 			catch (SQLException sqlException)
@@ -1167,7 +1208,17 @@ public void rollback() throws SQLException
 		{
 			//Destroy JMX
 			if (Application.isJMXEnabled())
-				ConnectionJMX.DestroyConnectionJMX(this);
+			{
+				try
+				{
+					Class<?> clazz = Class.forName(connectionJMXClassName);
+					Method method = clazz.getMethod("DestroyConnectionJMX");
+					method.invoke(this);
+				} catch (Exception e)
+				{
+					logger.error("Failed to destroy JMX connection", e);
+				}
+			}
 			con.close();
 		}
 

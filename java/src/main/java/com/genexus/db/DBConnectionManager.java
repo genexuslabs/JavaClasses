@@ -1,5 +1,6 @@
 package com.genexus.db;
 
+import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Enumeration;
@@ -15,8 +16,6 @@ import com.genexus.db.driver.DataSource;
 import com.genexus.db.driver.GXConnection;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
-import com.genexus.management.LocalUserInformationJMX;
-import com.genexus.management.ServerUserInformationJMX;
 
 public abstract class DBConnectionManager
 {
@@ -140,14 +139,26 @@ public abstract class DBConnectionManager
 	private void connectJMX(UserInformation userInfo) {
 		if (Application.isJMXEnabled())
 		{
-			if (userInfo instanceof ServerUserInformation)
+			try
 			{
-				((ServerUserInformation)userInfo).setIP(ModelContext.getModelContext().getWorkstationId(userInfo.getHandle()));
-				ServerUserInformationJMX.CreateServerUserInformationJMX((ServerUserInformation)userInfo, ModelContext.getModelContext());
-			}
-			else
+				if (userInfo instanceof ServerUserInformation)
+				{
+					Class<?> clazz = Class.forName("com.genexus.management.ServerUserInformationJMX");
+					Method method = clazz.getMethod("CreateServerUserInformationJMX");
+					method.invoke((ServerUserInformation)userInfo, ModelContext.getModelContext());
+				}
+				else
 				if (userInfo instanceof LocalUserInformation)
-					LocalUserInformationJMX.CreateLocalUserInformationJMX((LocalUserInformation)userInfo);
+				{
+					Class<?> clazz = Class.forName("com.genexus.management.LocalUserInformationJMX");
+					Method method = clazz.getMethod("CreateLocalUserInformationJMX");
+					method.invoke((LocalUserInformation)userInfo);
+				}
+			}
+			catch (Exception e)
+			{
+				logger.error("Failed to create JMX server user or local user information", e);
+			}
 		}
 	}
 
@@ -277,11 +288,25 @@ public abstract class DBConnectionManager
 	private void unsuscribeJMX(UserInformation ui) {
 		if (Application.isJMXEnabled())
 		{
-			if (ui instanceof ServerUserInformation)
-				ServerUserInformationJMX.DestroyServerUserInformationJMX((ServerUserInformation)ui);
-			else
-				if (ui instanceof LocalUserInformation)
-					LocalUserInformationJMX.DestroyLocalUserInformationJMX((LocalUserInformation)ui);
+			try
+			{
+				if (ui instanceof ServerUserInformation)
+				{
+					Class<?> clazz = Class.forName("com.genexus.management.ServerUserInformationJMX");
+					Method method = clazz.getMethod("DestroyServerUserInformationJMX");
+					method.invoke((ServerUserInformation)ui);
+				}
+				else if (ui instanceof LocalUserInformation)
+				{
+					Class<?> clazz = Class.forName("com.genexus.management.LocalUserInformationJMX");
+					Method method = clazz.getMethod("DestroyLocalUserInformationJMX");
+					method.invoke((LocalUserInformation)ui);
+				}
+			}
+			catch (Exception e)
+			{
+				logger.error("Failed to destroy JMX server user or local user information", e);
+			}
 		}
 	}
 	public void flushBuffers(int handle, java.lang.Object o) throws SQLException, NullPointerException

@@ -1,4 +1,6 @@
 package com.genexus.db;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -9,8 +11,6 @@ import com.genexus.Application;
 import com.genexus.CommonUtil;
 import com.genexus.ICacheService2;
 import com.genexus.Preferences;
-import com.genexus.management.CacheItemJMX;
-import com.genexus.management.CacheJMX;
 import com.genexus.util.DoubleLinkedQueue;
 
 
@@ -26,6 +26,9 @@ public class InProcessCache implements ICacheService2
 	private ConcurrentHashMap<String, CacheValue> cache = new ConcurrentHashMap<String, CacheValue>();
 	private Object lockObject = new Object();
 
+	private Class<?> cacheItemJMXClass;
+	private Class<?> cacheJMXClass;
+
 	public InProcessCache()
 	{
 		Preferences prefs = Preferences.getDefaultPreferences();
@@ -33,9 +36,31 @@ public class InProcessCache implements ICacheService2
 		cacheStorageSize = prefs.getCACHE_STORAGE_SIZE() * 1024;
 		cacheEnabled = prefs.getCACHING();
 
+		try
+		{
+			Class<?> cacheItemJMXClass = Class.forName("com.genexus.management.CacheItemJMX");
+			Class<?> cacheJMXClass = Class.forName("com.genexus.management.CacheJMX");
+		}
+		catch (ClassNotFoundException e)
+		{
+			System.out.println("Failed to get CacheJMX and CacheItemJMX classes");
+			e.printStackTrace();
+		}
+
 		//JMX Enabled
 		if (Application.isJMXEnabled())
-			CacheJMX.CreateCacheJMX(this);
+		{
+			try
+			{
+				Method method = cacheJMXClass.getMethod("CreateCacheJMX");
+				method.invoke(this);
+			}
+			catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
+			{
+				System.out.println("Failed to create JMX cache");
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public boolean isEnabled()
@@ -131,10 +156,20 @@ public class InProcessCache implements ICacheService2
 
 	}
 	public void clear() {
-
 		//JMX Remove
 		if (Application.isJMXEnabled())
-			CacheJMX.DestroyCacheJMX();
+		{
+			try
+			{
+				Method method = cacheJMXClass.getMethod("DestroyCacheJMX");
+				method.invoke(null);
+			}
+			catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
+			{
+				System.out.println("Failed to destroy JMX cache");
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	public void clearKey(String key, CacheValue value) {
@@ -152,7 +187,18 @@ public class InProcessCache implements ICacheService2
 			}
 			//JMX Remove
 			if (Application.isJMXEnabled())
-				CacheItemJMX.DestroyCacheItemJMX(value);
+			{
+				try
+				{
+					Method method = cacheItemJMXClass.getMethod("DestroyCacheItemJMX");
+					method.invoke(value);
+				}
+				catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
+				{
+					System.out.println("Failed to destroy JMX item cache");
+					e.printStackTrace();
+				}
+			}
 			cache.remove(key);
 		}
 	}
@@ -258,7 +304,18 @@ public class InProcessCache implements ICacheService2
 	{
 		//JMX Enabled
 		if (Application.isJMXEnabled())
-			CacheItemJMX.CreateCacheItemJMX(value);
+		{
+			try
+			{
+				Method method = cacheItemJMXClass.getMethod("CreateCacheItemJMX");
+				method.invoke(value);
+			}
+			catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
+			{
+				System.out.println("Failed to create JMX item cache");
+				e.printStackTrace();
+			}
+		}
 
 		value.setTimestamp();
 		cache.put(key, value);
@@ -293,7 +350,18 @@ public class InProcessCache implements ICacheService2
 
 						//JMX Remove
 						if (Application.isJMXEnabled())
-							CacheItemJMX.DestroyCacheItemJMX(item);
+						{
+							try
+							{
+								Method method = cacheItemJMXClass.getMethod("DestroyCacheItemJMX");
+								method.invoke(item);
+							}
+							catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
+							{
+								System.out.println("Failed to destroy JMX item cache");
+								e.printStackTrace();
+							}
+						}
 
 						cache.remove(item.getKey().getKey());
 						cacheDrops++;
@@ -326,7 +394,18 @@ public class InProcessCache implements ICacheService2
 
 				//JMX Remove
 				if (Application.isJMXEnabled())
-					CacheItemJMX.DestroyCacheItemJMX(value);
+				{
+					try
+					{
+						Method method = cacheItemJMXClass.getMethod("DestroyCacheItemJMX");
+						method.invoke(value);
+					}
+					catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
+					{
+						System.out.println("Failed to destroy JMX item cache");
+						e.printStackTrace();
+					}
+				}
 
 				cache.remove(value.getKey().getKey());
 			}

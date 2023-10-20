@@ -4,8 +4,9 @@ import java.io.PrintStream;
 import java.util.Date;
 
 import com.genexus.Application;
+import com.genexus.ISentenceInfo;
 
-public class SentenceInfo
+public class SentenceInfo implements ISentenceInfo
 {
 	private long sentenceCount;  
 	private String sqlSentence;

@@ -4,11 +4,12 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 
 import com.genexus.CommonUtil;
+import com.genexus.IDataStoreProviderInfo;
 import com.genexus.db.DataStoreProvider;
 
 public class DataStoreProviderJMX implements DataStoreProviderJMXMBean{
 	
-	DataStoreProviderInfo dataStoreProvider;
+	IDataStoreProviderInfo dataStoreProvider;
 	
   public DataStoreProviderJMX(String name)
   {

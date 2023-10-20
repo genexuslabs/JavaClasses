@@ -2,6 +2,8 @@ package com.genexus.db;
 
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.Enumeration;
@@ -16,14 +18,14 @@ import com.genexus.db.driver.GXCallableStatement;
 import com.genexus.db.driver.GXConnection;
 import com.genexus.db.driver.GXDBMS;
 import com.genexus.db.driver.GXResultSet;
-import com.genexus.performance.DataStoreProviderInfo;
-import com.genexus.performance.DataStoreProviderJMX;
-import com.genexus.performance.DataStoreProvidersJMX;
-import com.genexus.performance.SentenceInfo;
+import com.genexus.IDataStoreProviderInfo;
+import com.genexus.ISentenceInfo;
+
 
 public class DataStoreProvider extends DataStoreProviderBase implements
 		IDataStoreProvider {
 	protected ILocalDataStoreHelper helper;
+	private IDataStoreProviderFactory dataStoreProviderFactory;
 
 	// JMX Properties
 	private static AtomicLong sentenceCount = new AtomicLong(0);
@@ -33,7 +35,7 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 	private static AtomicLong sentenceInsertCount = new AtomicLong(0);
 	private static AtomicLong sentenceCallCount = new AtomicLong(0);
 	private static AtomicLong sentenceDirectSQLCount = new AtomicLong(0);
-	private static ConcurrentHashMap<String, DataStoreProviderInfo> dataStoreProviders = new ConcurrentHashMap<String, DataStoreProviderInfo>();
+	private static ConcurrentHashMap<String, IDataStoreProviderInfo> dataStoreProviders = new ConcurrentHashMap<String, IDataStoreProviderInfo>();
 
 	private static AtomicBoolean firstTime = new AtomicBoolean(true);
 
@@ -42,7 +44,7 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 		super(context, remoteHandle);
 	}
 
-	public DataStoreProvider(ModelContext context, int remoteHandle, ILocalDataStoreHelper helper, Object[] buffers)
+	public DataStoreProvider(ModelContext context, int remoteHandle, ILocalDataStoreHelper helper, Object[] buffers, IDataStoreProviderFactory factory)
 	{
 		super(context, remoteHandle);
 
@@ -50,8 +52,18 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 		if (Application.isJMXEnabled())
 			if (firstTime.get())
 			{
-				DataStoreProvidersJMX.CreateDataStoreProvidersJMX();
-				firstTime.set(false);
+				try
+				{
+					Class<?> clazz = Class.forName("com.genexus.performance.DataStoreProvidersJMX");
+					Method method = clazz.getMethod("CreateDataStoreProvidersJMX");
+					method.invoke(null);
+					firstTime.set(false);
+				}
+				catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e)
+				{
+					System.err.println("Failed to create JMX data store providers");
+					e.printStackTrace();
+				}
 			}
 
 		this.helper = helper;
@@ -59,7 +71,7 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 		setOutputBuffers(buffers);
 
 		//JMX
-		addDataStoreProviderInfo(helper.getClass().getName());
+		addDataStoreProviderInfo(helper.getClass().getName(), factory);
 
 	}
 
@@ -688,19 +700,32 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 	}
 
 ////////////////////////////////////////JMX Operations/////////////////////////////////////
-	public static void addDataStoreProviderInfo(String key) {
-		DataStoreProviderInfo dsInfo = new DataStoreProviderInfo(key);
-		DataStoreProviderInfo dsInfoPrev = dataStoreProviders.putIfAbsent(key,
+	public static void addDataStoreProviderInfo(String key, IDataStoreProviderFactory factory) {
+		IDataStoreProviderInfo dsInfo = factory.createDataStoreProviderInfo(key);
+		IDataStoreProviderInfo dsInfoPrev = dataStoreProviders.putIfAbsent(key,
 				dsInfo);
 		if (dsInfoPrev == null) {
 			if (Application.isJMXEnabled())
-				DataStoreProviderJMX.CreateDataStoreProviderJMX(key);
+			{
+				try
+				{
+					Class<?> clazz = Class.forName("com.genexus.performance.DataStoreProviderJMX");
+					Method method = clazz.getMethod("CreateDataStoreProviderJMX");
+					method.invoke(key);
+				}
+				catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e)
+				{
+					System.err.println("Failed to create JMX data store provider");
+					e.printStackTrace();
+				}
+			}
+
 		}
 	}
 
-	public static DataStoreProviderInfo getDataStoreProviderInfo(String key)
+	public static IDataStoreProviderInfo getDataStoreProviderInfo(String key)
 	{
-		return (DataStoreProviderInfo) dataStoreProviders.get(key);
+		return (IDataStoreProviderInfo) dataStoreProviders.get(key);
 	}
 
 	void beginExecute()
@@ -717,9 +742,9 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 	void incSentencesCount(String key, Cursor cursor)
 	{
 
-		DataStoreProviderInfo dsInfo = getDataStoreProviderInfo(key);
+		IDataStoreProviderInfo dsInfo = getDataStoreProviderInfo(key);
 		dsInfo.incSentenceCount();
-		SentenceInfo sInfo;
+		ISentenceInfo sInfo;
 		if (cursor.dynStatement) {
 			sInfo = dsInfo.addSentenceInfo(key + "_" + cursor.mCursorId, key
 					+ "_" + cursor.mCursorId + "_" + cursor.mSQLSentence);
@@ -772,8 +797,8 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 		if (con != null)
 			con.setFinishExecute(true);
 
-		DataStoreProviderInfo dsInfo = getDataStoreProviderInfo(key);
-		SentenceInfo sInfo = dsInfo.getSentenceInfo(key + "_"
+		IDataStoreProviderInfo dsInfo = getDataStoreProviderInfo(key);
+		ISentenceInfo sInfo = dsInfo.getSentenceInfo(key + "_"
 				+ cursor.mCursorId);
 		sInfo.setTimeExecute((System.currentTimeMillis() - this.beginExecute
 				.getTime()));
@@ -827,7 +852,7 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 			out.println("");
 			for (Enumeration en = dataStoreProviders.elements(); en.hasMoreElements(); )
 			{
-				DataStoreProviderInfo dsInfo = (DataStoreProviderInfo) en.nextElement();
+				IDataStoreProviderInfo dsInfo = (IDataStoreProviderInfo) en.nextElement();
 				dsInfo.dump(out);
 				out.println("");
 				out.println("");
@@ -856,9 +881,9 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 				sentenceInsertCount.get());
 		writer.writeElement("StoredProcedureCount", sentenceCallCount.get());
 		writer.writeElement("SQLCommandCount", sentenceDirectSQLCount.get());
-		for (Enumeration<DataStoreProviderInfo> en = dataStoreProviders
+		for (Enumeration<IDataStoreProviderInfo> en = dataStoreProviders
 				.elements(); en.hasMoreElements();) {
-			DataStoreProviderInfo dsInfo = (DataStoreProviderInfo) en
+			IDataStoreProviderInfo dsInfo = (IDataStoreProviderInfo) en
 					.nextElement();
 			dsInfo.dump(writer);
 		}

@@ -1,5 +1,6 @@
-package com.genexus.db;
+ package com.genexus.db;
 
+import java.lang.reflect.Method;
 import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -8,8 +9,6 @@ import com.genexus.common.classes.AbstractNamespace;
 import com.genexus.db.driver.DataSource;
 import com.genexus.db.driver.GXDBDebug;
 import com.genexus.db.driver.JDBCLogConfig;
-import com.genexus.management.DataSourceJMX;
-import com.genexus.management.NamespaceJMX;
 import com.genexus.util.IniFile;
 
 public class Namespace extends AbstractNamespace
@@ -144,7 +143,20 @@ public class Namespace extends AbstractNamespace
 			
 			//Enable JMX
 			if (Application.isJMXEnabled())
-				DataSourceJMX.CreateDataSourceJMX(ds);
+			{
+				try
+				{
+					Class<?> clazz = Class.forName("com.genexus.management.DataSourceJMX");
+					Method method = clazz.getMethod("CreateDataSourceJMX");
+					method.invoke(ds);
+				}
+				catch (Exception e)
+				{
+					System.out.println("Failed to create JMX data source");
+					e.printStackTrace();
+				}
+			}
+
 		}
 
 		classesArchive  = iniFile.getProperty(name, "Archive", "");
@@ -156,7 +168,20 @@ public class Namespace extends AbstractNamespace
 		
 		//Enable JMX
 		if (Application.isJMXEnabled())
-			NamespaceJMX.CreateNamespaceJMX(this);
+		{
+			try
+			{
+				Class<?> clazz = Class.forName("com.genexus.management.NamespaceJMX");
+				Method method = clazz.getMethod("CreateNamespaceJMX");
+				method.invoke(this);
+			}
+			catch (Exception e)
+			{
+				System.out.println("Failed to create JMX namespace");
+				e.printStackTrace();
+			}
+		}
+
 	}
 
 	private int getIsolationLevel(IniFile iniFile, String section)
