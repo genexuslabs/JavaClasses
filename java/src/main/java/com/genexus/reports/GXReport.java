@@ -80,8 +80,6 @@ public abstract class GXReport extends GXProcedure {
 					else
 						reportHandler = new PDFReportPDFBox(context);
 					((GXReportPDFCommons) reportHandler).setOutputStream(getOutputStream());
-				} catch (RuntimeException e) {
-					log.debug("getPrinter may have failed to set the output stream for the report: ", e);
 				} catch (Exception e) {
 					log.error("Failed to set output stream: ", e);
 				}
@@ -141,7 +139,7 @@ public abstract class GXReport extends GXProcedure {
 	}
 
 	protected java.io.OutputStream getOutputStream() {
-		throw new RuntimeException("Output stream not set");
+		return null;
 	}
 	
 	//M�todos para la implementaci�n de reportes din�micos
