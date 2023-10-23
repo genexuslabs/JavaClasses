@@ -114,8 +114,7 @@
 		<module>gxcloudstorage-azureblob</module>
 		<module>gxcloudstorage-ibmcos</module>
 		<module>gxcloudstorage-tests</module>
-        <module>gxmanagement</module>
-    </modules>
+	</modules>
 
 	<dependencies>
 		<dependency>

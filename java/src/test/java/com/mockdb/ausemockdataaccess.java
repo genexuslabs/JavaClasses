@@ -3,31 +3,14 @@ import com.genexus.*;
 import com.genexus.db.*;
 import com.genexus.sampleapp.GXcfg;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.sql.*;
 
 public final  class ausemockdataaccess extends GXProcedure
 {
-	private IDataStoreProviderFactory dataStoreProviderFactory;
-
    public static void main( String args[] )
    {
       Application.init(GXcfg.class);
-	  ausemockdataaccess pgm = null;
-	  try
-	  {
-		  Class<?> clazz = Class.forName("com.genexus.performance.DataStoreProviderFactory");
-		  Constructor<?> constructor = clazz.getConstructor(String.class);
-		  Object instance = constructor.newInstance();
-
-		  pgm = new ausemockdataaccess (-1, (IDataStoreProviderFactory) instance);
-	  }
-	  catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e)
-	  {
-
-	  }
+      ausemockdataaccess pgm = new ausemockdataaccess (-1);
       Application.realMainProgram = pgm;
       pgm.executeCmdLine(args);
       GXRuntime.exit( );
@@ -39,10 +22,9 @@ public final  class ausemockdataaccess extends GXProcedure
       execute();
    }
 
-   public ausemockdataaccess( int remoteHandle , IDataStoreProviderFactory factory)
+   public ausemockdataaccess( int remoteHandle )
    {
-      super( remoteHandle , new ModelContext( ausemockdataaccess.class ), "");
-	  this.dataStoreProviderFactory = factory;
+      super( remoteHandle , new ModelContext( ausemockdataaccess.class ), "" );
    }
 
    public ausemockdataaccess( int remoteHandle ,
@@ -146,8 +128,7 @@ public final  class ausemockdataaccess extends GXProcedure
             }
             , new Object[] {
             }
-         },
-		  dataStoreProviderFactory
+         }
       );
       /* GeneXus formulas. */
       Gx_err = (short)(0) ;

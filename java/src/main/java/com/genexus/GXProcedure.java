@@ -1,15 +1,15 @@
+
 package com.genexus;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.Date;
 import com.genexus.db.Namespace;
-import com.genexus.db.ServerUserInformation;
 import com.genexus.db.UserInformation;
 import com.genexus.diagnostics.GXDebugInfo;
 import com.genexus.diagnostics.GXDebugManager;
 import com.genexus.internet.HttpContext;
+import com.genexus.performance.ProcedureInfo;
+import com.genexus.performance.ProceduresInfo;
 import com.genexus.util.ReorgSubmitThreadPool;
 import com.genexus.util.SubmitThreadPool;
 
@@ -41,19 +41,7 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 
 		//JMX Counter
 		beginExecute = new Date();
-		IProcedureInfo pInfo = null;
-		try
-		{
-			Class<?> clazz = Class.forName("com.genexus.performance.ProceduresInfo");
-			Method method = clazz.getMethod("addProcedureInfo");
-			pInfo = (IProcedureInfo) method.invoke(this.getClass().getName());
-		}
-		catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e)
-		{
-			System.out.println("Failed to add procedure information");
-			e.printStackTrace();
-		}
-
+		ProcedureInfo pInfo = ProceduresInfo.addProcedureInfo(this.getClass().getName());
 		pInfo.incCount();
 
 		this.remoteHandle = remoteHandle;
@@ -183,18 +171,7 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 
 	public void endExecute(String name)
 	{
-		IProcedureInfo pInfo = null;
-		try
-		{
-			Class<?> clazz = Class.forName("com.genexus.performance.ProceduresInfo");
-			Method method = clazz.getMethod("getProcedureInfo");
-			pInfo = (IProcedureInfo) method.invoke(name);
-		}
-		catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e)
-		{
-			System.out.println("Failed to add procedure information");
-			e.printStackTrace();
-		}
+		ProcedureInfo pInfo = ProceduresInfo.getProcedureInfo(name);
 		pInfo.setTimeExecute(System.currentTimeMillis() - beginExecute.getTime());
 		
 		if (context != null && context.getSessionContext() != null)

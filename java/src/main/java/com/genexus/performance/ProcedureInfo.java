@@ -1,11 +1,9 @@
 package com.genexus.performance;
 
-import com.genexus.IProcedureInfo;
-
 import java.io.PrintStream;
 import java.util.Date;
 
-public class ProcedureInfo implements IProcedureInfo
+public class ProcedureInfo
 {
 	private long count;  
 	private String name;

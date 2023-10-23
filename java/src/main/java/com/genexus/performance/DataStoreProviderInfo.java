@@ -5,9 +5,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import com.genexus.Application;
-import com.genexus.IDataStoreProviderInfo;
 
-public class DataStoreProviderInfo implements IDataStoreProviderInfo
+public class DataStoreProviderInfo
 {
 	private long sentenceCount;
 	private long sentenceSelectCount;

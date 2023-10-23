@@ -2,7 +2,6 @@ package com.genexus.db.driver;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Enumeration;
@@ -12,6 +11,7 @@ import java.util.Vector;
 import com.genexus.*;
 import com.genexus.db.DBConnectionManager;
 import com.genexus.db.UserInformation;
+import com.genexus.management.ConnectionPoolJMX;
 
 public abstract class ConnectionPool
 {
@@ -56,11 +56,9 @@ public abstract class ConnectionPool
 	Hashtable<Integer, Long> timeStartUserWait = new Hashtable<>();
 	long maxTimeUserWait;
 	float averageUserWaitingTime;
+	ConnectionPoolJMX connectionPoolJMX;
 	long UserMaxTimeWaitingBeforeNotif = 30000;
 	boolean enableNotifications = true;
-
-	private Object connectionPoolJMXInstance;
-	private Class<?> connectionPoolJMXClass;
 	
 	ConnectionPool(DataSource dataSource, String user, String password)
 	{
@@ -69,32 +67,10 @@ public abstract class ConnectionPool
 		this.user 	    = user;
 		this.password   = password;
 		constate = new PoolDBConnectionState();
-
-		try
-		{
-			connectionPoolJMXClass = Class.forName("com.genexus.management.ConnectionPoolJMX");
-			connectionPoolJMXInstance = connectionPoolJMXClass.newInstance();
-		}
-		catch (ClassNotFoundException | InstantiationException | IllegalAccessException e)
-		{
-			System.err.println("Failed to get a JMX connection pool instance");
-			e.printStackTrace();
-		}
 		
 		//Enable JMX
 		if (Application.isJMXEnabled())
-		{
-			try
-			{
-				Method method = connectionPoolJMXClass.getMethod("CreateConnectionPoolJMX");
-				method.invoke(this);
-			}
-			catch (Exception e)
-			{
-				System.err.println("Failed to create JMX connection pool");
-				e.printStackTrace();
-			}
-		}
+			ConnectionPoolJMX.CreateConnectionPoolJMX(this);
 	}
 
 	PoolDBConnectionState getDBConnectionState()
@@ -221,18 +197,7 @@ public abstract class ConnectionPool
 				if	(con == null)
 				{
 					if (Application.isJMXEnabled() && enableNotifications)
-					{
-						try
-						{
-							Method method = connectionPoolJMXInstance.getClass().getMethod("PoolIsFull");
-							method.invoke(null);
-						}
-						catch (Exception e)
-						{
-							System.err.println("Failed set JMX connection pool to full");
-							e.printStackTrace();
-						}
-					}
+						connectionPoolJMX.PoolIsFull();
 					((UserInformation)DBConnectionManager.getInstance().getUserInformation(handle)).setWaitingConnection(true);
 					if	(DEBUG)
 						log(handle, "Waiting for connection " + PrivateUtilities.getCurrentThreadId() + " unlimited " + unlimitedSize + " poolSize " + pool.size() + " maxPoolSize " + maxPoolSize);
@@ -248,18 +213,7 @@ public abstract class ConnectionPool
 					{
 						if (Application.isJMXEnabled())
 							if ((UserMaxTimeWaitingBeforeNotif < (System.currentTimeMillis() - (timeStartUserWait.get(new Integer(handle))).longValue())) && enableNotifications)
-							{
-								try
-								{
-									Method method = connectionPoolJMXInstance.getClass().getMethod("UserWaitingForLongTime");
-									method.invoke(null);
-								}
-								catch (Exception e)
-								{
-									System.err.println("Failed set user wait time as long");
-									e.printStackTrace();
-								}
-							}
+								connectionPoolJMX.UserWaitingForLongTime();
 					}
 					notified = false;
 					while (!notified)
@@ -659,9 +613,9 @@ public abstract class ConnectionPool
 		}
 	}
 	
-	public void setConnectionPoolJMX(Object connectionPoolJMX)
+	public void setConnectionPoolJMX(ConnectionPoolJMX connectionPoolJMX)
 	{
-		connectionPoolJMXInstance = connectionPoolJMX;
+		this.connectionPoolJMX = connectionPoolJMX;
 	}
 	public void runWithLock(Runnable runnable) {
 		synchronized (poolLock) {
