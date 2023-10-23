@@ -40,11 +40,6 @@
 			<version>4.1</version>
 		</dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>gxperformance</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
             <version>${log4j.version}</version>
