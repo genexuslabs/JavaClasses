@@ -17,6 +17,9 @@ import com.genexus.db.ServerUserInformation;
 import com.genexus.db.driver.ConnectionPool;
 import com.genexus.db.driver.DataSource;
 import com.genexus.db.driver.GXConnection;
+import json.org.json.HTTP;
+import org.apache.http.conn.routing.HttpRoute;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 public class MBeanUtils {
 	
@@ -130,6 +133,24 @@ public class MBeanUtils {
 	ConnectionPoolJMX mbean = new ConnectionPoolJMX(connectionPool);
     registerBean(mbean, "com.genexus.management:type=GeneXusApplicationServer.ApplicationName.DataStore.ConnectionPool,ApplicationName=" + connectionPool.getDataSource().getNamespace() + ",DataStore=" + connectionPool.getDataSource().name + ",name=R/W pool");
   }
+
+	public static void createMBean(PoolingHttpClientConnectionManager connectionPool)
+	{
+		MBeanServer mbs = getMBeanServer();
+		if (mbs == null)
+			return;
+		HTTPPoolJMX mbean = new HTTPPoolJMX(connectionPool);
+		registerBean(mbean, "com.genexus.management:type=GeneXusApplicationServer.ApplicationName.HTTPPool,ApplicationName=" + connectionPool.hashCode() + ",HttpPool=" + connectionPool.toString() + ",name=Http Connection pool");
+	}
+
+	public static void createMBean(HttpRoute httpConnection)
+	{
+		MBeanServer mbs = getMBeanServer();
+		if (mbs == null)
+			return;
+		HTTPConnectionJMX mbean = new HTTPConnectionJMX(httpConnection);
+		registerBean(mbean, "com.genexus.management:type=GeneXusApplicationServer.ApplicationName.HTTPPool.HTTPConnection,ApplicationName=" + httpConnection.hashCode() + ",HttpConnection=" + httpConnection.toString() + ",name=Http Connection");
+	}
   
   public static void createMBean(GXConnection connection)
   {
@@ -241,6 +262,33 @@ public class MBeanUtils {
       System.out.println(e);
     }
   }
+
+	public static void destroyMBean(HttpRoute httpConnection)
+	{
+		MBeanServer mbs = getMBeanServer();
+		if (mbs == null)
+			return;
+
+		try
+		{
+			ObjectName name = new ObjectName("com.genexus.management:type=GeneXusApplicationServer.ApplicationName.HTTPPool.HTTPConnection,ApplicationName=" + httpConnection.hashCode() + ",HttpConnection=" + httpConnection.toString() + ",name=Http Connection");
+			registeredObjects.removeElement(name);
+
+			mbs.unregisterMBean(name);
+		}
+		catch(javax.management.MalformedObjectNameException e)
+		{
+			System.out.println(e);
+		}
+		catch(javax.management.InstanceNotFoundException e)
+		{
+			System.out.println(e);
+		}
+		catch(javax.management.MBeanRegistrationException e)
+		{
+			System.out.println(e);
+		}
+	}
   
   public static void destroyMBeanCache()
   {
@@ -314,5 +362,5 @@ public class MBeanUtils {
 		  System.out.println(e);
 	  }
 	  mbs = null;
-  }  
+  }
 }

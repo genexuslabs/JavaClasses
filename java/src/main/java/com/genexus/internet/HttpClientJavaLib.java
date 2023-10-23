@@ -12,12 +12,16 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.*;
+import com.genexus.ModelContext;
+import com.genexus.management.HTTPPoolJMX;
 import com.genexus.util.IniFile;
+import com.genexus.Application;
 import org.apache.http.*;
 import com.genexus.CommonUtil;
 import com.genexus.specific.java.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.protocol.HttpContext;
@@ -43,7 +47,6 @@ import org.apache.http.impl.auth.NTLMSchemeFactory;
 import org.apache.http.impl.auth.SPNegoSchemeFactory;
 import org.apache.http.impl.client.*;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.ssl.SSLContextBuilder;
@@ -53,7 +56,7 @@ import org.apache.logging.log4j.Logger;
 
 import javax.net.ssl.SSLContext;
 
-public class HttpClientJavaLib extends GXHttpClient {
+public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserver {
 
 	public HttpClientJavaLib() {
 		getPoolInstance();
@@ -62,6 +65,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		cookies = new BasicCookieStore();
 		logger.info("Using apache http client implementation");
 		streamsToClose = new Vector<>();
+		connManager.addObserver(this);
 	}
 
 	private static void getPoolInstance() {
@@ -70,13 +74,26 @@ public class HttpClientJavaLib extends GXHttpClient {
 				RegistryBuilder.<ConnectionSocketFactory>create()
 					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https",getSSLSecureInstance())
 					.build();
-			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+			connManager = new CustomPoolingHttpClientConnectionManager(socketFactoryRegistry);
 			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_SIZE", "1000")));
 			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_PER_ROUTE", "1000")));
+
+			if (Application.isJMXEnabled())
+				HTTPPoolJMX.CreateHTTPPoolJMX(connManager);
 		}
 		else {
 			connManager.closeExpiredConnections();
 		}
+	}
+
+	@Override
+	public void onConnectionCreated(HttpRoute route) {
+		System.out.println("Connection created");
+	}
+
+	@Override
+	public void onConnectionDestroyed(HttpRoute route) {
+		System.out.println("Connection destroyed");
 	}
 
 	private ConnectionKeepAliveStrategy generateKeepAliveStrategy() {
@@ -109,7 +126,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	private static Logger logger = org.apache.logging.log4j.LogManager.getLogger(HttpClientJavaLib.class);
 
-	private static PoolingHttpClientConnectionManager connManager = null;
+	private static CustomPoolingHttpClientConnectionManager connManager = null;
 	private Integer statusCode = 0;
 	private String reasonLine = "";
 	private HttpClientBuilder httpClientBuilder;
