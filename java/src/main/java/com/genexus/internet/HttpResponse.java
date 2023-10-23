@@ -1,20 +1,17 @@
 
 package com.genexus.internet;
 
-import java.io.*;
-import java.util.Hashtable;
-
-import com.genexus.CommonUtil;
-import com.genexus.ModelContext;
 import com.genexus.IHttpContext;
+import com.genexus.ModelContext;
 import com.genexus.PrivateUtilities;
 import com.genexus.com.IHttpResponse;
 import com.genexus.webpanels.FileItemCollection;
 import com.genexus.webpanels.HttpContextWeb;
-import com.genexus.webpanels.HttpUtils;
 import com.genexus.webpanels.WebUtils;
-
 import org.apache.logging.log4j.Logger;
+
+import java.io.*;
+import java.util.Hashtable;
 
 /**
 * Esta clase esta disponible en los webprocs para grabar informacion en el response
@@ -43,23 +40,32 @@ public class HttpResponse implements IHttpResponse
 	 return httpContext.getPostedparts();
        }
 
-	public void addHeader(String name, String value)
-	{
-		if(name.equalsIgnoreCase("Content-Disposition"))
-		{
-		  value = WebUtils.getEncodedContentDisposition(value, httpContext.getBrowserType());
+	public void addHeader(String name, String value) {
+		final String normalizedName = name.trim().toLowerCase();
+
+		if (normalizedName.equals("content-disposition")) {
+			value = WebUtils.getEncodedContentDisposition(value, httpContext.getBrowserType());
 		}
 
 		httpContext.setHeader(name, value);
 		headers.put(name.toUpperCase(), value);
 
-		if	(name.equalsIgnoreCase("Content-type"))
-		{
-			httpContext.setContentType(value);
-		}
-		else if	(name.equalsIgnoreCase("Content-length"))
-		{
-			httpContext.getResponse().setContentLength((int) CommonUtil.val(value));
+		switch (normalizedName) {
+			case "content-type":
+				httpContext.setContentType(value);
+
+				if (value.equalsIgnoreCase("text/event-stream")) {
+					httpContext.setResponseBufferMode(HttpContext.ResponseBufferMode.DISABLED);
+				}
+				break;
+			case "content-length":
+				try {
+					int length = Integer.parseInt(value);
+					httpContext.getResponse().setContentLength(length);
+				} catch (NumberFormatException ex) {
+					log.warn("Content-Length header could not be set to HttpResponse", ex);
+				}
+				break;
 		}
 	}
 
