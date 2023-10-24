@@ -13,6 +13,7 @@ import java.security.cert.CertificateException;
 import java.util.*;
 import com.genexus.ModelContext;
 import com.genexus.management.HTTPPoolJMX;
+import com.genexus.management.MBeanUtils;
 import com.genexus.util.IniFile;
 import com.genexus.Application;
 import org.apache.http.*;
@@ -89,12 +90,14 @@ public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserv
 
 	@Override
 	public void onConnectionCreated(HttpRoute route) {
-		System.out.println("Connection created");
+		if (Application.isJMXEnabled())
+			MBeanUtils.createMBean(route);
 	}
 
 	@Override
 	public void onConnectionDestroyed(HttpRoute route) {
-		System.out.println("Connection destroyed");
+		if (Application.isJMXEnabled())
+			MBeanUtils.destroyMBean(route);
 	}
 
 	private ConnectionKeepAliveStrategy generateKeepAliveStrategy() {
