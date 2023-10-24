@@ -12,6 +12,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.*;
 import com.genexus.ModelContext;
+import com.genexus.management.HTTPConnectionJMX;
 import com.genexus.management.HTTPPoolJMX;
 import com.genexus.management.MBeanUtils;
 import com.genexus.util.IniFile;
@@ -91,13 +92,13 @@ public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserv
 	@Override
 	public void onConnectionCreated(HttpRoute route) {
 		if (Application.isJMXEnabled())
-			MBeanUtils.createMBean(route);
+			HTTPConnectionJMX.CreateHTTPConnectionJMX(route);
 	}
 
 	@Override
 	public void onConnectionDestroyed(HttpRoute route) {
 		if (Application.isJMXEnabled())
-			MBeanUtils.destroyMBean(route);
+			HTTPConnectionJMX.DestroyHTTPConnectionJMX(route);
 	}
 
 	private ConnectionKeepAliveStrategy generateKeepAliveStrategy() {
