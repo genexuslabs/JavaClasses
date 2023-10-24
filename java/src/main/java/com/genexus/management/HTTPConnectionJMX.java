@@ -5,7 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 public class HTTPConnectionJMX implements HTTPConnectionJMXBean{
 
-	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(HTTPPoolJMX.class);
+	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(HTTPConnectionJMX.class);
 
 	HttpRoute connection;
 

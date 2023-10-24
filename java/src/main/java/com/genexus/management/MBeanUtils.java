@@ -143,13 +143,13 @@ public class MBeanUtils {
 		registerBean(mbean, "com.genexus.management:type=GeneXusApplicationServer.ApplicationName.HTTPPool,ApplicationName=" + connectionPool.hashCode() + ",HttpPool=" + connectionPool.toString() + ",name=Http Connection pool");
 	}
 
-	public static void createMBean(HttpRoute httpConnection)
+	public static void createMBean(HttpRoute httpRoute)
 	{
 		MBeanServer mbs = getMBeanServer();
 		if (mbs == null)
 			return;
-		HTTPConnectionJMX mbean = new HTTPConnectionJMX(httpConnection);
-		registerBean(mbean, "com.genexus.management:type=GeneXusApplicationServer.ApplicationName.HTTPPool.HTTPConnection,ApplicationName=" + httpConnection.hashCode() + ",HttpConnection=" + httpConnection.toString() + ",name=Http Connection");
+		HTTPConnectionJMX mbean = new HTTPConnectionJMX(httpRoute);
+		registerBean(mbean, "com.genexus.management:type=GeneXusApplicationServer.ApplicationName.HTTPPool.HTTPConnection,ApplicationName=" + httpRoute.getTargetHost().getHostName() + ",Port=" + httpRoute.getTargetHost().getPort()+ ",name=http connection");
 	}
   
   public static void createMBean(GXConnection connection)
@@ -263,7 +263,7 @@ public class MBeanUtils {
     }
   }
 
-	public static void destroyMBean(HttpRoute httpConnection)
+	public static void destroyMBean(HttpRoute httpRoute)
 	{
 		MBeanServer mbs = getMBeanServer();
 		if (mbs == null)
@@ -271,7 +271,7 @@ public class MBeanUtils {
 
 		try
 		{
-			ObjectName name = new ObjectName("com.genexus.management:type=GeneXusApplicationServer.ApplicationName.HTTPPool.HTTPConnection,ApplicationName=" + httpConnection.hashCode() + ",HttpConnection=" + httpConnection.toString() + ",name=Http Connection");
+			ObjectName name = new ObjectName("com.genexus.management:type=GeneXusApplicationServer.ApplicationName.HTTPPool.HTTPConnection,ApplicationName=" + httpRoute.getTargetHost().getHostName() + ",Port=" + httpRoute.getTargetHost().getPort() + ",name=http connection");
 			registeredObjects.removeElement(name);
 
 			mbs.unregisterMBean(name);
