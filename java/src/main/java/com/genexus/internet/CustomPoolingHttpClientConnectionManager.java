@@ -4,12 +4,9 @@ import org.apache.http.HttpClientConnection;
 import org.apache.http.config.Registry;
 import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.apache.http.conn.ConnectionRequest;
-import org.apache.http.conn.ManagedHttpClientConnection;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.pool.PoolEntry;
-import org.apache.http.pool.PoolEntryCallback;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -43,9 +40,8 @@ public class CustomPoolingHttpClientConnectionManager extends PoolingHttpClientC
 			public HttpClientConnection get(long timeout, TimeUnit tunit) throws InterruptedException, ExecutionException, ConnectionPoolTimeoutException {
 				HttpClientConnection connection = originalRequest.get(timeout, tunit);
 
-				if (connection != null && !connection.isOpen()) {
+				if (connection != null && !connection.isOpen())
 					notifyConnectionCreated(route);
-				}
 
 				return connection;
 			}
@@ -54,62 +50,49 @@ public class CustomPoolingHttpClientConnectionManager extends PoolingHttpClientC
 
 	@Override
 	public void closeExpiredConnections() {
-		Set<HttpRoute> closedRoutes = new HashSet<>();
+		Set<HttpRoute> beforeClosing = new HashSet<>();
+		Set<HttpRoute> afterClosing = new HashSet<>();
 
-		// Enumerate over all connections and collect routes of the expired ones
-		super.enumAvailable(new PoolEntryCallback<HttpRoute, ManagedHttpClientConnection>() {
-			@Override
-			public void process(PoolEntry<HttpRoute, ManagedHttpClientConnection> entry) {
-				if (entry.isExpired(System.currentTimeMillis())) {
-					closedRoutes.add(entry.getRoute());
-				}
+		super.enumAvailable(entry -> {
+			if (entry.isExpired(System.currentTimeMillis())) {
+				beforeClosing.add(entry.getRoute());
 			}
 		});
-
-		// Close the expired connections
 		super.closeExpiredConnections();
+		super.enumAvailable(entry -> afterClosing.add(entry.getRoute()));
+		beforeClosing.removeAll(afterClosing);
 
-		// Notify for each closed connection
-		for (HttpRoute route : closedRoutes) {
+		for (HttpRoute route : beforeClosing)
 			notifyConnectionDestroyed(route);
-		}
 	}
 
 	@Override
 	public void closeIdleConnections(long idletime, TimeUnit tunit) {
-		Set<HttpRoute> closedRoutes = new HashSet<>();
+		Set<HttpRoute> beforeClosing = new HashSet<>();
+		Set<HttpRoute> afterClosing = new HashSet<>();
 		long idleTimeoutMillis = tunit.toMillis(idletime);
 
-		// Enumerate over all connections and collect routes of the idle ones
-		super.enumAvailable(new PoolEntryCallback<HttpRoute, ManagedHttpClientConnection>() {
-			@Override
-			public void process(PoolEntry<HttpRoute, ManagedHttpClientConnection> entry) {
-				if (entry.getUpdated() + idleTimeoutMillis < System.currentTimeMillis()) {
-					closedRoutes.add(entry.getRoute());
-				}
+		super.enumAvailable(entry -> {
+			if (entry.getUpdated() + idleTimeoutMillis < System.currentTimeMillis()) {
+				beforeClosing.add(entry.getRoute());
 			}
 		});
-
-		// Close the idle connections
 		super.closeIdleConnections(idletime, tunit);
+		super.enumAvailable(entry -> afterClosing.add(entry.getRoute()));
+		beforeClosing.removeAll(afterClosing);
 
-		// Notify for each closed connection
-		for (HttpRoute route : closedRoutes) {
+		for (HttpRoute route : beforeClosing)
 			notifyConnectionDestroyed(route);
-		}
 	}
 
-
 	private void notifyConnectionCreated(HttpRoute route) {
-		for (IConnectionObserver observer : observers) {
+		for (IConnectionObserver observer : observers)
 			observer.onConnectionCreated(route);
-		}
 	}
 
 	private void notifyConnectionDestroyed(HttpRoute route) {
-		for (IConnectionObserver observer : observers) {
+		for (IConnectionObserver observer : observers)
 			observer.onConnectionDestroyed(route);
-		}
 	}
 }
 
