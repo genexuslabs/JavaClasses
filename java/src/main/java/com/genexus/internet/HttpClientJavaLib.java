@@ -12,15 +12,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.*;
-import com.genexus.ModelContext;
-import com.genexus.management.HTTPConnectionJMX;
-import com.genexus.management.HTTPPoolJMX;
-import com.genexus.management.MBeanUtils;
-import com.genexus.util.IniFile;
-import com.genexus.Application;
+import java.net.URI;
+import javax.net.ssl.SSLContext;
 import org.apache.http.*;
-import com.genexus.CommonUtil;
-import com.genexus.specific.java.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.conn.routing.HttpRoute;
@@ -55,8 +49,14 @@ import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
-
-import javax.net.ssl.SSLContext;
+import com.genexus.webpanels.HttpContextWeb;
+import com.genexus.ModelContext;
+import com.genexus.management.HTTPConnectionJMX;
+import com.genexus.management.HTTPPoolJMX;
+import com.genexus.util.IniFile;
+import com.genexus.Application;
+import com.genexus.CommonUtil;
+import com.genexus.specific.java.*;
 
 public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserver {
 
