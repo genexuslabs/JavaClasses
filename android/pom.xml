@@ -16,21 +16,6 @@
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>gxcryptocommon</artifactId>
-			<version>${project.version}</version>
-            <exclusions>
-                <exclusion>  <!-- exclude common io from android -->
-                    <groupId>commons-io</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
-                <exclusion>  <!-- exclude bouncycastle from android -->
-                    <groupId>org.bouncycastle</groupId>
-                    <artifactId>bcprov-jdk18on</artifactId>
-                </exclusion>
-            </exclusions>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
 			<artifactId>gxcommon</artifactId>
 			<version>${project.version}</version>
             <exclusions>
