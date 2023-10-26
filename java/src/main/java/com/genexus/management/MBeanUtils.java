@@ -145,7 +145,7 @@ public class MBeanUtils {
 		if (mbs == null)
 			return;
 		HTTPConnectionJMX mbean = new HTTPConnectionJMX(httpRoute);
-		registerBean(mbean, "com.genexus.management:type=GeneXusApplicationServer.HTTPPool.HTTPConnection,ApplicationName=" + httpRoute.getTargetHost().getHostName() + ",Port=" + httpRoute.getTargetHost().getPort() + ",name=http connection");
+		registerBean(mbean, "com.genexus.management:type=GeneXusApplicationServer.HTTPPool.HTTPConnection,ApplicationName=" + httpRoute.getTargetHost().getHostName() + ",Port=" + httpRoute.getTargetHost().getPort() + ",name=Http connection");
 	}
   
   public static void createMBean(GXConnection connection)
@@ -265,7 +265,7 @@ public class MBeanUtils {
 			return;
 
 		try {
-			ObjectName name = new ObjectName("com.genexus.management:type=GeneXusApplicationServer.HTTPPool.HTTPConnection,ApplicationName=" + httpRoute.getTargetHost().getHostName() + ",Port=" + httpRoute.getTargetHost().getPort() + ",name=http connection");
+			ObjectName name = new ObjectName("com.genexus.management:type=GeneXusApplicationServer.HTTPPool.HTTPConnection,ApplicationName=" + httpRoute.getTargetHost().getHostName() + ",Port=" + httpRoute.getTargetHost().getPort() + ",name=Http connection");
 			registeredObjects.removeElement(name);
 
 			mbs.unregisterMBean(name);
