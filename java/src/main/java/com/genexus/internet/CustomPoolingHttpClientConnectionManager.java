@@ -79,6 +79,12 @@ public class CustomPoolingHttpClientConnectionManager extends PoolingHttpClientC
 		for (IConnectionObserver observer : observers)
 			observer.onConnectionDestroyed(route);
 	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		scheduler.shutdown();
+	}
 }
 
 
