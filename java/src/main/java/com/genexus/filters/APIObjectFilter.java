@@ -19,35 +19,32 @@ import org.apache.logging.log4j.Logger;
 public class APIObjectFilter extends Filter {
     
     private ArrayList<String> appPath = new ArrayList<String>();
-    
+    static final String PRIVATEDIR="private";
+	static final String WEBINFO="WEB-INF";
     public static final Logger logger = LogManager.getLogger(APIObjectFilter.class);
 
-    public void doFilter(IServletRequest request, IServletResponse response, IFilterChain chain) throws Exception {
+	public  void doFilter(IServletRequest request, IServletResponse response, IFilterChain chain) throws Exception {
         if (request.isHttpServletRequest() && response.isHttpServletResponse()) {
             IHttpServletRequest httpRequest = request.getHttpServletRequest();
             String path = httpRequest.getRequestURI().substring(httpRequest.getContextPath().length()).substring(1);
             String urlString = path.toLowerCase();
             boolean isPath = false;
-            for(String appBasePath : appPath)
-            {                
-                if (urlString.startsWith(appBasePath))
-				{
+            for(String appBasePath : appPath) {                
+                if (urlString.startsWith(appBasePath)) {
                     isPath = true;
 					break;					
 				}
             }     
-            if(isPath)
-            {
+            if(isPath) {
                 String fwdURI = "/rest/" + path;
+				logger.info("Forwarding from " + path +" to: " + fwdURI) ;
 				httpRequest.getRequestDispatcher(fwdURI).forward(request,response);
             }
-            else
-            {
+            else {
                 chain.doFilter(request, response);
             }
         }
-        else
-        {
+        else {
             chain.doFilter(request, response);
         }
     }
@@ -56,28 +53,28 @@ public class APIObjectFilter extends Filter {
         try {
             String paramValue = headers.get("BasePath");
             if (paramValue != null && !paramValue.isEmpty())
-            {                
+            {
+				Path privateFolder = Paths.get(paramValue + File.separator);
                 if (paramValue.equals("*"))
-                {                    
+                {
                     if (path != null &&  !path.isEmpty())
-                    {                        
-                        paramValue  = path + "private";                        
-                        Path privateFolder = Paths.get(paramValue);
+                    {
+						privateFolder = Paths.get(path, PRIVATEDIR);
                         if (!Files.exists(privateFolder)){
-                            paramValue  = path + "WEB-INF" + File.separator + "private";
+							privateFolder  = Paths.get(path, WEBINFO, PRIVATEDIR);
                         }
                     }
                 }
-                logger.info("API metadata path: " +  paramValue) ; 
-                Stream<Path> walk = Files.walk(Paths.get(paramValue + File.separator)); 
+                logger.info("API metadata folder: [" +  privateFolder.toString() + "]") ;
+                Stream<Path> walk = Files.walk(privateFolder);
                 List<String> result = walk.map(x -> x.toString()).filter(f -> f.endsWith(".grp.json")).collect(Collectors.toList());
                 for (String temp : result)
                 {
                     try{
                         String read = String.join( "", Files.readAllLines(Paths.get(temp)));
                         JSONObject jo = new JSONObject(read);
-                        String apipath = jo.getString("BasePath");
-                        appPath.add(apipath.toLowerCase());
+                        String apiPath = jo.getString("BasePath");
+                        appPath.add(apiPath.toLowerCase());
                     }
                     catch(IOException e)
                     {
