@@ -2,6 +2,7 @@ package com.genexus.internet;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
@@ -11,7 +12,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.*;
-import java.net.URI;
 import javax.net.ssl.SSLContext;
 import org.apache.http.*;
 import org.apache.http.HttpResponse;
@@ -99,6 +99,16 @@ public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserv
 			HTTPConnectionJMX.DestroyHTTPConnectionJMX(route);
 	}
 
+	@Override
+	protected void finalize() {
+		this.closeOpenedStreams();
+		if (Application.isJMXEnabled()){
+			for (HttpRoute route : connManager.getRoutes())
+				HTTPConnectionJMX.DestroyHTTPConnectionJMX(route);
+			HTTPPoolJMX.DestroyHTTPPoolJMX(connManager);
+		}
+	}
+
 	private ConnectionKeepAliveStrategy generateKeepAliveStrategy() {
 		return new ConnectionKeepAliveStrategy() {
 			@Override
@@ -145,7 +155,6 @@ public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserv
 	private static IniFile clientCfg = new ModelContext(ModelContext.getModelContextPackageClass()).getPreferences().getIniFile();
 	private static final String SET_COOKIE = "Set-Cookie";
 	private static final String COOKIE = "Cookie";
-
 	private java.util.Vector<InputStream> streamsToClose;
 
 	private void closeOpenedStreams()
@@ -303,7 +312,7 @@ public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserv
 		CookieStore cookiesToSend = new BasicCookieStore();
 		if (!ModelContext.getModelContext().isNullHttpContext()) { 	// Caso de ejecucion de varias instancia de HttpClientJavaLib, por lo que se obtienen cookies desde sesion web del browser
 
-			String selfWebCookie = ((HttpContextWeb) ModelContext.getModelContext().getHttpContext()).getCookie(SET_COOKIE);
+			String selfWebCookie = ((HttpContextWeb) ModelContext.getModelContext().getHttpContext()).getCookie("Set-Cookie");
 			if (!selfWebCookie.isEmpty())
 				this.addHeader(COOKIE, selfWebCookie.replace("+",";"));
 
@@ -754,12 +763,6 @@ public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserv
 
 	public void cleanup() {
 		resetErrorsAndConnParams();
-	}
-
-	@Override
-	protected void finalize()
-	{
-		this.closeOpenedStreams();
 	}
 
 }

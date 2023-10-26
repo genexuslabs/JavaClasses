@@ -28,8 +28,17 @@ public class HTTPPoolJMX extends NotificationBroadcasterSupport implements HTTPP
 		}
 	}
 
+	static public void DestroyHTTPPoolJMX(PoolingHttpClientConnectionManager httpConnectionPool) {
+		try {
+			MBeanUtils.destroyMBean(httpConnectionPool);
+		}
+		catch(Exception e) {
+			log.error("Cannot register HTTP connection pool MBean.", e);
+		}
+	}
+
 	public int getNumberOfConnectionsInUse(){
-		return connectionPool.getTotalStats().getAvailable();
+		return connectionPool.getTotalStats().getLeased();
 	}
 
 	public int getNumberOfRequestsWaiting(){
