@@ -11,15 +11,35 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class CustomPoolingHttpClientConnectionManager extends PoolingHttpClientConnectionManager {
 	private final List<IConnectionObserver> observers = new ArrayList<>();
 
+	private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
+	HashSet<HttpRoute> activeRoutes = new HashSet<>(this.getRoutes());
+
 	public CustomPoolingHttpClientConnectionManager(Registry<ConnectionSocketFactory> socketFactoryRegistry){
 		super(socketFactoryRegistry);
+		initializePeriodicPoolCheck();
+	}
+
+	private void initializePeriodicPoolCheck() {
+		Runnable task = () -> periodicPoolCheck();
+		scheduler.scheduleAtFixedRate(task, 0, 30, TimeUnit.SECONDS);
+	}
+
+	private void periodicPoolCheck() {
+		if (activeRoutes.size() > this.getRoutes().size()){
+			activeRoutes.removeAll(this.getRoutes());
+			for (HttpRoute route : activeRoutes)
+				notifyConnectionDestroyed(route);
+		}
+		activeRoutes = new HashSet<>(this.getRoutes());
 	}
 
 	public void addObserver(IConnectionObserver observer) {
@@ -40,49 +60,14 @@ public class CustomPoolingHttpClientConnectionManager extends PoolingHttpClientC
 			public HttpClientConnection get(long timeout, TimeUnit tunit) throws InterruptedException, ExecutionException, ConnectionPoolTimeoutException {
 				HttpClientConnection connection = originalRequest.get(timeout, tunit);
 
-				if (connection != null && !connection.isOpen())
+				if (connection != null && !connection.isOpen()){
 					notifyConnectionCreated(route);
+					activeRoutes.add(route);
+				}
 
 				return connection;
 			}
 		};
-	}
-
-	@Override
-	public void closeExpiredConnections() {
-		Set<HttpRoute> beforeClosing = new HashSet<>();
-		Set<HttpRoute> afterClosing = new HashSet<>();
-
-		super.enumAvailable(entry -> {
-			if (entry.isExpired(System.currentTimeMillis())) {
-				beforeClosing.add(entry.getRoute());
-			}
-		});
-		super.closeExpiredConnections();
-		super.enumAvailable(entry -> afterClosing.add(entry.getRoute()));
-		beforeClosing.removeAll(afterClosing);
-
-		for (HttpRoute route : beforeClosing)
-			notifyConnectionDestroyed(route);
-	}
-
-	@Override
-	public void closeIdleConnections(long idletime, TimeUnit tunit) {
-		Set<HttpRoute> beforeClosing = new HashSet<>();
-		Set<HttpRoute> afterClosing = new HashSet<>();
-		long idleTimeoutMillis = tunit.toMillis(idletime);
-
-		super.enumAvailable(entry -> {
-			if (entry.getUpdated() + idleTimeoutMillis < System.currentTimeMillis()) {
-				beforeClosing.add(entry.getRoute());
-			}
-		});
-		super.closeIdleConnections(idletime, tunit);
-		super.enumAvailable(entry -> afterClosing.add(entry.getRoute()));
-		beforeClosing.removeAll(afterClosing);
-
-		for (HttpRoute route : beforeClosing)
-			notifyConnectionDestroyed(route);
 	}
 
 	private void notifyConnectionCreated(HttpRoute route) {
