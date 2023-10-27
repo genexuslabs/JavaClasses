@@ -23,9 +23,10 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 public class MBeanUtils {
 	
 	private static MBeanServer mbs = null;	
-	private static Vector<ObjectName> registeredObjects = new Vector<>();
+	private static Vector<ObjectName> registeredObjects = new Vector<ObjectName>();
 	
-  public MBeanUtils() {}
+  public MBeanUtils() {
+  }
   
   private static MBeanServer getMBeanServer()		
   {
@@ -266,28 +267,6 @@ public class MBeanUtils {
 
 		try {
 			ObjectName name = new ObjectName("com.genexus.management:type=GeneXusApplicationServer.HTTPPool.HTTPConnection,ApplicationName=" + httpRoute.getTargetHost().getHostName() + ",Port=" + httpRoute.getTargetHost().getPort() + ",name=Http connection");
-			registeredObjects.removeElement(name);
-
-			mbs.unregisterMBean(name);
-		}
-		catch(javax.management.MalformedObjectNameException e) {
-			System.out.println(e);
-		}
-		catch(javax.management.InstanceNotFoundException e) {
-			System.out.println(e);
-		}
-		catch(javax.management.MBeanRegistrationException e) {
-			System.out.println(e);
-		}
-	}
-
-	public static void destroyMBean(PoolingHttpClientConnectionManager httpConnectionPool) {
-		MBeanServer mbs = getMBeanServer();
-		if (mbs == null)
-			return;
-
-		try {
-			ObjectName name = new ObjectName("com.genexus.management:type=GeneXusApplicationServer.HTTPPool,ApplicationName=Http connection pool");
 			registeredObjects.removeElement(name);
 
 			mbs.unregisterMBean(name);
