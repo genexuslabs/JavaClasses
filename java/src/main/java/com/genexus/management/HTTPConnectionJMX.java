@@ -17,7 +17,7 @@ public class HTTPConnectionJMX implements HTTPConnectionJMXBean{
 		try {
 			MBeanUtils.createMBean(connection);
 		}
-		catch(Exception e) {
+		catch (Exception e) {
 			log.error("Failed to register HTTP connection MBean.", e);
 		}
 	}
@@ -26,7 +26,7 @@ public class HTTPConnectionJMX implements HTTPConnectionJMXBean{
 		try {
 			MBeanUtils.destroyMBean(connection);
 		}
-		catch(Exception e) {
+		catch (Exception e) {
 			log.error("Failed to destroy HTTP connection MBean.", e);
 		}
 	}

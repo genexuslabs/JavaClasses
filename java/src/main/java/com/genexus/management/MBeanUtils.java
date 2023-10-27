@@ -23,9 +23,10 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 public class MBeanUtils {
 	
 	private static MBeanServer mbs = null;	
-	private static Vector<ObjectName> registeredObjects = new Vector<>();
+	private static Vector<ObjectName> registeredObjects = new Vector<ObjectName>();
 	
-  public MBeanUtils() {}
+  public MBeanUtils() {
+  }
   
   private static MBeanServer getMBeanServer()		
   {
@@ -137,7 +138,7 @@ public class MBeanUtils {
 		if (mbs == null)
 			return;
 		HTTPPoolJMX mbean = new HTTPPoolJMX(connectionPool);
-		registerBean(mbean, "com.genexus.management:type=GeneXusApplicationServer.HTTPPool,ApplicationName=Http connection pool");
+		registerBean(mbean, "com.genexus.management:type=GeneXusApplicationServer.HTTPPool,ApplicationName=Http connection pool, Http connection pool id =" + connectionPool.hashCode());
 	}
 
 	public static void createMBean(HttpRoute httpRoute) {
@@ -145,7 +146,7 @@ public class MBeanUtils {
 		if (mbs == null)
 			return;
 		HTTPConnectionJMX mbean = new HTTPConnectionJMX(httpRoute);
-		registerBean(mbean, "com.genexus.management:type=GeneXusApplicationServer.HTTPPool.HTTPConnection,ApplicationName=" + httpRoute.getTargetHost().getHostName() + ",Port=" + httpRoute.getTargetHost().getPort() + ",name=Http connection");
+		registerBean(mbean, "com.genexus.management:type=GeneXusApplicationServer.HTTPPool.HTTPConnection,ApplicationName=" + httpRoute.getTargetHost().getHostName() + ",Port=" + httpRoute.getTargetHost().getPort() + ",Http connection id=" + httpRoute.hashCode());
 	}
   
   public static void createMBean(GXConnection connection)
@@ -265,29 +266,7 @@ public class MBeanUtils {
 			return;
 
 		try {
-			ObjectName name = new ObjectName("com.genexus.management:type=GeneXusApplicationServer.HTTPPool.HTTPConnection,ApplicationName=" + httpRoute.getTargetHost().getHostName() + ",Port=" + httpRoute.getTargetHost().getPort() + ",name=Http connection");
-			registeredObjects.removeElement(name);
-
-			mbs.unregisterMBean(name);
-		}
-		catch(javax.management.MalformedObjectNameException e) {
-			System.out.println(e);
-		}
-		catch(javax.management.InstanceNotFoundException e) {
-			System.out.println(e);
-		}
-		catch(javax.management.MBeanRegistrationException e) {
-			System.out.println(e);
-		}
-	}
-
-	public static void destroyMBean(PoolingHttpClientConnectionManager httpConnectionPool) {
-		MBeanServer mbs = getMBeanServer();
-		if (mbs == null)
-			return;
-
-		try {
-			ObjectName name = new ObjectName("com.genexus.management:type=GeneXusApplicationServer.HTTPPool,ApplicationName=Http connection pool");
+			ObjectName name = new ObjectName("com.genexus.management:type=GeneXusApplicationServer.HTTPPool.HTTPConnection,ApplicationName=" + httpRoute.getTargetHost().getHostName() + ",Port=" + httpRoute.getTargetHost().getPort() + ",Http connection id=" + httpRoute.hashCode());
 			registeredObjects.removeElement(name);
 
 			mbs.unregisterMBean(name);
