@@ -13,6 +13,7 @@ import java.security.cert.CertificateException;
 import java.util.*;
 import java.net.URI;
 import javax.net.ssl.SSLContext;
+
 import org.apache.http.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
@@ -48,6 +49,7 @@ import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
+
 import com.genexus.webpanels.HttpContextWeb;
 import com.genexus.ModelContext;
 import com.genexus.management.HTTPConnectionJMX;
@@ -128,7 +130,6 @@ public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserv
 	}
 
 	private static Logger logger = org.apache.logging.log4j.LogManager.getLogger(HttpClientJavaLib.class);
-
 	private static CustomPoolingHttpClientConnectionManager connManager = null;
 	private Integer statusCode = 0;
 	private String reasonLine = "";
@@ -754,6 +755,8 @@ public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserv
 
 	public void cleanup() {
 		resetErrorsAndConnParams();
+		if (Application.isJMXEnabled())
+			HTTPPoolJMX.DestroyHTTPPoolJMX(connManager);
 	}
 
 	@Override

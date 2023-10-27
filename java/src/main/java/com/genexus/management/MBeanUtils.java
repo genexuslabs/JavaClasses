@@ -8,7 +8,6 @@ import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-
 import com.genexus.db.CacheValue;
 import com.genexus.db.InProcessCache;
 import com.genexus.db.LocalUserInformation;
@@ -17,8 +16,8 @@ import com.genexus.db.ServerUserInformation;
 import com.genexus.db.driver.ConnectionPool;
 import com.genexus.db.driver.DataSource;
 import com.genexus.db.driver.GXConnection;
+import com.genexus.internet.CustomPoolingHttpClientConnectionManager;
 import org.apache.http.conn.routing.HttpRoute;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 public class MBeanUtils {
 	
@@ -133,7 +132,7 @@ public class MBeanUtils {
     registerBean(mbean, "com.genexus.management:type=GeneXusApplicationServer.ApplicationName.DataStore.ConnectionPool,ApplicationName=" + connectionPool.getDataSource().getNamespace() + ",DataStore=" + connectionPool.getDataSource().name + ",name=R/W pool");
   }
 
-	public static void createMBean(PoolingHttpClientConnectionManager connectionPool) {
+	public static void createMBean(CustomPoolingHttpClientConnectionManager connectionPool) {
 		MBeanServer mbs = getMBeanServer();
 		if (mbs == null)
 			return;
@@ -259,6 +258,33 @@ public class MBeanUtils {
       System.out.println(e);
     }
   }
+
+	public static void destroyMBean(CustomPoolingHttpClientConnectionManager connectionPool)
+	{
+		MBeanServer mbs = getMBeanServer();
+		if (mbs == null)
+			return;
+
+		try
+		{
+			ObjectName name = new ObjectName("com.genexus.management:type=GeneXusApplicationServer.HTTPPool,ApplicationName=Http connection pool, Http connection pool id =" + connectionPool.hashCode());
+			registeredObjects.removeElement(name);
+
+			mbs.unregisterMBean(name);
+		}
+		catch(javax.management.MalformedObjectNameException e)
+		{
+			System.out.println(e);
+		}
+		catch(javax.management.InstanceNotFoundException e)
+		{
+			System.out.println(e);
+		}
+		catch(javax.management.MBeanRegistrationException e)
+		{
+			System.out.println(e);
+		}
+	}
 
 	public static void destroyMBean(HttpRoute httpRoute) {
 		MBeanServer mbs = getMBeanServer();
