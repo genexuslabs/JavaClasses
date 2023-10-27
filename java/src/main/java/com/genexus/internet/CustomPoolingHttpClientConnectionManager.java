@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 public class CustomPoolingHttpClientConnectionManager extends PoolingHttpClientConnectionManager {
 	private final List<IConnectionObserver> observers = new ArrayList<>();
 
-	public CustomPoolingHttpClientConnectionManager(Registry<ConnectionSocketFactory> socketFactoryRegistry){
+	public CustomPoolingHttpClientConnectionManager(Registry<ConnectionSocketFactory> socketFactoryRegistry) {
 		super(socketFactoryRegistry);
 	}
 
@@ -50,39 +50,24 @@ public class CustomPoolingHttpClientConnectionManager extends PoolingHttpClientC
 
 	@Override
 	public void closeExpiredConnections() {
-		Set<HttpRoute> beforeClosing = new HashSet<>();
-		Set<HttpRoute> afterClosing = new HashSet<>();
-
-		super.enumAvailable(entry -> {
-			if (entry.isExpired(System.currentTimeMillis())) {
-				beforeClosing.add(entry.getRoute());
-			}
-		});
+		Set<HttpRoute> beforeClosing = new HashSet<>(this.getRoutes());
 		super.closeExpiredConnections();
-		super.enumAvailable(entry -> afterClosing.add(entry.getRoute()));
-		beforeClosing.removeAll(afterClosing);
+		Set<HttpRoute> afterClosing = this.getRoutes();
 
 		for (HttpRoute route : beforeClosing)
-			notifyConnectionDestroyed(route);
+			if (!afterClosing.contains(route))
+				notifyConnectionDestroyed(route);
 	}
 
 	@Override
 	public void closeIdleConnections(long idletime, TimeUnit tunit) {
-		Set<HttpRoute> beforeClosing = new HashSet<>();
-		Set<HttpRoute> afterClosing = new HashSet<>();
-		long idleTimeoutMillis = tunit.toMillis(idletime);
-
-		super.enumAvailable(entry -> {
-			if (entry.getUpdated() + idleTimeoutMillis < System.currentTimeMillis()) {
-				beforeClosing.add(entry.getRoute());
-			}
-		});
+		Set<HttpRoute> beforeClosing = new HashSet<>(this.getRoutes());
 		super.closeIdleConnections(idletime, tunit);
-		super.enumAvailable(entry -> afterClosing.add(entry.getRoute()));
-		beforeClosing.removeAll(afterClosing);
+		Set<HttpRoute> afterClosing = this.getRoutes();
 
 		for (HttpRoute route : beforeClosing)
-			notifyConnectionDestroyed(route);
+			if (!afterClosing.contains(route))
+				notifyConnectionDestroyed(route);
 	}
 
 	private void notifyConnectionCreated(HttpRoute route) {
@@ -93,12 +78,6 @@ public class CustomPoolingHttpClientConnectionManager extends PoolingHttpClientC
 	private void notifyConnectionDestroyed(HttpRoute route) {
 		for (IConnectionObserver observer : observers)
 			observer.onConnectionDestroyed(route);
-	}
-
-	@Override
-	protected void finalize() throws Throwable {
-		super.finalize();
-		scheduler.shutdown();
 	}
 }
 
