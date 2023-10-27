@@ -3,28 +3,35 @@ package com.genexus.management;
 import javax.management.MBeanNotificationInfo;
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
-
 import org.apache.logging.log4j.Logger;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-
+import com.genexus.internet.CustomPoolingHttpClientConnectionManager;
 public class HTTPPoolJMX extends NotificationBroadcasterSupport implements HTTPPoolJMXMBean{
 
 	private long sequenceNumber=0;
-	PoolingHttpClientConnectionManager connectionPool;
+	CustomPoolingHttpClientConnectionManager connectionPool;
 	private long lastUserWaitingForLongTimeNotif = 0L;
 	private long lastPoollsFullNotif = 0L;
 	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(HTTPPoolJMX.class);
 
-	public HTTPPoolJMX(PoolingHttpClientConnectionManager connectionPool) {
+	public HTTPPoolJMX(CustomPoolingHttpClientConnectionManager connectionPool) {
 		this.connectionPool = connectionPool;
 	}
 
-	static public void CreateHTTPPoolJMX(PoolingHttpClientConnectionManager httpConnectionPool) {
+	static public void CreateHTTPPoolJMX(CustomPoolingHttpClientConnectionManager httpConnectionPool) {
 		try {
 			MBeanUtils.createMBean(httpConnectionPool);
 		}
 		catch(Exception e) {
-			log.error("Cannot register HTTP connection pool MBean.", e);
+			log.error("Failed to register HTTP connection pool MBean.", e);
+		}
+	}
+
+	static public void DestroyHTTPPoolJMX(CustomPoolingHttpClientConnectionManager httpConnectionPool) {
+		try {
+			MBeanUtils.destroyMBean(httpConnectionPool);
+		}
+		catch(Exception e) {
+			log.error("Failed to destroy HTTP connection pool MBean.", e);
 		}
 	}
 
