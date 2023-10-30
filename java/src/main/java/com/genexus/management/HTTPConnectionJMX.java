@@ -1,19 +1,19 @@
 package com.genexus.management;
 
-import org.apache.http.conn.routing.HttpRoute;
+import com.genexus.internet.IdentifiableHttpRoute;
 import org.apache.logging.log4j.Logger;
 
 public class HTTPConnectionJMX implements HTTPConnectionJMXBean{
 
 	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(HTTPConnectionJMX.class);
 
-	HttpRoute httpRoute;
+	IdentifiableHttpRoute idableHttpRoute;
 
-	public HTTPConnectionJMX(HttpRoute httpRoute) {
-		this.httpRoute = httpRoute;
+	public HTTPConnectionJMX(IdentifiableHttpRoute httpRoute) {
+		this.idableHttpRoute = httpRoute;
 	}
 
-	static public void CreateHTTPConnectionJMX(HttpRoute connection) {
+	static public void CreateHTTPConnectionJMX(IdentifiableHttpRoute connection) {
 		try {
 			MBeanUtils.createMBean(connection);
 		}
@@ -22,7 +22,7 @@ public class HTTPConnectionJMX implements HTTPConnectionJMXBean{
 		}
 	}
 
-	static public void DestroyHTTPConnectionJMX(HttpRoute connection) {
+	static public void DestroyHTTPConnectionJMX(IdentifiableHttpRoute connection) {
 		try {
 			MBeanUtils.destroyMBean(connection);
 		}
@@ -32,10 +32,10 @@ public class HTTPConnectionJMX implements HTTPConnectionJMXBean{
 	}
 
 	public int getPort() {
-		return httpRoute.getTargetHost().getPort();
+		return idableHttpRoute.getHttpRoute().getTargetHost().getPort();
 	}
 
 	public String getHost() {
-		return httpRoute.getTargetHost().getHostName();
+		return idableHttpRoute.getHttpRoute().getTargetHost().getHostName();
 	}
 }
