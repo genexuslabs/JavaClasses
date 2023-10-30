@@ -90,15 +90,22 @@ public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserv
 	}
 
 	@Override
-	public void onConnectionCreated(HttpRoute route) {
+	public void onConnectionCreated(IdentifiableHttpRoute route) {
 		if (Application.isJMXEnabled())
 			HTTPConnectionJMX.CreateHTTPConnectionJMX(route);
 	}
 
 	@Override
-	public void onConnectionDestroyed(HttpRoute route) {
+	public void onConnectionDestroyed(IdentifiableHttpRoute route) {
 		if (Application.isJMXEnabled())
 			HTTPConnectionJMX.DestroyHTTPConnectionJMX(route);
+	}
+
+	@Override
+	protected void finalize() {
+		this.closeOpenedStreams();
+		if (Application.isJMXEnabled())
+			HTTPPoolJMX.DestroyHTTPPoolJMX(connManager);
 	}
 
 	private ConnectionKeepAliveStrategy generateKeepAliveStrategy() {
@@ -755,14 +762,6 @@ public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserv
 
 	public void cleanup() {
 		resetErrorsAndConnParams();
-		if (Application.isJMXEnabled())
-			HTTPPoolJMX.DestroyHTTPPoolJMX(connManager);
-	}
-
-	@Override
-	protected void finalize()
-	{
-		this.closeOpenedStreams();
 	}
 
 }
