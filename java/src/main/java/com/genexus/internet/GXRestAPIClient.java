@@ -25,7 +25,7 @@ public class GXRestAPIClient {
 	
 	private String name;
 	private Location location;
-	private String protocol = "REST";
+	private int protocol = 1;
 	private String httpMethod = "GET";
 	private int  statusCode;
 	private int  errorCode;	
@@ -74,7 +74,7 @@ public class GXRestAPIClient {
 		return location;
 	}
 
-	public String getProtocol() {
+	public int getProtocol() {
 		return protocol;
 	}
 
@@ -104,7 +104,7 @@ public class GXRestAPIClient {
 		location = value;
 	}
 
-	public void setProtocol( String value) {
+	public void setProtocol( int value) {
 		protocol = value;
 	}
 
