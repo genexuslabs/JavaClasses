@@ -1698,7 +1698,7 @@ public class LocalUtil
 			}
 			else
 			{
-				picture = picture.replace('(', 'Z').replace(')', '?');
+				picture = picture.replace('(', 'Z').substring(0, picture.length() - 1);
 				preffix = "";
 				suffix = "";
 			}
