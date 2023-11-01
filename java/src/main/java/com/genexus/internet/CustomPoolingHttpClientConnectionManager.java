@@ -5,8 +5,9 @@ import org.apache.http.conn.ConnectionRequest;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-
+import org.apache.http.pool.PoolStats;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -16,6 +17,7 @@ public class CustomPoolingHttpClientConnectionManager extends PoolingHttpClientC
 	private final List<IConnectionObserver> observers = new ArrayList<>();
 
 	private Set<IdentifiableHttpRoute> storedRoutes = this.getRoutes().stream().map(r -> new IdentifiableHttpRoute(r)).collect(Collectors.toSet());
+	PoolStats storedStats = this.getTotalStats();
 
 	public CustomPoolingHttpClientConnectionManager(Registry<ConnectionSocketFactory> socketFactoryRegistry) {
 		super(socketFactoryRegistry);
@@ -27,40 +29,60 @@ public class CustomPoolingHttpClientConnectionManager extends PoolingHttpClientC
 
 	@Override
 	public ConnectionRequest requestConnection(HttpRoute route, Object state) {
-		ConnectionRequest originalRequest;
-		originalRequest = super.requestConnection(route, state);
-		if (originalRequest != null){
+		PoolStats statsBefore = storedStats;
+		ConnectionRequest connectionRequest = super.requestConnection(route, state);
+		PoolStats statsAfter = this.getTotalStats();
+		if (statsBefore.getAvailable() < statsAfter.getAvailable() || statsBefore.getLeased() < statsAfter.getLeased()) {
 			IdentifiableHttpRoute identifiableHttpRoute = new IdentifiableHttpRoute(route);
 			storedRoutes.add(identifiableHttpRoute);
 			notifyConnectionCreated(identifiableHttpRoute);
+			storedStats = statsAfter;
 		}
-		return originalRequest;
+		return connectionRequest;
 	}
 
 	@Override
 	public void closeExpiredConnections() {
 		Set<IdentifiableHttpRoute> beforeClosing = storedRoutes;
+		Set<IdentifiableHttpRoute> commonRoutes = new HashSet<>();
 		super.closeExpiredConnections();
 		Set<HttpRoute> afterClosing = this.getRoutes();
 
-		for (IdentifiableHttpRoute route : beforeClosing)
-			if (!afterClosing.contains(route.getHttpRoute()))
-				notifyConnectionDestroyed(route);
+		for (IdentifiableHttpRoute identifiableHttpRoute : beforeClosing){
+			Boolean found = false;
+			for (HttpRoute httpRoute : afterClosing){
+				if (identifiableHttpRoute.equals(httpRoute)){
+					found = true;
+					commonRoutes.add(identifiableHttpRoute);
+					break;
+				}
+			}
+			if (!found) notifyConnectionDestroyed(identifiableHttpRoute);
+		}
 
-		storedRoutes = afterClosing.stream().map(r -> new IdentifiableHttpRoute(r)).collect(Collectors.toSet());
+		storedRoutes = commonRoutes;
 	}
 
 	@Override
 	public void closeIdleConnections(long idletime, TimeUnit tunit) {
 		Set<IdentifiableHttpRoute> beforeClosing = storedRoutes;
+		Set<IdentifiableHttpRoute> commonRoutes = new HashSet<>();
 		super.closeIdleConnections(idletime, tunit);
 		Set<HttpRoute> afterClosing = this.getRoutes();
 
-		for (IdentifiableHttpRoute route : beforeClosing)
-			if (!afterClosing.contains(route.getHttpRoute()))
-				notifyConnectionDestroyed(route);
+		for (IdentifiableHttpRoute identifiableHttpRoute : beforeClosing){
+			Boolean found = false;
+			for (HttpRoute httpRoute : afterClosing){
+				if (identifiableHttpRoute.equals(httpRoute)){
+					found = true;
+					commonRoutes.add(identifiableHttpRoute);
+					break;
+				}
+			}
+			if (!found) notifyConnectionDestroyed(identifiableHttpRoute);
+		}
 
-		storedRoutes = afterClosing.stream().map(r -> new IdentifiableHttpRoute(r)).collect(Collectors.toSet());
+		storedRoutes = commonRoutes;
 	}
 
 	private void notifyConnectionCreated(IdentifiableHttpRoute route) {

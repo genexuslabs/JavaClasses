@@ -17,8 +17,8 @@ import javax.net.ssl.SSLContext;
 import org.apache.http.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
@@ -68,7 +68,8 @@ public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserv
 		cookies = new BasicCookieStore();
 		logger.info("Using apache http client implementation");
 		streamsToClose = new Vector<>();
-		connManager.addObserver(this);
+		if (Application.isJMXEnabled())
+			((CustomPoolingHttpClientConnectionManager) connManager).addObserver(this);
 	}
 
 	private static void getPoolInstance() {
@@ -77,12 +78,12 @@ public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserv
 				RegistryBuilder.<ConnectionSocketFactory>create()
 					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
 					.build();
-			connManager = new CustomPoolingHttpClientConnectionManager(socketFactoryRegistry);
+			connManager = Application.isJMXEnabled() ? new CustomPoolingHttpClientConnectionManager(socketFactoryRegistry) : new PoolingHttpClientConnectionManager(socketFactoryRegistry);
 			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_SIZE", "1000")));
 			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_PER_ROUTE", "1000")));
 
 			if (Application.isJMXEnabled())
-				HTTPPoolJMX.CreateHTTPPoolJMX(connManager);
+				HTTPPoolJMX.CreateHTTPPoolJMX((CustomPoolingHttpClientConnectionManager) connManager);
 		}
 		else {
 			connManager.closeExpiredConnections();
@@ -105,7 +106,7 @@ public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserv
 	protected void finalize() {
 		this.closeOpenedStreams();
 		if (Application.isJMXEnabled())
-			HTTPPoolJMX.DestroyHTTPPoolJMX(connManager);
+			HTTPPoolJMX.DestroyHTTPPoolJMX((CustomPoolingHttpClientConnectionManager) connManager);
 	}
 
 	private ConnectionKeepAliveStrategy generateKeepAliveStrategy() {
@@ -137,7 +138,7 @@ public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserv
 	}
 
 	private static Logger logger = org.apache.logging.log4j.LogManager.getLogger(HttpClientJavaLib.class);
-	private static CustomPoolingHttpClientConnectionManager connManager = null;
+	private static PoolingHttpClientConnectionManager connManager = null;
 	private Integer statusCode = 0;
 	private String reasonLine = "";
 	private HttpClientBuilder httpClientBuilder;
