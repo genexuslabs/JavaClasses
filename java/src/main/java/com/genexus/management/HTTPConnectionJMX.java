@@ -7,10 +7,10 @@ public class HTTPConnectionJMX implements HTTPConnectionJMXBean{
 
 	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(HTTPConnectionJMX.class);
 
-	IdentifiableHttpRoute idableHttpRoute;
+	IdentifiableHttpRoute identifiableHttpRoute;
 
 	public HTTPConnectionJMX(IdentifiableHttpRoute httpRoute) {
-		this.idableHttpRoute = httpRoute;
+		this.identifiableHttpRoute = httpRoute;
 	}
 
 	static public void CreateHTTPConnectionJMX(IdentifiableHttpRoute connection) {
@@ -32,10 +32,10 @@ public class HTTPConnectionJMX implements HTTPConnectionJMXBean{
 	}
 
 	public int getPort() {
-		return idableHttpRoute.getHttpRoute().getTargetHost().getPort();
+		return identifiableHttpRoute.getHttpRoute().getTargetHost().getPort();
 	}
 
 	public String getHost() {
-		return idableHttpRoute.getHttpRoute().getTargetHost().getHostName();
+		return identifiableHttpRoute.getHttpRoute().getTargetHost().getHostName();
 	}
 }

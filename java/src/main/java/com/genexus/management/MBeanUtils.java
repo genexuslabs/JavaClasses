@@ -293,14 +293,13 @@ public class MBeanUtils {
 		try {
 			ObjectName name = new ObjectName("com.genexus.management:type=GeneXusApplicationServer.HTTPPool.HTTPConnection,ApplicationName=" + idableHttpRoute.getHttpRoute().getTargetHost().getHostName() + ",Port=" + idableHttpRoute.getHttpRoute().getTargetHost().getPort() + ",Http connection id=" + idableHttpRoute.getId());
 			registeredObjects.removeElement(name);
-
 			mbs.unregisterMBean(name);
 		}
 		catch(javax.management.MalformedObjectNameException e) {
 			System.out.println(e);
 		}
 		catch(javax.management.InstanceNotFoundException e) {
-			System.out.println(e);
+			// Intentionally left empty because PoolingHttpClientConnectionManager does not provide a concise way of knowing exactly which connections are being destroyed
 		}
 		catch(javax.management.MBeanRegistrationException e) {
 			System.out.println(e);
