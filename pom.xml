@@ -93,7 +93,6 @@
 		<module>gxmaps</module>
 		<module>gxoffice</module>
 		<module>gxsearch</module>
-		<module>javapns</module>
 		<module>android</module>
 		<module>gxgeospatial</module>
 		<module>gxodata</module>
