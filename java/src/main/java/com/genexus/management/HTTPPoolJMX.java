@@ -3,21 +3,22 @@ package com.genexus.management;
 import javax.management.MBeanNotificationInfo;
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
+
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.logging.log4j.Logger;
-import com.genexus.internet.CustomPoolingHttpClientConnectionManager;
 public class HTTPPoolJMX extends NotificationBroadcasterSupport implements HTTPPoolJMXMBean{
 
 	private long sequenceNumber=0;
-	CustomPoolingHttpClientConnectionManager connectionPool;
+	PoolingHttpClientConnectionManager connectionPool;
 	private long lastUserWaitingForLongTimeNotif = 0L;
 	private long lastPoollsFullNotif = 0L;
 	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(HTTPPoolJMX.class);
 
-	public HTTPPoolJMX(CustomPoolingHttpClientConnectionManager connectionPool) {
+	public HTTPPoolJMX(PoolingHttpClientConnectionManager connectionPool) {
 		this.connectionPool = connectionPool;
 	}
 
-	static public void CreateHTTPPoolJMX(CustomPoolingHttpClientConnectionManager httpConnectionPool) {
+	static public void CreateHTTPPoolJMX(PoolingHttpClientConnectionManager httpConnectionPool) {
 		try {
 			MBeanUtils.createMBean(httpConnectionPool);
 		}
@@ -26,17 +27,8 @@ public class HTTPPoolJMX extends NotificationBroadcasterSupport implements HTTPP
 		}
 	}
 
-	static public void DestroyHTTPPoolJMX(CustomPoolingHttpClientConnectionManager httpConnectionPool) {
-		try {
-			MBeanUtils.destroyMBean(httpConnectionPool);
-		}
-		catch(Exception e) {
-			log.error("Failed to destroy HTTP connection pool MBean.", e);
-		}
-	}
-
 	public int getNumberOfConnectionsInUse(){
-		return connectionPool.getTotalStats().getAvailable();
+		return connectionPool.getTotalStats().getLeased();
 	}
 
 	public int getNumberOfRequestsWaiting(){
@@ -49,25 +41,6 @@ public class HTTPPoolJMX extends NotificationBroadcasterSupport implements HTTPP
 
 	public int getMaxNumberOfConnections(){
 		return connectionPool.getTotalStats().getMax();
-	}
-
-	public void PoolIsFull() {
-		if (System.currentTimeMillis() - lastPoollsFullNotif > 1000L) {
-			lastPoollsFullNotif = System.currentTimeMillis();
-			Notification n = new Notification("com.genexus.managment.fullpool",this,sequenceNumber++,System.currentTimeMillis(),"The Connection Pool does not have available connections ");
-
-			sendNotification(n);
-		}
-	}
-
-	public void UserWaitingForLongTime() {
-		if (System.currentTimeMillis() - lastUserWaitingForLongTimeNotif > 1000L)
-		{
-			lastUserWaitingForLongTimeNotif = System.currentTimeMillis();
-			Notification n = new Notification("com.genexus.managment.longtimeuserwaiting",this,sequenceNumber++,System.currentTimeMillis(),"User waiting a connection for a long time");
-
-			sendNotification(n);
-		}
 	}
 
 	public MBeanNotificationInfo[] getNotificationInfo() {

@@ -17,6 +17,7 @@ import javax.net.ssl.SSLContext;
 import org.apache.http.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
@@ -59,7 +60,7 @@ import com.genexus.Application;
 import com.genexus.CommonUtil;
 import com.genexus.specific.java.*;
 
-public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserver {
+public class HttpClientJavaLib extends GXHttpClient {
 
 	public HttpClientJavaLib() {
 		getPoolInstance();
@@ -68,8 +69,6 @@ public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserv
 		cookies = new BasicCookieStore();
 		logger.info("Using apache http client implementation");
 		streamsToClose = new Vector<>();
-		if (Application.isJMXEnabled())
-			((CustomPoolingHttpClientConnectionManager) connManager).addObserver(this);
 	}
 
 	private static void getPoolInstance() {
@@ -78,12 +77,12 @@ public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserv
 				RegistryBuilder.<ConnectionSocketFactory>create()
 					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
 					.build();
-			connManager = Application.isJMXEnabled() ? new CustomPoolingHttpClientConnectionManager(socketFactoryRegistry) : new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
 			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_SIZE", "1000")));
 			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_PER_ROUTE", "1000")));
 
 			if (Application.isJMXEnabled())
-				HTTPPoolJMX.CreateHTTPPoolJMX((CustomPoolingHttpClientConnectionManager) connManager);
+				HTTPPoolJMX.CreateHTTPPoolJMX(connManager);
 		}
 		else {
 			connManager.closeExpiredConnections();
@@ -91,22 +90,16 @@ public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserv
 	}
 
 	@Override
-	public void onConnectionCreated(IdentifiableHttpRoute route) {
-		if (Application.isJMXEnabled())
-			HTTPConnectionJMX.CreateHTTPConnectionJMX(route);
-	}
-
-	@Override
-	public void onConnectionDestroyed(IdentifiableHttpRoute route) {
-		if (Application.isJMXEnabled())
-			HTTPConnectionJMX.DestroyHTTPConnectionJMX(route);
-	}
-
-	@Override
 	protected void finalize() {
 		this.closeOpenedStreams();
-		if (Application.isJMXEnabled())
-			HTTPPoolJMX.DestroyHTTPPoolJMX((CustomPoolingHttpClientConnectionManager) connManager);
+		if (Application.isJMXEnabled()){
+			Iterator<IdentifiableHttpRoute> iterator = storedRoutes.iterator();
+			while (iterator.hasNext()) {
+				IdentifiableHttpRoute idRoute = iterator.next();
+				HTTPConnectionJMX.DestroyHTTPConnectionJMX(idRoute);
+				iterator.remove();
+			}
+		}
 	}
 
 	private ConnectionKeepAliveStrategy generateKeepAliveStrategy() {
@@ -154,8 +147,9 @@ public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserv
 	private static IniFile clientCfg = new ModelContext(ModelContext.getModelContextPackageClass()).getPreferences().getIniFile();
 	private static final String SET_COOKIE = "Set-Cookie";
 	private static final String COOKIE = "Cookie";
-
 	private java.util.Vector<InputStream> streamsToClose;
+	private HashSet<IdentifiableHttpRoute> storedRoutes = new HashSet<>();
+
 
 	private void closeOpenedStreams()
 	{
@@ -626,8 +620,21 @@ public class HttpClientJavaLib extends GXHttpClient implements IConnectionObserv
 			this.reasonLine = "";
 		}
 		finally {
-			if (getIsURL())
-			{
+			if (Application.isJMXEnabled()){
+				Iterator<IdentifiableHttpRoute> iterator = storedRoutes.iterator();
+				while (iterator.hasNext()) {
+					IdentifiableHttpRoute idRoute = iterator.next();
+					HTTPConnectionJMX.DestroyHTTPConnectionJMX(idRoute);
+					iterator.remove();
+				}
+
+				for (HttpRoute route : connManager.getRoutes()){
+					IdentifiableHttpRoute idRoute = new IdentifiableHttpRoute(route);
+					HTTPConnectionJMX.CreateHTTPConnectionJMX(idRoute);
+					storedRoutes.add(idRoute);
+				}
+			}
+			if (getIsURL()) {
 				this.setHost(getPrevURLhost());
 				this.setBaseURL(getPrevURLbaseURL());
 				this.setPort(getPrevURLport());
