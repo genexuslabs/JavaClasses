@@ -16,8 +16,9 @@ import com.genexus.db.ServerUserInformation;
 import com.genexus.db.driver.ConnectionPool;
 import com.genexus.db.driver.DataSource;
 import com.genexus.db.driver.GXConnection;
-import com.genexus.internet.CustomPoolingHttpClientConnectionManager;
 import com.genexus.internet.IdentifiableHttpRoute;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+
 public class MBeanUtils {
 	
 	private static MBeanServer mbs = null;	
@@ -131,7 +132,7 @@ public class MBeanUtils {
     registerBean(mbean, "com.genexus.management:type=GeneXusApplicationServer.ApplicationName.DataStore.ConnectionPool,ApplicationName=" + connectionPool.getDataSource().getNamespace() + ",DataStore=" + connectionPool.getDataSource().name + ",name=R/W pool");
   }
 
-	public static void createMBean(CustomPoolingHttpClientConnectionManager connectionPool) {
+	public static void createMBean(PoolingHttpClientConnectionManager connectionPool) {
 		MBeanServer mbs = getMBeanServer();
 		if (mbs == null)
 			return;
@@ -139,12 +140,12 @@ public class MBeanUtils {
 		registerBean(mbean, "com.genexus.management:type=GeneXusApplicationServer.HTTPPool,ApplicationName=Http connection pool, Http connection pool id =" + connectionPool.hashCode());
 	}
 
-	public static void createMBean(IdentifiableHttpRoute idableHttpRoute) {
+	public static void createMBean(IdentifiableHttpRoute idHttpRoute) {
 		MBeanServer mbs = getMBeanServer();
 		if (mbs == null)
 			return;
-		HTTPConnectionJMX mbean = new HTTPConnectionJMX(idableHttpRoute);
-		registerBean(mbean, "com.genexus.management:type=GeneXusApplicationServer.HTTPPool.HTTPConnection,ApplicationName=" + idableHttpRoute.getHttpRoute().getTargetHost().getHostName() + ",Port=" + idableHttpRoute.getHttpRoute().getTargetHost().getPort() + ",Http connection id=" + idableHttpRoute.getId());
+		HTTPConnectionJMX mbean = new HTTPConnectionJMX(idHttpRoute);
+		registerBean(mbean, "com.genexus.management:type=GeneXusApplicationServer.HTTPPool.HTTPConnection,ApplicationName=" + idHttpRoute.getHttpRoute().getTargetHost().getHostName() + ",Port=" + idHttpRoute.getHttpRoute().getTargetHost().getPort() + ",Http connection id=" + idHttpRoute.getId());
 	}
   
   public static void createMBean(GXConnection connection)
@@ -258,40 +259,13 @@ public class MBeanUtils {
     }
   }
 
-	public static void destroyMBean(CustomPoolingHttpClientConnectionManager connectionPool)
-	{
-		MBeanServer mbs = getMBeanServer();
-		if (mbs == null)
-			return;
-
-		try
-		{
-			ObjectName name = new ObjectName("com.genexus.management:type=GeneXusApplicationServer.HTTPPool,ApplicationName=Http connection pool, Http connection pool id =" + connectionPool.hashCode());
-			registeredObjects.removeElement(name);
-
-			mbs.unregisterMBean(name);
-		}
-		catch(javax.management.MalformedObjectNameException e)
-		{
-			System.out.println(e);
-		}
-		catch(javax.management.InstanceNotFoundException e)
-		{
-			System.out.println(e);
-		}
-		catch(javax.management.MBeanRegistrationException e)
-		{
-			System.out.println(e);
-		}
-	}
-
-	public static void destroyMBean(IdentifiableHttpRoute idableHttpRoute) {
+	public static void destroyMBean(IdentifiableHttpRoute idHttpRoute) {
 		MBeanServer mbs = getMBeanServer();
 		if (mbs == null)
 			return;
 
 		try {
-			ObjectName name = new ObjectName("com.genexus.management:type=GeneXusApplicationServer.HTTPPool.HTTPConnection,ApplicationName=" + idableHttpRoute.getHttpRoute().getTargetHost().getHostName() + ",Port=" + idableHttpRoute.getHttpRoute().getTargetHost().getPort() + ",Http connection id=" + idableHttpRoute.getId());
+			ObjectName name = new ObjectName("com.genexus.management:type=GeneXusApplicationServer.HTTPPool.HTTPConnection,ApplicationName=" + idHttpRoute.getHttpRoute().getTargetHost().getHostName() + ",Port=" + idHttpRoute.getHttpRoute().getTargetHost().getPort() + ",Http connection id=" + idHttpRoute.getId());
 			registeredObjects.removeElement(name);
 			mbs.unregisterMBean(name);
 		}
@@ -299,7 +273,7 @@ public class MBeanUtils {
 			System.out.println(e);
 		}
 		catch(javax.management.InstanceNotFoundException e) {
-			// Intentionally left empty because PoolingHttpClientConnectionManager does not provide a concise way of knowing exactly which connections are being destroyed
+			System.out.println(e);
 		}
 		catch(javax.management.MBeanRegistrationException e) {
 			System.out.println(e);
