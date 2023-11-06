@@ -12,6 +12,8 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.*;
 import java.net.URI;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.net.ssl.SSLContext;
 
 import org.apache.http.*;
@@ -92,14 +94,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 	@Override
 	protected void finalize() {
 		this.closeOpenedStreams();
-		if (Application.isJMXEnabled()){
-			Iterator<IdentifiableHttpRoute> iterator = storedRoutes.iterator();
-			while (iterator.hasNext()) {
-				IdentifiableHttpRoute idRoute = iterator.next();
-				HTTPConnectionJMX.DestroyHTTPConnectionJMX(idRoute);
-				iterator.remove();
-			}
-		}
+		executor.shutdown();
 	}
 
 	private ConnectionKeepAliveStrategy generateKeepAliveStrategy() {
@@ -148,7 +143,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private static final String SET_COOKIE = "Set-Cookie";
 	private static final String COOKIE = "Cookie";
 	private java.util.Vector<InputStream> streamsToClose;
-	private HashSet<IdentifiableHttpRoute> storedRoutes = new HashSet<>();
+	private static HashSet<IdentifiableHttpRoute> storedRoutes = new HashSet<>();
 
 
 	private void closeOpenedStreams()
@@ -620,20 +615,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 			this.reasonLine = "";
 		}
 		finally {
-			if (Application.isJMXEnabled()){
-				Iterator<IdentifiableHttpRoute> iterator = storedRoutes.iterator();
-				while (iterator.hasNext()) {
-					IdentifiableHttpRoute idRoute = iterator.next();
-					HTTPConnectionJMX.DestroyHTTPConnectionJMX(idRoute);
-					iterator.remove();
-				}
-
-				for (HttpRoute route : connManager.getRoutes()){
-					IdentifiableHttpRoute idRoute = new IdentifiableHttpRoute(route);
-					HTTPConnectionJMX.CreateHTTPConnectionJMX(idRoute);
-					storedRoutes.add(idRoute);
-				}
-			}
+			if (Application.isJMXEnabled())
+				executor.submit(this::displayHTTPConnections);
 			if (getIsURL()) {
 				this.setHost(getPrevURLhost());
 				this.setBaseURL(getPrevURLbaseURL());
@@ -642,6 +625,22 @@ public class HttpClientJavaLib extends GXHttpClient {
 				setIsURL(false);
 			}
 			resetStateAdapted();
+		}
+	}
+
+	private static ExecutorService executor = Executors.newSingleThreadExecutor();
+	private synchronized void displayHTTPConnections(){
+		Iterator<IdentifiableHttpRoute> iterator = storedRoutes.iterator();
+		while (iterator.hasNext()) {
+			IdentifiableHttpRoute idRoute = iterator.next();
+			HTTPConnectionJMX.DestroyHTTPConnectionJMX(idRoute);
+			iterator.remove();
+		}
+
+		for (HttpRoute route : connManager.getRoutes()){
+			IdentifiableHttpRoute idRoute = new IdentifiableHttpRoute(route);
+			HTTPConnectionJMX.CreateHTTPConnectionJMX(idRoute);
+			storedRoutes.add(idRoute);
 		}
 	}
 
