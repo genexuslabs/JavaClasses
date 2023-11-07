@@ -329,7 +329,7 @@ public class WebUtils
 		}
 		
 		String filename = value.substring(eqIdx + 1).trim();
-		value = value.substring(0, filenameIdx) + String.format("filename*=UTF-8''%1$s; filename=\"%1$s\"", PrivateUtilities.URLEncode(filename, "UTF8"));
+		value = value.substring(0, filenameIdx) + String.format("filename*=UTF-8''%1$s; filename=\"%1$s\"", PrivateUtilities.URLEncode(filename, "UTF8").replace('+', ' '));
 
 		return value;
 	}
