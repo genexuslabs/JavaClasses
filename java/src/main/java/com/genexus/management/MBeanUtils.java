@@ -16,7 +16,7 @@ import com.genexus.db.ServerUserInformation;
 import com.genexus.db.driver.ConnectionPool;
 import com.genexus.db.driver.DataSource;
 import com.genexus.db.driver.GXConnection;
-import com.genexus.internet.IdentifiableHttpRoute;
+import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 public class MBeanUtils {
@@ -140,12 +140,12 @@ public class MBeanUtils {
 		registerBean(mbean, "com.genexus.management:type=GeneXusApplicationServer.HTTPPool,ApplicationName=Http connection pool, Http connection pool id =" + connectionPool.hashCode());
 	}
 
-	public static void createMBean(IdentifiableHttpRoute idHttpRoute) {
+	public static void createMBean(HttpRoute httpRoute) {
 		MBeanServer mbs = getMBeanServer();
 		if (mbs == null)
 			return;
-		HTTPConnectionJMX mbean = new HTTPConnectionJMX(idHttpRoute);
-		registerBean(mbean, "com.genexus.management:type=GeneXusApplicationServer.HTTPPool.HTTPConnection,ApplicationName=" + idHttpRoute.getHttpRoute().getTargetHost().getHostName() + ",Port=" + idHttpRoute.getHttpRoute().getTargetHost().getPort() + ",Http connection id=" + idHttpRoute.getId());
+		HTTPConnectionJMX mbean = new HTTPConnectionJMX(httpRoute);
+		registerBean(mbean, "com.genexus.management:type=GeneXusApplicationServer.HTTPPool.HTTPConnection,ApplicationName=" + httpRoute.getTargetHost().getHostName() + ",Port=" + httpRoute.getTargetHost().getPort() + ",Http connection id=" + System.identityHashCode(httpRoute));
 	}
   
   public static void createMBean(GXConnection connection)
@@ -259,13 +259,13 @@ public class MBeanUtils {
     }
   }
 
-	public static void destroyMBean(IdentifiableHttpRoute idHttpRoute) {
+	public static void destroyMBean(HttpRoute httpRoute) {
 		MBeanServer mbs = getMBeanServer();
 		if (mbs == null)
 			return;
 
 		try {
-			ObjectName name = new ObjectName("com.genexus.management:type=GeneXusApplicationServer.HTTPPool.HTTPConnection,ApplicationName=" + idHttpRoute.getHttpRoute().getTargetHost().getHostName() + ",Port=" + idHttpRoute.getHttpRoute().getTargetHost().getPort() + ",Http connection id=" + idHttpRoute.getId());
+			ObjectName name = new ObjectName("com.genexus.management:type=GeneXusApplicationServer.HTTPPool.HTTPConnection,ApplicationName=" + httpRoute.getTargetHost().getHostName() + ",Port=" + httpRoute.getTargetHost().getPort() + ",Http connection id=" + System.identityHashCode(httpRoute));
 			registeredObjects.removeElement(name);
 			mbs.unregisterMBean(name);
 		}
