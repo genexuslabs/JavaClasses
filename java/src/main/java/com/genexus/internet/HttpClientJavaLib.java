@@ -143,7 +143,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private static final String SET_COOKIE = "Set-Cookie";
 	private static final String COOKIE = "Cookie";
 	private java.util.Vector<InputStream> streamsToClose;
-	private static HashSet<IdentifiableHttpRoute> storedRoutes = new HashSet<>();
+	private static HashSet<HttpRoute> storedRoutes = new HashSet<>();
 
 
 	private void closeOpenedStreams()
@@ -599,8 +599,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 			this.reasonLine = "";
 		}
 		finally {
-			if (Application.isJMXEnabled())
+			if (Application.isJMXEnabled()){
+				if (executor.isShutdown())
+					executor = Executors.newSingleThreadExecutor();
 				executor.submit(this::displayHTTPConnections);
+			}
 			if (getIsURL()) {
 				this.setHost(getPrevURLhost());
 				this.setBaseURL(getPrevURLbaseURL());
@@ -614,17 +617,16 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	private static ExecutorService executor = Executors.newSingleThreadExecutor();
 	private synchronized void displayHTTPConnections(){
-		Iterator<IdentifiableHttpRoute> iterator = storedRoutes.iterator();
+		Iterator<HttpRoute> iterator = storedRoutes.iterator();
 		while (iterator.hasNext()) {
-			IdentifiableHttpRoute idRoute = iterator.next();
-			HTTPConnectionJMX.DestroyHTTPConnectionJMX(idRoute);
+			HttpRoute route = iterator.next();
+			HTTPConnectionJMX.DestroyHTTPConnectionJMX(route);
 			iterator.remove();
 		}
 
 		for (HttpRoute route : connManager.getRoutes()){
-			IdentifiableHttpRoute idRoute = new IdentifiableHttpRoute(route);
-			HTTPConnectionJMX.CreateHTTPConnectionJMX(idRoute);
-			storedRoutes.add(idRoute);
+			HTTPConnectionJMX.CreateHTTPConnectionJMX(route);
+			storedRoutes.add(route);
 		}
 	}
 
