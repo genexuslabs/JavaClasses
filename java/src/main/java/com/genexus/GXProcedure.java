@@ -8,13 +8,13 @@ import com.genexus.db.UserInformation;
 import com.genexus.diagnostics.GXDebugInfo;
 import com.genexus.diagnostics.GXDebugManager;
 import com.genexus.internet.HttpContext;
+import com.genexus.mock.GXMockProvider;
 import com.genexus.performance.ProcedureInfo;
 import com.genexus.performance.ProceduresInfo;
 import com.genexus.util.ReorgSubmitThreadPool;
 import com.genexus.util.SubmitThreadPool;
 
-public abstract class GXProcedure implements IErrorHandler, ISubmitteable
-{
+public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 	public abstract void initialize();
 
 	protected transient int remoteHandle;
@@ -31,14 +31,11 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 	
 	public static final int IN_NEW_UTL = -2;
 
-	public GXProcedure(int remoteHandle, ModelContext context, String location)
-	{
+	public GXProcedure(int remoteHandle, ModelContext context, String location) {
 		this(false, remoteHandle, context, location);
 	}
 
-	public GXProcedure(boolean inNewUTL, int remoteHandle, ModelContext context, String location)
-	{
-
+	public GXProcedure(boolean inNewUTL, int remoteHandle, ModelContext context, String location) {
 		//JMX Counter
 		beginExecute = new Date();
 		ProcedureInfo pInfo = ProceduresInfo.addProcedureInfo(this.getClass().getName());
@@ -49,18 +46,15 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 		this.location	  = location;
 		int parentHandle = remoteHandle;
 		
-		if(inNewUTL)
-		{
+		if(inNewUTL) {
 			remoteHandle = IN_NEW_UTL;
 		}
-		if (context != null && context.getSessionContext() != null)
-		{
+		if (context != null && context.getSessionContext() != null) {
 			ApplicationContext.getInstance().setEJB(true);
 			ApplicationContext.getInstance().setPoolConnections(true);
 		}
 
-		switch(remoteHandle)
-		{
+		switch(remoteHandle) {
 			case -1:
 				ui = Application.getConnectionManager().createUserInformation(Namespace.getNamespace(context.getNAME_SPACE()));
 				this.remoteHandle = ui.getHandle();
@@ -75,23 +69,18 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 				ui.setAutoDisconnect(true);
 				break;
 			case IN_NEW_UTL:
-				if(context.prefs == null && ApplicationContext.getInstance().isApplicationServer())
-				{
-					if(parentHandle == IN_NEW_UTL)
-					{
+				if(context.prefs == null && ApplicationContext.getInstance().isApplicationServer()) {
+					if(parentHandle == IN_NEW_UTL) {
 						context.prefs = ClientPreferences.getInstance(context.packageClass);
 					}
-					else
-					{						
+					else {
 						context.prefs = ServerPreferences.getInstance(context.packageClass);
 						Preferences specificPrefs = (Preferences) context.getPreferences();
 						specificPrefs.iniFile.setProperty(specificPrefs.defaultSection, "NAME_SPACE", Application.getConnectionManager().getUserInformation(parentHandle).getNamespace().getName());
 					}
 				}
-				if (ApplicationContext.getInstance().isApplicationServer())
-				{
-					if(context.prefs.getProperty("NAME_SPACE", "").equals(""))
-					{
+				if (ApplicationContext.getInstance().isApplicationServer()) {
+					if(context.prefs.getProperty("NAME_SPACE", "").equals("")) {
 						Preferences specificPrefs = (Preferences) context.getPreferences();
 						specificPrefs.iniFile.setProperty(specificPrefs.defaultSection, "NAME_SPACE", Application.getConnectionManager().getUserInformation(parentHandle).getNamespace().getName());
 					}
@@ -105,104 +94,86 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 		}
 
 		localUtil    	  = ui.getLocalUtil();
-		if (context != null)
-		{
+		if (context != null) {
 			httpContext = (HttpContext) context.getHttpContext();
 			httpContext.initClientId();
 		}
 	}
 
-	public Object me()
-	{
+	public Object me() {
 		return this;
 	}
-	public void handleError()
-	{
+	public void handleError() {
 		new DefaultErrorHandler().handleError(context, remoteHandle);
 	}
 
-	public int getHandle()
-	{
+	public int getHandle() {
 		return remoteHandle;
 	}
 
-	public ModelContext getContext()
-	{
+	public ModelContext getContext() {
 		return context;
 	}
 
-	protected boolean isRemoteProcedure()
-	{
+	protected boolean isRemoteProcedure() {
 		return Application.isRemoteProcedure(context, remoteHandle, location);
 	}
-	protected boolean batchCursorHolder(){ return false;}
-	protected void exitApp()
-	{
+	protected boolean batchCursorHolder(){
+		return false;
+	}
+	protected void exitApp() {
 		exitApplication(batchCursorHolder());
 	}
 	/**
 	 * @deprecated use exitApp()
 	 * */
-	protected void exitApplication()
-	{
+	protected void exitApplication() {
 		exitApplication(true);
 	}
-	private void exitApplication(boolean flushBuffers)
-	{
+	private void exitApplication(boolean flushBuffers) {
 		if(dbgInfo != null && Application.realMainProgram == this)
 			dbgInfo.onExit();
 
 		if (flushBuffers) {
 			try {
 				Application.getConnectionManager().flushBuffers(remoteHandle, this);
-			} catch (Exception exception) {
-				;
-			}
+			} catch (Exception exception) { ; }
 		}
-		if(disconnectUserAtCleanup)
-		{
-			try
-			{
+		if(disconnectUserAtCleanup) {
+			try {
 				Application.getConnectionManager().disconnect(remoteHandle);
-			}catch(Exception disconnectException){ ; }
+			} catch(Exception disconnectException){ ; }
 		}
 		Application.cleanup(context, this, remoteHandle);
 	}
 
-	public void endExecute(String name)
-	{
+	public void endExecute(String name) {
 		ProcedureInfo pInfo = ProceduresInfo.getProcedureInfo(name);
 		pInfo.setTimeExecute(System.currentTimeMillis() - beginExecute.getTime());
 		
-		if (context != null && context.getSessionContext() != null)
-		{
+		if (context != null && context.getSessionContext() != null) {
 			ApplicationContext.getInstance().setEJB(false);
 			ApplicationContext.getInstance().setPoolConnections(false);
-		}		
+		}
 	}
 	
-	public void release()
-	{
+	public void release() {
 	}
 
-	protected String formatLink(String jumpURL)
-	{
+	protected String formatLink(String jumpURL) {
 		return formatLink(jumpURL, new String[]{}, new String[]{});
 	}
 
-	protected String formatLink(String jumpURL, String[] parms, String[] parmsName)
-	{
+	protected String formatLink(String jumpURL, String[] parms, String[] parmsName) {
 		String contextPath = (httpContext.getRequest() == null)? "" : httpContext.getRequest().getContextPath();
 		return URLRouter.getURLRoute(jumpURL, parms, parmsName, contextPath, context.getPackageName());
 	}
 	
-	public void callSubmit(final int id, Object [] submitParms)
-	{
+	public void callSubmit(final int id, Object [] submitParms) {
 		SubmitThreadPool.submit(this, id, submitParms, context.submitCopy());
 	}
 	
-	public void callSubmit(String blockName, String message, final int id, Object [] submitParms)
-	{
+	public void callSubmit(String blockName, String message, final int id, Object [] submitParms) {
 		ReorgSubmitThreadPool.submitReorg(blockName, message, this, id);
 	}	
 	
@@ -213,68 +184,73 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable
 	public void submitReorg(int id, Object [] submitParms) throws SQLException{  }
 	
 	
-	public void setejbMessageCall()
-	{
+	public void setejbMessageCall() {
 		ejbMessageCall = true;
 	}
 	
-	public void SetCreateDataBase()
-	{
+	public void SetCreateDataBase() {
 		GXReorganization.setCreateDataBase();
 	}
 
-    public int setLanguage(String language)
-    {
+    public int setLanguage(String language) {
 		int res = GXutil.setLanguage(language, context, ui);
 		this.localUtil = ui.getLocalUtil();
 		return res;
 	}
 
-	protected void callWebObject(String url)
-	{
+	protected void callWebObject(String url) {
 		httpContext.wjLoc = url;
 	}
 
-	protected void cleanup()
-	{
+	protected void cleanup() {
 	}
 
-	public void handleException(String gxExceptionType, String gxExceptionDetails, String gxExceptionStack)
-	{
+	public void handleException(String gxExceptionType, String gxExceptionDetails, String gxExceptionStack) {
 	}
 
 	private GXDebugInfo dbgInfo = null;
-	protected void trkCleanup()
-	{
+	protected void trkCleanup() {
 		if(dbgInfo != null)
 			dbgInfo.onCleanup();
 	}
 
-	protected void initialize(int objClass, int objId, int dbgLines, long hash)
-	{
+	protected void initialize(int objClass, int objId, int dbgLines, long hash) {
 		dbgInfo = GXDebugManager.getInstance().getDbgInfo(context, objClass, objId, dbgLines, hash);
 	}
 
-	protected void trk(int lineNro)
-	{
+	protected void trk(int lineNro) {
 		if(dbgInfo != null)
 			dbgInfo.trk(lineNro);
 	}
 
-	protected void trk(int lineNro, int lineNro2)
-	{
+	protected void trk(int lineNro, int lineNro2) {
 		if(dbgInfo != null)
 			dbgInfo.trk(lineNro, lineNro2);
 	}
 
-	protected void trkrng(int lineNro, int lineNro2)
-	{
+	protected void trkrng(int lineNro, int lineNro2) {
 		trkrng(lineNro, 0, lineNro2, 0);
 	}
 
-	protected void trkrng(int lineNro, int colNro, int lineNro2, int colNro2)
-	{
+	protected void trkrng(int lineNro, int colNro, int lineNro2, int colNro2) {
 		if(dbgInfo != null)
 			dbgInfo.trkRng(lineNro, colNro, lineNro2, colNro2);
+	}
+
+	protected void privateExecute() {
+	}
+
+	protected String[] getParametersInternalNames( ) {
+		return null ;
+	}
+
+	protected void mockExecute() {
+		if (GXMockProvider.getProvier() != null) {
+			if (GXMockProvider.getProvier().handle(remoteHandle, context, this, getParametersInternalNames())) {
+				cleanup();
+				return;
+			}
+		}
+		privateExecute( );
 	}
 }
