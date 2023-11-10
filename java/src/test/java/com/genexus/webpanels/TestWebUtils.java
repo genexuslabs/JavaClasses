@@ -55,6 +55,12 @@ public class TestWebUtils {
 		doTest(contentDisposition, expectedContentDisposition);
 	}
 
+	@Test
+	public void TestContentDispositionHeaderEncoding7() {
+		String contentDisposition = "attachment; filename=My file.pdf";
+		String expectedContentDisposition = "attachment; filename*=UTF-8''My file.pdf; filename=\"My file.pdf\"";
+		doTest(contentDisposition, expectedContentDisposition);
+	}
 
 	private void doTest(String contentDisposition, String expectedContentDisposition) {
 		doTest(contentDisposition, expectedContentDisposition, HttpContextWeb.BROWSER_CHROME);
