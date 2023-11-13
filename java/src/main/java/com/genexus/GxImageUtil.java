@@ -116,41 +116,28 @@ public class GxImageUtil {
 	private static final Pattern IMAGE_PATTERN = Pattern.compile("\\.(jpg|jpeg|png|bmp|webp|jfif)([/?]|$)", Pattern.CASE_INSENSITIVE);
 
 	private static String writeImage(BufferedImage bufferedImage, String destinationFilePathOrUrl) throws IOException {
-		IHttpContext httpContext = com.genexus.ModelContext.getModelContext().getHttpContext();
-		if (destinationFilePathOrUrl.toLowerCase().startsWith("http://") || destinationFilePathOrUrl.toLowerCase().startsWith("https://") || (httpContext.isHttpContextWeb() && destinationFilePathOrUrl.startsWith(httpContext.getContextPath()))){
-
-			String newFileName;
-			if (!IMAGE_PATTERN.matcher(destinationFilePathOrUrl).find()) {
-				URL imageUrl = new URL(destinationFilePathOrUrl);
-				HttpURLConnection connection = null;
-				String format;
-				try {
-					connection = (HttpURLConnection) imageUrl.openConnection();
-					format = connection.getContentType().split("/")[1];
-				} finally {
-					if (connection != null) connection.disconnect();
-				}
-				newFileName = PrivateUtilities.getTempFileName(format);
-			} else
-				newFileName = PrivateUtilities.getTempFileName(CommonUtil.getFileType(destinationFilePathOrUrl));
-
-			try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
-				ImageIO.write(bufferedImage, CommonUtil.getFileType(newFileName), outStream);
-				try (ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray())) {
-					GXFile file = getGXFile(newFileName);
-					file.create(inStream, true);
-					file.close();
-					return file.getURI();
-				}
+		String newFileName;
+		if (!IMAGE_PATTERN.matcher(destinationFilePathOrUrl).find()) {
+			URL imageUrl = new URL(destinationFilePathOrUrl);
+			HttpURLConnection connection = null;
+			String format;
+			try {
+				connection = (HttpURLConnection) imageUrl.openConnection();
+				format = connection.getContentType().split("/")[1];
+			} finally {
+				if (connection != null) connection.disconnect();
 			}
+			newFileName = PrivateUtilities.getTempFileName(format);
+		} else
+			newFileName = PrivateUtilities.getTempFileName(CommonUtil.getFileType(destinationFilePathOrUrl));
 
-		} else {
-			String newFileName = PrivateUtilities.getTempFileName(CommonUtil.getFileType(destinationFilePathOrUrl));
-			try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
-				ImageIO.write(bufferedImage, CommonUtil.getFileType(newFileName), outStream);
-				outStream.flush();
-				byte[] imageInByte = outStream.toByteArray();
-				return GXutil.blobFromBytes(imageInByte,CommonUtil.getFileType(newFileName));
+		try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
+			ImageIO.write(bufferedImage, CommonUtil.getFileType(newFileName), outStream);
+			try (ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray())) {
+				GXFile file = getGXFile(Preferences.getDefaultPreferences().getPRIVATE_PATH() + newFileName);
+				file.create(inStream, true);
+				file.close();
+				return file.getURI();
 			}
 		}
 	}
