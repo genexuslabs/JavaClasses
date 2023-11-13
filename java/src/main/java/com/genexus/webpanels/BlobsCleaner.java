@@ -10,7 +10,7 @@ import com.genexus.util.GXFile;
 
 public class BlobsCleaner
 {
-	private static BlobsCleaner instance = null;
+	private volatile static BlobsCleaner instance = null;
 	
 	//Blobs archived by websession id
 	private Hashtable<String, ArrayList<String>> blobsTable;

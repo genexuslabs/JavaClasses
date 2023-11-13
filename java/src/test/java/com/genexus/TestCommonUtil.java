@@ -1,9 +1,13 @@
 package com.genexus;
 
+import com.genexus.db.UserInformation;
+import com.genexus.sampleapp.GXcfg;
 import com.genexus.specific.java.Connect;
 import com.genexus.specific.java.LogManager;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.UUID;
 
@@ -13,6 +17,7 @@ public class TestCommonUtil {
 	{
 		Connect.init();
 		LogManager.initialize(".");
+		Application.init(GXcfg.class);
 	}
 
 	@Test
@@ -130,6 +135,80 @@ public class TestCommonUtil {
 		value = "%1 is %2 years old";
 		expectedResult = "Alex is 26 years old";
 		result = CommonUtil.format(value, "Alex", "26", "10", "10", "", "", "", "", "");
+		Assert.assertEquals(expectedResult, result);
+
+		UserInformation ui = (UserInformation) GXObjectHelper.getUserInformation(ModelContext.getModelContext(GXcfg.class), -1);
+		long decimalValue = -150;
+		String picture = "$ZZZ,ZZZ,ZZ9";
+		expectedResult = "-$        150";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		result = ui.getLocalUtil().format(DecimalUtil.doubleToDec(decimalValue), picture);
+		Assert.assertEquals(expectedResult, result);
+		
+		picture  = "$ ZZZ,ZZZ,ZZ9";
+		expectedResult  = "-$         150";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		result = ui.getLocalUtil().format(DecimalUtil.doubleToDec(decimalValue), picture);
+		Assert.assertEquals(expectedResult, result);
+
+		picture = "ZZZ,ZZZ,ZZ9";
+		expectedResult = "        -150";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		result = ui.getLocalUtil().format(DecimalUtil.doubleToDec(decimalValue), picture);
+		Assert.assertEquals(expectedResult, result);
+
+		decimalValue = 150;
+		picture  = "$ZZZ,ZZZ,ZZ9";
+		expectedResult  = "$        150";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		decimalValue = 5;
+		picture = "$ 9.99";
+		expectedResult = "$ 5.00";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		decimalValue = -666;
+		picture = "+ZZZ9";
+		expectedResult = "-666";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result.trim());
+
+		decimalValue = -123456789;
+		picture = "ZZZ,ZZZ,ZZ9";
+		expectedResult = "-123,456,789";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		result = ui.getLocalUtil().format(DecimalUtil.doubleToDec(decimalValue), picture);
+		Assert.assertEquals(expectedResult, result);
+
+		BigDecimal bigDecimalValue = new BigDecimal(-12.5);
+		picture = "+99.9";
+		expectedResult = "-12.5";
+
+		result = ui.getLocalUtil().format(bigDecimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		bigDecimalValue = new BigDecimal(-12.5);
+		picture = "$Z9.9";
+		expectedResult = "-$12.5";
+
+		result = ui.getLocalUtil().format(bigDecimalValue, picture);
 		Assert.assertEquals(expectedResult, result);
 	}
 
