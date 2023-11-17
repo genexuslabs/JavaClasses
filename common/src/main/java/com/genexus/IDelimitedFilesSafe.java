@@ -27,7 +27,9 @@ public interface IDelimitedFilesSafe {
     byte dfwopen(final String filename, String fdel, final String sdel, final int append, final String enc);
 
     byte dfwnext();
-    byte dfwpnum(double num, int dec);
+	byte dfwpnum(long num, int dec);
+	byte dfwpnum(BigDecimal num, int dec);
+	byte dfwpnum(double num, int dec);
     byte dfwptxt(String txt, int len);
     byte dfwpdate(Date date, String fmt, String sep);
     byte dfwclose();

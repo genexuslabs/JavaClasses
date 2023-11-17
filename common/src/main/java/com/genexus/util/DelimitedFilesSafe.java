@@ -756,12 +756,27 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		return 0;
 	}
 
+	public byte dfwpnum(long num, int dec)
+	{
+		return dfwpnum(new BigDecimal(num), dec);
+	}
+
+	public byte dfwpnum(BigDecimal num, int dec)
+	{
+		String doubnum = CommonUtil.ltrim(CommonUtil.str(num, 20 + dec, dec, true));
+		return dfwpnum(doubnum, dec);
+	}
 	public byte dfwpnum(double num, int dec)
+	{
+		String doubnum = CommonUtil.ltrim(CommonUtil.str(num, 20 + dec, dec));
+		return dfwpnum(doubnum, dec);
+	}
+
+	private byte dfwpnum(String doubnum, int dec)
 	{
 		byte retval = GX_ASCDEL_SUCCESS;
 		if (dfwopen_in_use)
 		{
-			String doubnum = CommonUtil.ltrim(CommonUtil.str(num, 20 + dec, dec));
 			int k = doubnum.indexOf(".");
 			if (dec == 0)
 			{
