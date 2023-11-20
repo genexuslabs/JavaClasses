@@ -39,7 +39,11 @@ public class APIObjectFilter extends Filter {
 				}
             }     
             if(isPath) {
-                String fwdURI = REST_SUBPART  + path + QS_SEP + httpRequest.getQueryString();
+                String fwdURI = REST_SUBPART  + path;
+				String qString = httpRequest.getQueryString();
+				if ( qString != null && !qString.isEmpty()) {
+					fwdURI = fwdURI + QS_SEP + qString;
+				}
 				logger.info("Forwarding from " + path +" to: " + fwdURI) ;
 				httpRequest.getRequestDispatcher(fwdURI).forward(request,response);
             }
