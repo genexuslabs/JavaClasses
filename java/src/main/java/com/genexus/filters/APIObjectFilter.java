@@ -21,6 +21,9 @@ public class APIObjectFilter extends Filter {
     private ArrayList<String> appPath = new ArrayList<String>();
     static final String PRIVATE_DIR="private";
     static final String WEB_INFO="WEB-INF";
+	static final String REST_SUBPART = "/rest/";
+	static final String QS_SEP = "?";
+
     public static final Logger logger = LogManager.getLogger(APIObjectFilter.class);
 
 	public  void doFilter(IServletRequest request, IServletResponse response, IFilterChain chain) throws Exception {
@@ -36,7 +39,11 @@ public class APIObjectFilter extends Filter {
 				}
             }     
             if(isPath) {
-                String fwdURI = "/rest/" + path;
+                String fwdURI = REST_SUBPART  + path;
+				String qString = httpRequest.getQueryString();
+				if ( qString != null && !qString.isEmpty()) {
+					fwdURI = fwdURI + QS_SEP + qString;
+				}
 				logger.info("Forwarding from " + path +" to: " + fwdURI) ;
 				httpRequest.getRequestDispatcher(fwdURI).forward(request,response);
             }
