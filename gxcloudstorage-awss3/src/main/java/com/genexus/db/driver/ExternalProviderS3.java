@@ -33,6 +33,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 
 
@@ -68,6 +69,7 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
     static final String DUALSTACK = "s3-accelerate.dualstack.amazonaws.com";
 	static final String DEFAULT_REGION = "us-east-1";
     private S3Client client;
+	private S3Presigner presigner;
 	private String clientRegion = "";
     private String bucket;
     private String folder;
@@ -93,7 +95,7 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 		initialize();
     }
 
-	private void initialize() throws Exception{
+	private void initialize() throws Exception {
 		String accessKey = getEncryptedPropertyValue(ACCESS_KEY, ACCESS_KEY_ID_DEPRECATED, "");
 		String secretKey = getEncryptedPropertyValue(SECRET_ACCESS_KEY, SECRET_ACCESS_KEY_DEPRECATED, "");
 		String bucket = getEncryptedPropertyValue(BUCKET, BUCKET_DEPRECATED);
@@ -119,6 +121,7 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 			this.folder = folder;
 
 			this.client = buildS3Client(accessKey, secretKey, endpointValue, clientRegion);
+			this.presigner = buildS3Presinger(accessKey, secretKey, clientRegion);
 			bucketExists();
 		}
 	}
@@ -177,6 +180,13 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 			}
 		}
 		return s3Client;
+	}
+
+	private S3Presigner buildS3Presinger(String accessKey, String secretKey, String region){
+		return S3Presigner.builder()
+			.region(Region.of(region))
+			.credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
+			.build();
 	}
 
     private void bucketExists() {
@@ -303,34 +313,24 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 		return getResourceUrl(externalFileName, acl, expirationMinutes);
 	}
 
-	private String getResourceUrl(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
+	public String getResourceUrl(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
 		if (internalToAWSACL(acl) == ObjectCannedACL.PRIVATE) {
-			final int finalExpirationMinutes = expirationMinutes > 0 ? expirationMinutes: defaultExpirationMinutes;
-			Date expiration = new Date();
-			long msec = expiration.getTime();
-			msec += 60000 * expirationMinutes;
-			expiration.setTime(msec);
-
-			S3Presigner presigner = S3Presigner.builder()
-				.region(Region.of(clientRegion))
-				.build();
+			expirationMinutes = expirationMinutes > 0 ? expirationMinutes : defaultExpirationMinutes;
+			Instant expiration = Instant.now().plus(Duration.ofMinutes(expirationMinutes));
 
 			GetObjectRequest getObjectRequest = GetObjectRequest.builder()
 				.bucket(bucket)
 				.key(externalFileName)
 				.build();
 
-			PresignedGetObjectRequest presignedRequest = presigner.presignGetObject(z -> z.signatureDuration(Duration.ofMinutes(finalExpirationMinutes))
-				.getObjectRequest(getObjectRequest));
+			PresignedGetObjectRequest presignedGetObjectRequest =
+				presigner.presignGetObject(r -> r.signatureDuration(Duration.between(Instant.now(), expiration))
+					.getObjectRequest(getObjectRequest));
 
-			String presignedUrl = presignedRequest.url().toString();
-			presigner.close();
-
-			return presignedUrl;
+			return presignedGetObjectRequest.url().toString();
 		} else {
 			return String.format("https://%s.s3.%s.amazonaws.com/%s", bucket, Region.of(clientRegion), externalFileName);
 		}
-
 	}
 
 	public void delete(String objectName, ResourceAccessControlList acl) {
