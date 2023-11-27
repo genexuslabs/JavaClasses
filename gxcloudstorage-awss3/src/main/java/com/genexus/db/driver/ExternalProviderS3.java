@@ -313,7 +313,7 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 		return getResourceUrl(externalFileName, acl, expirationMinutes);
 	}
 
-	public String getResourceUrl(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
+	private String getResourceUrl(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
 		if (internalToAWSACL(acl) == ObjectCannedACL.PRIVATE) {
 			expirationMinutes = expirationMinutes > 0 ? expirationMinutes : defaultExpirationMinutes;
 			Instant expiration = Instant.now().plus(Duration.ofMinutes(expirationMinutes));
