@@ -27,7 +27,7 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
-            <version>${com.amazonaws.version}</version>
+            <version>${software.awssdk.version}</version>
         </dependency>
     </dependencies>
 </project>
