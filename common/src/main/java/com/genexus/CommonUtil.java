@@ -2923,65 +2923,66 @@ public final class CommonUtil
 	}
 
 
-	public static String str(BigDecimal value, int length, int decimals, boolean round) {
-			if	(length - 1 <= decimals)
-			{
-				// Esto es que hizo str(_, 2, 1) o str(_, 3, 2), todas cosas
-				// invalidas que implican que decimals = 0
-				decimals = 0;
-			}
+	public static String str(BigDecimal value, int length, int decimals, boolean round)
+	{
+		if	(length - 1 <= decimals)
+		{
+			// Esto es que hizo str(_, 2, 1) o str(_, 3, 2), todas cosas
+			// invalidas que implican que decimals = 0
+			decimals = 0;
+		}
 
-			if	(round)
+		if	(round)
+		{
+			value = CommonUtil.roundDecimal(value, decimals, BigDecimal.ROUND_HALF_UP);
+		}
+		else
+		{
+			value = CommonUtil.roundDecimal(value, decimals, BigDecimal.ROUND_DOWN);
+		}
+
+		String base = value.toString();
+		String decimalStr = "";
+		int decimalPos = base.indexOf('.');
+
+		if	(decimals > 0 && base.indexOf('E') == -1)
+		{
+			if	(decimalPos  < 0)
 			{
-				value = CommonUtil.roundDecimal(value, decimals, BigDecimal.ROUND_HALF_UP);
+					base += "." + replicate("0", decimals);
 			}
 			else
 			{
-				value = CommonUtil.roundDecimal(value, decimals, BigDecimal.ROUND_DOWN);
+				base = (decimalPos == 0?"0":base.substring(0, decimalPos)) + padr(base.substring(decimalPos), decimals + 1, "0");
 			}
-
-			String base = value.toString();
-			String decimalStr = "";
-			int decimalPos = base.indexOf('.');
-
-			if	(decimals > 0 && base.indexOf('E') == -1)
-			{
-				if	(decimalPos  < 0)
-				{
-						base += "." + replicate("0", decimals);
-				}
-				else
-				{
-					base = (decimalPos == 0?"0":base.substring(0, decimalPos)) + padr(base.substring(decimalPos), decimals + 1, "0");
-				}
-			}
-
-			// Aca el numero tiene el valor redondeado y tiene los decimales correctos. Ahora
-			// hay que empezar a achicarlo si no entra en el espacio indicado.
-
-			if	(base.length() <= length)
-			{
-				return padl(base, length, " ");
-			}
-
-			decimalPos = base.indexOf('.');
-			if	(decimalPos > 0)
-			{
-				String integerPart = base.substring(0, decimalPos);
-				if	(integerPart.length() <= length)
-				{
-				if (SpecificImplementation.KeepDecimals) {
-					int decimalsToKeep = Math.max(0, length-integerPart.length()-1);
-					decimalsToKeep = Math.min(decimals, decimalsToKeep);
-					return str(decimalVal(base, "."), length, decimalsToKeep, round);
-				}
-				else
-					return str(decimalVal(base, "."), length, 0, round);
-				}
-	 		}
-
-			return replicate("*", length);
 		}
+
+		// Aca el numero tiene el valor redondeado y tiene los decimales correctos. Ahora
+		// hay que empezar a achicarlo si no entra en el espacio indicado.
+
+		if	(base.length() <= length)
+		{
+			return padl(base, length, " ");
+		}
+
+		decimalPos = base.indexOf('.');
+		if	(decimalPos > 0)
+		{
+			String integerPart = base.substring(0, decimalPos);
+			if	(integerPart.length() <= length)
+			{
+			if (SpecificImplementation.KeepDecimals) {
+				int decimalsToKeep = Math.max(0, length-integerPart.length()-1);
+				decimalsToKeep = Math.min(decimals, decimalsToKeep);
+				return str(decimalVal(base, "."), length, decimalsToKeep, round);
+			}
+			else
+				return str(decimalVal(base, "."), length, 0, round);
+			}
+		}
+
+		return replicate("*", length);
+	}
 
 	public static double round(double in, int decimals) {
 		return roundDecimal(DecimalUtil.unexponentString(Double.toString(in)), decimals).doubleValue();
