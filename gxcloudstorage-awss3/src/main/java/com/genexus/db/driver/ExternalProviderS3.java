@@ -590,8 +590,7 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 
 	private String getStorageUri()
 	{
-		return (!pathStyleUrls) ? String.format("https://%s%s", this.bucket, this.endpointUrl):
-			String.format("%s/%s/",  this.endpointUrl, this.bucket);
+		return "https://" + bucket + ".s3." + Region.of(clientRegion) + ".amazonaws.com/";
 	}
 }
 
