@@ -25,9 +25,9 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>s3</artifactId>
-            <version>${software.awssdk.version}</version>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+            <version>${com.amazonaws.version}</version>
         </dependency>
     </dependencies>
 </project>
