@@ -277,13 +277,13 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
             bytes = IoUtils.toByteArray(input);
 			PutObjectRequest.Builder putRequestBuilder = PutObjectRequest.builder()
 				.bucket(bucket)
-				.key(externalFileName)
 				.contentLength((long) bytes.length);
 			if (externalFileName.endsWith(".tmp")) {
 				putRequestBuilder.contentType("image/jpeg");
+				externalFileName = externalFileName.replace(".tmp", ".jpeg");
 			}
-			ObjectCannedACL cannedACL = internalToAWSACL(acl);
-			putRequestBuilder.acl(cannedACL);
+			putRequestBuilder.acl(internalToAWSACL(acl));
+			putRequestBuilder.key(externalFileName);
 
             String upload;
 			try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes)) {
@@ -300,6 +300,8 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
     public String get(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
 		// Send a request to AWS S3 to retrieve the metadata for the specified object to see if
 		// the object exists and is accessible under the provided credentials and permissions.
+		if (externalFileName.endsWith(".tmp"))
+			externalFileName = externalFileName.replace(".tmp", ".jpeg");
 		try {
 			HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
 				.bucket(bucket)
