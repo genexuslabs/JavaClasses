@@ -585,7 +585,7 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 		{
 			objectName = url.replace(this.getStorageUri(), "");
 		}
-		return objectName != null ? objectName : url.replaceAll(".*[\\\\/]", "");
+		return objectName;
 	}
 
 	private String getStorageUri()
