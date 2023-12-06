@@ -37,7 +37,7 @@ import java.time.Instant;
 import java.util.*;
 
 
-public class ExternalProviderS3 extends ExternalProviderBase implements ExternalProvider  {
+public class ExternalProviderS3 extends ExternalProviderBase implements ExternalProvider {
 	private static Logger logger = LogManager.getLogger(ExternalProviderS3.class);
 
 	static final String NAME = "AWSS3";
@@ -65,35 +65,35 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 	@Deprecated
 	static final String REGION_DEPRECATED = "STORAGE_PROVIDER_REGION";
 
-    static final String ACCELERATED = "s3-accelerate.amazonaws.com";
-    static final String DUALSTACK = "s3-accelerate.dualstack.amazonaws.com";
+	static final String ACCELERATED = "s3-accelerate.amazonaws.com";
+	static final String DUALSTACK = "s3-accelerate.dualstack.amazonaws.com";
 	static final String DEFAULT_REGION = "us-east-1";
-    private S3Client client;
+	private S3Client client;
 	private S3Presigner presigner;
 	private String clientRegion = "";
-    private String bucket;
-    private String folder;
-    private String endpointUrl = ".s3.amazonaws.com/";
+	private String bucket;
+	private String folder;
+	private String endpointUrl = ".s3.amazonaws.com/";
 	private int defaultExpirationMinutes = DEFAULT_EXPIRATION_MINUTES;
 	private Boolean pathStyleUrls = false;
 
-	public String getName(){
+	public String getName() {
 		return NAME;
 	}
 
-	public ExternalProviderS3(String service) throws Exception{
+	public ExternalProviderS3(String service) throws Exception {
 		this(Application.getGXServices().get(service));
 	}
 
-	public ExternalProviderS3() throws Exception{
+	public ExternalProviderS3() throws Exception {
 		super();
 		initialize();
 	}
 
-	public ExternalProviderS3(GXService providerService) throws Exception{
-    	super(providerService);
+	public ExternalProviderS3(GXService providerService) throws Exception {
+		super(providerService);
 		initialize();
-    }
+	}
 
 	private void initialize() throws Exception {
 		String accessKey = getEncryptedPropertyValue(ACCESS_KEY, ACCESS_KEY_ID_DEPRECATED, "");
@@ -154,8 +154,7 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 					.build())
 				.build();
 			endpointUrl = endpoint;
-		}
-		else {
+		} else {
 			pathStyleUrls = false;
 			if (endpoint.equals(ACCELERATED)) {
 				s3Client = builder
@@ -164,8 +163,7 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 						.accelerateModeEnabled(true)
 						.build())
 					.build();
-			}
-			else if (endpoint.equals(DUALSTACK)) {
+			} else if (endpoint.equals(DUALSTACK)) {
 				s3Client = builder
 					.region(Region.of(region))
 					.serviceConfiguration(S3Configuration.builder()
@@ -182,14 +180,14 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 		return s3Client;
 	}
 
-	private S3Presigner buildS3Presinger(String accessKey, String secretKey, String region){
+	private S3Presigner buildS3Presinger(String accessKey, String secretKey, String region) {
 		return S3Presigner.builder()
 			.region(Region.of(region))
 			.credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
 			.build();
 	}
 
-    private void bucketExists() {
+	private void bucketExists() {
 		// There is no "bucket.exists" method, so we attempt to get metadata about the bucket
 		// and if we get a 404 error then it means the bucket does not exist
 		try {
@@ -203,9 +201,9 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 			else
 				logger.debug("Something went wrong while checking for bucket existence", e);
 		}
-    }
+	}
 
-    private String ensureFolder(String... pathPart) {
+	private String ensureFolder(String... pathPart) {
 		String folderName = buildPath(pathPart);
 		PutObjectRequest putObjectRequest = PutObjectRequest.builder()
 			.bucket(bucket)
@@ -214,17 +212,17 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 			.build();
 		client.putObject(putObjectRequest, RequestBody.fromBytes(new byte[0]));
 		return folderName;
-    }
+	}
 
-    public void download(String externalFileName, String localFile, ResourceAccessControlList acl) {
-        try {
+	public void download(String externalFileName, String localFile, ResourceAccessControlList acl) {
+		try {
 			ResponseBytes<GetObjectResponse> objectBytes = client.getObject(GetObjectRequest.builder()
 					.bucket(bucket)
 					.key(externalFileName)
 					.build(),
 				ResponseTransformer.toBytes());
-            try (InputStream objectData = objectBytes.asInputStream()) {
-				try (OutputStream outputStream = new FileOutputStream(localFile)){
+			try (InputStream objectData = objectBytes.asInputStream()) {
+				try (OutputStream outputStream = new FileOutputStream(localFile)) {
 					int read;
 					byte[] bytes = new byte[1024];
 					while ((read = objectData.read(bytes)) != -1) {
@@ -232,14 +230,14 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 					}
 				}
 			}
-        } catch (FileNotFoundException ex) {
-            logger.error("Error while downloading file to the external provider", ex);
-        } catch (IOException ex) {
-            logger.error("Error while downloading file to the external provider", ex);
-        }
-    }
+		} catch (FileNotFoundException ex) {
+			logger.error("Error while downloading file to the external provider", ex);
+		} catch (IOException ex) {
+			logger.error("Error while downloading file to the external provider", ex);
+		}
+	}
 
-    public String upload(String localFile, String externalFileName, ResourceAccessControlList acl) {
+	public String upload(String localFile, String externalFileName, ResourceAccessControlList acl) {
 		client.putObject(PutObjectRequest.builder()
 				.bucket(bucket)
 				.key(externalFileName)
@@ -250,31 +248,29 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 			.key(externalFileName)
 			.acl(internalToAWSACL(acl))
 			.build());
-        return getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
-    }
+		return getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
+	}
 
-    private ObjectCannedACL internalToAWSACL(ResourceAccessControlList acl) {
-        if (acl == ResourceAccessControlList.Default) {
-        	acl = this.defaultAcl;
+	private ObjectCannedACL internalToAWSACL(ResourceAccessControlList acl) {
+		if (acl == ResourceAccessControlList.Default) {
+			acl = this.defaultAcl;
 		}
 
 		ObjectCannedACL accessControl = ObjectCannedACL.PRIVATE;
-        if (acl == ResourceAccessControlList.Private) {
-            accessControl = ObjectCannedACL.PRIVATE;
-        }
-		else if (acl == ResourceAccessControlList.PublicRead) {
+		if (acl == ResourceAccessControlList.Private) {
+			accessControl = ObjectCannedACL.PRIVATE;
+		} else if (acl == ResourceAccessControlList.PublicRead) {
 			accessControl = ObjectCannedACL.PUBLIC_READ;
-		}
-		else if (acl == ResourceAccessControlList.PublicReadWrite) {
+		} else if (acl == ResourceAccessControlList.PublicReadWrite) {
 			accessControl = ObjectCannedACL.PUBLIC_READ_WRITE;
 		}
-        return accessControl;
-    }
+		return accessControl;
+	}
 
-    public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
-        byte[] bytes;
-        try {
-            bytes = IoUtils.toByteArray(input);
+	public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
+		byte[] bytes;
+		try {
+			bytes = IoUtils.toByteArray(input);
 			PutObjectRequest.Builder putRequestBuilder = PutObjectRequest.builder()
 				.bucket(bucket)
 				.contentLength((long) bytes.length);
@@ -285,32 +281,29 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 			putRequestBuilder.acl(internalToAWSACL(acl));
 			putRequestBuilder.key(externalFileName);
 
-            String upload;
+			String upload;
 			try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes)) {
 				client.putObject(putRequestBuilder.build(), RequestBody.fromInputStream(byteArrayInputStream, bytes.length));
 				upload = getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
 			}
 			return upload;
-        } catch (IOException ex) {
-            logger.error("Error while uploading file to the external provider.", ex);
-            return "";
-        }
-    }
+		} catch (IOException ex) {
+			logger.error("Error while uploading file to the external provider.", ex);
+			return "";
+		}
+	}
 
-    public String get(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
-		// Send a request to AWS S3 to retrieve the metadata for the specified object to see if
-		// the object exists and is accessible under the provided credentials and permissions.
+	public String get(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
 		if (externalFileName.endsWith(".tmp"))
 			externalFileName = externalFileName.replace(".tmp", ".jpeg");
-		try {
-			HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
-				.bucket(bucket)
-				.key(externalFileName)
-				.build();
-			client.headObject(headObjectRequest);
-		} catch (NoSuchKeyException e) {
-			logger.info("The resource " + externalFileName +" is probably private or non-existent", e);
-		}
+
+		// Send a request to AWS S3 to retrieve the metadata for the specified object to see if
+		// the object exists and is accessible under the provided credentials and permissions.
+		HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
+			.bucket(bucket)
+			.key(externalFileName)
+			.build();
+		client.headObject(headObjectRequest);
 
 		return getResourceUrl(externalFileName, acl, expirationMinutes);
 	}
@@ -331,7 +324,7 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 
 			return presignedGetObjectRequest.url().toString();
 		} else {
-			return String.format("https://%s.s3.%s.amazonaws.com/%s", bucket, Region.of(clientRegion), externalFileName);
+			return String.format("https://%s.s3.%s.amazonaws.com/%s", bucket, clientRegion, externalFileName);
 		}
 	}
 
@@ -341,15 +334,15 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 			.key(objectName)
 			.build();
 		client.deleteObject(deleteObjectRequest);
-    }
+	}
 
-    public String rename(String objectName, String newName, ResourceAccessControlList acl) {
-        String url = copy(objectName, newName, acl);
-        delete(objectName, acl);
-        return url;
-    }
+	public String rename(String objectName, String newName, ResourceAccessControlList acl) {
+		String url = copy(objectName, newName, acl);
+		delete(objectName, acl);
+		return url;
+	}
 
-    public String copy(String objectName, String newName, ResourceAccessControlList acl) {
+	public String copy(String objectName, String newName, ResourceAccessControlList acl) {
 		CopyObjectRequest request = CopyObjectRequest.builder()
 			.sourceBucket(bucket)
 			.sourceKey(objectName)
@@ -357,18 +350,17 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 			.destinationKey(newName)
 			.acl(internalToAWSACL(acl))
 			.build();
-        client.copyObject(request);
-        return getResourceUrl(newName, acl, defaultExpirationMinutes);
-    }
+		client.copyObject(request);
+		return getResourceUrl(newName, acl, defaultExpirationMinutes);
+	}
 
-    public String copy(String objectUrl, String newName, String tableName, String fieldName, ResourceAccessControlList acl) {
-        String resourceFolderName = buildPath(folder, tableName, fieldName);
-        String resourceKey = resourceFolderName + StorageUtils.DELIMITER + newName;
+	public String copy(String objectUrl, String newName, String tableName, String fieldName, ResourceAccessControlList acl) {
+		String resourceFolderName = buildPath(folder, tableName, fieldName);
+		String resourceKey = resourceFolderName + StorageUtils.DELIMITER + newName;
 
-        try {
+		try {
 			objectUrl = new URI(objectUrl).getPath();
-		}
-        catch (Exception e){
+		} catch (Exception e) {
 			logger.error("Failed to Parse Storage Object URI for Copy operation", e);
 		}
 
@@ -383,18 +375,18 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 			.destinationBucket(bucket)
 			.destinationKey(newName)
 			.metadata(metadata)
-			.metadataDirective(MetadataDirective.REPLACE) // This will replace the metadata of the copied object
+			.metadataDirective(MetadataDirective.REPLACE)
 			.acl(internalToAWSACL(acl))
 			.build();
 
 		client.copyObject(request);
 
 		return getResourceUrl(resourceKey, acl, defaultExpirationMinutes);
-    }
+	}
 
-    private String buildPath(String... pathPart) {
+	private String buildPath(String... pathPart) {
 		ArrayList<String> pathParts = new ArrayList<>();
-		for(String part : pathPart){
+		for (String part : pathPart) {
 			if (part.length() > 0) {
 				pathParts.add(part);
 			}
@@ -402,7 +394,7 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 		return String.join(StorageUtils.DELIMITER, pathParts);
 	}
 
-    public long getLength(String objectName, ResourceAccessControlList acl) {
+	public long getLength(String objectName, ResourceAccessControlList acl) {
 		HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
 			.bucket(bucket)
 			.key(objectName)
@@ -410,9 +402,9 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 
 		HeadObjectResponse objectHead = client.headObject(headObjectRequest);
 		return objectHead.contentLength();
-    }
+	}
 
-    public Date getLastModified(String objectName, ResourceAccessControlList acl) {
+	public Date getLastModified(String objectName, ResourceAccessControlList acl) {
 		HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
 			.bucket(bucket)
 			.key(objectName)
@@ -420,31 +412,31 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 
 		HeadObjectResponse objectHead = client.headObject(headObjectRequest);
 		return Date.from(objectHead.lastModified());
-    }
+	}
 
-    public boolean exists(String objectName, ResourceAccessControlList acl) {
-        try {
+	public boolean exists(String objectName, ResourceAccessControlList acl) {
+		try {
 			HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
 				.bucket(bucket)
 				.key(objectName)
 				.build();
 
 			client.headObject(headObjectRequest);
-        } catch (S3Exception ex) {
-            if (ex.statusCode() == 404) {
-                return false;
-            }
-        }
-        return true;
-    }
+		} catch (S3Exception ex) {
+			if (ex.statusCode() == 404) {
+				return false;
+			}
+		}
+		return true;
+	}
 
-    public String getDirectory(String directoryName) {
-        if (existsDirectory(directoryName)) {
-            return bucket + ":" + StorageUtils.DELIMITER + directoryName + StorageUtils.DELIMITER;
-        } else {
-            return "";
-        }
-    }
+	public String getDirectory(String directoryName) {
+		if (existsDirectory(directoryName)) {
+			return bucket + ":" + StorageUtils.DELIMITER + directoryName + StorageUtils.DELIMITER;
+		} else {
+			return "";
+		}
+	}
 
 	public boolean existsDirectory(String directoryName) {
 		ListObjectsV2Request listObjectsRequest = ListObjectsV2Request.builder()
@@ -456,11 +448,11 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 		return client.listObjectsV2(listObjectsRequest).keyCount() > 0;
 	}
 
-    public void createDirectory(String directoryName) {
-        ensureFolder(directoryName);
-    }
+	public void createDirectory(String directoryName) {
+		ensureFolder(directoryName);
+	}
 
-    public void deleteDirectory(String directoryName) {
+	public void deleteDirectory(String directoryName) {
 		ListObjectsV2Request listReq = ListObjectsV2Request.builder()
 			.bucket(bucket)
 			.prefix(directoryName)
@@ -479,11 +471,11 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 
 			listReq = listReq.toBuilder().continuationToken(listRes.nextContinuationToken()).build();
 		} while (listRes.isTruncated());
-    }
+	}
 
-    public void renameDirectory(String directoryName, String newDirectoryName) {
-        final String finalDirectoryName = StorageUtils.normalizeDirectoryName(directoryName);
-        final String finalNewDirectoryName = StorageUtils.normalizeDirectoryName(newDirectoryName);
+	public void renameDirectory(String directoryName, String newDirectoryName) {
+		final String finalDirectoryName = StorageUtils.normalizeDirectoryName(directoryName);
+		final String finalNewDirectoryName = StorageUtils.normalizeDirectoryName(newDirectoryName);
 
 		ListObjectsRequest listObjectsRequest = ListObjectsRequest.builder()
 			.bucket(bucket)
@@ -508,10 +500,10 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 			client.deleteObject(deleteObjectRequest);
 		});
 
-        deleteDirectory(finalDirectoryName);
-    }
+		deleteDirectory(finalDirectoryName);
+	}
 
-    public List<String> getFiles(String directoryName, String filter) {
+	public List<String> getFiles(String directoryName, String filter) {
 		filter = (filter == null || filter.isEmpty()) ? null : filter.replace("*", "");
 		List<String> files = new ArrayList<>();
 
@@ -533,18 +525,18 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 		}
 
 		return files;
-    }
+	}
 
-    private boolean isFile(String directory, String name) {
-        return !name.endsWith(StorageUtils.DELIMITER);
-    }
+	private boolean isFile(String directory, String name) {
+		return !name.endsWith(StorageUtils.DELIMITER);
+	}
 
-    public List<String> getFiles(String directoryName) {
-        return getFiles(directoryName, null);
-    }
+	public List<String> getFiles(String directoryName) {
+		return getFiles(directoryName, null);
+	}
 
-    public List<String> getSubDirectories(String directoryName) {
-        directoryName = StorageUtils.normalizeDirectoryName(directoryName);
+	public List<String> getSubDirectories(String directoryName) {
+		directoryName = StorageUtils.normalizeDirectoryName(directoryName);
 		ListObjectsV2Request listReq = ListObjectsV2Request.builder()
 			.bucket(bucket)
 			.prefix(directoryName)
@@ -557,7 +549,7 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 		listRes.commonPrefixes().forEach(prefix -> subdirectories.add(prefix.prefix()));
 
 		return subdirectories;
-    }
+	}
 
 	public InputStream getStream(String objectName, ResourceAccessControlList acl) {
 		GetObjectRequest getObjectRequest = GetObjectRequest.builder()
@@ -569,28 +561,28 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 		return object;
 	}
 
-    public boolean getMessageFromException(Exception ex, StructSdtMessages_Message msg) {
-        try {
-            S3Exception s3Exception = (S3Exception) ex;
-            msg.setId(s3Exception.awsErrorDetails().errorCode());
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
+	public boolean getMessageFromException(Exception ex, StructSdtMessages_Message msg) {
+		try {
+			S3Exception s3Exception = (S3Exception) ex;
+			msg.setId(s3Exception.awsErrorDetails().errorCode());
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
 
-    public String getObjectNameFromURL(String url) {
-    	String objectName = null;
-		if (url.startsWith(this.getStorageUri()))
-		{
+	public String getObjectNameFromURL(String url) {
+		String objectName = null;
+		if (url.startsWith(this.getStorageUri())) {
 			objectName = url.replace(this.getStorageUri(), "");
 		}
 		return objectName;
 	}
 
-	private String getStorageUri()
-	{
-		return "https://" + bucket + ".s3." + Region.of(clientRegion) + ".amazonaws.com/";
+	private String getStorageUri() {
+		return (!pathStyleUrls) ?
+			"https://" + bucket + ".s3." + clientRegion + ".amazonaws.com/" :
+			".s3." + clientRegion + ".amazonaws.com//" + bucket + "/";
 	}
 }
 
