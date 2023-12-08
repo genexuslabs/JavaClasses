@@ -3,6 +3,7 @@ package com.genexus.webpanels;
 import java.io.*;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
@@ -430,9 +431,6 @@ public class WebUtils
 		}
 		
 	private static final String gxApplicationClassesFileName = "GXApplicationClasses.txt";
-	private static final String gxApplicationServicesClassesFileName = "GeneXus.services";
-	private static final String gxApplicationAIServicesClassesFileName = "GeneXusAI.services";
-	private static final String gxApplicationChatbotServicesClassesFileName = "Chatbot.services";
 
 	private static InputStream getInputStreamFile(Class<?> gxAppClass, String fileName) throws FileNotFoundException {
 		InputStream is = gxAppClass.getResourceAsStream(fileName);
@@ -472,9 +470,19 @@ public class WebUtils
 	
 	public static void AddExternalServices(Class<?> gxAppClass, Set<Class<?>> rrcs) 
 	{
-		WebUtils.AddExternalServicesFile(gxAppClass, rrcs, gxApplicationServicesClassesFileName);
-		WebUtils.AddExternalServicesFile(gxAppClass, rrcs, gxApplicationAIServicesClassesFileName);
-		WebUtils.AddExternalServicesFile(gxAppClass, rrcs, gxApplicationChatbotServicesClassesFileName);
+		String classFilePath = gxAppClass.getProtectionDomain().getCodeSource().getLocation().getPath();
+		String[] files = new File(classFilePath.replaceAll("%20", " ") + gxAppClass.getPackage().getName().replace('.', '/')).list(new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.endsWith(".services");
+			}
+		});
+
+		if (files != null) {
+			for (String fileName : files) {
+				WebUtils.AddExternalServicesFile(gxAppClass, rrcs, fileName);;
+			}
+		}
 	}
 	
 	public static void AddExternalServicesFile(Class<?> gxAppClass, Set<Class<?>> rrcs, String servicesClassesFileName)
@@ -484,22 +492,7 @@ public class WebUtils
 			InputStream is = getInputStreamFile(gxAppClass, servicesClassesFileName);
 			if (is != null)
 			{
-				//BOMInputStream bomInputStream = new BOMInputStream(is);// Avoid using BOMInputStream because of runtime error (java.lang.NoSuchMethodError: org.apache.commons.io.IOUtils.length([Ljava/lang/Object;)I) issue 94611
-				//IOUtils.toString(bomInputStream, "UTF-8");
-				String xmlstring = PrivateUtilities.BOMInputStreamToStringUTF8(is);
-				
-				XMLReader reader = new XMLReader();
-				reader.openFromString(xmlstring);
-				if (reader.getErrCode() == 0) 
-				{
-					while (reader.readType(1, "Service") > 0) 
-					{
-						Class serviceClass = processRestService(reader);
-						if (serviceClass != null)
-							rrcs.add(serviceClass);
-					}
-					reader.close();
-				}
+				WebUtils.AddExternalServicesFile(rrcs, null, is);
 				
 				is.close();
 			}
@@ -514,6 +507,26 @@ public class WebUtils
 		catch (IOException ioe) 
 		{
 			logger.error("Error loading External Services classes ", ioe);
+		}
+	}
+
+	public static void AddExternalServicesFile(Set<Class<?>> rrcs, ArrayList<String> restImports, InputStream is) {
+		String xmlstring = PrivateUtilities.BOMInputStreamToStringUTF8(is);
+
+		XMLReader reader = new XMLReader();
+		reader.openFromString(xmlstring);
+		if (reader.getErrCode() == 0)
+		{
+			while (reader.readType(1, "Service") > 0)
+			{
+				Class serviceClass = processRestService(reader);
+				if (serviceClass != null)
+					if (rrcs != null)
+						rrcs.add(serviceClass);
+					else
+						restImports.add(serviceClass.getName());
+			}
+			reader.close();
 		}
 	}
 	
