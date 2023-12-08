@@ -29,6 +29,9 @@ public class GXImportSelector implements ImportSelector {
 		catch (IOException e){
 			logger.error("Error loading External Services classes ", e);
 		}
+
+		addWebSocketsImport(restImports);
+
 		return restImports.toArray(new String[0]);
 	}
 
@@ -43,6 +46,15 @@ public class GXImportSelector implements ImportSelector {
 		}
 		catch (Exception e){
 			logger.error("Error loading External Services classes ", e);
+		}
+	}
+
+	private void addWebSocketsImport(ArrayList<String> restImports) {
+		try {
+			restImports.add(Class.forName("com.genexus.internet.websocket.GXWebSocket").getName());
+		}
+		catch (ClassNotFoundException e) {
+			logger.info("WebSocket class not found");
 		}
 	}
 }
