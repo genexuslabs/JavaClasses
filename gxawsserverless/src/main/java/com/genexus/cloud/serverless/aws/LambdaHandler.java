@@ -11,6 +11,7 @@ import com.amazonaws.serverless.proxy.model.AwsProxyResponse;
 import com.amazonaws.serverless.proxy.model.MultiValuedTreeMap;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+
 import com.genexus.cloud.serverless.aws.handler.AwsGxServletResponse;
 import com.genexus.cloud.serverless.aws.handler.LambdaApplicationHelper;
 import com.genexus.diagnostics.core.ILogger;
@@ -19,6 +20,7 @@ import com.genexus.webpanels.GXOAuthAccessToken;
 import com.genexus.webpanels.GXOAuthLogout;
 import com.genexus.webpanels.GXOAuthUserInfo;
 import com.genexus.webpanels.GXWebObjectStub;
+
 import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.servlet.ServletConfig;
@@ -159,7 +161,6 @@ public class LambdaHandler implements RequestHandler<AwsProxyRequest, AwsProxyRe
 		}
 		return handler;
 	}
-
 
 	private void dumpRequest(AwsProxyRequest awsProxyRequest) {
 		String lineSeparator = System.lineSeparator();
