@@ -438,7 +438,9 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 	
 	private void executeSavePointOperation(String operation, Cursor cursor) 
 	{
-		if (getDataSource().dbms.getId() == GXDBMS.DBMS_POSTGRESQL && GXutil.dbmsVersion( context, remoteHandle, getDataSource().name) > 7 && cursor instanceof ForEachCursor && cursor.isCurrentOf())
+		if (getDataSource().dbms.getId() == GXDBMS.DBMS_POSTGRESQL && GXutil.dbmsVersion( context, remoteHandle, getDataSource().name) > 7
+			&& cursor instanceof ForEachCursor && cursor.isCurrentOf()
+			&& context.getPreferences().getProperty("GenerateSavePoints", "1").equals("1"))
 		{
 	    	try
 	    	{
