@@ -25,17 +25,16 @@ import com.genexus.util.StorageUtils;
 import com.genexus.StructSdtMessages_Message;
 
 import java.io.InputStream;
-import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
-
 
 public class ExternalProviderS3 extends ExternalProviderBase implements ExternalProvider {
 	private static Logger logger = LogManager.getLogger(ExternalProviderS3.class);
@@ -268,25 +267,21 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 	}
 
 	public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
-		byte[] bytes;
 		try {
-			bytes = IoUtils.toByteArray(input);
-			PutObjectRequest.Builder putRequestBuilder = PutObjectRequest.builder()
+			ByteBuffer byteBuffer = ByteBuffer.wrap(IoUtils.toByteArray(input));
+			PutObjectRequest putObjectRequest = PutObjectRequest.builder()
 				.bucket(bucket)
-				.contentLength((long) bytes.length);
-			if (externalFileName.endsWith(".tmp")) {
-				putRequestBuilder.contentType("image/jpeg");
-				externalFileName = externalFileName.replace(".tmp", ".jpeg");
-			}
-			putRequestBuilder.acl(internalToAWSACL(acl));
-			putRequestBuilder.key(externalFileName);
+				.key(externalFileName)
+				.contentType(externalFileName.endsWith(".tmp") ? "image/jpeg" : null)
+				.acl(internalToAWSACL(acl))
+				.build();
 
-			String upload;
-			try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes)) {
-				client.putObject(putRequestBuilder.build(), RequestBody.fromInputStream(byteArrayInputStream, bytes.length));
-				upload = getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
+			PutObjectResponse response = client.putObject(putObjectRequest, RequestBody.fromByteBuffer(byteBuffer));
+			if (!response.sdkHttpResponse().isSuccessful()) {
+				logger.error("Error while uploading file: " + response.sdkHttpResponse().statusText().orElse("Unknown error"));
 			}
-			return upload;
+
+			return getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
 		} catch (IOException ex) {
 			logger.error("Error while uploading file to the external provider.", ex);
 			return "";
@@ -294,9 +289,6 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 	}
 
 	public String get(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
-		if (externalFileName.endsWith(".tmp"))
-			externalFileName = externalFileName.replace(".tmp", ".jpeg");
-
 		// Send a request to AWS S3 to retrieve the metadata for the specified object to see if
 		// the object exists and is accessible under the provided credentials and permissions.
 		HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
@@ -369,17 +361,19 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 		metadata.put("Field", fieldName);
 		metadata.put("KeyValue", StorageUtils.encodeNonAsciiCharacters(resourceKey));
 
-		CopyObjectRequest request = CopyObjectRequest.builder()
-			.sourceBucket(bucket)
-			.sourceKey(objectUrl)
-			.destinationBucket(bucket)
-			.destinationKey(newName)
+		GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+			.bucket(bucket)
+			.key(objectUrl)
+			.build();
+		ResponseBytes<GetObjectResponse> objectBytes = client.getObjectAsBytes(getObjectRequest);
+
+		PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+			.bucket(bucket)
+			.key(resourceKey)
 			.metadata(metadata)
-			.metadataDirective(MetadataDirective.REPLACE)
 			.acl(internalToAWSACL(acl))
 			.build();
-
-		client.copyObject(request);
+		client.putObject(putObjectRequest, RequestBody.fromBytes(objectBytes.asByteArray()));
 
 		return getResourceUrl(resourceKey, acl, defaultExpirationMinutes);
 	}
