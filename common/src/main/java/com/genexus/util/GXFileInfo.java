@@ -15,12 +15,15 @@ import java.util.Date;
 public class GXFileInfo implements IGXFileInfo {
 
 	private File fileSource;
+	private ClassPathResource resource;
 	private boolean isDirectory;
 
 	public GXFileInfo(File file){
 		this(file, false);
 	}
 	public GXFileInfo(File file, boolean isDirectory){
+		if (ApplicationContext.getInstance().isSpringBootApp())
+			resource = new ClassPathResource(file.getPath());
 		fileSource = file;
 		this.isDirectory = isDirectory;
 	}
@@ -36,8 +39,8 @@ public class GXFileInfo implements IGXFileInfo {
 		}
 	}
 	public boolean exists(){
-		if (ApplicationContext.getInstance().isSpringBootApp() && !isDirectory) {
-			if (!fileSource.exists() && !new ClassPathResource(fileSource.getPath()).exists())
+		if (resource != null && !isDirectory) {
+			if (!fileSource.exists() && !resource.exists())
 				return false;
 			return true;
 		}
@@ -48,6 +51,8 @@ public class GXFileInfo implements IGXFileInfo {
 		return false;
 	}
 	public boolean isFile(){
+		if (resource != null)
+			return true;
 		return fileSource.isFile();
 	}
 	public boolean isDirectory(){
@@ -88,6 +93,13 @@ public class GXFileInfo implements IGXFileInfo {
 		return fileSource.getAbsolutePath();
 	}
 	public long length(){
+		if (resource != null)
+			try {
+				return resource.contentLength();
+			}
+			catch (IOException _) {
+				return 0;
+			}
 		return fileSource.length();
 	}
 	public Date lastModified(){
@@ -139,8 +151,8 @@ public class GXFileInfo implements IGXFileInfo {
         
         public InputStream getStream(){
             try {
-				if (ApplicationContext.getInstance().isSpringBootApp()) {
-					return new ClassPathResource(fileSource.getPath()).getInputStream();
+				if (resource != null) {
+					return resource.getInputStream();
 				}
 
                 return new FileInputStream(fileSource);
