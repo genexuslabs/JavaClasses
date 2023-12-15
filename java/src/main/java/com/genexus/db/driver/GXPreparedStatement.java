@@ -9,9 +9,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
@@ -1414,7 +1411,10 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 				if(webContext != null)
 				{
 					if (webContext instanceof com.genexus.webpanels.HttpContextWeb) {
-						fileName = ((com.genexus.webpanels.HttpContextWeb) webContext).getRealPath(fileName);
+						if (ApplicationContext.getInstance().isSpringBootApp())
+							fileName = fileName.replaceFirst(webContext.getContextPath(), "").substring(1);
+						else
+							fileName = ((com.genexus.webpanels.HttpContextWeb) webContext).getRealPath(fileName);
 					}
 					else
 					{
@@ -1452,16 +1452,17 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			{
 					if (Application.getExternalProvider() == null)
 					{
-						try
+						GXFile file = new GXFile(fileName);
+						InputStream is = file.getStream();
+						if (is != null)
 						{
-							File file = new File(fileName);
-							BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file));
-							setBinaryStream(index, inputStream, (int) file.length());
+							BufferedInputStream inputStream = new BufferedInputStream(is);
+							setBinaryStream(index, inputStream, (int) file.getLength());
 						}
-						catch (IOException e)
+						else
 						{
 							throw new SQLException("The filename does not exists in url " + fileName);
-						}						
+						}
 					}
 					else
 					{

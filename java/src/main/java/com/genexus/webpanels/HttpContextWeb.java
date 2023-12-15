@@ -516,6 +516,9 @@ public class HttpContextWeb extends HttpContext {
 	public void setContextPath(String path) {}
 
 	public String getRealPath(String path) {
+		if (ApplicationContext.getInstance().isSpringBootApp())
+			return path;
+
 		String realPath = path;
 
 		File file = new File(path);
@@ -1256,7 +1259,7 @@ public class HttpContextWeb extends HttpContext {
 
 	public String getDefaultPath() {
 		if (ApplicationContext.getInstance().isSpringBootApp())
-			return "";
+			return new File("").getAbsolutePath();
 
 		if (servletContext == null)
 			return "";
