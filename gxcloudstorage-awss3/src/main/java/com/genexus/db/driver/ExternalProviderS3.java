@@ -150,6 +150,7 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 				.region(Region.of(region))
 				.serviceConfiguration(S3Configuration.builder()
 					.pathStyleAccessEnabled(true)
+					.chunkedEncodingEnabled(false)
 					.build())
 				.build();
 			endpointUrl = endpoint;
@@ -567,9 +568,10 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 
 	public String getObjectNameFromURL(String url) {
 		String objectName = null;
-		if (url.startsWith(this.getStorageUri())) {
+		if (url.startsWith(this.getStorageUri()))
 			objectName = url.replace(this.getStorageUri(), "");
-		}
+		else if (url.startsWith(this.getStorageUriWithoutRegion()))
+			objectName = url.replace(this.getStorageUriWithoutRegion(), "");
 		return objectName;
 	}
 
@@ -577,6 +579,12 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 		return (!pathStyleUrls) ?
 			"https://" + bucket + ".s3." + clientRegion + ".amazonaws.com/" :
 			".s3." + clientRegion + ".amazonaws.com//" + bucket + "/";
+	}
+
+	private String getStorageUriWithoutRegion() {
+		return (!pathStyleUrls) ?
+			"https://" + bucket + ".s3.amazonaws.com/" :
+			".s3.amazonaws.com//" + bucket + "/";
 	}
 }
 
