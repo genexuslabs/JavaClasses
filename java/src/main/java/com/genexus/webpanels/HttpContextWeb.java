@@ -143,7 +143,7 @@ public class HttpContextWeb extends HttpContext {
 		}
 		;
 		String Resource = path;
-		String basePath = getDefaultPath();
+		String basePath = getDefaultPath(true);
 		if (Resource.startsWith(basePath) && Resource.length() >= basePath.length())
 			Resource = Resource.substring(basePath.length());
 		if (ContextPath != null && !ContextPath.equals("") && Resource.startsWith(ContextPath))
@@ -1260,8 +1260,15 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getDefaultPath() {
-		if (ApplicationContext.getInstance().isSpringBootApp())
-			return new File("").getAbsolutePath();
+		return getDefaultPath(false);
+	}
+	public String getDefaultPath(boolean useAbsolutePath) {
+		if (ApplicationContext.getInstance().isSpringBootApp()) {
+			if (useAbsolutePath)
+				return new File("").getAbsolutePath();
+			else
+				return "";
+		}
 
 		if (servletContext == null)
 			return "";
