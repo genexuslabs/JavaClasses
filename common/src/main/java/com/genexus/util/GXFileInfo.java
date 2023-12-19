@@ -22,7 +22,7 @@ public class GXFileInfo implements IGXFileInfo {
 		this(file, false);
 	}
 	public GXFileInfo(File file, boolean isDirectory){
-		if (ApplicationContext.getInstance().isSpringBootApp())
+		if (ApplicationContext.getInstance().isSpringBootApp() && ! file.exists())
 			resource = new ClassPathResource(file.getPath());
 		fileSource = file;
 		this.isDirectory = isDirectory;

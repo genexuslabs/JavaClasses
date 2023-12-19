@@ -1411,7 +1411,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 				if(webContext != null)
 				{
 					if (webContext instanceof com.genexus.webpanels.HttpContextWeb) {
-						if (ApplicationContext.getInstance().isSpringBootApp())
+						if (ApplicationContext.getInstance().isSpringBootApp() && ! new File(fileName).isAbsolute())
 							fileName = fileName.replaceFirst(webContext.getContextPath(), "").substring(1);
 						else
 							fileName = ((com.genexus.webpanels.HttpContextWeb) webContext).getRealPath(fileName);
