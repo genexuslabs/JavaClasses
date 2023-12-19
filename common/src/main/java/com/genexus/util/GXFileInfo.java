@@ -93,7 +93,7 @@ public class GXFileInfo implements IGXFileInfo {
 		return fileSource.getAbsolutePath();
 	}
 	public long length(){
-		if (resource != null)
+		if (resource != null && !fileSource.exists())
 			try {
 				return resource.contentLength();
 			}
@@ -151,7 +151,7 @@ public class GXFileInfo implements IGXFileInfo {
         
         public InputStream getStream(){
             try {
-				if (resource != null) {
+				if (resource != null && !fileSource.exists()) {
 					return resource.getInputStream();
 				}
 
