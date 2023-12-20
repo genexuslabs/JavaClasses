@@ -243,11 +243,14 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 				.key(externalFileName)
 				.build(),
 			RequestBody.fromFile(Paths.get(localFile)));
-		client.putObjectAcl(PutObjectAclRequest.builder()
-			.bucket(bucket)
-			.key(externalFileName)
-			.acl(internalToAWSACL(acl))
-			.build());
+		// As of December 2023, some S3-compatible storages do not
+		// implement every AWS S3 feature such as setting an object ACL
+		if (endpointUrl.contains(".amazonaws.com"))
+			client.putObjectAcl(PutObjectAclRequest.builder()
+				.bucket(bucket)
+				.key(externalFileName)
+				.acl(internalToAWSACL(acl))
+				.build());
 		return getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
 	}
 
@@ -270,12 +273,13 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 	public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
 		try {
 			ByteBuffer byteBuffer = ByteBuffer.wrap(IoUtils.toByteArray(input));
-			PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+			PutObjectRequest.Builder putObjectRequestBuilder = PutObjectRequest.builder()
 				.bucket(bucket)
 				.key(externalFileName)
-				.contentType(externalFileName.endsWith(".tmp") ? "image/jpeg" : null)
-				.acl(internalToAWSACL(acl))
-				.build();
+				.contentType(externalFileName.endsWith(".tmp") ? "image/jpeg" : null);
+			if (endpointUrl.contains(".amazonaws.com"))
+				putObjectRequestBuilder = putObjectRequestBuilder.acl(internalToAWSACL(acl));
+			PutObjectRequest putObjectRequest = putObjectRequestBuilder.build();
 
 			PutObjectResponse response = client.putObject(putObjectRequest, RequestBody.fromByteBuffer(byteBuffer));
 			if (!response.sdkHttpResponse().isSuccessful()) {
@@ -336,13 +340,14 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 	}
 
 	public String copy(String objectName, String newName, ResourceAccessControlList acl) {
-		CopyObjectRequest request = CopyObjectRequest.builder()
+		CopyObjectRequest.Builder requestBuilder = CopyObjectRequest.builder()
 			.sourceBucket(bucket)
 			.sourceKey(objectName)
 			.destinationBucket(bucket)
-			.destinationKey(newName)
-			.acl(internalToAWSACL(acl))
-			.build();
+			.destinationKey(newName);
+		if (endpointUrl.contains(".amazonaws.com"))
+			requestBuilder = requestBuilder.acl(internalToAWSACL(acl));
+		CopyObjectRequest request = requestBuilder.build();
 		client.copyObject(request);
 		return getResourceUrl(newName, acl, defaultExpirationMinutes);
 	}
@@ -368,12 +373,13 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 			.build();
 		ResponseBytes<GetObjectResponse> objectBytes = client.getObjectAsBytes(getObjectRequest);
 
-		PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+		PutObjectRequest.Builder putObjectRequestBuilder = PutObjectRequest.builder()
 			.bucket(bucket)
 			.key(resourceKey)
-			.metadata(metadata)
-			.acl(internalToAWSACL(acl))
-			.build();
+			.metadata(metadata);
+		if (endpointUrl.contains(".amazonaws.com"))
+			putObjectRequestBuilder = putObjectRequestBuilder.acl(internalToAWSACL(acl));
+		PutObjectRequest putObjectRequest = putObjectRequestBuilder.build();
 		client.putObject(putObjectRequest, RequestBody.fromBytes(objectBytes.asByteArray()));
 
 		return getResourceUrl(resourceKey, acl, defaultExpirationMinutes);
