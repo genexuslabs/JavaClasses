@@ -378,12 +378,13 @@ public abstract class HttpContext implements IHttpContext
 			}
 		}        	
 		getResponse().setStatus(statusCode);
-		try {
-			getResponse().sendError(statusCode, statusDescription);
-		}
-		catch(Exception e) {
-			if (logger.isErrorEnabled()) {
-				logger.error("Could not send Response Error Code", e);
+		if (!ApplicationContext.getInstance().isSpringBootApp()) {
+			try {
+				getResponse().sendError(statusCode, statusDescription);
+			} catch (Exception e) {
+				if (logger.isErrorEnabled()) {
+					logger.error("Could not send Response Error Code", e);
+				}
 			}
 		}
 		setAjaxCallMode();
