@@ -86,6 +86,10 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 		}
 	}
 
+	private PDPageContentStream getNewPDPageContentStream() throws IOException {
+		return new PDPageContentStream(document, document.getPage(page - 1), PDPageContentStream.AppendMode.APPEND,false);
+	}
+
 	private void drawRectangle(PDPageContentStream cb, float x, float y, float w, float h,
 							   int styleTop, int styleBottom, int styleRight, int styleLeft,
 							   float radioTL, float radioTR, float radioBL, float radioBR, float penAux, boolean hideCorners) {
@@ -224,7 +228,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 
 	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue,
 						   int styleTop, int styleBottom, int styleRight, int styleLeft, int cornerRadioTL, int cornerRadioTR, int cornerRadioBL, int cornerRadioBR) {
-		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false)){
+		try (PDPageContentStream cb = getNewPDPageContentStream()){
 
 			float penAux = (float)convertScale(pen);
 			float rightAux = (float)convertScale(right);
@@ -308,7 +312,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	}
 
 	public void GxDrawLine(int left, int top, int right, int bottom, int width, int foreRed, int foreGreen, int foreBlue, int style) {
-		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false)){
+		try (PDPageContentStream cb = getNewPDPageContentStream()){
 
 			float widthAux = (float)convertScale(width);
 			float rightAux = (float)convertScale(right);
@@ -347,7 +351,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	}
 
 	public void GxDrawBitMap(String bitmap, int left, int top, int right, int bottom, int aspectRatio) {
-		try (PDPageContentStream cb = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false)){
+		try (PDPageContentStream cb = getNewPDPageContentStream()){
 			PDImageXObject image;
 			try {
 				if (documentImages != null && documentImages.containsKey(bitmap)) {
@@ -571,7 +575,9 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 		}
 	}
 	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border, int valign) {
-		try (PDPageContentStream cb =  new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false)){
+		PDPageContentStream cb =  null;
+		try {
+			cb = getNewPDPageContentStream();
 			boolean printRectangle = false;
 			if (props.getBooleanGeneralProperty(Const.BACK_FILL_IN_CONTROLS, true))
 				printRectangle = true;
@@ -635,11 +641,26 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 
 					loadSupportedHTMLTags();
 
-					Document document = Jsoup.parse(sTxt);
-					Elements allElements = document.getAllElements();
-					for (Element element : allElements)
+					Document htmlDocument = Jsoup.parse(sTxt);
+					Elements allElements = htmlDocument.getAllElements();
+					for (Element element : allElements){
+						if (pageHeightExceeded(bottomMargin, spaceHandler.getCurrentYPosition())) {
+							llx = leftAux + leftMargin;
+							lly = drawingPageHeight - bottomAux;
+							urx = rightAux + leftMargin;
+							ury = drawingPageHeight - topAux;
+							htmlRectangle = new PDRectangle(llx, lly, urx - llx, ury - lly);
+							spaceHandler = new SpaceHandler(htmlRectangle.getUpperRightY(), htmlRectangle.getHeight());
+							bottomAux -= drawingPageHeight;
+							GxEndPage();
+							GxStartPage();
+
+							cb.close();
+							cb = getNewPDPageContentStream();
+						}
 						if (this.supportedHTMLTags.contains(element.normalName()))
 							processHTMLElement(cb, htmlRectangle, spaceHandler, element);
+					}
 
 				} catch (Exception e) {
 					log.error("GxDrawText failed to print HTML text : ", e);
@@ -718,7 +739,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 							rectangle.setUpperRightY(this.pageSize.getUpperRightY() - topAux - topMargin -bottomMargin);
 							break;
 					}
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false);
+					PDPageContentStream contentStream = getNewPDPageContentStream();
 					contentStream.setNonStrokingColor(backColor);
 					contentStream.addRect(rectangle.getLowerLeftX(), rectangle.getLowerLeftY(),rectangle.getWidth(), rectangle.getHeight());
 					contentStream.fill();
@@ -752,7 +773,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 							underline.setUpperRightY(this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);
 							break;
 					}
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false);
+					PDPageContentStream contentStream = getNewPDPageContentStream();
 					contentStream.setNonStrokingColor(foreColor);
 					contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY(),underline.getWidth(), underline.getHeight());
 					contentStream.fill();
@@ -783,7 +804,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 							underline.setUpperRightY(this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
 							break;
 					}
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false);
+					PDPageContentStream contentStream = getNewPDPageContentStream();
 					contentStream.setNonStrokingColor(foreColor);
 					contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY() - strikethruSeparation * 1/3, underline.getWidth(), underline.getHeight());
 					contentStream.fill();
@@ -799,7 +820,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 						templateCreated = true;
 					}
 					PDFormXObject form = new PDFormXObject(document);
-					PDPageContentStream contentStream = new PDPageContentStream(document, document.getPage(page - 1),PDPageContentStream.AppendMode.APPEND,false);
+					PDPageContentStream contentStream = getNewPDPageContentStream();
 					contentStream.transform(Matrix.getTranslateInstance(leftAux + leftMargin, leftAux + leftMargin));
 					contentStream.drawForm(form);
 					contentStream.close();
@@ -852,6 +873,13 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			}
 		} catch (Exception ioe){
 			log.error("GxDrawText failed: ", ioe);
+		} finally {
+			try {
+				if (cb != null) cb.close();
+			}
+			catch (IOException ioe) {
+				log.error("GxDrawText failed to close a content stream to one of it's pages: ", ioe);
+			}
 		}
 	}
 
@@ -880,7 +908,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 		}
 
 		if (spaceHandler.getAvailableSpace() <= 0){
-			log.error("You ran out of available space while rendering HTML");
+			log.debug("You ran out of available space in page #" + this.page + " while rendering HTML");
 			return;
 		}
 
@@ -1047,7 +1075,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			contentStream.setRenderingMode(RenderingMode.FILL); // Default text rendering mode for PDFBox 2.0.27
 			return lines.size();
 		} catch (IOException ioe) {
-			log.error("failed to draw wrapped text: ", ioe);
+			log.error("failed to render HTML text: ", ioe);
 			return -1;
 		}
 	}
@@ -1222,7 +1250,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					template.endText();
 					template.close();
 					for (PDPage page : document.getPages()){
-						try (PDPageContentStream templatePainter = new PDPageContentStream(document, page,PDPageContentStream.AppendMode.APPEND,false)) {
+						try (PDPageContentStream templatePainter = new PDPageContentStream(document, page, PDPageContentStream.AppendMode.APPEND,false)) {
 							templatePainter.drawForm(formXObjecttemplate);
 						}
 					}
@@ -1305,8 +1333,8 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			try {
 				document.save(outputStream);
 				document.close();
-			} catch (IOException ioe) {
-				log.error("GxEndDocument: failed to save document to the output stream", ioe);
+			} catch (IOException | IllegalStateException e) {
+				log.error("GxEndDocument: failed to save document to the output stream", e);
 			}
 
 			log.debug("GxEndDocument!");

@@ -2983,7 +2983,7 @@ public final class CommonUtil
 	}
 
 
-	static String str(BigDecimal value, int length, int decimals, boolean round) {
+	public static String str(BigDecimal value, int length, int decimals, boolean round) {
 			if	(length - 1 <= decimals)
 			{
 				// Esto es que hizo str(_, 2, 1) o str(_, 3, 2), todas cosas

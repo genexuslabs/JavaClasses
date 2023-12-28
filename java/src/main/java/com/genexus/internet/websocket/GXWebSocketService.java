@@ -22,8 +22,8 @@ import com.genexus.xml.GXXMLSerializable;
 import com.genexus.websocket.ISession;
 
 public class GXWebSocketService {
-	public static final ILogger logger = LogManager.getLogger(GXWebSocketService.class);
-	private static GXWebSocketService instance;
+	public static ILogger logger;
+	private volatile static GXWebSocketService instance;
 
 	private String[] handlerCache = new String[HandlerType.values().length];
 	private GXWebSocketSessionCollection wsClients = new GXWebSocketSessionCollection();
@@ -41,6 +41,10 @@ public class GXWebSocketService {
 				}
 			}
 		}
+
+		if (logger == null)
+			logger = LogManager.getLogger(GXWebSocketService.class);
+
 		return instance;
 	}
 

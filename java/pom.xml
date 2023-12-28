@@ -35,11 +35,6 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>javapns</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-collections4</artifactId>
 			<version>4.1</version>
@@ -169,6 +164,11 @@
     	    <version>3.36.0.3</version>
     	    <scope>test</scope>
 		</dependency>
+		<dependency>
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-instrumentation-annotations</artifactId>
+            <version>${io.opentelemetry.version}</version>
+        </dependency>
     </dependencies>
 	
 	<build>
