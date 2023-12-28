@@ -283,11 +283,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private CookieStore setAllStoredCookies() {
 		CookieStore cookiesToSend = new BasicCookieStore();
 		if (!com.genexus.ModelContext.getModelContext().isNullHttpContext()) { 	// Caso de ejecucion de varias instancia de HttpClientJavaLib, por lo que se obtienen cookies desde sesion web del browser
-
-			String selfWebCookie = ((HttpContextWeb) ModelContext.getModelContext().getHttpContext()).getCookie(SET_COOKIE);
-			if (!selfWebCookie.isEmpty())
-				this.addHeader("Cookie", selfWebCookie.replace("+",";"));
-
+			if (getIncludeCookies()) {
+				String selfWebCookie = ((HttpContextWeb) ModelContext.getModelContext().getHttpContext()).getCookie(SET_COOKIE);
+				if (!selfWebCookie.isEmpty())
+					this.addHeader(COOKIE, selfWebCookie.replace("+", ";"));
+			}
 		} else {	// Caso se ejecucion de una misma instancia HttpClientJavaLib mediante command line
 			if (!getIncludeCookies())
 				cookies.clear();
