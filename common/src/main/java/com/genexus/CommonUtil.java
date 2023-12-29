@@ -235,33 +235,33 @@ public final class CommonUtil
 	}
 
 
-	public static void writeLogInfo( String message)
+	public static void writeLogInfo(String message)
 	{
 		logger.info( message);
 	}
 
-	public static void writeLogError( String message)
+	public static void writeLogError(String message)
 	{
 		logger.error( message);
 	}
 
-	public static void writeLogln( String message)
+	public static void writeLogln(String message)
 	{
 		logger.debug( message);
 	}
 
-	public static void writeTLogln( String message)
+	public static void writeTLogln(String message)
 	{
 		logger.trace(message);
 	}
 
-	public static void writeLogRaw( String message, Object obj)
+	public static void writeLogRaw(String message, Object obj)
 	{
 		logger.debug(message);
 		logger.debug(obj.toString());
 	}
 
-	public static void writeLog( String message)
+	public static void writeLog(String message)
 	{
 		logger.debug(message, new Throwable());
 	}
