@@ -776,7 +776,7 @@ public abstract class GXHttpClient implements IHttpClient{
 			return "Content-Disposition: form-data; name=\""+ name + "\"; filename=\""+ fileName + "\"\r\n" + "Content-Type: " + mimeType + "\r\n\r\n";
 		}
 		String getFormDataTemplate(String varName, String value){
-			return "\r\n--" + boundary + "\r\nContent-Disposition: form-data; name=\"" + varName + "\";\r\n\r\n" + value;
+			return "\r\n--" + boundary + "\r\nContent-Disposition: form-data; name=\"" + varName + "\"\r\n\r\n" + value;
 		}
 	}
 
