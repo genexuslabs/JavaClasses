@@ -30,8 +30,8 @@ import java.util.Date;
 import java.util.List;
 
 
-public class ExternalProviderS3Legacy extends ExternalProviderBase implements ExternalProvider  {
-	private static Logger logger = LogManager.getLogger(ExternalProviderS3Legacy.class);
+public class ExternalProviderS3V1 extends ExternalProviderBase implements ExternalProvider  {
+	private static Logger logger = LogManager.getLogger(ExternalProviderS3V1.class);
 
 	static final String NAME = "AWSS3";
 	static final String ACCESS_KEY = "ACCESS_KEY";
@@ -75,16 +75,16 @@ public class ExternalProviderS3Legacy extends ExternalProviderBase implements Ex
 		return NAME;
 	}
 
-	public ExternalProviderS3Legacy(String service) throws Exception{
+	public ExternalProviderS3V1(String service) throws Exception{
 		this(Application.getGXServices().get(service));
 	}
 
-	public ExternalProviderS3Legacy() throws Exception{
+	public ExternalProviderS3V1() throws Exception{
 		super();
 		initialize();
 	}
 
-	public ExternalProviderS3Legacy(GXService providerService) throws Exception{
+	public ExternalProviderS3V1(GXService providerService) throws Exception{
 		super(providerService);
 		initialize();
 	}

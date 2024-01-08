@@ -36,8 +36,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
-public class ExternalProviderS3 extends ExternalProviderBase implements ExternalProvider {
-	private static Logger logger = LogManager.getLogger(ExternalProviderS3.class);
+public class ExternalProviderS3V2 extends ExternalProviderBase implements ExternalProvider {
+	private static Logger logger = LogManager.getLogger(ExternalProviderS3V2.class);
 
 	static final String NAME = "AWSS3";
 	static final String ACCESS_KEY = "ACCESS_KEY";
@@ -80,16 +80,16 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 		return NAME;
 	}
 
-	public ExternalProviderS3(String service) throws Exception {
+	public ExternalProviderS3V2(String service) throws Exception {
 		this(Application.getGXServices().get(service));
 	}
 
-	public ExternalProviderS3() throws Exception {
+	public ExternalProviderS3V2() throws Exception {
 		super();
 		initialize();
 	}
 
-	public ExternalProviderS3(GXService providerService) throws Exception {
+	public ExternalProviderS3V2(GXService providerService) throws Exception {
 		super(providerService);
 		initialize();
 	}
