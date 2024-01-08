@@ -107,12 +107,13 @@
 		<module>gxcache-redis</module>
 		<module>gxcache-memcached</module>
 		<module>gxcloudstorage-common</module>
-		<module>gxcloudstorage-awss3</module>
+		<module>gxcloudstorage-awss3-v1</module>
 		<module>gxcloudstorage-googlecloudstorage</module>
 		<module>gxcloudstorage-azureblob</module>
 		<module>gxcloudstorage-ibmcos</module>
 		<module>gxcloudstorage-tests</module>
-	</modules>
+        <module>gxcloudstorage-awss3-v2</module>
+    </modules>
 
 	<dependencies>
 		<dependency>
