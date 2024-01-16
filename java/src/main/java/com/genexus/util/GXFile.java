@@ -237,7 +237,7 @@ public class GXFile extends AbstractGXFile {
         if (sourceSeted()) {
             try {
                 resetErrors();
-				if (ApplicationContext.getInstance().isSpringBootApp() && new ClassPathResource(source).exists())
+				if (ApplicationContext.getInstance().isSpringBootApp() && source != null && new ClassPathResource(source).exists())
 				{
 					return true;
 				}
