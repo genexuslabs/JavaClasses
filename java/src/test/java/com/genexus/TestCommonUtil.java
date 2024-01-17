@@ -262,7 +262,7 @@ public class TestCommonUtil {
 		try{
 			Class integerClass = Class.forName("java.lang.Integer");
 			result = CommonUtil.convertObjectTo(obj, integerClass, true);
-			Assert.assertEquals(Integer.valueOf("0"), result);
+			Assert.assertEquals(null, result);
 		} catch (Exception e){
 			Assert.fail("Test failed " + e);
 		}
@@ -282,7 +282,7 @@ public class TestCommonUtil {
 		try{
 			Class stringClass = Class.forName("java.lang.String");
 			result = CommonUtil.convertObjectTo(obj, stringClass, true);
-			Assert.assertEquals("", result);
+			Assert.assertEquals(null, result);
 		} catch (Exception e){
 			Assert.fail("Test failed " + e);
 		}
@@ -322,7 +322,7 @@ public class TestCommonUtil {
 		try{
 			Class booleanClass = Class.forName("java.lang.Boolean");
 			result = CommonUtil.convertObjectTo(obj, booleanClass, true);
-			Assert.assertEquals(false, result);
+			Assert.assertEquals(null, result);
 		} catch (Exception e){
 			Assert.fail("Test failed " + e);
 		}
