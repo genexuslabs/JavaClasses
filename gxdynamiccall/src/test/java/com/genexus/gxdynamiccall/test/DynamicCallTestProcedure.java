@@ -43,7 +43,7 @@ public final  class DynamicCallTestProcedure extends GXProcedure
       privateExecute();
    }
 
-   private void privateExecute( )
+   protected void privateExecute( )
    {
       AV11numAux = (short)(AV8varchar1+AV9varchar2) ;
       AV10varchar3 = GXutil.str( AV11numAux, 4, 0) ;
