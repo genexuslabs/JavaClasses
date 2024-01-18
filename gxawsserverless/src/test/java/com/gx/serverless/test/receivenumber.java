@@ -50,7 +50,7 @@ public final  class receivenumber extends GXProcedure
       privateExecute();
    }
 
-   private void privateExecute( )
+	protected void privateExecute( )
    {
       GXt_int1 = AV6i ;
       GXv_int2[0] = GXt_int1 ;
