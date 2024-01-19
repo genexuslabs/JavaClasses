@@ -306,7 +306,7 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 		try{
 			props = new ParseINI(configurationFile, configurationTemplateFile);
 		} catch(IOException e) {
-			log.error("Failed to load report configuration file " + configurationFile, e);
+			log.warn("Failed to load report configuration file " + configurationFile, e);
 			props = new ParseINI();
 		}
 
