@@ -415,47 +415,45 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 
 	private String findContentTypeByExtension(String fileName) {
 		String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
-		for (String[] mapping : contentTypes)
-			if (mapping[0].equals(fileExtension))
-				return mapping[1];
-		return "application/octet-stream";
+		String contentType = contentTypes.get(fileExtension);
+		return contentType != null ? contentTypes.get(fileExtension) : "application/octet-stream";
 	}
 
-	private static final String contentTypes[][] = {
-		{"txt" 	, "text/plain"},
-		{"rtx" 	, "text/richtext"},
-		{"htm" 	, "text/html"},
-		{"html" , "text/html"},
-		{"xml" 	, "text/xml"},
-		{"aif"	, "audio/x-aiff"},
-		{"au"	, "audio/basic"},
-		{"wav"	, "audio/wav"},
-		{"bmp"	, "image/bmp"},
-		{"gif"	, "image/gif"},
-		{"jpe"	, "image/jpeg"},
-		{"jpeg"	, "image/jpeg"},
-		{"jpg"	, "image/jpeg"},
-		{"jfif"	, "image/pjpeg"},
-		{"tif"	, "image/tiff"},
-		{"tiff"	, "image/tiff"},
-		{"png"	, "image/x-png"},
-		{"3gp"	, "video/3gpp"},
-		{"3g2"	, "video/3gpp2"},
-		{"mpg"	, "video/mpeg"},
-		{"mpeg"	, "video/mpeg"},
-		{"mov"	, "video/quicktime"},
-		{"qt"	, "video/quicktime"},
-		{"avi"	, "video/x-msvideo"},
-		{"exe"	, "application/octet-stream"},
-		{"dll"	, "application/x-msdownload"},
-		{"ps"	, "application/postscript"},
-		{"pdf"	, "application/pdf"},
-		{"svg"	, "image/svg+xml"},
-		{"tgz"	, "application/x-compressed"},
-		{"zip"	, "application/x-zip-compressed"},
-		{"gz"	, "application/x-gzip"},
-		{"json"	, "application/json"}
-	};
+	private static Map<String, String> contentTypes  = new HashMap<String, String>() {{
+			put("txt" 	, "text/plain");
+			put("rtx" 	, "text/richtext");
+			put("htm" 	, "text/html");
+			put("html" , "text/html");
+			put("xml" 	, "text/xml");
+			put("aif"	, "audio/x-aiff");
+			put("au"	, "audio/basic");
+			put("wav"	, "audio/wav");
+			put("bmp"	, "image/bmp");
+			put("gif"	, "image/gif");
+			put("jpe"	, "image/jpeg");
+			put("jpeg"	, "image/jpeg");
+			put("jpg"	, "image/jpeg");
+			put("jfif"	, "image/pjpeg");
+			put("tif"	, "image/tiff");
+			put("tiff"	, "image/tiff");
+			put("png"	, "image/x-png");
+			put("3gp"	, "video/3gpp");
+			put("3g2"	, "video/3gpp2");
+			put("mpg"	, "video/mpeg");
+			put("mpeg"	, "video/mpeg");
+			put("mov"	, "video/quicktime");
+			put("qt"	, "video/quicktime");
+			put("avi"	, "video/x-msvideo");
+			put("exe"	, "application/octet-stream");
+			put("dll"	, "application/x-msdownload");
+			put("ps"	, "application/postscript");
+			put("pdf"	, "application/pdf");
+			put("svg"	, "image/svg+xml");
+			put("tgz"	, "application/x-compressed");
+			put("zip"	, "application/x-zip-compressed");
+			put("gz"	, "application/x-gzip");
+			put("json"	, "application/json");
+	}};
 
 	private String buildPath(String... pathPart) {
 		ArrayList<String> pathParts = new ArrayList<>();
