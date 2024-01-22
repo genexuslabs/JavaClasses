@@ -29,6 +29,8 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
@@ -387,7 +389,8 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 		PutObjectRequest.Builder putObjectRequestBuilder = PutObjectRequest.builder()
 			.bucket(bucket)
 			.key(resourceKey)
-			.metadata(metadata);
+			.metadata(metadata)
+			.contentType(getContentType(newName));
 		if (endpointUrl.contains(".amazonaws.com"))
 			putObjectRequestBuilder = putObjectRequestBuilder.acl(internalToAWSACL(acl));
 		PutObjectRequest putObjectRequest = putObjectRequestBuilder.build();
@@ -395,6 +398,64 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 
 		return getResourceUrl(resourceKey, acl, defaultExpirationMinutes);
 	}
+
+	private String getContentType(String fileName) {
+		Path path = Paths.get(fileName);
+		String defaultContentType = "application/octet-stream";
+
+		try {
+			String probedContentType = Files.probeContentType(path);
+			if (probedContentType == null || probedContentType.equals(defaultContentType))
+				return findContentTypeByExtension(fileName);
+			return probedContentType;
+		} catch (IOException ioe) {
+			return findContentTypeByExtension(fileName);
+		}
+	}
+
+	private String findContentTypeByExtension(String fileName) {
+		String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+		for (String[] mapping : contentTypes)
+			if (mapping[0].equals(fileExtension))
+				return mapping[1];
+		return "application/octet-stream";
+	}
+
+	private static final String contentTypes[][] = {
+		{"txt" 	, "text/plain"},
+		{"rtx" 	, "text/richtext"},
+		{"htm" 	, "text/html"},
+		{"html" , "text/html"},
+		{"xml" 	, "text/xml"},
+		{"aif"	, "audio/x-aiff"},
+		{"au"	, "audio/basic"},
+		{"wav"	, "audio/wav"},
+		{"bmp"	, "image/bmp"},
+		{"gif"	, "image/gif"},
+		{"jpe"	, "image/jpeg"},
+		{"jpeg"	, "image/jpeg"},
+		{"jpg"	, "image/jpeg"},
+		{"jfif"	, "image/pjpeg"},
+		{"tif"	, "image/tiff"},
+		{"tiff"	, "image/tiff"},
+		{"png"	, "image/x-png"},
+		{"3gp"	, "video/3gpp"},
+		{"3g2"	, "video/3gpp2"},
+		{"mpg"	, "video/mpeg"},
+		{"mpeg"	, "video/mpeg"},
+		{"mov"	, "video/quicktime"},
+		{"qt"	, "video/quicktime"},
+		{"avi"	, "video/x-msvideo"},
+		{"exe"	, "application/octet-stream"},
+		{"dll"	, "application/x-msdownload"},
+		{"ps"	, "application/postscript"},
+		{"pdf"	, "application/pdf"},
+		{"svg"	, "image/svg+xml"},
+		{"tgz"	, "application/x-compressed"},
+		{"zip"	, "application/x-zip-compressed"},
+		{"gz"	, "application/x-gzip"},
+		{"json"	, "application/json"}
+	};
 
 	private String buildPath(String... pathPart) {
 		ArrayList<String> pathParts = new ArrayList<>();
