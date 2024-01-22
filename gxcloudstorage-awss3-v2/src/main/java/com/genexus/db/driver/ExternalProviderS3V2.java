@@ -24,13 +24,11 @@ import com.genexus.util.GXService;
 import com.genexus.util.StorageUtils;
 import com.genexus.StructSdtMessages_Message;
 
-import java.io.InputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
@@ -321,7 +319,20 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 
 			return presignedGetObjectRequest.url().toString();
 		} else {
-			return String.format("https://%s.s3.%s.amazonaws.com/%s", bucket, clientRegion, externalFileName);
+			try {
+				return String.format(
+					"https://%s.s3.%s.amazonaws.com/%s",
+					bucket,
+					clientRegion,
+					URLEncoder.encode(
+						externalFileName,
+						StandardCharsets.UTF_8.toString()
+					)
+				);
+			} catch (UnsupportedEncodingException uee) {
+				logger.error("Failed to encode resource URL for " + externalFileName, uee);
+				return "";
+			}
 		}
 	}
 
