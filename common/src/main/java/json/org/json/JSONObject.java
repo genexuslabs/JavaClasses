@@ -901,16 +901,11 @@ public class JSONObject implements IJsonFormattable, java.io.Serializable{
         if (key == null) {
             throw new JSONException("Null key.");
         }
-        if (value != null) {
-            testValidity(value);
-            if (!has(key))
-            {
-                this.nameIndexList.add(key);
-            }
-            this.myHashMap.put(key, value);
-        } else {
-            remove(key);
-        }
+		testValidity(value);
+		if (!has(key)) {
+			this.nameIndexList.add(key);
+		}
+		this.myHashMap.put(key, value);
         return this;
     }
 
