@@ -210,8 +210,35 @@ public class TestCommonUtil {
 
 		result = ui.getLocalUtil().format(bigDecimalValue, picture);
 		Assert.assertEquals(expectedResult, result);
+
+		double doubleValue = 123456.12;
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "ZZZZZZZZZZ9.ZZZZZZ", "     123456.120000");
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "99999999999.999999", "00000123456.120000");
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "ZZZZZZZZZZ9.999999", "     123456.120000");
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "##########9.######", "         123456.12");
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "??????????9.??????", "     123456.12    ");
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "\\# ??????????9.??????", "#      123456.12    ");
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "##,###,###,##9.######", "           123,456.12");
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "??,???,???,??9.??????", "       123,456.12    ");
+
+		doubleValue = 0;
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "###########.######", "                  ");
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "???????????.??????", "                  ");
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "\\# ??????????9.??????", "#            0      ");
+
+		doubleValue = 0.1;
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "???????????.??????", "           .1     ");
+
+		doubleValue = -123456.12;
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "(??????????9.??????)", "(     123456.12    )");
 	}
 
+	private void doLocalUtilFormatAssert(UserInformation ui, double doubleValue, BigDecimal bigDecimalValue, String picture, String expectedResult) {
+		String result = ui.getLocalUtil().format(doubleValue, picture);
+		Assert.assertEquals(expectedResult, result);
+		result = ui.getLocalUtil().format(bigDecimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+	}
 	@Test
 	public void testConvertObjectTo() {
 		initialize();
