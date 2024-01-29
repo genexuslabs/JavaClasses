@@ -322,15 +322,20 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 			return presignedGetObjectRequest.url().toString();
 		} else {
 			try {
-				return String.format(
-					"https://%s.s3.%s.amazonaws.com/%s",
+				int lastIndex = Math.max(externalFileName.lastIndexOf('/'), externalFileName.lastIndexOf('\\'));
+				String path = externalFileName.substring(0, lastIndex + 1);
+				String fileName = externalFileName.substring(lastIndex + 1);
+				String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString());
+
+				String url = String.format(
+					"https://%s.s3.%s.amazonaws.com/%s%s",
 					bucket,
 					clientRegion,
-					URLEncoder.encode(
-						externalFileName,
-						StandardCharsets.UTF_8.toString()
-					)
+					path,
+					encodedFileName
 				);
+
+				return url;
 			} catch (UnsupportedEncodingException uee) {
 				logger.error("Failed to encode resource URL for " + externalFileName, uee);
 				return "";
