@@ -402,7 +402,11 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 								}
 							}
 							if (setClass != null)
-								setMethod.invoke(this, new Object[] { convertValueToParmType(currObj, setClass) });
+							{
+								Object parmType = convertValueToParmType(currObj, setClass);
+								if (parmType != null)
+									setMethod.invoke(this, new Object[] { parmType });
+							}
 						}
 					}
 					catch (java.lang.ClassCastException ex)
@@ -419,6 +423,8 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
         {
             if (parmClass.getName().equals("java.util.Date"))
             {
+				if (value.toString().equals("null"))
+					return null;
 				return localUtil.ctot(value.toString(), 0);
             }
             return CommonUtil.convertObjectTo(value, parmClass);
