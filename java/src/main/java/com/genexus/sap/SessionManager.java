@@ -153,7 +153,7 @@ public class SessionManager
 			try
 			{					
 				destinationName = (String)destinationObj;
-				scopeName  = (String)scopeObj;
+				scopeName  = String.valueOf( scopeObj);
 				Log.info("GX SAP - Begin Transaction " +  destinationName);
 				JCoDestination destination = null;
 				if (scopeName.length() == 0) 
@@ -180,12 +180,12 @@ public class SessionManager
 			try
 			{
 				JCoDestination destination = null;
-				destinationName = (String)destinationObj;						
-				if ( scopeObject == null ||  ((String)scopeObject).length() == 0 ) {
+				destinationName = (String)destinationObj;
+				scopeName = String.valueOf(scopeObject);
+				if ( scopeName.length() == 0 ) {
 					destination = JCoDestinationManager.getDestination(destinationName);
 				}
 				else {
-					scopeName = (String)scopeObject;
 					destination = JCoDestinationManager.getDestination(destinationName, scopeName);	
 				}
 				Log.info("GX SAP - Commit Transaction " +  destinationName);	
