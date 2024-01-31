@@ -53,6 +53,7 @@ public class TestDateMethods {
             testDate2 = localUtil.ctotex("2023-01-01T00:00:00", 0);
             testDate3 = localUtil.ctotex("2200-12-31T00:00:00.000", 0);
         } catch (Exception e) {
+            e.printStackTrace();
             Assert.fail(e.getMessage());
         }
 
@@ -72,6 +73,7 @@ public class TestDateMethods {
             testDate2 = localUtil.ctotex("30-01-01T00", 0);
             testDate3 = localUtil.ctotex("31-12-31T00:00", 0);
         } catch (Exception e) {
+            e.printStackTrace();
             Assert.fail(e.getMessage());
         }
 
