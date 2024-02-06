@@ -100,7 +100,7 @@ public class ExternalStorage extends GXStorageProvider {
 		{
 
 			case "AMAZONS3":
-				className = "com.genexus.db.driver.ExternalProviderS3V1";
+				className = "com.genexus.db.driver.ExternalProviderS3V2";
 				setDefaultProperty(properties, "STORAGE_PROVIDER_REGION", "us-east-1");
 				setDefaultProperty(properties, "STORAGE_ENDPOINT", "s3.amazonaws.com");
 				setEncryptProperty(properties, "STORAGE_PROVIDER_ACCESSKEYID");
@@ -108,8 +108,8 @@ public class ExternalStorage extends GXStorageProvider {
 				setEncryptProperty(properties, "BUCKET_NAME");
 				break;
 
-			case "AMAZONS3V2":
-				className = "com.genexus.db.driver.ExternalProviderS3V2";
+			case "AMAZONS3V1":
+				className = "com.genexus.db.driver.ExternalProviderS3V1";
 				setDefaultProperty(properties, "STORAGE_PROVIDER_REGION", "us-east-1");
 				setDefaultProperty(properties, "STORAGE_ENDPOINT", "s3.amazonaws.com");
 				setEncryptProperty(properties, "STORAGE_PROVIDER_ACCESSKEYID");
