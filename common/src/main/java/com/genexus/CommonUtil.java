@@ -2755,18 +2755,21 @@ public final class CommonUtil
 		{
 			try
             {
-            	
-				if (objStr.isEmpty() || objStr.equals("null"))
-					objStr ="0";
-				else 
+				if (objStr.equals("null"))
+					return null;
+				else
 				{
-					int i = objStr.indexOf(".") ;
-					if	(i >= 0)
+					if (objStr.isEmpty() || objStr.equals("null"))
+						objStr = "0";
+					else
 					{
-						if (objStr.indexOf('E') == -1 && objStr.indexOf('e') == -1)
-	            			objStr =  objStr.substring(0, i);  
-						else
-							objStr = CommonUtil.strUnexponentString(objStr);
+						int i = objStr.indexOf(".");
+						if (i >= 0) {
+							if (objStr.indexOf('E') == -1 && objStr.indexOf('e') == -1)
+								objStr = objStr.substring(0, i);
+							else
+								objStr = CommonUtil.strUnexponentString(objStr);
+						}
 					}
 				}
             }
@@ -2795,7 +2798,7 @@ public final class CommonUtil
         }
         else if (className.equals("string") || className.indexOf("java.lang.String") != -1)
         {
-            return objStr.equals("null") ? "" : objStr;
+            return objStr.equals("null") ? null : objStr;
         }
         else if (className.equals("double") || className.equals("java.lang.Double") || className.equals("[D"))
         {
@@ -2831,7 +2834,7 @@ public final class CommonUtil
         {
             try
             {
-                return objStr.equals("null") ? false : Boolean.valueOf(objStr);
+                return objStr.equals("null") ? null : Boolean.valueOf(objStr);
             }
             catch(Exception e)
             {

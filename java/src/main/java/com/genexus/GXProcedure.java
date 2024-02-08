@@ -37,9 +37,11 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 
 	public GXProcedure(boolean inNewUTL, int remoteHandle, ModelContext context, String location) {
 		//JMX Counter
-		beginExecute = new Date();
-		ProcedureInfo pInfo = ProceduresInfo.addProcedureInfo(this.getClass().getName());
-		pInfo.incCount();
+		if (Application.isJMXEnabled()) {
+			beginExecute = new Date();
+			ProcedureInfo pInfo = ProceduresInfo.addProcedureInfo(this.getClass().getName());
+			pInfo.incCount();
+		}
 
 		this.remoteHandle = remoteHandle;
 		this.context	  = context;
@@ -148,8 +150,10 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 	}
 
 	public void endExecute(String name) {
-		ProcedureInfo pInfo = ProceduresInfo.getProcedureInfo(name);
-		pInfo.setTimeExecute(System.currentTimeMillis() - beginExecute.getTime());
+		if (Application.isJMXEnabled()) {
+			ProcedureInfo pInfo = ProceduresInfo.getProcedureInfo(name);
+			pInfo.setTimeExecute(System.currentTimeMillis() - beginExecute.getTime());
+		}
 		
 		if (context != null && context.getSessionContext() != null) {
 			ApplicationContext.getInstance().setEJB(false);
