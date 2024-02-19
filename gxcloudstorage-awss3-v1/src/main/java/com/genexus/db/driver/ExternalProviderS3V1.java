@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-
 public class ExternalProviderS3V1 extends ExternalProviderBase implements ExternalProvider  {
 	private static Logger logger = LogManager.getLogger(ExternalProviderS3V1.class);
 
@@ -173,21 +172,38 @@ public class ExternalProviderS3V1 extends ExternalProviderBase implements Extern
 	}
 
 	public void download(String externalFileName, String localFile, ResourceAccessControlList acl) {
+		S3ObjectInputStream objectData = null;
 		try {
 			S3Object object = client.getObject(new GetObjectRequest(bucket, externalFileName));
-			try (InputStream objectData = object.getObjectContent()) {
-				try (OutputStream outputStream = new FileOutputStream(new File(localFile))){
-					int read;
-					byte[] bytes = new byte[1024];
-					while ((read = objectData.read(bytes)) != -1) {
-						outputStream.write(bytes, 0, read);
-					}
+			objectData = object.getObjectContent();
+			File file = new File(localFile);
+			File parentDir = file.getParentFile();
+			if (parentDir != null && !parentDir.exists())
+				parentDir.mkdirs();
+
+			try (OutputStream outputStream = new FileOutputStream(file)) {
+				int read;
+				byte[] bytes = new byte[1024];
+				while ((read = objectData.read(bytes)) != -1) {
+					outputStream.write(bytes, 0, read);
 				}
 			}
 		} catch (FileNotFoundException ex) {
 			logger.error("Error while downloading file to the external provider", ex);
 		} catch (IOException ex) {
 			logger.error("Error while downloading file to the external provider", ex);
+		} finally {
+			if (objectData != null) {
+				try {
+					// Drain the remainder of the stream to avoid leaving the HTTP connection in an inconsistent state
+					byte[] drainBuffer = new byte[1024];
+					while (objectData.read(drainBuffer) != -1) {
+						// Continue reading until the end of the stream
+					}
+				} catch (IOException e) {
+					logger.error("Error while draining the S3ObjectInputStream", e);
+				}
+			}
 		}
 	}
 
