@@ -24,7 +24,7 @@ public final class handlesimplenoparmsevent extends GXProcedure {
 		privateExecute();
 	}
 
-	private void privateExecute() {
+	protected void privateExecute() {
 		System.out.println("START EventBridge Event received with no parms");
 		System.out.println("END EventBridge Event");
 		cleanup();

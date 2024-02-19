@@ -62,6 +62,20 @@ public class GXExternalCollection<T extends GXXMLSerializable> extends GXBaseCol
 		}
 	}
 
+	public byte removeItem(int index) {
+		if(index > 0 && index <= size()) {
+			((Vector)vectorExternal).remove((int) index -1);
+		}
+
+		return super.removeItem(index);
+	}
+
+	public void clear() {
+		vectorExternal.clear();
+
+		super.clear();
+	}
+
 	public void setExternalStruct(AbstractCollection data)
 	{
 		vectorExternal = data;

@@ -152,10 +152,11 @@ public class GXSmartCacheProvider implements IExtensionGXSmartCacheProvider {
 
 		@Override
 		public void setUpdated(String table, int handle) {
-			Vector<String> tablesUpdatedInUTLHandle = getTablesUpdatedInUTL(handle);
-			if (isEnabled() && ! tablesUpdatedInUTLHandle.contains(table))
-				tablesUpdatedInUTLHandle.add(table);
-			
+			if (isEnabled()) {
+				Vector<String> tablesUpdatedInUTLHandle = getTablesUpdatedInUTL(handle);
+				if (!tablesUpdatedInUTLHandle.contains(table))
+					tablesUpdatedInUTLHandle.add(table);
+			}
 		}
 
 		private Vector<String> getTablesUpdatedInUTL(Integer handle){
