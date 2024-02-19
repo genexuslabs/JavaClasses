@@ -1,16 +1,14 @@
 package com.genexus.db.driver;
-
-
-public class TestExternalProviderOracle extends TestExternalProvider {
+public class TestExternalProviderS3V2 extends TestExternalProvider {
 
 	@Override
 	public String getProviderName(){
-		return ExternalProviderS3V1.NAME;
+		return ExternalProviderS3V2.NAME;
 	}
 
 	@Override
 	public ExternalProvider getExternalProvider() throws Exception {
-		return new ExternalProviderS3V1();
+		return new ExternalProviderS3V2();
 	}
 
 }
