@@ -54,6 +54,7 @@ public abstract class BaseProvider implements IGXSmartCacheProvider
 				GXFileCollection files = configurationDirectory.getFiles();
 				XMLReader reader = new XMLReader();
 				short ok;
+				boolean anyTables=false;
 				for(int i=1; i <= files.getItemCount(); i++)
 				{
 					Vector<String> lst = new Vector<String>();
@@ -63,11 +64,14 @@ public abstract class BaseProvider implements IGXSmartCacheProvider
 					ok = reader.readType(1, "Table");
 					while (ok == 1)
 					{
+						anyTables=true;
 						lst.add(normalizeKey((String) reader.getAttributeByName("name")));
 						ok = reader.readType(1, "Table");
 					}
 					reader.close();
-					qTables.put(normalizeKey((String)xmlFile.getNameNoExt()), lst);
+					if (anyTables) {
+						qTables.put(normalizeKey((String) xmlFile.getNameNoExt()), lst);
+					}
 				}
 				startupDate = CommonUtil.now(false,false);
 				queryTables = qTables;
