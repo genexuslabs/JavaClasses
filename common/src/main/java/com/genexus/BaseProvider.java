@@ -74,6 +74,7 @@ public abstract class BaseProvider implements IGXSmartCacheProvider
 			GXFileCollection files = configurationDirectory.getFiles();
 			XMLReader reader = new XMLReader();
 			short ok;
+			boolean anyTable = false;
 			for(int i=1; i <= files.getItemCount(); i++) {
 				Vector<String> lst = new Vector<String>();
 				lst.add(FORCED_INVALIDATE); // Caso en que se invalido el cache manualmente
@@ -81,11 +82,14 @@ public abstract class BaseProvider implements IGXSmartCacheProvider
 				reader.open(xmlFile.getAbsoluteName());
 				ok = reader.readType(1, "Table");
 				while (ok == 1) {
+					anyTable=true;
 					lst.add(normalizeKey(reader.getAttributeByName("name")));
 					ok = reader.readType(1, "Table");
 				}
 				reader.close();
-				qTables.put(normalizeKey(xmlFile.getNameNoExt()), lst);
+				if (anyTable){
+					qTables.put(normalizeKey(xmlFile.getNameNoExt()), lst);
+				}
 			}
 		}
 
@@ -95,6 +99,7 @@ public abstract class BaseProvider implements IGXSmartCacheProvider
 				XMLReader reader = new XMLReader();
 				reader.setDocEncoding("UTF8");
 				short ok;
+				boolean anyTable = false;
 				String xmlContent;
 				for (int i = 0; i < resources.length; i++) {
 					Vector<String> lst = new Vector<String>();
@@ -105,11 +110,14 @@ public abstract class BaseProvider implements IGXSmartCacheProvider
 					reader.openFromString(xmlContent);
 					ok = reader.readType(1, "Table");
 					while (ok == 1) {
+						anyTable=true;
 						lst.add(normalizeKey(reader.getAttributeByName("name")));
 						ok = reader.readType(1, "Table");
 					}
 					reader.close();
-					qTables.put(normalizeKey(resources[i].getFilename().substring(0, resources[i].getFilename().lastIndexOf("."))), lst);
+					if (anyTable) {
+						qTables.put(normalizeKey(resources[i].getFilename().substring(0, resources[i].getFilename().lastIndexOf("."))), lst);
+					}
 				}
 			}
 			catch (IOException e) {
