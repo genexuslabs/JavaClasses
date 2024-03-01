@@ -337,12 +337,20 @@ public class ExternalProviderS3V1 extends ExternalProviderBase implements Extern
 	}
 
 	public boolean existsDirectory(String directoryName) {
-		ListObjectsV2Request listObjectsRequest = new ListObjectsV2Request()
+		if (directoryName == null || directoryName.isEmpty() || directoryName.equals(".") || directoryName.equals("/"))
+			directoryName = "";
+		else
+			directoryName = StorageUtils.normalizeDirectoryName(directoryName);
+
+		ListObjectsV2Request listObjectsV2Request = new ListObjectsV2Request()
 			.withBucketName(bucket)
-			.withDelimiter(StorageUtils.DELIMITER)
-			.withPrefix(StorageUtils.normalizeDirectoryName(directoryName))
+			.withPrefix(directoryName)
 			.withMaxKeys(1);
-		return client.listObjectsV2(listObjectsRequest).getKeyCount() > 0;
+
+		if (!directoryName.isEmpty())
+			listObjectsV2Request = listObjectsV2Request.withDelimiter(StorageUtils.DELIMITER);
+
+		return client.listObjectsV2(listObjectsV2Request).getKeyCount() > 0;
 	}
 
 	public void createDirectory(String directoryName) {
