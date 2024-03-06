@@ -231,11 +231,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 				} catch (IOException e) {
 					logger.error("Error while processing the input stream", e);
 				} finally {
-					// Drain the remainder of the stream to avoid leaving the HTTP connection in an inconsistent state
-					byte[] buffer = new byte[1024];
-					while (objectData.read(buffer) != -1) {
-						// Consume the rest of the stream without processing it
-					}
+					objectData.close();
 				}
 			}
 		} catch (FileNotFoundException ex) {
