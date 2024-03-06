@@ -193,17 +193,7 @@ public class ExternalProviderS3V1 extends ExternalProviderBase implements Extern
 		} catch (IOException ex) {
 			logger.error("Error while downloading file to the external provider", ex);
 		} finally {
-			if (objectData != null) {
-				try {
-					// Drain the remainder of the stream to avoid leaving the HTTP connection in an inconsistent state
-					byte[] drainBuffer = new byte[1024];
-					while (objectData.read(drainBuffer) != -1) {
-						// Continue reading until the end of the stream
-					}
-				} catch (IOException e) {
-					logger.error("Error while draining the S3ObjectInputStream", e);
-				}
-			}
+			try {objectData.close();} catch (IOException ioe) {logger.error("Error while draining the S3ObjectInputStream", ioe);}
 		}
 	}
 
