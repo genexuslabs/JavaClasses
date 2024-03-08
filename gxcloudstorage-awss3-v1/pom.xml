@@ -10,8 +10,8 @@
 		<version>${revision}${changelist}</version>
 	</parent>
 
-    <artifactId>gxcloudstorage-awss3</artifactId>
-    <name>GeneXus AWS S3 Cloud Storage</name>
+    <artifactId>gxcloudstorage-awss3-v1</artifactId>
+    <name>GeneXus AWS S3 (V1) Cloud Storage</name>
 
 	<dependencies>
 		<dependency>
@@ -27,7 +27,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
-            <version>${com.amazonaws.version}</version>
+            <version>1.12.587</version>
         </dependency>
     </dependencies>
 </project>
