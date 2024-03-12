@@ -112,6 +112,7 @@
 		<module>gxcloudstorage-tests</module>
 		<module>gxcache-redis</module>
 		<module>gxcache-memcached</module>
+		<module>gxobservability</module>
     </modules>
 
 	<dependencies>
