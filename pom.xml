@@ -24,8 +24,7 @@
 		<poi.version>5.2.2</poi.version>
 		<jackson.version>2.14.1</jackson.version>
 		<junit.version>4.13.2</junit.version>
-		<com.amazonaws.version>1.12.587</com.amazonaws.version>
-		<software.awssdk.version>2.21.21</software.awssdk.version>
+		<software.awssdk.version>2.21.27</software.awssdk.version>
 		<software.azure.cosmos.version>4.42.0</software.azure.cosmos.version>
 		<log4j.version>2.21.1</log4j.version>
         <io.opentelemetry.version>1.28.0</io.opentelemetry.version>
@@ -108,13 +107,14 @@
 		<module>gxcache-redis</module>
 		<module>gxcache-memcached</module>
 		<module>gxcloudstorage-common</module>
-		<module>gxcloudstorage-awss3</module>
+		<module>gxcloudstorage-awss3-v1</module>
 		<module>gxcloudstorage-googlecloudstorage</module>
 		<module>gxcloudstorage-azureblob</module>
 		<module>gxcloudstorage-ibmcos</module>
 		<module>gxcloudstorage-tests</module>
         <module>gxobservability</module>
-	</modules>
+        <module>gxcloudstorage-awss3-v2</module>
+    </modules>
 
 	<dependencies>
 		<dependency>
