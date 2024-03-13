@@ -1,11 +1,11 @@
-| Branch | Status
-|---|---
-|master |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Amaster)
-|beta   |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Abeta)
-
 # GeneXus Standard Classes for Java
-
 These are the source of the GeneXus Standard Classes for Java, valid since GeneXus 16 Upgrade 4.
+
+## Repo Status
+| Branch | Build | Security
+|---|---|---
+|master |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Amaster)|[![CodeQL](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml)
+|beta   |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Abeta)|[![CodeQL](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml)
 
 ## Modules
 
