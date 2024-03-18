@@ -130,6 +130,7 @@ public class JSONObject implements IJsonFormattable, java.io.Serializable{
      * The hash map where the JSONObject's properties are kept.
      */
     private HashMap<String, Object> myHashMap;
+	private ArrayList<String> nameIndexList;
 
     /**
      * It is sometimes more convenient and less ambiguous to have a
@@ -145,6 +146,7 @@ public class JSONObject implements IJsonFormattable, java.io.Serializable{
      */
     public JSONObject() {
         this.myHashMap = new HashMap<>();
+		this.nameIndexList = new ArrayList<>();
     }
 
 
@@ -234,6 +236,9 @@ public class JSONObject implements IJsonFormattable, java.io.Serializable{
         this.myHashMap = (map == null) ?
         	new HashMap<>() :
         	new HashMap<>(map);
+		this.nameIndexList = (map == null) ?
+			new ArrayList<>():
+			new ArrayList<>(map.keySet());
     }
 
 
@@ -526,7 +531,7 @@ public class JSONObject implements IJsonFormattable, java.io.Serializable{
      * @return An iterator of the keys.
      */
     public Iterator<String> keys() {
-        return this.myHashMap.keySet().iterator();
+		return this.nameIndexList.iterator();
     }
 
 
@@ -545,6 +550,7 @@ public class JSONObject implements IJsonFormattable, java.io.Serializable{
      */
     public void clear() {
         this.myHashMap.clear();
+		this.nameIndexList.clear();
     }
 
 
@@ -894,6 +900,9 @@ public class JSONObject implements IJsonFormattable, java.io.Serializable{
             throw new JSONException("Null key.");
         }
 		testValidity(value);
+		if (!has(key)) {
+			this.nameIndexList.add(key);
+		}
 		this.myHashMap.put(key, value);
         return this;
     }
@@ -982,6 +991,8 @@ public class JSONObject implements IJsonFormattable, java.io.Serializable{
      * or null if there was no value.
      */
     public Object remove(String key) {
+		if (this.nameIndexList.contains(key))
+			this.nameIndexList.remove(key);
         return this.myHashMap.remove(key);
     }
 
