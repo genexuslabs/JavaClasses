@@ -230,8 +230,6 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 					}
 				} catch (IOException e) {
 					logger.error("Error while processing the input stream", e);
-				} finally {
-					objectData.close();
 				}
 			}
 		} catch (FileNotFoundException ex) {
