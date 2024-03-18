@@ -228,8 +228,6 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 					while ((read = objectData.read(bytes)) != -1) {
 						outputStream.write(bytes, 0, read);
 					}
-				} catch (IOException e) {
-					logger.error("Error while processing the input stream", e);
 				}
 			}
 		} catch (FileNotFoundException ex) {
