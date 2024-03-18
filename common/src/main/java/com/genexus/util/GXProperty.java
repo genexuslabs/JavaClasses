@@ -4,6 +4,8 @@ public class GXProperty {
     public String name;
     public String value;
 
+	public GXProperty() {}
+
 	public GXProperty(String name, String value){
 		this.name = name;
 		this.value = value;
