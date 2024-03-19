@@ -1352,5 +1352,17 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 		return false;
 	}
 
+	public boolean addRange( GXSimpleCollection<T> baseList, Number index) {
+		return super.addRange(baseList, index);
+	}
+
+	public boolean removeRange( int index, Number count) {
+		return  super.removeRange(index, count);
+	}
+
+	public boolean setElement( int index, T element) {
+		return super.setElement(index, element);
+	}
+
 
 }

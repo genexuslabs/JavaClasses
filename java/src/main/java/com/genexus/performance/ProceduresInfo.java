@@ -2,17 +2,13 @@ package com.genexus.performance;
 
 import java.io.PrintStream;
 import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.genexus.Application;
 
 public class ProceduresInfo
 {
-	static private Hashtable<String, ProcedureInfo> procedureInfo = new Hashtable<>();
-	
-  public ProceduresInfo()
-  {
-  }
+	static private ConcurrentHashMap<String, ProcedureInfo> procedureInfo = new ConcurrentHashMap<>();
   	
   static public void dump(PrintStream out)
   {
