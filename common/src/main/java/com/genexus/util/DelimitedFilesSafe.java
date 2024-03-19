@@ -498,6 +498,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		String retstr;
 		Date retdate = CommonUtil.nullDate();
 		int year = 0, month = 0, day = 0;
+		boolean getnexttoken = true;
 
 		if (dfropen_in_use)
 		{
@@ -506,6 +507,8 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 				String stringDelimitedField = actline.nextToken(fdel);
 				if(fdel.equals(stringDelimitedField) || stringDelimitedField.equals(""))
 				{ // Si el token debe estar vac�o...
+					if (fdel.equals(stringDelimitedField))
+						getnexttoken = false;
 					stringDelimitedField = "";
 				}
 
@@ -563,7 +566,8 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		date[0] = retdate;
 		try
 		{
-			String stringDelimitedField = actline.nextToken(fdel);
+			if (getnexttoken)
+				actline.nextToken(fdel);
 		}
 		catch(Exception e)
 		{//Se sabe que se puede leer un token que no existe al final de la linea
