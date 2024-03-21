@@ -8,6 +8,7 @@ import java.io.Reader;
 import com.genexus.PrivateUtilities;
 import com.genexus.WrapperUtils;
 import com.genexus.webpanels.HttpContextWeb;
+import org.apache.commons.io.IOUtils;
 
 public class HttpRequestWeb extends HttpRequest
 {
@@ -62,8 +63,8 @@ public class HttpRequestWeb extends HttpRequest
 			String requestEncoding = "UTF-8";
 			if (httpContext.getRequest().getCharacterEncoding() != null && httpContext.getRequest().getCharacterEncoding().length() > 0)
 				requestEncoding = httpContext.getRequest().getCharacterEncoding();
-			
-			return new String(PrivateUtilities.readToByteArray(getInputStream()), requestEncoding);
+
+			return new String(IOUtils.toByteArray(getInputStream()), requestEncoding);
 		}
 		catch (IOException e)
 		{
