@@ -8,6 +8,7 @@ import java.io.Reader;
 import com.genexus.PrivateUtilities;
 import com.genexus.WrapperUtils;
 import com.genexus.webpanels.HttpContextWeb;
+import org.apache.commons.io.IOUtils;
 
 public class HttpRequestWeb extends HttpRequest
 {
@@ -63,7 +64,7 @@ public class HttpRequestWeb extends HttpRequest
 			if (httpContext.getRequest().getCharacterEncoding() != null && httpContext.getRequest().getCharacterEncoding().length() > 0)
 				requestEncoding = httpContext.getRequest().getCharacterEncoding();
 			
-			return new String(PrivateUtilities.readToByteArray(is), requestEncoding);
+			return new String(IOUtils.toByteArray(is), requestEncoding);
 		}
 		catch (IOException e)
 		{
