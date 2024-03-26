@@ -180,7 +180,7 @@ public class GXWebSocketService {
 				try {
 					session.getSession().sendEndPointText(message);
 					result = SendResponseType.OK;
-				} catch (IOException e) {
+				} catch (IOException | IllegalStateException e) {
 					result = SendResponseType.SendFailed;
 					logger.warn("WebSocket - sendMessage failed", e);
 				}
