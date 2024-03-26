@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-
 public class ExternalProviderS3V1 extends ExternalProviderBase implements ExternalProvider  {
 	private static Logger logger = LogManager.getLogger(ExternalProviderS3V1.class);
 
@@ -173,21 +172,31 @@ public class ExternalProviderS3V1 extends ExternalProviderBase implements Extern
 	}
 
 	public void download(String externalFileName, String localFile, ResourceAccessControlList acl) {
+		S3ObjectInputStream objectData = null;
 		try {
 			S3Object object = client.getObject(new GetObjectRequest(bucket, externalFileName));
-			try (InputStream objectData = object.getObjectContent()) {
-				try (OutputStream outputStream = new FileOutputStream(new File(localFile))){
-					int read;
-					byte[] bytes = new byte[1024];
-					while ((read = objectData.read(bytes)) != -1) {
-						outputStream.write(bytes, 0, read);
-					}
+			objectData = object.getObjectContent();
+			File file = new File(localFile);
+			File parentDir = file.getParentFile();
+			if (parentDir != null && !parentDir.exists())
+				parentDir.mkdirs();
+
+			try (OutputStream outputStream = new FileOutputStream(file)) {
+				int read;
+				byte[] bytes = new byte[1024];
+				while ((read = objectData.read(bytes)) != -1) {
+					outputStream.write(bytes, 0, read);
 				}
 			}
 		} catch (FileNotFoundException ex) {
 			logger.error("Error while downloading file to the external provider", ex);
 		} catch (IOException ex) {
 			logger.error("Error while downloading file to the external provider", ex);
+		} finally {
+			try {
+				if (objectData != null)
+					objectData.close();
+			} catch (IOException ioe) {logger.error("Error while draining the S3ObjectInputStream", ioe);}
 		}
 	}
 
@@ -337,12 +346,20 @@ public class ExternalProviderS3V1 extends ExternalProviderBase implements Extern
 	}
 
 	public boolean existsDirectory(String directoryName) {
-		ListObjectsV2Request listObjectsRequest = new ListObjectsV2Request()
+		if (directoryName == null || directoryName.isEmpty() || directoryName.equals(".") || directoryName.equals("/"))
+			directoryName = "";
+		else
+			directoryName = StorageUtils.normalizeDirectoryName(directoryName);
+
+		ListObjectsV2Request listObjectsV2Request = new ListObjectsV2Request()
 			.withBucketName(bucket)
-			.withDelimiter(StorageUtils.DELIMITER)
-			.withPrefix(StorageUtils.normalizeDirectoryName(directoryName))
+			.withPrefix(directoryName)
 			.withMaxKeys(1);
-		return client.listObjectsV2(listObjectsRequest).getKeyCount() > 0;
+
+		if (!directoryName.isEmpty())
+			listObjectsV2Request = listObjectsV2Request.withDelimiter(StorageUtils.DELIMITER);
+
+		return client.listObjectsV2(listObjectsV2Request).getKeyCount() > 0;
 	}
 
 	public void createDirectory(String directoryName) {

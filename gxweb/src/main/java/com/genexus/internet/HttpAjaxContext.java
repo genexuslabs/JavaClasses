@@ -868,7 +868,7 @@ public class HttpAjaxContext extends HttpContextWeb
                 {
                   try {
                       JSONObject obj = getGxObject(AttValues, CmpContext, IsMasterPage);
-					  if (obj != null && (dynAjaxEventContext.isParmModified(AttName, SdtObj) || !isUndefinedOutParam( AttName, SdtObj)))
+					  if (obj != null && (!isUndefinedOutParam( AttName, SdtObj) || dynAjaxEventContext.isParmModified(AttName, SdtObj)))
 					  {
                         if (SdtObj instanceof IGxJSONAble)
                             obj.put(AttName, ((IGxJSONAble)SdtObj).GetJSONObject());
