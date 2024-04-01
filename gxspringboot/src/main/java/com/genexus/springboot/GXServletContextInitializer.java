@@ -28,6 +28,17 @@ public class GXServletContextInitializer implements ServletContextInitializer {
 				ServletRegistration.Dynamic dispatcherQuery3 = container.addServlet("gxqueryviewerforsd", (Servlet) Class.forName("qviewer.services.gxqueryviewerforsd").getConstructor().newInstance());
 				dispatcherQuery3.addMapping("/qviewer.services.gxqueryviewerforsd");
 			}
+
+			try {
+				Class<?> wsServlet = Class.forName("com.sun.xml.ws.transport.http.servlet.WSServlet");
+				ServletRegistration.Dynamic dispatcherQuery3 = container.addServlet("JaxWSServlet", (Servlet) wsServlet.getConstructor().newInstance());
+				dispatcherQuery3.setLoadOnStartup(1);
+				dispatcherQuery3.addMapping("/servlet/ws/*");
+				dispatcherQuery3.addMapping("/ws/*");
+			}
+			catch (ClassNotFoundException e) {
+				log.info("Declare servlet mapping for com.sun.xml.ws.transport.http.servlet.WSServlet is not necessary");
+			}
 		}
 		catch(Exception e) {
 			log.error("Error executing ServletContextInitializer", e);
