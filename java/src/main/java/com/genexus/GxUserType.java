@@ -46,8 +46,8 @@ public abstract class GxUserType extends GXXMLSerializable implements Cloneable,
 	}
 
 	protected void setHashMapFromJson(String json) {
-		fromjson_(json);
+		fromjson(json);
 	}
 
-	protected void fromjson_(String json){}
+	protected void fromjson(String json){}
 }
