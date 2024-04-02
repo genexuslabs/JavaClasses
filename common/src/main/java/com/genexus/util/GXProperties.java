@@ -24,12 +24,11 @@ public class GXProperties implements IGxJSONSerializable {
 	}
 
 	public void add(String name, String value) {
-		properties.put(name, new GXProperty(name, value));
+		this.put(name, value);
 	}
 
-	public void put(String name, String value) {
-		properties.put(name, new GXProperty(name, value));
-	}
+	public void put(String name, String value) { properties.put(name, new GXProperty(name, value)); }
+
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		for (GXProperty property: properties.values()) {
@@ -47,7 +46,10 @@ public class GXProperties implements IGxJSONSerializable {
 	}
 
 	public boolean containsKey(String name) {
-		return properties.containsKey(name);
+		for (String key : properties.keySet())
+			if (key.equalsIgnoreCase(name))
+				return true;
+		return false;
 	}
 
 	public GXProperty item(int i) {
@@ -104,7 +106,7 @@ public class GXProperties implements IGxJSONSerializable {
 			GXProperty prop = item(i);
 			try {
 				jObj.put(prop.getKey(), prop.getValue());
-			} catch (JSONException e) {}
+			} catch (JSONException ignored) {}
 			i++;
 		}
 		return jObj;
@@ -119,7 +121,7 @@ public class GXProperties implements IGxJSONSerializable {
 	}
 	public boolean fromJSonString(String s, GXBaseCollection < SdtMessages_Message > messages) {
 		this.clear();
-		if (!s.equals("")) {
+		if (!s.isEmpty()) {
 			try {
 				JSONObject jObj = new JSONObject(s);
 				Iterator < String > keys = jObj.keys();
