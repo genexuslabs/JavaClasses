@@ -39,22 +39,11 @@ public class GXProperties implements IGxJSONSerializable {
 	}
 
 	public String get(String name) {
-		return containsKey(name) ? this.getCaseInsensitive(name).getValue() : "";
-	}
-
-	public GXProperty getCaseInsensitive(String name) {
-		for (Map.Entry<String, GXProperty> entry : properties.entrySet())
-			if (entry.getKey().equalsIgnoreCase(name))
-				return entry.getValue();
-		return null;
+		return containsKey(name) ? properties.get(name).getValue() : "";
 	}
 
 	public void remove(String name) {
-		this.removeCaseInsensitive(name);
-	}
-
-	public void removeCaseInsensitive(String name) {
-        properties.entrySet().removeIf(entry -> entry.getKey().equalsIgnoreCase(name));
+		properties.remove(name);
 	}
 
 	public boolean containsKey(String name) {
