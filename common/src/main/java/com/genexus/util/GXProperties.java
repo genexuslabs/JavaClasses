@@ -23,44 +23,33 @@ public class GXProperties implements IGxJSONSerializable {
 		this.put(name, value);
 	}
 
-	public void add(String name, String value) {
-		this.put(name, value);
-	}
+	public void add(String name, String value) { this.put(name, value); }
 
-	public void put(String name, String value) { properties.put(name, new GXProperty(name, value)); }
+	public void put(String name, String value) {
+		name = name.toLowerCase();
+		properties.put(name, new GXProperty(name, value));
+	}
 
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		for (GXProperty property: properties.values()) {
+		for (GXProperty property: properties.values())
 			builder.append(property.getValue());
-		}
 		return builder.toString();
 	}
 
 	public String get(String name) {
-		return containsKey(name) ? this.getCaseInsensitive(name).getValue() : "";
-	}
-
-	public GXProperty getCaseInsensitive(String name) {
-		for (Map.Entry<String, GXProperty> entry : properties.entrySet())
-			if (entry.getKey().equalsIgnoreCase(name))
-				return entry.getValue();
-		return null;
+		name = name.toLowerCase();
+		return containsKey(name) ? properties.get(name).getValue() : "";
 	}
 
 	public void remove(String name) {
-		this.removeCaseInsensitive(name);
-	}
-
-	public void removeCaseInsensitive(String name) {
-        properties.entrySet().removeIf(entry -> entry.getKey().equalsIgnoreCase(name));
+		name = name.toLowerCase();
+		properties.remove(name);
 	}
 
 	public boolean containsKey(String name) {
-		for (String key : properties.keySet())
-			if (key.equalsIgnoreCase(name))
-				return true;
-		return false;
+		name = name.toLowerCase();
+		return properties.containsKey(name);
 	}
 
 	public GXProperty item(int i) {
@@ -117,7 +106,7 @@ public class GXProperties implements IGxJSONSerializable {
 			GXProperty prop = item(i);
 			try {
 				jObj.put(prop.getKey(), prop.getValue());
-			} catch (JSONException ignored) {}
+			} catch (JSONException e) {}
 			i++;
 		}
 		return jObj;
@@ -127,9 +116,11 @@ public class GXProperties implements IGxJSONSerializable {
 		JSONObject jObj = (JSONObject) GetJSONObject();
 		return jObj.toString();
 	}
+
 	public boolean fromJSonString(String s) {
 		return fromJSonString(s, null);
 	}
+
 	public boolean fromJSonString(String s, GXBaseCollection < SdtMessages_Message > messages) {
 		this.clear();
 		if (!s.isEmpty()) {
