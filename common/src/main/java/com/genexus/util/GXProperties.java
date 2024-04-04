@@ -23,30 +23,32 @@ public class GXProperties implements IGxJSONSerializable {
 		this.put(name, value);
 	}
 
-	public void add(String name, String value) {
+	public void add(String name, String value) { this.put(name, value); }
+
+	public void put(String name, String value) {
+		name = name.toLowerCase();
 		properties.put(name, new GXProperty(name, value));
 	}
 
-	public void put(String name, String value) {
-		properties.put(name, new GXProperty(name, value));
-	}
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		for (GXProperty property: properties.values()) {
+		for (GXProperty property: properties.values())
 			builder.append(property.getValue());
-		}
 		return builder.toString();
 	}
 
 	public String get(String name) {
+		name = name.toLowerCase();
 		return containsKey(name) ? properties.get(name).getValue() : "";
 	}
 
 	public void remove(String name) {
+		name = name.toLowerCase();
 		properties.remove(name);
 	}
 
 	public boolean containsKey(String name) {
+		name = name.toLowerCase();
 		return properties.containsKey(name);
 	}
 
@@ -114,12 +116,14 @@ public class GXProperties implements IGxJSONSerializable {
 		JSONObject jObj = (JSONObject) GetJSONObject();
 		return jObj.toString();
 	}
+
 	public boolean fromJSonString(String s) {
 		return fromJSonString(s, null);
 	}
+
 	public boolean fromJSonString(String s, GXBaseCollection < SdtMessages_Message > messages) {
 		this.clear();
-		if (!s.equals("")) {
+		if (!s.isEmpty()) {
 			try {
 				JSONObject jObj = new JSONObject(s);
 				Iterator < String > keys = jObj.keys();
