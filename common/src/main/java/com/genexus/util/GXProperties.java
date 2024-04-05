@@ -45,6 +45,7 @@ public class GXProperties implements IGxJSONSerializable {
 	}
 
 	public void remove(String name) {
+		originalProperties.remove(name);
 		name = name.toLowerCase();
 		properties.remove(name);
 	}
