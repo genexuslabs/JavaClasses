@@ -14,6 +14,7 @@ import java.util.Map;
 
 public class GXProperties implements IGxJSONSerializable {
 	private LinkedHashMap < String, GXProperty > properties = new LinkedHashMap < > ();
+	private LinkedHashMap < String, GXProperty > originalProperties = new LinkedHashMap < > ();
 	private boolean eof;
 	private int lastElement;
 
@@ -26,6 +27,7 @@ public class GXProperties implements IGxJSONSerializable {
 	public void add(String name, String value) { this.put(name, value); }
 
 	public void put(String name, String value) {
+		originalProperties.put(name, new GXProperty(name, value));
 		name = name.toLowerCase();
 		properties.put(name, new GXProperty(name, value));
 	}
@@ -54,7 +56,7 @@ public class GXProperties implements IGxJSONSerializable {
 
 	public GXProperty item(int i) {
 		int counter = 0;
-		for (Map.Entry < String, GXProperty > entry: properties.entrySet()) {
+		for (Map.Entry < String, GXProperty > entry: originalProperties.entrySet()) {
 			if (counter++ == i) {
 				return entry.getValue();
 			}
@@ -78,7 +80,7 @@ public class GXProperties implements IGxJSONSerializable {
 		eof = false;
 		if (count() > 0) {
 			lastElement = 0;
-			return properties.entrySet().iterator().next().getValue();
+			return originalProperties.entrySet().iterator().next().getValue();
 		} else {
 			eof = true;
 			return null;
