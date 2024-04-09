@@ -920,7 +920,7 @@ public abstract class HttpContext implements IHttpContext
 								{"rtx" 	, "text/richtext"},
 								{"htm" 	, "text/html"},
 								{"html" , "text/html"},
-								{"xml" 	, "text/xml"},
+								{"xml" 	, "application/xml"},
 								{"aif"	, "audio/x-aiff"},
 								{"au"	, "audio/basic"},
 								{"wav"	, "audio/wav"},
