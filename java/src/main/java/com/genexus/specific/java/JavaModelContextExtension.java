@@ -166,6 +166,7 @@ public class JavaModelContextExtension implements IExtensionModelContext {
     public ModelContext submitCopy(ModelContext modelContext) {
         ModelContext newContext = new ModelContext(modelContext);
         newContext.setHttpContext(new HttpContextNull());
+		newContext.setCurrentTimeZone(modelContext.getClientTimeZone());
         initializeSubmitSession(modelContext, newContext);
         HttpContext ctx = (HttpContext) modelContext.getHttpContext();
         if (ctx != null)
