@@ -4,13 +4,11 @@ import com.genexus.db.UserInformation;
 import com.genexus.internet.HttpContext;
 import com.genexus.reports.*;
 import com.genexus.webpanels.GXWebProcedure;
-import org.apache.logging.log4j.Logger;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
 public abstract class GXWebReport extends GXWebProcedure {
-	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(GXWebReport.class);
 
 	public static final int OUTPUT_RVIEWER = 1;
 	public static final int OUTPUT_PDF = 2;
@@ -118,36 +116,10 @@ public abstract class GXWebReport extends GXWebProcedure {
 		return ret;
 	}
 
-	private void setResponseOuputFileName() {
-		String outputFileName = filename != null ? filename : getClass().getSimpleName();
-		String outputFileType = filetype != null ? "." + filetype.toLowerCase() : ".pdf";
-
-		try {
-			// Encode the filename in UTF-8 according to RFC 5987
-			String encodedFileName = URLEncoder.encode(outputFileName, "UTF-8").replace("+", "%20");
-			String dispositionHeader = "inline; filename=\"" + asciiFileName(outputFileName) +
-				"\"; filename*=UTF-8''" + encodedFileName + outputFileType;
-
-			httpContext.getResponse().addHeader("Content-Disposition", dispositionHeader);
-		} catch (UnsupportedEncodingException e) {
-			log.error("Failed to encode the name of the report", e);
-		}
-	}
-
-	/**
-	 * Returns an ASCII version of the filename.
-	 * Non-ASCII characters are replaced with underscore to ensure ASCII compliance.
-	 */
-	private String asciiFileName(String fileName) {
-		StringBuilder asciiFileName = new StringBuilder();
-		for (char character: fileName.toCharArray()) {
-			if ((character <= 127)) {
-				asciiFileName.append(character);
-			} else {
-				asciiFileName.append("_");
-			}
-		}
-		return asciiFileName.toString();
+	private void setResponseOuputFileName(){
+		String outputFileName = filename!=null ? filename : getClass().getSimpleName();
+		String outputFileType = filetype!=null ? "." + filetype.toLowerCase(): ".pdf";
+		httpContext.getResponse().addHeader("content-disposition", "inline; filename=" + outputFileName + outputFileType);
 	}
 
 	protected void endPrinter() {
