@@ -5,9 +5,6 @@ import com.genexus.internet.HttpContext;
 import com.genexus.reports.*;
 import com.genexus.webpanels.GXWebProcedure;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
 public abstract class GXWebReport extends GXWebProcedure
 {
 	public static final int OUTPUT_RVIEWER = 1;
@@ -56,11 +53,7 @@ public abstract class GXWebReport extends GXWebProcedure
 	}
 
 	protected void setOutputFileName(String outputFileName){
-		try {
-			filename = URLEncoder.encode(outputFileName, "UTF-8").replace("+", "%20");
-		} catch (UnsupportedEncodingException e) {
-
-		}
+		filename = outputFileName;
 	}
 	protected void setOutputType(String outputType){
 		filetype = outputType.toLowerCase();
@@ -122,21 +115,9 @@ public abstract class GXWebReport extends GXWebProcedure
 	}
 
 	private void setResponseOuputFileName(){
-		String outputFileName = filename != null ? filename : getClass().getSimpleName();
-		String outputFileType = filetype != null ? "." + filetype.toLowerCase() : ".pdf";
-
-		try {
-			// Encode the filename in UTF-8 and replace + with %20 to handle spaces according to RFC 5987
-			String encodedFileName = URLEncoder.encode(outputFileName, "UTF-8").replace("+", "%20");
-
-			// Create the filename part of the header, using both the encoded form and the original form for compatibility
-			String dispositionFileName = "filename*=UTF-8''" + encodedFileName + "; filename=\"" + outputFileName + "\"";
-
-			httpContext.getResponse().addHeader("Content-Disposition", "inline; " + dispositionFileName + outputFileType);
-		} catch (UnsupportedEncodingException e) {
-			// This should never happen since UTF-8 is a standard charset
-			e.printStackTrace();
-		}
+		String outputFileName = filename!=null ? filename : getClass().getSimpleName();
+		String outputFileType = filetype!=null ? "." + filetype.toLowerCase(): ".pdf";
+		httpContext.getResponse().addHeader("content-disposition", "inline; filename=" + outputFileName + outputFileType);
 	}
 
 	protected void endPrinter()
