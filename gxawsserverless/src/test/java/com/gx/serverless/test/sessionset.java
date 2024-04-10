@@ -32,7 +32,7 @@ public final  class sessionset extends GXProcedure
       privateExecute();
    }
 
-   private void privateExecute( )
+	protected void privateExecute( )
    {
       AV10WebSession.setValue(AV8SessionName, AV9SessionValue);
       cleanup();

@@ -46,7 +46,7 @@ public final  class sethttpresponseheaders extends GXProcedure
       privateExecute();
    }
 
-   private void privateExecute( )
+	protected void privateExecute( )
    {
       if ( ! httpContext.isAjaxRequest( ) )
       {

@@ -179,7 +179,7 @@ public final class CommonUtil
 	
 	public static String removeAllQuotes(String fileName)
 	{
-		StringBuffer out = new StringBuffer();
+		StringBuilder out = new StringBuilder();
 		int len = fileName.length();
 		for (int i = 0; i < len; i++)
 			if	(fileName.charAt(i) != '"')
@@ -1023,7 +1023,7 @@ public final class CommonUtil
 			return s;
 
 		int index, start, subLength;
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		subLength = subString.length();
 
 		for (start = 0, index = s.indexOf(subString, start); index >= 0; start = index + subLength, index = s.indexOf(subString, start))
@@ -1080,7 +1080,7 @@ public final class CommonUtil
 		if	(size <= 0)
 			return "";
 
-		StringBuffer ret = new StringBuffer(size);
+		StringBuilder ret = new StringBuilder(size);
 
 		for (int i = 0; i < size; i++)
 		{
@@ -1095,7 +1095,7 @@ public final class CommonUtil
 		if	(size <= 0)
 			return "";
 
-		StringBuffer ret = new StringBuffer(size);
+		StringBuilder ret = new StringBuilder(size);
 
 		for (int i = 0; i < size; i++)
 		{
@@ -1218,7 +1218,7 @@ public final class CommonUtil
 		}
 		catch (Exception e)
 		{
-			StringBuffer out = new StringBuffer();
+			StringBuilder out = new StringBuilder();
 
 			boolean first = true;
 			int len = text.length();
@@ -1282,8 +1282,8 @@ public final class CommonUtil
 		return BigDecimal.ZERO;
 	}
 
-	private static StringBuffer extractNumericStringValue(String text, String sDSep) {
-		StringBuffer out = new StringBuffer();
+	private static StringBuilder extractNumericStringValue(String text, String sDSep) {
+		StringBuilder out = new StringBuilder();
 
 		char dSep = (sDSep.length() > 0) ? sDSep.charAt(0) : '.';
 		boolean point = false;
@@ -1861,7 +1861,7 @@ public final class CommonUtil
 
 	public static String getTimeFormat(String time)
 	{
-		StringBuffer ret = new StringBuffer(time);
+		StringBuilder ret = new StringBuilder(time);
 		char hora;
 		boolean app = false;
 		char append = ' ';
@@ -2337,7 +2337,7 @@ public final class CommonUtil
 	public static String format(String value, String v1, String v2, String v3, String v4, String v5, String v6, String v7, String v8, String v9)
 	{
 		String[] vs = {v1, v2, v3, v4, v5, v6, v7, v8, v9};
-		StringBuffer stringBuilder = new StringBuffer();
+		StringBuilder stringBuilder = new StringBuilder();
 		int valueLength = value.length();
 		if (value != null && !value.equals(""))
 		{
@@ -2560,7 +2560,7 @@ public final class CommonUtil
    				int point = num.indexOf('.');
    				int scale = num.length() - (point == -1 ? num.length () : point + 1) - scaleAdj;
 
-  				StringBuffer val = new StringBuffer(point == -1 ? num : num.substring(0, point) + num.substring (point + 1));
+				StringBuilder val = new StringBuilder(point == -1 ? num : num.substring(0, point) + num.substring (point + 1));
 
   				// correct for negative scale as per BigDecimal javadoc
   				for(; scale<0; scale++)
@@ -2755,18 +2755,21 @@ public final class CommonUtil
 		{
 			try
             {
-            	
-				if (objStr.isEmpty() || objStr.equals("null"))
-					objStr ="0";
-				else 
+				if (objStr.equals("null"))
+					return null;
+				else
 				{
-					int i = objStr.indexOf(".") ;
-					if	(i >= 0)
+					if (objStr.isEmpty() || objStr.equals("null"))
+						objStr = "0";
+					else
 					{
-						if (objStr.indexOf('E') == -1 && objStr.indexOf('e') == -1)
-	            			objStr =  objStr.substring(0, i);  
-						else
-							objStr = CommonUtil.strUnexponentString(objStr);
+						int i = objStr.indexOf(".");
+						if (i >= 0) {
+							if (objStr.indexOf('E') == -1 && objStr.indexOf('e') == -1)
+								objStr = objStr.substring(0, i);
+							else
+								objStr = CommonUtil.strUnexponentString(objStr);
+						}
 					}
 				}
             }
@@ -2795,7 +2798,7 @@ public final class CommonUtil
         }
         else if (className.equals("string") || className.indexOf("java.lang.String") != -1)
         {
-            return objStr.equals("null") ? "" : objStr;
+            return objStr.equals("null") ? null : objStr;
         }
         else if (className.equals("double") || className.equals("java.lang.Double") || className.equals("[D"))
         {
@@ -2831,7 +2834,7 @@ public final class CommonUtil
         {
             try
             {
-                return objStr.equals("null") ? false : Boolean.valueOf(objStr);
+                return objStr.equals("null") ? null : Boolean.valueOf(objStr);
             }
             catch(Exception e)
             {
@@ -2904,7 +2907,7 @@ public final class CommonUtil
 		if	(decimals < 0) decimals = 0;
 		if	(digits < 0)   digits   = 0;
 
-		StringBuffer b = new StringBuffer();
+		StringBuilder b = new StringBuilder();
 		boolean hasSign = (val < 0);
 
 		if	(hasSign)
@@ -2983,7 +2986,7 @@ public final class CommonUtil
 	}
 
 
-	static String str(BigDecimal value, int length, int decimals, boolean round) {
+	public static String str(BigDecimal value, int length, int decimals, boolean round) {
 			if	(length - 1 <= decimals)
 			{
 				// Esto es que hizo str(_, 2, 1) o str(_, 3, 2), todas cosas
@@ -3113,7 +3116,7 @@ public final class CommonUtil
 	}
 
 	public static String quoteString(String in, boolean entities8bit, boolean encodeQuotes) {
-		StringBuffer out = new StringBuffer();
+		StringBuilder out = new StringBuilder();
 		for (int i = 0; i < in.length(); i++)
 		{
 			char currentChar = in.charAt(i);
@@ -3380,7 +3383,7 @@ public final class CommonUtil
 		if (hashtable == null)
 			return null;
 
-		StringBuffer qbuf = new StringBuffer();
+		StringBuilder qbuf = new StringBuilder();
 		for (Enumeration en = hashtable.keys(); en.hasMoreElements();) {
 			Object key = en.nextElement();
 			qbuf.append((key == null ? null : URLEncode((String)key,"UTF-8")) + "=" +
