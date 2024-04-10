@@ -86,6 +86,16 @@ public class PictureFormatter
 			char car = picture.charAt(i);
 			switch (car)
 			{
+				case '\\' :
+					newPicture.append('\'');
+					newPicture.append(picture.charAt(i +1));
+					newPicture.append('\'');
+					newPicture.append(picture.charAt(i +1));
+					i++;
+					break;
+				case '?' :
+						newPicture.append('#');
+						break;
 				case '9' :
 						newPicture.append('#');
 						break;
@@ -93,15 +103,20 @@ public class PictureFormatter
 						newPicture.append('#');
 						break;
 				case '.' :
-						if	(i > 0)
+						if	(i > 0 && picture.charAt(i -1) != '?')
 						{
-							newPicture.setCharAt(i-1, '0');
+							newPicture.setCharAt(newPicture.length()-1, '0');
 						}
 						newPicture.append(car);
 						if(i+1 < picture.length() &&
 						   picture.indexOf('0', i+1) > i+1)
 						{
 							picture = picture.substring(0, i) + picture.substring(i).replace('0', '#');
+							newPicture.append('0');
+							i++;
+						}
+						else if (picture.charAt(i +1) == '?' && picture.charAt(i -1) == '?')
+						{
 							newPicture.append('0');
 							i++;
 						}
