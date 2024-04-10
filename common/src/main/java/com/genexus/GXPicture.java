@@ -128,6 +128,6 @@ public abstract class  GXPicture
 		
 	public static boolean isSeparator(char c)
 	{
-		return (c != '9' && c != 'X' && c != '!' && c != 'Z' && c != 'A' && c != 'M');
+		return (c != '?' && c != '#' && c != '9' && c != 'X' && c != '!' && c != 'Z' && c != 'A' && c != 'M');
 	}
 }
