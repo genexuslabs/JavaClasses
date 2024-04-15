@@ -1562,6 +1562,8 @@ public class LocalUtil
 			else if (a=='\\')
 			{
 				i++;
+				if (picture.charAt(i--) == '"')
+					pictureWithoutSymbols.append('"');
 			}
 		}
 		return pictureWithoutSymbols.toString();
@@ -1897,12 +1899,11 @@ public class LocalUtil
 
         private String addPicturePreffix(String suffix, String originalPicture, String value)
         {
-                if (originalPicture.startsWith(suffix))
-                {
-                        return suffix + value;
-                }
-
-                return value;
+			if (suffix.equals("\"") && originalPicture.startsWith("\\\\"))
+				return suffix + value;
+			if (originalPicture.startsWith(suffix))
+				return suffix + value;
+			return value;
         }
 
 	private String pictureToNumberFormat(String withoutSuffixPicture)
