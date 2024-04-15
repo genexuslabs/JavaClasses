@@ -1899,9 +1899,7 @@ public class LocalUtil
 
         private String addPicturePreffix(String suffix, String originalPicture, String value)
         {
-			if (suffix.equals("\"") && originalPicture.startsWith("\\\\"))
-				return suffix + value;
-			if (originalPicture.startsWith(suffix))
+			if (originalPicture.startsWith(suffix) || (suffix.equals("\"") && originalPicture.startsWith("\\\\")))
 				return suffix + value;
 			return value;
         }
