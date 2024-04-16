@@ -34,7 +34,7 @@ public final class handlesimplesqsevent2 extends GXProcedure {
 		privateExecute();
 	}
 
-	private void privateExecute() {
+	protected void privateExecute() {
 		System.out.println("START Queue Event received");
 		System.out.println(AV8EventMessages.toJSonString(false, true));
 

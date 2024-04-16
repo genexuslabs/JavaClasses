@@ -22,7 +22,7 @@ import com.genexus.xml.GXXMLSerializable;
 import com.genexus.websocket.ISession;
 
 public class GXWebSocketService {
-	public static final ILogger logger = LogManager.getLogger(GXWebSocketService.class);
+	public static ILogger logger;
 	private volatile static GXWebSocketService instance;
 
 	private String[] handlerCache = new String[HandlerType.values().length];
@@ -41,6 +41,10 @@ public class GXWebSocketService {
 				}
 			}
 		}
+
+		if (logger == null)
+			logger = LogManager.getLogger(GXWebSocketService.class);
+
 		return instance;
 	}
 
@@ -176,7 +180,7 @@ public class GXWebSocketService {
 				try {
 					session.getSession().sendEndPointText(message);
 					result = SendResponseType.OK;
-				} catch (IOException e) {
+				} catch (IOException | IllegalStateException e) {
 					result = SendResponseType.SendFailed;
 					logger.warn("WebSocket - sendMessage failed", e);
 				}

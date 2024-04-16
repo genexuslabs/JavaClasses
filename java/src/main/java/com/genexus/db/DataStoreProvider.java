@@ -47,20 +47,17 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 		super(context, remoteHandle);
 
 		//JMX Enabled
-		if (Application.isJMXEnabled())
-			if (firstTime.get())
-			{
+		if (Application.isJMXEnabled()) {
+			if (firstTime.get()) {
 				DataStoreProvidersJMX.CreateDataStoreProvidersJMX();
 				firstTime.set(false);
 			}
+			addDataStoreProviderInfo(helper.getClass().getName());
+		}
 
 		this.helper = helper;
 		this.cursors = helper.getCursors();
 		setOutputBuffers(buffers);
-
-		//JMX
-		addDataStoreProviderInfo(helper.getClass().getName());
-
 	}
 
         public void setErrorBuffers(int cursorIdx, Object[] buffers)
@@ -716,18 +713,20 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 
 	void incSentencesCount(String key, Cursor cursor)
 	{
-
-		DataStoreProviderInfo dsInfo = getDataStoreProviderInfo(key);
-		dsInfo.incSentenceCount();
-		SentenceInfo sInfo;
-		if (cursor.dynStatement) {
-			sInfo = dsInfo.addSentenceInfo(key + "_" + cursor.mCursorId, key
+		DataStoreProviderInfo dsInfo = null;
+		if (Application.isJMXEnabled()) {
+			dsInfo = getDataStoreProviderInfo(key);
+			dsInfo.incSentenceCount();
+			SentenceInfo sInfo;
+			if (cursor.dynStatement) {
+				sInfo = dsInfo.addSentenceInfo(key + "_" + cursor.mCursorId, key
 					+ "_" + cursor.mCursorId + "_" + cursor.mSQLSentence);
-		} else {
-			sInfo = dsInfo.addSentenceInfo(key + "_" + cursor.mCursorId,
+			} else {
+				sInfo = dsInfo.addSentenceInfo(key + "_" + cursor.mCursorId,
 					cursor.mSQLSentence);
+			}
+			sInfo.incSentenceCount();
 		}
-		sInfo.incSentenceCount();
 
 		String sqlSnt = cursor.mSQLSentence;
 		sentenceCount.incrementAndGet();
