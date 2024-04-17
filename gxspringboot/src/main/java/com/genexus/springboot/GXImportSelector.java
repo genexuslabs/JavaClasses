@@ -1,7 +1,7 @@
 package com.genexus.springboot;
 
 import com.genexus.diagnostics.core.ILogger;
-import com.genexus.diagnostics.core.LogManager;
+import com.genexus.specific.java.LogManager;
 import com.genexus.webpanels.WebUtils;
 
 import java.io.IOException;
@@ -16,7 +16,7 @@ import org.springframework.core.type.AnnotationMetadata;
 
 public class GXImportSelector implements ImportSelector {
 
-	public static final ILogger logger = LogManager.getLogger(GXImportSelector.class);
+	public static final ILogger logger = new LogManager().getLogger(GXImportSelector.class);
 	@Override
 	public String[] selectImports(AnnotationMetadata importingClassMetadata) {
 		ArrayList<String> restImports = new ArrayList<>();
