@@ -75,10 +75,6 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 	protected String endpointUrl = ".s3.amazonaws.com/";
 	protected int defaultExpirationMinutes = DEFAULT_EXPIRATION_MINUTES;
 	protected Boolean pathStyleUrls = false;
-	protected Boolean objectOwnershipEnabled;
-	private ExternalProviderS3V2ACL externalProviderS3V2ACL = null;
-	private ExternalProviderS3V2NoACL	externalProviderS3V2NoACL = null;
-
 
 	public String getName() {
 		return NAME;
@@ -86,22 +82,16 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 
 	public ExternalProviderS3V2(String service) throws Exception {
 		this(Application.getGXServices().get(service));
-		externalProviderS3V2ACL = new ExternalProviderS3V2ACL(service);
-		externalProviderS3V2NoACL = new ExternalProviderS3V2NoACL(service);
 	}
 
 	public ExternalProviderS3V2() throws Exception {
 		super();
 		initialize();
-		externalProviderS3V2ACL = new ExternalProviderS3V2ACL();
-		externalProviderS3V2NoACL = new ExternalProviderS3V2NoACL();
 	}
 
 	public ExternalProviderS3V2(GXService providerService) throws Exception {
 		super(providerService);
 		initialize();
-		externalProviderS3V2ACL = new ExternalProviderS3V2ACL(providerService);
-		externalProviderS3V2NoACL = new ExternalProviderS3V2NoACL(providerService);
 	}
 
 	protected void initialize() throws Exception {
@@ -110,7 +100,6 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 		String bucket = getEncryptedPropertyValue(BUCKET, BUCKET_DEPRECATED);
 		String folder = getPropertyValue(FOLDER, FOLDER_DEPRECATED, "");
 		clientRegion = getPropertyValue(REGION, REGION_DEPRECATED, DEFAULT_REGION);
-		objectOwnershipEnabled = !getEncryptedPropertyValue(DEFAULT_ACL_DEPRECATED,null, "Default").equals("Bucket owner enforced");
 		String endpointValue = getPropertyValue(STORAGE_ENDPOINT, STORAGE_ENDPOINT_DEPRECATED, "");
 		if (endpointValue.equals("custom")) {
 			endpointValue = getPropertyValue(STORAGE_CUSTOM_ENDPOINT, STORAGE_CUSTOM_ENDPOINT_DEPRECATED);
@@ -247,15 +236,13 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 	}
 
 	public String upload(String localFile, String externalFileName, ResourceAccessControlList acl) {
-		return objectOwnershipEnabled ?
-			externalProviderS3V2ACL.upload(localFile, externalFileName, acl) :
-			externalProviderS3V2NoACL.upload(localFile, externalFileName);
+		throw new UnsupportedOperationException("This class is intended as a parent class. " +
+			"Try ExternalProviderS3ACL or ExternalProviderS3NoACL");
 	}
 
 	public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
-		return objectOwnershipEnabled ?
-			externalProviderS3V2ACL.upload(externalFileName, input, acl) :
-			externalProviderS3V2NoACL.upload(externalFileName, input);
+		throw new UnsupportedOperationException("This class is intended as a parent class. " +
+			"Try ExternalProviderS3ACL or ExternalProviderS3NoACL");
 	}
 
 	public String get(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
@@ -271,9 +258,8 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 	}
 
 	protected String getResourceUrl(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
-		return objectOwnershipEnabled ?
-			externalProviderS3V2ACL.getResourceUrl(externalFileName, acl, expirationMinutes) :
-			externalProviderS3V2NoACL.getResourceUrl(externalFileName, expirationMinutes);
+		throw new UnsupportedOperationException("This class is intended as a parent class. " +
+			"Try ExternalProviderS3ACL or ExternalProviderS3NoACL");
 	}
 
 	public void delete(String objectName, ResourceAccessControlList acl) {
@@ -291,15 +277,13 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 	}
 
 	public String copy(String objectName, String newName, ResourceAccessControlList acl) {
-		return objectOwnershipEnabled ?
-			externalProviderS3V2ACL.copy(objectName, newName, acl) :
-			externalProviderS3V2NoACL.copy(objectName, newName);
+		throw new UnsupportedOperationException("This class is intended as a parent class. " +
+			"Try ExternalProviderS3ACL or ExternalProviderS3NoACL");
 	}
 
 	public String copy(String objectUrl, String newName, String tableName, String fieldName, ResourceAccessControlList acl) {
-		return objectOwnershipEnabled ?
-			externalProviderS3V2ACL.copy(objectUrl, newName, tableName, fieldName, acl) :
-			externalProviderS3V2NoACL.copy(objectUrl, newName, tableName, fieldName);
+		throw new UnsupportedOperationException("This class is intended as a parent class. " +
+			"Try ExternalProviderS3ACL or ExternalProviderS3NoACL");
 	}
 
 	protected String getContentType(String fileName) {
