@@ -54,12 +54,8 @@ public abstract class GXWebReport extends GXWebProcedure {
 		((GXReportPDFCommons) reportHandler).setOutputStream(httpContext.getOutputStream());
 	}
 
-	protected void setOutputFileName(String outputFileName){
-		try {
-			filename = URLEncoder.encode(outputFileName, "UTF-8").replace("+", "%20");
-		} catch (UnsupportedEncodingException e) {
-
-		}
+	protected void setOutputFileName(String outputFileName) {
+		filename = outputFileName;
 	}
 	protected void setOutputType(String outputType) {
 		filetype = outputType.toLowerCase();
