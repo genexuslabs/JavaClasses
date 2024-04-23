@@ -1744,6 +1744,8 @@ public class LocalUtil
 			if (originalPicture.startsWith("\\"))
 			{
 				negativeSign = -2;
+				if (preffix.equals("\"") && originalPicture.startsWith("\\\\"))
+					negativeSign--;
 				return originalPicture.charAt(1) + addPictureSuffix(suffix, originalPicture, addPicturePreffix(preffix, originalPicture, alignRight(formatted, originalPictLength + negativeSign)));
 			}
 			return addPictureSuffix(suffix, originalPicture, addPicturePreffix(preffix, originalPicture, alignRight(formatted, originalPictLength + negativeSign)));
