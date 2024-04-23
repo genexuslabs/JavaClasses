@@ -28,8 +28,7 @@ public class SubmitThreadPool
 			{
 				public void run()
 				{
-					if (ctx.threadModelContext.get() == null)
-						ctx.threadModelContext.set(ctx);
+					ctx.threadModelContext.set(ctx);
 					proc.submit(id, submitParms, ctx);
 					SubmitThreadPool.decRemainingSubmits();
 				}
@@ -190,8 +189,7 @@ class SubmitThread extends Thread
 			// Ejecuto el submit
 			try
 			{
-				if (context.threadModelContext.get() == null)
-					context.threadModelContext.set(context);
+				context.threadModelContext.set(context);
 				proc.submit(submitId, submitParms, context);
 			}catch(Throwable e)
 			{
