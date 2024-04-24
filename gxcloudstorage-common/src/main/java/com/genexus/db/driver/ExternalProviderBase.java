@@ -16,7 +16,7 @@ public abstract class ExternalProviderBase {
 	static final String FOLDER = "FOLDER_NAME";
 
 	@Deprecated
-	static final String DEFAULT_ACL_DEPRECATED = "STORAGE_PROVIDER_DEFAULT_ACL";
+	static final String DEFAULT_ACL_DEPRECATED = "STORAGE_PROVIDER_PRIVACY";
 	@Deprecated
 	static final String DEFAULT_EXPIRATION_DEPRECATED = "STORAGE_PROVIDER_DEFAULT_EXPIRATION";
 
