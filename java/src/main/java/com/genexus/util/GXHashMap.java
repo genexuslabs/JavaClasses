@@ -2,10 +2,12 @@ package com.genexus.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.genexus.GXutil;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -81,5 +83,39 @@ public class GXHashMap<K, V> extends HashMap<K, V> {
 		catch (JsonProcessingException e) {
 			log.error("Could not set Dictionary from json", e);
 		}
+	}
+
+	public GXHashMap<K, String> dateToCharRest() {
+		return convertToCharRest(this, false);
+	}
+
+	public GXHashMap<K, String> timeToCharRest() {
+		return convertToCharRest(this, true);
+	}
+
+	private GXHashMap<K, String> convertToCharRest(GXHashMap<K, V> thisHashMap, boolean isDateTime) {
+		GXHashMap<K, String> chardMap = new GXHashMap<>();
+
+		for (Map.Entry<K, V> entry : thisHashMap.entrySet()) {
+			K key = entry.getKey();
+			V dateValue = entry.getValue();
+
+			String stringValue = isDateTime? GXutil.timeToCharREST((Date)dateValue) : GXutil.dateToCharREST((Date)dateValue);
+			chardMap.put(key, stringValue);
+		}
+		return chardMap;
+	}
+
+	public GXHashMap<K, V> charToDateREST(GXHashMap<K, String> charHashMap, boolean isDateTime) {
+		clear();
+
+		for (Map.Entry<K, String> entry : charHashMap.entrySet()) {
+			K key = entry.getKey();
+			String stringValue = entry.getValue();
+
+			V dateValue = isDateTime? (V)GXutil.charToTimeREST(stringValue): (V)GXutil.charToDateREST(stringValue);
+			put(key, dateValue);
+		}
+		return this;
 	}
 }
