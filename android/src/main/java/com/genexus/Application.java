@@ -250,6 +250,9 @@ public class Application
 	*/
 	public static ClientPreferences getClientPreferences()
 	{
+		if (!hasClientPreferences())
+			return null;
+
 		return (ClientPreferences) ((ModelContext)ClientContext.getModelContext()).getPreferences();
 	}
 

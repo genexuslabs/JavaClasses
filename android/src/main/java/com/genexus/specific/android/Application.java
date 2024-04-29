@@ -24,7 +24,15 @@ public class Application implements IExtensionApplication {
 
 	@Override
 	public Object getProperty(String key, String defaultValue) {
-		return com.genexus.Application.getClientContext().getClientPreferences().getProperty(key, defaultValue);
+		com.genexus.ModelContext modelContext = com.genexus.Application.getClientContext();
+		if (modelContext == null)
+			return defaultValue;
+
+		IClientPreferences preferences = modelContext.getClientPreferences();
+		if (preferences == null)
+			return defaultValue;
+
+		return preferences.getProperty(key, defaultValue);
 	}
 
 	@Override
