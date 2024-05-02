@@ -125,6 +125,7 @@
         <module>gamsaml</module>
         <module>gxsftp</module>
         <module>gxftps</module>
+        <module>gxcompress</module>
 		<module>gamtotp</module>
     </modules>
 
