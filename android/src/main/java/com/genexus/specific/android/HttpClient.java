@@ -19,7 +19,11 @@ public class HttpClient implements IExtensionHttpClient {
 
 	@Override
 	public void addSDHeaders(String host, String baseURL, Hashtable<String, String> headersToSend) {
-		com.genexus.Preferences.getDefaultPreferences().getProperty("USER_LOG_NAMESPACE", "GeneXusUserLog");
+		com.genexus.Preferences preferences = com.genexus.Preferences.getDefaultPreferences();
+		if (preferences == null)
+			return;
+
+		preferences.getProperty("USER_LOG_NAMESPACE", "GeneXusUserLog");
 	}
 
 	@Override
