@@ -148,6 +148,7 @@ public abstract class GXWebObjectBase extends GXObjectBase implements GXInternet
 		}
 		catch (Throwable e)
 		{
+			handleException(e.getClass().getName(), e.getMessage(), CommonUtil.getStackTraceAsString(e));
 			cleanup(); // Antes de hacer el rethrow, hago un cleanup del objeto
 			throw e;
 		}
@@ -157,6 +158,8 @@ public abstract class GXWebObjectBase extends GXObjectBase implements GXInternet
 		}
 	}
 
+	public void handleException(String gxExceptionType, String gxExceptionDetails, String gxExceptionStack) {
+	}
         public void executeUsercontrolMethod(String CmpContext, boolean IsMasterPage, String containerName, String methodName, String input, Object[] parms)
         {
             httpContext.executeUsercontrolMethod(CmpContext, IsMasterPage, containerName, methodName, input, parms);
