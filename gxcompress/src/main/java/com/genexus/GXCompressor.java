@@ -1,8 +1,10 @@
 package com.genexus;
 
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
+import org.apache.commons.compress.archivers.sevenz.SevenZFile;
 import org.apache.commons.compress.archivers.sevenz.SevenZOutputFile;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
@@ -11,8 +13,12 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.zip.Deflater;
+import java.util.zip.*;
+
+import static org.apache.commons.io.FilenameUtils.getExtension;
+import static org.apache.commons.io.FilenameUtils.removeExtension;
 
 public class GXCompressor implements IGXCompressor {
 	@Override
@@ -48,7 +54,27 @@ public class GXCompressor implements IGXCompressor {
 
 	@Override
 	public void decompress(File file, String path, String password) {
-		// Implementation goes here
+		// Determine the format from the file extension or other logic
+		String extension = getExtension(file.getName());
+		try {
+			switch (extension.toLowerCase()) {
+				case "zip":
+					decompressZip(file, path);
+					break;
+				case "7z":
+					decompress7z(file, path, password); // New case for 7z
+					break;
+				case "tar":
+					decompressTar(file, path);
+				case "gzip":
+					decompressGzip(file, path);
+					// Add cases for other formats as needed
+				default:
+					throw new IllegalArgumentException("Unsupported compression format for decompression: " + extension);
+			}
+		} catch (IOException ioe) {
+			System.out.println("Fail");
+		}
 	}
 
 	private int convertCompressionMethodToLevel(CompressionMethod method) {
@@ -203,5 +229,118 @@ public class GXCompressor implements IGXCompressor {
 			throw new RuntimeException("Error compressing file with GZIP", e);
 		}
 	}
+
+	private void decompressZip(File zipFile, String directory) {
+		Path zipFilePath =  Paths.get(zipFile.toURI());
+		Path targetDir = Paths.get(directory);
+		targetDir = targetDir.toAbsolutePath(); // Ensure the path is absolute to prevent directory traversal issues
+
+		try (InputStream fis = Files.newInputStream(zipFilePath.toFile().toPath());
+			 ZipInputStream zipIn = new ZipInputStream(fis)) {
+
+			ZipEntry entry;
+			while ((entry = zipIn.getNextEntry()) != null) {
+				Path resolvedPath = targetDir.resolve(entry.getName()).normalize();
+
+				if (!resolvedPath.startsWith(targetDir)) {
+					throw new SecurityException("Zip entry is outside of the target dir: " + entry.getName());
+				}
+
+				if (entry.isDirectory()) {
+					Files.createDirectories(resolvedPath);
+				} else {
+					Path parentDir = resolvedPath.getParent();
+					if (!Files.exists(parentDir)) {
+						Files.createDirectories(parentDir);
+					}
+					try (OutputStream out = Files.newOutputStream(resolvedPath.toFile().toPath())) {
+						byte[] buffer = new byte[4096];
+						int length;
+						while ((length = zipIn.read(buffer)) > 0) {
+							out.write(buffer, 0, length);
+						}
+					}
+				}
+				zipIn.closeEntry();
+			}
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to decompress ZIP file: " + zipFilePath, e);
+		}
+	}
+
+	private void decompress7z(File file, String outputPath, String password) throws IOException {
+		Path targetDir = Paths.get(outputPath).toAbsolutePath(); // Ensure the path is absolute
+
+		try (SevenZFile sevenZFile = new SevenZFile(file, password.toCharArray())) {
+			SevenZArchiveEntry entry = sevenZFile.getNextEntry();
+			while (entry != null) {
+				Path resolvedPath = targetDir.resolve(entry.getName()).normalize();
+
+				if (!resolvedPath.startsWith(targetDir)) {
+					throw new IOException("Entry is outside of the target dir: " + entry.getName());
+				}
+
+				if (entry.isDirectory()) {
+					Files.createDirectories(resolvedPath);
+				} else {
+					File outputFile = resolvedPath.toFile();
+					File parentDir = outputFile.getParentFile();
+					if (!parentDir.exists() && !parentDir.mkdirs()) {
+						throw new IOException("Failed to create directory: " + parentDir);
+					}
+
+					try (FileOutputStream out = new FileOutputStream(outputFile)) {
+						byte[] content = new byte[(int) entry.getSize()];
+						sevenZFile.read(content, 0, content.length);
+						out.write(content);
+					}
+				}
+				entry = sevenZFile.getNextEntry();
+			}
+		}
+	}
+
+	private void decompressTar(File file, String outputPath) throws IOException {
+		Path targetDir = Paths.get(outputPath).toAbsolutePath();
+		try (InputStream fi = Files.newInputStream(file.toPath());
+			 TarArchiveInputStream ti = new TarArchiveInputStream(fi)) {
+			TarArchiveEntry entry;
+			while ((entry = ti.getNextTarEntry()) != null) {
+				File outputFile = targetDir.resolve(entry.getName()).normalize().toFile();
+				if (!outputFile.toPath().startsWith(targetDir)) {
+					throw new IOException("Entry is outside of the target directory: " + entry.getName());
+				}
+				if (entry.isDirectory()) {
+					if (!outputFile.exists()) {
+						if (!outputFile.mkdirs()) {
+							throw new IOException("Failed to create directory: " + outputFile);
+						}
+					}
+				} else {
+					File parent = outputFile.getParentFile();
+					if (!parent.exists() && !parent.mkdirs()) {
+						throw new IOException("Failed to create directory: " + parent);
+					}
+					try (OutputStream out = new FileOutputStream(outputFile)) {
+						IOUtils.copy(ti, out);
+					}
+				}
+			}
+		}
+	}
+
+	private void decompressGzip(File inputFile, String outputPath) throws IOException {
+		Path outputFilePath = Paths.get(outputPath, removeExtension(inputFile.getName()));
+		try (FileInputStream fis = new FileInputStream(inputFile);
+			 GZIPInputStream gzis = new GZIPInputStream(fis);
+			 FileOutputStream fos = new FileOutputStream(outputFilePath.toFile())) {
+			byte[] buffer = new byte[4096];
+			int bytesRead;
+			while ((bytesRead = gzis.read(buffer)) != -1) {
+				fos.write(buffer, 0, bytesRead);
+			}
+		}
+	}
+
 }
 
