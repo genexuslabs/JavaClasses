@@ -12,4 +12,12 @@
     <artifactId>gxcompress</artifactId>
     <name>GeneXus compression and decompression module</name>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.26.1</version>
+        </dependency>
+    </dependencies>
+
 </project>
