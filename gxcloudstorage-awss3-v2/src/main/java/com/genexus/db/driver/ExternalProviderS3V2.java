@@ -104,7 +104,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 		String folder = getPropertyValue(FOLDER, FOLDER_DEPRECATED, "");
 		clientRegion = getPropertyValue(REGION, REGION_DEPRECATED, DEFAULT_REGION);
 
-		objectOwnershipEnabled = !getPropertyValue(DEFAULT_ACL, DEFAULT_ACL_DEPRECATED, "").equals("Bucket owner enforced");
+		objectOwnershipEnabled = !getPropertyValue(DEFAULT_ACL, DEFAULT_STORAGE_PRIVACY, "").contains("Bucket owner enforced");
 
 		String endpointValue = getPropertyValue(STORAGE_ENDPOINT, STORAGE_ENDPOINT_DEPRECATED, "");
 		if (endpointValue.equals("custom")) {
@@ -268,7 +268,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 	private String getResourceUrl(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
 		return objectOwnershipEnabled ?
 			getResourceUrlWithACL(externalFileName, acl, expirationMinutes) :
-			getResourceUrlWithoutACL(externalFileName);
+			getResourceUrlWithoutACL(externalFileName, expirationMinutes);
 	}
 
 	public void delete(String objectName, ResourceAccessControlList acl) {
@@ -717,13 +717,18 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 
 	// Without ACL implementation
 
+	private enum BucketPrivacy {PRIVATE, PUBLIC};
+	private final BucketPrivacy ownerEnforcedBucketPrivacy = getPropertyValue(DEFAULT_ACL, DEFAULT_STORAGE_PRIVACY, "").contains("Bucket owner enforced") ?
+		(getPropertyValue(DEFAULT_ACL, DEFAULT_STORAGE_PRIVACY, "").contains("private") ? BucketPrivacy.PRIVATE : BucketPrivacy.PUBLIC)
+		: null;
+
 	private String uploadWithoutACL(String localFile, String externalFileName) {
 		client.putObject(PutObjectRequest.builder()
 				.bucket(bucket)
 				.key(externalFileName)
 				.build(),
 			RequestBody.fromFile(Paths.get(localFile)));
-		return getResourceUrlWithoutACL(externalFileName);
+		return getResourceUrlWithoutACL(externalFileName, defaultExpirationMinutes);
 	}
 
 	private String uploadWithoutACL(String externalFileName, InputStream input) {
@@ -740,27 +745,49 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 				logger.error("Error while uploading file: " + response.sdkHttpResponse().statusText().orElse("Unknown error"));
 			}
 
-			return getResourceUrlWithoutACL(externalFileName);
+			return getResourceUrlWithoutACL(externalFileName, defaultExpirationMinutes);
 		} catch (IOException ex) {
 			logger.error("Error while uploading file to the external provider.", ex);
 			return "";
 		}
 	}
 
-	private String getResourceUrlWithoutACL(String externalFileName) {
-		try {
-			GetUrlRequest request = GetUrlRequest.builder()
+	private String getResourceUrlWithoutACL(String externalFileName, int expirationMinutes) {
+		if (ownerEnforcedBucketPrivacy == BucketPrivacy.PRIVATE) {
+			expirationMinutes = expirationMinutes > 0 ? expirationMinutes : defaultExpirationMinutes;
+			Instant expiration = Instant.now().plus(Duration.ofMinutes(expirationMinutes));
+
+			GetObjectRequest getObjectRequest = GetObjectRequest.builder()
 				.bucket(bucket)
 				.key(externalFileName)
 				.build();
 
-			URL url = client.utilities().getUrl(request);
-			return url.toString();
+			PresignedGetObjectRequest presignedGetObjectRequest =
+				presigner.presignGetObject(r -> r.signatureDuration(Duration.between(Instant.now(), expiration))
+					.getObjectRequest(getObjectRequest));
 
-		} catch (S3Exception e) {
-			logger.error("Failed to get the URL for the given resource because " + e.awsErrorDetails().errorMessage(), e);
-			return "";
-		}
+			return presignedGetObjectRequest.url().toString();
+		} else if (ownerEnforcedBucketPrivacy == BucketPrivacy.PUBLIC){
+			try {
+				int lastIndex = Math.max(externalFileName.lastIndexOf('/'), externalFileName.lastIndexOf('\\'));
+				String path = externalFileName.substring(0, lastIndex + 1);
+				String fileName = externalFileName.substring(lastIndex + 1);
+				String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString());
+
+				String url = String.format(
+					"https://%s.s3.%s.amazonaws.com/%s%s",
+					bucket,
+					clientRegion,
+					path,
+					encodedFileName
+				);
+
+				return url;
+			} catch (UnsupportedEncodingException uee) {
+				logger.error("Failed to encode resource URL for {}", externalFileName, uee);
+				return "";
+			}
+		} else return "";
 	}
 
 	private String copyWithoutACL(String objectName, String newName) {
@@ -771,7 +798,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 			.destinationKey(newName);
 		CopyObjectRequest request = requestBuilder.build();
 		client.copyObject(request);
-		return getResourceUrlWithoutACL(newName);
+		return getResourceUrlWithoutACL(newName, defaultExpirationMinutes);
 	}
 
 	private String copyWithoutACL(String objectUrl, String newName, String tableName, String fieldName) {
@@ -803,7 +830,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 		PutObjectRequest putObjectRequest = putObjectRequestBuilder.build();
 		client.putObject(putObjectRequest, RequestBody.fromBytes(objectBytes.asByteArray()));
 
-		return getResourceUrlWithoutACL(resourceKey);
+		return getResourceUrlWithoutACL(resourceKey, defaultExpirationMinutes);
 	}
 }
 
