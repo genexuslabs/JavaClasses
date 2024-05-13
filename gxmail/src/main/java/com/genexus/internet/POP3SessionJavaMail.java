@@ -1,11 +1,8 @@
 package com.genexus.internet;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Properties;
@@ -357,21 +354,22 @@ public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
   
   private void saveFile(String filename, InputStream input) throws IOException 
   {
-    File file = new File(attachmentsPath + filename);
-	BufferedOutputStream bos;
-    try (FileOutputStream fos = new FileOutputStream(file)) {
-		bos = new BufferedOutputStream(fos);
-	}
-
-    BufferedInputStream bis = new BufferedInputStream(input);
-    int aByte;
-    while ((aByte = bis.read()) != -1) 
-    {
-      bos.write(aByte);
-    }
-    bos.flush();
-    bos.close();
-    bis.close();
+	  try {
+		  String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8.toString());
+		  encodedFilename = encodedFilename.replace("+", "_");
+		  File file = new File(attachmentsPath + encodedFilename);
+		  try (FileOutputStream fos = new FileOutputStream(file);
+			   BufferedOutputStream bos = new BufferedOutputStream(fos);
+			   BufferedInputStream bis = new BufferedInputStream(input)) {
+			  int aByte;
+			  while ((aByte = bis.read()) != -1) {
+				  bos.write(aByte);
+			  }
+			  bos.flush();
+		  }
+	  } catch (UnsupportedEncodingException e) {
+		  throw new IOException("Error encoding the filename", e);
+	  }
   }
   
 	public String getNextUID() throws GXMailException
