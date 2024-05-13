@@ -8,6 +8,9 @@ public class JapaneseMimeDecoder
 
 	public static String decode(String encoded)
 	{
+		if (encoded == null)
+			return "";
+
 		int strLen = encoded.length();
 		int currentIndex = 0;
 
