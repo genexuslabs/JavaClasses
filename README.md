@@ -12,7 +12,6 @@ These are the source of the GeneXus Standard Classes for Java, valid since GeneX
 | Name  | Description
 |---|---
 | common | Classes common to Android and Java
-| gxcryptocommon | Classes common to Android and Java related to Cryptography
 | gxmail | Classes related to mail handling
 | java | Java standard classes,  output is gxclassr.jar
 | wrappercommon | Interfaces to encapsulate Java EE and Jakarta EE support,  output is gxwrappercommon.jar
