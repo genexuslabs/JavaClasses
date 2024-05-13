@@ -15,6 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.genexus.internet.IGxJSONAble;
 import com.genexus.internet.IGxJSONSerializable;
 
+import static com.genexus.common.interfaces.SpecificImplementation.GXutil;
+
 
 public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJSONAble, IGxJSONSerializable
 {
@@ -425,7 +427,11 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
             {
 				if (value.toString().equals("null"))
 					return null;
-				return localUtil.ctot(value.toString(), 0);
+				String stringValue = value.toString();
+				if (stringValue.contains("."))
+					return GXutil.charToTimeREST(stringValue);
+				else
+					return localUtil.ctot(stringValue, 0);
             }
             return CommonUtil.convertObjectTo(value, parmClass);
         }
