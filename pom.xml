@@ -27,6 +27,7 @@
 		<software.awssdk.version>2.21.27</software.awssdk.version>
 		<software.azure.cosmos.version>4.42.0</software.azure.cosmos.version>
 		<log4j.version>2.21.1</log4j.version>
+        <org.bouncycastle.version>1.78.1</org.bouncycastle.version>
         <io.opentelemetry.version>1.28.0</io.opentelemetry.version>
         <commons.compress.version>1.26.0</commons.compress.version>
 	</properties>
@@ -116,6 +117,7 @@
 		<module>gxcloudstorage-ibmcos</module>
 		<module>gxcloudstorage-tests</module>
         <module>gxobservability</module>
+        <module>securityapicommons</module>
         <module>gxcloudstorage-awss3-v2</module>
         <module>gamtotp</module>
     </modules>
