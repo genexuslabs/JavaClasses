@@ -116,6 +116,7 @@
         <module>gxobservability</module>
         <module>gxcloudstorage-awss3-v2</module>
         <module>securityapicommons</module>
+        <module>gxjwt</module>
     </modules>
 
 	<dependencies>
