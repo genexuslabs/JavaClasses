@@ -7,6 +7,13 @@ import junit.framework.TestCase;
 
 public class SecurityAPITestObject extends TestCase {
 
+	public String resources;
+
+
+	public SecurityAPITestObject() {
+		resources = System.getProperty("user.dir").concat("/src/test/resources");
+	}
+
 	public void True(boolean result, SecurityAPIObject object)
 	{
 		assertTrue(result);
