@@ -70,8 +70,8 @@ public class ECDSACurvesPrimeJwtTest extends SecurityAPITestObject {
 	}
 
 	private void prime192v1() {
-		String pathKey = ECDSA_path + "prime192v1" + "\\key.pem";
-		String pathCert = ECDSA_path + "prime192v1" + "\\cert.pem";
+		String pathKey = ECDSA_path + "prime192v1" + "/key.pem";
+		String pathCert = ECDSA_path + "prime192v1" + "/cert.pem";
 		System.out.println("pathKey: " + pathKey);
 		System.out.println("pathCert: " + pathCert);
 		PrivateKeyManager key = new PrivateKeyManager();
