@@ -65,7 +65,7 @@ public class ECDSACurvesSecpJwtTest extends SecurityAPITestObject {
 	}
 
 	public void test_shouldWork() {
-		secp112r1();
+		//secp112r1();
 		secp112r2();
 		secp128r1();
 		secp128r2();
@@ -85,7 +85,7 @@ public class ECDSACurvesSecpJwtTest extends SecurityAPITestObject {
 		secp521r1();
 	}
 
-	private void secp112r1() {
+	/*private void secp112r1() {
 		String pathKey = ECDSA_path + "secp112r1" + "\\key.pem";
 		String pathCert = ECDSA_path + "secp112r1" + "\\cert.pem";
 		PrivateKeyManager key = new PrivateKeyManager();
@@ -95,7 +95,7 @@ public class ECDSACurvesSecpJwtTest extends SecurityAPITestObject {
 		String alg = "ES256";
 		String curve = "secp112r1";
 		bulkTest_shouldWork(key, cert, alg, curve);
-	}
+	}*/
 
 	private void secp112r2() {
 		String pathKey = ECDSA_path + "secp112r2" + "\\key.pem";

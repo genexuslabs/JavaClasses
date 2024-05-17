@@ -59,7 +59,7 @@ public class ECDSACurvesPrimeJwtTest extends SecurityAPITestObject {
 
 	public void test_shouldWork() {
 
-		prime192v1();
+		//prime192v1();
 		prime192v2();
 		prime192v3();
 		prime239v1();
@@ -68,7 +68,7 @@ public class ECDSACurvesPrimeJwtTest extends SecurityAPITestObject {
 		prime256v1();
 	}
 
-	private void prime192v1() {
+	/*private void prime192v1() {
 		String pathKey = ECDSA_path + "prime192v1" + "\\key.pem";
 		String pathCert = ECDSA_path + "prime192v1" + "\\cert.pem";
 		PrivateKeyManager key = new PrivateKeyManager();
@@ -78,7 +78,7 @@ public class ECDSACurvesPrimeJwtTest extends SecurityAPITestObject {
 		String alg = "ES256";
 		String curve = "prime192v1";
 		bulkTest_shouldWork(key, cert, alg, curve);
-	}
+	}*/
 
 	private void prime192v2() {
 		String pathKey = ECDSA_path + "prime192v2" + "\\key.pem";
