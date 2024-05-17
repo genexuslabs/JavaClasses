@@ -7,8 +7,6 @@ import com.genexus.commons.JWTOptions;
 import com.genexus.securityapicommons.keys.CertificateX509;
 import com.genexus.securityapicommons.keys.PrivateKeyManager;
 import com.genexus.test.commons.SecurityAPITestObject;
-
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
