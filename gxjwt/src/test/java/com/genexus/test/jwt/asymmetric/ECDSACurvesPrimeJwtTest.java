@@ -52,6 +52,7 @@ public class ECDSACurvesPrimeJwtTest extends SecurityAPITestObject {
 		options.setCertificate(cert);
 		String token = jwt.doCreate(alg, claims, options);
 		System.out.println("token: " + token);
+		System.out.println("Error. Code: " + jwt.getErrorCode() + " Desc: " + jwt.getErrorDescription());
 		//assertFalse(jwt.hasError());
 		boolean verification = jwt.doVerify(token, alg, claims, options);
 		System.out.println("verification: " + Boolean.toString(verification));
