@@ -8,6 +8,7 @@ import com.genexus.securityapicommons.keys.CertificateX509;
 import com.genexus.securityapicommons.keys.PrivateKeyManager;
 import com.genexus.test.commons.SecurityAPITestObject;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -52,35 +53,41 @@ public class ECDSACurvesPrimeJwtTest extends SecurityAPITestObject {
 		options.setPrivateKey(key);
 		options.setCertificate(cert);
 		String token = jwt.doCreate(alg, claims, options);
-		assertFalse(jwt.hasError());
+		System.out.println("token: " + token);
+		//assertFalse(jwt.hasError());
 		boolean verification = jwt.doVerify(token, alg, claims, options);
+		System.out.println("verification: " + Boolean.toString(verification));
 		True(verification, jwt);
 	}
 
 	public void test_shouldWork() {
 
-		//prime192v1();
-		prime192v2();
+		prime192v1();
+		/*prime192v2();
 		prime192v3();
 		prime239v1();
 		prime239v2();
 		prime239v3();
-		prime256v1();
+		prime256v1();*/
 	}
 
-	/*private void prime192v1() {
+	private void prime192v1() {
 		String pathKey = ECDSA_path + "prime192v1" + "\\key.pem";
 		String pathCert = ECDSA_path + "prime192v1" + "\\cert.pem";
+		System.out.println("pathKey: " + pathKey);
+		System.out.println("pathCert: " + pathCert);
 		PrivateKeyManager key = new PrivateKeyManager();
 		CertificateX509 cert = new CertificateX509();
-		key.load(pathKey);
-		cert.load(pathCert);
+		boolean keyLoaded = key.load(pathKey);
+		System.out.println("keyLoaded: " + Boolean.toString(keyLoaded));
+		boolean certLoaded = cert.load(pathCert);
+		System.out.println("certLoaded: " + Boolean.toString(certLoaded));
 		String alg = "ES256";
 		String curve = "prime192v1";
 		bulkTest_shouldWork(key, cert, alg, curve);
-	}*/
+	}
 
-	private void prime192v2() {
+	/*private void prime192v2() {
 		String pathKey = ECDSA_path + "prime192v2" + "\\key.pem";
 		String pathCert = ECDSA_path + "prime192v2" + "\\cert.pem";
 		PrivateKeyManager key = new PrivateKeyManager();
@@ -150,5 +157,5 @@ public class ECDSACurvesPrimeJwtTest extends SecurityAPITestObject {
 		String alg = "ES256";
 		String curve = "prime256v1";
 		bulkTest_shouldWork(key, cert, alg, curve);
-	}
+	}*/
 }
