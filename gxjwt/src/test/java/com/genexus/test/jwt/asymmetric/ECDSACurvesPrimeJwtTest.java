@@ -86,7 +86,7 @@ public class ECDSACurvesPrimeJwtTest extends SecurityAPITestObject {
 		//bulkTest_shouldWork(key, cert, alg, curve);
 		options.setPrivateKey(key);
 		options.setCertificate(cert);
-		
+
 		String token = jwt.doCreate(alg, claims, options);
 		System.out.println("token: " + token);
 		System.out.println("Error. Code: " + jwt.getErrorCode() + " Desc: " + jwt.getErrorDescription());
