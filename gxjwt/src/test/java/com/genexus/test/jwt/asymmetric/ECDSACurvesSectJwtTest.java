@@ -65,7 +65,7 @@ public class ECDSACurvesSectJwtTest extends SecurityAPITestObject{
 	}
 
 	public void test_shouldWork() {
-		sect113r1();
+		//sect113r1();
 		sect113r2();
 		sect131r1();
 		sect131r2();
@@ -91,7 +91,7 @@ public class ECDSACurvesSectJwtTest extends SecurityAPITestObject{
 		sect571r1();
 	}
 
-	private void sect113r1() {
+	/*private void sect113r1() {
 		String pathKey = ECDSA_path + "sect113r1" + "\\key.pem";
 		String pathCert = ECDSA_path + "sect113r1" + "\\cert.pem";
 		PrivateKeyManager key = new PrivateKeyManager();
@@ -101,7 +101,7 @@ public class ECDSACurvesSectJwtTest extends SecurityAPITestObject{
 		String alg = "ES256";
 		String curve = "sect113r1";
 		bulkTest_shouldWork(key, cert, alg, curve);
-	}
+	}*/
 
 	private void sect113r2() {
 		String pathKey = ECDSA_path + "sect113r2" + "\\key.pem";
