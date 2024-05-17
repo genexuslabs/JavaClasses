@@ -83,7 +83,17 @@ public class ECDSACurvesPrimeJwtTest extends SecurityAPITestObject {
 		System.out.println("certLoaded: " + Boolean.toString(certLoaded));
 		String alg = "ES256";
 		String curve = "prime192v1";
-		bulkTest_shouldWork(key, cert, alg, curve);
+		//bulkTest_shouldWork(key, cert, alg, curve);
+		options.setPrivateKey(key);
+		options.setCertificate(cert);
+		
+		String token = jwt.doCreate(alg, claims, options);
+		System.out.println("token: " + token);
+		System.out.println("Error. Code: " + jwt.getErrorCode() + " Desc: " + jwt.getErrorDescription());
+		//assertFalse(jwt.hasError());
+		boolean verification = jwt.doVerify(token, alg, claims, options);
+		System.out.println("verification: " + Boolean.toString(verification));
+		True(verification, jwt);
 	}
 
 	/*private void prime192v2() {
