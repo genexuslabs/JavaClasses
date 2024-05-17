@@ -115,6 +115,7 @@
 		<module>gxcache-memcached</module>
 		<module>gxobservability</module>
         <module>securityapicommons</module>
+        <module>gxjwt</module>
     </modules>
 
 	<dependencies>
