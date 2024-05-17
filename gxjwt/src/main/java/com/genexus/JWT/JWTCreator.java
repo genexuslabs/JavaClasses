@@ -243,9 +243,16 @@ public class JWTCreator extends JWTObject {
 		}
 		String signedJwt = "";
 		try {
+			if(algorithmType == null)
+			{
+				System.out.println("Algrithmm type null");
+			}
+			System.out.println("Algorithm type: " + algorithmType.getSigningKeyId());
+
 			signedJwt = tokenBuilder.sign(algorithmType);
 		} catch (Exception e) {
 			this.error.setError("JW006", e.getMessage());
+			e.printStackTrace();
 			return "";
 		}
 
