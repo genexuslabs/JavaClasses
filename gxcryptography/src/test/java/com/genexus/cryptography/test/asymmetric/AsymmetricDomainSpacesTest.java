@@ -21,7 +21,7 @@ public class AsymmetricDomainSpacesTest extends SecurityAPITestObject{
 
 	@Override
 	protected void setUp() {
-		path_RSA_sha1_1024 = "C:\\Temp\\dummycerts\\RSA_sha1_1024\\";
+		path_RSA_sha1_1024 = resources.concat("/dummycerts/RSA_sha1_1024/");
 		plainText = "Lorem ipsum";
 		pathKey = path_RSA_sha1_1024 + "sha1d_key.pem";
 		pathCert = path_RSA_sha1_1024 + "sha1_cert.crt";
