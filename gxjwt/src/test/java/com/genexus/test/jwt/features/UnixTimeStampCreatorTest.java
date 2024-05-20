@@ -28,7 +28,7 @@ public class UnixTimeStampCreatorTest extends SecurityAPITestObject {
 	public void setUp() {
 		date = "2023/07/19 11:41:00";
 		creator = new UnixTimestampCreator();
-		expected = "1689777660";
+		expected = "1689766860";
 	}
 
 

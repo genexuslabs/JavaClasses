@@ -5,6 +5,7 @@ import com.genexus.securityapicommons.commons.SecurityAPIObject;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 public class UnixTimestampCreator  extends SecurityAPIObject {
 
@@ -17,6 +18,7 @@ public class UnixTimestampCreator  extends SecurityAPIObject {
 	{
 		Date datef = null;
 		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 		try {
 
 			datef = dateFormat.parse(date);
