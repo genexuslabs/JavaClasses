@@ -112,6 +112,7 @@
 		<module>gxcache-memcached</module>
 		<module>gxcloudstorage-common</module>
 		<module>gxcloudstorage-awss3-v1</module>
+		<module>gxcloudstorage-awss3-v2</module>
 		<module>gxcloudstorage-googlecloudstorage</module>
 		<module>gxcloudstorage-azureblob</module>
 		<module>gxcloudstorage-ibmcos</module>
@@ -119,8 +120,8 @@
         <module>gxobservability</module>
         <module>securityapicommons</module>
         <module>gxjwt</module>
-        <module>gxcloudstorage-awss3-v2</module>
-        <module>gamtotp</module>
+        <module>gxcryptography</module>
+		<module>gamtotp</module>
     </modules>
 
 	<dependencies>
