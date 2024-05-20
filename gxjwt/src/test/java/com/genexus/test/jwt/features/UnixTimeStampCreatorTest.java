@@ -34,7 +34,16 @@ public class UnixTimeStampCreatorTest extends SecurityAPITestObject {
 
 	public void testCreate()
 	{
+		System.out.println("date: " + date);
 		String obtained = creator.create(date);
+		if(creator.hasError())
+		{
+			System.out.println("Error. Code: " + creator.getErrorCode() + " Desc: " + creator.getErrorDescription());
+		}else{
+			System.out.println("No error");
+		}
+		System.out.println("expected: " + expected);
+		System.out.println("obtained: " + obtained);
 		Equals(expected, obtained, creator);
 	}
 }
