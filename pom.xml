@@ -116,6 +116,7 @@
 		<module>gxobservability</module>
         <module>securityapicommons</module>
         <module>gxjwt</module>
+        <module>gxcryptography</module>
     </modules>
 
 	<dependencies>
