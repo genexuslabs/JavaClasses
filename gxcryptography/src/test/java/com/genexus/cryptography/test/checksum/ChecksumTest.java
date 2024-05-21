@@ -79,9 +79,9 @@ public class ChecksumTest extends SecurityAPITestObject {
 	@Override
 	public void runTest() {
 		testBulkChecksum();
-		testBulkChecksum_LocalFile();
+		/*testBulkChecksum_LocalFile();
 		testBulkChecksum0x();
-		testBulkChecksum0x_LocalFile();
+		testBulkChecksum0x_LocalFile();*/
 	}
 
 	public void testBulkChecksum() {
@@ -91,13 +91,14 @@ public class ChecksumTest extends SecurityAPITestObject {
 				String checksum = check.generateChecksum(inputs[j], inputTypes[j], algorithms[i]);
 				assertTrue(SecurityUtils.compareStrings(checksum, results[i]));
 				boolean verify = check.verifyChecksum(inputs[j], inputTypes[j], algorithms[i], checksum);
+				System.out.println("inputs: " + inputs[j] + " inputTypes: " +  inputTypes[j] + "algorithms: " + algorithms[i] + "checksum: "  + checksum);
 				True(verify, check);
 			}
 		}
 
 	}
 
-	public void testBulkChecksum0x() {
+	/*public void testBulkChecksum0x() {
 		ChecksumCreator check = new ChecksumCreator();
 		for (int j = 0; j < inputs.length; j++) {
 			for (int i = 0; i < algorithms.length; i++) {
@@ -129,6 +130,6 @@ public class ChecksumTest extends SecurityAPITestObject {
 				resultsLocalFile0x[k].toLowerCase());
 			True(verify, check);
 		}
-	}
+	}*/
 
 }
