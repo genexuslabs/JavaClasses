@@ -56,7 +56,6 @@ public class issue84141Test extends SecurityAPITestObject {
 		options.setSecret(hexaKey);
 		token = jwt.doCreate("HS256", claims, options);
 		String payload = jwt.getPayload(token);
-		System.out.println(payload);
 		ObjectMapper objectMapper = new ObjectMapper();
 		HashMap<String, Object> map = null;
 		try {
