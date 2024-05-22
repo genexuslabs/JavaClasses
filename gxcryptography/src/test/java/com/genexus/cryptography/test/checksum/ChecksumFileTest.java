@@ -12,8 +12,6 @@ public class ChecksumFileTest extends SecurityAPITestObject {
 
 	private static String localFileInput;
 	private static String[] algorithms;
-	private static String[] resultsLocalFile;
-	private static String[] resultsLocalFile0x;
 
 	@Override
 	protected void setUp() {
