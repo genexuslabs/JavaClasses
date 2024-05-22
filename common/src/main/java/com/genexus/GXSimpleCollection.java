@@ -22,9 +22,8 @@ import com.genexus.xml.XMLReader;
 
 import com.genexus.xml.XMLWriter;
 
-import json.org.json.IJsonFormattable;
-import json.org.json.JSONArray;
-import json.org.json.JSONException;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 public class GXSimpleCollection<T> extends GXBaseList<T> {
 
@@ -1031,7 +1030,7 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 		tojson(includeState);
 		return jsonArr;
 	}
-	public void FromJSONObject(IJsonFormattable obj)
+	public void FromJSONObject(Object obj)
 	{
 		
 		this.clear();
@@ -1059,7 +1058,7 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 					{
 						Constructor constructor = elementsType.getConstructor(parTypes);
 						currObj = constructor.newInstance(arglist);
-						((IGxJSONAble)currObj).FromJSONObject((IJsonFormattable)jsonObj);
+						((IGxJSONAble)currObj).FromJSONObject(jsonObj);
 					}
 					if (IGxJSONSerializable.class.isAssignableFrom(elementsType))
 					{
@@ -1317,7 +1316,7 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 			result = result + ",[";
 			GxUnknownObjectCollection tableCollection = (GxUnknownObjectCollection)super.get(i);
 			int tableCollectionSize = tableCollection.size();
-			jsonObj = new json.org.json.JSONArray();
+			jsonObj = new JSONArray();
 			for (int j = 1; j <= tableCollectionSize; j++)
 			{
 				jsonObj.put((StringCollection)tableCollection.item(j));
