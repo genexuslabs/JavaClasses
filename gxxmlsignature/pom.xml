@@ -9,30 +9,10 @@
         <version>${revision}${changelist}</version>
     </parent>
 
-    <artifactId>gxjwt</artifactId>
-    <name>GeneXus JWT</name>
+    <artifactId>gxxmlsignature</artifactId>
+    <name>GeneXus XML Signature</name>
 
     <dependencies>
-        <dependency>
-            <groupId>com.auth0</groupId>
-            <artifactId>java-jwt</artifactId>
-            <version>4.4.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk18on</artifactId>
@@ -44,9 +24,20 @@
             <version>${org.bouncycastle.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.santuario</groupId>
+            <artifactId>xmlsec</artifactId>
+            <version>3.0.3</version>
+        </dependency>
+        <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
             <version>1.13</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <version>1.7.7</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -61,10 +52,8 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-
     <build>
-        <finalName>GeneXusJWT</finalName>
+        <finalName>GeneXusXmlSignature</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
