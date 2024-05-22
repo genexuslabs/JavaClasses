@@ -121,6 +121,7 @@
         <module>securityapicommons</module>
         <module>gxjwt</module>
         <module>gxcryptography</module>
+        <module>gxxmlsignature</module>
 		<module>gamtotp</module>
     </modules>
 
