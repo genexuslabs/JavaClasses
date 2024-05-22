@@ -13,6 +13,7 @@ import org.bouncycastle.cert.jcajce.JcaCertStore;
 import org.bouncycastle.cms.*;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.DigestCalculatorProvider;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -98,6 +99,7 @@ public class StandardSigner extends StandardSignerObject {
 			result = verify_internal(Base64.decode(signed), plainText_bytes, options.getEncapsulated());
 		} catch (Exception e) {
 			error.setError("SS002", e.getMessage());
+			e.printStackTrace();
 			result = false;
 		}
 
@@ -143,7 +145,7 @@ public class StandardSigner extends StandardSignerObject {
 	}
 
 	private boolean verify_internal(byte[] cmsSignedData, byte[] data, boolean encapsulated)
-		throws GeneralSecurityException, OperatorCreationException, CMSException, CertificateException {
+		throws GeneralSecurityException, OperatorCreationException, CMSException {
 
 		CMSSignedData signedData = encapsulated ? new CMSSignedData(cmsSignedData): new CMSSignedData(new CMSProcessableByteArray(data), cmsSignedData);
 
