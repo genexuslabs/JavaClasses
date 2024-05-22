@@ -50,6 +50,11 @@
             <version>4.5.13</version>
             <scope>compile</scope>
         </dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20231013</version>
+		</dependency>        
     </dependencies>
 
 	<build>

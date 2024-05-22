@@ -10,7 +10,7 @@ import com.genexus.db.Namespace;
 import com.genexus.db.UserInformation;
 import com.genexus.ws.rs.core.Response;
 
-import json.org.json.JSONArray;
+import org.json.JSONArray;
 
 @javax.ws.rs.Path("/gxmulticall")
 @jakarta.ws.rs.Path("/gxmulticall")

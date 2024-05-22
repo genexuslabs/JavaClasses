@@ -4,9 +4,8 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 
-import json.org.json.IJsonFormattable;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONException;
+import com.genexus.json.JSONObjectWrapper;
 
 public class WebSecureToken extends SecureToken {
 	private static int TOKEN_DAYS_EXPIRATION = 15;
@@ -20,7 +19,7 @@ public class WebSecureToken extends SecureToken {
 	private String _value = "";
 	private Date _expiration;
 	
-	private JSONObject _jObj = new JSONObject();
+	private JSONObjectWrapper _jObj = new JSONObjectWrapper();
 	
 	public WebSecureToken(){			
 		_expiration = org.apache.commons.lang.time.DateUtils.addDays(new Date(), TOKEN_DAYS_EXPIRATION);
@@ -90,9 +89,9 @@ public class WebSecureToken extends SecureToken {
     	return GetJSONObject();
     }
     
-    public void FromJSONObject(IJsonFormattable obj)
+    public void FromJSONObject(Object obj)
     {
-    	JSONObject jObj = (JSONObject) obj;			
+		JSONObjectWrapper jObj = (JSONObjectWrapper) obj;
 		this._issuer = getJsonPtyValueString(jObj, WebSecureToken.JSON_ISSUER_NAME);
 		this._value = getJsonPtyValueString(jObj, WebSecureToken.JSON_VALUE_NAME);
 		this._pgmName = getJsonPtyValueString(jObj, WebSecureToken.JSON_PGMNAME_NAME);
@@ -107,7 +106,7 @@ public class WebSecureToken extends SecureToken {
     	return GetJSONObject().toString();
     }   
     
-    private String getJsonPtyValueString(JSONObject jObj, String name)
+    private String getJsonPtyValueString(JSONObjectWrapper jObj, String name)
     {
     	if (jObj.has(name))
 			try {
