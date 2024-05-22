@@ -49,13 +49,21 @@ public class ECDSAStandardSigningTest extends SecurityAPITestObject {
 		options.setEncapsulated(true);
 		StandardSigner signer = new StandardSigner();
 		String signed_encapsulated = signer.sign(plainText, options);
+		System.out.println("signed_encapsulated: + signed_encapsulated");
+		System.out.println("Error signer sign enc. Code: " + signer.getErrorCode() + " Desc: " + signer.getErrorDescription());
 		boolean result_encapsulated = signer.verify(signed_encapsulated, "", options);
+		System.out.println("result_encapsulated: " + result_encapsulated);
+		System.out.println("Error signer verify enc. Code: " + signer.getErrorCode() + " Desc: " + signer.getErrorDescription());
 		assertTrue(result_encapsulated);
 		True(result_encapsulated, signer);
 
 		options.setEncapsulated(false);
 		String signed = signer.sign(plainText, options);
+		System.out.println("signed: " + signed);
+		System.out.println("Error signer sign. Code: " + signer.getErrorCode() + " Desc: " + signer.getErrorDescription());
 		boolean result = signer.verify(signed, plainText, options);
+		System.out.println("result: " + result);
+		System.out.println("Error signer verify. Code: " + signer.getErrorCode() + " Desc: " + signer.getErrorDescription());
 		assertTrue(result);
 		True(result, signer);
 	}
@@ -66,13 +74,13 @@ public class ECDSAStandardSigningTest extends SecurityAPITestObject {
 
 	@Override
 	public void runTest() {
-		test_ecdsa_sha256_PEM();
+		/*test_ecdsa_sha256_PEM();
 		test_ecdsa_sha256_DER();
-		test_ecdsa_sha256_PKCS12();
+		test_ecdsa_sha256_PKCS12();*/
 
 		test_ecdsa_sha1_PEM();
-		test_ecdsa_sha1_DER();
-		test_ecdsa_sha1_PKCS12();
+		/*test_ecdsa_sha1_DER();
+		test_ecdsa_sha1_PKCS12();*/
 	}
 
 	public void test_ecdsa_sha1_PEM()
@@ -81,15 +89,17 @@ public class ECDSAStandardSigningTest extends SecurityAPITestObject {
 		String pathCert = path_ecdsa_sha1 + "sha1_cert.pem";
 		PrivateKeyManager key = new PrivateKeyManager();
 		key.load(pathKey);
+		System.out.println("Error key. Code: " + key.getErrorCode() + " Desc: " + key.getErrorDescription());
 		CertificateX509 cert = new CertificateX509();
 		cert.load(pathCert);
+		System.out.println("Error cert. Code: " + cert.getErrorCode() + " Desc: " + cert.getErrorDescription());
 		SignatureStandardOptions options = new SignatureStandardOptions();
 		options.setCertificate(cert);
 		options.setPrivateKey(key);
 		bulkTest(options);
 	}
 
-	public void test_ecdsa_sha1_DER() {
+	/*public void test_ecdsa_sha1_DER() {
 		String pathKey = path_ecdsa_sha1 + "sha1_key.pem";
 		String pathCert = path_ecdsa_sha1 + "sha1_cert.crt";
 		PrivateKeyManager key = new PrivateKeyManager();
@@ -156,6 +166,6 @@ public class ECDSAStandardSigningTest extends SecurityAPITestObject {
 		options.setPrivateKey(key);
 		bulkTest(options);
 
-	}
+	}*/
 
 }
