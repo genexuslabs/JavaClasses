@@ -23,10 +23,11 @@ import com.genexus.security.GXSecurityProvider;
 
 import com.genexus.security.web.SecureTokenHelper;
 import com.genexus.security.web.WebSecurityHelper;
-import json.org.json.IJsonFormattable;
-import json.org.json.JSONArray;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import com.genexus.json.JSONObjectWrapper;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 
 class DataIntegrityException extends Exception
@@ -508,7 +509,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 
 		private void parseInputJSonMessage(String jsonMessage, GXWebPanel targetObj) throws JSONException {
 			try {
-				JSONObject objMessage = new JSONObject(jsonMessage);
+				JSONObjectWrapper objMessage = new JSONObjectWrapper(jsonMessage);
 				if (objMessage.has("parms"))
 					inParmsValues = objMessage.getJSONArray("parms");
 				if (objMessage.has("hsh"))
@@ -534,7 +535,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 					}
 				}
 				if (objMessage.has("grids"))
-					parseGridsDataParms((JSONObject) objMessage.get("grids"));
+					parseGridsDataParms((JSONObjectWrapper) objMessage.get("grids"));
 				if (objMessage.has("grid"))
 					grid = objMessage.getInt("grid");
 				else
@@ -557,14 +558,14 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			}
 		}
 
-		private void parseGridsDataParms(JSONObject gxGrids)
+		private void parseGridsDataParms(JSONObjectWrapper gxGrids)
 		 {
 			JSONArray gridNames = gxGrids.names();
 			if (gridNames != null) 
 			{
 				for (int i = 0; i < gridNames.length(); i++) {
 					try {
-						JSONObject grid = (JSONObject)gxGrids.get(gridNames.getString(i));
+						JSONObjectWrapper grid = (JSONObjectWrapper)gxGrids.get(gridNames.getString(i));
 						if (grid.getInt("id") != 0 && !grid.getString("lastRow").equals(""))
 						 {
 							int lastRow = grid.getInt("lastRow") + 1;
@@ -648,7 +649,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 				for (int i=0; i< events.length(); i++ ) 
 				{
 					String eventName = events.getString(i);
-					JSONObject eventMetadata = new JSONObject(targetObj.eventsMetadata.get(eventName));
+					JSONObjectWrapper eventMetadata = new JSONObjectWrapper(targetObj.eventsMetadata.get(eventName));
 					eventHandlers[eventCount] = eventMetadata.getString("handler");
 					JSONArray eventInputParms = eventMetadata.getJSONArray("iparms");
 					for (int j=0; j< eventInputParms.length(); j++ )
@@ -668,7 +669,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			}
 		}
 
-		private void SetNullableScalarOrCollectionValue(JSONObject parm, Object value, JSONArray columnValues) throws JSONException, Exception 
+		private void SetNullableScalarOrCollectionValue(JSONObjectWrapper parm, Object value, JSONArray columnValues) throws JSONException, Exception
 		{
 			String nullableAttribute = parm.optString("nullAv", null);
 			if (nullableAttribute != null && value.toString().length() == 0) 
@@ -735,7 +736,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			if (field != null)
 			{
 				Class[] cArg = new Class[1];
-				cArg[0] = IJsonFormattable.class;
+				cArg[0] = Object.class;
 				Method mth = field.getType().getMethod("FromJSONObject", cArg);
 				if (mth != null)
 				{
@@ -760,9 +761,9 @@ public abstract class GXWebPanel extends GXWebObjectBase
 					cArg[0] = String.class;
 					Object fieldInstance = PrivateUtilities.getFieldValue(targetObj, fieldName);
 					Method mth;
-					if (value instanceof IJsonFormattable) 
+					if (value instanceof JSONArray || value instanceof JSONObjectWrapper)
 					{
-						mth = field.getType().getMethod("FromJSONObject", new Class[]{IJsonFormattable.class});
+						mth = field.getType().getMethod("FromJSONObject", new Class[]{Object.class});
 						mth.invoke(fieldInstance , new Object[]{value});
 					} 
 					else 
@@ -861,7 +862,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 				int len = dynAjaxEventContext.inParmsMetadata.length();
 				boolean multipart = targetObj.httpContext.isMultipartContent();
 				for (int i = 0; i < len; i++) {
-					JSONObject parm = (JSONObject) dynAjaxEventContext.inParmsMetadata.getJSONObject(i);
+					JSONObjectWrapper parm = (JSONObjectWrapper) dynAjaxEventContext.inParmsMetadata.getJSONObject(i);
 					try{
 						if (parm.has("postForm"))
 						 {
@@ -898,7 +899,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 									//Case for each line command or collection based grid
 									int colDataLen = (allCollData == null) ? 0 : allCollData.length();
 									for (int k = 0; k < colDataLen; k++) {
-										JSONObject columnData = (JSONObject)allCollData.get(k);
+										JSONObjectWrapper columnData = (JSONObjectWrapper) allCollData.get(k);
 										parentRow = (String)columnData.get("pRow");
 										columnValues = (JSONArray)columnData.get("c");
 										if (columnData.has("hsh")) {
@@ -994,7 +995,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 									columnValues = (value instanceof JSONArray ? (JSONArray)value : null);
 									if (parm.has("hsh") && httpContext.useSecurityTokenValidation()) {
 										try {
-											JSONObject hashObj = (JSONObject)((hash_i < inHashValues.length()) ? inHashValues.get(hash_i) : new JSONObject());
+											JSONObjectWrapper hashObj = (JSONObjectWrapper) ((hash_i < inHashValues.length()) ? inHashValues.get(hash_i) : new JSONObjectWrapper());
 											String sRow = "";
 											String hash = "";
 											try {
@@ -1173,7 +1174,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		{
 			try 
 			{
-				JSONObject jsonCmd = new JSONObject();
+				JSONObjectWrapper jsonCmd = new JSONObjectWrapper();
 				jsonCmd.put("url", url);
 				jsonCmd.put("target", target);
 				httpContext.appendAjaxCommand("calltarget", jsonCmd);

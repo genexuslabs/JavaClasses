@@ -1,15 +1,14 @@
 package com.genexus.internet;
 
 import java.util.*;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.math.BigDecimal;
 import java.text.ParseException;
 
-import json.org.json.IJsonFormattable;
-import json.org.json.JSONArray;
+import org.json.JSONArray;
 import com.genexus.internet.IGxJSONAble;
 import com.genexus.xml.GXXMLSerializable;
 import com.genexus.internet.IGxJSONSerializable;
@@ -399,7 +398,7 @@ public class GXRestAPIClient {
 				return null;
 			}
 		} 
-		catch (json.org.json.JSONException e) {
+		catch (JSONException e) {
 			errorCode = PARSING_ERROR_CODE;
 			errorMessage = PARSING_ERROR_MSG;
 			logError(PARSING_ERROR_CODE, PARSING_ERROR_MSG + " " + sdtClass, e);
@@ -429,7 +428,7 @@ public class GXRestAPIClient {
 
 			if (jsonarr != null) {
 				for (int i=0; i < jsonarr.length(); i++) {
-    				JSONObject o = jsonarr.getJSONObject(i);
+					JSONObject o = jsonarr.getJSONObject(i);
 					T sdt = elementClass.newInstance();
 					sdt.fromJSonString(o.toString(),null);
 					col.add(sdt);
@@ -441,7 +440,7 @@ public class GXRestAPIClient {
 				logError(RESPONSE_ERROR_CODE,RESPONSE_ERROR_MSG + " " + elementClass);
 			}	
 		} 
-		catch (json.org.json.JSONException e) {
+		catch (JSONException e) {
 			errorCode = PARSING_ERROR_CODE;
 			errorMessage = PARSING_ERROR_MSG;
 			logError(PARSING_ERROR_CODE,PARSING_ERROR_MSG + " " + elementClass ,e );
@@ -469,7 +468,7 @@ public class GXRestAPIClient {
 				coll.fromJSonString(jsonResponse.getString(varName), null);
 			} 
 		} 
-		catch (json.org.json.JSONException e) {
+		catch (JSONException e) {
 			errorCode = PARSING_ERROR_CODE;
 			errorMessage = PARSING_ERROR_MSG;
 			logError(PARSING_ERROR_CODE,PARSING_ERROR_MSG + " " + elementClasss, e);

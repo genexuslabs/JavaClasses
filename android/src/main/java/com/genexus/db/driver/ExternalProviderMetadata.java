@@ -1,7 +1,7 @@
 package com.genexus.db.driver;
 
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class ExternalProviderMetadata
 {
