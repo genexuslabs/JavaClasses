@@ -24,6 +24,7 @@ import com.genexus.webpanels.HttpContextWeb;
 import com.genexus.webpanels.WebUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import com.genexus.json.JSONObjectWrapper;
 
 public class HttpAjaxContext extends HttpContextWeb
@@ -896,11 +897,13 @@ public class HttpAjaxContext extends HttpContextWeb
         {
 			JSONObjectWrapper ctrlProps = null;
             try {
-                ctrlProps = new JSONObjectWrapper(obj.optJSONObject(Control));
-                if (ctrlProps == null) {
+				JSONObject crtPropsAux = obj.optJSONObject(Control);
+                if (crtPropsAux == null) {
                     ctrlProps = new JSONObjectWrapper();
                     obj.put(Control, ctrlProps);
                 }
+				else
+					ctrlProps = new JSONObjectWrapper(crtPropsAux);
             } catch (JSONException e) {
             }
             return ctrlProps;
