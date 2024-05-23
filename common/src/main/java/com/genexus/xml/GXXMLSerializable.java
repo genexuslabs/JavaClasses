@@ -354,6 +354,8 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 		}
 		else
 		{
+			if (obj instanceof JSONObject)
+				obj = new JSONObjectWrapper((JSONObject)obj);
 			Iterator it = getFromJSONObjectOrderIterator(((JSONObjectWrapper)obj).keys());
 			while(it.hasNext())
 			{
