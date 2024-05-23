@@ -1,5 +1,6 @@
 package com.genexus.webpanels;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import com.genexus.CommonUtil;
@@ -114,6 +115,7 @@ public class GXWebRow implements IGxJSONAble, IGXWebRow
 			boolean equal =  it != null && !((HttpContext)context.getHttpContext()).isAjaxCallMode() ;
             Object current = null;
 
+			ArrayList<Object> myArrayList = new ArrayList<Object>();;
             for (int i = props.length - 1; i >= 0; i--)
             {
                 Object prop = props[i];
@@ -129,7 +131,7 @@ public class GXWebRow implements IGxJSONAble, IGXWebRow
                     {
                         equal = false;
                         try{
-							colProps.put(0, prop);
+							myArrayList.add(0, prop);
                         }catch (JSONException e){}
                         if (it == null)
                             colPropsRev.put(prop);
@@ -143,6 +145,9 @@ public class GXWebRow implements IGxJSONAble, IGXWebRow
                     _Values.put(prop);
                 }
             }
+			if (myArrayList.size() > 0)
+				colProps.putAll(myArrayList);
+
             if (this._parentGrid != null && it == null) // If is the first Row.
             {
                 this._parentGrid.GetColsPropsCommon().add(colPropsRev);
