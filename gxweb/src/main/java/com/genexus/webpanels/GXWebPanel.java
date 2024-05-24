@@ -669,7 +669,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			}
 		}
 
-		private void SetNullableScalarOrCollectionValue(JSONObjectWrapper parm, Object value, JSONArray columnValues) throws JSONException, Exception
+		private void SetNullableScalarOrCollectionValue(JSONObject parm, Object value, JSONArray columnValues) throws JSONException, Exception
 		{
 			String nullableAttribute = parm.optString("nullAv", null);
 			if (nullableAttribute != null && value.toString().length() == 0) 
@@ -862,7 +862,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 				int len = dynAjaxEventContext.inParmsMetadata.length();
 				boolean multipart = targetObj.httpContext.isMultipartContent();
 				for (int i = 0; i < len; i++) {
-					JSONObjectWrapper parm = (JSONObjectWrapper) dynAjaxEventContext.inParmsMetadata.getJSONObject(i);
+					JSONObject parm = (JSONObject) dynAjaxEventContext.inParmsMetadata.getJSONObject(i);
 					try{
 						if (parm.has("postForm"))
 						 {
