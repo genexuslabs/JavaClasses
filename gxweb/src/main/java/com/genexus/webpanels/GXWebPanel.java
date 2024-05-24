@@ -550,7 +550,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 					}
 				}
 				if (objMessage.has("grids"))
-					parseGridsDataParms((JSONObjectWrapper) objMessage.get("grids"));
+					parseGridsDataParms((JSONObject) objMessage.get("grids"));
 				if (objMessage.has("grid"))
 					grid = objMessage.getInt("grid");
 				else
@@ -573,7 +573,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			}
 		}
 
-		private void parseGridsDataParms(JSONObjectWrapper gxGrids)
+		private void parseGridsDataParms(JSONObject gxGrids)
 		{
 			JSONArray gridNames = gxGrids.names();
 			if (gridNames != null)
