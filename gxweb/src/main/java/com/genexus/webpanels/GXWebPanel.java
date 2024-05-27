@@ -565,7 +565,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			{
 				for (int i = 0; i < gridNames.length(); i++) {
 					try {
-						JSONObjectWrapper grid = (JSONObjectWrapper)gxGrids.get(gridNames.getString(i));
+						JSONObject grid = (JSONObject)gxGrids.get(gridNames.getString(i));
 						if (grid.getInt("id") != 0 && !grid.getString("lastRow").equals(""))
 						 {
 							int lastRow = grid.getInt("lastRow") + 1;
@@ -899,7 +899,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 									//Case for each line command or collection based grid
 									int colDataLen = (allCollData == null) ? 0 : allCollData.length();
 									for (int k = 0; k < colDataLen; k++) {
-										JSONObjectWrapper columnData = (JSONObjectWrapper) allCollData.get(k);
+										JSONObject columnData = (JSONObject) allCollData.get(k);
 										parentRow = (String)columnData.get("pRow");
 										columnValues = (JSONArray)columnData.get("c");
 										if (columnData.has("hsh")) {
@@ -995,7 +995,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 									columnValues = (value instanceof JSONArray ? (JSONArray)value : null);
 									if (parm.has("hsh") && httpContext.useSecurityTokenValidation()) {
 										try {
-											JSONObjectWrapper hashObj = (JSONObjectWrapper) ((hash_i < inHashValues.length()) ? inHashValues.get(hash_i) : new JSONObjectWrapper());
+											JSONObject hashObj = (JSONObject) ((hash_i < inHashValues.length()) ? inHashValues.get(hash_i) : new JSONObject());
 											String sRow = "";
 											String hash = "";
 											try {
