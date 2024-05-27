@@ -562,7 +562,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 				for (int i = 0; i < gridNames.length(); i++) {
 					try {
 						JSONObject grid = (JSONObject)gxGrids.get(gridNames.getString(i));
-						if (grid.getInt("id") != 0 && !grid.getString("lastRow").equals(""))
+						if (grid.getInt("id") != 0 && !grid.get("lastRow").toString().equals(""))
 						{
 							int lastRow = grid.getInt("lastRow") + 1;
 							try{
@@ -590,7 +590,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 					String key;
 					try {
 						key = names.getString(i);
-						String value = gxState.getString(key);
+						String value = gxState.get(key).toString();
 						if ((!targetObj.httpContext.isFileParm( key)) && (!value.equals(""))) {
 							targetObj.httpContext.changePostValue(key, value);
 						}
