@@ -33,10 +33,12 @@ public class EnterpriseConnect
 	
 	public EnterpriseConnect(ModelContext context)
 	{
-		Object destination = context.getContextProperty("SAPSessionName");
-		if (destination !=null)
-		{
-			destinationName = (String)destination;
+		if (context !=null) {
+			Object destination = context.getContextProperty("SAPSessionName");
+			if (destination !=null)
+			{
+				destinationName = (String)destination;
+			}
 		}
 	}
 	
@@ -171,8 +173,11 @@ public class EnterpriseConnect
 						{
 							jTable.setValue(key, jObj.getString(key));
 						}
-						else if (jcoType == JCoMetaData.TYPE_INT2 || jcoType == JCoMetaData.TYPE_INT1 
-							      || jcoType == JCoMetaData.TYPE_BYTE)
+						else if (jcoType == JCoMetaData.TYPE_BYTE)
+						{
+							jTable.setValue(key, jObj.getString(key));
+						}
+						else if (jcoType == JCoMetaData.TYPE_INT2 || jcoType == JCoMetaData.TYPE_INT1)
 						{
 							jTable.setValue(key, jObj.getInt(key));
 						}
@@ -228,8 +233,11 @@ public class EnterpriseConnect
 					{
 						jStruct.setValue(key, jObj.getString(key));
 					}
-					else if (jcoType == JCoMetaData.TYPE_INT2 || jcoType == JCoMetaData.TYPE_INT1 
-					      || jcoType == JCoMetaData.TYPE_BYTE)
+					else if (jcoType == JCoMetaData.TYPE_BYTE)
+					{
+						jStruct.setValue(key, jObj.getString(key));
+					}
+					else if (jcoType == JCoMetaData.TYPE_INT2 || jcoType == JCoMetaData.TYPE_INT1)
 					{
 						jStruct.setValue(key, jObj.getInt(key));
 					}
@@ -275,8 +283,11 @@ public class EnterpriseConnect
 						{
 							jRow.put(field.getName(), field.getLong());
 						}
-						else if (field.getType() == JCoMetaData.TYPE_INT2 || field.getType() == JCoMetaData.TYPE_INT1 
-								|| field.getType() == JCoMetaData.TYPE_BYTE )
+						else if (field.getType() == JCoMetaData.TYPE_BYTE )
+						{
+							jRow.put(field.getName(), field.getByte());
+						}
+						else if (field.getType() == JCoMetaData.TYPE_INT2 || field.getType() == JCoMetaData.TYPE_INT1)
 						{
 							jRow.put(field.getName(), field.getInt());
 						}
@@ -339,6 +350,11 @@ public class EnterpriseConnect
 	{		
 		value[0] = function.getExportParameterList().getDate(parameterName);
 	}		
+	
+	public void getValue(String parameterName, byte[] value)
+	{		
+		value[0] = function.getExportParameterList().getByte(parameterName);
+	}
 	
 	public void getValue(String parameterName, int[] value)
 	{		
