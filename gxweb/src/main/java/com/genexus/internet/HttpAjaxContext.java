@@ -811,7 +811,7 @@ public class HttpAjaxContext extends HttpContextWeb
 			int len = array.length();
 			for(int i=0; i<len; i++)
 			{
-				obj = new JSONObjectWrapper(array.getJSONObject(i));
+				obj = (JSONObjectWrapper)array.getJSONObject(i);
 				if (obj.getBoolean("IsMasterPage") == IsMasterPage &&  obj.getString("CmpContext").equals(CmpContext))
 				{
 					return obj;
