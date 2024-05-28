@@ -85,7 +85,7 @@ public class GXMultiCall extends GxRestService
 			Object [] params = new Object[parmCount];
 			for(int j = 0; j < parmCount; j++)
 			{
-				params[j] = GXutil.convertObjectTo(procParms.getString(j), parameters[j]);
+				params[j] = GXutil.convertObjectTo(procParms.get(j).toString(), parameters[j]);
 			}
 			com.genexus.db.DynamicExecute.dynamicExecute(modelContext, remoteHandle, modelContext.packageClass, appPackage + procName, params);
 		}
