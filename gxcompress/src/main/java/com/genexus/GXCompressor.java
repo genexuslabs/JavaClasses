@@ -21,8 +21,8 @@ import static org.apache.commons.io.FilenameUtils.getExtension;
 import static org.apache.commons.io.FilenameUtils.removeExtension;
 
 public class GXCompressor implements IGXCompressor {
-	@Override
-	public void compress(File[] files, String path, CompressionFormat format, String password, CompressionMethod method, DictionarySize dictionarySize) {
+	
+	public static void compress(File[] files, String path, CompressionFormat format, String password, CompressionMethod method, DictionarySize dictionarySize) {
 		switch (format) {
 			case ZIP:
 				compressToZip(files, path, method, dictionarySize);
@@ -41,20 +41,25 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	@Override
-	public void compress(File folder, String path, CompressionFormat format, String password, CompressionMethod method, DictionarySize dictionarySize) {
-		// Implementation goes here
+	
+	public static void compress(File folder, String path, CompressionFormat format, String password, CompressionMethod method, DictionarySize dictionarySize) {
+		if (!folder.exists()) {
+			throw new IllegalArgumentException("The specified folder does not exist: " + folder.getAbsolutePath());
+		}
+		if (!folder.isDirectory()) {
+			throw new IllegalArgumentException("The specified file is not a directory: " + folder.getAbsolutePath());
+		}
+		File[] files = new File[] { folder };
+		compress(files, path, format, password, method, dictionarySize);
 	}
 
-	@Override
-	public Compression newCompression(String path, CompressionFormat format, String password, CompressionMethod method, DictionarySize dictionarySize) {
-		// Implementation goes here
+	
+	public static Compression newCompression(String path, CompressionFormat format, String password, CompressionMethod method, DictionarySize dictionarySize) {
 		return new Compression(path, format, password, method, dictionarySize);
 	}
 
-	@Override
-	public void decompress(File file, String path, String password) {
-		// Determine the format from the file extension or other logic
+	
+	public static void decompress(File file, String path, String password) {
 		String extension = getExtension(file.getName());
 		try {
 			switch (extension.toLowerCase()) {
@@ -62,13 +67,12 @@ public class GXCompressor implements IGXCompressor {
 					decompressZip(file, path);
 					break;
 				case "7z":
-					decompress7z(file, path, password); // New case for 7z
+					decompress7z(file, path, password);
 					break;
 				case "tar":
 					decompressTar(file, path);
 				case "gzip":
 					decompressGzip(file, path);
-					// Add cases for other formats as needed
 				default:
 					throw new IllegalArgumentException("Unsupported compression format for decompression: " + extension);
 			}
@@ -77,7 +81,7 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	private int convertCompressionMethodToLevel(CompressionMethod method) {
+	private static int convertCompressionMethodToLevel(CompressionMethod method) {
 		switch (method) {
 			case FASTEST:
 				return Deflater.BEST_SPEED;
@@ -88,16 +92,11 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	private void compressToZip(File[] files, String outputPath, CompressionMethod method, DictionarySize dictionarySize) {
-		// Set up the zip output stream to write to the specified output path
+	private static void compressToZip(File[] files, String outputPath, CompressionMethod method, DictionarySize dictionarySize) {
 		try (OutputStream fos = Files.newOutputStream(Paths.get(outputPath));
 			 ZipArchiveOutputStream zos = new ZipArchiveOutputStream(fos)) {
-
-			// Setting the compression method and level
 			zos.setMethod(ZipArchiveOutputStream.DEFLATED);
 			zos.setLevel(convertCompressionMethodToLevel(method));
-
-			// Add each file as a new entry to the zip file
 			for (File file : files) {
 				if (file.exists()) {
 					addFileToZip(zos, file, "");
@@ -108,10 +107,9 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	private void addFileToZip(ZipArchiveOutputStream zos, File file, String base) throws IOException {
+	private static void addFileToZip(ZipArchiveOutputStream zos, File file, String base) throws IOException {
 		String entryName = base + file.getName();
 		if (file.isDirectory()) {
-			// If it's a directory, recursively add its contents
 			File[] children = file.listFiles();
 			if (children != null) {
 				for (File child : children) {
@@ -119,7 +117,6 @@ public class GXCompressor implements IGXCompressor {
 				}
 			}
 		} else {
-			// If it's a file, add it as an entry
 			ZipArchiveEntry zipEntry = new ZipArchiveEntry(file, entryName);
 			zos.putArchiveEntry(zipEntry);
 			try (FileInputStream fis = new FileInputStream(file)) {
@@ -133,7 +130,7 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	private void compressToSevenZ(File[] files, String outputPath) {
+	private static void compressToSevenZ(File[] files, String outputPath) {
 		File outputSevenZFile = new File(outputPath);
 		try (SevenZOutputFile sevenZOutput = new SevenZOutputFile(outputSevenZFile)) {
 			for (File file : files) {
@@ -144,7 +141,7 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	private void addToSevenZArchive(SevenZOutputFile sevenZOutput, File file, String base) throws IOException {
+	private static void addToSevenZArchive(SevenZOutputFile sevenZOutput, File file, String base) throws IOException {
 		if (file.isFile()) {
 			SevenZArchiveEntry entry = sevenZOutput.createArchiveEntry(file, base + file.getName());
 			sevenZOutput.putArchiveEntry(entry);
@@ -157,7 +154,6 @@ public class GXCompressor implements IGXCompressor {
 			}
 			sevenZOutput.closeArchiveEntry();
 		} else if (file.isDirectory()) {
-			// Recursively add directory contents
 			File[] children = file.listFiles();
 			if (children != null) {
 				for (File child : children) {
@@ -167,12 +163,10 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	private void compressToTar(File[] files, String outputPath) {
+	private static void compressToTar(File[] files, String outputPath) {
 		File outputTarFile = new File(outputPath);
 		try (FileOutputStream fos = new FileOutputStream(outputTarFile);
 			 TarArchiveOutputStream taos = new TarArchiveOutputStream(fos)) {
-
-			// Configure TAR options
 			taos.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
 			taos.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);
 			taos.setAddPaxHeadersForNonAsciiNames(true);
@@ -186,7 +180,7 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	private void addFileToTar(TarArchiveOutputStream taos, File file, String base) throws IOException {
+	private static void addFileToTar(TarArchiveOutputStream taos, File file, String base) throws IOException {
 		if (file.isDirectory()) {
 			File[] children = file.listFiles();
 			if (children != null) {
@@ -207,7 +201,7 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	private void compressToGzip(File[] files, String outputPath) {
+	private static void compressToGzip(File[] files, String outputPath) {
 		if (files.length > 1) {
 			throw new IllegalArgumentException("GZIP does not support multiple files. Consider archiving the files first.");
 		}
@@ -230,10 +224,10 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	private void decompressZip(File zipFile, String directory) {
+	private static void decompressZip(File zipFile, String directory) {
 		Path zipFilePath =  Paths.get(zipFile.toURI());
 		Path targetDir = Paths.get(directory);
-		targetDir = targetDir.toAbsolutePath(); // Ensure the path is absolute to prevent directory traversal issues
+		targetDir = targetDir.toAbsolutePath();
 
 		try (InputStream fis = Files.newInputStream(zipFilePath.toFile().toPath());
 			 ZipInputStream zipIn = new ZipInputStream(fis)) {
@@ -268,8 +262,8 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	private void decompress7z(File file, String outputPath, String password) throws IOException {
-		Path targetDir = Paths.get(outputPath).toAbsolutePath(); // Ensure the path is absolute
+	private static void decompress7z(File file, String outputPath, String password) throws IOException {
+		Path targetDir = Paths.get(outputPath).toAbsolutePath();
 
 		try (SevenZFile sevenZFile = new SevenZFile(file, password.toCharArray())) {
 			SevenZArchiveEntry entry = sevenZFile.getNextEntry();
@@ -300,7 +294,7 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	private void decompressTar(File file, String outputPath) throws IOException {
+	private static void decompressTar(File file, String outputPath) throws IOException {
 		Path targetDir = Paths.get(outputPath).toAbsolutePath();
 		try (InputStream fi = Files.newInputStream(file.toPath());
 			 TarArchiveInputStream ti = new TarArchiveInputStream(fi)) {
@@ -329,7 +323,7 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	private void decompressGzip(File inputFile, String outputPath) throws IOException {
+	private static void decompressGzip(File inputFile, String outputPath) throws IOException {
 		Path outputFilePath = Paths.get(outputPath, removeExtension(inputFile.getName()));
 		try (FileInputStream fis = new FileInputStream(inputFile);
 			 GZIPInputStream gzis = new GZIPInputStream(fis);
