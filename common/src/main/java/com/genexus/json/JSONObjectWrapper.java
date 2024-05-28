@@ -59,8 +59,7 @@ public class JSONObjectWrapper extends JSONObject{
 			super.put(key, value);
 		if (map == null)
 			map = new LinkedHashMap<String, Object>();
-		if (!map.containsKey(key))
-			map.put(key, value);
+		map.put(key, value);
 		return this;
 	}
 
