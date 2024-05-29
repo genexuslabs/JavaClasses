@@ -3,8 +3,8 @@ package com.genexus.compression;
 import java.io.File;
 
 public interface IGXCompressor {
-	static void compress(File[] files, String path, CompressionFormat format, int dictionarySize) {}
-	static void compress(File folder, String path, CompressionFormat format, int dictionarySize) {}
+	static int compress(File[] files, String path, CompressionFormat format, int dictionarySize) {return 0;}
+	static int compress(File folder, String path, CompressionFormat format, int dictionarySize) {return 0;}
 	static Compression newCompression(String path, CompressionFormat format, int dictionarySize) { return new Compression();}
-	static void decompress(File file, String path) {}
+	static int decompress(File file, String path) {return 0;}
 }
