@@ -25,9 +25,10 @@ public class GXCompressor implements IGXCompressor {
 
 	private static final Logger log = org.apache.logging.log4j.LogManager.getLogger(GXCompressor.class);
 	
-	public static int compress(File[] files, String path, CompressionFormat format, int dictionarySize) {
+	public static int compress(File[] files, String path, String format, int dictionarySize) {
 		try {
-			switch (format) {
+			CompressionFormat compressionFormat = getCompressionFormat(format);
+			switch (compressionFormat) {
 				case ZIP:
 					compressToZip(files, path, dictionarySize);
 					break;
@@ -50,7 +51,7 @@ public class GXCompressor implements IGXCompressor {
 	}
 
 	
-	public static int compress(File folder, String path, CompressionFormat format, int dictionarySize) {
+	public static int compress(File folder, String path, String format, int dictionarySize) {
 		if (!folder.exists()) {
 			log.error("The specified folder does not exist: {}", folder.getAbsolutePath());
 			return -2;
@@ -64,7 +65,7 @@ public class GXCompressor implements IGXCompressor {
 	}
 
 	
-	public static Compression newCompression(String path, CompressionFormat format,  int dictionarySize) {
+	public static Compression newCompression(String path, String format,  int dictionarySize) {
 		return new Compression(path, format, dictionarySize);
 	}
 
@@ -347,6 +348,13 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
+	public static CompressionFormat getCompressionFormat(String format) {
+		try {
+			return CompressionFormat.valueOf(format.toUpperCase());
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException("Invalid compression format: " + format);
+		}
+	}
 
 }
 

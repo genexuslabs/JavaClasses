@@ -10,13 +10,13 @@ public class Compression {
 	private static final Logger log = org.apache.logging.log4j.LogManager.getLogger(Compression.class);
 
 	private String path;
-	private CompressionFormat format;
+	private String format;
 	private int dictionarySize;
 	private List<File> filesToCompress;
 
 	public Compression() {}
 
-	public Compression(String path, CompressionFormat format, int dictionarySize) {
+	public Compression(String path, String format, int dictionarySize) {
 		this.path = path;
 		this.format = format;
 		this.dictionarySize = dictionarySize;
@@ -27,7 +27,7 @@ public class Compression {
 		this.path = path;
 	}
 
-	public void setFormat(CompressionFormat format) {
+	public void setFormat(String format) {
 		this.format = format;
 	}
 
@@ -78,7 +78,7 @@ public class Compression {
 
 	public void close() {
 		this.path = "";
-		this.format = null;
+		this.format = "";
 		this.dictionarySize = 0;
 		this.filesToCompress = new ArrayList<>();
 	}
