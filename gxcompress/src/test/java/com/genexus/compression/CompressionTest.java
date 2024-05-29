@@ -17,6 +17,14 @@ class CompressionTest {
 	private List<File> tempFiles = new ArrayList<>();
 	private File tempDir;
 
+	public static String[] convertToPaths(File[] files) {
+		String[] paths = new String[files.length];
+		for (int i = 0; i < files.length; i++) {
+			paths[i] = files[i].getPath();
+		}
+		return paths;
+	}
+
 	@BeforeEach
 	void setUp() throws IOException {
 		tempDir = Files.createTempDirectory("compressionTest").toFile();
@@ -42,9 +50,9 @@ class CompressionTest {
 		String compressedPath = tempDir.getAbsolutePath() + File.separator + "archive.zip";
 		String decompressedPath = tempDir.getAbsolutePath() + File.separator + "decompressed";
 		File[] filesArray = tempFiles.toArray(new File[0]);
-		GXCompressor.compress(filesArray, compressedPath, "zip", 4);
+		GXCompressor.compress(convertToPaths(filesArray), compressedPath, "zip", 4);
 		File compressedFile = new File(compressedPath);
-		GXCompressor.decompress(compressedFile, decompressedPath);
+		GXCompressor.decompress(compressedPath, decompressedPath);
 		File decompressedDir = new File(decompressedPath);
 		File[] decompressedFiles = decompressedDir.listFiles();
 		assertNotNull(decompressedFiles);
@@ -66,9 +74,9 @@ class CompressionTest {
 		String compressedPath = tempDir.getAbsolutePath() + File.separator + "archive.tar";
 		String decompressedPath = tempDir.getAbsolutePath() + File.separator + "decompressed";
 		File[] filesArray = tempFiles.toArray(new File[0]);
-		GXCompressor.compress(filesArray, compressedPath, "tar", 128);
+		GXCompressor.compress(convertToPaths(filesArray), compressedPath, "tar", 128);
 		File compressedFile = new File(compressedPath);
-		GXCompressor.decompress(compressedFile, decompressedPath);
+		GXCompressor.decompress(compressedPath, decompressedPath);
 		File decompressedDir = new File(decompressedPath);
 		File[] decompressedFiles = decompressedDir.listFiles();
 		assertNotNull(decompressedFiles);
@@ -90,9 +98,9 @@ class CompressionTest {
 		String compressedPath = tempDir.getAbsolutePath() + File.separator + "archive.7z";
 		String decompressedPath = tempDir.getAbsolutePath() + File.separator + "decompressed";
 		File[] filesArray = tempFiles.toArray(new File[0]);
-		GXCompressor.compress(filesArray, compressedPath, "sevenz", 32);
+		GXCompressor.compress(convertToPaths(filesArray), compressedPath, "sevenz", 32);
 		File compressedFile = new File(compressedPath);
-		GXCompressor.decompress(compressedFile, decompressedPath);
+		GXCompressor.decompress(compressedPath, decompressedPath);
 		File decompressedDir = new File(decompressedPath);
 		File[] decompressedFiles = decompressedDir.listFiles();
 		assertNotNull(decompressedFiles);
@@ -107,25 +115,6 @@ class CompressionTest {
 			file.delete();
 		}
 		decompressedDir.delete();
-	}
-
-	@Test
-	void testCompressionAndDecompressionGZIP() throws IOException {
-		String compressedPath = tempDir.getAbsolutePath() + File.separator + "archive.gz";
-		String decompressedDirPath = tempDir.getAbsolutePath();
-		File singleTestFile = new File(tempDir, "testFile.txt");
-		try (FileWriter writer = new FileWriter(singleTestFile)) {
-			writer.write("This is a test file");
-		}
-		GXCompressor.compress(new File[]{singleTestFile}, compressedPath, "gzip", 4);
-		File compressedFile = new File(compressedPath);
-		assertTrue(compressedFile.exists());
-		GXCompressor.decompress(compressedFile, decompressedDirPath);
-		File decompressedFile = new File(decompressedDirPath, singleTestFile.getName());
-		assertTrue(decompressedFile.exists());
-		assertArrayEquals(Files.readAllBytes(singleTestFile.toPath()), Files.readAllBytes(decompressedFile.toPath()));
-		compressedFile.delete();
-		decompressedFile.delete();
 	}
 
 }

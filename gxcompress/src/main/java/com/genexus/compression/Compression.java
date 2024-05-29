@@ -66,9 +66,13 @@ public class Compression {
 			return -3;
 		}
 		File[] filesArray = filesToCompress.toArray(new File[0]);
+		String[] paths = new String[filesArray.length];
+		for (int i = 0; i < filesArray.length; i++) {
+			paths[i] = filesArray[i].getPath();
+		}
 		int compressionResult;
 		try {
-			compressionResult = GXCompressor.compress(filesArray, path, format, dictionarySize);
+			compressionResult = GXCompressor.compress(paths, path, format, dictionarySize);
 		} catch (IllegalArgumentException e) {
 			compressionResult = -1;
 			log.error("Compression failed: {}", e.getMessage());
