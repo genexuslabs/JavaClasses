@@ -25,21 +25,25 @@ public class GXCompressor implements IGXCompressor {
 
 	private static final Logger log = org.apache.logging.log4j.LogManager.getLogger(GXCompressor.class);
 	
-	public static int compress(File[] files, String path, String format, int dictionarySize) {
+	public static int compress(String[] files, String path, String format, int dictionarySize) {
+		File[] toCompress = new File[files.length];
+		for (int i = 0; i < files.length; i++) {
+			toCompress[i] = new File(files[i]);
+		}
 		try {
 			CompressionFormat compressionFormat = getCompressionFormat(format);
 			switch (compressionFormat) {
 				case ZIP:
-					compressToZip(files, path, dictionarySize);
+					compressToZip(toCompress, path, dictionarySize);
 					break;
 				case SEVENZ:
-					compressToSevenZ(files, path);
+					compressToSevenZ(toCompress, path);
 					break;
 				case TAR:
-					compressToTar(files, path);
+					compressToTar(toCompress, path);
 					break;
 				case GZIP:
-					compressToGzip(files, path);
+					compressToGzip(toCompress, path);
 					break;
 				default:
 					throw new IllegalArgumentException("Unsupported compression format: " + format);
@@ -51,17 +55,18 @@ public class GXCompressor implements IGXCompressor {
 	}
 
 	
-	public static int compress(File folder, String path, String format, int dictionarySize) {
-		if (!folder.exists()) {
-			log.error("The specified folder does not exist: {}", folder.getAbsolutePath());
+	public static int compress(String folder, String path, String format, int dictionarySize) {
+		File toCompress = new File(folder);
+		if (!toCompress.exists()) {
+			log.error("The specified folder does not exist: {}", toCompress.getAbsolutePath());
 			return -2;
 		}
-		if (!folder.isDirectory()) {
-			log.error("The specified file is not a directory: {}", folder.getAbsolutePath());
+		if (!toCompress.isDirectory()) {
+			log.error("The specified file is not a directory: {}", toCompress.getAbsolutePath());
 			return -2;
 		}
-		File[] files = new File[] { folder };
-		return  compress(files, path, format, dictionarySize);
+		File[] files = new File[] { toCompress };
+		return compress(folder, path, format, dictionarySize);
 	}
 
 	
@@ -70,21 +75,22 @@ public class GXCompressor implements IGXCompressor {
 	}
 
 
-	public static int decompress(File file, String path) {
-		String extension = getExtension(file.getName());
+	public static int decompress(String file, String path) {
+		File toCompress = new File(file);
+		String extension = getExtension(toCompress.getName());
 		try {
 			switch (extension.toLowerCase()) {
 				case "zip":
-					decompressZip(file, path);
+					decompressZip(toCompress, path);
 					return 0;
 				case "7z":
-					decompress7z(file, path);
+					decompress7z(toCompress, path);
 					return 0;
 				case "tar":
-					decompressTar(file, path);
+					decompressTar(toCompress, path);
 					return 0;
 				case "gz":
-					decompressGzip(file, path);
+					decompressGzip(toCompress, path);
 					return 0;
 				default:
 					log.error("Unsupported compression format for decompression: {}", extension);
