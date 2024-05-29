@@ -1,4 +1,4 @@
-package com.genexus;
+package com.genexus.compression;
 
 import java.io.File;
 import java.util.ArrayList;

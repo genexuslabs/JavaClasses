@@ -1,4 +1,4 @@
-package com.genexus;
+package com.genexus.compression;
 
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
 import org.apache.commons.compress.archivers.sevenz.SevenZFile;
