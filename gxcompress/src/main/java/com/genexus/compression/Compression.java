@@ -1,14 +1,17 @@
 package com.genexus.compression;
 
+import org.apache.logging.log4j.Logger;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Compression {
+	private static final Logger log = org.apache.logging.log4j.LogManager.getLogger(Compression.class);
+
 	private String path;
 	private CompressionFormat format;
 	private int dictionarySize;
-
 	private List<File> filesToCompress;
 
 	public Compression() {}
@@ -36,7 +39,7 @@ public class Compression {
 		if (file.exists()) {
 			filesToCompress.add(file);
 		} else {
-			System.out.println("File does not exist: " + file.getAbsolutePath());
+			log.error("File does not exist: {}", file.getAbsolutePath());
 		}
 	}
 
@@ -53,25 +56,30 @@ public class Compression {
 				}
 			}
 		} else {
-			System.out.println("Folder does not exist or is not a directory: " + folder.getAbsolutePath());
+			log.error("Folder does not exist or is not a directory: {}", folder.getAbsolutePath());
 		}
 	}
 
-	public void save() {
+	public int save() {
 		if (filesToCompress.isEmpty()) {
-			System.out.println("No files have been added for compression.");
-			return;
+			log.error("No files have been added for compression.");
+			return -3;
 		}
 		File[] filesArray = filesToCompress.toArray(new File[0]);
+		int compressionResult;
 		try {
-			GXCompressor.compress(filesArray, path, format, dictionarySize);
-			System.out.println("Compression successful to: " + path);
+			compressionResult = GXCompressor.compress(filesArray, path, format, dictionarySize);
 		} catch (IllegalArgumentException e) {
-			System.err.println("Compression failed: " + e.getMessage());
+			compressionResult = -1;
+			log.error("Compression failed: {}", e.getMessage());
 		}
+		return compressionResult;
 	}
 
 	public void close() {
-		filesToCompress.clear();
+		this.path = "";
+		this.format = null;
+		this.dictionarySize = 0;
+		this.filesToCompress = new ArrayList<>();
 	}
 }

@@ -1,5 +1,7 @@
 package com.genexus.compression;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
 import org.apache.commons.compress.archivers.sevenz.SevenZFile;
 import org.apache.commons.compress.archivers.sevenz.SevenZOutputFile;
@@ -20,36 +22,45 @@ import java.util.zip.*;
 import static org.apache.commons.io.FilenameUtils.getExtension;
 
 public class GXCompressor implements IGXCompressor {
+
+	private static final Logger log = org.apache.logging.log4j.LogManager.getLogger(GXCompressor.class);
 	
-	public static void compress(File[] files, String path, CompressionFormat format, int dictionarySize) {
-		switch (format) {
-			case ZIP:
-				compressToZip(files, path, dictionarySize);
-				break;
-			case SEVENZ:
-				compressToSevenZ(files, path);
-				break;
-			case TAR:
-				compressToTar(files, path);
-				break;
-			case GZIP:
-				compressToGzip(files, path);
-				break;
-			default:
-				throw new IllegalArgumentException("Unsupported compression format: " + format);
+	public static int compress(File[] files, String path, CompressionFormat format, int dictionarySize) {
+		try {
+			switch (format) {
+				case ZIP:
+					compressToZip(files, path, dictionarySize);
+					break;
+				case SEVENZ:
+					compressToSevenZ(files, path);
+					break;
+				case TAR:
+					compressToTar(files, path);
+					break;
+				case GZIP:
+					compressToGzip(files, path);
+					break;
+				default:
+					throw new IllegalArgumentException("Unsupported compression format: " + format);
+			}
+			return 0;
+		} catch (Exception e) {
+			return -1;
 		}
 	}
 
 	
-	public static void compress(File folder, String path, CompressionFormat format, int dictionarySize) {
+	public static int compress(File folder, String path, CompressionFormat format, int dictionarySize) {
 		if (!folder.exists()) {
-			throw new IllegalArgumentException("The specified folder does not exist: " + folder.getAbsolutePath());
+			log.error("The specified folder does not exist: {}", folder.getAbsolutePath());
+			return -2;
 		}
 		if (!folder.isDirectory()) {
-			throw new IllegalArgumentException("The specified file is not a directory: " + folder.getAbsolutePath());
+			log.error("The specified file is not a directory: {}", folder.getAbsolutePath());
+			return -2;
 		}
 		File[] files = new File[] { folder };
-		compress(files, path, format, dictionarySize);
+		return  compress(files, path, format, dictionarySize);
 	}
 
 	
@@ -58,27 +69,29 @@ public class GXCompressor implements IGXCompressor {
 	}
 
 
-	public static void decompress(File file, String path) {
+	public static int decompress(File file, String path) {
 		String extension = getExtension(file.getName());
 		try {
 			switch (extension.toLowerCase()) {
 				case "zip":
 					decompressZip(file, path);
-					break;
+					return 0;
 				case "7z":
 					decompress7z(file, path);
-					break;
+					return 0;
 				case "tar":
 					decompressTar(file, path);
-					break;
+					return 0;
 				case "gz":
 					decompressGzip(file, path);
-					break;
+					return 0;
 				default:
-					throw new IllegalArgumentException("Unsupported compression format for decompression: " + extension);
+					log.error("Unsupported compression format for decompression: {}", extension);
+					return -3;
 			}
 		} catch (IOException ioe) {
-			System.out.println("Decompression failed: " + ioe.getMessage());
+			log.error("Decompression failed: {}", ioe.getMessage());
+			return -1;
 		}
 	}
 
@@ -119,7 +132,7 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	private static void compressToSevenZ(File[] files, String outputPath) {
+	private static void compressToSevenZ(File[] files, String outputPath) throws RuntimeException {
 		File outputSevenZFile = new File(outputPath);
 		try (SevenZOutputFile sevenZOutput = new SevenZOutputFile(outputSevenZFile)) {
 			for (File file : files) {
@@ -152,7 +165,7 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	private static void compressToTar(File[] files, String outputPath) {
+	private static void compressToTar(File[] files, String outputPath) throws RuntimeException {
 		File outputTarFile = new File(outputPath);
 		try (FileOutputStream fos = new FileOutputStream(outputTarFile);
 			 TarArchiveOutputStream taos = new TarArchiveOutputStream(fos)) {
@@ -190,7 +203,7 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	private static void compressToGzip(File[] files, String outputPath) {
+	private static void compressToGzip(File[] files, String outputPath) throws RuntimeException {
 		if (files.length > 1) {
 			throw new IllegalArgumentException("GZIP does not support multiple files. Consider archiving the files first.");
 		}
@@ -213,7 +226,7 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	private static void decompressZip(File zipFile, String directory) {
+	private static void decompressZip(File zipFile, String directory) throws RuntimeException{
 		Path zipFilePath =  Paths.get(zipFile.toURI());
 		Path targetDir = Paths.get(directory);
 		targetDir = targetDir.toAbsolutePath();
@@ -313,24 +326,16 @@ public class GXCompressor implements IGXCompressor {
 	}
 
 	private static void decompressGzip(File inputFile, String outputPath) throws IOException {
-		// Create the output directory if it doesn't exist
 		File outputDir = new File(outputPath);
 		if (!outputDir.exists() && !outputDir.mkdirs()) {
 			throw new IOException("Failed to create the output directory: " + outputDir.getAbsolutePath());
 		}
-
-		// Generate the output file's name by removing the .gz extension
 		String outputFileName = inputFile.getName();
-		if (outputFileName.endsWith(".gz")) {
+		if (outputFileName.endsWith(".gz"))
 			outputFileName = outputFileName.substring(0, outputFileName.length() - 3);
-		} else {
-			// Handle cases where the extension is not .gz (just a safeguard)
+		else
 			throw new IllegalArgumentException("The input file does not have a .gz extension.");
-		}
-
 		File outputFile = new File(outputDir, outputFileName);
-
-		// Decompress the GZIP file
 		try (FileInputStream fis = new FileInputStream(inputFile);
 			 GZIPInputStream gzis = new GZIPInputStream(fis);
 			 FileOutputStream fos = new FileOutputStream(outputFile)) {
