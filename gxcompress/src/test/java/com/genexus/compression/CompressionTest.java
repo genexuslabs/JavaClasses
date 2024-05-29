@@ -42,7 +42,7 @@ class CompressionTest {
 		String compressedPath = tempDir.getAbsolutePath() + File.separator + "archive.zip";
 		String decompressedPath = tempDir.getAbsolutePath() + File.separator + "decompressed";
 		File[] filesArray = tempFiles.toArray(new File[0]);
-		GXCompressor.compress(filesArray, compressedPath, CompressionFormat.ZIP, 4);
+		GXCompressor.compress(filesArray, compressedPath, "zip", 4);
 		File compressedFile = new File(compressedPath);
 		GXCompressor.decompress(compressedFile, decompressedPath);
 		File decompressedDir = new File(decompressedPath);
@@ -66,7 +66,7 @@ class CompressionTest {
 		String compressedPath = tempDir.getAbsolutePath() + File.separator + "archive.tar";
 		String decompressedPath = tempDir.getAbsolutePath() + File.separator + "decompressed";
 		File[] filesArray = tempFiles.toArray(new File[0]);
-		GXCompressor.compress(filesArray, compressedPath, CompressionFormat.TAR, 128);
+		GXCompressor.compress(filesArray, compressedPath, "tar", 128);
 		File compressedFile = new File(compressedPath);
 		GXCompressor.decompress(compressedFile, decompressedPath);
 		File decompressedDir = new File(decompressedPath);
@@ -90,7 +90,7 @@ class CompressionTest {
 		String compressedPath = tempDir.getAbsolutePath() + File.separator + "archive.7z";
 		String decompressedPath = tempDir.getAbsolutePath() + File.separator + "decompressed";
 		File[] filesArray = tempFiles.toArray(new File[0]);
-		GXCompressor.compress(filesArray, compressedPath, CompressionFormat.SEVENZ, 32);
+		GXCompressor.compress(filesArray, compressedPath, "sevenz", 32);
 		File compressedFile = new File(compressedPath);
 		GXCompressor.decompress(compressedFile, decompressedPath);
 		File decompressedDir = new File(decompressedPath);
@@ -117,7 +117,7 @@ class CompressionTest {
 		try (FileWriter writer = new FileWriter(singleTestFile)) {
 			writer.write("This is a test file");
 		}
-		GXCompressor.compress(new File[]{singleTestFile}, compressedPath, CompressionFormat.GZIP, 4);
+		GXCompressor.compress(new File[]{singleTestFile}, compressedPath, "gzip", 4);
 		File compressedFile = new File(compressedPath);
 		assertTrue(compressedFile.exists());
 		GXCompressor.decompress(compressedFile, decompressedDirPath);
