@@ -903,7 +903,7 @@ public class HttpAjaxContext extends HttpContextWeb
                     obj.put(Control, ctrlProps);
                 }
 				else
-					ctrlProps = new JSONObjectWrapper(crtPropsAux);
+					ctrlProps = (JSONObjectWrapper)crtPropsAux;
             } catch (JSONException e) {
             }
             return ctrlProps;
