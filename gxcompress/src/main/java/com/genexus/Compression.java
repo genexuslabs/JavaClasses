@@ -7,19 +7,15 @@ import java.util.List;
 public class Compression {
 	private String path;
 	private CompressionFormat format;
-	private String password;
-	private CompressionMethod method;
-	private DictionarySize dictionarySize;
+	private int dictionarySize;
 
 	private List<File> filesToCompress;
 
 	public Compression() {}
 
-	public Compression(String path, CompressionFormat format, String password, CompressionMethod method, DictionarySize dictionarySize) {
+	public Compression(String path, CompressionFormat format, int dictionarySize) {
 		this.path = path;
 		this.format = format;
-		this.password = password;
-		this.method = method;
 		this.dictionarySize = dictionarySize;
 		this.filesToCompress = new ArrayList<>();
 	}
@@ -32,15 +28,7 @@ public class Compression {
 		this.format = format;
 	}
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	public void setMethod(CompressionMethod method) {
-		this.method = method;
-	}
-
-	public void setDictionarySize(DictionarySize dictionarySize) {
+	public void setDictionarySize(int dictionarySize) {
 		this.dictionarySize = dictionarySize;
 	}
 
@@ -76,7 +64,7 @@ public class Compression {
 		}
 		File[] filesArray = filesToCompress.toArray(new File[0]);
 		try {
-			GXCompressor.compress(filesArray, path, format, password, method, dictionarySize);
+			GXCompressor.compress(filesArray, path, format, dictionarySize);
 			System.out.println("Compression successful to: " + path);
 		} catch (IllegalArgumentException e) {
 			System.err.println("Compression failed: " + e.getMessage());

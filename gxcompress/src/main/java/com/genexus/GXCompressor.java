@@ -18,14 +18,13 @@ import java.nio.file.Paths;
 import java.util.zip.*;
 
 import static org.apache.commons.io.FilenameUtils.getExtension;
-import static org.apache.commons.io.FilenameUtils.removeExtension;
 
 public class GXCompressor implements IGXCompressor {
 	
-	public static void compress(File[] files, String path, CompressionFormat format, String password, CompressionMethod method, DictionarySize dictionarySize) {
+	public static void compress(File[] files, String path, CompressionFormat format, int dictionarySize) {
 		switch (format) {
 			case ZIP:
-				compressToZip(files, path, method, dictionarySize);
+				compressToZip(files, path, dictionarySize);
 				break;
 			case SEVENZ:
 				compressToSevenZ(files, path);
@@ -42,7 +41,7 @@ public class GXCompressor implements IGXCompressor {
 	}
 
 	
-	public static void compress(File folder, String path, CompressionFormat format, String password, CompressionMethod method, DictionarySize dictionarySize) {
+	public static void compress(File folder, String path, CompressionFormat format, int dictionarySize) {
 		if (!folder.exists()) {
 			throw new IllegalArgumentException("The specified folder does not exist: " + folder.getAbsolutePath());
 		}
@@ -50,16 +49,16 @@ public class GXCompressor implements IGXCompressor {
 			throw new IllegalArgumentException("The specified file is not a directory: " + folder.getAbsolutePath());
 		}
 		File[] files = new File[] { folder };
-		compress(files, path, format, password, method, dictionarySize);
+		compress(files, path, format, dictionarySize);
 	}
 
 	
-	public static Compression newCompression(String path, CompressionFormat format, String password, CompressionMethod method, DictionarySize dictionarySize) {
-		return new Compression(path, format, password, method, dictionarySize);
+	public static Compression newCompression(String path, CompressionFormat format,  int dictionarySize) {
+		return new Compression(path, format, dictionarySize);
 	}
 
-	
-	public static void decompress(File file, String path, String password) {
+
+	public static void decompress(File file, String path) {
 		String extension = getExtension(file.getName());
 		try {
 			switch (extension.toLowerCase()) {
@@ -67,36 +66,26 @@ public class GXCompressor implements IGXCompressor {
 					decompressZip(file, path);
 					break;
 				case "7z":
-					decompress7z(file, path, password);
+					decompress7z(file, path);
 					break;
 				case "tar":
 					decompressTar(file, path);
-				case "gzip":
+					break;
+				case "gz":
 					decompressGzip(file, path);
+					break;
 				default:
 					throw new IllegalArgumentException("Unsupported compression format for decompression: " + extension);
 			}
 		} catch (IOException ioe) {
-			System.out.println("Fail");
+			System.out.println("Decompression failed: " + ioe.getMessage());
 		}
 	}
 
-	private static int convertCompressionMethodToLevel(CompressionMethod method) {
-		switch (method) {
-			case FASTEST:
-				return Deflater.BEST_SPEED;
-			case BEST:
-				return Deflater.BEST_COMPRESSION;
-			default:
-				return Deflater.DEFAULT_COMPRESSION;
-		}
-	}
-
-	private static void compressToZip(File[] files, String outputPath, CompressionMethod method, DictionarySize dictionarySize) {
+	private static void compressToZip(File[] files, String outputPath, int dictionarySize) {
 		try (OutputStream fos = Files.newOutputStream(Paths.get(outputPath));
 			 ZipArchiveOutputStream zos = new ZipArchiveOutputStream(fos)) {
 			zos.setMethod(ZipArchiveOutputStream.DEFLATED);
-			zos.setLevel(convertCompressionMethodToLevel(method));
 			for (File file : files) {
 				if (file.exists()) {
 					addFileToZip(zos, file, "");
@@ -262,10 +251,10 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	private static void decompress7z(File file, String outputPath, String password) throws IOException {
+	private static void decompress7z(File file, String outputPath) throws IOException {
 		Path targetDir = Paths.get(outputPath).toAbsolutePath();
 
-		try (SevenZFile sevenZFile = new SevenZFile(file, password.toCharArray())) {
+		try (SevenZFile sevenZFile = new SevenZFile(file)) {
 			SevenZArchiveEntry entry = sevenZFile.getNextEntry();
 			while (entry != null) {
 				Path resolvedPath = targetDir.resolve(entry.getName()).normalize();
@@ -324,10 +313,27 @@ public class GXCompressor implements IGXCompressor {
 	}
 
 	private static void decompressGzip(File inputFile, String outputPath) throws IOException {
-		Path outputFilePath = Paths.get(outputPath, removeExtension(inputFile.getName()));
+		// Create the output directory if it doesn't exist
+		File outputDir = new File(outputPath);
+		if (!outputDir.exists() && !outputDir.mkdirs()) {
+			throw new IOException("Failed to create the output directory: " + outputDir.getAbsolutePath());
+		}
+
+		// Generate the output file's name by removing the .gz extension
+		String outputFileName = inputFile.getName();
+		if (outputFileName.endsWith(".gz")) {
+			outputFileName = outputFileName.substring(0, outputFileName.length() - 3);
+		} else {
+			// Handle cases where the extension is not .gz (just a safeguard)
+			throw new IllegalArgumentException("The input file does not have a .gz extension.");
+		}
+
+		File outputFile = new File(outputDir, outputFileName);
+
+		// Decompress the GZIP file
 		try (FileInputStream fis = new FileInputStream(inputFile);
 			 GZIPInputStream gzis = new GZIPInputStream(fis);
-			 FileOutputStream fos = new FileOutputStream(outputFilePath.toFile())) {
+			 FileOutputStream fos = new FileOutputStream(outputFile)) {
 			byte[] buffer = new byte[4096];
 			int bytesRead;
 			while ((bytesRead = gzis.read(buffer)) != -1) {
@@ -335,6 +341,7 @@ public class GXCompressor implements IGXCompressor {
 			}
 		}
 	}
+
 
 }
 
