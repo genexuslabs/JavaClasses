@@ -570,8 +570,8 @@ public abstract class GXWebPanel extends GXWebObjectBase
 						 {
 							int lastRow = grid.getInt("lastRow") + 1;
 							try{
-								SetFieldValue("sGXsfl_" + grid.getString("id") + "_idx", String.format("%04d", lastRow) + pRow);
-								SetFieldValue("nGXsfl_" + grid.getString("id") + "_idx", String.valueOf(lastRow));
+								SetFieldValue("sGXsfl_" + grid.get("id").toString() + "_idx", String.format("%04d", lastRow) + pRow);
+								SetFieldValue("nGXsfl_" + grid.get("id").toString() + "_idx", String.valueOf(lastRow));
 							} 
 							catch(Exception ex1)
 							 {
@@ -922,7 +922,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 											}
 											 else
 											  {
-												strValue = columnValues.getString(j);
+												strValue = columnValues.get(j).toString();
 											}
 											targetObj.httpContext.changePostValue(varName, strValue);
 											rowIdx++;
