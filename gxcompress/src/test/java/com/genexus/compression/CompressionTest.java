@@ -1,5 +1,5 @@
-import com.genexus.CompressionFormat;
-import com.genexus.GXCompressor;
+package com.genexus.compression;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,7 +15,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CompressionTest {
 	private List<File> tempFiles = new ArrayList<>();
-	private File singleTestFile;
 	private File tempDir;
 
 	@BeforeEach
@@ -35,7 +34,6 @@ class CompressionTest {
 		for (File file : tempFiles) {
 			file.delete();
 		}
-		if (singleTestFile != null) singleTestFile.delete();
 		tempDir.delete();
 	}
 
