@@ -119,6 +119,7 @@
         <module>gxcryptography</module>
         <module>gxxmlsignature</module>
         <module>gamsaml</module>
+        <module>gxsftp</module>
     </modules>
 
 	<dependencies>
