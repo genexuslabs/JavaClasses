@@ -122,6 +122,7 @@
         <module>gxjwt</module>
         <module>gxcryptography</module>
         <module>gxxmlsignature</module>
+        <module>gxsftp</module>
 		<module>gamtotp</module>
     </modules>
 
