@@ -118,6 +118,7 @@
         <module>gxjwt</module>
         <module>gxcryptography</module>
         <module>gxxmlsignature</module>
+        <module>gamsaml</module>
     </modules>
 
 	<dependencies>
