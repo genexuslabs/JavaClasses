@@ -54,6 +54,11 @@ public class ExternalProviderIBM extends ExternalProviderBase implements Externa
     private String endpointUrl;
 	private int defaultExpirationMinutes = DEFAULT_EXPIRATION_MINUTES;
 
+	public ExternalProviderIBM() throws Exception{
+		super();
+		init();
+	}
+
     public ExternalProviderIBM(GXService providerService) throws Exception {
     	super(providerService);
 		init();
