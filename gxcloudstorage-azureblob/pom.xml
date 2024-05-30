@@ -15,6 +15,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>gxclassR</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.genexus</groupId>
             <artifactId>gxcloudstorage-common</artifactId>
             <version>${project.version}</version>

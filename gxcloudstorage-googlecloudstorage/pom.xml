@@ -13,7 +13,12 @@
     <artifactId>gxcloudstorage-googlecloudstorage</artifactId>
     <name>GeneXus Google Cloud Storage</name>
 
-	<dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>gxclassR</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.genexus</groupId>
             <artifactId>gxcloudstorage-common</artifactId>
