@@ -8,7 +8,6 @@ import com.amazonaws.services.s3.S3ClientOptions;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import com.amazonaws.HttpMethod;
-import com.genexus.Application;
 import com.genexus.util.GXService;
 import com.genexus.util.StorageUtils;
 import com.genexus.StructSdtMessages_Message;
@@ -73,10 +72,6 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
 
 	public String getName(){
 		return NAME;
-	}
-
-	public ExternalProviderS3(String service) throws Exception{
-		this(Application.getGXServices().get(service));
 	}
 
 	public ExternalProviderS3() throws Exception{
