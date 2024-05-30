@@ -123,6 +123,7 @@
         <module>gxcryptography</module>
         <module>gxxmlsignature</module>
         <module>gxsftp</module>
+        <module>gxftps</module>
 		<module>gamtotp</module>
     </modules>
 
