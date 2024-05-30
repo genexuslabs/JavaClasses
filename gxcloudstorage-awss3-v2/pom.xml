@@ -15,6 +15,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.genexus</groupId>
+            <artifactId>gxclassR</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>gxclassR</artifactId>
             <version>${project.version}</version>
