@@ -15,10 +15,9 @@
 
 	<dependencies>
         <dependency>
-            <groupId>com.genexus</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>gxclassR</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.genexus</groupId>

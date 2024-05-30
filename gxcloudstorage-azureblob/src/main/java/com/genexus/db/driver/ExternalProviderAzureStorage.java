@@ -1,5 +1,6 @@
 package com.genexus.db.driver;
 
+import com.genexus.Application;
 import com.genexus.StructSdtMessages_Message;
 import com.genexus.util.GXService;
 import com.genexus.util.StorageUtils;
@@ -46,6 +47,9 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 	private String privateContainerName;
 	private String publicContainerName;
 
+	public ExternalProviderAzureStorage(String service) throws Exception {
+		this(Application.getGXServices().get(service));
+	}
 
 	private void init() throws Exception {
 		try {
