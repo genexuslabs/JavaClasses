@@ -21,11 +21,16 @@ These are the source of the GeneXus Standard Classes for Java, valid since GeneX
 | gxoffice                       | Formerly Java classes are now separated to be included only when using office. 
 | gxsearch                       | Formerly in Java classes are now separated to be included only when using search.
 | gxandroidpublisher and javapns | They are necessary for when you have Push Notifications in your old implementation. These are projects that should disappear in the short term.
-| android                        | The standard Android classes. **Note that this is not the full runtime for Android, the full runtime can be created by using the Android Flexible Client project**.
-| gxexternalproviders            | Implements service provider for IBM Cloud, Google, Azure, Amazon
-| gxgeospatial                   | Geography data type implementation
-| gxodata                        | OData access
-| gamtotp                        | GAM external object for RFC6238 implementation
+| android | The standard Android classes. **Note that this is not the full runtime for Android, the full runtime can be created by using the Android Flexible Client project**.
+| gxexternalproviders | Implements service provider for IBM Cloud, Google, Azure, Amazon
+| gxgeospatial | Geography data type implementation
+| gxodata | OData access
+| securityapicommons | SecurityAPI's common module
+| gxcryptography | SecurityAPI's GeneXusCryptography module
+| gxjwt | SecurityAPI's GeneXusJWT module
+| gxxmlsignature | SecurityAPI's GeneXusXmlSignature module
+| gxftps | SecurityAPI's GeneXusFTPS module
+| gxsftp | SecurityAPI's GeneXusSFTP module
 
 The dependencies between the projects are specified in each pom.xml within their directory.
 
