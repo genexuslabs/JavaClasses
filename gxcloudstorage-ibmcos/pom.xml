@@ -13,11 +13,12 @@
     <artifactId>gxcloudstorage-ibmcos</artifactId>
 	<name>GeneXus IBM Cloud Storage</name>
 
-    <dependencies>
+	<dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>gxclassR</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.genexus</groupId>
