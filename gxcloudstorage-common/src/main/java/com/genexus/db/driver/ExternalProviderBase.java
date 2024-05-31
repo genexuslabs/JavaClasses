@@ -32,6 +32,17 @@ public abstract class ExternalProviderBase {
 		init();
 	}
 
+
+	/**
+	 * Starts the necessary processes required for the usage of an External Object.
+	 * This method ensures that the Provider is installed correctly before any
+	 * operations are performed. It should be called at the beginning to set up
+	 * the environment for the External Object.
+	 */
+	public void start() {
+		
+	}
+
 	private void init() {
 		String aclS = getPropertyValue(DEFAULT_ACL, DEFAULT_ACL_DEPRECATED, "");
 		if (aclS.length() > 0) {
