@@ -40,7 +40,7 @@ public abstract class ExternalProviderBase {
 	 * the environment for the External Object.
 	 */
 	public void start() {
-		
+
 	}
 
 	private void init() {
