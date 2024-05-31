@@ -341,9 +341,9 @@ public class GXRestAPIClient {
 		try {
 			if (jsonResponse != null) {
 				if (jsonResponse.has(varName))
-					jsonstr = jsonResponse.getString(varName);
+					jsonstr = jsonResponse.get(varName).toString();
 				else if (jsonResponse.length() == 1 && jsonResponse.has(""))
-					jsonstr = jsonResponse.getString("");								
+					jsonstr = jsonResponse.get("").toString();
 			}
 			else {
 				errorCode = RESPONSE_ERROR_CODE;
@@ -375,10 +375,10 @@ public class GXRestAPIClient {
 			if (jsonResponse != null) {
 				Boolean dSuccess = false;
 				if (jsonResponse.has(varName) && jsonResponse.length() == 1) {
-					dSuccess = sdt.fromJSonString(jsonResponse.getString(varName), null);
+					dSuccess = sdt.fromJSonString(jsonResponse.get(varName).toString(), null);
 				} 
 				else if (jsonResponse.length() == 1 && jsonResponse.has("")) {
-					dSuccess = sdt.fromJSonString(jsonResponse.getString(""), null);
+					dSuccess = sdt.fromJSonString(jsonResponse.get("").toString(), null);
 				} 
 				else if (jsonResponse.length()>= 1) {
 					dSuccess = sdt.fromJSonString(httpClient.getString(), null);			
@@ -462,10 +462,10 @@ public class GXRestAPIClient {
         } 		
 		try {
 			if (jsonResponse.has(varName)) {
-				coll.fromJSonString(jsonResponse.getString(varName), null);
+				coll.fromJSonString(jsonResponse.get(varName).toString(), null);
 			} 
 			else if (jsonResponse.length() == 1 && jsonResponse.has("")) {
-				coll.fromJSonString(jsonResponse.getString(varName), null);
+				coll.fromJSonString(jsonResponse.get(varName).toString(), null);
 			} 
 		} 
 		catch (JSONException e) {
