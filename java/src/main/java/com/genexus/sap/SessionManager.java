@@ -158,7 +158,7 @@ public class SessionManager
 				scopeName  = String.valueOf( scopeObj);
 				Log.info("GX SAP - Begin Transaction " +  destinationName);
 				JCoDestination destination = null;
-				if (scopeName.isEmpty()) 
+				if (scopeName.isEmpty() || scopeName.equals("null"))
 					destination = JCoDestinationManager.getDestination(destinationName);		
 				else 	
 					destination = JCoDestinationManager.getDestination(destinationName, scopeName);		
@@ -184,7 +184,7 @@ public class SessionManager
 				JCoDestination destination = null;
 				destinationName = (String)destinationObj;
 				scopeName = String.valueOf(scopeObject);
-				if ( scopeName.isEmpty() ) {
+				if ( scopeName.isEmpty() || scopeName.equals("null") ) {
 					destination = JCoDestinationManager.getDestination(destinationName);
 				}
 				else {
