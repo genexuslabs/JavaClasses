@@ -17,6 +17,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Vector;
 import java.util.zip.*;
 
 import static org.apache.commons.io.FilenameUtils.getExtension;
@@ -25,16 +26,17 @@ public class GXCompressor implements IGXCompressor {
 
 	private static final Logger log = org.apache.logging.log4j.LogManager.getLogger(GXCompressor.class);
 	
-	public static int compress(String[] files, String path, String format, int dictionarySize) {
-		File[] toCompress = new File[files.length];
-		for (int i = 0; i < files.length; i++) {
-			toCompress[i] = new File(files[i]);
+	public static int compressFiles(Vector<String> files, String path, String format) {
+		File[] toCompress = new File[files.size()];
+		int index = 0;
+		for (String filePath : files) {
+			toCompress[index++] = new File(filePath);
 		}
 		try {
 			CompressionFormat compressionFormat = getCompressionFormat(format);
 			switch (compressionFormat) {
 				case ZIP:
-					compressToZip(toCompress, path, dictionarySize);
+					compressToZip(toCompress, path);
 					break;
 				case SEVENZ:
 					compressToSevenZ(toCompress, path);
@@ -55,23 +57,20 @@ public class GXCompressor implements IGXCompressor {
 	}
 
 	
-	public static int compress(String folder, String path, String format, int dictionarySize) {
+	public static int compressFolder(String folder, String path, String format) {
 		File toCompress = new File(folder);
 		if (!toCompress.exists()) {
 			log.error("The specified folder does not exist: {}", toCompress.getAbsolutePath());
 			return -2;
 		}
-		if (!toCompress.isDirectory()) {
-			log.error("The specified file is not a directory: {}", toCompress.getAbsolutePath());
-			return -2;
-		}
-		File[] files = new File[] { toCompress };
-		return compress(folder, path, format, dictionarySize);
+		Vector<String> vector = new Vector<String>();
+		vector.add(folder);
+		return compressFiles(vector, path, format);
 	}
 
 	
-	public static Compression newCompression(String path, String format,  int dictionarySize) {
-		return new Compression(path, format, dictionarySize);
+	public static Compression newCompression(String path, String format) {
+		return new Compression(path, format);
 	}
 
 
@@ -102,7 +101,7 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	private static void compressToZip(File[] files, String outputPath, int dictionarySize) {
+	private static void compressToZip(File[] files, String outputPath) {
 		try (OutputStream fos = Files.newOutputStream(Paths.get(outputPath));
 			 ZipArchiveOutputStream zos = new ZipArchiveOutputStream(fos)) {
 			zos.setMethod(ZipArchiveOutputStream.DEFLATED);
