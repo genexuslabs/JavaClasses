@@ -285,7 +285,7 @@ public class EnterpriseConnect
 						}
 						else if (field.getType() == JCoMetaData.TYPE_BYTE )
 						{
-							jRow.put(field.getName(), field.getByte());
+							jRow.put(field.getName(), new String(field.getByteArray()));
 						}
 						else if (field.getType() == JCoMetaData.TYPE_INT2 || field.getType() == JCoMetaData.TYPE_INT1)
 						{
