@@ -1,11 +1,11 @@
 package com.genexus.compression;
 
-import com.genexus.GXSimpleCollection;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
 public class Compression {
 	private static final Logger log = org.apache.logging.log4j.LogManager.getLogger(Compression.class);
@@ -60,18 +60,11 @@ public class Compression {
 			log.error("No files have been added for compression.");
 			return -3;
 		}
-		GXSimpleCollection<String> paths = new GXSimpleCollection<>();
+		Vector<String> paths = new Vector<>();
 		for (File file : filesToCompress) {
 			paths.add(file.getPath());
 		}
-		int compressionResult;
-		try {
-			compressionResult = GXCompressor.compressFiles(paths, path, format);
-		} catch (IllegalArgumentException e) {
-			compressionResult = -1;
-			log.error("Compression failed: {}", e.getMessage());
-		}
-		return compressionResult;
+		return GXCompressor.compressFiles(paths, path, format);
 	}
 
 

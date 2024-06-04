@@ -48,10 +48,12 @@ public class GXCompressor implements IGXCompressor {
 					compressToGzip(toCompress, path);
 					break;
 				default:
-					throw new IllegalArgumentException("Unsupported compression format: " + format);
+					log.error("Unsupported compression format for compression: {}", format);
+					return -3;
 			}
 			return 0;
 		} catch (Exception e) {
+			log.error("An error occurred during the compression process: ", e);
 			return -1;
 		}
 	}
@@ -63,7 +65,7 @@ public class GXCompressor implements IGXCompressor {
 			log.error("The specified folder does not exist: {}", toCompress.getAbsolutePath());
 			return -2;
 		}
-		Vector<String> vector = new Vector<String>();
+		Vector<String> vector = new Vector<>();
 		vector.add(folder);
 		return compressFiles(vector, path, format);
 	}
