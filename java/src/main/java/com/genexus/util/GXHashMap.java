@@ -15,9 +15,16 @@ import java.util.Vector;
 public class GXHashMap<K, V> extends HashMap<K, V> {
 	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(GXHashMap.class);
 	private static final ObjectMapper objectMapper = new ObjectMapper();
+	private boolean isNumberKey = false;
 
 	public void setHashMap(GXHashMap<K, V> hashMap) {
 		putAll(hashMap);
+	}
+
+	public V put(K key, V value) {
+		if (key instanceof Number)
+			isNumberKey = true;
+		return super.put(key, value);
 	}
 
 	public boolean get(K key, V[] value) {
@@ -78,9 +85,19 @@ public class GXHashMap<K, V> extends HashMap<K, V> {
 
 		try {
 			this.clear();
-			this.putAll(objectMapper.readValue(json, objectMapper.getTypeFactory().constructType(type)));
+			HashMap<K, V> fromJsonHashMap = objectMapper.readValue(json, objectMapper.getTypeFactory().constructType(type));
+			if (!isNumberKey)
+				this.putAll(fromJsonHashMap);
+			else {
+				for (Map.Entry<K, V> entry : fromJsonHashMap.entrySet()) {
+					K key = entry.getKey();
+					V value = entry.getValue();
+
+					this.put((K) java.text.NumberFormat.getInstance().parse((String) key), value);
+				}
+			}
 		}
-		catch (JsonProcessingException e) {
+		catch (Exception e) {
 			log.error("Could not set Dictionary from json", e);
 		}
 	}

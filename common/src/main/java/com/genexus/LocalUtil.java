@@ -1562,6 +1562,8 @@ public class LocalUtil
 			else if (a=='\\')
 			{
 				i++;
+				if (picture.charAt(i--) == '"')
+					pictureWithoutSymbols.append('"');
 			}
 		}
 		return pictureWithoutSymbols.toString();
@@ -1742,6 +1744,8 @@ public class LocalUtil
 			if (originalPicture.startsWith("\\"))
 			{
 				negativeSign = -2;
+				if (preffix.equals("\"") && originalPicture.startsWith("\\\\"))
+					negativeSign--;
 				return originalPicture.charAt(1) + addPictureSuffix(suffix, originalPicture, addPicturePreffix(preffix, originalPicture, alignRight(formatted, originalPictLength + negativeSign)));
 			}
 			return addPictureSuffix(suffix, originalPicture, addPicturePreffix(preffix, originalPicture, alignRight(formatted, originalPictLength + negativeSign)));
@@ -1897,12 +1901,9 @@ public class LocalUtil
 
         private String addPicturePreffix(String suffix, String originalPicture, String value)
         {
-                if (originalPicture.startsWith(suffix))
-                {
-                        return suffix + value;
-                }
-
-                return value;
+			if (originalPicture.startsWith(suffix) || (suffix.equals("\"") && originalPicture.startsWith("\\\\")))
+				return suffix + value;
+			return value;
         }
 
 	private String pictureToNumberFormat(String withoutSuffixPicture)

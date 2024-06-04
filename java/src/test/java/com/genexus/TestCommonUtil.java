@@ -211,6 +211,13 @@ public class TestCommonUtil {
 		result = ui.getLocalUtil().format(bigDecimalValue, picture);
 		Assert.assertEquals(expectedResult, result);
 
+		decimalValue = 87654321;
+		picture = "\\\" ZZ,ZZZ,ZZ9";
+		expectedResult = "\\\" 87,654,321";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
 		double doubleValue = 123456.12;
 		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "ZZZZZZZZZZ9.ZZZZZZ", "     123456.120000");
 		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "99999999999.999999", "00000123456.120000");
