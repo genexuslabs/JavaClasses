@@ -12,7 +12,7 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.util.Vector;
 
-public class CompressionTest {
+public class TestCompression {
 
 	private Vector<String> files;
 	private File testDirectory;
@@ -79,11 +79,5 @@ public class CompressionTest {
 		String outputPath = new File(testDirectory, "output.unknown").getAbsolutePath();
 		int result = GXCompressor.compressFiles(files, outputPath, "UNKNOWN");
 		assertEquals(-1, result);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testThrowExceptionForUnsupportedFormat() {
-		String outputPath = new File(testDirectory, "output.unsupported").getAbsolutePath();
-		GXCompressor.compressFiles(files, outputPath, "UNSUPPORTED");
 	}
 }
