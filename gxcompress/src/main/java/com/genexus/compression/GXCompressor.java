@@ -123,6 +123,7 @@ public class GXCompressor implements IGXCompressor {
 				}
 			}
 		} catch (IOException e) {
+			log.error("Error while compressing to zip", e);
 			throw new RuntimeException("Failed to compress files", e);
 		}
 	}
@@ -157,6 +158,7 @@ public class GXCompressor implements IGXCompressor {
 				addToSevenZArchive(sevenZOutput, file, "");
 			}
 		} catch (IOException e) {
+			log.error("Error while compressing to 7z", e);
 			throw new RuntimeException("Error creating 7z archive", e);
 		}
 	}
@@ -196,6 +198,7 @@ public class GXCompressor implements IGXCompressor {
 			}
 			taos.finish();
 		} catch (IOException e) {
+			log.error("Error while compressing to tar", e);
 			throw new RuntimeException("Error creating TAR archive", e);
 		}
 	}
@@ -240,6 +243,7 @@ public class GXCompressor implements IGXCompressor {
 				gzOut.write(buffer, 0, n);
 			}
 		} catch (IOException e) {
+			log.error("Error while compressing to gzip", e);
 			throw new RuntimeException("Error compressing file with GZIP", e);
 		}
 	}
@@ -278,6 +282,7 @@ public class GXCompressor implements IGXCompressor {
 				zipIn.closeEntry();
 			}
 		} catch (IOException e) {
+			log.error("Error while decompressing to zip", e);
 			throw new RuntimeException("Failed to decompress ZIP file: " + zipFilePath, e);
 		}
 	}
