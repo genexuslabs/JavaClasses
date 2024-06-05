@@ -37,25 +37,25 @@ public class GXCompressor implements IGXCompressor {
 			switch (compressionFormat) {
 				case ZIP:
 					compressToZip(toCompress, path);
-					break;
+					return 0;
 				case SEVENZ:
 					compressToSevenZ(toCompress, path);
-					break;
+					return 0;
 				case TAR:
 					compressToTar(toCompress, path);
-					break;
+					return 0;
 				case GZIP:
 					compressToGzip(toCompress, path);
-					break;
-				default:
-					log.error("Unsupported compression format for compression: {}", format);
-					return -3;
+					return 0;
 			}
-			return 0;
+		} catch (IllegalArgumentException iae) {
+			log.error("Unsupported compression format for compression: {}", format);
+			return -3;
 		} catch (Exception e) {
 			log.error("An error occurred during the compression process: ", e);
 			return -1;
 		}
+		return -1;
 	}
 
 	
@@ -69,12 +69,10 @@ public class GXCompressor implements IGXCompressor {
 		vector.add(folder);
 		return compressFiles(vector, path, format);
 	}
-
 	
 	public static Compression newCompression(String path, String format) {
 		return new Compression(path, format);
 	}
-
 
 	public static int decompress(String file, String path) {
 		File toCompress = new File(file);
@@ -97,8 +95,8 @@ public class GXCompressor implements IGXCompressor {
 					log.error("Unsupported compression format for decompression: {}", extension);
 					return -3;
 			}
-		} catch (IOException ioe) {
-			log.error("Decompression failed: {}", ioe.getMessage());
+		} catch (Exception e) {
+			log.error("Decompression failed: {}", e.getMessage());
 			return -1;
 		}
 	}
@@ -355,7 +353,7 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	public static CompressionFormat getCompressionFormat(String format) {
+	private static CompressionFormat getCompressionFormat(String format) {
 		try {
 			return CompressionFormat.valueOf(format.toUpperCase());
 		} catch (IllegalArgumentException e) {
