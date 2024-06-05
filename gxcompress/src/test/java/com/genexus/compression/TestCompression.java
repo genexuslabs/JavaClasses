@@ -78,6 +78,6 @@ public class TestCompression {
 	public void testUnsupportedFormat() {
 		String outputPath = new File(testDirectory, "output.unknown").getAbsolutePath();
 		int result = GXCompressor.compressFiles(files, outputPath, "UNKNOWN");
-		assertEquals(-1, result);
+		assertEquals(-3, result);
 	}
 }

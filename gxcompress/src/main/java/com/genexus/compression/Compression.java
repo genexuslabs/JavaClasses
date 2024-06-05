@@ -58,7 +58,7 @@ public class Compression {
 	public int save() {
 		if (filesToCompress.isEmpty()) {
 			log.error("No files have been added for compression.");
-			return -3;
+			return -4;
 		}
 		Vector<String> paths = new Vector<>();
 		for (File file : filesToCompress) {
