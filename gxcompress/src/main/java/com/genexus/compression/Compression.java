@@ -30,7 +30,8 @@ public class Compression {
 		this.format = format;
 	}
 
-	public void addFile(File file) {
+	public void addFile(String filePath) {
+		File file = new File(filePath);
 		if (file.exists()) {
 			filesToCompress.add(file);
 		} else {
@@ -38,15 +39,16 @@ public class Compression {
 		}
 	}
 
-	public void addFolder(File folder) {
+	public void addFolder(String folderPath) {
+		File folder = new File(folderPath);
 		if (folder.exists() && folder.isDirectory()) {
 			File[] files = folder.listFiles();
 			if (files != null) {
 				for (File file : files) {
 					if (file.isDirectory()) {
-						addFolder(file);
+						addFolder(file.getAbsolutePath());
 					} else {
-						addFile(file);
+						addFile(file.getAbsolutePath());
 					}
 				}
 			}
