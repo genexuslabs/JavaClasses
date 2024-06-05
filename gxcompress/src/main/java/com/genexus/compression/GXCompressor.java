@@ -27,6 +27,10 @@ public class GXCompressor implements IGXCompressor {
 	private static final Logger log = org.apache.logging.log4j.LogManager.getLogger(GXCompressor.class);
 	
 	public static int compressFiles(Vector<String> files, String path, String format) {
+		if (files.isEmpty()){
+			log.error("No files have been added for compression.");
+			return -4;
+		}
 		File[] toCompress = new File[files.size()];
 		int index = 0;
 		for (String filePath : files) {
@@ -76,6 +80,14 @@ public class GXCompressor implements IGXCompressor {
 
 	public static int decompress(String file, String path) {
 		File toCompress = new File(file);
+		if (!toCompress.exists()) {
+			log.error("The specified archive does not exist: {}", toCompress.getAbsolutePath());
+			return -2;
+		}
+		if (toCompress.length() == 0L){
+            log.error("The archive located at {} is empty", path);
+			return -4;
+		}
 		String extension = getExtension(toCompress.getName());
 		try {
 			switch (extension.toLowerCase()) {
