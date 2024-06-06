@@ -15,7 +15,13 @@ public class JSONObjectWrapper extends JSONObject{
 	}
 
 	public JSONObjectWrapper(String string) {
-		super(string);
+		super(new JSONTokenerWrapper(string));
+		if (map == null)
+			map = new LinkedHashMap<String, Object>();
+	}
+
+	public JSONObjectWrapper(JSONTokenerWrapper token) {
+		super(token);
 		if (map == null)
 			map = new LinkedHashMap<String, Object>();
 	}

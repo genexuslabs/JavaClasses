@@ -13,6 +13,7 @@ import com.genexus.json.JSONObjectWrapper;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.genexus.internet.IGxJSONAble;
@@ -291,14 +292,15 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 	}
 
 	/*Recorre el iterador y pone los _N del campo al final asi no se pierden los valores null cuando se asigna el valor al campo*/
-	private Iterator getFromJSONObjectOrderIterator(Iterator it)
+	private Iterator getFromJSONObjectOrderIterator(Iterator<Map.Entry<String, Object>> it)
 	{
 		java.util.Vector<String> v = new java.util.Vector<String>();
 		java.util.Vector<String> vAtEnd = new java.util.Vector<String>();
 		String name;
         while(it.hasNext())
         {
-        	name = (String)it.next();
+			Map.Entry<String, Object> entry = it.next();
+        	name = entry.getKey();
 	        String map = getJsonMap(name);
 	        String className = CommonUtil.classNameNoPackage(this.getClass());
 			Method getMethod = getMethod(GET_METHOD_NAME + className + "_" + (map != null? map : name));
@@ -356,7 +358,7 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 		{
 			if (obj instanceof JSONObject)
 				obj = new JSONObjectWrapper((JSONObject)obj);
-			Iterator it = getFromJSONObjectOrderIterator(((JSONObjectWrapper)obj).keys());
+			Iterator it = getFromJSONObjectOrderIterator(((JSONObjectWrapper)obj).entrySet().iterator());
 			while(it.hasNext())
 			{
 				name = (String)it.next();
