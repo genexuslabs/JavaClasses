@@ -1,15 +1,15 @@
 package com.genexus.internet;
 import java.util.*;
-import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
-
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 import org.json.JSONArray;
-
 import java.io.Serializable;
 
 public class GXNavigationHelper implements Serializable
     {
-				private static final long serialVersionUID = 2608956804836620190L;    	
+		private static final long serialVersionUID = 2608956804836620190L;    	
+        private static final ILogger logger = LogManager.getLogger(GXNavigationHelper.class);
     	
         public static String POPUP_LEVEL = "gxPopupLevel";
         public static String TAB_ID = "gxTabId";
@@ -116,7 +116,8 @@ public class GXNavigationHelper implements Serializable
                 referers.remove(popupLevel);
         }
 
-        static public String getUrlComponent(String url, String key) {
+        static public String getUrlComponent(String url, String key) 
+        {
             url = SpecificImplementation.GXutil.URLDecode(url);
             String result = "";
             if (url != null)
@@ -134,8 +135,9 @@ public class GXNavigationHelper implements Serializable
                             {
                                 result = url.substring(eqIdx+1, cIdx);
                             }
-                            catch(Exception e)
+                            catch(IndexOutOfBoundsException e)
                             {
+                                logger.error(String.format("Searching parm:'%1$s' in url:'%2$s'", key, url), e);
                             }
                         }
                     }
@@ -144,7 +146,7 @@ public class GXNavigationHelper implements Serializable
             return result;
         }
 
-        public String getUrlPopupLevel(String url)
+        static public String getUrlPopupLevel(String url)
         {
             return getUrlComponent( url, POPUP_LEVEL);
         }
