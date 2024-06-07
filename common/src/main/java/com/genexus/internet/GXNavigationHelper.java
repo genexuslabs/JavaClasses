@@ -12,6 +12,8 @@ public class GXNavigationHelper implements Serializable
 				private static final long serialVersionUID = 2608956804836620190L;    	
     	
         public static String POPUP_LEVEL = "gxPopupLevel";
+        public static String TAB_ID = "gxTabId";
+		public static String TAB_ID_HEADER = "X-Gx-Tabid";
         public static String CALLED_AS_POPUP = "gxCalledAsPopup";
 
         private Hashtable<String, Stack<String>> referers;
@@ -114,13 +116,12 @@ public class GXNavigationHelper implements Serializable
                 referers.remove(popupLevel);
         }
 
-        public String getUrlPopupLevel(String url)
-        {
+        static public String getUrlComponent(String url, String key) {
             url = SpecificImplementation.GXutil.URLDecode(url);
-            String popupLevel = "-1";
+            String result = "";
             if (url != null)
             {
-                int pIdx = url.indexOf(POPUP_LEVEL);
+                int pIdx = url.indexOf(key);
                 if (pIdx != -1)
                 {
                     int eqIdx = url.indexOf("=", pIdx);
@@ -131,16 +132,20 @@ public class GXNavigationHelper implements Serializable
                         {
                             try
                             {
-                                popupLevel = url.substring(eqIdx+1, cIdx);
+                                result = url.substring(eqIdx+1, cIdx);
                             }
                             catch(Exception e)
                             {
-                                popupLevel = "-1";
                             }
                         }
                     }
                 }
             }
-            return popupLevel;
+            return result;
+        }
+
+        public String getUrlPopupLevel(String url)
+        {
+            return getUrlComponent( url, POPUP_LEVEL);
         }
     }
