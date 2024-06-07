@@ -1064,9 +1064,10 @@ public class HttpContextWeb extends HttpContext {
 		loadParameters(qs);
 	}
 
-	private String removeInternalParms(String query) {
+	private String removeInternalParm(String query, String parm) 
+	{
 		query = removeEventPrefix(query);
-		int idx = query.indexOf(GXNavigationHelper.POPUP_LEVEL);
+		int idx = query.indexOf(parm);
 		if (idx == 1)
 			return "";
 		if (idx > 1)
@@ -1077,6 +1078,11 @@ public class HttpContextWeb extends HttpContext {
 			query = query.substring(0, idx);
 		}
 		return query;
+	}
+
+	private String removeInternalParms(String query) {
+		query = removeInternalParm( query, GXNavigationHelper.POPUP_LEVEL);
+		return removeInternalParm( query, GXNavigationHelper.TAB_ID);
 	}
 
 	public String getQueryString() {

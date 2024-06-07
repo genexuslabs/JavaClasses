@@ -21,6 +21,7 @@ public abstract class HttpRequest implements IHttpRequest
 	private int errCode;
 	private String errDescription;
 	private String Referrer = "";
+	private String tabId = "";
 	protected HttpContext httpContext;
 	
 	public HttpRequest(HttpContext httpContext)
@@ -256,5 +257,20 @@ public abstract class HttpRequest implements IHttpRequest
 	
 	public void setErrDescription(String errDsc){
 		this.errDescription = errDsc;
+	}
+
+	public String getTabId() 
+	{
+			String sUrl = httpContext.getRequestNavUrl().trim();
+
+			if ( tabId.isEmpty())
+			{
+				tabId = GXNavigationHelper.getUrlComponent(sUrl, GXNavigationHelper.TAB_ID);
+			}
+			if ( tabId.isEmpty())
+			{
+				tabId = getHeader(GXNavigationHelper.TAB_ID_HEADER);
+			}
+		return tabId;
 	}
 }
