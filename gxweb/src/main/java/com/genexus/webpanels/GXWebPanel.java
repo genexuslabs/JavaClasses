@@ -914,7 +914,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 										for (int j = 0; j < colValuesLen; j++) {
 											String varName = String.format("%s%s_%s%s", cmpContext, (String)parm.get("fld"), String.format("%04d", rowIdx), parentRow);
 											objValue = columnValues.get(j);
-											if (objValue.getClass() == Double.class)
+											if (objValue.getClass() == java.math.BigDecimal.class || objValue.getClass() == Double.class)
 											{
 												DecimalFormat df = (DecimalFormat) NumberFormat.getInstance(localUtil.getLocale());
 												df.setMaximumFractionDigits(Integer.MAX_VALUE);
@@ -958,7 +958,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 											for (int j = 0; j < hideCodeValuesLen; j++) {
 												String varName = String.format("%sGXHC%s_%s%s", cmpContext, (String)parm.get("fld"), String.format("%04d", rowIdx), parentRow);
 												objValue = hideCodeValues.get(j);
-												if (objValue.getClass() == Double.class)
+												if (objValue.getClass() == java.math.BigDecimal.class || objValue.getClass() == Double.class)
 												{
 													DecimalFormat df = (DecimalFormat) NumberFormat.getInstance(localUtil.getLocale());
 													df.setMaximumFractionDigits(Integer.MAX_VALUE);
