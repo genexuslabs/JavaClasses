@@ -28,18 +28,14 @@ public class JSONObjectWrapper extends JSONObject{
 
 	public JSONObjectWrapper(Map<?,?> m) {
 		super(m);
-		if (map == null)
-			map = new LinkedHashMap<String, Object>();
-		else {
-			map = new LinkedHashMap<String, Object>(m.size());
-			for (final Entry<?, ?> e : m.entrySet()) {
-				if (e.getKey() == null) {
-					throw new NullPointerException("Null key.");
-				}
-				final Object value = e.getValue();
-				if (value != null)
-					this.map.put(String.valueOf(e.getKey()), value);
+		map = new LinkedHashMap<String, Object>(m.size());
+		for (final Entry<?, ?> e : m.entrySet()) {
+			if (e.getKey() == null) {
+				throw new NullPointerException("Null key.");
 			}
+			final Object value = e.getValue();
+			if (value != null)
+				this.map.put(String.valueOf(e.getKey()), value);
 		}
 	}
 
