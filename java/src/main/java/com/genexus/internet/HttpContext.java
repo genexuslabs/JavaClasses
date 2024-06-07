@@ -351,7 +351,7 @@ public abstract class HttpContext implements IHttpContext
 	
 	public void deleteReferer()
 	{
-		deleteReferer(getNavigationHelper(false).getUrlPopupLevel(getRequestNavUrl()));            
+		deleteReferer(GXNavigationHelper.getUrlPopupLevel(getRequestNavUrl()));            
 	}
 
 	public void pushCurrentUrl()
