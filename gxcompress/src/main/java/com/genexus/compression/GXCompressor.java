@@ -18,6 +18,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Vector;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
+import java.util.jar.JarOutputStream;
 import java.util.zip.*;
 
 import static org.apache.commons.io.FilenameUtils.getExtension;
@@ -50,6 +53,9 @@ public class GXCompressor implements IGXCompressor {
 					return 0;
 				case GZIP:
 					compressToGzip(toCompress, path);
+					return 0;
+				case JAR:
+					compressToJar(toCompress, path);
 					return 0;
 			}
 		} catch (IllegalArgumentException iae) {
@@ -102,6 +108,9 @@ public class GXCompressor implements IGXCompressor {
 					return 0;
 				case "gz":
 					decompressGzip(toCompress, path);
+					return 0;
+				case "jar":
+					decompressJar(toCompress, path);
 					return 0;
 				default:
 					log.error("Unsupported compression format for decompression: {}", extension);
@@ -329,12 +338,8 @@ public class GXCompressor implements IGXCompressor {
 				if (!outputFile.toPath().startsWith(targetDir)) {
 					throw new IOException("Entry is outside of the target directory: " + entry.getName());
 				}
-				if (entry.isDirectory()) {
-					if (!outputFile.exists()) {
-						if (!outputFile.mkdirs()) {
-							throw new IOException("Failed to create directory: " + outputFile);
-						}
-					}
+				if (entry.isDirectory() && !outputFile.exists() && !outputFile.mkdirs()) {
+					throw new IOException("Failed to create directory: " + outputFile);
 				} else {
 					File parent = outputFile.getParentFile();
 					if (!parent.exists() && !parent.mkdirs()) {
@@ -366,6 +371,52 @@ public class GXCompressor implements IGXCompressor {
 			int bytesRead;
 			while ((bytesRead = gzis.read(buffer)) != -1) {
 				fos.write(buffer, 0, bytesRead);
+			}
+		}
+	}
+
+	private static void compressToJar(File[] files, String outputPath) throws IOException {
+		JarOutputStream jos = new JarOutputStream(Files.newOutputStream(Paths.get(outputPath)));
+		byte[] buffer = new byte[1024];
+		for (File file : files) {
+			FileInputStream fis = new FileInputStream(file);
+			jos.putNextEntry(new JarEntry(file.getName()));
+			int length;
+			while ((length = fis.read(buffer)) > 0) {
+				jos.write(buffer, 0, length);
+			}
+			fis.close();
+			jos.closeEntry();
+		}
+		jos.close();
+	}
+
+	public static void decompressJar(File jarFile, String outputPath) throws IOException {
+		if (!jarFile.exists()) {
+			throw new IOException("The jar file does not exist.");
+		}
+		File outputDir = new File(outputPath);
+		if (!outputDir.exists() && !outputDir.mkdirs()) {
+			throw new IOException("Failed to create output directory.");
+		}
+		try (JarInputStream jis = new JarInputStream(Files.newInputStream(jarFile.toPath()))) {
+			JarEntry entry;
+			byte[] buffer = new byte[1024];
+			while ((entry = jis.getNextJarEntry()) != null) {
+				File outputFile = new File(outputDir, entry.getName());
+				if (entry.isDirectory()) {
+					if (!outputFile.exists() && !outputFile.mkdirs()) {
+						throw new IOException("Failed to create directory " + outputFile.getAbsolutePath());
+					}
+				} else {
+					try (FileOutputStream fos = new FileOutputStream(outputFile)) {
+						int len;
+						while ((len = jis.read(buffer)) > 0) {
+							fos.write(buffer, 0, len);
+						}
+					}
+				}
+				jis.closeEntry();
 			}
 		}
 	}
