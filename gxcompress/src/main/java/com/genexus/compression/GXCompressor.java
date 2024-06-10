@@ -12,6 +12,8 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.io.IOUtils;
+import com.github.junrar.Junrar;
+import com.github.junrar.exception.RarException;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -111,6 +113,9 @@ public class GXCompressor implements IGXCompressor {
 					return 0;
 				case "jar":
 					decompressJar(toCompress, path);
+					return 0;
+				case "rar":
+					decompressRar(toCompress, path);
 					return 0;
 				default:
 					log.error("Unsupported compression format for decompression: {}", extension);
@@ -419,6 +424,10 @@ public class GXCompressor implements IGXCompressor {
 				jis.closeEntry();
 			}
 		}
+	}
+
+	public static void decompressRar(File rarFile, String destinationPath) throws RarException, IOException{
+		Junrar.extract(rarFile, new File(destinationPath));
 	}
 
 	private static CompressionFormat getCompressionFormat(String format) {
