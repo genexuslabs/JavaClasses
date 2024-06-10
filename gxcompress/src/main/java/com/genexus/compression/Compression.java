@@ -12,14 +12,14 @@ public class Compression {
 
 	private String path;
 	private String format;
-	private List<File> filesToCompress;
+	private Vector<String> filesToCompress;
 
 	public Compression() {}
 
 	public Compression(String path, String format) {
 		this.path = path;
 		this.format = format;
-		this.filesToCompress = new ArrayList<>();
+		this.filesToCompress = new Vector<>();
 	}
 
 	public void setPath(String path) {
@@ -31,11 +31,10 @@ public class Compression {
 	}
 
 	public void addFile(String filePath) {
-		File file = new File(filePath);
-		if (file.exists()) {
-			filesToCompress.add(file);
+		if (new File(filePath).exists()) {
+			filesToCompress.add(filePath);
 		} else {
-			log.error("File does not exist: {}", file.getAbsolutePath());
+			log.error("File does not exist: {}", filePath);
 		}
 	}
 
@@ -62,17 +61,13 @@ public class Compression {
 			log.error("No files have been added for compression.");
 			return -4;
 		}
-		Vector<String> paths = new Vector<>();
-		for (File file : filesToCompress) {
-			paths.add(file.getPath());
-		}
-		return GXCompressor.compressFiles(paths, path, format);
+		return GXCompressor.compressFiles(filesToCompress, path, format);
 	}
 
 
 	public void clear() {
 		this.path = "";
 		this.format = "";
-		this.filesToCompress = new ArrayList<>();
+		this.filesToCompress = new Vector<>();
 	}
 }
