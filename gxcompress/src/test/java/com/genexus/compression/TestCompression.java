@@ -75,6 +75,14 @@ public class TestCompression {
 	}
 
 	@Test
+	public void testCompressToJar() {
+		String outputPath = new File(testDirectory, "output.jar").getAbsolutePath();
+		int result = GXCompressor.compressFiles(files, outputPath, "JAR");
+		assertEquals(0, result);
+		assertTrue(new File(outputPath).exists());
+	}
+
+	@Test
 	public void testUnsupportedFormat() {
 		String outputPath = new File(testDirectory, "output.unknown").getAbsolutePath();
 		int result = GXCompressor.compressFiles(files, outputPath, "UNKNOWN");
