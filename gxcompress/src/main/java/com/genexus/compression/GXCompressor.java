@@ -409,10 +409,8 @@ public class GXCompressor implements IGXCompressor {
 			byte[] buffer = new byte[1024];
 			while ((entry = jis.getNextJarEntry()) != null) {
 				File outputFile = new File(outputDir, entry.getName());
-				if (entry.isDirectory()) {
-					if (!outputFile.exists() && !outputFile.mkdirs()) {
-						throw new IOException("Failed to create directory " + outputFile.getAbsolutePath());
-					}
+				if (entry.isDirectory() && !outputFile.exists() && !outputFile.mkdirs()) {
+					throw new IOException("Failed to create directory " + outputFile.getAbsolutePath());
 				} else {
 					try (FileOutputStream fos = new FileOutputStream(outputFile)) {
 						int len;
