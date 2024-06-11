@@ -16,10 +16,10 @@ import com.genexus.db.DynamicExecute;
 import com.genexus.internet.IGxJSONAble;
 import com.genexus.internet.IGxJSONSerializable;
 import com.genexus.internet.StringCollection;
+import com.genexus.json.JSONArrayWrapper;
 import com.genexus.util.GXMap;
 import com.genexus.util.Quicksort;
 import com.genexus.xml.XMLReader;
-
 import com.genexus.xml.XMLWriter;
 
 import org.json.JSONArray;
@@ -33,7 +33,7 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 	protected String xmlElementsName;
 	protected String containedXmlNamespace = "";
 	protected int remoteHandle = -1;
-	protected JSONArray jsonArr = new JSONArray();
+	protected JSONArrayWrapper jsonArr = new JSONArrayWrapper();
 
 	public GXSimpleCollection()
 	{
@@ -979,7 +979,7 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 	}
 	public void tojson(boolean includeState)
 	{
-		jsonArr = new JSONArray();
+		jsonArr = new JSONArrayWrapper();
 		int size = size();
 		for (int i = 0; i < size; i++)
 		{
@@ -1118,7 +1118,7 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 	{
 		try
 		{
-			jsonArr = new JSONArray(s);
+			jsonArr = new JSONArrayWrapper(s);
 			FromJSONObject(jsonArr);
 			return true;
 		}
@@ -1144,7 +1144,7 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 		this.clear();
 		try
 		{
-			jsonArr = new JSONArray(s);
+			jsonArr = new JSONArrayWrapper(s);
 			for (int i = 0; i < jsonArr.length(); i++)
 			{
 				JSONArray jsonObj = jsonArr.getJSONArray(i);
@@ -1224,7 +1224,7 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 	{
 		this.clear();
 		try {
-			jsonArr = new JSONArray(s);
+			jsonArr = new JSONArrayWrapper(s);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -1291,7 +1291,7 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 
 	public JSONArray getRawJSONArray()
 	{
-		return jsonArr;
+		return (JSONArray)jsonArr;
 	}
 
 	// toString of GxUnknownObjectCollection as client proc expect, table info + rows.
