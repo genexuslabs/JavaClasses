@@ -3,12 +3,13 @@ import com.genexus.*;
 import com.genexus.common.classes.AbstractGXFile;
 import com.genexus.ModelContext;
 import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.json.JSONArrayWrapper;
+import com.genexus.json.JSONObjectWrapper;
 import com.genexus.util.GXProperties;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import com.genexus.json.JSONObjectWrapper;
 
 import java.io.Serializable;
 import java.util.Iterator;
@@ -40,7 +41,7 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 	private static final String GET_METHOD_NAME = "getgxTv_";
 	private static final String SET_METHOD_NAME = "setgxTv_";
 	private JSONObjectWrapper jsonObj = new JSONObjectWrapper();
-	private JSONArray jsonArr = new JSONArray();
+	private JSONArrayWrapper jsonArr = new JSONArrayWrapper();
 	protected boolean isArrayObject = false;
 	protected String arrayItemName;
 	protected String type;
@@ -240,7 +241,11 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 				}
 				else if (isArrayObject)
 				{
-					jsonArr = (JSONArray)((IGxJSONAble)prop).GetJSONObject(includeState);
+					Object obj = ((IGxJSONAble)prop).GetJSONObject(includeState);
+					if (obj instanceof JSONArrayWrapper)
+						jsonArr = (JSONArrayWrapper)obj;
+					else
+						jsonArr = new JSONArrayWrapper((JSONArray)obj);
 				}
 				else
 				{

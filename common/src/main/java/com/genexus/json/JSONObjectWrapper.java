@@ -5,7 +5,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import org.json.JSONException;
 import org.json.JSONObject;
-public class JSONObjectWrapper extends JSONObject{
+public class JSONObjectWrapper extends JSONObject implements java.io.Serializable{
 	private Map<String, Object> map;
 
 	public JSONObjectWrapper() {
