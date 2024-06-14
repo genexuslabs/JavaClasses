@@ -148,6 +148,7 @@ public class GXNavigationHelper implements Serializable
 
         static public String getUrlPopupLevel(String url)
         {
-            return getUrlComponent( url, POPUP_LEVEL);
+            String result = getUrlComponent( url, POPUP_LEVEL);
+            return result.isEmpty() ? "-1":result;
         }
     }
