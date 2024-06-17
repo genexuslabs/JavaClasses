@@ -121,7 +121,7 @@ public class GamSamlProperties {
 	public static String getKeyStPwdCredential() {
 		String cryptPass = GamSamlProperties.getInstance().getGeneralProperty(
 			"KeyStPwdCredential");
-		String ret = Crypt.getInstance().Decrypt(cryptPass);
+		String ret = Crypt.Decrypt(cryptPass);
 		logger.debug("[getKeyStPwdCredential] " + "Gets getKeyStPwdCredential: " + ret);
 
 		return ret;
@@ -152,7 +152,7 @@ public class GamSamlProperties {
 	public static String getKeyStPwdTrustSt() {
 		String cryptPass = GamSamlProperties.getInstance().getGeneralProperty(
 			"KeyStorePwdTrustCred");
-		String ret = Crypt.getInstance().Decrypt(cryptPass);
+		String ret = Crypt.Decrypt(cryptPass);
 		logger.debug("[getKeyStPwdTrustSt] " + "Gets KeyStorePwdTrustCred: " + cryptPass);
 		return ret;
 	}
@@ -177,7 +177,7 @@ public class GamSamlProperties {
 		String cryptPass = GamSamlProperties.getInstance().getGeneralProperty(
 			"KeyStorePwdTrustCred");
 		logger.debug("[getKeyStorePwdTrustCred] " + "cryptPass: " + cryptPass);
-		String ret = Crypt.getInstance().Decrypt(cryptPass);
+		String ret = Crypt.Decrypt(cryptPass);
 		logger.debug("[getKeyStorePwdTrustCred] " + "Gets KeyStorePwdTrustCred: " + ret);
 		return ret;
 	}
@@ -214,7 +214,7 @@ public class GamSamlProperties {
 	public static String getCriteriaKey() {
 		String cryptPass = GamSamlProperties.getInstance().getGeneralProperty("CriteriaKey");
 
-		String ret = Crypt.getInstance().Decrypt(cryptPass);
+		String ret = Crypt.Decrypt(cryptPass);
 		logger.debug("[getCriteriaKey] " + "Gets getCriteriaKey: " + ret);
 
 		return ret;

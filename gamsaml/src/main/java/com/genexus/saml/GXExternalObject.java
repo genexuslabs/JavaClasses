@@ -1,89 +1,36 @@
 package com.genexus.saml;
 
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.AuthnStatement;
 
-import java.util.ArrayList;
-import java.util.List;
-
 
 public class GXExternalObject {
+	public static final ILogger logger = LogManager.getLogger(GXExternalObject.class);
 	private SamlReceiver receiver;
-	private boolean error;
-	private String errorMessage, errorTrace;
 
 	public GXExternalObject() {
-		try {
-			receiver = new SamlReceiver();
-			error = false;
-			errorMessage = "";
-			errorTrace = "";
-		} catch (Exception e) {
-			error = true;
-			errorMessage = e.getMessage();
-			errorTrace = e.toString();
-		}
+		receiver = new SamlReceiver();
 	}
-
-	public boolean isError() {
-		return error;
-
-	}
-
-	public String getErrorMessage() {
-		return errorMessage;
-
-	}
-
-	public String getErrorTrace() {
-		return errorTrace;
-
-	}
-
 	public SamlAssertion getSamlAssertion(String sAMLParameter) {
 		Assertion assertion;
 		try {
 			assertion = receiver.getSAMLAssertion(sAMLParameter);
-			if (!receiver.isError()) {
-				error = false;
-				errorMessage = "";
-				errorTrace = "";
-				return receiver.getDataFromAssertion(assertion);
-			} else {
-				error = true;
-				errorMessage = receiver.getErrorMessage();
-				errorTrace = receiver.getErrorTrace();
-			}
+			return receiver.getDataFromAssertion(assertion);
 		} catch (Exception e) {
-			error = true;
-			errorMessage = e.getMessage();
-			errorTrace = e.toString();
+			logger.error("[getSamlAssertion]", e);
 		}
 		return new SamlAssertion();
 	}
 
-	public String getSessionIndex(String sAMLParameter) {
-		Assertion assertion;
+	public String getSessionIndex(String samlParameter) {
 		try {
-			assertion = receiver.getSAMLAssertion(sAMLParameter);
-			List<Assertion> assertions = new ArrayList<Assertion>();
-			assertions.add(assertion);
-			String sessionIndex = null;
-			if (assertions != null && assertions.size() > 0) {
-				List<AuthnStatement> authnStatements = assertions.get(0).getAuthnStatements();
-				if (authnStatements != null && authnStatements.size() > 0) {
-					AuthnStatement authStmt = authnStatements.get(0);
-					sessionIndex = authStmt.getSessionIndex();
-				}
-			}
-			error = false;
-			errorMessage = "";
-			errorTrace = "";
-			return sessionIndex;
+			Assertion assertion = receiver.getSAMLAssertion(samlParameter);
+			AuthnStatement authStmt = assertion.getAuthnStatements().get(0);
+			return authStmt.getSessionIndex();
 		} catch (Exception e) {
-			error = true;
-			errorMessage = e.getMessage();
-			errorTrace = e.toString();
+			logger.error("[getSessionIndex]", e);
 		}
 		return "";
 	}

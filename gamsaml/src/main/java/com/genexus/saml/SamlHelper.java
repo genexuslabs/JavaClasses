@@ -34,7 +34,9 @@ import java.security.cert.X509Certificate;
 
 public class SamlHelper extends SamlBuilder {
 	public static final ILogger logger = LogManager.getLogger(SamlHelper.class);
+	private static final String STATUS_SUCCESS = "urn:oasis:names:tc:SAML:2.0:status:Success";
 
+	private static final String STATUS_PARTIAL_LOGOUT = "urn:oasis:names:tc:SAML:2.0:status:PartialLogout";
 	public SamlHelper() {
 		super();
 	}
@@ -52,7 +54,7 @@ public class SamlHelper extends SamlBuilder {
 		nameIDPolicy.setAllowCreate(true);
 
 		String NameIDFormat = GamSamlProperties.getNameIDPolicyFormat();
-		if (NameIDFormat == null || NameIDFormat.isEmpty() || NameIDFormat == "")
+		if (NameIDFormat == null || NameIDFormat.isEmpty())
 			nameIDPolicy.setFormat(NameIDType.UNSPECIFIED);
 		else
 			nameIDPolicy.setFormat(NameIDFormat);
@@ -102,7 +104,7 @@ public class SamlHelper extends SamlBuilder {
 
 		//force authentication
 		String setForceAuthn = GamSamlProperties.getForceAuthn();
-		if (setForceAuthn == "true") {
+		if (setForceAuthn.equals("true")) {
 			authnRequest.setForceAuthn(true);
 		}
 
@@ -172,7 +174,7 @@ public class SamlHelper extends SamlBuilder {
 
 		File keyStoreFile = new File(keyStoreFilePath);
 		FileInputStream keyStoreFis;
-		org.opensaml.security.credential.Credential credential = null;
+
 
 		try {
 			keyStoreFis = new FileInputStream(keyStoreFile);
@@ -184,11 +186,12 @@ public class SamlHelper extends SamlBuilder {
 			java.security.cert.X509Certificate cert = (java.security.cert.X509Certificate) keyStore.getCertificate(keyAlias);
 			cert.verify(keyStore.getCertificate(keyAlias).getPublicKey());
 			logger.debug("certificate verified");
-			credential = new org.opensaml.security.x509.BasicX509Credential(cert, pk);
+			return new org.opensaml.security.x509.BasicX509Credential(cert, pk);
 		} catch (Exception e) {
 			logger.error("[getCredential] ", e);
+			return null;
 		}
-		return credential;
+
 	}
 
 
@@ -225,24 +228,21 @@ public class SamlHelper extends SamlBuilder {
 		String keyStoreFilePath = GamSamlProperties.getKeyStoreFilePathTrustCred();
 		String keyStorePwd = GamSamlProperties.getKeyStorePwdTrustCred();
 		String keyAlias = GamSamlProperties.getKeyAliasTrustCred();
-		KeyStore keyStore = null;
 		File keyStoreFile = new File(keyStoreFilePath);
-		org.opensaml.security.x509.BasicX509Credential credential = null;
 		FileInputStream keyStoreFis;
 		try {
 			keyStoreFis = new FileInputStream(keyStoreFile);
-			keyStore = KeyStore.getInstance(GamSamlProperties.getKeyStoreTrustCred());
+			KeyStore keyStore = KeyStore.getInstance(GamSamlProperties.getKeyStoreTrustCred());
 			keyStore.load(keyStoreFis, keyStorePwd.toCharArray());
 			Certificate cert = keyStore.getCertificate(keyAlias);
-			credential = new org.opensaml.security.x509.BasicX509Credential((X509Certificate) cert);
+			return new org.opensaml.security.x509.BasicX509Credential((X509Certificate) cert);
 		} catch (Exception e) {
 			logger.error("[getTrustStoreCredential] ", e);
 			throw new GamSamlException(e);
 		}
-		return credential;
 	}
 
-	private LogoutRequest createLogoutRequestGlobal(String sessionindex, String identifier, String nameIdentifier) throws IllegalArgumentException, java.lang.SecurityException, IllegalAccessException {
+	private LogoutRequest createLogoutRequestGlobal(String sessionIndex, String identifier, String nameIdentifier) throws IllegalArgumentException, java.lang.SecurityException, IllegalAccessException {
 
 		//create the logout request
 		SAMLObjectBuilder<LogoutRequest> logoutRequestBuilder = (SAMLObjectBuilder<LogoutRequest>) builderFactory.getBuilder(LogoutRequest.DEFAULT_ELEMENT_NAME);
@@ -277,7 +277,7 @@ public class SamlHelper extends SamlBuilder {
 		logoutReq.setNameID(nameID);
 
 		SessionIndex sessionIndexElement = new SessionIndexBuilder().buildObject();
-		sessionIndexElement.setSessionIndex(sessionindex);
+		sessionIndexElement.setSessionIndex(sessionIndex);
 		logoutReq.getSessionIndexes().add(sessionIndexElement);
 
 		return logoutReq;
@@ -348,7 +348,7 @@ public class SamlHelper extends SamlBuilder {
 		} catch (Exception e) {
 			logger.error("[doLogoutLocalRedirect]  reflection", e);
 		}
-		result = "urn:oasis:names:tc:SAML:2.0:status:Success";
+		result = STATUS_SUCCESS;
 		String singleLogoutEndpoint = url;
 		LogoutResponse logoutresponse = createLogoutResponseLocal(req, result, singleLogoutEndpoint);
 
@@ -437,7 +437,7 @@ public class SamlHelper extends SamlBuilder {
 			Status status = resp.getStatus();
 			StatusCode code = status.getStatusCode();
 			String value = code.getValue();
-			if (value.equals("urn:oasis:names:tc:SAML:2.0:status:Success") || value.equals("urn:oasis:names:tc:SAML:2.0:status:PartialLogout")) {
+			if (value.equals(STATUS_SUCCESS) || value.equals(STATUS_PARTIAL_LOGOUT)) {
 				validate = true;
 			}
 		}
