@@ -36,42 +36,20 @@ import java.util.Map;
 
 public class SamlReceiver extends SamlHelper {
 	public static final ILogger logger = LogManager.getLogger(SamlReceiver.class);
+
+	private String samlString;
 	public SamlReceiver() {
 		super();
 	}
-	private boolean error;
-	private String errorMessage;
-	private String errorTrace;
-	private String samlString;
 
-	public boolean isError() {
-		logger.debug("[isError] isError: " + error);
-		return error;
-	}
-
-	public String getErrorMessage() {
-		logger.debug("[getErrorMessage] errorMessage: " + errorMessage);
-		return errorMessage;
-	}
-
-	public String getErrorTrace() {
-		logger.debug("[getErrorTrace] errorTrace: " + errorTrace);
-		return errorTrace;
-	}
-
-	public Assertion getSAMLAssertion(String responseMessage) throws GamSamlException, Base64DecodingException {
+	public Assertion getSAMLAssertion(String responseMessage) throws GamSamlException {
 		Response resp = getSAMLResponse(responseMessage);
 		logger.debug("[getSAMLAssertion] resp:" + resp.toString());
-		clearError();
 
 		Assertion assertion;
 		if (resp.getAssertions().size() > 0) {
 			assertion = resp.getAssertions().get(0);
-			//is state = empty
-			//propiedades.getInstance()
-			//if state = null
-			//wasn't inicialized by GAM
-			logger.debug("[getSAMLAssertion] Propiedades.State: " + GamSamlProperties.getState());
+			logger.debug("[getSAMLAssertion] Properties.State: " + GamSamlProperties.getState());
 			if (GamSamlProperties.getState() == null || GamSamlProperties.getState().trim().isEmpty()) {
 				String[] resultString = new String[1];
 				if (!assertion.getConditions().getAudienceRestrictions().isEmpty()) {
@@ -92,10 +70,10 @@ public class SamlReceiver extends SamlHelper {
 					try {
 						GamSamlProperties.getInstance().saveConfigFile(result);
 					} catch (Exception e) {
-						logger.error("[GetConditions] ", e);
+						logger.error("[getSAMLAssertion] ", e);
 					}
 				} else {
-					logger.error("[GetConditions/Audience Error-Empty]");
+					logger.error("[getSAMLAssertion/Audience Error-Empty]");
 				}
 			}
 			try {
@@ -106,7 +84,7 @@ public class SamlReceiver extends SamlHelper {
 					return null;
 				}
 			} catch (Exception e) {
-				logger.error("[GetConditions] " + e.getMessage(), e);
+				logger.error("[getSAMLAssertion] " + e.getMessage(), e);
 				return null;
 			}
 		} else {
@@ -143,26 +121,20 @@ public class SamlReceiver extends SamlHelper {
 
 			XMLObject responseXmlObj = unmarshaller.unmarshall(element);
 
-			Response resp = (Response) responseXmlObj;
-
-			return resp;
+			return (Response) responseXmlObj;
 
 		} catch (Exception e1) {
-			error = true;
-			logger.error("[getStatusAssertion] ", e1);
+			logger.error("[getSAMLResponse] ", e1);
 			throw new GamSamlException(e1);
 		}
 	}
 
 
 	private boolean p_validateSignature(SignableSAMLObject assertion) throws GamSamlException, SecurityException {
-
+		logger.debug("[p_validateSignature] assertion.isSigned()" + assertion.isSigned());
 		if (!assertion.isSigned()) {
-			logger.debug("[p_validateSignature] assertion.isSigned() == false");
 			return false;
 		} else {
-			logger.debug("[p_validateSignature] assertion.isSigned() == true");
-			boolean validSignature = false;
 			Map<String, String> passwordMap = new HashMap<String, String>();
 
 			KeyStoreCredentialResolver resolver = new KeyStoreCredentialResolver(getTrustStore(), passwordMap);
@@ -180,85 +152,68 @@ public class SamlReceiver extends SamlHelper {
 
 				SignatureValidator.validate(assertion.getSignature(), getTrustStoreCredential());
 
-				validSignature = true;
 			} catch (SecurityException | org.opensaml.xmlsec.signature.support.SignatureException e) {
-				validSignature = false;
 				logger.error("[p_validateSignature] ", e);
 				throw new GamSamlException(e);
 			} catch (ResolverException e) {
 				throw new RuntimeException(e);
 			}
-			logger.debug("[p_validateSignature] validSignature: " + validSignature);
-			return validSignature;
+			return true;
 		}
 	}
 
 	// detached signature
 	public boolean validateSignature(SignableSAMLObject assertion) throws GamSamlException{
-
+		logger.debug("[validate detached signature] response.isSigned() " + assertion.isSigned());
 		if (!assertion.isSigned()) {
-			logger.debug("[validate detached signature] response.isSigned() == false");
 			return false;
 		} else {
-			logger.debug("[validate signature] response.isSigned() == true");
-			boolean validSignature = false;
 			try {
 				SAMLSignatureProfileValidator profileValidator = new SAMLSignatureProfileValidator();
 				profileValidator.validate(assertion.getSignature());
 
 				SignatureValidator.validate(assertion.getSignature(), getTrustStoreCredential());
 
-				validSignature = true;
 			} catch (org.opensaml.xmlsec.signature.support.SignatureException e) {
-				validSignature = false;
 				logger.error("[validateSignature] ", e);
 				throw new GamSamlException(e);
 			}
-			logger.debug("[validateSignature] validSignature: " + validSignature);
-			return validSignature;
+			return true;
 		}
 	}
 
 	public boolean validateDetachedSignature(String signature, String document, String algorithm, String saml) throws GamSamlException,
 		InvalidKeyException, SignatureException, NoSuchAlgorithmException, IOException, Base64DecodingException {
 
-		String urlenconde = URLEncoder.encode(algorithm, "UTF-8");
-		String samlrequestencode = URLEncoder.encode(document, "UTF-8");
+		String urlEncode = URLEncoder.encode(algorithm, "UTF-8");
+		String samlRequestEncode = URLEncoder.encode(document, "UTF-8");
 
-		String concat = saml + "=" + samlrequestencode + "&" + "SigAlg=" + urlenconde;
+		String concat = saml + "=" + samlRequestEncode + "&" + "SigAlg=" + urlEncode;
 
 		byte[] signatureBytes = Base64.decode(signature);
 		byte[] documentBytes = concat.getBytes();
-
-		Signature verifier = null;
-		if (saml == "SAMLRequest") {
-			verifier = Signature.getInstance("SHA256withRSA");
+		String code;
+		if (saml.equals("SAMLRequest")) {
+			code = "SHA256withRSA";
 		} else {
 			logger.debug("[validateDetachedSignature] algorithm: " + algorithm);
-			String code = getAlgorithmCode(algorithm);
-			verifier = Signature.getInstance(code);
+			code = getAlgorithmCode(algorithm);
 		}
 
 		Credential cred = getTrustStoreCredential();
 		PublicKey publicKey = cred.getPublicKey();
-
+		Signature verifier = Signature.getInstance(code);
 		verifier.initVerify(publicKey);
 		verifier.update(documentBytes);
 		boolean verified = verifier.verify(signatureBytes);
-
-		if (verified) {
-			logger.debug("[validateDetachedSignature] validSignature: true");
-			return true;
-		} else {
-			logger.debug("[validateDetachedSignature] validSignature: false");
-			return false;
-		}
+		logger.debug("[validateDetachedSignature] validSignature: " + verified);
+		return verified;
 	}
 
 
 	private String getAlgorithmCode(String algorithm) {
 		logger.debug("[getAlgorithmCode] algorithm: " + algorithm);
-		String code = "";
+		String code;
 		if (algorithm.contains("rsa")) {
 			if (algorithm.contains("sha1"))
 				code = "SHA1withRSA";
@@ -277,17 +232,10 @@ public class SamlReceiver extends SamlHelper {
 		return code;
 	}
 
-	private void clearError() {
-		error = false;
-		errorMessage = "";
-		errorTrace = "";
-	}
 
 	public SamlAssertion getDataFromAssertion(Assertion assertion) {
-
-
 		String authenticationMethod = SamlAssertion.UNKNOWN;
-		boolean presencial = false, certificado = false;
+		boolean presencial = false, certificate = false;
 		String uid = "", document = "", countryDocument = "", typeDocument = "", completeName = "", issuer = "", name1 = "", name2 = "", lastName1 = "", lastName2 = "";
 		String fullAttributesJson = "[";
 		if (assertion.getIssuer() != null) {
@@ -311,7 +259,7 @@ public class SamlReceiver extends SamlHelper {
 					} else if (attributeName.equalsIgnoreCase(GamSamlProperties.getAttTIPODOCUMENTO())) {
 						typeDocument = attributeValue;
 					} else if (attributeName.equalsIgnoreCase(GamSamlProperties.getAttCERTIFICADO())) {
-						certificado = isTrueString(attributeValue);
+						certificate = isTrueString(attributeValue);
 					} else if (attributeName.equalsIgnoreCase(GamSamlProperties.getAttUID())) {
 						uid = attributeValue;
 					} else if (attributeName.equalsIgnoreCase(GamSamlProperties.getAttPRIMERNOMBRE())) {
@@ -339,7 +287,7 @@ public class SamlReceiver extends SamlHelper {
 				authenticationMethod = SamlAssertion.SMARTCARD;
 			}
 		}
-		return new SamlAssertion(uid, countryDocument, typeDocument, document, completeName, presencial, certificado,
+		return new SamlAssertion(uid, countryDocument, typeDocument, document, completeName, presencial, certificate,
 			authenticationMethod, issuer, name1, name2, lastName1, lastName2, fullAttributesJson);
 	}
 
@@ -394,7 +342,6 @@ public class SamlReceiver extends SamlHelper {
 			Unmarshaller unmarshaller = unmarshallerFactory.getUnmarshaller(element);
 			XMLObject responseXmlObj = unmarshaller.unmarshall(element);
 			LogoutResponse resp = (LogoutResponse) responseXmlObj;
-			clearError();
 
 			if (alg == null) {
 				logger.debug("[getLogoutResponse] alg is empty");
@@ -410,7 +357,6 @@ public class SamlReceiver extends SamlHelper {
 			}
 
 		} catch (Exception e1) {
-			error = true;
 			logger.error("[getLogoutResponse] ", e1);
 			throw new GamSamlException(e1);
 		}
@@ -435,12 +381,10 @@ public class SamlReceiver extends SamlHelper {
 			XMLObject responseXmlObj = unmarshaller.unmarshall(element);
 			LogoutRequest resp = (LogoutRequest) responseXmlObj;
 
-			clearError();
 
 			return resp;
 
 		} catch (Exception e1) {
-			error = true;
 			logger.error("[getLogoutRequest] ", e1);
 			throw new GamSamlException(e1);
 		}

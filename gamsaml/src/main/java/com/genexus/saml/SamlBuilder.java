@@ -1,7 +1,5 @@
 package com.genexus.saml;
 
-import java.security.SecureRandom;
-
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import org.opensaml.core.xml.XMLObjectBuilderFactory;
@@ -17,14 +15,11 @@ import org.opensaml.saml.saml2.metadata.impl.SingleSignOnServiceBuilder;
 public class SamlBuilder {
 	public static final ILogger logger = LogManager.getLogger(SamlBuilder.class);
 	protected XMLObjectBuilderFactory builderFactory;
-	protected SecureRandom iDGenerator;
 
 	public SamlBuilder() {
 		try {
 			SamlBootstrap instanceSAMLBootstrap = SamlBootstrap.getInstance();
-			iDGenerator = instanceSAMLBootstrap.getIdGenerator();
 			builderFactory = XMLObjectProviderRegistrySupport.getBuilderFactory();
-			logger.debug("[constructor] idGenerator: " + iDGenerator.toString().trim());
 		} catch (Exception e) {
 			logger.error("[constructor]  ", e);
 		}

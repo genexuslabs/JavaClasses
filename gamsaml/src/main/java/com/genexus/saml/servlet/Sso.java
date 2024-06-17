@@ -26,6 +26,7 @@ public class Sso extends HttpServlet {
 	public static final ILogger logger = LogManager.getLogger(Sso.class);
 	private static final long serialVersionUID = 6515092992727846423L;
 	private static final String SAMLPARAMETER = "SAMLResponse";
+	private static String SESSION_SUCCESS = "urn:oasis:names:tc:SAML:2.0:status:Success";
 	private String errorServlet;
 
 
@@ -35,17 +36,6 @@ public class Sso extends HttpServlet {
 		super.init(config);
 	}
 
-	/*
-	POST
-	If it does not have a SAML parameter
-		create SAML Authn
-	If it does
-		If it is a correct SAML Assertion
-			save on websession a GUID and add it to the request
-			resent to portal's login webpanel
-		If it is an invalid SAML
-			Log and show error
-	*/
 	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IllegalStateException {
 
@@ -81,8 +71,8 @@ public class Sso extends HttpServlet {
 				} catch (Exception e) {
 					logger.error("[doPost] ", e);
 				}
-				if (status.equalsIgnoreCase("urn:oasis:names:tc:SAML:2.0:status:Success")) {
-					logger.debug("[doPost] status == urn:oasis:names:tc:SAML:2.0:status:Success");
+				if (status.equalsIgnoreCase(SESSION_SUCCESS)) {
+					logger.debug("[doPost] status == " + SESSION_SUCCESS);
 					SamlAssertion samlAssertion = receiver.getDataFromAssertion(assertion);
 
 					if (samlAssertion != null) {
@@ -99,13 +89,14 @@ public class Sso extends HttpServlet {
 					}
 				} else {
 
-					String parameters = "";
+
 					try {
-						parameters = "saml=auth&state=" + GamSamlProperties.getState().trim() + "&error_code=" + status + "&error_message=" + receiver.getStatusAssertionMessage(samlParameter);
+						String parameters = "saml=auth&state=" + GamSamlProperties.getState().trim() + "&error_code=" + status + "&error_message=" + receiver.getStatusAssertionMessage(samlParameter);
+						response.sendRedirect(request.getContextPath() + "/oauth/gam/callback?" + parameters);
 					} catch (Exception e) {
 						logger.error("[doPost] ", e);
 					}
-					response.sendRedirect(request.getContextPath() + "/oauth/gam/callback?" + parameters);
+
 				}
 			}
 		} catch (Exception e) {
@@ -113,14 +104,6 @@ public class Sso extends HttpServlet {
 		}
 	}
 
-
-	/*
-	GET
-	If does not have SAML parameter
-		create SAML Authn
-	If it does, unsupported situation
-		Log and show error
-	*/
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IllegalStateException {
 
