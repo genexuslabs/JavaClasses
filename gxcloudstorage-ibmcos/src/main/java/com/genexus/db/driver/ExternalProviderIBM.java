@@ -1,9 +1,7 @@
 package com.genexus.db.driver;
 
-import com.genexus.Application;
 import com.genexus.StructSdtMessages_Message;
 import com.genexus.util.GXService;
-import com.genexus.util.GXServices;
 import com.genexus.util.StorageUtils;
 import com.ibm.cloud.objectstorage.ClientConfiguration;
 import com.ibm.cloud.objectstorage.HttpMethod;
@@ -24,7 +22,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 
 public class ExternalProviderIBM extends ExternalProviderBase implements ExternalProvider {
 
@@ -57,14 +54,10 @@ public class ExternalProviderIBM extends ExternalProviderBase implements Externa
     private String endpointUrl;
 	private int defaultExpirationMinutes = DEFAULT_EXPIRATION_MINUTES;
 
-    /* For compatibility reasons with GX16 U6 or lower*/
-    public ExternalProviderIBM() throws Exception {
-        this(GXServices.STORAGE_SERVICE);
-    }
-
-    public ExternalProviderIBM(String service) throws Exception {
-        this(Application.getGXServices().get(service));
-    }
+	public ExternalProviderIBM() throws Exception{
+		super();
+		init();
+	}
 
     public ExternalProviderIBM(GXService providerService) throws Exception {
     	super(providerService);
