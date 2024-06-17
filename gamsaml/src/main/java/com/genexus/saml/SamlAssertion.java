@@ -11,7 +11,7 @@ public class SamlAssertion {
 	public static final String PASSWORD = "PasswordProtectedTransport";
 	public static final String SMARTCARD = "SmartcardPKI";
 	private String authenticationMethod;
-	private boolean presencial, certificate, error;
+	private boolean presencial, certificate;
 	private String uid, document, countryDocument, typeDocument, completeName, issuer, name2, lastName2, lastName1, name1, fullAttributesJson, errorMessage, errorTrace;
 
 
@@ -20,37 +20,11 @@ public class SamlAssertion {
 		try {
 			SamlReceiver receiver = new SamlReceiver();
 			assertion = receiver.getSAMLAssertion(samlParameter);
-			if (!receiver.isError()) {
-				error = false;
-				errorMessage = "";
-				errorTrace = "";
-				return receiver.getDataFromAssertion(assertion);
-			} else {
-				error = true;
-				errorMessage = receiver.getErrorMessage();
-				errorTrace = receiver.getErrorTrace();
-			}
+			return receiver.getDataFromAssertion(assertion);
 		} catch (Exception e) {
-			error = true;
-			errorMessage = e.getMessage();
-			errorTrace = e.toString();
+			logger.error("[get]", e);
 		}
 		return new SamlAssertion();
-	}
-
-	public boolean isError() {
-		return error;
-
-	}
-
-	public String getErrorMessage() {
-		return errorMessage;
-
-	}
-
-	public String getErrorTrace() {
-		return errorTrace;
-
 	}
 
 	public String getIssuer() {
@@ -65,7 +39,7 @@ public class SamlAssertion {
 						 String document, String completeName,
 						 boolean presencial, boolean certificate, String authenticationMethod, String issuer,
 						 String name1, String name2, String lastName1, String lastName2, String fullAttributesJson) {
-		super();
+
 		logger.debug("[SamlAssertion constructor with parameters] ");
 
 		this.uid = uid;

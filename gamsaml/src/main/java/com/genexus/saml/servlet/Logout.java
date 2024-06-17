@@ -84,7 +84,7 @@ public class Logout extends HttpServlet {
 						if(status.equalsIgnoreCase("urn:oasis:names:tc:SAML:2.0:status:Success") || status.equalsIgnoreCase("urn:oasis:names:tc:SAML:2.0:status:PartialLogout")){
 
 							//verifies the validity of the LogoutResponse
-							if (resp != null && !identifier.equals("") && validateLogoutResponse(resp,identifier)) {
+							if (!identifier.equals("") && validateLogoutResponse(resp,identifier)) {
 								logout(request,response);
 							} else {
 								try {
@@ -121,8 +121,7 @@ public class Logout extends HttpServlet {
 
 					String sessionIndex = req.getSessionIndexes().get(0).getSessionIndex();
 					NameID nameId = req.getNameID();
-					String externalToken = nameId.getFormat() + "," + nameId.getValue();
-					externalToken += "::" + sessionIndex;
+					String externalToken = nameId.getFormat() + "," + nameId.getValue()+"::" + sessionIndex;;
 					stateParm = "Token="+ externalToken;
 					props.updatePropsFromGAM(stateParm);
 
@@ -202,28 +201,15 @@ public class Logout extends HttpServlet {
 		logger.debug("[createSamlLogout]");
 		try{
 			HttpSession session = request.getSession();
-
-			String sessionindex = request.getParameter("index");
+			String sessionIndex = request.getParameter("index");
 			String fullNameIdentifier = request.getParameter("nameid");
-			String nameIdentifier = "";
-			String nameIdentifierFormat = "";
-			if (fullNameIdentifier != null)
-			{
-				String[] splitedNameID = fullNameIdentifier.split(",");
-				nameIdentifierFormat = splitedNameID[0];
-				nameIdentifier = splitedNameID[1];
-			}
-			nameIdentifier = nameIdentifier.replace("%7c", "|");
-			logger.debug("[index]" + sessionindex);
+			String[] splitedNameID = fullNameIdentifier.split(",");
+			String nameIdentifier = splitedNameID[1].replace("%7c", "|");
+			logger.debug("[index]" + sessionIndex);
 			SamlHelper helper = new SamlHelper();
-
 			String identifier = helper.createIdentifier();
-
-
 			session.setAttribute("identifier", identifier);
-
-
-			helper.doLogoutGlobalRedirect(response,sessionindex,identifier, nameIdentifier);
+			helper.doLogoutGlobalRedirect(response,sessionIndex,identifier, nameIdentifier);
 		}
 		catch(Exception e){
 			logger.error("[createSamlLogout] ", e);
