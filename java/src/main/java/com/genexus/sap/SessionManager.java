@@ -1,8 +1,9 @@
 package com.genexus.sap;
 
 import java.util.Properties;
-import com.genexus.ModelContext;
+
 import com.genexus.diagnostics.Log;
+import com.genexus.ModelContext;
 import com.sap.conn.jco.AbapException;
 import com.sap.conn.jco.JCoContext;
 import com.sap.conn.jco.JCoDestination;
@@ -12,7 +13,6 @@ import com.sap.conn.jco.JCoFunction;
 
 public class SessionManager
 {
-
 	private String msHost = "";
 	private String msServ = "";
 	private String group = "";
