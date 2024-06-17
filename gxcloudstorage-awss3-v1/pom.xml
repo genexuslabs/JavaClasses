@@ -13,12 +13,13 @@
     <artifactId>gxcloudstorage-awss3-v1</artifactId>
     <name>GeneXus AWS S3 (V1) Cloud Storage</name>
 
-	<dependencies>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>gxclassR</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>gxclassR</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>com.genexus</groupId>
             <artifactId>gxcloudstorage-common</artifactId>
