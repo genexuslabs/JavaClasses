@@ -1,7 +1,6 @@
 package com.genexus.sap;
 
 import java.util.Properties;
-
 import com.genexus.diagnostics.Log;
 import com.genexus.ModelContext;
 import com.sap.conn.jco.AbapException;
