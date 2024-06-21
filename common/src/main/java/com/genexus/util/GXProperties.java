@@ -76,6 +76,7 @@ public class GXProperties implements IGxJSONSerializable {
 
 	public void clear() {
 		properties.clear();
+		originalProperties.clear();
 	}
 
 	public GXProperty first() {
