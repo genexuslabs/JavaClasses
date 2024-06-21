@@ -223,6 +223,10 @@ public class CertificateX509 extends com.genexus.securityapicommons.commons.Cert
 		try {
 			ks = KeyStore.getInstance("PKCS12");
 			ks.load(in, password.toCharArray());
+			if(SecurityUtils.compareStrings("", alias))
+			{
+				alias = ks.aliases().nextElement();
+			}
 			this.cert = (X509Certificate) ks.getCertificate(alias);
 		} catch (Exception e) {
 			this.error.setError("CE007", "Path not found.");
