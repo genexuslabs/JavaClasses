@@ -282,6 +282,10 @@ public class PrivateKeyManager extends com.genexus.securityapicommons.commons.Pr
 		InputStream in = SecurityUtils.inputFileToStream(path);
 		KeyStore ks = KeyStore.getInstance("PKCS12");
 		ks.load(in, password.toCharArray());
+		if(SecurityUtils.compareStrings("", alias))
+		{
+			alias = ks.aliases().nextElement();
+		}
 		if (ks.getKey(alias, password.toCharArray()) != null) {
 			PrivateKey privateKey = (PrivateKey) ks.getKey(alias, password.toCharArray());
 			this.privateKeyInfo = PrivateKeyInfo.getInstance(privateKey.getEncoded());
