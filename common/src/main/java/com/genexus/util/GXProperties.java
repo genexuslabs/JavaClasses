@@ -15,7 +15,6 @@ import java.util.Map;
 
 public class GXProperties implements IGxJSONSerializable {
 	private LinkedHashMap < String, GXProperty > properties = new LinkedHashMap < > ();
-	private LinkedHashMap < String, GXProperty > originalProperties = new LinkedHashMap < > ();
 	private boolean eof;
 	private int lastElement;
 
@@ -25,40 +24,36 @@ public class GXProperties implements IGxJSONSerializable {
 		this.put(name, value);
 	}
 
-	public void add(String name, String value) { this.put(name, value); }
-
-	public void put(String name, String value) {
-		originalProperties.put(name, new GXProperty(name, value));
-		name = name.toLowerCase();
+	public void add(String name, String value) {
 		properties.put(name, new GXProperty(name, value));
 	}
 
+	public void put(String name, String value) {
+		properties.put(name, new GXProperty(name, value));
+	}
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		for (GXProperty property: properties.values())
+		for (GXProperty property: properties.values()) {
 			builder.append(property.getValue());
+		}
 		return builder.toString();
 	}
 
 	public String get(String name) {
-		name = name.toLowerCase();
 		return containsKey(name) ? properties.get(name).getValue() : "";
 	}
 
 	public void remove(String name) {
-		originalProperties.remove(name);
-		name = name.toLowerCase();
 		properties.remove(name);
 	}
 
 	public boolean containsKey(String name) {
-		name = name.toLowerCase();
 		return properties.containsKey(name);
 	}
 
 	public GXProperty item(int i) {
 		int counter = 0;
-		for (Map.Entry < String, GXProperty > entry: originalProperties.entrySet()) {
+		for (Map.Entry < String, GXProperty > entry: properties.entrySet()) {
 			if (counter++ == i) {
 				return entry.getValue();
 			}
@@ -76,14 +71,13 @@ public class GXProperties implements IGxJSONSerializable {
 
 	public void clear() {
 		properties.clear();
-		originalProperties.clear();
 	}
 
 	public GXProperty first() {
 		eof = false;
 		if (count() > 0) {
 			lastElement = 0;
-			return originalProperties.entrySet().iterator().next().getValue();
+			return properties.entrySet().iterator().next().getValue();
 		} else {
 			eof = true;
 			return null;
@@ -121,14 +115,12 @@ public class GXProperties implements IGxJSONSerializable {
 		JSONObjectWrapper jObj = (JSONObjectWrapper) GetJSONObject();
 		return jObj.toString();
 	}
-
 	public boolean fromJSonString(String s) {
 		return fromJSonString(s, null);
 	}
-
 	public boolean fromJSonString(String s, GXBaseCollection < SdtMessages_Message > messages) {
 		this.clear();
-		if (!s.isEmpty()) {
+		if (!s.equals("")) {
 			try {
 				JSONObjectWrapper jObj = new JSONObjectWrapper(s);
 				for (Map.Entry<String, Object> e : jObj.entrySet()) {
