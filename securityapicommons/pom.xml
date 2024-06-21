@@ -24,6 +24,11 @@
             <artifactId>bcprov-jdk18on</artifactId>
             <version>${org.bouncycastle.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>nimbus-jose-jwt</artifactId>
+            <version>9.39.2</version>
+        </dependency>
     </dependencies>
 
     <build>

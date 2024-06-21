@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.security.KeyFactory;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -18,6 +20,11 @@ import org.bouncycastle.crypto.util.SubjectPublicKeyInfoFactory;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.util.encoders.Base64;
+
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.KeyType;
+import com.nimbusds.jose.jwk.RSAKey;
 
 import com.genexus.securityapicommons.utils.SecurityUtils;
 
@@ -93,8 +100,73 @@ public class PublicKey extends Key {
 		return base64Encoded;
 	}
 
+	public boolean fromJwks(String jwks, String kid)
+	{
+		/******* INPUT VERIFICATION - BEGIN *******/
+		SecurityUtils.validateStringInput("jwks", jwks, this.error);
+		SecurityUtils.validateStringInput("kid", kid, this.error);
+		if (this.hasError()) {
+			return false;
+		}
+
+		/******* INPUT VERIFICATION - END *******/
+
+		boolean flag = false;
+		String b64 = "";
+		try
+		{
+			b64 = fromJson(jwks, kid);
+		}catch(Exception e)
+		{
+			this.error.setError("PU013", e.getMessage());
+			return false;
+		}
+		flag = this.fromBase64(b64);
+		return flag;
+
+	}
+
 	/******** EXTERNAL OBJECT PUBLIC METHODS - END ********/
 
+	private String fromJson(String jwks, String kid)
+	{
+		JWKSet set = null;
+		try {
+			set = JWKSet.parse(jwks);
+		}catch(Exception e){
+			this.error.setError("PU012", e.getMessage());
+		}
+		if(set != null) {
+			JWK jwk = set.getKeyByKeyId(kid);
+			return convert(jwk);
+		}else {
+			return "";
+		}
+	}
+
+	private String convert(JWK jwk)
+	{
+		try {
+			if (!jwk.getKeyType().equals(KeyType.RSA)) {
+				throw new IllegalArgumentException("JWK must be an RSA public key");
+			}
+
+			RSAKey key = jwk.toRSAKey();
+			RSAPublicKey rsaPublicKey = key.toRSAPublicKey();
+			RSAPublicKeySpec spec = new RSAPublicKeySpec(rsaPublicKey.getModulus(), rsaPublicKey.getPublicExponent());
+			KeyFactory f = KeyFactory.getInstance("RSA");
+			java.security.PublicKey pub = f.generatePublic(spec);
+			byte[] data = pub.getEncoded();
+			String base64encoded = new String(java.util.Base64.getEncoder().encode(data));
+			System.out.println(base64encoded);
+			return base64encoded;
+
+		}catch(Exception e)
+		{
+			this.error.setError("PU011", e.getMessage());
+			return "";
+		}
+	}
 	@Override
 	protected void setAlgorithm() {
 		if (this.subjectPublicKeyInfo == null) {
