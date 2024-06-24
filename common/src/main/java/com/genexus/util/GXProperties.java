@@ -10,6 +10,7 @@ import org.json.JSONException;
 import com.genexus.CommonUtil;
 import com.genexus.SdtMessages_Message;
 import com.genexus.GXBaseCollection;
+import java.util.Iterator;
 import java.util.Map;
 
 public class GXProperties implements IGxJSONSerializable {
