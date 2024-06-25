@@ -9,8 +9,10 @@ import java.util.Map;
 import com.genexus.Application;
 import com.genexus.CommonUtil;
 import com.genexus.ICacheService2;
+import com.genexus.util.Encryption;
 import com.genexus.util.GXService;
 import com.genexus.util.GXServices;
+
 
 import net.spy.memcached.AddrUtil;
 import net.spy.memcached.BinaryConnectionFactory;
@@ -42,6 +44,7 @@ public class Memcached implements ICacheService2, Closeable {
 		}
 		else
 		{
+			password = Encryption.tryDecrypt64(password);
 			AuthDescriptor ad = new AuthDescriptor(new String[]{"PLAIN"},
 									new PlainCallbackHandler(username, password));
 
