@@ -304,6 +304,8 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 		String name;
         while(it.hasNext())
         {
+			/* Even though the map entry value is never used and the method could receive just the map's keys list,
+				its entries set provides the keys in a specific order required by this method */
 			Map.Entry<String, Object> entry = it.next();
         	name = entry.getKey();
 	        String map = getJsonMap(name);
@@ -363,10 +365,11 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 		{
 			if (obj instanceof JSONObject)
 				obj = new JSONObjectWrapper((JSONObject)obj);
-			Iterator it = getFromJSONObjectOrderIterator(((JSONObjectWrapper)obj).entrySet().iterator());
-			while(it.hasNext())
+			Iterator unorderedIterator = getJSONObjectIterator((JSONObjectWrapper) obj);
+			Iterator orderedIterator = getFromJSONObjectOrderIterator(unorderedIterator);
+			while(orderedIterator.hasNext())
 			{
-				name = (String)it.next();
+				name = (String)orderedIterator.next();
 				map = getJsonMap(name);
 				setMethod = getMethod(SET_METHOD_NAME + className + "_" + (map != null? map : name));
 				getMethod = getMethod(GET_METHOD_NAME + className + "_" + (map != null? map : name));
@@ -433,6 +436,14 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 			}
 		}
 	}
+
+	private Iterator<Map.Entry<String, Object>> getJSONObjectIterator(JSONObjectWrapper obj) {
+		if (SpecificImplementation.JsonSerialization == null)
+			return obj.entrySet().iterator();
+
+		return SpecificImplementation.JsonSerialization.getJSONObjectIterator(obj);
+	}
+
         private Object convertValueToParmType(Object value, Class parmClass) throws Exception
         {
             if (parmClass.getName().equals("java.util.Date"))

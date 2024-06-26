@@ -32,6 +32,7 @@ public final class Connect {
 		// connect GXSilentTrn
 		SpecificImplementation.GXSilentTrnSdt = new GXSilentTrnSdt();
 		SpecificImplementation.SdtMessages_Message = new SdtMessages_Message();
+		SpecificImplementation.JsonSerialization = new AndroidJSONSerialization();
 
 		SpecificImplementation.KeepDecimals = true;
 		SpecificImplementation.MillisecondMask = "SSS";
