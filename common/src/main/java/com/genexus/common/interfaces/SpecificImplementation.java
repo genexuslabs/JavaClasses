@@ -26,6 +26,7 @@ public class SpecificImplementation {
 	public static IExtensionSdtMessages_Message				SdtMessages_Message;
 	public static ICryptoAlhorithms 						Algorithms;
 	public static IExtensionModelContext					ModelContext;
+	public static IExtensionJSONSerialization				JsonSerialization;
 	public static boolean KeepDecimals;
 	public static String MillisecondMask;
 	public static boolean SupportPending;
