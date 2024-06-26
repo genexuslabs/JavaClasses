@@ -13,7 +13,7 @@ import com.genexus.common.interfaces.IHttpContextNull;
 import com.genexus.db.DBConnectionManager;
 import com.genexus.webpanels.WebSession;
 
-import json.org.json.JSONObject;
+import com.genexus.json.JSONObjectWrapper;
 
 public class HttpContextNull extends HttpContext implements IHttpContextNull
 {
@@ -361,7 +361,7 @@ public class HttpContextNull extends HttpContext implements IHttpContextNull
 	public void DeletePostValuePrefix(String sPrefix)
 	{
 	}
-    public void parseGXState(JSONObject tokenValues)
+    public void parseGXState(JSONObjectWrapper tokenValues)
     {
     }
 	public boolean isFileParm( String parm)

@@ -3,11 +3,9 @@ package com.genexus.specific.android;
 import java.util.Date;
 
 import com.genexus.common.interfaces.SpecificImplementation;
-import com.genexus.db.UserInformation;
 
-import json.org.json.IExtensionJSONObject;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public final class Connect {
 
@@ -34,6 +32,7 @@ public final class Connect {
 		// connect GXSilentTrn
 		SpecificImplementation.GXSilentTrnSdt = new GXSilentTrnSdt();
 		SpecificImplementation.SdtMessages_Message = new SdtMessages_Message();
+		SpecificImplementation.JsonSerialization = new AndroidJSONSerialization();
 
 		SpecificImplementation.KeepDecimals = true;
 		SpecificImplementation.MillisecondMask = "SSS";
@@ -41,28 +40,5 @@ public final class Connect {
 		SpecificImplementation.cdowMask = "EEEE";
 		SpecificImplementation.Base64Encode = "8859_1";
 		SpecificImplementation.UseUnicodeCharacterClass = false;
-		JSONObject.extension = new JSONObjectExtension();
-		
 	}
-	
-	 static class JSONObjectExtension implements IExtensionJSONObject {
-
-			@Override
-			public String dateToString(Date d) throws JSONException {
-				if (d == null) {
-			        throw new JSONException("Null pointer");
-			    }
-			    UserInformation ui = (UserInformation) com.genexus.GXObjectHelper.getUserInformation(new com.genexus.ModelContext(com.genexus.ModelContext.getModelContextPackageClass()), -1);
-			    com.genexus.LocalUtil localUtil = ui.getLocalUtil();
-			    String dateString = localUtil.format(d, localUtil.getDateFormat() + " " + localUtil.getTimeFormat());
-			    try
-			    {
-			    	com.genexus.db.DBConnectionManager.getInstance().disconnect(ui.getHandle());
-			    }
-			    catch (Throwable e)
-			    {}
-			    return dateString;
-			}
-			
-		}
 }

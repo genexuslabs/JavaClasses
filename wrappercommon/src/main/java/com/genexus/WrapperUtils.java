@@ -7,8 +7,8 @@ import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
 import com.genexus.opentelemetry.OpenTelemetryHelper;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONException;
+import com.genexus.json.JSONObjectWrapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -31,10 +31,10 @@ public class WrapperUtils {
         }
 
         log.error("Error executing REST service", ex);
-        JSONObject errorJson = new JSONObject();
+		JSONObjectWrapper errorJson = new JSONObjectWrapper();
         try
         {
-            JSONObject obj = new JSONObject();
+			JSONObjectWrapper obj = new JSONObjectWrapper();
             obj.put("code", localStatusCode);
             obj.put("message", reasonPhrase);
             errorJson.put("error", obj);

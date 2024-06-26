@@ -4,7 +4,7 @@ import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.util.*;
 
-import json.org.json.JSONObject;
+import org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.io.*;
