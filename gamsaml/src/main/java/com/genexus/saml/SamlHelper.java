@@ -63,13 +63,13 @@ public class SamlHelper extends SamlBuilder {
 
 		boolean removeAuthContext = false;
 		String configuredAuthContext = GamSamlProperties.getAuthnContext();
-		if (configuredAuthContext.compareTo("NONE") == 0)
+		if (configuredAuthContext.equals("NONE"))
 			removeAuthContext = true;
 		else {
-			if (configuredAuthContext.compareTo("SMARTCARD_AUTHN_CTX") == 0) {
+			if (configuredAuthContext.equals("SMARTCARD_AUTHN_CTX")) {
 				ref.setAuthnContextClassRef(AuthnContext.SMARTCARD_PKI_AUTHN_CTX);
 				logger.debug("[createStockAuthnRequest] AuthnContext.SMARTCARD_PKI_AUTHN_CTX");
-			} else if (configuredAuthContext.compareTo("PPT_AUTHN_CTX") == 0) {
+			} else if (configuredAuthContext.equals("PPT_AUTHN_CTX")) {
 				ref.setAuthnContextClassRef(AuthnContext.PPT_AUTHN_CTX);
 				logger.debug("[createStockAuthnRequest] AuthnContext.PPT_AUTHN_CTX");
 			} else if (configuredAuthContext.startsWith("urn:oasis:names:tc:SAML:2.0")) {
@@ -123,7 +123,7 @@ public class SamlHelper extends SamlBuilder {
 
 
 		String isRedirectBinding = GamSamlProperties.isRedirectBinding();
-		if (isRedirectBinding.compareTo("true") == 0) {
+		if (isRedirectBinding.equals("true")) {
 			samlEndpoint.setBinding(SAMLConstants.SAML2_REDIRECT_BINDING_URI);
 			logger.debug("[doAuthenticationRedirect] SAMLConstants.SAML2_REDIRECT_BINDING_URI");
 		} else {
