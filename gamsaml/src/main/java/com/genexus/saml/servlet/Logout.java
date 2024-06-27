@@ -123,7 +123,7 @@ public class Logout extends HttpServlet {
 					NameID nameId = req.getNameID();
 					String externalToken = nameId.getFormat() + "," + nameId.getValue()+"::" + sessionIndex;;
 					stateParm = "Token="+ externalToken;
-					props.updatePropsFromGAM(stateParm);
+					props.update(stateParm);
 
 					boolean isValid = receiver.validateSignature(req);
 
