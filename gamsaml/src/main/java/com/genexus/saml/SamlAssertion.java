@@ -15,7 +15,7 @@ public class SamlAssertion {
 	private String uid, document, countryDocument, typeDocument, completeName, issuer, name2, lastName2, lastName1, name1, fullAttributesJson, errorMessage, errorTrace;
 
 
-	public SamlAssertion get(String samlParameter) {
+	public static SamlAssertion get(String samlParameter) {
 		Assertion assertion;
 		try {
 			SamlReceiver receiver = new SamlReceiver();
