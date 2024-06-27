@@ -4,12 +4,10 @@ import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import org.opensaml.core.xml.XMLObjectBuilderFactory;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
-import org.opensaml.saml.common.SAMLObject;
-import org.opensaml.saml.common.SAMLObjectBuilder;
 import org.opensaml.saml.saml2.core.*;
-import org.opensaml.saml.saml2.core.impl.*;
 import org.opensaml.saml.saml2.metadata.SingleSignOnService;
-import org.opensaml.saml.saml2.metadata.impl.SingleSignOnServiceBuilder;
+
+import javax.xml.namespace.QName;
 
 
 public class SamlBuilder {
@@ -26,38 +24,38 @@ public class SamlBuilder {
 
 	}
 
-	@SuppressWarnings("unchecked")
-	protected <SAMLObjectType extends SAMLObject, BuilderT extends SAMLObjectBuilder<SAMLObjectType>> SAMLObjectType buildSamlObject(javax.xml.namespace.QName defaultElementName, Class<BuilderT> type) {
-		BuilderT requestBuilder = (BuilderT) builderFactory.getBuilder(defaultElementName);
-		return requestBuilder.buildObject();
-	}
+
+	/*@SuppressWarnings({"unused", "unchecked"})
+	public <T> T buildSAMLObject(final Class<T> objectClass, QName qName) {
+		return (T) builderFactory.getBuilder(qName).buildObject(qName);
+	}*/
 
 	protected Issuer buildSamlIssuer() {
-		return buildSamlObject(Issuer.DEFAULT_ELEMENT_NAME, IssuerBuilder.class);
+		return (Issuer) builderFactory.getBuilder(Issuer.DEFAULT_ELEMENT_NAME).buildObject(Issuer.DEFAULT_ELEMENT_NAME);
 	}
 
 	protected NameIDPolicy buildSamlNameIDPolicy() {
-		return buildSamlObject(NameIDPolicy.DEFAULT_ELEMENT_NAME, NameIDPolicyBuilder.class);
+		return (NameIDPolicy) builderFactory.getBuilder(NameIDPolicy.DEFAULT_ELEMENT_NAME).buildObject(NameIDPolicy.DEFAULT_ELEMENT_NAME);
 	}
 
 	protected AuthnContextClassRef buildSamlAuthnContextClassRef() {
-		return buildSamlObject(AuthnContextClassRef.DEFAULT_ELEMENT_NAME, AuthnContextClassRefBuilder.class);
+		return (AuthnContextClassRef) builderFactory.getBuilder(AuthnContextClassRef.DEFAULT_ELEMENT_NAME).buildObject(AuthnContextClassRef.DEFAULT_ELEMENT_NAME);
 	}
 
 	protected RequestedAuthnContext buildSamlRequestedAuthnContext() {
-		return buildSamlObject(RequestedAuthnContext.DEFAULT_ELEMENT_NAME, RequestedAuthnContextBuilder.class);
+		return (RequestedAuthnContext) builderFactory.getBuilder(RequestedAuthnContext.DEFAULT_ELEMENT_NAME).buildObject(RequestedAuthnContext.DEFAULT_ELEMENT_NAME);
 	}
 
 	protected AuthnRequest buildSamlAuthnAuthnRequest() {
-		return buildSamlObject(AuthnRequest.DEFAULT_ELEMENT_NAME, AuthnRequestBuilder.class);
+		return (AuthnRequest) builderFactory.getBuilder(AuthnRequest.DEFAULT_ELEMENT_NAME).buildObject(AuthnRequest.DEFAULT_ELEMENT_NAME);
 	}
 
 	protected SingleSignOnService buildSamlSingleSignOnServiceEndpoint() {
-		return buildSamlObject(SingleSignOnService.DEFAULT_ELEMENT_NAME, SingleSignOnServiceBuilder.class);
+		return (SingleSignOnService) builderFactory.getBuilder(SingleSignOnService.DEFAULT_ELEMENT_NAME).buildObject(SingleSignOnService.DEFAULT_ELEMENT_NAME);
 	}
 
 	public ArtifactResponse buildSamlArtifactResponse() {
-		return buildSamlObject(ArtifactResponse.DEFAULT_ELEMENT_NAME, ArtifactResponseBuilder.class);
+		return (ArtifactResponse) builderFactory.getBuilder(ArtifactResponse.DEFAULT_ELEMENT_NAME).buildObject(ArtifactResponse.DEFAULT_ELEMENT_NAME);
 	}
 
 }
