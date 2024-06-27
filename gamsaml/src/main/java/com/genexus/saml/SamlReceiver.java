@@ -68,7 +68,7 @@ public class SamlReceiver extends SamlHelper {
 					String result = resultString[0].trim();
 					logger.debug("[getSAMLAssertion] result: " + result);
 					try {
-						GamSamlProperties.getInstance().saveConfigFile(result);
+						GamSamlProperties.getInstance().saveConfig(result);
 					} catch (Exception e) {
 						logger.error("[getSAMLAssertion] ", e);
 					}

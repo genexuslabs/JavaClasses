@@ -11,11 +11,13 @@ import java.util.Properties;
 public class GamSamlProperties {
 	public static final ILogger logger = LogManager.getLogger(GamSamlProperties.class);
 	private static GamSamlProperties instance = null;
-	private Properties generalPropsProperties = null;
-	private Properties attPropsProperties = null;
+	private Properties generalProperties;
+	private Properties attPropsProperties;
 	private static String state = "";
 
 	private GamSamlProperties() {
+		generalProperties = null;
+		attPropsProperties = null;
 	}
 
 	public static GamSamlProperties getInstance() {
@@ -26,32 +28,23 @@ public class GamSamlProperties {
 	}
 
 	public void init(String instate) {
-		logger.debug("[init] - state = " + instate);
-		generalPropsProperties = null;
-		if (instate == null || instate.isEmpty()) {
-			logger.debug("[init] - state state == null or empty");
-			state = "";
-			logger.debug("[init] sale if ");
-
-		} else {
+		if (!(instate == null || instate.isEmpty())) {
 			state = instate;
 			logger.debug("[init] - state != null");
-			// if state is there inicialize from GAM
 			try {
-				generalPropsProperties = loadPropsFromGAM(instate);
+				generalProperties = load(instate);
 			} catch (Exception e) {
 				logger.error("[init] ", e);
 			}
 		}
 	}
 
-	public void updatePropsFromGAM(String state) {
-		logger.debug("[init] - updatePropsFromGAM = " + state);
-		generalPropsProperties = null;
+
+	public void update(String state) {
 		try {
-			generalPropsProperties = loadPropsFromGAM(state);
+			generalProperties = load(state);
 		} catch (Exception e) {
-			logger.error("[] updatePropsFromGAM " , e);
+			logger.error("update " , e);
 		}
 	}
 
@@ -121,7 +114,7 @@ public class GamSamlProperties {
 	public static String getKeyStPwdCredential() {
 		String cryptPass = GamSamlProperties.getInstance().getGeneralProperty(
 			"KeyStPwdCredential");
-		String ret = Crypt.Decrypt(cryptPass);
+		String ret = com.genexus.util.Encryption.decrypt64(cryptPass, getKeyCrypt());
 		logger.debug("[getKeyStPwdCredential] " + "Gets getKeyStPwdCredential: " + ret);
 
 		return ret;
@@ -152,7 +145,8 @@ public class GamSamlProperties {
 	public static String getKeyStPwdTrustSt() {
 		String cryptPass = GamSamlProperties.getInstance().getGeneralProperty(
 			"KeyStorePwdTrustCred");
-		String ret = Crypt.Decrypt(cryptPass);
+		//String ret = Crypt.Decrypt(cryptPass);
+		String ret = com.genexus.util.Encryption.decrypt64(cryptPass, getKeyCrypt());
 		logger.debug("[getKeyStPwdTrustSt] " + "Gets KeyStorePwdTrustCred: " + cryptPass);
 		return ret;
 	}
@@ -177,7 +171,7 @@ public class GamSamlProperties {
 		String cryptPass = GamSamlProperties.getInstance().getGeneralProperty(
 			"KeyStorePwdTrustCred");
 		logger.debug("[getKeyStorePwdTrustCred] " + "cryptPass: " + cryptPass);
-		String ret = Crypt.Decrypt(cryptPass);
+		String ret = com.genexus.util.Encryption.decrypt64(cryptPass, getKeyCrypt());
 		logger.debug("[getKeyStorePwdTrustCred] " + "Gets KeyStorePwdTrustCred: " + ret);
 		return ret;
 	}
@@ -213,10 +207,8 @@ public class GamSamlProperties {
 
 	public static String getCriteriaKey() {
 		String cryptPass = GamSamlProperties.getInstance().getGeneralProperty("CriteriaKey");
-
-		String ret = Crypt.Decrypt(cryptPass);
+		String ret = com.genexus.util.Encryption.decrypt64(cryptPass, getKeyCrypt());
 		logger.debug("[getCriteriaKey] " + "Gets getCriteriaKey: " + ret);
-
 		return ret;
 	}
 
@@ -300,7 +292,7 @@ public class GamSamlProperties {
 	}
 
 	private String getGeneralProperty(String prop) {
-		return getPropertyValue(generalPropsProperties, prop);
+		return getPropertyValue(generalProperties, prop);
 	}
 
 	private String getAttProperty(String prop) {
@@ -315,7 +307,7 @@ public class GamSamlProperties {
 		}
 	}
 
-	public Properties loadPropsFromGAM(String state) throws Exception {
+	public Properties load(String state) throws Exception {
 		logger.debug("[loadPropsFromGAM] start");
 		Properties config = new Properties();
 		String[] resultString = new String[1];
@@ -337,10 +329,10 @@ public class GamSamlProperties {
 		return config;
 	}
 
-	public void saveConfigFile(String result) throws Exception {
+	public void saveConfig(String result) throws Exception {
 		Properties config = new Properties();
 		config.load(new StringReader(result));
-		generalPropsProperties = config;
+		generalProperties = config;
 		logger.debug("[saveConfigFile] config: " + config.toString());
 	}
 }
