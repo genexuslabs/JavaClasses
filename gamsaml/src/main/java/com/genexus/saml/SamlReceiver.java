@@ -212,24 +212,14 @@ public class SamlReceiver extends SamlHelper {
 
 
 	private String getAlgorithmCode(String algorithm) {
-		logger.debug("[getAlgorithmCode] algorithm: " + algorithm);
-		String code;
 		if (algorithm.contains("rsa")) {
 			if (algorithm.contains("sha1"))
-				code = "SHA1withRSA";
+				return "SHA1withRSA";
 			else if (algorithm.contains("sha256"))
-				code = "SHA256withRSA";
-			else {
-				logger.debug("[getAlgorithmCode] code not matched: " + algorithm);
-				code = algorithm;
-			}
-
-		} else {
-			logger.debug("[getAlgorithmCode] code not matched: " + algorithm);
-			code = algorithm;
+				return "SHA256withRSA";
 		}
-		logger.debug("[getAlgorithmCode] returned code: " + code);
-		return code;
+		logger.error("[getAlgorithmCode] code not matched: " + algorithm);
+		return algorithm;
 	}
 
 
