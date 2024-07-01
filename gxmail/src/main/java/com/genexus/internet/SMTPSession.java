@@ -641,8 +641,6 @@ final class SMTPSession implements GXInternetConstants,ISMTPSession
 			   base64Output.flush();
 			   outStream.writeBytes(CRLF);
 			   outStream.flush();
-
-			   base64Output.close();
 		} catch (FileNotFoundException e) {
 			log ("11 - FileNotFound " + e.getMessage());
 			throw new GXMailException("Can't find " + attachmentPath + fileNamePath, MAIL_InvalidAttachment);
