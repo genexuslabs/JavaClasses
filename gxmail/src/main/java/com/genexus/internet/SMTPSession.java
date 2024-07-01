@@ -623,8 +623,27 @@ final class SMTPSession implements GXInternetConstants,ISMTPSession
    		try {
 			   fis = new FileInputStream(attachmentPath + fileNamePath);
 			   is = fis;
-		}
-		catch (FileNotFoundException e) {
+
+			   println(getNextMessageIdMixed(sTime, false));
+			   println("Content-Type: " + "application/octet-stream");
+			   println("Content-Transfer-Encoding: " + "base64");
+			   println("Content-Disposition: " + "attachment; filename=\"" + GXMailer.getEncodedString(fileName) + "\"");
+			   println("");
+	   
+				 int BUFFER_SIZE = 4096;
+			   byte[] buffer = new byte[BUFFER_SIZE];
+			   OutputStream base64Output = new Base64OutputStream(outStream);
+			   int n = is.read(buffer, 0, BUFFER_SIZE);
+			   while (n >= 0) {
+				   base64Output.write(buffer, 0, n);
+				   n = is.read(buffer, 0, BUFFER_SIZE);
+			   }
+			   base64Output.flush();
+			   outStream.writeBytes(CRLF);
+			   outStream.flush();
+
+			   base64Output.close();
+		} catch (FileNotFoundException e) {
 			log ("11 - FileNotFound " + e.getMessage());
 			throw new GXMailException("Can't find " + attachmentPath + fileNamePath, MAIL_InvalidAttachment);
 		} finally {
@@ -633,24 +652,6 @@ final class SMTPSession implements GXInternetConstants,ISMTPSession
 			   if (fis != null)
 				   fis.close();
 		}
-
-		println(getNextMessageIdMixed(sTime, false));
-		println("Content-Type: " + "application/octet-stream");
-		println("Content-Transfer-Encoding: " + "base64");
-		println("Content-Disposition: " + "attachment; filename=\"" + GXMailer.getEncodedString(fileName) + "\"");
-        println("");
-
-	  	int BUFFER_SIZE = 4096;
-		byte[] buffer = new byte[BUFFER_SIZE];
-		OutputStream base64Output = new Base64OutputStream(outStream);
-		int n = is.read(buffer, 0, BUFFER_SIZE);
-		while (n >= 0) {
-			base64Output.write(buffer, 0, n);
-			n = is.read(buffer, 0, BUFFER_SIZE);
-		}
-		base64Output.flush();
-		outStream.writeBytes(CRLF);
-		outStream.flush();
 	}
 
 	private void println(String s) throws IOException
