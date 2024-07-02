@@ -41,10 +41,16 @@ public class URLRouter
 
 		String lowURL = CommonUtil.lower(key);
 
-		if ((!packageName.equals("") && !lowURL.startsWith(packageName)) || (packageName.equals("") && !lowURL.equals(key)))
+		if ((!packageName.equals("") && !lowURL.startsWith(packageName)) || (packageName.equals("") && !lowURL.equals(key)) || lowURL.startsWith(packageName))
 		{
 			if (!packageName.equals(""))
 				packageName += ".";
+
+			if (lowURL.startsWith(packageName))
+			{
+				lowURL = lowURL.substring(packageName.length());
+			}
+
 			try
 			{
 				SpecificImplementation.Application.getConfigurationClass().getClassLoader().loadClass(packageName + lowURL);

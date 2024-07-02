@@ -17,7 +17,6 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-import com.genexus.Application;
 import com.genexus.util.GXService;
 import com.genexus.util.StorageUtils;
 import com.genexus.StructSdtMessages_Message;
@@ -81,10 +80,6 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 
 	public String getName() {
 		return NAME;
-	}
-
-	public ExternalProviderS3V2(String service) throws Exception {
-		this(Application.getGXServices().get(service));
 	}
 
 	public ExternalProviderS3V2() throws Exception {

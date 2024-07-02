@@ -184,7 +184,7 @@ public class Application
 				throw new InternalError("Unrecognized External Provider class (ClassNotFound) : " + providerService.getName() + " / " + providerService.getClassName());
 			}
 			try {
-				externalProviderImpl = (ExternalProvider) providerClass.getConstructor(String.class).newInstance(service);
+				externalProviderImpl = (ExternalProvider) providerClass.getConstructor(GXService.class).newInstance(providerService);
 			}
 			catch (Exception e)
 			{
