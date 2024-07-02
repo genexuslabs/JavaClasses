@@ -77,7 +77,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 	private int defaultExpirationMinutes = DEFAULT_EXPIRATION_MINUTES;
 	private Boolean pathStyleUrls = false;
 	private Boolean objectOwnershipEnabled;
-
+	private final String bucketOwnerEnforced = "Bucket owner enforced";
 
 	public String getName() {
 		return NAME;
@@ -104,7 +104,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 		String folder = getPropertyValue(FOLDER, FOLDER_DEPRECATED, "");
 		clientRegion = getPropertyValue(REGION, REGION_DEPRECATED, DEFAULT_REGION);
 
-		objectOwnershipEnabled = !getPropertyValue(DEFAULT_ACL, DEFAULT_STORAGE_PRIVACY, "").contains("Bucket owner enforced");
+		objectOwnershipEnabled = !getPropertyValue(DEFAULT_ACL, DEFAULT_STORAGE_PRIVACY, "").contains(bucketOwnerEnforced);
 
 		String endpointValue = getPropertyValue(STORAGE_ENDPOINT, STORAGE_ENDPOINT_DEPRECATED, "");
 		if (endpointValue.equals("custom")) {
@@ -718,7 +718,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 	// Without ACL implementation
 
 	private enum BucketPrivacy {PRIVATE, PUBLIC};
-	private final BucketPrivacy ownerEnforcedBucketPrivacy = getPropertyValue(DEFAULT_ACL, DEFAULT_STORAGE_PRIVACY, "").contains("Bucket owner enforced") ?
+	private final BucketPrivacy ownerEnforcedBucketPrivacy = getPropertyValue(DEFAULT_ACL, DEFAULT_STORAGE_PRIVACY, "").contains(bucketOwnerEnforced) ?
 		(getPropertyValue(DEFAULT_ACL, DEFAULT_STORAGE_PRIVACY, "").contains("private") ? BucketPrivacy.PRIVATE : BucketPrivacy.PUBLIC)
 		: null;
 
