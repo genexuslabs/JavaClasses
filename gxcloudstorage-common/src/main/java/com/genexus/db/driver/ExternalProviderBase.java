@@ -14,9 +14,7 @@ public abstract class ExternalProviderBase {
 	static final String DEFAULT_ACL = "DEFAULT_ACL";
 	static final String DEFAULT_EXPIRATION = "DEFAULT_EXPIRATION";
 	static final String FOLDER = "FOLDER_NAME";
-
-	@Deprecated
-	static final String DEFAULT_ACL_DEPRECATED = "STORAGE_PROVIDER_DEFAULT_ACL";
+	static final String DEFAULT_STORAGE_PRIVACY = "STORAGE_PROVIDER_DEFAULT_ACL";
 	@Deprecated
 	static final String DEFAULT_EXPIRATION_DEPRECATED = "STORAGE_PROVIDER_DEFAULT_EXPIRATION";
 
@@ -44,7 +42,7 @@ public abstract class ExternalProviderBase {
 	}
 
 	private void init() {
-		String aclS = getPropertyValue(DEFAULT_ACL, DEFAULT_ACL_DEPRECATED, "");
+		String aclS = getPropertyValue(DEFAULT_ACL, DEFAULT_STORAGE_PRIVACY, "");
 		if (aclS.length() > 0) {
 			this.defaultAcl = ResourceAccessControlList.parse(aclS);
 		}
