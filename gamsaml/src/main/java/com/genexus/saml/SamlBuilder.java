@@ -24,12 +24,6 @@ public class SamlBuilder {
 
 	}
 
-
-	/*@SuppressWarnings({"unused", "unchecked"})
-	public <T> T buildSAMLObject(final Class<T> objectClass, QName qName) {
-		return (T) builderFactory.getBuilder(qName).buildObject(qName);
-	}*/
-
 	protected Issuer buildSamlIssuer() {
 		return (Issuer) builderFactory.getBuilder(Issuer.DEFAULT_ELEMENT_NAME).buildObject(Issuer.DEFAULT_ELEMENT_NAME);
 	}

@@ -145,7 +145,6 @@ public class GamSamlProperties {
 	public static String getKeyStPwdTrustSt() {
 		String cryptPass = GamSamlProperties.getInstance().getGeneralProperty(
 			"KeyStorePwdTrustCred");
-		//String ret = Crypt.Decrypt(cryptPass);
 		String ret = com.genexus.util.Encryption.decrypt64(cryptPass, getKeyCrypt());
 		logger.debug("[getKeyStPwdTrustSt] " + "Gets KeyStorePwdTrustCred: " + cryptPass);
 		return ret;
