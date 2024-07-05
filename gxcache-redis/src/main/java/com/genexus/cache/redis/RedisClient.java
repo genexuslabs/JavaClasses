@@ -18,6 +18,7 @@ import com.genexus.Application;
 import com.genexus.ICacheService2;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
+import com.genexus.util.Encryption;
 import com.genexus.util.GXService;
 import com.genexus.util.GXServices;
 
@@ -74,7 +75,7 @@ public class RedisClient implements ICacheService2, Closeable {
 			throw e;
 		}
 
-		password = (!isNullOrEmpty(password)) ? password : null;
+		password = (!isNullOrEmpty(password)) ? Encryption.tryDecrypt64(password) : null;
 
 		pool = new JedisPool(new JedisPoolConfig(), host, port, redis.clients.jedis.Protocol.DEFAULT_TIMEOUT, password);
 
