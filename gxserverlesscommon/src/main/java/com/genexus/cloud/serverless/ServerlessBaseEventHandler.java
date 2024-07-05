@@ -1,38 +1,44 @@
-package com.genexus.cloud.serverless.aws.handler;
+package com.genexus.cloud.serverless;
 
 import com.genexus.ApplicationContext;
 import com.genexus.ModelContext;
-import com.genexus.cloud.serverless.*;
-import com.genexus.cloud.serverless.EventMessageResponse;
-import com.genexus.cloud.serverless.EventMessages;
+import com.genexus.cloud.serverless.exception.FunctionConfigurationException;
+import com.genexus.cloud.serverless.model.EventMessageResponse;
+import com.genexus.cloud.serverless.model.EventMessages;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.specific.java.Connect;
 import com.genexus.specific.java.LogManager;
 import com.genexus.util.IniFile;
 
+public abstract class ServerlessBaseEventHandler <T extends ServerlessFunctionConfiguration> {
 
-public class LambdaBaseEventHandler {
+	protected T functionConfiguration;
 	protected static ILogger logger = null;
 	protected static Class entryPointClass = null;
-	private static LambdaFunctionConfiguration functionConfiguration;
+	protected static GXProcedureExecutor executor;
 	private static final String GX_APPLICATION_CLASS = "GXcfg";
 	private static String packageName = null;
-	private static GXProcedureExecutor executor;
 
-	public LambdaBaseEventHandler() throws Exception {
+
+	protected abstract T createFunctionConfiguration();
+	protected abstract T createFunctionConfiguration(String className);
+	protected abstract T createFunctionConfiguration(String functionName, String className);
+	protected abstract T getFunctionConfiguration(String functionName) throws FunctionConfigurationException;
+	protected abstract void InitializeServerlessConfig() throws Exception;
+	public ServerlessBaseEventHandler() throws Exception {
+		this.functionConfiguration = createFunctionConfiguration();
 		initialize();
-
 	}
-
-	public LambdaBaseEventHandler(String className) throws Exception {
-		functionConfiguration = new LambdaFunctionConfiguration(className);
+	public ServerlessBaseEventHandler(String className) throws Exception {
+		this.functionConfiguration = createFunctionConfiguration(className);
 		initialize();
-
 	}
-
-
+	public ServerlessBaseEventHandler(String functionName, String className) throws Exception {
+		this.functionConfiguration = createFunctionConfiguration(functionName,className);
+		initialize();
+	}
 	private void initialize() throws Exception {
-		logger = LogManager.initialize(".", LambdaBaseEventHandler.class);
+		logger = LogManager.initialize(".", ServerlessBaseEventHandler.class);
 		Connect.init();
 
 		IniFile config = com.genexus.ConfigFileFinder.getConfigFile(null, "client.cfg", null);
@@ -40,34 +46,28 @@ public class LambdaBaseEventHandler {
 		Class cfgClass;
 
 		String cfgClassName = packageName.isEmpty() ? GX_APPLICATION_CLASS : String.format("%s.%s", packageName, GX_APPLICATION_CLASS);
+
 		try {
 			cfgClass = Class.forName(cfgClassName);
+			logger.debug("Finished loading cfgClassName " + cfgClassName);
 			com.genexus.Application.init(cfgClass);
 			ApplicationContext.getInstance().setPoolConnections(true);
 		} catch (ClassNotFoundException e) {
 			logger.error(String.format("Failed to initialize GX AppConfig Class: %s", cfgClassName), e);
 			throw e;
-		}
-
-		logger.debug("Initializing Function configuration");
-		try {
-			if (functionConfiguration == null) {
-				functionConfiguration = LambdaFunctionConfigurationHelper.getFunctionConfiguration();
-			}
-			entryPointClass = Class.forName(functionConfiguration.getEntryPointClassName());
 		} catch (Exception e) {
-			logger.error(String.format("Failed to initialize Application for className: %s", functionConfiguration.getEntryPointClassName()), e);
+			logger.error(String.format("Failed to initialize GX AppConfig Class: %s", cfgClassName), e);
 			throw e;
 		}
 
-		executor = new GXProcedureExecutor(entryPointClass);
+		InitializeServerlessConfig();
 	}
 
 	protected EventMessageResponse dispatchEvent(EventMessages eventMessages, String lambdaRawMessageBody) throws Exception {
 		String jsonStringMessages = Helper.toJSONString(eventMessages);
 
 		if (logger.isDebugEnabled()) {
-			logger.debug(String.format("dispatchEventMessages (%s) - serialized messages: %s", functionConfiguration.getEntryPointClassName(), jsonStringMessages));
+			logger.debug(String.format("dispatchEventMessages (%s) - serialized messages: %s", functionConfiguration.getGXClassName(), jsonStringMessages));
 		}
 
 		ModelContext modelContext = new ModelContext(entryPointClass);

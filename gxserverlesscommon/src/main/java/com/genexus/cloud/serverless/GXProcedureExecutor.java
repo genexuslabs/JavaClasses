@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genexus.GXProcedure;
 import com.genexus.GxUserType;
 import com.genexus.ModelContext;
+import com.genexus.cloud.serverless.model.EventMessageResponse;
+import com.genexus.cloud.serverless.model.EventMessages;
 import com.genexus.db.DynamicExecute;
 import org.apache.commons.lang.NotImplementedException;
 
@@ -96,7 +98,7 @@ public class GXProcedureExecutor {
 			paramOutArray[0] = Class.forName(MESSAGE_OUTPUT_COLLECTION_CLASS_NAME).getConstructor(int.class, ModelContext.class).newInstance(-1, modelContext);
 		}
 
-		com.genexus.db.DynamicExecute.dynamicExecute(modelContext, -1, entryPointClass, "", entryPointClass.getName(), parameters);
+		DynamicExecute.dynamicExecute(modelContext, -1, entryPointClass, "", entryPointClass.getName(), parameters);
 
 		if (paramOutArray != null) {
 			GxUserType handlerOutput = (GxUserType) paramOutArray[0];
