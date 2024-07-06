@@ -8,7 +8,7 @@ import com.genexus.cloud.serverless.EventMessage;
 import com.genexus.cloud.serverless.EventMessageResponse;
 import com.genexus.cloud.serverless.EventMessageSourceType;
 import com.genexus.cloud.serverless.EventMessages;
-import json.org.json.JSONObject;
+import com.genexus.json.JSONObjectWrapper;
 import org.apache.http.client.utils.DateUtils;
 
 import java.util.Map;
