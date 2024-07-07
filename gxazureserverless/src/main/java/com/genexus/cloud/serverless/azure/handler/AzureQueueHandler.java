@@ -1,5 +1,6 @@
 package com.genexus.cloud.serverless.azure.handler;
 
+import com.genexus.cloud.serverless.Helper;
 import com.genexus.cloud.serverless.model.*;
 
 import com.microsoft.azure.functions.annotation.*;

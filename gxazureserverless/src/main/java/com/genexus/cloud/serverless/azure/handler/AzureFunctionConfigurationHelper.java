@@ -28,10 +28,13 @@ public class AzureFunctionConfigurationHelper {
 				return mappings;
 			} catch (IOException e) {
 				logger.error(String.format("Invalid Azure function configuration file: %s. Please check json content.", FUNCTION_CONFIG_PATH), e);
-				throw new FunctionConfigurationException(String.format("Please check function configuration. File '%s' should be present", FUNCTION_CONFIG_PATH));
+				throw new FunctionConfigurationException(String.format("JSON contents of file '%s' are not valid.", FUNCTION_CONFIG_PATH));
 			}
 		}
-		return null;
+		else {
+			logger.error(String.format("Failure while trying to read Azure function configuration file: %s.", FUNCTION_CONFIG_PATH));
+			throw new FunctionConfigurationException(String.format("File %s not found. The file is attempted to be read when there is no GX_AZURE_<FUNCTIONNAME>_CLASS environment variable pointing to the GeneXus class associated with the function.", FUNCTION_CONFIG_PATH));
+		}
 	}
 
 	public static String getFunctionConfigurationEntryPoint(String functionName, AzureFunctionConfiguration functionConfiguration)

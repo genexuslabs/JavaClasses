@@ -14,7 +14,7 @@ public abstract class ServerlessBaseEventHandler <T extends ServerlessFunctionCo
 
 	protected T functionConfiguration;
 	protected static ILogger logger = null;
-	protected static Class entryPointClass = null;
+	protected Class entryPointClass = null;
 	protected static GXProcedureExecutor executor;
 	private static final String GX_APPLICATION_CLASS = "GXcfg";
 	private static String packageName = null;
@@ -23,7 +23,7 @@ public abstract class ServerlessBaseEventHandler <T extends ServerlessFunctionCo
 	protected abstract T createFunctionConfiguration();
 	protected abstract T createFunctionConfiguration(String className);
 	protected abstract T createFunctionConfiguration(String functionName, String className);
-	protected abstract T getFunctionConfiguration(String functionName) throws FunctionConfigurationException;
+
 	protected abstract void InitializeServerlessConfig() throws Exception;
 	public ServerlessBaseEventHandler() throws Exception {
 		this.functionConfiguration = createFunctionConfiguration();
@@ -62,8 +62,7 @@ public abstract class ServerlessBaseEventHandler <T extends ServerlessFunctionCo
 
 		InitializeServerlessConfig();
 	}
-
-	protected EventMessageResponse dispatchEvent(EventMessages eventMessages, String lambdaRawMessageBody) throws Exception {
+	protected EventMessageResponse dispatchEvent(EventMessages eventMessages, String rawMessageBody) throws Exception {
 		String jsonStringMessages = Helper.toJSONString(eventMessages);
 
 		if (logger.isDebugEnabled()) {
@@ -74,7 +73,7 @@ public abstract class ServerlessBaseEventHandler <T extends ServerlessFunctionCo
 		EventMessageResponse response = null;
 
 		try {
-			response = executor.execute(modelContext, eventMessages, lambdaRawMessageBody);
+			response = executor.execute(modelContext, eventMessages, rawMessageBody);
 		} catch (Exception e) {
 			logger.error(String.format("dispatchEventmessages - program '%s' execution error", entryPointClass.getName()), e);
 			throw e;
