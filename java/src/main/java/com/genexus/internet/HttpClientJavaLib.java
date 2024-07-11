@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -21,6 +22,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.entity.ContentType;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.auth.AuthSchemeProvider;
@@ -723,7 +725,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 			return "";
 		try {
 			this.setEntity();
-			String res = EntityUtils.toString(entity, "UTF-8");
+			Charset charset = ContentType.getOrDefault(entity).getCharset();
+			if (charset == null) {
+				charset = StandardCharsets.UTF_8;
+			}
+			String res = EntityUtils.toString(entity, charset);
 			eof = true;
 			return res;
 		} catch (IOException e) {
