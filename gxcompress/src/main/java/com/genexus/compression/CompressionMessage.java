@@ -1,20 +1,20 @@
 package com.genexus.compression;
 
 public class CompressionMessage {
-	private boolean successfulCompression;
+	private boolean successfulOperation;
 	private String message;
 
-	public CompressionMessage(boolean successfulCompression, String message) {
-		this.successfulCompression = successfulCompression;
+	public CompressionMessage(boolean successfulOperation, String message) {
+		this.successfulOperation = successfulOperation;
 		this.message = message;
 	}
 
-	public boolean isSuccessfulCompression() {
-		return successfulCompression;
+	public boolean isSuccessfulOperation() {
+		return successfulOperation;
 	}
 
-	public void setSuccessfulCompression(boolean successfulCompression) {
-		this.successfulCompression = successfulCompression;
+	public void setSuccessfulCompression(boolean successfulOperation) {
+		this.successfulOperation = successfulOperation;
 	}
 
 	public String getMessage() {

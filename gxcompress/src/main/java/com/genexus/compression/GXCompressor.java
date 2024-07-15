@@ -61,7 +61,7 @@ public class GXCompressor implements IGXCompressor {
 					return getSuccessfulCompressionMessage();
 			}
 		} catch (IllegalArgumentException iae) {
-			log.error("Unsupported compression format for compression: {}", format);
+			log.error("Unsupported compression format for compression: {}", format, iae);
 			return new CompressionMessage(false, "Unsupported compression format for compression: " + format);
 		} catch (Exception e) {
 			log.error("An error occurred during the compression process: ", e);
@@ -121,7 +121,7 @@ public class GXCompressor implements IGXCompressor {
 					return new CompressionMessage(false, "Unsupported compression format for decompression");
 			}
 		} catch (Exception e) {
-			log.error("Decompression failed: {}", e.getMessage());
+			log.error("Decompression failed: ", e);
 			return new CompressionMessage(false, "Decompression failed");
 		}
 	}
