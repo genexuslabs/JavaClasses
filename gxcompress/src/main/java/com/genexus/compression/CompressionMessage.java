@@ -1,8 +1,8 @@
 package com.genexus.compression;
 
 public class CompressionMessage {
-	private boolean successfulCompression;
-	private String message;
+	private final boolean successfulOperation;
+	private final String message;
 
 	public CompressionMessage(boolean successfulCompression, String message) {
 		this.successfulCompression = successfulCompression;
@@ -19,9 +19,5 @@ public class CompressionMessage {
 
 	public String getMessage() {
 		return message;
-	}
-
-	public void setMessage(String message) {
-		this.message = message;
 	}
 }
