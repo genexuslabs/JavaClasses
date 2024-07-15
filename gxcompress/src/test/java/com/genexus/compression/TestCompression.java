@@ -1,8 +1,5 @@
 package com.genexus.compression;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,6 +8,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.util.Vector;
+
+import static org.junit.Assert.*;
 
 public class TestCompression {
 
@@ -43,24 +42,24 @@ public class TestCompression {
 	@Test
 	public void testCompressToZip() {
 		String outputPath = new File(testDirectory, "output.zip").getAbsolutePath();
-		int result = GXCompressor.compressFiles(files, outputPath, "ZIP");
-		assertEquals(0, result);
+		CompressionMessage result = GXCompressor.compressFiles(files, outputPath, "ZIP");
+		assertTrue(result.isSuccessfulCompression());
 		assertTrue(new File(outputPath).exists());
 	}
 
 	@Test
 	public void testCompressToSevenZ() {
 		String outputPath = new File(testDirectory, "output.7z").getAbsolutePath();
-		int result = GXCompressor.compressFiles(files, outputPath, "SEVENZ");
-		assertEquals(0, result);
+		CompressionMessage result = GXCompressor.compressFiles(files, outputPath, "SEVENZ");
+		assertTrue(result.isSuccessfulCompression());
 		assertTrue(new File(outputPath).exists());
 	}
 
 	@Test
 	public void testCompressToTar() {
 		String outputPath = new File(testDirectory, "output.tar").getAbsolutePath();
-		int result = GXCompressor.compressFiles(files, outputPath, "TAR");
-		assertEquals(0, result);
+		CompressionMessage result = GXCompressor.compressFiles(files, outputPath, "TAR");
+		assertTrue(result.isSuccessfulCompression());
 		assertTrue(new File(outputPath).exists());
 	}
 
@@ -69,23 +68,23 @@ public class TestCompression {
 		String outputPath = new File(testDirectory, "output.gz").getAbsolutePath();
 		Vector<String> singleFileCollection = new Vector<>();
 		singleFileCollection.add(files.get(0));
-		int result = GXCompressor.compressFiles(singleFileCollection, outputPath, "GZIP");
-		assertEquals(0, result);
+		CompressionMessage result = GXCompressor.compressFiles(singleFileCollection, outputPath, "GZIP");
+		assertTrue(result.isSuccessfulCompression());
 		assertTrue(new File(outputPath).exists());
 	}
 
 	@Test
 	public void testCompressToJar() {
 		String outputPath = new File(testDirectory, "output.jar").getAbsolutePath();
-		int result = GXCompressor.compressFiles(files, outputPath, "JAR");
-		assertEquals(0, result);
+		CompressionMessage result = GXCompressor.compressFiles(files, outputPath, "JAR");
+		assertTrue(result.isSuccessfulCompression());
 		assertTrue(new File(outputPath).exists());
 	}
 
 	@Test
 	public void testUnsupportedFormat() {
 		String outputPath = new File(testDirectory, "output.unknown").getAbsolutePath();
-		int result = GXCompressor.compressFiles(files, outputPath, "UNKNOWN");
-		assertEquals(-3, result);
+		CompressionMessage result = GXCompressor.compressFiles(files, outputPath, "UNKNOWN");
+		assertFalse(result.isSuccessfulCompression());
 	}
 }
