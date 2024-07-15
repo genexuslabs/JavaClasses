@@ -54,10 +54,10 @@ public class Compression {
 		}
 	}
 
-	public int save() {
+	public CompressionMessage save() {
 		if (filesToCompress.isEmpty()) {
 			log.error("No files have been added for compression.");
-			return -4;
+			return new CompressionMessage(false, "No files have been added for compression.");
 		}
 		return GXCompressor.compressFiles(filesToCompress, path, format);
 	}

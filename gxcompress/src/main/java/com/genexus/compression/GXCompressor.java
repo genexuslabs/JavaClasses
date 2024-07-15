@@ -31,10 +31,10 @@ public class GXCompressor implements IGXCompressor {
 
 	private static final Logger log = org.apache.logging.log4j.LogManager.getLogger(GXCompressor.class);
 	
-	public static int compressFiles(Vector<String> files, String path, String format) {
+	public static CompressionMessage compressFiles(Vector<String> files, String path, String format) {
 		if (files.isEmpty()){
 			log.error("No files have been added for compression.");
-			return -4;
+			return new CompressionMessage(false, "No files have been added for compression.");
 		}
 		File[] toCompress = new File[files.size()];
 		int index = 0;
@@ -46,36 +46,35 @@ public class GXCompressor implements IGXCompressor {
 			switch (compressionFormat) {
 				case ZIP:
 					compressToZip(toCompress, path);
-					return 0;
+					return getSuccessfulCompressionMessage();
 				case SEVENZ:
 					compressToSevenZ(toCompress, path);
-					return 0;
+					return getSuccessfulCompressionMessage();
 				case TAR:
 					compressToTar(toCompress, path);
-					return 0;
+					return getSuccessfulCompressionMessage();
 				case GZIP:
 					compressToGzip(toCompress, path);
-					return 0;
+					return getSuccessfulCompressionMessage();
 				case JAR:
 					compressToJar(toCompress, path);
-					return 0;
+					return getSuccessfulCompressionMessage();
 			}
 		} catch (IllegalArgumentException iae) {
 			log.error("Unsupported compression format for compression: {}", format);
-			return -3;
+			return new CompressionMessage(false, "Unsupported compression format for compression: " + format);
 		} catch (Exception e) {
 			log.error("An error occurred during the compression process: ", e);
-			return -1;
+			return new CompressionMessage(false, "An error occurred during the compression process");
 		}
-		return -1;
+		return new CompressionMessage(false, "An error occurred during the compression process");
 	}
-
 	
-	public static int compressFolder(String folder, String path, String format) {
+	public static CompressionMessage compressFolder(String folder, String path, String format) {
 		File toCompress = new File(folder);
 		if (!toCompress.exists()) {
 			log.error("The specified folder does not exist: {}", toCompress.getAbsolutePath());
-			return -2;
+			return new CompressionMessage(false, "The specified folder does not exist: " + folder);
 		}
 		Vector<String> vector = new Vector<>();
 		vector.add(folder);
@@ -86,45 +85,49 @@ public class GXCompressor implements IGXCompressor {
 		return new Compression(path, format);
 	}
 
-	public static int decompress(String file, String path) {
+	public static CompressionMessage decompress(String file, String path) {
 		File toCompress = new File(file);
 		if (!toCompress.exists()) {
 			log.error("The specified archive does not exist: {}", toCompress.getAbsolutePath());
-			return -2;
+			return new CompressionMessage(false, "The specified archive does not exist: " + file);
 		}
 		if (toCompress.length() == 0L){
-            log.error("The archive located at {} is empty", path);
-			return -4;
+            log.error("The archive located at {} is empty", file);
+			return new CompressionMessage(false, "The archive located at " + file + " is empty");
 		}
 		String extension = getExtension(toCompress.getName());
 		try {
 			switch (extension.toLowerCase()) {
 				case "zip":
 					decompressZip(toCompress, path);
-					return 0;
+					return getSuccessfulCompressionMessage();
 				case "7z":
 					decompress7z(toCompress, path);
-					return 0;
+					return getSuccessfulCompressionMessage();
 				case "tar":
 					decompressTar(toCompress, path);
-					return 0;
+					return getSuccessfulCompressionMessage();
 				case "gz":
 					decompressGzip(toCompress, path);
-					return 0;
+					return getSuccessfulCompressionMessage();
 				case "jar":
 					decompressJar(toCompress, path);
-					return 0;
+					return getSuccessfulCompressionMessage();
 				case "rar":
 					decompressRar(toCompress, path);
-					return 0;
+					return getSuccessfulCompressionMessage();
 				default:
 					log.error("Unsupported compression format for decompression: {}", extension);
-					return -3;
+					return new CompressionMessage(false, "Unsupported compression format for decompression");
 			}
 		} catch (Exception e) {
 			log.error("Decompression failed: {}", e.getMessage());
-			return -1;
+			return new CompressionMessage(false, "Decompression failed");
 		}
+	}
+
+	private static CompressionMessage getSuccessfulCompressionMessage(){
+		return new CompressionMessage(true, "The operation was successful");
 	}
 
 	private static void compressToZip(File[] files, String outputPath) {
