@@ -81,6 +81,7 @@ public class GXCompressor implements IGXCompressor {
 			return false;
 		} catch (Exception e) {
 			log.error("An error occurred during the compression process: ", e);
+			if (messages != null) storageMessages(e, null, messages[0]);
 			return false;
 		}
 		return false;
