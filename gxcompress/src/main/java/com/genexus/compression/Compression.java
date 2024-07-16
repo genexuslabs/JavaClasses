@@ -1,5 +1,8 @@
 package com.genexus.compression;
 
+import com.genexus.GXBaseCollection;
+import com.genexus.SdtMessages_Message;
+import com.genexus.StructSdtMessages_Message;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
@@ -10,13 +13,15 @@ public class Compression {
 
 	private String path;
 	private String format;
+	private GXBaseCollection<SdtMessages_Message>[] messages;
 	private Vector<String> filesToCompress;
 
 	public Compression() {}
 
-	public Compression(String path, String format) {
+	public Compression(String path, String format, GXBaseCollection<SdtMessages_Message>[] messages) {
 		this.path = path;
 		this.format = format;
+		this.messages = messages;
 		this.filesToCompress = new Vector<>();
 	}
 
@@ -33,6 +38,7 @@ public class Compression {
 			filesToCompress.add(filePath);
 		} else {
 			log.error("File does not exist: {}", filePath);
+			if (messages != null) storageMessages("File does not exist: " + filePath, messages[0]);
 		}
 	}
 
@@ -51,21 +57,25 @@ public class Compression {
 			}
 		} else {
 			log.error("Folder does not exist or is not a directory: {}", folder.getAbsolutePath());
+			if (messages != null) storageMessages("Folder does not exist or is not a directory: " + folder.getAbsolutePath(), messages[0]);
 		}
 	}
 
-	public CompressionMessage save() {
-		if (filesToCompress.isEmpty()) {
-			log.error("No files have been added for compression.");
-			return new CompressionMessage(false, "No files have been added for compression.");
-		}
-		return GXCompressor.compressFiles(filesToCompress, path, format);
+	public Boolean save() {
+		return GXCompressor.compressFiles(filesToCompress, path, format, this.messages);
 	}
-
 
 	public void clear() {
 		this.path = "";
 		this.format = "";
 		this.filesToCompress = new Vector<>();
+	}
+
+	private static void storageMessages(String error, GXBaseCollection<SdtMessages_Message> messages) {
+		StructSdtMessages_Message struct = new StructSdtMessages_Message();
+		struct.setDescription(error);
+		struct.setType((byte) 1);
+		SdtMessages_Message msg = new SdtMessages_Message(struct);
+		messages.add(msg);
 	}
 }
