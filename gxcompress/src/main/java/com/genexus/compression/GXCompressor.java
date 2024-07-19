@@ -476,9 +476,8 @@ public class GXCompressor implements IGXCompressor {
 		try {
 			return CompressionFormat.valueOf(format.toUpperCase());
 		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException("Invalid compression format: " + format);
+			throw new IllegalArgumentException("Invalid compression format: " + format + ". Valid formats are (upper or lower): GZIP,TAR, ZIP, SEVENZ and JAR");
 		}
 	}
 
 }
-
