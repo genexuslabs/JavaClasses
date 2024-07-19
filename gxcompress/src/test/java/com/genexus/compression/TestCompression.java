@@ -1,7 +1,5 @@
 package com.genexus.compression;
 
-import com.genexus.GXBaseCollection;
-import com.genexus.SdtMessages_Message;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
