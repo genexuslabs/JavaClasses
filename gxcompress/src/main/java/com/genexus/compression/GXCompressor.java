@@ -22,9 +22,9 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
@@ -59,7 +59,7 @@ public class GXCompressor implements IGXCompressor {
 
 	}
 	
-	public static Boolean compressFiles(Vector<String> files, String path, String format, GXBaseCollection<SdtMessages_Message>[] messages) {
+	public static Boolean compressFiles(ArrayList<String> files, String path, String format, GXBaseCollection<SdtMessages_Message>[] messages) {
 		if (files.isEmpty()){
 			log.error(errorMessages.get("NO_FILES_ADDED"));
 			if (messages != null) storageMessages(errorMessages.get("NO_FILES_ADDED"), messages[0]);
@@ -116,9 +116,9 @@ public class GXCompressor implements IGXCompressor {
 			if (messages != null) storageMessages(errorMessages.get("FOLDER_NOT_EXISTS") + toCompress.getAbsolutePath(), messages[0]);
 			return false;
 		}
-		Vector<String> vector = new Vector<>();
-		vector.add(folder);
-		return compressFiles(vector, path, format, messages);
+		ArrayList<String> list = new ArrayList<>();
+		list.add(folder);
+		return compressFiles(list, path, format, messages);
 	}
 	
 	public static Compression newCompression(String path, String format, GXBaseCollection<SdtMessages_Message>[] messages) {
