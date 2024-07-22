@@ -7,19 +7,19 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
-import java.util.Vector;
+import java.util.ArrayList;
 
 import static org.junit.Assert.*;
 
 public class TestCompression {
 
-	private Vector<String> files;
+	private ArrayList<String> files;
 	private File testDirectory;
 
 	@Before
 	public void setUp() throws IOException {
 		testDirectory = Files.createTempDirectory("testCompressor").toFile();
-		files = new Vector<>();
+		files = new ArrayList<>();
 		String content = "This is a sample text to test the compression functionality.";
 		for (int i = 0; i < 3; i++) {
 			File file = new File(testDirectory, "testFile" + i + ".txt");
@@ -66,7 +66,7 @@ public class TestCompression {
 	@Test
 	public void testCompressToGzip() {
 		String outputPath = new File(testDirectory, "output.gz").getAbsolutePath();
-		Vector<String> singleFileCollection = new Vector<>();
+		ArrayList<String> singleFileCollection = new ArrayList<>();
 		singleFileCollection.add(files.get(0));
 		Boolean result = GXCompressor.compressFiles(singleFileCollection, outputPath, "GZIP", null);
 		assertTrue(result);

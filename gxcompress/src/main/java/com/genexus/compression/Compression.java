@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Vector;
+import java.util.ArrayList;
 import java.util.stream.Stream;
 
 public class Compression {
@@ -17,7 +17,7 @@ public class Compression {
 	private String path;
 	private String format;
 	private GXBaseCollection<SdtMessages_Message>[] messages;
-	private Vector<String> filesToCompress;
+	private ArrayList<String> filesToCompress;
 
 	public Compression() {}
 
@@ -25,7 +25,7 @@ public class Compression {
 		this.path = path;
 		this.format = format;
 		this.messages = messages;
-		filesToCompress = new Vector<>();
+		filesToCompress = new ArrayList<>();
 	}
 
 	public void setPath(String path) {
@@ -57,6 +57,6 @@ public class Compression {
 	public void clear() {
 		path = "";
 		format = "";
-		filesToCompress = new Vector<>();
+		filesToCompress = new ArrayList<>();
 	}
 }
