@@ -23,8 +23,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
@@ -36,15 +34,12 @@ public class GXCompressor implements IGXCompressor {
 
 	private static final Logger log = org.apache.logging.log4j.LogManager.getLogger(GXCompressor.class);
 
-	private static final Map<String, String> errorMessages = new HashMap<>();
-	static {
-		errorMessages.put("GENERIC_ERROR","An error occurred during the compression/decompression process: ");
-		errorMessages.put("NO_FILES_ADDED", "No files have been added for compression.");
-		errorMessages.put("FILE_NOT_EXISTS", "File does not exist: ");
-		errorMessages.put("FOLDER_NOT_EXISTS", "The specified folder does not exist: ");
-		errorMessages.put("UNSUPPORTED_FORMAT", "Unsupported compression/decompression format: ");
-		errorMessages.put("EMPTY_FILE", "The selected file is empty: ");
-	}
+	private static final String GENERIC_ERROR = "An error occurred during the compression/decompression process: ";
+	private static final String NO_FILES_ADDED = "No files have been added for compression.";
+	private static final String FILE_NOT_EXISTS = "File does not exist: ";
+	private static final String FOLDER_NOT_EXISTS = "The specified folder does not exist: ";
+	private static final String UNSUPPORTED_FORMAT = "Unsupported compression/decompression format: ";
+	private static final String EMPTY_FILE = "The selected file is empty: ";
 
 	private static void storageMessages(String error, GXBaseCollection<SdtMessages_Message> messages) {
 		try {
@@ -61,8 +56,8 @@ public class GXCompressor implements IGXCompressor {
 	
 	public static Boolean compressFiles(ArrayList<String> files, String path, String format, GXBaseCollection<SdtMessages_Message>[] messages) {
 		if (files.isEmpty()){
-			log.error(errorMessages.get("NO_FILES_ADDED"));
-			if (messages != null) storageMessages(errorMessages.get("NO_FILES_ADDED"), messages[0]);
+			log.error(NO_FILES_ADDED);
+			if (messages != null) storageMessages(NO_FILES_ADDED, messages[0]);
 			return false;
 		}
 		File[] toCompress = new File[files.size()];
@@ -70,8 +65,8 @@ public class GXCompressor implements IGXCompressor {
 		for (String filePath : files) {
 			File file = new File(filePath);
 			if (!file.exists()) {
-				log.error("{}{}", errorMessages.get("FILE_NOT_EXISTS"), filePath);
-				if (messages != null) storageMessages(errorMessages.get("FILE_NOT_EXISTS") + filePath, messages[0]);
+				log.error("{}{}", FILE_NOT_EXISTS, filePath);
+				if (messages != null) storageMessages(FILE_NOT_EXISTS + filePath, messages[0]);
 				continue;
 			}
 			toCompress[index++] = file;
@@ -99,11 +94,11 @@ public class GXCompressor implements IGXCompressor {
 			}
 			return true;
 		} catch (IllegalArgumentException iae) {
-			log.error("{}{}", errorMessages.get("UNSUPPORTED_FORMAT"), format, iae);
-			if (messages != null) storageMessages(errorMessages.get("UNSUPPORTED_FORMAT") + format, messages[0]);
+			log.error("{}{}", UNSUPPORTED_FORMAT, format, iae);
+			if (messages != null) storageMessages(UNSUPPORTED_FORMAT + format, messages[0]);
 			return false;
 		} catch (Exception e) {
-			log.error(errorMessages.get("GENERIC_ERROR"), e);
+			log.error(GENERIC_ERROR, e);
 			if (messages != null) storageMessages(e.getMessage(),  messages[0]);
 			return false;
 		}
@@ -112,8 +107,8 @@ public class GXCompressor implements IGXCompressor {
 	public static Boolean compressFolder(String folder, String path, String format, GXBaseCollection<SdtMessages_Message>[] messages) {
 		File toCompress = new File(folder);
 		if (!toCompress.exists()) {
-			log.error("{}{}", errorMessages.get("FOLDER_NOT_EXISTS"), toCompress.getAbsolutePath());
-			if (messages != null) storageMessages(errorMessages.get("FOLDER_NOT_EXISTS") + toCompress.getAbsolutePath(), messages[0]);
+			log.error("{}{}", FOLDER_NOT_EXISTS, toCompress.getAbsolutePath());
+			if (messages != null) storageMessages(FOLDER_NOT_EXISTS + toCompress.getAbsolutePath(), messages[0]);
 			return false;
 		}
 		ArrayList<String> list = new ArrayList<>();
@@ -128,13 +123,13 @@ public class GXCompressor implements IGXCompressor {
 	public static Boolean decompress(String file, String path, GXBaseCollection<SdtMessages_Message>[] messages) {
 		File toCompress = new File(file);
 		if (!toCompress.exists()) {
-			log.error("{}{}", errorMessages.get("FILE_NOT_EXISTS"), toCompress.getAbsolutePath());
-			if (messages != null) storageMessages(errorMessages.get("FILE_NOT_EXISTS") + toCompress.getAbsolutePath(), messages[0]);
+			log.error("{}{}", FILE_NOT_EXISTS, toCompress.getAbsolutePath());
+			if (messages != null) storageMessages(FILE_NOT_EXISTS + toCompress.getAbsolutePath(), messages[0]);
 			return false;
 		}
 		if (toCompress.length() == 0L){
-			log.error("{}{}", errorMessages.get("EMPTY_FILE"), file);
-			if (messages != null) storageMessages(errorMessages.get("EMPTY_FILE") + file, messages[0]);
+			log.error("{}{}", EMPTY_FILE, file);
+			if (messages != null) storageMessages(EMPTY_FILE + file, messages[0]);
 			return false;
 		}
 		String extension = getExtension(toCompress.getName());
@@ -159,13 +154,13 @@ public class GXCompressor implements IGXCompressor {
 					decompressRar(toCompress, path);
 					break;
 				default:
-					log.error("{}{}", errorMessages.get("UNSUPPORTED_FORMAT"), extension);
-					if (messages != null) storageMessages( errorMessages.get("UNSUPPORTED_FORMAT") + extension, messages[0]);
+					log.error("{}{}", UNSUPPORTED_FORMAT, extension);
+					if (messages != null) storageMessages( UNSUPPORTED_FORMAT + extension, messages[0]);
 					return false;
 			}
 			return true;
 		} catch (Exception e) {
-			log.error(errorMessages.get("GENERIC_ERROR"), e);
+			log.error(GENERIC_ERROR, e);
 			if (messages != null) storageMessages(e.getMessage(), messages[0]);
 			return false;
 		}
