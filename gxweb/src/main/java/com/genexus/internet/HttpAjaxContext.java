@@ -1197,6 +1197,11 @@ public class HttpAjaxContext extends HttpContextWeb
 					}
 					else
 					{
+						if (parm instanceof Date) {
+							LocalUtil localUtil = Application.getClientLocalUtil();
+							inputs.put(localUtil.format((Date)parm, localUtil.getDateFormat() + " " + localUtil.getTimeFormat()));
+						}
+						else
 							inputs.put(parm);
 					}
 			}
