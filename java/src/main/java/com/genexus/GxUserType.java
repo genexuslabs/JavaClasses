@@ -2,7 +2,7 @@ package com.genexus;
 
 import com.genexus.xml.GXXMLSerializable;
 import java.util.HashMap;
-import json.org.json.JSONObject;
+import com.genexus.json.JSONObjectWrapper;
 import org.apache.logging.log4j.Logger;
 
 public abstract class GxUserType extends GXXMLSerializable implements Cloneable, java.io.Serializable, IGXAssigned
@@ -34,10 +34,10 @@ public abstract class GxUserType extends GXXMLSerializable implements Cloneable,
 	}
 
 	protected Object getJsonObjectFromHashMap( Object userType) {
-		JSONObject jsonObj = new JSONObject();
+		JSONObjectWrapper jsonObj = new JSONObjectWrapper();
 		try {
 			if (userType instanceof HashMap)
-				jsonObj = new json.org.json.JSONObject((HashMap)userType);
+				jsonObj = new JSONObjectWrapper((HashMap)userType);
 		}
 		catch(Exception e) {
 			log.error("Could not create Json Object", e);
