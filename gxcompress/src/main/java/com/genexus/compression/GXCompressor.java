@@ -57,7 +57,7 @@ public class GXCompressor implements IGXCompressor {
 	public static Boolean compressFiles(ArrayList<String> files, String path, String format, GXBaseCollection<SdtMessages_Message>[] messages) {
 		if (files.isEmpty()){
 			log.error(NO_FILES_ADDED);
-			if (messages != null) storageMessages(NO_FILES_ADDED, messages[0]);
+			storageMessages(NO_FILES_ADDED, messages[0]);
 			return false;
 		}
 		File[] toCompress = new File[files.size()];
@@ -66,7 +66,7 @@ public class GXCompressor implements IGXCompressor {
 			File file = new File(filePath);
 			if (!file.exists()) {
 				log.error("{}{}", FILE_NOT_EXISTS, filePath);
-				if (messages != null) storageMessages(FILE_NOT_EXISTS + filePath, messages[0]);
+				storageMessages(FILE_NOT_EXISTS + filePath, messages[0]);
 				continue;
 			}
 			toCompress[index++] = file;
@@ -95,11 +95,11 @@ public class GXCompressor implements IGXCompressor {
 			return true;
 		} catch (IllegalArgumentException iae) {
 			log.error("{}{}", UNSUPPORTED_FORMAT, format, iae);
-			if (messages != null) storageMessages(UNSUPPORTED_FORMAT + format, messages[0]);
+			storageMessages(UNSUPPORTED_FORMAT + format, messages[0]);
 			return false;
 		} catch (Exception e) {
 			log.error(GENERIC_ERROR, e);
-			if (messages != null) storageMessages(e.getMessage(),  messages[0]);
+			storageMessages(e.getMessage(),  messages[0]);
 			return false;
 		}
 	}
@@ -108,7 +108,7 @@ public class GXCompressor implements IGXCompressor {
 		File toCompress = new File(folder);
 		if (!toCompress.exists()) {
 			log.error("{}{}", FOLDER_NOT_EXISTS, toCompress.getAbsolutePath());
-			if (messages != null) storageMessages(FOLDER_NOT_EXISTS + toCompress.getAbsolutePath(), messages[0]);
+			storageMessages(FOLDER_NOT_EXISTS + toCompress.getAbsolutePath(), messages[0]);
 			return false;
 		}
 		ArrayList<String> list = new ArrayList<>();
@@ -124,12 +124,12 @@ public class GXCompressor implements IGXCompressor {
 		File toCompress = new File(file);
 		if (!toCompress.exists()) {
 			log.error("{}{}", FILE_NOT_EXISTS, toCompress.getAbsolutePath());
-			if (messages != null) storageMessages(FILE_NOT_EXISTS + toCompress.getAbsolutePath(), messages[0]);
+			storageMessages(FILE_NOT_EXISTS + toCompress.getAbsolutePath(), messages[0]);
 			return false;
 		}
 		if (toCompress.length() == 0L){
 			log.error("{}{}", EMPTY_FILE, file);
-			if (messages != null) storageMessages(EMPTY_FILE + file, messages[0]);
+			storageMessages(EMPTY_FILE + file, messages[0]);
 			return false;
 		}
 		String extension = getExtension(toCompress.getName());
@@ -155,13 +155,13 @@ public class GXCompressor implements IGXCompressor {
 					break;
 				default:
 					log.error("{}{}", UNSUPPORTED_FORMAT, extension);
-					if (messages != null) storageMessages( UNSUPPORTED_FORMAT + extension, messages[0]);
+					storageMessages( UNSUPPORTED_FORMAT + extension, messages[0]);
 					return false;
 			}
 			return true;
 		} catch (Exception e) {
 			log.error(GENERIC_ERROR, e);
-			if (messages != null) storageMessages(e.getMessage(), messages[0]);
+			storageMessages(e.getMessage(), messages[0]);
 			return false;
 		}
 	}

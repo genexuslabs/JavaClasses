@@ -1,7 +1,14 @@
 package com.genexus.compression;
 
+import com.genexus.Application;
+import com.genexus.GXBaseCollection;
+import com.genexus.SdtMessages_Message;
+import com.genexus.reports.GXcfg;
+import com.genexus.specific.java.Connect;
+import com.genexus.specific.java.LogManager;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
@@ -15,9 +22,17 @@ public class TestCompression {
 
 	private ArrayList<String> files;
 	private File testDirectory;
+	private static GXBaseCollection[] msgs;
+
+	@BeforeClass
+	public static void setUpTestSuite() {
+		Connect.init();
+		msgs = new GXBaseCollection[]{new GXBaseCollection<>()};
+		msgs[0] = new GXBaseCollection<>(SdtMessages_Message.class, "Messages.Message", "Genexus");
+	}
 
 	@Before
-	public void setUp() throws IOException {
+	public void setUpTest() throws IOException {
 		testDirectory = Files.createTempDirectory("testCompressor").toFile();
 		files = new ArrayList<>();
 		String content = "This is a sample text to test the compression functionality.";
@@ -41,7 +56,7 @@ public class TestCompression {
 	@Test
 	public void testCompressToZip() {
 		String outputPath = new File(testDirectory, "output.zip").getAbsolutePath();
-		Boolean result = GXCompressor.compressFiles(files, outputPath, "ZIP", null);
+		Boolean result = GXCompressor.compressFiles(files, outputPath, "ZIP", msgs);
 		assertTrue(result);
 		assertTrue(new File(outputPath).exists());
 	}
@@ -49,7 +64,7 @@ public class TestCompression {
 	@Test
 	public void testCompressToSevenZ() {
 		String outputPath = new File(testDirectory, "output.7z").getAbsolutePath();
-		Boolean result = GXCompressor.compressFiles(files, outputPath, "SEVENZ", null);
+		Boolean result = GXCompressor.compressFiles(files, outputPath, "SEVENZ", msgs);
 		assertTrue(result);
 		assertTrue(new File(outputPath).exists());
 	}
@@ -57,7 +72,7 @@ public class TestCompression {
 	@Test
 	public void testCompressToTar() {
 		String outputPath = new File(testDirectory, "output.tar").getAbsolutePath();
-		Boolean result = GXCompressor.compressFiles(files, outputPath, "TAR", null);
+		Boolean result = GXCompressor.compressFiles(files, outputPath, "TAR", msgs);
 		assertTrue(result);
 		assertTrue(new File(outputPath).exists());
 	}
@@ -67,7 +82,7 @@ public class TestCompression {
 		String outputPath = new File(testDirectory, "output.gz").getAbsolutePath();
 		ArrayList<String> singleFileCollection = new ArrayList<>();
 		singleFileCollection.add(files.get(0));
-		Boolean result = GXCompressor.compressFiles(singleFileCollection, outputPath, "GZIP", null);
+		Boolean result = GXCompressor.compressFiles(singleFileCollection, outputPath, "GZIP", msgs);
 		assertTrue(result);
 		assertTrue(new File(outputPath).exists());
 	}
@@ -75,7 +90,7 @@ public class TestCompression {
 	@Test
 	public void testCompressToJar() {
 		String outputPath = new File(testDirectory, "output.jar").getAbsolutePath();
-		Boolean result = GXCompressor.compressFiles(files, outputPath, "JAR", null);
+		Boolean result = GXCompressor.compressFiles(files, outputPath, "JAR", msgs);
 		assertTrue(result);
 		assertTrue(new File(outputPath).exists());
 	}
@@ -83,7 +98,7 @@ public class TestCompression {
 	@Test
 	public void testUnsupportedFormat() {
 		String outputPath = new File(testDirectory, "output.unknown").getAbsolutePath();
-		Boolean result = GXCompressor.compressFiles(files, outputPath, "UNKNOWN", null);
+		Boolean result = GXCompressor.compressFiles(files, outputPath, "UNKNOWN", msgs);
 		assertFalse(result);
 	}
 }
