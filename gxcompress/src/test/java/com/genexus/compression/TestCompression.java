@@ -1,11 +1,8 @@
 package com.genexus.compression;
 
-import com.genexus.Application;
 import com.genexus.GXBaseCollection;
 import com.genexus.SdtMessages_Message;
-import com.genexus.reports.GXcfg;
 import com.genexus.specific.java.Connect;
-import com.genexus.specific.java.LogManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
