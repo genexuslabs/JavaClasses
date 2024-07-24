@@ -43,6 +43,12 @@
             <artifactId>gxcommon</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.genexus</groupId>
+            <artifactId>gxclassR</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>
