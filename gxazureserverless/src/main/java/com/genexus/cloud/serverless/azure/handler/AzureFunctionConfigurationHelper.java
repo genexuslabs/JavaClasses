@@ -24,8 +24,7 @@ public class AzureFunctionConfigurationHelper {
 		if (configFile.exists()) {
 			try {
 				String jsonConfig = new String(Files.readAllBytes(Paths.get(FUNCTION_CONFIG_PATH)));
-				List<AzureFunctionConfiguration> mappings = new ObjectMapper().readValue(jsonConfig, new TypeReference<List<AzureFunctionConfiguration>>(){});
-				return mappings;
+				return new ObjectMapper().readValue(jsonConfig, new TypeReference<List<AzureFunctionConfiguration>>(){});
 			} catch (IOException e) {
 				logger.error(String.format("Invalid Azure function configuration file: %s. Please check json content.", FUNCTION_CONFIG_PATH), e);
 				throw new FunctionConfigurationException(String.format("JSON contents of file '%s' are not valid.", FUNCTION_CONFIG_PATH));
@@ -39,16 +38,19 @@ public class AzureFunctionConfigurationHelper {
 
 	public static String getFunctionConfigurationEntryPoint(String functionName, AzureFunctionConfiguration functionConfiguration)
 	{
-		return functionConfiguration.getGXClassName();
+		if (functionConfiguration != null)
+			return functionConfiguration.getGXClassName();
+		else return null;
 	}
 
-	public static AzureFunctionConfiguration getAzureFunctionConfiguration(String functionName, List<AzureFunctionConfiguration> mappings)  throws FunctionConfigurationException
-	{
-		Optional<AzureFunctionConfiguration> config = mappings.stream()
-			.filter(c -> functionName.equals(c.getFunctionName()))
-			.findFirst();
-		AzureFunctionConfiguration configuration = config.orElseThrow(() -> new FunctionConfigurationException(String.format("Configuration not found for Azure function %s at gxazmappings.json.",functionName)));
-		return configuration;
+	public static AzureFunctionConfiguration getAzureFunctionConfiguration(String functionName, List<AzureFunctionConfiguration> mappings)  throws FunctionConfigurationException {
+		Optional<AzureFunctionConfiguration> config = null;
+		if (mappings != null) {
+			config = mappings.stream()
+				.filter(c -> functionName.equals(c.getFunctionName()))
+				.findFirst();
+		}
+		return config.orElseThrow(() -> new FunctionConfigurationException(String.format("Configuration not found for Azure function %s at gxazmappings.json.", functionName)));
 	}
 
 }

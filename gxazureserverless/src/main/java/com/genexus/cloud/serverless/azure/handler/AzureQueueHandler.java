@@ -1,19 +1,13 @@
 package com.genexus.cloud.serverless.azure.handler;
 
-import com.genexus.cloud.serverless.Helper;
 import com.genexus.cloud.serverless.model.*;
 
 import com.microsoft.azure.functions.annotation.*;
 import com.microsoft.azure.functions.ExecutionContext;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.*;
 
-/**
- * Azure Functions with Azure Storage Queue Trigger Handler.
- * https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-storage-queue-trigger?tabs=java
- */
 public class AzureQueueHandler extends AzureEventHandler {
 	public AzureQueueHandler() throws Exception {
 		super();
@@ -35,8 +29,7 @@ public class AzureQueueHandler extends AzureEventHandler {
 		msg.setMessageId(id);
 		msg.setMessageSourceType(EventMessageSourceType.QUEUE_MESSAGE);
 
-		Instant nowUtc = Instant.now();
-		msg.setMessageDate(Date.from(nowUtc));
+		msg.setMessageDate(new Date());
 		msg.setMessageData(message);
 
 		List<EventMessageProperty> msgAtts = msg.getMessageProperties();
@@ -50,38 +43,17 @@ public class AzureQueueHandler extends AzureEventHandler {
 
 		msgs.add(msg);
 
-		boolean wasHandled = false;
-		String errorMessage;
-
 		SetupServerlessMappings(context.getFunctionName());
 
 		try {
 			EventMessageResponse response = dispatchEvent(msgs, message);
-			wasHandled = !response.hasFailed();
-			errorMessage = response.getErrorMessage();
+			if (response.hasFailed()) {
+				logger.error(String.format("Messages were not handled. Error: %s", response.getErrorMessage()));
+				throw new RuntimeException(response.getErrorMessage()); //Throw the exception so the runtime can Retry the operation.
+			}
 		} catch (Exception e) {
-			errorMessage = "HandleRequest execution error";
-			logger.error(errorMessage, e);
+			logger.error("HandleRequest execution error", e);
 			throw e; 		//Throw the exception so the runtime can Retry the operation.
 		}
 	}
-
-	@Override
-	protected AzureFunctionConfiguration createFunctionConfiguration(String functionName, String className) {
-		return null;
-	}
-	@Override
-	protected AzureFunctionConfiguration createFunctionConfiguration(String className) {
-		return null;
-	}
-
-	@Override
-	protected AzureFunctionConfiguration createFunctionConfiguration() {
-		return null;
-	}
 }
-
-
-
-
-
