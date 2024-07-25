@@ -21,12 +21,6 @@ public class CryptographicHash {
 		}
 	}
 
-	static public CryptographicHash Create(String algorithm) {
-		if (algorithm == "" || algorithm == "SHA512")
-			algorithm = "SHA-512";
-		return new CryptographicHash(algorithm);
-	}
-
 	public String ComputeHash(String data) {
 		try {
 			if (alg == null) alg = MessageDigest.getInstance("SHA-512");
