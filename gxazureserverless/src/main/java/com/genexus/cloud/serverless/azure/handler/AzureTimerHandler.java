@@ -50,37 +50,20 @@ public class AzureTimerHandler extends AzureEventHandler {
 
 			msgs.add(msg);
 
-			String errorMessage;
 
 			SetupServerlessMappings(context.getFunctionName());
+			EventMessageResponse response = dispatchEvent(msgs, TimerInfo);
 
-			try {
-				EventMessageResponse response = dispatchEvent(msgs, TimerInfo);
-				errorMessage = response.getErrorMessage();
-			} catch (Exception e) {
-				errorMessage = "HandleRequest execution error";
-				//logger.error(errorMessage, e);
-				throw e; 		//Throw the exception so the runtime can Retry the operation.
+			if (response.hasFailed()) {
+				logger.error(String.format("Messages were not handled. Error: %s", response.getErrorMessage()));
+				throw new RuntimeException(response.getErrorMessage()); //Throw the exception so the runtime can Retry the operation.
 			}
+
 		}
 		catch (Exception e) {
+			logger.error("Message was not handled.");
 			throw e;
 		}
-	}
-
-
-	@Override
-	protected AzureFunctionConfiguration createFunctionConfiguration(String functionName, String className) {
-		return null;
-	}
-	@Override
-	protected AzureFunctionConfiguration createFunctionConfiguration(String className) {
-		return null;
-	}
-
-	@Override
-	protected AzureFunctionConfiguration createFunctionConfiguration() {
-		return null;
 	}
 	private static class TimerObject{
 

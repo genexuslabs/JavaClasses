@@ -2,9 +2,9 @@ package com.genexus.cloud.serverless;
 
 import com.genexus.ApplicationContext;
 import com.genexus.ModelContext;
-import com.genexus.cloud.serverless.exception.FunctionConfigurationException;
 import com.genexus.cloud.serverless.model.EventMessageResponse;
 import com.genexus.cloud.serverless.model.EventMessages;
+import com.genexus.cloud.serverless.model.EventMessagesList;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.specific.java.Connect;
 import com.genexus.specific.java.LogManager;
@@ -14,11 +14,9 @@ public abstract class ServerlessBaseEventHandler <T extends ServerlessFunctionCo
 
 	protected T functionConfiguration;
 	protected static ILogger logger = null;
-	protected Class entryPointClass = null;
+	protected static Class entryPointClass = null;
 	protected static GXProcedureExecutor executor;
 	private static final String GX_APPLICATION_CLASS = "GXcfg";
-	private static String packageName = null;
-
 
 	protected abstract T createFunctionConfiguration();
 	protected abstract T createFunctionConfiguration(String className);
@@ -42,7 +40,7 @@ public abstract class ServerlessBaseEventHandler <T extends ServerlessFunctionCo
 		Connect.init();
 
 		IniFile config = com.genexus.ConfigFileFinder.getConfigFile(null, "client.cfg", null);
-		packageName = config.getProperty("Client", "PACKAGE", null);
+		String packageName = config.getProperty("Client", "PACKAGE", null);
 		Class cfgClass;
 
 		String cfgClassName = packageName.isEmpty() ? GX_APPLICATION_CLASS : String.format("%s.%s", packageName, GX_APPLICATION_CLASS);
@@ -52,9 +50,6 @@ public abstract class ServerlessBaseEventHandler <T extends ServerlessFunctionCo
 			logger.debug("Finished loading cfgClassName " + cfgClassName);
 			com.genexus.Application.init(cfgClass);
 			ApplicationContext.getInstance().setPoolConnections(true);
-		} catch (ClassNotFoundException e) {
-			logger.error(String.format("Failed to initialize GX AppConfig Class: %s", cfgClassName), e);
-			throw e;
 		} catch (Exception e) {
 			logger.error(String.format("Failed to initialize GX AppConfig Class: %s", cfgClassName), e);
 			throw e;
@@ -63,6 +58,10 @@ public abstract class ServerlessBaseEventHandler <T extends ServerlessFunctionCo
 		InitializeServerlessConfig();
 	}
 	protected EventMessageResponse dispatchEvent(EventMessages eventMessages, String rawMessageBody) throws Exception {
+		EventMessagesList eventMessagesList = new EventMessagesList();
+		return dispatchEvent(eventMessages,eventMessagesList,rawMessageBody);
+	}
+	protected EventMessageResponse dispatchEvent(EventMessages eventMessages, EventMessagesList eventMessagesList, String rawMessageBody) throws Exception {
 		String jsonStringMessages = Helper.toJSONString(eventMessages);
 
 		if (logger.isDebugEnabled()) {
@@ -70,10 +69,10 @@ public abstract class ServerlessBaseEventHandler <T extends ServerlessFunctionCo
 		}
 
 		ModelContext modelContext = new ModelContext(entryPointClass);
-		EventMessageResponse response = null;
+		EventMessageResponse response;
 
 		try {
-			response = executor.execute(modelContext, eventMessages, rawMessageBody);
+			response = executor.execute(modelContext, eventMessages, eventMessagesList, rawMessageBody);
 		} catch (Exception e) {
 			logger.error(String.format("dispatchEventmessages - program '%s' execution error", entryPointClass.getName()), e);
 			throw e;

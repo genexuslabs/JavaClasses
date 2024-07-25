@@ -5,4 +5,6 @@ public class EventMessageSourceType {
 	public static String SERVICE_BUS_MESSAGE = "ServiceBusMessage";
 	public static String TIMER = "Timer";
 	public static String STREAM_MESSAGE = "StreamMessage";
+	public static String BLOB = "Blob";
+	public static String COSMOSDB = "CosmosDB";
 }

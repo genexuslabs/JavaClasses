@@ -35,8 +35,10 @@ public class GlobalConfigurationCache {
 		if (!initialized) {
 			List<AzureFunctionConfiguration> mappings = AzureFunctionConfigurationHelper.getFunctionsMapConfiguration();
 			if (mappings != null) {
-				for (AzureFunctionConfiguration azureFunctionConfiguration : mappings)
-					functionConfigCache.put(azureFunctionConfiguration.getFunctionName(), azureFunctionConfiguration.getGXClassName());
+				for (AzureFunctionConfiguration azureFunctionConfiguration : mappings) {
+					if (azureFunctionConfiguration.isValidConfiguration())
+						functionConfigCache.put(azureFunctionConfiguration.getFunctionName(), azureFunctionConfiguration.getGXClassName());
+				}
 				initialized = true;
 			}
 			else
