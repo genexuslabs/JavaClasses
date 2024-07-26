@@ -74,7 +74,7 @@ public class CertificateTest {
 
 	@Test
 	public void testLoadKey() {
-		X509Certificate cert = CertificateUtil.getCertificate(path_RSA_sha256_2048 + "sha256_cert.Key", "", "");
+		X509Certificate cert = CertificateUtil.getCertificate(path_RSA_sha256_2048 + "sha256_cert.key", "", "");
 		Assert.assertNotNull("testLoadKey", cert);
 	}
 }
