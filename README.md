@@ -25,6 +25,7 @@ These are the source of the GeneXus Standard Classes for Java, valid since GeneX
 | gxexternalproviders | Implements service provider for IBM Cloud, Google, Azure, Amazon
 | gxgeospatial | Geography data type implementation
 | gxodata | OData access
+| gamutils | GAM external object with utilities
 
 The dependencies between the projects are specified in each pom.xml within their directory.
 
