@@ -4,18 +4,23 @@ import com.genexus.Application;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.tuckey.web.filters.urlrewrite.UrlRewriteFilter;
 
 @Configuration
 @EnableWebMvc
 public class GXConfig implements WebMvcConfigurer {
 	public static final ILogger logger = LogManager.getLogger(GXConfig.class);
+	private static final String REWRITE_FILE = "rewrite.config";
 
 	@Override
 	public void configurePathMatch(PathMatchConfigurer configurer) {
@@ -44,5 +49,20 @@ public class GXConfig implements WebMvcConfigurer {
 		catch (ClassNotFoundException e) {
 			logger.error("Error setting context folders ", e);
 		}
+	}
+
+	@Bean
+	public FilterRegistrationBean<UrlRewriteFilter> urlRewriteFilter() {
+		FilterRegistrationBean<UrlRewriteFilter> registrationBean = new FilterRegistrationBean<>();
+		registrationBean.setFilter(new UrlRewriteFilter());
+		registrationBean.addUrlPatterns("/*");
+		if (new ClassPathResource(REWRITE_FILE).exists()) {
+			registrationBean.addInitParameter("modRewriteConf", "true");
+			registrationBean.addInitParameter("confPath", REWRITE_FILE);
+		}
+		else {
+			registrationBean.setEnabled(false);
+		}
+		return registrationBean;
 	}
 }
