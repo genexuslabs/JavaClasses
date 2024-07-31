@@ -165,6 +165,11 @@
             <artifactId>opentelemetry-instrumentation-annotations</artifactId>
             <version>${io.opentelemetry.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-dbcp2</artifactId>
+            <version>2.9.0</version> <!-- Verifica la última versión disponible -->
+        </dependency>
     </dependencies>
 	
 	<build>
