@@ -20,11 +20,15 @@ import java.util.Optional;
 public class GXProcedureExecutor {
 	protected Class<GXProcedure> entryPointClass;
 
-	public int methodSignatureIdx = -1;
+	protected int methodSignatureIdx = -1;
 
 	protected static final String MESSAGE_COLLECTION_INPUT_CLASS_NAME = "com.genexus.genexusserverlessapi.SdtEventMessages";
 	protected static final String MESSAGE_OUTPUT_COLLECTION_CLASS_NAME = "com.genexus.genexusserverlessapi.SdtEventMessageResponse";
 	protected static final String MESSAGE_COLLECTION_LIST_CLASS_NAME = "com.genexus.genexusserverlessapi.SdtEventMessagesList";
+
+	public int getMethodSignatureIdx() {
+		return methodSignatureIdx;
+	}
 
 	public GXProcedureExecutor(Class entryPointClassParms) throws ClassNotFoundException, NotImplementedException {
 		entryPointClass = entryPointClassParms;

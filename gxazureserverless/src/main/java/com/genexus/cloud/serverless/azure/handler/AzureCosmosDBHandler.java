@@ -24,8 +24,11 @@ public class AzureCosmosDBHandler extends AzureEventHandler{
 
 		EventMessages msgs = new EventMessages();
 		EventMessagesList eventMessagesList = new EventMessagesList();
+		String rawMessage= "";
 
-		switch (executor.methodSignatureIdx) {
+		setupServerlessMappings(context.getFunctionName());
+
+		switch (executor.getMethodSignatureIdx()) {
 			case 0:
 				msgs = setupEventMessages(eventId,items);
 				break;
@@ -33,12 +36,12 @@ public class AzureCosmosDBHandler extends AzureEventHandler{
 				eventMessagesList = setupEventMessagesList(items);
 				break;
 			default:
+				rawMessage = Helper.toJSONString(items);
 				break;
 		}
-		SetupServerlessMappings(context.getFunctionName());
 
 		try {
-			EventMessageResponse response = dispatchEvent(msgs, eventMessagesList, Helper.toJSONString(items));
+			EventMessageResponse response = dispatchEvent(msgs, eventMessagesList, rawMessage);
 			if (response.hasFailed()) {
 				logger.error(String.format("Messages were not handled. Error: %s", response.getErrorMessage()));
 				throw new RuntimeException(response.getErrorMessage()); //Throw the exception so the runtime can Retry the operation.

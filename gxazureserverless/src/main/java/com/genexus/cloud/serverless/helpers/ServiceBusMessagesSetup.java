@@ -9,11 +9,10 @@ import com.genexus.cloud.serverless.model.EventMessages;
 import java.util.Date;
 import java.util.List;
 
-public class BuildServiceBusMessages {
-
-	public static EventMessages setupServiceBusMessages(List<ServiceBusReceivedMessage> messages) {
-		EventMessages msgs = new EventMessages();
-
+public class ServiceBusMessagesSetup {
+	public static EventMessages setupservicebuslistmsgs(List<ServiceBusReceivedMessage> messages)
+	{
+		EventMessages eventmessages = new EventMessages();
 		for (ServiceBusReceivedMessage message : messages) {
 
 			EventMessage msg = new EventMessage();
@@ -51,8 +50,8 @@ public class BuildServiceBusMessages {
 
 			msgAtts.add(new EventMessageProperty("State", String.valueOf(message.getState())));
 
-			msgs.add(msg);
-
-		}	return msgs;
+			eventmessages.add(msg);
+		}
+		return eventmessages;
 	}
 }

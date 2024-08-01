@@ -24,26 +24,27 @@ public class AzureQueueHandler extends AzureEventHandler {
 
 		context.getLogger().info("GeneXus Queue trigger handler. Function processed: " + context.getFunctionName() + " Invocation Id: " + context.getInvocationId());
 
+		setupServerlessMappings(context.getFunctionName());
+
 		EventMessages msgs = new EventMessages();
-		EventMessage msg = new EventMessage();
-		msg.setMessageId(id);
-		msg.setMessageSourceType(EventMessageSourceType.QUEUE_MESSAGE);
+		if (executor.getMethodSignatureIdx() == 0) {
+				EventMessage msg = new EventMessage();
+				msg.setMessageId(id);
+				msg.setMessageSourceType(EventMessageSourceType.QUEUE_MESSAGE);
 
-		msg.setMessageDate(new Date());
-		msg.setMessageData(message);
+				msg.setMessageDate(new Date());
+				msg.setMessageData(message);
 
-		List<EventMessageProperty> msgAtts = msg.getMessageProperties();
+				List<EventMessageProperty> msgAtts = msg.getMessageProperties();
 
-		msgAtts.add(new EventMessageProperty("Id", id));
-		msgAtts.add(new EventMessageProperty("DequeueCount", Long.toString(dequeCount)));
-		msgAtts.add(new EventMessageProperty("ExpirationTime", expirationTime));
-		msgAtts.add(new EventMessageProperty("InsertionTime", insertionTime));
-		msgAtts.add(new EventMessageProperty("NextVisibleTime", nextVisibleTime));
-		msgAtts.add(new EventMessageProperty("PopReceipt", popReceipt));
-
-		msgs.add(msg);
-
-		SetupServerlessMappings(context.getFunctionName());
+				msgAtts.add(new EventMessageProperty("Id", id));
+				msgAtts.add(new EventMessageProperty("DequeueCount", Long.toString(dequeCount)));
+				msgAtts.add(new EventMessageProperty("ExpirationTime", expirationTime));
+				msgAtts.add(new EventMessageProperty("InsertionTime", insertionTime));
+				msgAtts.add(new EventMessageProperty("NextVisibleTime", nextVisibleTime));
+				msgAtts.add(new EventMessageProperty("PopReceipt", popReceipt));
+				msgs.add(msg);
+		}
 
 		try {
 			EventMessageResponse response = dispatchEvent(msgs, message);
