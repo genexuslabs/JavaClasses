@@ -10,6 +10,9 @@ import java.util.Date;
 import java.util.List;
 
 public class AzureEventGridHandler  extends AzureEventHandler {
+
+	EventMessages msgs = new EventMessages();
+	String rawMessage = "";
 	public AzureEventGridHandler() throws Exception {
 	}
 
@@ -19,29 +22,11 @@ public class AzureEventGridHandler  extends AzureEventHandler {
 
 		context.getLogger().info("GeneXus Event Grid trigger handler. Function processed: " + context.getFunctionName() + " Invocation Id: " + context.getInvocationId());
 
-		EventMessages msgs = new EventMessages();
-		EventMessage msg = new EventMessage();
-		msg.setMessageId(event.getId());
-		msg.setMessageSourceType(event.getEventType());
-		msg.setMessageVersion(event.getDataVersion());
-
-		msg.setMessageDate(new Date());
-		msg.setMessageData(event.getData().toString());
-
-		List<EventMessageProperty> msgAtts = msg.getMessageProperties();
-
-		msgAtts.add(new EventMessageProperty("Id", event.getId()));
-
-		msgAtts.add(new EventMessageProperty("Subject",event.getSubject()));
-		msgAtts.add(new EventMessageProperty("Topic",event.getTopic()));
-		msgAtts.add(new EventMessageProperty("EventTime",event.getEventTime().toString()));
-
-		msgs.add(msg);
-
-		SetupServerlessMappings(context.getFunctionName());
+		setupServerlessMappings(context.getFunctionName());
+		setupEventGridMessage(event);
 
 		try {
-			EventMessageResponse response = dispatchEvent(msgs, Helper.toJSONString(event));
+			EventMessageResponse response = dispatchEvent(msgs, rawMessage);
 			if (response.hasFailed()) {
 				logger.error(String.format("Messages were not handled. Error: %s", response.getErrorMessage()));
 				throw new RuntimeException(response.getErrorMessage()); //Throw the exception so the runtime can Retry the operation.
@@ -52,5 +37,35 @@ public class AzureEventGridHandler  extends AzureEventHandler {
 			throw e; 		//Throw the exception so the runtime can Retry the operation.
 		}
 
+
+	}
+	protected void setupEventGridMessage(EventGridEvent event) {
+
+		switch (executor.getMethodSignatureIdx()) {
+			case 0:
+				EventMessage msg = new EventMessage();
+				msg.setMessageId(event.getId());
+				msg.setMessageSourceType(event.getEventType());
+				msg.setMessageVersion(event.getDataVersion());
+
+				msg.setMessageDate(new Date());
+				msg.setMessageData(event.getData().toString());
+
+				List<EventMessageProperty> msgAtts = msg.getMessageProperties();
+
+				msgAtts.add(new EventMessageProperty("Id", event.getId()));
+
+				msgAtts.add(new EventMessageProperty("Subject",event.getSubject()));
+				msgAtts.add(new EventMessageProperty("Topic",event.getTopic()));
+				if (event.getEventTime()!= null)
+					msgAtts.add(new EventMessageProperty("EventTime",event.getEventTime().toString()));
+
+				msgs.add(msg);
+
+				break;
+			case 1:
+			case 2:
+				rawMessage = Helper.toJSONString(event);
+		}
 	}
 }

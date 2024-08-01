@@ -6,15 +6,17 @@ import com.genexus.cloud.serverless.model.EventMessageResponse;
 import com.genexus.cloud.serverless.model.EventMessages;
 import com.genexus.cloud.serverless.model.EventMessagesList;
 import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
+
 import com.genexus.specific.java.Connect;
-import com.genexus.specific.java.LogManager;
+
 import com.genexus.util.IniFile;
 
 public abstract class ServerlessBaseEventHandler <T extends ServerlessFunctionConfiguration> {
 
 	protected T functionConfiguration;
 	protected static ILogger logger = null;
-	protected static Class entryPointClass = null;
+	protected Class entryPointClass = null;
 	protected static GXProcedureExecutor executor;
 	private static final String GX_APPLICATION_CLASS = "GXcfg";
 
@@ -36,7 +38,8 @@ public abstract class ServerlessBaseEventHandler <T extends ServerlessFunctionCo
 		initialize();
 	}
 	private void initialize() throws Exception {
-		logger = LogManager.initialize(".", ServerlessBaseEventHandler.class);
+		//logger = LogManager.getLogger(ServerlessBaseEventHandler.class);
+		logger = com.genexus.specific.java.LogManager.initialize(".", ServerlessBaseEventHandler.class);
 		Connect.init();
 
 		IniFile config = com.genexus.ConfigFileFinder.getConfigFile(null, "client.cfg", null);

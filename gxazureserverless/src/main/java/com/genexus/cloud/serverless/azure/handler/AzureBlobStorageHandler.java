@@ -35,7 +35,7 @@ public class AzureBlobStorageHandler extends AzureEventHandler{
 
 		msgs.add(msg);
 
-		SetupServerlessMappings(context.getFunctionName());
+		setupServerlessMappings(context.getFunctionName());
 
 		try {
 			EventMessageResponse response = dispatchEvent(msgs, Base64.getEncoder().encodeToString(content));
