@@ -21,7 +21,6 @@ import java.util.UUID;
 
 public class JwtTest {
 
-	private static String resources;
 	private static String header;
 	private static String payload;
 	private static String kid;
@@ -33,7 +32,7 @@ public class JwtTest {
 
 	@BeforeClass
 	public static void setUp() {
-		resources = System.getProperty("user.dir").concat("/src/test/resources");
+		String resources = System.getProperty("user.dir").concat("/src/test/resources");
 		kid = UUID.randomUUID().toString();
 		header = "{\n" +
 			"  \"alg\": \"RS256\",\n" +

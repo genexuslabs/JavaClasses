@@ -9,14 +9,13 @@ import java.security.cert.X509Certificate;
 
 public class CertificateTest {
 
-	private static String resources;
 	private static String path_RSA_sha256_2048;
 	private static String alias;
 	private static String password;
 
 	@BeforeClass
 	public static void setUp() {
-		resources = System.getProperty("user.dir").concat("/src/test/resources");
+		String resources = System.getProperty("user.dir").concat("/src/test/resources");
 		path_RSA_sha256_2048 = resources.concat("/dummycerts/RSA_sha256_2048/");
 		alias = "1";
 		password = "dummy";
