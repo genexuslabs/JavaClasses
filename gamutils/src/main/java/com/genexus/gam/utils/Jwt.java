@@ -1,21 +1,20 @@
 package com.genexus.gam.utils;
 
-import com.genexus.diagnostics.core.ILogger;
-import com.genexus.diagnostics.core.LogManager;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
 public class Jwt {
 
-	public static final ILogger logger = LogManager.getLogger(Jwt.class);
+	private static Logger logger = LogManager.getLogger(Jwt.class);
 
 	/******** EXTERNAL OBJECT PUBLIC METHODS - BEGIN ********/
 
@@ -47,9 +46,5 @@ public class Jwt {
 
 	/******** EXTERNAL OBJECT PUBLIC METHODS - END ********/
 
-
-	private static boolean extensionIs(String stringPath, String extension) {
-		return extension.equalsIgnoreCase(FilenameUtils.getExtension(stringPath));
-	}
 
 }

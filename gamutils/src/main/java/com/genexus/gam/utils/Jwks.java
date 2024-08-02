@@ -1,13 +1,13 @@
 package com.genexus.gam.utils;
 
-import com.genexus.diagnostics.core.ILogger;
-import com.genexus.diagnostics.core.LogManager;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Jwks {
 
-	public static final ILogger logger = LogManager.getLogger(Jwks.class);
+	private static Logger logger = LogManager.getLogger(Jwks.class);
 
 	public static boolean verifyJWT(String jwksString, String token, String kid) {
 		if (jwksString.isEmpty()) {

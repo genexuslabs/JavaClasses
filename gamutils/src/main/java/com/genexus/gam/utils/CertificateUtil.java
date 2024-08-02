@@ -1,7 +1,7 @@
 package com.genexus.gam.utils;
 
-import com.genexus.diagnostics.core.ILogger;
-import com.genexus.diagnostics.core.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.apache.commons.io.FilenameUtils;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.jcajce.provider.asymmetric.x509.CertificateFactory;
@@ -15,7 +15,7 @@ public enum CertificateUtil {
 
 	crt, cer, pfx, jks, pkcs12, p12, pem, key;
 
-	public static final ILogger logger = LogManager.getLogger(CertificateUtil.class);
+	private static Logger logger = LogManager.getLogger(CertificateUtil.class);
 
 	public static CertificateUtil value(String ext) {
 		switch (ext.toLowerCase().trim()) {
@@ -90,7 +90,7 @@ public enum CertificateUtil {
 		try (FileInputStream inStream = new FileInputStream(path)) {
 			KeyStore ks = KeyStore.getInstance("PKCS12");
 			ks.load(inStream, password.toCharArray());
-			if (alias.equals("") || alias.isEmpty()) {
+			if (alias.isEmpty()) {
 				return (X509Certificate) ks.getCertificate(ks.aliases().nextElement());
 			} else {
 				return (X509Certificate) ks.getCertificate(alias);

@@ -1,18 +1,18 @@
 package com.genexus.gam.utils;
 
-import com.genexus.diagnostics.core.ILogger;
-import com.genexus.diagnostics.core.LogManager;
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.UUID;
 
 public class Jwk {
 
-	public static final ILogger logger = LogManager.getLogger(Jwk.class);
+	private static Logger logger = LogManager.getLogger(Jwk.class);
 
 	public static String generateKeyPair() {
 		try {

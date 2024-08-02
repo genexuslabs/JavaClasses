@@ -1,13 +1,13 @@
 package com.genexus.gam.utils;
 
-import com.genexus.diagnostics.core.ILogger;
-import com.genexus.diagnostics.core.LogManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.security.SecureRandom;
 
 public class Random {
 
-	public static final ILogger logger = LogManager.getLogger(Random.class);
+	private static Logger logger = LogManager.getLogger(Random.class);
 
 	private static SecureRandom instanceRandom() {
 		try {
