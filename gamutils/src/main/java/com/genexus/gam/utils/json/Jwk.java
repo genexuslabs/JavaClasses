@@ -1,4 +1,4 @@
-package com.genexus.gam.utils;
+package com.genexus.gam.utils.json;
 
 import com.nimbusds.jose.Algorithm;
 import com.nimbusds.jose.jwk.JWK;

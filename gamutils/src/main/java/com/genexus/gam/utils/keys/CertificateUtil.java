@@ -1,4 +1,4 @@
-package com.genexus.gam.utils;
+package com.genexus.gam.utils.keys;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -6,6 +6,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.jcajce.provider.asymmetric.x509.CertificateFactory;
 import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.util.encoders.Base64;
 
 import java.io.*;
 import java.security.KeyStore;
@@ -13,7 +14,7 @@ import java.security.cert.X509Certificate;
 
 public enum CertificateUtil {
 
-	crt, cer, pfx, jks, pkcs12, p12, pem, key;
+	crt, cer, pfx, jks, pkcs12, p12, pem, key, b64;
 
 	private static Logger logger = LogManager.getLogger(CertificateUtil.class);
 
@@ -35,6 +36,8 @@ public enum CertificateUtil {
 				return pem;
 			case "key":
 				return key;
+			case "b64":
+				return b64;
 			default:
 				logger.error("Invalid certificate file extension");
 				return null;
@@ -42,11 +45,8 @@ public enum CertificateUtil {
 	}
 
 	public static X509Certificate getCertificate(String path, String alias, String password) {
-		CertificateUtil ext = CertificateUtil.value(FilenameUtils.getExtension(path));
-		if (ext == null) {
-			logger.error("Error reading certificate path");
-			return null;
-		}
+		String extension = FilenameUtils.getExtension(path);
+		CertificateUtil ext = extension.isEmpty() ? CertificateUtil.value("b64"): CertificateUtil.value(extension);
 		switch (ext) {
 			case crt:
 			case cer:
@@ -59,9 +59,24 @@ public enum CertificateUtil {
 			case pem:
 			case key:
 				return loadFromPkcs8(path);
+			case b64:
+				return loadBase64(path);
 			default:
 				logger.error("Invalid certificate file extension");
 				return null;
+		}
+	}
+
+	private static X509Certificate loadBase64(String base64)
+	{
+		logger.debug("loadBase64");
+		try {
+			ByteArrayInputStream byteArray = new ByteArrayInputStream(Base64.decode(base64));
+			CertificateFactory factory = new CertificateFactory();
+			return (X509Certificate) factory.engineGenerateCertificate(byteArray);
+		} catch (Exception e) {
+			logger.error("loadBase64", e);
+			return null;
 		}
 	}
 
