@@ -1,5 +1,7 @@
-package com.genexus.gam.utils;
+package com.genexus.gam.utils.json;
 
+import com.genexus.gam.utils.keys.CertificateUtil;
+import com.genexus.gam.utils.keys.PrivateKeyUtil;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.RSASSASigner;
@@ -42,6 +44,11 @@ public class Jwt {
 
 	public static boolean verify(String path, String alias, String password, String token) {
 		return verify((RSAPublicKey) CertificateUtil.getCertificate(path, alias, password).getPublicKey(), token);
+	}
+
+	public static String create(String path, String alias, String password, String payload, String header)
+	{
+		return create(PrivateKeyUtil.getPrivateKey(path, alias, password), payload, header);
 	}
 
 	/******** EXTERNAL OBJECT PUBLIC METHODS - END ********/

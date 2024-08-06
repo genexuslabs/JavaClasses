@@ -39,7 +39,7 @@ public class HashTest {
 	@Test
 	public void testSha512Random() {
 		for (int i = 0; i < 100; i++) {
-			String value = Random.randomAlphanumeric(15);
+			String value = Random.alphanumeric(15);
 			Assert.assertEquals("random sha512 ", cryptographicHash.ComputeHash(value), GamUtilsEO.sha512(value));
 		}
 	}

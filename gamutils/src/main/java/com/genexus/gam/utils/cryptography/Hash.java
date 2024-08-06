@@ -1,4 +1,4 @@
-package com.genexus.gam.utils;
+package com.genexus.gam.utils.cryptography;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;

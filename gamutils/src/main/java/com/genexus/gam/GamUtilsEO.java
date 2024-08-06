@@ -1,6 +1,11 @@
 package com.genexus.gam;
 
-import com.genexus.gam.utils.*;
+import com.genexus.gam.utils.Random;
+import com.genexus.gam.utils.cryptography.Encryption;
+import com.genexus.gam.utils.cryptography.Hash;
+import com.genexus.gam.utils.json.Jwk;
+import com.genexus.gam.utils.json.Jwks;
+import com.genexus.gam.utils.json.Jwt;
 
 public class GamUtilsEO {
 
@@ -11,15 +16,24 @@ public class GamUtilsEO {
 		return Hash.sha512(plainText);
 	}
 
+	//**ENCRYPTION**//
+
+	public static String AesGcm(String input, String key, String nonce, int macSize, boolean toEncrypt) {
+		return Encryption.AesGcm(input, key, nonce, macSize, toEncrypt);
+	}
+
 	//**RANDOM**//
 	public static String randomAlphanumeric(int length) {
-		return Random.randomAlphanumeric(length);
+		return Random.alphanumeric(length);
 	}
 
 	public static String randomNumeric(int length) {
-		return Random.randomNumeric(length);
+		return Random.numeric(length);
 	}
 
+	public static String randomHexaBits(int bits) {
+		return Random.hexaBits(bits);
+	}
 
 	//**JWK**//
 
@@ -48,6 +62,10 @@ public class GamUtilsEO {
 	//**JWT**//
 	public static boolean verifyJWTWithFile(String path, String alias, String password, String token) {
 		return Jwt.verify(path, alias, password, token);
+	}
+
+	public static String createJWTWithFile(String path, String alias, String password, String payload, String header) {
+		return Jwt.create(path, alias, password, payload, header);
 	}
 
 	/********EXTERNAL OBJECT PUBLIC METHODS  - END ********/
