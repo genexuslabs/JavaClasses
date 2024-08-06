@@ -7,6 +7,7 @@ import com.genexus.GxUserType;
 import com.genexus.ModelContext;
 import com.genexus.cloud.serverless.model.EventMessageResponse;
 import com.genexus.cloud.serverless.model.EventMessages;
+import com.genexus.cloud.serverless.model.EventMessagesList;
 import com.genexus.db.DynamicExecute;
 import org.apache.commons.lang.NotImplementedException;
 
@@ -19,21 +20,27 @@ import java.util.Optional;
 public class GXProcedureExecutor {
 	protected Class<GXProcedure> entryPointClass;
 
-	private Class<?>[][] supportedMethodSignatures = new Class<?>[5][];
-	private int methodSignatureIdx = -1;
+	protected int methodSignatureIdx = -1;
 
 	protected static final String MESSAGE_COLLECTION_INPUT_CLASS_NAME = "com.genexus.genexusserverlessapi.SdtEventMessages";
 	protected static final String MESSAGE_OUTPUT_COLLECTION_CLASS_NAME = "com.genexus.genexusserverlessapi.SdtEventMessageResponse";
+	protected static final String MESSAGE_COLLECTION_LIST_CLASS_NAME = "com.genexus.genexusserverlessapi.SdtEventMessagesList";
+
+	public int getMethodSignatureIdx() {
+		return methodSignatureIdx;
+	}
 
 	public GXProcedureExecutor(Class entryPointClassParms) throws ClassNotFoundException, NotImplementedException {
 		entryPointClass = entryPointClassParms;
+		Class<?>[][] supportedMethodSignatures = new Class<?>[6][];
 		supportedMethodSignatures[0] = new Class<?>[]{Class.forName(MESSAGE_COLLECTION_INPUT_CLASS_NAME), Class.forName(MESSAGE_OUTPUT_COLLECTION_CLASS_NAME)};
 		supportedMethodSignatures[1] = new Class<?>[]{String.class, Class.forName(MESSAGE_OUTPUT_COLLECTION_CLASS_NAME)};
 		supportedMethodSignatures[2] = new Class<?>[]{String.class};
 		supportedMethodSignatures[3] = new Class<?>[]{Class.forName(MESSAGE_OUTPUT_COLLECTION_CLASS_NAME)};
-		supportedMethodSignatures[4] = new Class<?>[]{}; //No inputs, no outputs
+		supportedMethodSignatures[4] = new Class<?>[]{Class.forName(MESSAGE_COLLECTION_LIST_CLASS_NAME), Class.forName(MESSAGE_OUTPUT_COLLECTION_CLASS_NAME)};
+		supportedMethodSignatures[5] = new Class<?>[]{}; //No inputs, no outputs
 
-		Optional<Method> executeMethodOpt = Arrays.stream(this.entryPointClass.getDeclaredMethods()).filter(m -> m.getName() == DynamicExecute.METHOD_EXECUTE).findFirst();
+		Optional<Method> executeMethodOpt = Arrays.stream(this.entryPointClass.getDeclaredMethods()).filter(m -> m.getName().equals(DynamicExecute.METHOD_EXECUTE)).findFirst();
 
 		if (!executeMethodOpt.isPresent()) {
 			throw new NotImplementedException(String.format("EXECUTE Method not implemented on Class '%s'", entryPointClass.getName()));
@@ -46,7 +53,7 @@ public class GXProcedureExecutor {
 			if (supportedMethodSignatures[i].length != parametersTypes.length) {
 				continue;
 			}
-			Class<?>[] listParameters = (Class<?>[]) supportedMethodSignatures[i];
+			Class<?>[] listParameters = supportedMethodSignatures[i];
 			boolean isMatch = true;
 			for (int j = 0; j < listParameters.length && isMatch; j++) {
 				isMatch = listParameters[j] == parametersTypes[j] || listParameters[j] == parametersTypes[j].getComponentType();
@@ -61,7 +68,7 @@ public class GXProcedureExecutor {
 
 	}
 
-	public EventMessageResponse execute(ModelContext modelContext, EventMessages msgs, String rawJsonEvent) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, JsonProcessingException {
+	public EventMessageResponse execute(ModelContext modelContext, EventMessages msgs, EventMessagesList msgsList, String rawJsonEvent) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, JsonProcessingException {
 		EventMessageResponse response = new EventMessageResponse();
 
 		Object[] parameters;
@@ -85,6 +92,14 @@ public class GXProcedureExecutor {
 			case 3:
 				parameters = new Object[]{new Object[]{}};
 				break;
+			case 4:
+				Class<?> inputListClass = Class.forName(MESSAGE_COLLECTION_LIST_CLASS_NAME);
+				Object msgsListInput = inputListClass.getConstructor().newInstance();
+				if (GxUserType.class.isAssignableFrom(inputListClass)) {
+					((GxUserType) msgsListInput).fromJSonString(Helper.toJSONString(msgsList));
+				}
+				parameters = new Object[]{msgsListInput, new Object[]{}};
+				break;
 			default:
 				parameters = new Object[]{};
 				returnsValue = false;
@@ -93,12 +108,12 @@ public class GXProcedureExecutor {
 
 		Object[] paramOutArray = null;
 		if (returnsValue) {
-			parameters[parameters.length - 1] = (Object[]) Array.newInstance(Class.forName(MESSAGE_OUTPUT_COLLECTION_CLASS_NAME), 1);
+			parameters[parameters.length - 1] = Array.newInstance(Class.forName(MESSAGE_OUTPUT_COLLECTION_CLASS_NAME), 1);
 			paramOutArray = (Object[]) parameters[parameters.length - 1];
 			paramOutArray[0] = Class.forName(MESSAGE_OUTPUT_COLLECTION_CLASS_NAME).getConstructor(int.class, ModelContext.class).newInstance(-1, modelContext);
 		}
 
-		com.genexus.db.DynamicExecute.dynamicExecute(modelContext, -1, entryPointClass, "", entryPointClass.getName(), parameters);
+		DynamicExecute.dynamicExecute(modelContext, -1, entryPointClass, "", entryPointClass.getName(), parameters);
 
 		if (paramOutArray != null) {
 			GxUserType handlerOutput = (GxUserType) paramOutArray[0];
