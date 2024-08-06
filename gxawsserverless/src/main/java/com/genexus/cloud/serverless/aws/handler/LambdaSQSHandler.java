@@ -6,11 +6,7 @@ import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import com.genexus.cloud.serverless.*;
-import com.genexus.cloud.serverless.EventMessageProperty;
-import com.genexus.cloud.serverless.EventMessage;
-import com.genexus.cloud.serverless.EventMessageResponse;
-import com.genexus.cloud.serverless.EventMessageSourceType;
-import com.genexus.cloud.serverless.EventMessages;
+import com.genexus.cloud.serverless.model.*;
 
 import java.util.ArrayList;
 import java.util.Date;
