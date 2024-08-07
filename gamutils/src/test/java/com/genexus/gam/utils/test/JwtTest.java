@@ -109,6 +109,13 @@ public class JwtTest {
 	}
 
 	@Test
+	public void testCreateEncryptedPkcs8()
+	{
+		String token = GamUtilsEO.createJWTWithFile(path_RSA_sha256_2048 + "sha256_key.pem", "", password, payload, header);
+		Assert.assertFalse("testCreateEncryptedPkcs8", token.isEmpty());
+	}
+
+	@Test
 	public void testVerifyDer() {
 		boolean result = GamUtilsEO.verifyJWTWithFile(path_RSA_sha256_2048 + "sha256_cert.cer", "", "", tokenFile);
 		Assert.assertTrue("testVerifyDer", result);
