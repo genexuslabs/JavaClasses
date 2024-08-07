@@ -71,4 +71,11 @@ public class PrivateKeyTest {
 		RSAPrivateKey key = PrivateKeyUtil.getPrivateKey(base64, "", "");
 		Assert.assertNotNull("testLoadBase64", key);
 	}
+
+	@Test
+	public void testLoadEncryptedPkcs8()
+	{
+		RSAPrivateKey key = PrivateKeyUtil.getPrivateKey(path_RSA_sha256_2048 + "sha256_key.pem", "", password);
+		Assert.assertNotNull("testLoadEncryptedPkcs8", key);
+	}
 }

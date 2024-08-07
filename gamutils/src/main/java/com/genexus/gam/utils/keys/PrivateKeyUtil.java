@@ -6,16 +6,22 @@ import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.operator.InputDecryptorProvider;
+import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
+import org.bouncycastle.pkcs.jcajce.JcePKCSPBEInputDecryptorProviderBuilder;
 import org.bouncycastle.util.encoders.Base64;
 
+import javax.crypto.EncryptedPrivateKeyInfo;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyFactory;
 import java.security.KeyStore;
+import java.security.Security;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 
@@ -49,7 +55,7 @@ public enum PrivateKeyUtil {
 
 	public static RSAPrivateKey getPrivateKey(String path, String alias, String password) {
 		String extension = FilenameUtils.getExtension(path);
-		PrivateKeyUtil ext = extension.isEmpty() ? PrivateKeyUtil.value("b64"): PrivateKeyUtil.value(extension);
+		PrivateKeyUtil ext = extension.isEmpty() ? PrivateKeyUtil.value("b64") : PrivateKeyUtil.value(extension);
 		switch (ext) {
 			case pfx:
 			case jks:
@@ -58,7 +64,7 @@ public enum PrivateKeyUtil {
 				return loadFromPkcs12(path, alias, password);
 			case pem:
 			case key:
-				return loadFromPkcs8(path);
+				return loadFromPkcs8(path, password);
 			case b64:
 				return loadFromBase64(path);
 			default:
@@ -67,20 +73,18 @@ public enum PrivateKeyUtil {
 		}
 	}
 
-	private static RSAPrivateKey loadFromBase64(String base64)
-	{
+	private static RSAPrivateKey loadFromBase64(String base64) {
 		logger.debug("loadFromBase64");
-		try(ASN1InputStream stream = new ASN1InputStream(Base64.decode(base64))) {
+		try (ASN1InputStream stream = new ASN1InputStream(Base64.decode(base64))) {
 			ASN1Sequence seq = (ASN1Sequence) stream.readObject();
 			return castPrivateKeyInfo(PrivateKeyInfo.getInstance(seq));
-		}catch (Exception e)
-		{
+		} catch (Exception e) {
 			logger.error("loadFromBase64", e);
 			return null;
 		}
 	}
 
-	private static RSAPrivateKey loadFromPkcs8(String path) {
+	private static RSAPrivateKey loadFromPkcs8(String path, String password) {
 		logger.debug("loadFromPkcs8");
 		try (FileReader privateKeyReader = new FileReader(path)) {
 			try (PEMParser parser = new PEMParser(privateKeyReader)) {
@@ -91,6 +95,13 @@ public enum PrivateKeyUtil {
 				} else if (obj instanceof PEMKeyPair) {
 					PEMKeyPair pemKeyPair = (PEMKeyPair) obj;
 					return castPrivateKeyInfo(pemKeyPair.getPrivateKeyInfo());
+				} else if (obj instanceof EncryptedPrivateKeyInfo || obj instanceof PKCS8EncryptedPrivateKeyInfo) {
+					logger.debug("loadFromPkcs8 encrypted private key");
+					Security.addProvider(new BouncyCastleProvider());
+					PKCS8EncryptedPrivateKeyInfo encPrivKeyInfo = (PKCS8EncryptedPrivateKeyInfo) obj;
+					InputDecryptorProvider pkcs8Prov = new JcePKCSPBEInputDecryptorProviderBuilder().setProvider("BC")
+						.build(password.toCharArray());
+					return castPrivateKeyInfo(encPrivKeyInfo.decryptPrivateKeyInfo(pkcs8Prov));
 				} else {
 					logger.error("loadFromPkcs8: Could not load private key");
 					return null;
