@@ -304,7 +304,9 @@ public class POP3SessionJavaMail implements GXInternetConstants, IPOP3Session {
 			.replace("\"", "_")
 			.replace("<", "_")
 			.replace(">", "_")
-			.replace("|", "_");
+			.replace("|", "_")
+			.replace("\n", "_")
+            .replace("\r", "_");
 
 		File file = new File(attachmentsPath + filename);
 
