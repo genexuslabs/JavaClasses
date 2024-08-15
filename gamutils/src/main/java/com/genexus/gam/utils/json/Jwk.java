@@ -44,7 +44,7 @@ public class Jwk {
 		}
 	}
 
-	public static boolean verifyJWT(String jwkString, String token) {
+	/*public static boolean verifyJWT(String jwkString, String token) {
 		if (jwkString.isEmpty()) {
 			logger.error("verifyJWT jwkString parameter is empty");
 			return false;
@@ -83,5 +83,5 @@ public class Jwk {
 			logger.error("createJwt", e);
 			return "";
 		}
-	}
+	}*/
 }
