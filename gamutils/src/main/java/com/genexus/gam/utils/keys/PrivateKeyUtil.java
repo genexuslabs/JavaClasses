@@ -57,7 +57,7 @@ public enum PrivateKeyUtil {
 		}
 	}
 
-	public static RSAPrivateKey getPrivateKey(String path, String alias, String password) throws Exception{
+	public static RSAPrivateKey getPrivateKey(String path, String alias, String password) throws Exception {
 		PrivateKeyUtil ext = PrivateKeyUtil.value(fixType(path));
 		switch (Objects.requireNonNull(ext)) {
 			case pfx:
@@ -78,8 +78,7 @@ public enum PrivateKeyUtil {
 		}
 	}
 
-	private static RSAPrivateKey loadFromJson(String json)
-	{
+	private static RSAPrivateKey loadFromJson(String json) {
 		logger.debug("loadFromJson");
 		try {
 			JWK jwk = JWK.parse(json);
@@ -90,13 +89,24 @@ public enum PrivateKeyUtil {
 		}
 	}
 
-	private static String fixType(String input)
-	{
+	private static String fixType(String input) {
+		logger.debug("fixType");
 		try {
 			String extension = FilenameUtils.getExtension(input);
-			return extension.isEmpty() ? "b64" : extension;
-		}catch (IllegalArgumentException e)
-		{
+			if (extension.isEmpty()) {
+				try {
+					Base64.decode(input);
+					logger.debug("b64");
+					return "b64";
+				} catch (Exception e) {
+					logger.debug("json");
+					return "json";
+				}
+			} else {
+				return extension;
+			}
+		} catch (IllegalArgumentException e) {
+			logger.debug("json");
 			return "json";
 		}
 	}

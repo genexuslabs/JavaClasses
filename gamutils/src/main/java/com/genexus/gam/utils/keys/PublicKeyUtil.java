@@ -25,29 +25,29 @@ public enum PublicKeyUtil {
 	private static final Logger logger = LogManager.getLogger(PublicKeyUtil.class);
 
 
-	public static RSAPublicKey getPublicKey(String path, String alias, String password, String token) throws NullPointerException{
+	public static RSAPublicKey getPublicKey(String path, String alias, String password, String token) throws NullPointerException {
 		logger.debug("getPublicKey");
 		PublicKeyUtil ext = PublicKeyUtil.value(fixType(path));
-			switch (Objects.requireNonNull(ext)) {
-				case crt:
-				case cer:
-					return (RSAPublicKey) Objects.requireNonNull(loadFromDer(path)).getPublicKey();
-				case pfx:
-				case jks:
-				case pkcs12:
-				case p12:
-					return (RSAPublicKey) Objects.requireNonNull(loadFromPkcs12(path, alias, password)).getPublicKey();
-				case pem:
-				case key:
-					return (RSAPublicKey) Objects.requireNonNull(loadFromPkcs8(path)).getPublicKey();
-				case b64:
-					return (RSAPublicKey) Objects.requireNonNull(loadFromBase64(path)).getPublicKey();
-				case json:
-					return loadFromJson(path, token);
-				default:
-					logger.error("Invalid public key file extension");
-					return null;
-			}
+		switch (Objects.requireNonNull(ext)) {
+			case crt:
+			case cer:
+				return (RSAPublicKey) Objects.requireNonNull(loadFromDer(path)).getPublicKey();
+			case pfx:
+			case jks:
+			case pkcs12:
+			case p12:
+				return (RSAPublicKey) Objects.requireNonNull(loadFromPkcs12(path, alias, password)).getPublicKey();
+			case pem:
+			case key:
+				return (RSAPublicKey) Objects.requireNonNull(loadFromPkcs8(path)).getPublicKey();
+			case b64:
+				return (RSAPublicKey) Objects.requireNonNull(loadFromBase64(path)).getPublicKey();
+			case json:
+				return loadFromJson(path, token);
+			default:
+				logger.error("Invalid public key file extension");
+				return null;
+		}
 	}
 
 	private static PublicKeyUtil value(String ext) {
@@ -105,10 +105,23 @@ public enum PublicKeyUtil {
 	}
 
 	private static String fixType(String input) {
+		logger.debug("fixType");
 		try {
 			String extension = FilenameUtils.getExtension(input);
-			return extension.isEmpty() ? "b64" : extension;
+			if (extension.isEmpty()) {
+				try {
+					Base64.decode(input);
+					logger.debug("b64");
+					return "b64";
+				} catch (Exception e) {
+					logger.debug("json");
+					return "json";
+				}
+			} else {
+				return extension;
+			}
 		} catch (IllegalArgumentException e) {
+			logger.debug("json");
 			return "json";
 		}
 	}
