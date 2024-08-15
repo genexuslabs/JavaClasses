@@ -4,8 +4,10 @@ import com.genexus.gam.utils.Random;
 import com.genexus.gam.utils.cryptography.Encryption;
 import com.genexus.gam.utils.cryptography.Hash;
 import com.genexus.gam.utils.json.Jwk;
-import com.genexus.gam.utils.json.Jwks;
 import com.genexus.gam.utils.json.Jwt;
+import com.genexus.gam.utils.json.UnixTimestamp;
+
+import java.util.Date;
 
 public class GamUtilsEO {
 
@@ -45,27 +47,25 @@ public class GamUtilsEO {
 		return Jwk.getPublic(jwkString);
 	}
 
-	public static boolean jwk_verifyJWT(String jwkString, String token) {
-		return Jwk.verifyJWT(jwkString, token);
-	}
-
-	public static String jwk_createJwt(String jwkString, String payload, String header) {
-		return Jwk.createJwt(jwkString, payload, header);
-	}
-
-	//**JWKS**//
-
-	public static boolean jwks_verifyJWT(String jwksString, String token, String kid) {
-		return Jwks.verifyJWT(jwksString, token, kid);
-	}
-
 	//**JWT**//
-	public static boolean verifyJWTWithFile(String path, String alias, String password, String token) {
+	public static boolean verifyJwt(String path, String alias, String password, String token) {
 		return Jwt.verify(path, alias, password, token);
 	}
 
-	public static String createJWTWithFile(String path, String alias, String password, String payload, String header) {
+	public static String createJwt(String path, String alias, String password, String payload, String header) {
 		return Jwt.create(path, alias, password, payload, header);
+	}
+
+	public static long createUnixTimestamp(Date date) {
+		return UnixTimestamp.create(date);
+	}
+
+	public static String getJwtHeader(String token) {
+		return Jwt.getHeader(token);
+	}
+
+	public static String getJwtPayload(String token) {
+		return Jwt.getPayload(token);
 	}
 
 	/********EXTERNAL OBJECT PUBLIC METHODS  - END ********/

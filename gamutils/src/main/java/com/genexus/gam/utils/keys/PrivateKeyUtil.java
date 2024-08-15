@@ -1,5 +1,6 @@
 package com.genexus.gam.utils.keys;
 
+import com.nimbusds.jose.jwk.JWK;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,10 +25,11 @@ import java.security.KeyStore;
 import java.security.Security;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Objects;
 
 public enum PrivateKeyUtil {
 
-	pfx, jks, pkcs12, p12, pem, key, b64;
+	pfx, jks, pkcs12, p12, pem, key, b64, json;
 
 	private static Logger logger = LogManager.getLogger(PrivateKeyUtil.class);
 
@@ -47,16 +49,17 @@ public enum PrivateKeyUtil {
 				return key;
 			case "b64":
 				return b64;
+			case "json":
+				return json;
 			default:
-				logger.error("Invalid certificate file extension");
+				logger.error("Invalid private key file extension");
 				return null;
 		}
 	}
 
-	public static RSAPrivateKey getPrivateKey(String path, String alias, String password) {
-		String extension = FilenameUtils.getExtension(path);
-		PrivateKeyUtil ext = extension.isEmpty() ? PrivateKeyUtil.value("b64") : PrivateKeyUtil.value(extension);
-		switch (ext) {
+	public static RSAPrivateKey getPrivateKey(String path, String alias, String password) throws Exception{
+		PrivateKeyUtil ext = PrivateKeyUtil.value(fixType(path));
+		switch (Objects.requireNonNull(ext)) {
 			case pfx:
 			case jks:
 			case pkcs12:
@@ -67,9 +70,34 @@ public enum PrivateKeyUtil {
 				return loadFromPkcs8(path, password);
 			case b64:
 				return loadFromBase64(path);
+			case json:
+				return loadFromJson(path);
 			default:
 				logger.error("Invalid private key file extension");
 				return null;
+		}
+	}
+
+	private static RSAPrivateKey loadFromJson(String json)
+	{
+		logger.debug("loadFromJson");
+		try {
+			JWK jwk = JWK.parse(json);
+			return jwk.toRSAKey().toRSAPrivateKey();
+		} catch (Exception e) {
+			logger.error("loadFromJson", e);
+			return null;
+		}
+	}
+
+	private static String fixType(String input)
+	{
+		try {
+			String extension = FilenameUtils.getExtension(input);
+			return extension.isEmpty() ? "b64" : extension;
+		}catch (IllegalArgumentException e)
+		{
+			return "json";
 		}
 	}
 
