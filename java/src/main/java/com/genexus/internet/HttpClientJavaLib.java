@@ -14,6 +14,8 @@ import java.util.*;
 import java.net.URI;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLContext;
 
 import org.apache.http.*;
@@ -63,6 +65,27 @@ import com.genexus.CommonUtil;
 import com.genexus.specific.java.*;
 
 public class HttpClientJavaLib extends GXHttpClient {
+
+	private static class ExecutorWithTimeout {
+		public static ExecutorService createAutoShutdownExecutor(long timeout, TimeUnit unit) {
+			ExecutorService executor = Executors.newSingleThreadExecutor();
+			ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+			scheduler.schedule(() -> {
+				executor.shutdown();
+				try {
+					if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
+						executor.shutdownNow();
+					}
+				} catch (InterruptedException ie) {
+					executor.shutdownNow();
+					Thread.currentThread().interrupt();
+				} finally {
+					scheduler.shutdown();
+				}
+			}, timeout, unit);
+			return executor;
+		}
+	}
 
 	public HttpClientJavaLib() {
 		getPoolInstance();
@@ -616,8 +639,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 		finally {
 			if (Application.isJMXEnabled()){
-				if (executor.isShutdown())
-					executor = Executors.newSingleThreadExecutor();
+				executor = ExecutorWithTimeout.createAutoShutdownExecutor(2, TimeUnit.MINUTES);
 				executor.submit(this::displayHTTPConnections);
 			}
 			if (getIsURL()) {
