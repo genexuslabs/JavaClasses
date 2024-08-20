@@ -79,6 +79,7 @@ public class HttpContextWeb extends HttpContext {
 	private static final String SAME_SITE_LAX = "Lax";
 	private static final String SAME_SITE_STRICT = "Strict";
 	private static final String SET_COOKIE = "Set-Cookie";
+	private static String httpForwardedHeadersEnabled = System.getenv("HTTP_FORWARDEDHEADERS_ENABLED");
 
 	public static final int BROWSER_OTHER		= 0;
 	public static final int BROWSER_IE 		= 1;
@@ -632,8 +633,10 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getRemoteAddr() {
+		boolean isEnabled = "true".equalsIgnoreCase(httpForwardedHeadersEnabled);
 		String address = getHeader("X-Forwarded-For");
-		if (address.length() > 0){
+		if (isEnabled && address != null && address.length() > 0) {
+			address = address.split(",")[0].trim();
 			return address;
 		}
 		address = request.getRemoteAddr();
@@ -950,32 +953,28 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getServerName() {
+		boolean isEnabled = "true".equalsIgnoreCase(httpForwardedHeadersEnabled);
 		String host = getHeader("X-Forwarded-Host");
-		if (host.length() > 0){
-			return host;
+		if (isEnabled && host != null && host.length() > 0) {
+			return host.split(",")[0].trim();
 		}
 		String serverNameProperty = ModelContext.getModelContext().getPreferences().getProperty("SERVER_NAME", "");
 		if (!StringUtils.isBlank(serverNameProperty)) {
 			return serverNameProperty;
 		}
-		if (request != null)
-			return request.getServerName();
-
-		return "";
+		return request != null ? request.getServerName() : "";
 	}
 
 	public int getServerPort() {
+		boolean isEnabled = "true".equalsIgnoreCase(httpForwardedHeadersEnabled);
 		String port = getHeader("X-Forwarded-Port");
-		if (port.length() > 0){
-			return Integer.parseInt(port);
+		if (isEnabled && port != null && port.length() > 0) {
+			port = port.split(",")[0].trim();
+				return Integer.parseInt(port);
 		}
 		String serverPortProperty = ModelContext.getModelContext().getPreferences().getProperty("SERVER_PORT", "");
 		if (!StringUtils.isBlank(serverPortProperty)) {
 			return Integer.parseInt(serverPortProperty);
-		}
-		String serverNameProperty = ModelContext.getModelContext().getPreferences().getProperty("SERVER_NAME", "");
-		if (serverNameProperty.indexOf(':') != -1) {
-			return 80;
 		}
 		if (request != null) {
 			return request.getServerPort();
