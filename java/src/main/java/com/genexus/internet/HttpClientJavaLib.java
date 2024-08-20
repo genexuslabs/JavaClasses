@@ -68,8 +68,16 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	private static class ExecutorWithTimeout {
 		public static ExecutorService createAutoShutdownExecutor(long timeout, TimeUnit unit) {
-			ExecutorService executor = Executors.newSingleThreadExecutor();
-			ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+			ExecutorService executor = Executors.newSingleThreadExecutor(runnable -> {
+				Thread thread = new Thread(runnable);
+				thread.setDaemon(true);
+				return thread;
+			});
+			ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1, runnable -> {
+				Thread thread = new Thread(runnable);
+				thread.setDaemon(true);
+				return thread;
+			});
 			scheduler.schedule(() -> {
 				executor.shutdown();
 				try {
@@ -117,7 +125,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 	@Override
 	protected void finalize() {
 		this.closeOpenedStreams();
-		executor.shutdown();
 	}
 
 	private ConnectionKeepAliveStrategy generateKeepAliveStrategy() {
@@ -639,7 +646,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 		finally {
 			if (Application.isJMXEnabled()){
-				executor = ExecutorWithTimeout.createAutoShutdownExecutor(2, TimeUnit.MINUTES);
+				ExecutorService executor = ExecutorWithTimeout.createAutoShutdownExecutor(2, TimeUnit.MINUTES);
 				executor.submit(this::displayHTTPConnections);
 			}
 			if (getIsURL()) {
@@ -653,7 +660,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 	}
 
-	private static ExecutorService executor = Executors.newSingleThreadExecutor();
 	private synchronized void displayHTTPConnections(){
 		Iterator<HttpRoute> iterator = storedRoutes.iterator();
 		while (iterator.hasNext()) {
