@@ -82,7 +82,7 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 
 	//JMX Properties
 	int numberRequest = 0;
-	java.util.Date timeLastRequest;
+	java.util.Date timeLastRequest = new java.util.Date();
 	String sentenceLastRequest;
 	String lastObjectExecuted;
 	boolean finishExecute = true;
