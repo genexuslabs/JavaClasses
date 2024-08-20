@@ -966,15 +966,17 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public int getServerPort() {
-		boolean isEnabled = "true".equalsIgnoreCase(httpForwardedHeadersEnabled);
 		String port = getHeader("X-Forwarded-Port");
-		if (isEnabled && port != null && port.length() > 0) {
-			port = port.split(",")[0].trim();
-				return Integer.parseInt(port);
+		if (port.length() > 0){
+			return Integer.parseInt(port);
 		}
 		String serverPortProperty = ModelContext.getModelContext().getPreferences().getProperty("SERVER_PORT", "");
 		if (!StringUtils.isBlank(serverPortProperty)) {
 			return Integer.parseInt(serverPortProperty);
+		}
+		String serverNameProperty = ModelContext.getModelContext().getPreferences().getProperty("SERVER_NAME", "");
+		if (serverNameProperty.indexOf(':') != -1) {
+			return 80;
 		}
 		if (request != null) {
 			return request.getServerPort();
