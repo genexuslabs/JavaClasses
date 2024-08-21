@@ -24,8 +24,8 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeUtility;
 
 import com.genexus.common.interfaces.SpecificImplementation;
-import com.sun.mail.pop3.POP3Folder;
-import com.sun.mail.pop3.POP3Store;
+import org.eclipse.angus.mail.pop3.POP3Folder;
+import org.eclipse.angus.mail.pop3.POP3Store;
 
 public class POP3SessionJavaMail  implements GXInternetConstants,IPOP3Session
 {
