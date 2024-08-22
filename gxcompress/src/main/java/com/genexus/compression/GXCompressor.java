@@ -11,9 +11,6 @@ import org.apache.commons.compress.archivers.sevenz.SevenZOutputFile;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.io.IOUtils;
 import com.github.junrar.Junrar;
 import com.github.junrar.exception.RarException;
@@ -23,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
@@ -166,41 +164,48 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	private static void compressToZip(File[] files, String outputPath) {
-		try (OutputStream fos = Files.newOutputStream(Paths.get(outputPath));
-			 ZipArchiveOutputStream zos = new ZipArchiveOutputStream(fos)) {
-			zos.setMethod(ZipArchiveOutputStream.DEFLATED);
-			for (File file : files) {
-				if (file.exists()) {
-					addFileToZip(zos, file, "");
-				}
-			}
-		} catch (IOException e) {
-			log.error("Error while compressing to zip", e);
-			throw new RuntimeException("Failed to compress files", e);
+	private static void compressToZip(File[] files, String outputPath) throws IOException {
+		FileOutputStream fos = new FileOutputStream(outputPath);
+		ZipOutputStream zos = new ZipOutputStream(fos);
+		for (File file : files) {
+			addFileToZip("", file, zos);
 		}
+		zos.close();
+		fos.close();
 	}
 
-	private static void addFileToZip(ZipArchiveOutputStream zos, File file, String base) throws IOException {
-		String entryName = base + file.getName();
+	private static void addFileToZip(String parent, File file, ZipOutputStream zos) throws IOException {
+		if (file.isHidden()) {
+			log.error("{} is a hidden file and cannot be compressed", file.getAbsolutePath());
+			return;
+		}
+		String entryName = parent + file.getName();
 		if (file.isDirectory()) {
+			if (!entryName.endsWith("/")) {
+				entryName += "/";
+			}
+			ZipEntry entry = new ZipEntry(entryName);
+			entry.setTime(file.lastModified());
+			zos.putNextEntry(entry);
+			zos.closeEntry();
 			File[] children = file.listFiles();
 			if (children != null) {
-				for (File child : children) {
-					addFileToZip(zos, child, entryName + "/");
+				for (File nestedFile : children) {
+					addFileToZip(entryName, nestedFile, zos);
 				}
 			}
 		} else {
-			ZipArchiveEntry zipEntry = new ZipArchiveEntry(file, entryName);
-			zos.putArchiveEntry(zipEntry);
-			try (FileInputStream fis = new FileInputStream(file)) {
-				byte[] buffer = new byte[1024];
-				int length;
-				while ((length = fis.read(buffer)) >= 0) {
-					zos.write(buffer, 0, length);
-				}
+			FileInputStream fis = new FileInputStream(file);
+			ZipEntry entry = new ZipEntry(entryName);
+			entry.setTime(file.lastModified());
+			zos.putNextEntry(entry);
+			byte[] buffer = new byte[1024];
+			int count;
+			while ((count = fis.read(buffer)) != -1) {
+				zos.write(buffer, 0, count);
 			}
-			zos.closeArchiveEntry();
+			zos.closeEntry();
+			fis.close();
 		}
 	}
 
@@ -277,27 +282,56 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	private static void compressToGzip(File[] files, String outputPath) throws RuntimeException {
-		if (files.length > 1) {
-			throw new IllegalArgumentException("GZIP does not support multiple files. Consider archiving the files first.");
+	private static void compressToGzip(File[] files, String outputPath) throws IOException {
+		File tarFile = new File(outputPath.replace(".gz", ".tar"));
+		FileOutputStream fosTar = new FileOutputStream(tarFile);
+		BufferedOutputStream bosTar = new BufferedOutputStream(fosTar);
+		TarArchiveOutputStream taos = new TarArchiveOutputStream(bosTar);
+		for (File file : files) {
+			addFilesToTar(file, "", taos);
 		}
+		taos.finish();
+		taos.close();
+		bosTar.close();
+		fosTar.close();
+		FileInputStream fis = new FileInputStream(tarFile);
+		FileOutputStream fosGzip = new FileOutputStream(outputPath);
+		GZIPOutputStream gzos = new GZIPOutputStream(fosGzip);
+		byte[] buffer = new byte[1024];
+		int length;
+		while ((length = fis.read(buffer)) > 0) {
+			gzos.write(buffer, 0, length);
+		}
+		gzos.finish();
+		gzos.close();
+		fosGzip.close();
+		fis.close();
+		tarFile.delete();
+	}
 
-		File inputFile = files[0];
-		File outputFile = new File(outputPath);
-
-		try (InputStream in = Files.newInputStream(inputFile.toPath());
-			 FileOutputStream fout = new FileOutputStream(outputFile);
-			 BufferedOutputStream out = new BufferedOutputStream(fout);
-			 GzipCompressorOutputStream gzOut = new GzipCompressorOutputStream(out)) {
-
-			byte[] buffer = new byte[4096];
-			int n;
-			while (-1 != (n = in.read(buffer))) {
-				gzOut.write(buffer, 0, n);
+	private static void addFilesToTar(File file, String parent, TarArchiveOutputStream taos) throws IOException {
+		String entryName = parent + file.getName();
+		if (file.isDirectory()) {
+			File[] children = file.listFiles();
+			if (children != null) {
+				if (!entryName.endsWith("/")) {
+					entryName += "/";
+				}
+				for (File child : children) {
+					addFilesToTar(child, entryName, taos);
+				}
 			}
-		} catch (IOException e) {
-			log.error("Error while compressing to gzip", e);
-			throw new RuntimeException("Error compressing file with GZIP", e);
+		} else {
+			TarArchiveEntry entry = new TarArchiveEntry(file, entryName);
+			taos.putArchiveEntry(entry);
+			BufferedInputStream bis = new BufferedInputStream(Files.newInputStream(file.toPath()));
+			byte[] buffer = new byte[1024];
+			int count;
+			while ((count = bis.read(buffer)) != -1) {
+				taos.write(buffer, 0, count);
+			}
+			bis.close();
+			taos.closeArchiveEntry();
 		}
 	}
 
@@ -420,19 +454,45 @@ public class GXCompressor implements IGXCompressor {
 	}
 
 	private static void compressToJar(File[] files, String outputPath) throws IOException {
-		JarOutputStream jos = new JarOutputStream(Files.newOutputStream(Paths.get(outputPath)));
-		byte[] buffer = new byte[1024];
+		FileOutputStream fos = new FileOutputStream(outputPath);
+		JarOutputStream jos = new JarOutputStream(fos);
 		for (File file : files) {
-			FileInputStream fis = new FileInputStream(file);
-			jos.putNextEntry(new JarEntry(file.getName()));
-			int length;
-			while ((length = fis.read(buffer)) > 0) {
-				jos.write(buffer, 0, length);
-			}
-			fis.close();
-			jos.closeEntry();
+			addFileToJar("", file, jos);
 		}
 		jos.close();
+		fos.close();
+	}
+
+	private static void addFileToJar(String parent, File file, JarOutputStream jos) throws IOException {
+		if (file.isHidden()) {
+			log.error("{} is a hidden file and cannot be compressed", file.getAbsolutePath());
+			return;
+		}
+		String entryName = parent + file.getName();
+		if (file.isDirectory()) {
+			if (!entryName.endsWith("/")) {
+				entryName += "/";
+			}
+			JarEntry entry = new JarEntry(entryName);
+			entry.setTime(file.lastModified());
+			jos.putNextEntry(entry);
+			jos.closeEntry();
+			for (File nestedFile : Objects.requireNonNull(file.listFiles())) {
+				addFileToJar(entryName, nestedFile, jos);
+			}
+		} else {
+			FileInputStream fis = new FileInputStream(file);
+			JarEntry entry = new JarEntry(entryName);
+			entry.setTime(file.lastModified());
+			jos.putNextEntry(entry);
+			byte[] buffer = new byte[1024];
+			int count;
+			while ((count = fis.read(buffer)) != -1) {
+				jos.write(buffer, 0, count);
+			}
+			jos.closeEntry();
+			fis.close();
+		}
 	}
 
 	public static void decompressJar(File jarFile, String outputPath) throws IOException {
