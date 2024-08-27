@@ -127,6 +127,7 @@
         <module>gxftps</module>
         <module>gxcompress</module>
         <module>gamutils</module>
+		<module>gamtotp</module>
     </modules>
 
 	<dependencies>
