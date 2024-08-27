@@ -14,5 +14,6 @@ on:
 jobs:
   # Calls the latest Beta Bot with the current context
   call-workflow:
+    if: github.repository_owner == 'genexuslabs' 
     uses: genexuslabs/auto-prs-merger/.github/workflows/run-beta-bot.yml@master
     secrets: inherit
