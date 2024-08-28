@@ -27,6 +27,12 @@
             <artifactId>totp</artifactId>
             <version>1.7.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.beust</groupId>
+            <artifactId>jcommander</artifactId>
+            <version>1.78</version>
+        </dependency>
+
 
     </dependencies>
 
