@@ -32,6 +32,7 @@ These are the source of the GeneXus Standard Classes for Java, valid since GeneX
 | gxsftp | SecurityAPI's GeneXusSFTP module
 | gamsaml | GAM's External Object, SAML protocol implementation
 | gamutils | GAM external object with utilities
+| gamtotp | GAM external object for RFC6238 implementation
 
 The dependencies between the projects are specified in each pom.xml within their directory.
 
