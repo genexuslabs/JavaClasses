@@ -1,5 +1,6 @@
 package com.genexus.gam;
 
+import com.genexus.gam.utils.EncodingUtil;
 import com.genexus.gam.utils.Random;
 import com.genexus.gam.utils.cryptography.Encryption;
 import com.genexus.gam.utils.cryptography.Hash;
@@ -16,6 +17,10 @@ public class GamUtilsEO {
 	//**HASH**//
 	public static String sha512(String plainText) {
 		return Hash.sha512(plainText);
+	}
+
+	public static String sha256(String plainText) {
+		return Hash.sha256(plainText);
 	}
 
 	//**ENCRYPTION**//
@@ -66,6 +71,11 @@ public class GamUtilsEO {
 
 	public static String getJwtPayload(String token) {
 		return Jwt.getPayload(token);
+	}
+
+	//**ENCODING**//
+	public static String base64ToBase64Url(String base64) {
+		return EncodingUtil.b64ToB64Url(base64);
 	}
 
 	/********EXTERNAL OBJECT PUBLIC METHODS  - END ********/
