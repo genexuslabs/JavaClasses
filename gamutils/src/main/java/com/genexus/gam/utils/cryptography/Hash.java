@@ -9,19 +9,24 @@ import org.bouncycastle.util.encoders.Base64;
 
 import java.nio.charset.StandardCharsets;
 
-public class Hash {
+public enum Hash {
 
-	private static Logger logger = LogManager.getLogger(Hash.class);
+	SHA256, SHA512;
 
-	public static String sha512(String plainText) {
-		logger.debug("sha512");
-		return internalHash(new SHA512Digest(), plainText);
-	}
+	private static final Logger logger = LogManager.getLogger(Hash.class);
 
-	public static String sha256(String plainText)
+	public static String hash(String plainText, Hash hash)
 	{
-		logger.debug("sha256");
-		return internalHash(new SHA256Digest(), plainText);
+		switch (hash)
+		{
+			case SHA256:
+				return internalHash(new SHA256Digest(), plainText);
+			case SHA512:
+				return internalHash(new SHA512Digest(), plainText);
+			default:
+				logger.error("unrecognized hash");
+				return "";
+		}
 	}
 
 	private static String internalHash(Digest digest, String plainText)
