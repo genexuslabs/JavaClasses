@@ -16,11 +16,11 @@ public class GamUtilsEO {
 
 	//**HASH**//
 	public static String sha512(String plainText) {
-		return Hash.sha512(plainText);
+		return Hash.hash(plainText, Hash.SHA512);
 	}
 
 	public static String sha256(String plainText) {
-		return Hash.sha256(plainText);
+		return Hash.hash(plainText, Hash.SHA256);
 	}
 
 	//**ENCRYPTION**//
