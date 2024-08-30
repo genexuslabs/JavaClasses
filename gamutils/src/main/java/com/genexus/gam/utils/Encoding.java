@@ -6,9 +6,9 @@ import org.apache.logging.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.UrlBase64;
 
-public class EncodingUtil {
+public class Encoding {
 
-	private static final Logger logger = LogManager.getLogger(EncodingUtil.class);
+	private static final Logger logger = LogManager.getLogger(Encoding.class);
 
 	public static String b64ToB64Url(String input) {
 		logger.debug("b64ToB64Url");

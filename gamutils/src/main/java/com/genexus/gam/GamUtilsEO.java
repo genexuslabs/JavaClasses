@@ -1,6 +1,6 @@
 package com.genexus.gam;
 
-import com.genexus.gam.utils.EncodingUtil;
+import com.genexus.gam.utils.Encoding;
 import com.genexus.gam.utils.Random;
 import com.genexus.gam.utils.cryptography.Encryption;
 import com.genexus.gam.utils.cryptography.Hash;
@@ -75,7 +75,7 @@ public class GamUtilsEO {
 
 	//**ENCODING**//
 	public static String base64ToBase64Url(String base64) {
-		return EncodingUtil.b64ToB64Url(base64);
+		return Encoding.b64ToB64Url(base64);
 	}
 
 	/********EXTERNAL OBJECT PUBLIC METHODS  - END ********/
