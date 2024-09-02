@@ -64,7 +64,7 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.2</version>
+            <version>2.7</version>
         </dependency>
         <!-- add explicit bouncycastle in Android, version used in Android Flexible client -->
         <!-- keep in sync version here and in Android Flexible client -->
