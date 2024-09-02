@@ -1,0 +1,18 @@
+name: Call Beta Bot
+
+on:
+  # Triggers the workflow on push to beta branch or changes in a pull request to main branch
+  push:
+    branches: [ "beta" ]
+  pull_request:
+    types: [ opened, synchronize, reopened, ready_for_review, closed, labeled, unlabeled ]
+    branches: [ "master" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  call-workflow:
+    if: github.repository_owner == 'genexuslabs'
+    uses: genexuslabs/build-genexus-reusable-workflow/.github/workflows/run-beta-bot.yml@main
+    secrets: inherit
