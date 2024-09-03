@@ -186,7 +186,7 @@ jobs:
     uses: genexuslabs/build-genexus-reusable-workflow/.github/workflows/update-genexus-dep-version.yml@main
     needs: build
     if: github.repository_owner == 'genexuslabs' && needs.build.outputs.SHOULD_DEPLOY == 'true'
-    with:
+    with: 
       VERSION: ${{ needs.build.outputs.MAVEN_VERSION }}
       PACKAGE_NAMES: ${{ needs.build.outputs.PACKAGES_NAME }}
       COMMIT_MESSAGE: ${{ needs.build.outputs.COMMIT_MESSAGE }}
