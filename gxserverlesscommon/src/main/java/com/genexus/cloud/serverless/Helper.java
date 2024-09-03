@@ -1,9 +1,11 @@
 package com.genexus.cloud.serverless;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.genexus.cloud.serverless.model.EventMessage;
+import com.genexus.cloud.serverless.model.EventMessageProperty;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
-import com.genexus.cloud.serverless.model.*;
 
 public class Helper {
 
@@ -12,6 +14,7 @@ public class Helper {
 	public static String toJSONString(Object dtoObject) {
 		try {
 			ObjectMapper mapper = new ObjectMapper();
+			mapper.registerModule(new JavaTimeModule());
 			return mapper.writeValueAsString(dtoObject);
 		}
 		catch (Exception e) {
@@ -20,7 +23,7 @@ public class Helper {
 		return "";
 	}
 
-	public static void addEventMessageProperty(EventMessage msg,  String key, String value) {
+	public static void addEventMessageProperty(EventMessage msg, String key, String value) {
 		msg.getMessageProperties().add(new EventMessageProperty(key, value));
 	}
 }

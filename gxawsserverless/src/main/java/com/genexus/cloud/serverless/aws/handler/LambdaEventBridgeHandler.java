@@ -3,11 +3,8 @@ package com.genexus.cloud.serverless.aws.handler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.genexus.cloud.serverless.Helper;
+import com.genexus.cloud.serverless.model.*;
 import com.genexus.cloud.serverless.exception.FunctionRuntimeException;
-import com.genexus.cloud.serverless.model.EventMessage;
-import com.genexus.cloud.serverless.model.EventMessageResponse;
-import com.genexus.cloud.serverless.model.EventMessageSourceType;
-import com.genexus.cloud.serverless.model.EventMessages;
 import json.org.json.JSONObject;
 import org.apache.http.client.utils.DateUtils;
 

@@ -2,7 +2,9 @@ package com.genexus.cloud.serverless.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class EventMessage {
 	@JsonProperty("EventMessageId")
