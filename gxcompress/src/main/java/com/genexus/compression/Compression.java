@@ -1,25 +1,31 @@
 package com.genexus.compression;
 
+import com.genexus.GXBaseCollection;
+import com.genexus.SdtMessages_Message;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
+import java.util.stream.Stream;
 
 public class Compression {
 	private static final Logger log = org.apache.logging.log4j.LogManager.getLogger(Compression.class);
 
 	private String path;
 	private String format;
-	private List<File> filesToCompress;
+	private GXBaseCollection<SdtMessages_Message>[] messages;
+	private ArrayList<String> filesToCompress;
 
 	public Compression() {}
 
-	public Compression(String path, String format) {
+	public Compression(String path, String format, GXBaseCollection<SdtMessages_Message>[] messages) {
 		this.path = path;
 		this.format = format;
-		this.filesToCompress = new ArrayList<>();
+		this.messages = messages;
+		filesToCompress = new ArrayList<>();
 	}
 
 	public void setPath(String path) {
@@ -31,48 +37,26 @@ public class Compression {
 	}
 
 	public void addFile(String filePath) {
-		File file = new File(filePath);
-		if (file.exists()) {
-			filesToCompress.add(file);
-		} else {
-			log.error("File does not exist: {}", file.getAbsolutePath());
-		}
+		filesToCompress.add(filePath);
 	}
 
 	public void addFolder(String folderPath) {
-		File folder = new File(folderPath);
-		if (folder.exists() && folder.isDirectory()) {
-			File[] files = folder.listFiles();
-			if (files != null) {
-				for (File file : files) {
-					if (file.isDirectory()) {
-						addFolder(file.getAbsolutePath());
-					} else {
-						addFile(file.getAbsolutePath());
-					}
-				}
-			}
-		} else {
-			log.error("Folder does not exist or is not a directory: {}", folder.getAbsolutePath());
+		Path path = Paths.get(folderPath);
+		try (Stream<Path> stream = Files.walk(path)) {
+			stream.filter(Files::isRegularFile)
+				.forEach(p -> addFile(p.toAbsolutePath().toString()));
+		} catch (IOException e) {
+			log.error("Failed to process directory: {}", folderPath, e);
 		}
 	}
 
-	public int save() {
-		if (filesToCompress.isEmpty()) {
-			log.error("No files have been added for compression.");
-			return -4;
-		}
-		Vector<String> paths = new Vector<>();
-		for (File file : filesToCompress) {
-			paths.add(file.getPath());
-		}
-		return GXCompressor.compressFiles(paths, path, format);
+	public Boolean save() {
+		return GXCompressor.compressFiles(filesToCompress, path, format, messages);
 	}
-
 
 	public void clear() {
-		this.path = "";
-		this.format = "";
-		this.filesToCompress = new ArrayList<>();
+		path = "";
+		format = "";
+		filesToCompress = new ArrayList<>();
 	}
 }

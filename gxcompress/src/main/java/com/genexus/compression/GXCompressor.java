@@ -1,5 +1,8 @@
 package com.genexus.compression;
 
+import com.genexus.GXBaseCollection;
+import com.genexus.SdtMessages_Message;
+import com.genexus.StructSdtMessages_Message;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
@@ -8,16 +11,19 @@ import org.apache.commons.compress.archivers.sevenz.SevenZOutputFile;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.io.IOUtils;
+import com.github.junrar.Junrar;
+import com.github.junrar.exception.RarException;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Objects;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
+import java.util.jar.JarOutputStream;
 import java.util.zip.*;
 
 import static org.apache.commons.io.FilenameUtils.getExtension;
@@ -25,129 +31,181 @@ import static org.apache.commons.io.FilenameUtils.getExtension;
 public class GXCompressor implements IGXCompressor {
 
 	private static final Logger log = org.apache.logging.log4j.LogManager.getLogger(GXCompressor.class);
+
+	private static final String GENERIC_ERROR = "An error occurred during the compression/decompression process: ";
+	private static final String NO_FILES_ADDED = "No files have been added for compression.";
+	private static final String FILE_NOT_EXISTS = "File does not exist: ";
+	private static final String FOLDER_NOT_EXISTS = "The specified folder does not exist: ";
+	private static final String UNSUPPORTED_FORMAT = "Unsupported compression/decompression format: ";
+	private static final String EMPTY_FILE = "The selected file is empty: ";
+
+	private static void storageMessages(String error, GXBaseCollection<SdtMessages_Message> messages) {
+		try {
+			StructSdtMessages_Message struct = new StructSdtMessages_Message();
+			struct.setDescription(error);
+			struct.setType((byte) 1);
+			SdtMessages_Message msg = new SdtMessages_Message(struct);
+			messages.add(msg);
+		} catch (Exception e) {
+			log.error("Failed to store the following error message: {}", error, e);
+		}
+
+	}
 	
-	public static int compressFiles(Vector<String> files, String path, String format) {
+	public static Boolean compressFiles(ArrayList<String> files, String path, String format, GXBaseCollection<SdtMessages_Message>[] messages) {
 		if (files.isEmpty()){
-			log.error("No files have been added for compression.");
-			return -4;
+			log.error(NO_FILES_ADDED);
+			storageMessages(NO_FILES_ADDED, messages[0]);
+			return false;
 		}
 		File[] toCompress = new File[files.size()];
 		int index = 0;
 		for (String filePath : files) {
-			toCompress[index++] = new File(filePath);
+			File file = new File(filePath);
+			if (!file.exists()) {
+				log.error("{}{}", FILE_NOT_EXISTS, filePath);
+				storageMessages(FILE_NOT_EXISTS + filePath, messages[0]);
+				continue;
+			}
+			toCompress[index++] = file;
 		}
 		try {
 			CompressionFormat compressionFormat = getCompressionFormat(format);
 			switch (compressionFormat) {
 				case ZIP:
 					compressToZip(toCompress, path);
-					return 0;
+					break;
 				case SEVENZ:
 					compressToSevenZ(toCompress, path);
-					return 0;
+					break;
 				case TAR:
 					compressToTar(toCompress, path);
-					return 0;
+					break;
 				case GZIP:
 					compressToGzip(toCompress, path);
-					return 0;
+					break;
+				case JAR:
+					compressToJar(toCompress, path);
+					break;
+				default:
+					return false;
 			}
+			return true;
 		} catch (IllegalArgumentException iae) {
-			log.error("Unsupported compression format for compression: {}", format);
-			return -3;
+			log.error("{}{}", UNSUPPORTED_FORMAT, format, iae);
+			storageMessages(UNSUPPORTED_FORMAT + format, messages[0]);
+			return false;
 		} catch (Exception e) {
-			log.error("An error occurred during the compression process: ", e);
-			return -1;
+			log.error(GENERIC_ERROR, e);
+			storageMessages(e.getMessage(),  messages[0]);
+			return false;
 		}
-		return -1;
 	}
-
 	
-	public static int compressFolder(String folder, String path, String format) {
+	public static Boolean compressFolder(String folder, String path, String format, GXBaseCollection<SdtMessages_Message>[] messages) {
 		File toCompress = new File(folder);
 		if (!toCompress.exists()) {
-			log.error("The specified folder does not exist: {}", toCompress.getAbsolutePath());
-			return -2;
+			log.error("{}{}", FOLDER_NOT_EXISTS, toCompress.getAbsolutePath());
+			storageMessages(FOLDER_NOT_EXISTS + toCompress.getAbsolutePath(), messages[0]);
+			return false;
 		}
-		Vector<String> vector = new Vector<>();
-		vector.add(folder);
-		return compressFiles(vector, path, format);
+		ArrayList<String> list = new ArrayList<>();
+		list.add(folder);
+		return compressFiles(list, path, format, messages);
 	}
 	
-	public static Compression newCompression(String path, String format) {
-		return new Compression(path, format);
+	public static Compression newCompression(String path, String format, GXBaseCollection<SdtMessages_Message>[] messages) {
+		return new Compression(path, format, messages);
 	}
 
-	public static int decompress(String file, String path) {
+	public static Boolean decompress(String file, String path, GXBaseCollection<SdtMessages_Message>[] messages) {
 		File toCompress = new File(file);
 		if (!toCompress.exists()) {
-			log.error("The specified archive does not exist: {}", toCompress.getAbsolutePath());
-			return -2;
+			log.error("{}{}", FILE_NOT_EXISTS, toCompress.getAbsolutePath());
+			storageMessages(FILE_NOT_EXISTS + toCompress.getAbsolutePath(), messages[0]);
+			return false;
 		}
 		if (toCompress.length() == 0L){
-            log.error("The archive located at {} is empty", path);
-			return -4;
+			log.error("{}{}", EMPTY_FILE, file);
+			storageMessages(EMPTY_FILE + file, messages[0]);
+			return false;
 		}
 		String extension = getExtension(toCompress.getName());
 		try {
 			switch (extension.toLowerCase()) {
 				case "zip":
 					decompressZip(toCompress, path);
-					return 0;
+					break;
 				case "7z":
 					decompress7z(toCompress, path);
-					return 0;
+					break;
 				case "tar":
 					decompressTar(toCompress, path);
-					return 0;
+					break;
 				case "gz":
 					decompressGzip(toCompress, path);
-					return 0;
+					break;
+				case "jar":
+					decompressJar(toCompress, path);
+					break;
+				case "rar":
+					decompressRar(toCompress, path);
+					break;
 				default:
-					log.error("Unsupported compression format for decompression: {}", extension);
-					return -3;
+					log.error("{}{}", UNSUPPORTED_FORMAT, extension);
+					storageMessages( UNSUPPORTED_FORMAT + extension, messages[0]);
+					return false;
 			}
+			return true;
 		} catch (Exception e) {
-			log.error("Decompression failed: {}", e.getMessage());
-			return -1;
+			log.error(GENERIC_ERROR, e);
+			storageMessages(e.getMessage(), messages[0]);
+			return false;
 		}
 	}
 
-	private static void compressToZip(File[] files, String outputPath) {
-		try (OutputStream fos = Files.newOutputStream(Paths.get(outputPath));
-			 ZipArchiveOutputStream zos = new ZipArchiveOutputStream(fos)) {
-			zos.setMethod(ZipArchiveOutputStream.DEFLATED);
-			for (File file : files) {
-				if (file.exists()) {
-					addFileToZip(zos, file, "");
-				}
-			}
-		} catch (IOException e) {
-			log.error("Error while compressing to zip", e);
-			throw new RuntimeException("Failed to compress files", e);
+	private static void compressToZip(File[] files, String outputPath) throws IOException {
+		FileOutputStream fos = new FileOutputStream(outputPath);
+		ZipOutputStream zos = new ZipOutputStream(fos);
+		for (File file : files) {
+			addFileToZip("", file, zos);
 		}
+		zos.close();
+		fos.close();
 	}
 
-	private static void addFileToZip(ZipArchiveOutputStream zos, File file, String base) throws IOException {
-		String entryName = base + file.getName();
+	private static void addFileToZip(String parent, File file, ZipOutputStream zos) throws IOException {
+		if (file.isHidden()) {
+			log.error("{} is a hidden file and cannot be compressed", file.getAbsolutePath());
+			return;
+		}
+		String entryName = parent + file.getName();
 		if (file.isDirectory()) {
+			if (!entryName.endsWith("/")) {
+				entryName += "/";
+			}
+			ZipEntry entry = new ZipEntry(entryName);
+			entry.setTime(file.lastModified());
+			zos.putNextEntry(entry);
+			zos.closeEntry();
 			File[] children = file.listFiles();
 			if (children != null) {
-				for (File child : children) {
-					addFileToZip(zos, child, entryName + "/");
+				for (File nestedFile : children) {
+					addFileToZip(entryName, nestedFile, zos);
 				}
 			}
 		} else {
-			ZipArchiveEntry zipEntry = new ZipArchiveEntry(file, entryName);
-			zos.putArchiveEntry(zipEntry);
-			try (FileInputStream fis = new FileInputStream(file)) {
-				byte[] buffer = new byte[1024];
-				int length;
-				while ((length = fis.read(buffer)) >= 0) {
-					zos.write(buffer, 0, length);
-				}
+			FileInputStream fis = new FileInputStream(file);
+			ZipEntry entry = new ZipEntry(entryName);
+			entry.setTime(file.lastModified());
+			zos.putNextEntry(entry);
+			byte[] buffer = new byte[1024];
+			int count;
+			while ((count = fis.read(buffer)) != -1) {
+				zos.write(buffer, 0, count);
 			}
-			zos.closeArchiveEntry();
+			zos.closeEntry();
+			fis.close();
 		}
 	}
 
@@ -224,27 +282,56 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	private static void compressToGzip(File[] files, String outputPath) throws RuntimeException {
-		if (files.length > 1) {
-			throw new IllegalArgumentException("GZIP does not support multiple files. Consider archiving the files first.");
+	private static void compressToGzip(File[] files, String outputPath) throws IOException {
+		File tarFile = new File(outputPath.replace(".gz", ".tar"));
+		FileOutputStream fosTar = new FileOutputStream(tarFile);
+		BufferedOutputStream bosTar = new BufferedOutputStream(fosTar);
+		TarArchiveOutputStream taos = new TarArchiveOutputStream(bosTar);
+		for (File file : files) {
+			addFilesToTar(file, "", taos);
 		}
+		taos.finish();
+		taos.close();
+		bosTar.close();
+		fosTar.close();
+		FileInputStream fis = new FileInputStream(tarFile);
+		FileOutputStream fosGzip = new FileOutputStream(outputPath);
+		GZIPOutputStream gzos = new GZIPOutputStream(fosGzip);
+		byte[] buffer = new byte[1024];
+		int length;
+		while ((length = fis.read(buffer)) > 0) {
+			gzos.write(buffer, 0, length);
+		}
+		gzos.finish();
+		gzos.close();
+		fosGzip.close();
+		fis.close();
+		tarFile.delete();
+	}
 
-		File inputFile = files[0];
-		File outputFile = new File(outputPath);
-
-		try (InputStream in = Files.newInputStream(inputFile.toPath());
-			 FileOutputStream fout = new FileOutputStream(outputFile);
-			 BufferedOutputStream out = new BufferedOutputStream(fout);
-			 GzipCompressorOutputStream gzOut = new GzipCompressorOutputStream(out)) {
-
-			byte[] buffer = new byte[4096];
-			int n;
-			while (-1 != (n = in.read(buffer))) {
-				gzOut.write(buffer, 0, n);
+	private static void addFilesToTar(File file, String parent, TarArchiveOutputStream taos) throws IOException {
+		String entryName = parent + file.getName();
+		if (file.isDirectory()) {
+			File[] children = file.listFiles();
+			if (children != null) {
+				if (!entryName.endsWith("/")) {
+					entryName += "/";
+				}
+				for (File child : children) {
+					addFilesToTar(child, entryName, taos);
+				}
 			}
-		} catch (IOException e) {
-			log.error("Error while compressing to gzip", e);
-			throw new RuntimeException("Error compressing file with GZIP", e);
+		} else {
+			TarArchiveEntry entry = new TarArchiveEntry(file, entryName);
+			taos.putArchiveEntry(entry);
+			BufferedInputStream bis = new BufferedInputStream(Files.newInputStream(file.toPath()));
+			byte[] buffer = new byte[1024];
+			int count;
+			while ((count = bis.read(buffer)) != -1) {
+				taos.write(buffer, 0, count);
+			}
+			bis.close();
+			taos.closeArchiveEntry();
 		}
 	}
 
@@ -329,12 +416,8 @@ public class GXCompressor implements IGXCompressor {
 				if (!outputFile.toPath().startsWith(targetDir)) {
 					throw new IOException("Entry is outside of the target directory: " + entry.getName());
 				}
-				if (entry.isDirectory()) {
-					if (!outputFile.exists()) {
-						if (!outputFile.mkdirs()) {
-							throw new IOException("Failed to create directory: " + outputFile);
-						}
-					}
+				if (entry.isDirectory() && !outputFile.exists() && !outputFile.mkdirs()) {
+					throw new IOException("Failed to create directory: " + outputFile);
 				} else {
 					File parent = outputFile.getParentFile();
 					if (!parent.exists() && !parent.mkdirs()) {
@@ -370,13 +453,86 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
+	private static void compressToJar(File[] files, String outputPath) throws IOException {
+		FileOutputStream fos = new FileOutputStream(outputPath);
+		JarOutputStream jos = new JarOutputStream(fos);
+		for (File file : files) {
+			addFileToJar("", file, jos);
+		}
+		jos.close();
+		fos.close();
+	}
+
+	private static void addFileToJar(String parent, File file, JarOutputStream jos) throws IOException {
+		if (file.isHidden()) {
+			log.error("{} is a hidden file and cannot be compressed", file.getAbsolutePath());
+			return;
+		}
+		String entryName = parent + file.getName();
+		if (file.isDirectory()) {
+			if (!entryName.endsWith("/")) {
+				entryName += "/";
+			}
+			JarEntry entry = new JarEntry(entryName);
+			entry.setTime(file.lastModified());
+			jos.putNextEntry(entry);
+			jos.closeEntry();
+			for (File nestedFile : Objects.requireNonNull(file.listFiles())) {
+				addFileToJar(entryName, nestedFile, jos);
+			}
+		} else {
+			FileInputStream fis = new FileInputStream(file);
+			JarEntry entry = new JarEntry(entryName);
+			entry.setTime(file.lastModified());
+			jos.putNextEntry(entry);
+			byte[] buffer = new byte[1024];
+			int count;
+			while ((count = fis.read(buffer)) != -1) {
+				jos.write(buffer, 0, count);
+			}
+			jos.closeEntry();
+			fis.close();
+		}
+	}
+
+	public static void decompressJar(File jarFile, String outputPath) throws IOException {
+		if (!jarFile.exists()) {
+			throw new IOException("The jar file does not exist.");
+		}
+		File outputDir = new File(outputPath);
+		if (!outputDir.exists() && !outputDir.mkdirs()) {
+			throw new IOException("Failed to create output directory.");
+		}
+		try (JarInputStream jis = new JarInputStream(Files.newInputStream(jarFile.toPath()))) {
+			JarEntry entry;
+			byte[] buffer = new byte[1024];
+			while ((entry = jis.getNextJarEntry()) != null) {
+				File outputFile = new File(outputDir, entry.getName());
+				if (entry.isDirectory() && !outputFile.exists() && !outputFile.mkdirs()) {
+					throw new IOException("Failed to create directory " + outputFile.getAbsolutePath());
+				} else {
+					try (FileOutputStream fos = new FileOutputStream(outputFile)) {
+						int len;
+						while ((len = jis.read(buffer)) > 0) {
+							fos.write(buffer, 0, len);
+						}
+					}
+				}
+				jis.closeEntry();
+			}
+		}
+	}
+
+	public static void decompressRar(File rarFile, String destinationPath) throws RarException, IOException{
+		Junrar.extract(rarFile, new File(destinationPath));
+	}
+
 	private static CompressionFormat getCompressionFormat(String format) {
 		try {
 			return CompressionFormat.valueOf(format.toUpperCase());
 		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException("Invalid compression format: " + format);
+			throw new IllegalArgumentException("Invalid compression format: " + format + ". Valid formats are (upper or lower): GZIP,TAR, ZIP, SEVENZ and JAR");
 		}
 	}
 
 }
-
