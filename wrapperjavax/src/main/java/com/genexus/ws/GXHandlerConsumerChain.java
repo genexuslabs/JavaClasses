@@ -3,8 +3,6 @@ package com.genexus.ws;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Properties;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 import javax.xml.namespace.QName;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMResult;
@@ -14,14 +12,12 @@ import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 import javax.xml.soap.*;
 import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.apache.wss4j.common.crypto.Crypto;
-import org.apache.wss4j.common.crypto.CryptoFactory;
-import org.apache.wss4j.dom.message.WSSecEncrypt;
-import org.apache.wss4j.dom.message.WSSecHeader;
-import org.apache.wss4j.dom.message.WSSecSignature;
-import org.apache.wss4j.dom.message.WSSecTimestamp;
-
+import org.apache.ws.security.components.crypto.Crypto;
+import org.apache.ws.security.components.crypto.CryptoFactory;
+import org.apache.ws.security.message.WSSecEncrypt;
+import org.apache.ws.security.message.WSSecHeader;
+import org.apache.ws.security.message.WSSecSignature;
+import org.apache.ws.security.message.WSSecTimestamp;
 import org.w3c.dom.*;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
@@ -160,8 +156,8 @@ public class GXHandlerConsumerChain implements SOAPHandler<SOAPMessageContext>
 				Document doc = messageToDocument(messageContext.getMessage());
 
 				//Security header
-				WSSecHeader secHeader = new WSSecHeader(doc);
-				secHeader.insertSecurityHeader();
+				WSSecHeader secHeader = new WSSecHeader();
+				secHeader.insertSecurityHeader(doc);
 				Document signedDoc = null;
 
 				//Signature
@@ -172,7 +168,7 @@ public class GXHandlerConsumerChain implements SOAPHandler<SOAPMessageContext>
 					signatureProperties.put("org.apache.ws.security.crypto.merlin.keystore.password", wsSignature.getKeystore().getPassword());
 					signatureProperties.put("org.apache.ws.security.crypto.merlin.file", wsSignature.getKeystore().getSource());
 					Crypto signatureCrypto = CryptoFactory.getInstance(signatureProperties);
-					WSSecSignature sign = new WSSecSignature(doc);
+					WSSecSignature sign = new WSSecSignature();
 					sign.setKeyIdentifierType(wsSignature.getKeyIdentifierType());
 					sign.setUserInfo(wsSignature.getAlias(), wsSignature.getKeystore().getPassword());
 					if (wsSignature.getCanonicalizationalgorithm() != null)
@@ -181,13 +177,13 @@ public class GXHandlerConsumerChain implements SOAPHandler<SOAPMessageContext>
 						sign.setDigestAlgo(wsSignature.getDigest());
 					if (wsSignature.getSignaturealgorithm() != null)
 						sign.setSignatureAlgorithm(wsSignature.getSignaturealgorithm());
-					signedDoc = sign.build( signatureCrypto);
+					signedDoc = sign.build(doc, signatureCrypto, secHeader);
 
 					if (expirationTimeout > 0)
 					{
-						WSSecTimestamp timestamp = new WSSecTimestamp(secHeader);
+						WSSecTimestamp timestamp = new WSSecTimestamp();
 						timestamp.setTimeToLive(expirationTimeout);
-						signedDoc = timestamp.build();
+						signedDoc = timestamp.build(signedDoc, secHeader);
 					}
 				}
 
@@ -199,19 +195,14 @@ public class GXHandlerConsumerChain implements SOAPHandler<SOAPMessageContext>
 					encryptionProperties.put("org.apache.ws.security.crypto.merlin.keystore.password", wsEncryption.getKeystore().getPassword());
 					encryptionProperties.put("org.apache.ws.security.crypto.merlin.file", wsEncryption.getKeystore().getSource());
 					Crypto encryptionCrypto = CryptoFactory.getInstance(encryptionProperties);
+					WSSecEncrypt builder = new WSSecEncrypt();
+					builder.setUserInfo(wsEncryption.getAlias(), wsEncryption.getKeystore().getPassword());
+					builder.setKeyIdentifierType(wsEncryption.getKeyIdentifierType());
 					if (signedDoc == null)
 					{
 						signedDoc = doc;
 					}
-					WSSecEncrypt builder = new WSSecEncrypt(signedDoc);
-					builder.setUserInfo(wsEncryption.getAlias(), wsEncryption.getKeystore().getPassword());
-					builder.setKeyIdentifierType(wsEncryption.getKeyIdentifierType());
-					//using wss4j default encryption algorithm AES128-CBC
-					KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-					keyGenerator.init(128);
-					SecretKey key = keyGenerator.generateKey();
-
-					builder.build(encryptionCrypto, key);
+					builder.build(signedDoc, encryptionCrypto, secHeader);
 				}
 
 				Document securityDoc = doc;
