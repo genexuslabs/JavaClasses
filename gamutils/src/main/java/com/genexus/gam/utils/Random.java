@@ -1,13 +1,13 @@
 package com.genexus.gam.utils;
 
-import com.genexus.diagnostics.core.ILogger;
-import com.genexus.diagnostics.core.LogManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.security.SecureRandom;
 
 public class Random {
 
-	public static final ILogger logger = LogManager.getLogger(Random.class);
+	private static Logger logger = LogManager.getLogger(Random.class);
 
 	private static SecureRandom instanceRandom() {
 		try {
@@ -18,7 +18,7 @@ public class Random {
 		}
 	}
 
-	public static String randomAlphanumeric(int length) {
+	public static String alphanumeric(int length) {
 		SecureRandom random = instanceRandom();
 		if (random == null) {
 			logger.error("randomAlphanumeric SecureRandom is null");
@@ -31,7 +31,7 @@ public class Random {
 		return sb.toString();
 	}
 
-	public static String randomNumeric(int length) {
+	public static String numeric(int length) {
 		SecureRandom random = instanceRandom();
 		if (random == null) {
 			logger.error("randomNumeric SecureRandom is null");
@@ -42,5 +42,21 @@ public class Random {
 			sb.append(random.nextInt(10));
 		}
 		return sb.toString();
+	}
+
+	public static String hexaBits(int bits)
+	{
+		SecureRandom random = instanceRandom();
+		if (random == null) {
+			logger.error("randomNumeric SecureRandom is null");
+			return "";
+		}
+		byte[] values = new byte[bits / 8];
+		random.nextBytes(values);
+		StringBuilder sb = new StringBuilder();
+		for (byte b : values) {
+			sb.append(String.format("%02x", b));
+		}
+		return sb.toString().replaceAll("\\s", "");
 	}
 }

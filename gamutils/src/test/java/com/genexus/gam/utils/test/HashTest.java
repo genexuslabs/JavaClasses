@@ -39,8 +39,18 @@ public class HashTest {
 	@Test
 	public void testSha512Random() {
 		for (int i = 0; i < 100; i++) {
-			String value = Random.randomAlphanumeric(15);
+			String value = Random.alphanumeric(15);
 			Assert.assertEquals("random sha512 ", cryptographicHash.ComputeHash(value), GamUtilsEO.sha512(value));
+		}
+	}
+	@Test
+	public void testSha256()
+	{
+		String[] arrayInputs = new String[] {one, two, three, four, five};
+		String[] arrayRes= new String[] {"dpLDrTVAu4A8Ags67mbNiIcSMjTqDG5xQ8Ct1z/0Me0=", "P8TM/nRYcOLA2Z9x8w/wZWyN7dQcwdfT03aw2+aF4vM=", "i1udsME9skJWyCmqNkqpDG0uujGLkjKkq5MTuVTTVV8=", "BO+vCA9aPnThwp0cpqSFaTgsu80yTo1Z0rg+8hwDnwA=", "IisL1R/O9+ZcLmLbLtZUVwE7q1a+b6/rGe4R1FMVPIA="};
+		for(int i = 0; i < arrayInputs.length; i++)
+		{
+			Assert.assertEquals("testSha256 error", GamUtilsEO.sha256(arrayInputs[i]), arrayRes[i]);
 		}
 	}
 

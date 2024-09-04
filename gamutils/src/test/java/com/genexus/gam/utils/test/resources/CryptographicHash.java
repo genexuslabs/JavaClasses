@@ -11,7 +11,7 @@ public class CryptographicHash {
 
 	// private HashAlgorithm alg;
 	public CryptographicHash(String algorithm) {
-		if (algorithm == "" || algorithm == "SHA512")
+		if (algorithm.equals("SHA512"))
 			algorithm = "SHA-512";
 		// Supports algorithm = {MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512}
 		try {
