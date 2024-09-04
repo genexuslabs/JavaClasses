@@ -1,3 +1,6 @@
+#vscode
+.vscode/
+
 # Maven
 log/
 target/
@@ -5,6 +8,9 @@ target/
 # Intellij IDEA
 .idea/
 *.iml
+
+#VSCode
+.vscode/
 
 # Mac OS
 .DS_Store

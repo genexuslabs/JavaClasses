@@ -19,6 +19,10 @@
 			<artifactId>gxcommon</artifactId>
 			<version>${project.version}</version>
             <exclusions>
+                <exclusion>  <!-- declare the exclusion here -->
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                </exclusion>
                 <exclusion>  <!-- exclude common io from android -->
                     <groupId>commons-io</groupId>
                     <artifactId>commons-io</artifactId>

@@ -18,16 +18,19 @@
 		<changelist>-SNAPSHOT</changelist>
 		<sha1/>
 
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jersey.javax.version>2.34</jersey.javax.version>
 		<jersey.jakarta.version>3.0.4</jersey.jakarta.version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<poi.version>5.2.2</poi.version>
 		<jackson.version>2.14.1</jackson.version>
+		<poi.version>5.2.2</poi.version>
 		<junit.version>4.13.2</junit.version>
 		<software.awssdk.version>2.21.27</software.awssdk.version>
 		<software.azure.cosmos.version>4.42.0</software.azure.cosmos.version>
 		<log4j.version>2.21.1</log4j.version>
+		<io.opentelemetry.version>1.28.0</io.opentelemetry.version>
+        <org.bouncycastle.version>1.78.1</org.bouncycastle.version>
         <io.opentelemetry.version>1.28.0</io.opentelemetry.version>
+        <commons.compress.version>1.26.0</commons.compress.version>
 	</properties>
 
 	<organization>
@@ -85,8 +88,7 @@
 		<module>wrapperjavax</module>
 		<module>wrapperjakarta</module>
 		<module>wrappercommon</module>
-        <module>java</module>
-		<module>gxcryptocommon</module>
+		<module>java</module>
 		<module>gxdynamiccall</module>
 		<module>gxmail</module>
 		<module>gxmaps</module>
@@ -100,20 +102,32 @@
 		<module>gxwebsocket</module>
 		<module>gxwebsocketjakarta</module>
 		<module>gxawsserverless</module>
+      		<module>gxserverlesscommon</module>
+	        <module>gxazureserverless</module>
 		<module>androidreports</module>
 		<module>gxqueue</module>
 		<module>gxqueue-awssqs</module>
 		<module>gxqueue-azure</module>
-		<module>gxcache-redis</module>
-		<module>gxcache-memcached</module>
 		<module>gxcloudstorage-common</module>
 		<module>gxcloudstorage-awss3-v1</module>
+		<module>gxcloudstorage-awss3-v2</module>
 		<module>gxcloudstorage-googlecloudstorage</module>
 		<module>gxcloudstorage-azureblob</module>
 		<module>gxcloudstorage-ibmcos</module>
 		<module>gxcloudstorage-tests</module>
-        <module>gxobservability</module>
-        <module>gxcloudstorage-awss3-v2</module>
+		<module>gxcache-redis</module>
+		<module>gxcache-memcached</module>
+		<module>gxobservability</module>
+        <module>securityapicommons</module>
+        <module>gxjwt</module>
+        <module>gxcryptography</module>
+        <module>gxxmlsignature</module>
+        <module>gamsaml</module>
+        <module>gxsftp</module>
+        <module>gxftps</module>
+        <module>gxcompress</module>
+        <module>gamutils</module>
+		<module>gamtotp</module>
     </modules>
 
 	<dependencies>
@@ -260,6 +274,7 @@
 			</plugin>
 		</plugins>
 	</build>
+
 	<profiles>
 		<profile>
 			<id>ci-cd</id>
@@ -292,7 +307,7 @@
 									<goal>jar</goal>
 								</goals>
 								<configuration>
-                					<failOnError>false</failOnError>
+									<failOnError>false</failOnError>
 									<quiet>true</quiet>
 								</configuration>
 							</execution>
@@ -329,13 +344,13 @@
 			<distributionManagement>
 				<repository>
 					<id>azure-devops</id>
-	  				<name>Azure Artifacts</name>
-	  				<url>https://pkgs.dev.azure.com/genexuslabs/3361ab3b-96bc-4a69-a37a-f2b255ff2f35/_packaging/releases/maven/v1</url>
+					<name>Azure Artifacts</name>
+					<url>https://pkgs.dev.azure.com/genexuslabs/3361ab3b-96bc-4a69-a37a-f2b255ff2f35/_packaging/releases/maven/v1</url>
 				</repository>
 				<snapshotRepository>
 					<id>azure-devops</id>
-	  				<name>Azure Artifacts</name>
-	  				<url>https://pkgs.dev.azure.com/genexuslabs/3361ab3b-96bc-4a69-a37a-f2b255ff2f35/_packaging/snapshots/maven/v1</url>
+					<name>Azure Artifacts</name>
+					<url>https://pkgs.dev.azure.com/genexuslabs/3361ab3b-96bc-4a69-a37a-f2b255ff2f35/_packaging/snapshots/maven/v1</url>
 				</snapshotRepository>
 			</distributionManagement>
 		</profile>
@@ -346,13 +361,13 @@
 			<distributionManagement>
 				<repository>
 					<id>ossrh</id>
-	  				<name>Maven Central</name>
-	  				<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+					<name>Maven Central</name>
+					<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 				</repository>
 				<snapshotRepository>
 					<id>ossrh</id>
-	  				<name>Maven Central - Snapshots Repository</name>
-	  				<url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+					<name>Maven Central - Snapshots Repository</name>
+					<url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
 				</snapshotRepository>
 			</distributionManagement>
 			<build>
@@ -368,7 +383,7 @@
 							<autoReleaseAfterClose>true</autoReleaseAfterClose>
 						</configuration>
 					</plugin>
-				 </plugins>
+				</plugins>
 			</build>
 		</profile>
 	</profiles>

@@ -23,12 +23,7 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>gxwrapperjavax</artifactId>
 			<version>${project.version}</version> 			
-		</dependency>
-    <dependency>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>gxcryptocommon</artifactId>
-        <version>${project.version}</version>
-    </dependency>		
+		</dependency>		
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>gxmail</artifactId>
@@ -168,6 +163,11 @@
             <groupId>io.opentelemetry.instrumentation</groupId>
             <artifactId>opentelemetry-instrumentation-annotations</artifactId>
             <version>${io.opentelemetry.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-dbcp2</artifactId>
+            <version>2.9.0</version>
         </dependency>
     </dependencies>
 	

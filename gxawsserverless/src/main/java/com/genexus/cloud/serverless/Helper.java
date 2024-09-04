@@ -1,10 +1,9 @@
 package com.genexus.cloud.serverless;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.genexus.cloud.serverless.model.EventMessage;
-import com.genexus.cloud.serverless.model.EventMessageProperty;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
+import com.genexus.cloud.serverless.model.*;
 
 public class Helper {
 
