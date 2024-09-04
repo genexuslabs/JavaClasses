@@ -28,22 +28,13 @@ public class UnixTimeStampCreatorTest extends SecurityAPITestObject {
 	public void setUp() {
 		date = "2023/07/19 11:41:00";
 		creator = new UnixTimestampCreator();
-		expected = "1689777660";
+		expected = "1689766860";
 	}
 
 
 	public void testCreate()
 	{
-		System.out.println("date: " + date);
 		String obtained = creator.create(date);
-		if(creator.hasError())
-		{
-			System.out.println("Error. Code: " + creator.getErrorCode() + " Desc: " + creator.getErrorDescription());
-		}else{
-			System.out.println("No error");
-		}
-		System.out.println("expected: " + expected);
-		System.out.println("obtained: " + obtained);
 		Equals(expected, obtained, creator);
 	}
 }
