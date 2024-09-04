@@ -127,9 +127,8 @@ public class GXProperties implements IGxJSONSerializable {
 		if (!s.isEmpty()) {
 			try {
 				JSONObjectWrapper jObj = new JSONObjectWrapper(s);
-				Iterator < String > keys = jObj.keys();
-				while (keys.hasNext()) {
-					String key = keys.next();
+				for (Map.Entry<String, Object> e : jObj.entrySet()) {
+					String key = e.getKey();
 					this.put(key, jObj.get(key).toString());
 				}
 				return true;

@@ -5,7 +5,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import org.json.JSONException;
 import org.json.JSONObject;
-public class JSONObjectWrapper extends JSONObject{
+public class JSONObjectWrapper extends JSONObject implements java.io.Serializable{
 	private Map<String, Object> map;
 
 	public JSONObjectWrapper() {
@@ -15,25 +15,27 @@ public class JSONObjectWrapper extends JSONObject{
 	}
 
 	public JSONObjectWrapper(String string) {
-		super(string);
+		super(new JSONTokenerWrapper(string));
+		if (map == null)
+			map = new LinkedHashMap<String, Object>();
+	}
+
+	public JSONObjectWrapper(JSONTokenerWrapper token) {
+		super(token);
 		if (map == null)
 			map = new LinkedHashMap<String, Object>();
 	}
 
 	public JSONObjectWrapper(Map<?,?> m) {
 		super(m);
-		if (map == null)
-			map = new LinkedHashMap<String, Object>();
-		else {
-			map = new LinkedHashMap<String, Object>(m.size());
-			for (final Entry<?, ?> e : m.entrySet()) {
-				if (e.getKey() == null) {
-					throw new NullPointerException("Null key.");
-				}
-				final Object value = e.getValue();
-				if (value != null)
-					this.map.put(String.valueOf(e.getKey()), value);
+		map = new LinkedHashMap<String, Object>(m.size());
+		for (final Entry<?, ?> e : m.entrySet()) {
+			if (e.getKey() == null) {
+				throw new NullPointerException("Null key.");
 			}
+			final Object value = e.getValue();
+			if (value != null)
+				this.map.put(String.valueOf(e.getKey()), value);
 		}
 	}
 

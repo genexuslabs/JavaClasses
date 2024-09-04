@@ -3,16 +3,18 @@ import com.genexus.*;
 import com.genexus.common.classes.AbstractGXFile;
 import com.genexus.ModelContext;
 import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.json.JSONArrayWrapper;
+import com.genexus.json.JSONObjectWrapper;
 import com.genexus.util.GXProperties;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import com.genexus.json.JSONObjectWrapper;
 
 import java.io.Serializable;
 import java.util.Iterator;
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.genexus.internet.IGxJSONAble;
@@ -39,7 +41,7 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 	private static final String GET_METHOD_NAME = "getgxTv_";
 	private static final String SET_METHOD_NAME = "setgxTv_";
 	private JSONObjectWrapper jsonObj = new JSONObjectWrapper();
-	private JSONArray jsonArr = new JSONArray();
+	private JSONArrayWrapper jsonArr = new JSONArrayWrapper();
 	protected boolean isArrayObject = false;
 	protected String arrayItemName;
 	protected String type;
@@ -239,7 +241,11 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 				}
 				else if (isArrayObject)
 				{
-					jsonArr = (JSONArray)((IGxJSONAble)prop).GetJSONObject(includeState);
+					Object obj = ((IGxJSONAble)prop).GetJSONObject(includeState);
+					if (obj instanceof JSONArrayWrapper)
+						jsonArr = (JSONArrayWrapper)obj;
+					else
+						jsonArr = new JSONArrayWrapper((JSONArray)obj);
 				}
 				else
 				{
@@ -291,14 +297,17 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 	}
 
 	/*Recorre el iterador y pone los _N del campo al final asi no se pierden los valores null cuando se asigna el valor al campo*/
-	private Iterator getFromJSONObjectOrderIterator(Iterator it)
+	private Iterator getFromJSONObjectOrderIterator(Iterator<Map.Entry<String, Object>> it)
 	{
 		java.util.Vector<String> v = new java.util.Vector<String>();
 		java.util.Vector<String> vAtEnd = new java.util.Vector<String>();
 		String name;
         while(it.hasNext())
         {
-        	name = (String)it.next();
+			/* Even though the map entry value is never used and the method could receive just the map's keys list,
+				its entries set provides the keys in a specific order required by this method */
+			Map.Entry<String, Object> entry = it.next();
+        	name = entry.getKey();
 	        String map = getJsonMap(name);
 	        String className = CommonUtil.classNameNoPackage(this.getClass());
 			Method getMethod = getMethod(GET_METHOD_NAME + className + "_" + (map != null? map : name));
@@ -356,10 +365,11 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 		{
 			if (obj instanceof JSONObject)
 				obj = new JSONObjectWrapper((JSONObject)obj);
-			Iterator it = getFromJSONObjectOrderIterator(((JSONObjectWrapper)obj).keys());
-			while(it.hasNext())
+			Iterator objIterator = getJSONObjectIterator((JSONObjectWrapper) obj);
+			Iterator modifiedObjIterator = getFromJSONObjectOrderIterator(objIterator);
+			while(modifiedObjIterator.hasNext())
 			{
-				name = (String)it.next();
+				name = (String)modifiedObjIterator.next();
 				map = getJsonMap(name);
 				setMethod = getMethod(SET_METHOD_NAME + className + "_" + (map != null? map : name));
 				getMethod = getMethod(GET_METHOD_NAME + className + "_" + (map != null? map : name));
@@ -426,6 +436,14 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 			}
 		}
 	}
+
+	private Iterator<Map.Entry<String, Object>> getJSONObjectIterator(JSONObjectWrapper obj) {
+		if (SpecificImplementation.JsonSerialization == null)
+			return obj.entrySet().iterator();
+
+		return SpecificImplementation.JsonSerialization.getJSONObjectIterator(obj);
+	}
+
         private Object convertValueToParmType(Object value, Class parmClass) throws Exception
         {
             if (parmClass.getName().equals("java.util.Date"))
@@ -469,7 +487,7 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
                     else
                     {
 						if (gxColl.getElementsType() == java.math.BigDecimal.class)
-							gxColl.addBase(DecimalUtil.stringToDec(jsonArray.getString(i)));
+							gxColl.addBase(DecimalUtil.stringToDec(jsonArray.get(i).toString()));
 						else
                         	gxColl.addBase(currObj);
                     }
