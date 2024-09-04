@@ -15,7 +15,7 @@ import com.genexus.platform.INativeFunctions;
 import com.genexus.platform.NativeFunctions;
 import com.genexus.util.*;
 
-import org.json.JSONObject;
+import json.org.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 
 public final class GXutil

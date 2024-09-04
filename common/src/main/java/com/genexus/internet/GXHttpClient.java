@@ -1,9 +1,11 @@
 package com.genexus.internet;
 
+import HTTPClient.ParseException;
+import HTTPClient.URI;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
-import org.json.JSONException;
-import com.genexus.json.JSONObjectWrapper;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -13,7 +15,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import java.net.URISyntaxException;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -141,17 +142,17 @@ public abstract class GXHttpClient implements IHttpClient{
 		return this.includeCookies;
 	}
 
-	@Override
-	public void setURL(String stringURL) {
+	public void setURL(String stringURL)
+	{
 		try
 		{
-			java.net.URI url = new java.net.URI(stringURL);
+			URI url = new URI(stringURL);
 			setHost(url.getHost());
 			setPort(url.getPort());
 			setBaseURL(url.getPath());
 			setSecure(url.getScheme().equalsIgnoreCase("https") ? 1 : 0);
 		}
-		catch (URISyntaxException e)
+		catch (ParseException e)
 		{
 			System.err.println("E " + e + " " + stringURL);
 			e.printStackTrace();
@@ -806,7 +807,7 @@ public abstract class GXHttpClient implements IHttpClient{
 
 		private boolean isJsonString(String value){
 			try {
-				JSONObjectWrapper json = new JSONObjectWrapper(value);
+				JSONObject json = new JSONObject(value);
 				return true;
 			} catch (JSONException e) {
 				return false;

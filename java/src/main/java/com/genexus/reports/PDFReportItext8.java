@@ -805,7 +805,7 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 		return blockElement.createRendererSubTree().setParent(document.getRenderer()).layout(new LayoutContext(new LayoutArea(page, htmlRectangle))).getOccupiedArea().getBBox().getHeight();
 	}
 
-	private class YPosition {
+	public class YPosition {
 		float currentYPosition;
 
 		public YPosition(float currentYPosition) {

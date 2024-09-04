@@ -1,7 +1,7 @@
 package com.genexus.db.driver;
 
-import com.genexus.json.JSONObjectWrapper;
-import org.json.JSONException;
+import json.org.json.JSONObject;
+import json.org.json.JSONException;
 
 public class ExternalProviderMetadata
 {
@@ -57,7 +57,7 @@ public class ExternalProviderMetadata
 	{
 		try
 		{
-			JSONObjectWrapper jsonString = new JSONObjectWrapper();
+			JSONObject jsonString = new JSONObject();
 			jsonString.put("Provider", new Integer(getProvider()));
 			jsonString.put("Bucket", getBucket());
 			jsonString.put("Folder", getFolder());
@@ -74,8 +74,8 @@ public class ExternalProviderMetadata
 	public void fromJson(String jsonString)
 	{
 		try
-		{
-			JSONObjectWrapper jsonObject = new JSONObjectWrapper(jsonString);
+		{		
+			JSONObject jsonObject = new JSONObject(jsonString);
 			setProvider(new Integer((Integer)jsonObject.get("Provider")).intValue());
 			setBucket((String)jsonObject.get("Bucket"));
 			setFolder((String)jsonObject.get("Folder"));

@@ -22,10 +22,10 @@ import com.genexus.common.interfaces.IGXWebRow;
 
 import com.genexus.webpanels.HttpContextWeb;
 import com.genexus.webpanels.WebUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import com.genexus.json.JSONObjectWrapper;
+import json.org.json.IJsonFormattable;
+import json.org.json.JSONArray;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 
 public class HttpAjaxContext extends HttpContextWeb
 {
@@ -38,13 +38,13 @@ public class HttpAjaxContext extends HttpContextWeb
 	public static final ILogger logger = LogManager.getLogger(HttpAjaxContext.class);
 	private JSONArray AttValues = new JSONArray();
 	private JSONArray PropValues = new JSONArray();
-	protected JSONObjectWrapper HiddenValues = new JSONObjectWrapper();
-	protected JSONObjectWrapper Messages = new JSONObjectWrapper();
-	private JSONObjectWrapper WebComponents = new JSONObjectWrapper();
-	private Hashtable<Integer, JSONObjectWrapper> LoadCommands = new Hashtable<>();
+	protected JSONObject HiddenValues = new JSONObject();
+	protected JSONObject Messages = new JSONObject();
+	private JSONObject WebComponents = new JSONObject();
+	private Hashtable<Integer, JSONObject> LoadCommands = new Hashtable<>();
 	private ArrayList Grids = new ArrayList();
 	private Hashtable<String, Integer> DicGrids = new Hashtable<String, Integer>();
-	private JSONObjectWrapper ComponentObjects = new JSONObjectWrapper();
+	private JSONObject ComponentObjects = new JSONObject();
 	protected GXAjaxCommandCollection commands = new GXAjaxCommandCollection();
 	protected IGXWebRow _currentGridRow = null;
 	protected JSONArray StylesheetsToLoad = new JSONArray();
@@ -218,7 +218,7 @@ public class HttpAjaxContext extends HttpContextWeb
 	{
 		try
 		{
-			JSONObjectWrapper JSONRow = new JSONObjectWrapper();
+			JSONObject JSONRow = new JSONObject();
 			JSONRow.put("grid", SId);
 			JSONRow.put("props", row.getParentGrid().GetJSONObject());
 			JSONRow.put("values", row.getParentGrid().GetValues());
@@ -233,7 +233,7 @@ public class HttpAjaxContext extends HttpContextWeb
 	{
 		try
 		{
-			JSONObjectWrapper JSONData = new JSONObjectWrapper();
+			JSONObject JSONData = new JSONObject();
 			JSONData.put("grid", SId);
 			JSONData.put("count", lines);
 			appendAjaxCommand("addlines", JSONData);
@@ -279,7 +279,7 @@ public class HttpAjaxContext extends HttpContextWeb
 		commands.AppendCommand(new GXAjaxCommand(cmdType, cmdData));
 	}
 
-	public void appendLoadData(int SId, JSONObjectWrapper Data) throws JSONException
+	public void appendLoadData(int SId, JSONObject Data) throws JSONException
 	{
 		LoadCommands.put(SId, Data);
 	}
@@ -292,7 +292,7 @@ public class HttpAjaxContext extends HttpContextWeb
 
 	public void setExternalObjectProperty(String CmpContext, boolean IsMasterPage, String containerName, String propertyName, Object value)
 	{
-		JSONObjectWrapper obj = new JSONObjectWrapper();
+			JSONObject obj = new JSONObject();
 			try
 			{
 				obj.put("CmpContext", CmpContext);
@@ -307,7 +307,7 @@ public class HttpAjaxContext extends HttpContextWeb
 
 	public void executeExternalObjectMethod(String CmpContext, boolean IsMasterPage, String containerName, String methodName, Object[] parms, boolean isEvent)
 	{
-		JSONObjectWrapper obj = new JSONObjectWrapper();
+			JSONObject obj = new JSONObject();
 			try
 			{
 				obj.put("CmpContext", CmpContext);
@@ -333,7 +333,7 @@ public class HttpAjaxContext extends HttpContextWeb
 
 	protected void addPrintReportCommand(String reportFile, String printerRule)
 	{
-		JSONObjectWrapper obj = new JSONObjectWrapper();
+		JSONObject obj = new JSONObject();
 		try
 		{
 			obj.put("reportFile", reportFile);
@@ -516,7 +516,7 @@ public class HttpAjaxContext extends HttpContextWeb
 		AddStylesheetsToLoad();
 		if (isSpaRequest())
 		{
-			writeTextNL("<script>gx.ajax.saveJsonResponse(" + WebUtils.htmlEncode(JSONObjectWrapper.quote(getJSONResponse()), true) + ");</script>");
+			writeTextNL("<script>gx.ajax.saveJsonResponse(" + WebUtils.htmlEncode(JSONObject.quote(getJSONResponse()), true) + ");</script>");
 		}
 		else
 		{
@@ -803,21 +803,21 @@ public class HttpAjaxContext extends HttpContextWeb
 		return false;
 	}
 
-	private JSONObjectWrapper getGxObject(JSONArray array, String CmpContext, boolean IsMasterPage)
+	private JSONObject getGxObject(JSONArray array, String CmpContext, boolean IsMasterPage)
 	{
 		try
 		{
-			JSONObjectWrapper obj;
+			JSONObject obj;
 			int len = array.length();
 			for(int i=0; i<len; i++)
 			{
-				obj = (JSONObjectWrapper)array.getJSONObject(i);
+				obj = array.getJSONObject(i);
 				if (obj.getBoolean("IsMasterPage") == IsMasterPage &&  obj.getString("CmpContext").equals(CmpContext))
 				{
 					return obj;
 				}
 			}
-			obj = new JSONObjectWrapper();
+			obj = new JSONObject();
 			obj.put("CmpContext", CmpContext);
 			obj.put("IsMasterPage", new Boolean(IsMasterPage).toString());
 			array.put(obj);
@@ -836,7 +836,7 @@ public class HttpAjaxContext extends HttpContextWeb
 			if (!isSpaRequest() || (isSpaRequest() && (CmpContext == null || CmpContext.trim().length() == 0)))
 			{
 				try {
-					JSONObjectWrapper obj = getGxObject(AttValues, CmpContext, IsMasterPage);
+					JSONObject obj = getGxObject(AttValues, CmpContext, IsMasterPage);
 					if (obj != null)
 					{
 						obj.put(AttName, AttValue);
@@ -867,7 +867,7 @@ public class HttpAjaxContext extends HttpContextWeb
                 if (!isSpaRequest() || (isSpaRequest() && (CmpContext == null || CmpContext.trim().length() == 0)))
                 {
                   try {
-					  JSONObjectWrapper obj = getGxObject(AttValues, CmpContext, IsMasterPage);
+                      JSONObject obj = getGxObject(AttValues, CmpContext, IsMasterPage);
 					  if (obj != null && (!isUndefinedOutParam( AttName, SdtObj) || dynAjaxEventContext.isParmModified(AttName, SdtObj)))
 					  {
                         if (SdtObj instanceof IGxJSONAble)
@@ -893,17 +893,15 @@ public class HttpAjaxContext extends HttpContextWeb
             return HiddenValues.toString();
         }
 
-        private JSONObjectWrapper getControlProps(JSONObjectWrapper obj, String Control)
+        private JSONObject getControlProps(JSONObject obj, String Control)
         {
-			JSONObjectWrapper ctrlProps = null;
+            JSONObject ctrlProps = null;
             try {
-				JSONObject crtPropsAux = obj.optJSONObject(Control);
-                if (crtPropsAux == null) {
-                    ctrlProps = new JSONObjectWrapper();
+                ctrlProps = obj.optJSONObject(Control);
+                if (ctrlProps == null) {
+                    ctrlProps = new JSONObject();
                     obj.put(Control, ctrlProps);
                 }
-				else
-					ctrlProps = (JSONObjectWrapper)crtPropsAux;
             } catch (JSONException e) {
             }
             return ctrlProps;
@@ -933,10 +931,10 @@ public class HttpAjaxContext extends HttpContextWeb
                         {
                             formCaption = Value;
                         }
-						JSONObjectWrapper obj = getGxObject(PropValues, CmpContext, IsMasterPage);
+                        JSONObject obj = getGxObject(PropValues, CmpContext, IsMasterPage);
                         if (obj != null)
                         {
-							JSONObjectWrapper ctrlProps = getControlProps(obj, Control);
+                            JSONObject ctrlProps = getControlProps(obj, Control);
                             if (ctrlProps != null)
                             {
                             ctrlProps.put(Property, Value);
@@ -1197,11 +1195,6 @@ public class HttpAjaxContext extends HttpContextWeb
 					}
 					else
 					{
-						if (parm instanceof Date) {
-							LocalUtil localUtil = Application.getClientLocalUtil();
-							inputs.put(localUtil.format((Date)parm, localUtil.getDateFormat() + " " + localUtil.getTimeFormat()));
-						}
-						else
 							inputs.put(parm);
 					}
 			}
@@ -1336,7 +1329,7 @@ public class HttpAjaxContext extends HttpContextWeb
 	public void ajax_rsp_command_close() {
 		bCloseCommand = true;
 		try {
-			JSONObjectWrapper closeParms = new JSONObjectWrapper();
+			JSONObject closeParms = new JSONObject();
 			closeParms.put("values", ObjArrayToJSONArray(this.getWebReturnParms()));
 			closeParms.put("metadata", ObjArrayToJSONArray(this.getWebReturnParmsMetadata()));
 			appendAjaxCommand("close", closeParms);
@@ -1375,7 +1368,7 @@ public class HttpAjaxContext extends HttpContextWeb
 				if (win != null) {
 					appendAjaxCommand("popup", win.GetJSONObject());
 				} else if (!Redirected) {
-					JSONObjectWrapper jsonCmd = new JSONObjectWrapper();
+					JSONObject jsonCmd = new JSONObject();
 					jsonCmd.put("url", url);
 					if (this.wjLocDisableFrm > 0) {
 						jsonCmd.put("forceDisableFrm", this.wjLocDisableFrm);
@@ -1620,9 +1613,9 @@ public class HttpAjaxContext extends HttpContextWeb
 				return data;
 		}
 
-		public JSONObjectWrapper getJSONObject()
+		public JSONObject getJSONObject()
 		{
-			JSONObjectWrapper jObj = new JSONObjectWrapper();
+				JSONObject jObj = new JSONObject();
 				try {
 					jObj.put(type, data);
 				} catch (JSONException ex) {
@@ -1662,11 +1655,11 @@ public class HttpAjaxContext extends HttpContextWeb
 
 	public class GXUsercontrolMethod implements IGxJSONAble
 	{
-		JSONObjectWrapper wrapper;
+		JSONObject wrapper;
 
 		public GXUsercontrolMethod(String CmpContext, boolean IsMasterPage, String containerName, String methodName, String output, Object[] parms)
 		{
-			wrapper = new JSONObjectWrapper();
+			wrapper = new JSONObject();
 			AddObjectProperty("CmpContext", CmpContext);
 			AddObjectProperty("IsMasterPage", new Boolean(IsMasterPage));
 			AddObjectProperty("Control", containerName);
@@ -1712,7 +1705,7 @@ public class HttpAjaxContext extends HttpContextWeb
 			return wrapper;
 		}
 
-		public void FromJSONObject(Object obj)
+		public void FromJSONObject(IJsonFormattable obj)
 		{
 		}
 

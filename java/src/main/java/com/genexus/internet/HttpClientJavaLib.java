@@ -23,7 +23,6 @@ import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.entity.ContentType;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.auth.AuthSchemeProvider;
@@ -41,6 +40,7 @@ import org.apache.http.config.SocketConfig;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.ByteArrayEntity;
@@ -79,7 +79,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		if(connManager == null) {
 			Registry<ConnectionSocketFactory> socketFactoryRegistry =
 				RegistryBuilder.<ConnectionSocketFactory>create()
-					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https",getSSLSecureInstance())
+					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
 					.build();
 			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
 			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_SIZE", "1000")));
@@ -210,6 +210,23 @@ public class HttpClientJavaLib extends GXHttpClient {
 		getheadersToSend().clear();
 	}
 
+	@Override
+	public void setURL(String stringURL) {
+		try
+		{
+			URI url = new URI(stringURL);
+			setHost(url.getHost());
+			setPort(url.getPort());
+			setBaseURL(url.getPath());
+			setSecure(url.getScheme().equalsIgnoreCase("https") ? 1 : 0);
+		}
+		catch (URISyntaxException e)
+		{
+			System.err.println("E " + e + " " + stringURL);
+			e.printStackTrace();
+		}
+	}
+
 	private String getURLValid(String url) {
 		try
 		{
@@ -284,7 +301,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	private CookieStore setAllStoredCookies() {
 		CookieStore cookiesToSend = new BasicCookieStore();
-		if (!com.genexus.ModelContext.getModelContext().isNullHttpContext()) { 	// Caso de ejecucion de varias instancia de HttpClientJavaLib, por lo que se obtienen cookies desde sesion web del browser
+		if (!ModelContext.getModelContext().isNullHttpContext()) { 	// Caso de ejecucion de varias instancia de HttpClientJavaLib, por lo que se obtienen cookies desde sesion web del browser
 			if (getIncludeCookies()) {
 				String selfWebCookie = ((HttpContextWeb) ModelContext.getModelContext().getHttpContext()).getCookie(SET_COOKIE);
 				if (!selfWebCookie.isEmpty())
@@ -307,14 +324,14 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	private void SetCookieAtr(CookieStore cookiesToSend) {
 		if (cookiesToSend != null) {
-			if (com.genexus.ModelContext.getModelContext().isNullHttpContext()) {
+			if (ModelContext.getModelContext().isNullHttpContext()) {
 				for (Cookie c : cookiesToSend.getCookies())
 					cookies.addCookie(c);
 			} else {
 				try {
-					com.genexus.webpanels.HttpContextWeb webcontext = ((com.genexus.webpanels.HttpContextWeb) com.genexus.ModelContext.getModelContext().getHttpContext());
+					HttpContextWeb webcontext = ((HttpContextWeb) ModelContext.getModelContext().getHttpContext());
 
-					Header[] headers = this.response.getHeaders("Set-Cookie");
+					Header[] headers = this.response.getHeaders(SET_COOKIE);
 					if (headers.length > 0) {
 						String webcontextCookieHeader = "";
 						for (Header header : headers) {
@@ -329,9 +346,9 @@ public class HttpClientJavaLib extends GXHttpClient {
 							}
 						}
 						webcontextCookieHeader = webcontextCookieHeader.trim().substring(0,webcontextCookieHeader.length()-2);	// Se quita el espacio y la coma al final
-						webcontext.setCookie("Set-Cookie",webcontextCookieHeader,"",CommonUtil.nullDate(),"",this.getSecure());
+						webcontext.setCookie(SET_COOKIE,webcontextCookieHeader,"",CommonUtil.nullDate(),"",this.getSecure());
 					}
-					com.genexus.ModelContext.getModelContext().setHttpContext(webcontext);
+					ModelContext.getModelContext().setHttpContext(webcontext);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -464,7 +481,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			}
 
 			url = setPathUrl(url);
-			url = com.genexus.CommonUtil.escapeUnsafeChars(url);
+			url = CommonUtil.escapeUnsafeChars(url);
 
 			if (getSecure() == 1)   // Se completa con esquema y host
 				url = url.startsWith("https://") ? url : "https://" + getHost()+ (getPort() != 443?":"+getPort():"")+ url;		// La lib de HttpClient agrega el port
@@ -472,7 +489,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 				url = url.startsWith("http://") ? url : "http://" + getHost() + ":" + (getPort() == -1? "80" :getPort()) + url;
 
 			try (CloseableHttpClient httpClient = this.httpClientBuilder.build()) {
-
 				if (method.equalsIgnoreCase("GET")) {
 					HttpGetWithBody httpget = new HttpGetWithBody(url.trim());
 					httpget.setConfig(reqConfig);
@@ -500,7 +516,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 					ByteArrayEntity dataToSend;
 					if (!getIsMultipart() && getVariablesToSend().size() > 0)
-						dataToSend = new ByteArrayEntity(com.genexus.CommonUtil.hashtable2query(getVariablesToSend()).getBytes());
+						dataToSend = new ByteArrayEntity(CommonUtil.hashtable2query(getVariablesToSend()).getBytes());
 					else
 						dataToSend = new ByteArrayEntity(getData());
 					httpPost.setEntity(dataToSend);
@@ -585,16 +601,16 @@ public class HttpClientJavaLib extends GXHttpClient {
 					httpPatch.setEntity(dataToSend);
 					response = httpClient.execute(httpPatch, httpClientContext);
 				}
-
-				statusCode = response.getStatusLine().getStatusCode();
-				reasonLine = response.getStatusLine().getReasonPhrase();
-
-				SetCookieAtr(cookiesToSend);        // Se setean las cookies devueltas en la lista de cookies
-
-				if (response.containsHeader("Transfer-Encoding")) {
-					isChunkedResponse = response.getFirstHeader("Transfer-Encoding").getValue().equalsIgnoreCase("chunked");
-				}
 			}
+			statusCode =  response.getStatusLine().getStatusCode();
+			reasonLine =  response.getStatusLine().getReasonPhrase();
+
+			SetCookieAtr(cookiesToSend);		// Se setean las cookies devueltas en la lista de cookies
+
+			if (response.containsHeader("Transfer-Encoding")) {
+				isChunkedResponse = response.getFirstHeader("Transfer-Encoding").getValue().equalsIgnoreCase("chunked");
+			}
+
 		} catch (IOException e) {
 			setExceptionsCatch(e);
 			this.statusCode = 0;
@@ -670,7 +686,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			return;
 		try
 		{
-			value[0] = com.genexus.CommonUtil.getHeaderAsDate(response.getFirstHeader(name).getValue());
+			value[0] = CommonUtil.getHeaderAsDate(response.getFirstHeader(name).getValue());
 		}
 		catch (IOException e)
 		{

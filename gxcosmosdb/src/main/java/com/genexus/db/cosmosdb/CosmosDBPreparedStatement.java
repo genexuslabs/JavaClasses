@@ -16,8 +16,8 @@ import com.genexus.db.service.VarValue;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.util.NameValuePair;
-import org.json.JSONException;
-import com.genexus.json.JSONObjectWrapper;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 
@@ -65,7 +65,7 @@ public class CosmosDBPreparedStatement extends ServicePreparedStatement
 	private int _executeQuery(CosmosDBResultSet resultSet) throws Exception {
 		query.initializeParms(parms);
 		boolean isUpdate = query.getQueryType() == QueryType.UPD;
-		JSONObjectWrapper jsonObject = setUpJsonPayload(isUpdate);
+		JSONObject jsonObject = setUpJsonPayload(isUpdate);
 
 		switch (query.getQueryType())
 		{
@@ -253,7 +253,7 @@ public class CosmosDBPreparedStatement extends ServicePreparedStatement
 			throw new Exception("CosmosDB Delete Execution failed. Container not found.");
 		}
 	}
-	private int[] createDocument(JSONObjectWrapper jsonObject, Object partitionKey) throws Exception {
+	private int[] createDocument(JSONObject jsonObject, Object partitionKey) throws Exception {
 
 		int[] statusCode = new int[1];
 		if (container != null) {
@@ -289,7 +289,7 @@ public class CosmosDBPreparedStatement extends ServicePreparedStatement
 			throw new Exception("CosmosDB Insert Execution failed. Container not found.");
 		}
 	}
-	private int[] replaceDocument(JSONObjectWrapper jsonObject, String idValue , Object partitionKey) throws Exception {
+	private int[] replaceDocument(JSONObject jsonObject, String idValue , Object partitionKey) throws Exception {
 		int[] statusCode = new int[1];
 		if (container != null)
 		{
@@ -337,11 +337,11 @@ public class CosmosDBPreparedStatement extends ServicePreparedStatement
 		if (varValue != null)
 			keyCondition.put(name, varValue.value);
 	}
-	private JSONObjectWrapper setUpJsonPayload(boolean isUpdate) throws JSONException, SQLException {
+	private JSONObject setUpJsonPayload(boolean isUpdate) throws JSONException, SQLException {
 		// Setup the json payload to execute the insert or update query.
 
 		HashMap<String, Object> values = null;
-		JSONObjectWrapper jsonObject = null;
+		JSONObject jsonObject = null;
 
 		for (Iterator<NameValuePair> it = query.getAssignAtts(); it.hasNext(); ) {
 			NameValuePair asg = it.next();

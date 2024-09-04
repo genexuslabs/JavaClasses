@@ -8,9 +8,10 @@ import com.genexus.internet.HttpContext;
 import com.genexus.internet.IGxJSONAble;
 import com.genexus.common.interfaces.IGXWebGrid;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import com.genexus.json.JSONObjectWrapper;
+import json.org.json.IJsonFormattable;
+import json.org.json.JSONArray;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 
 public class GXWebGrid implements IGxJSONAble, IGXWebGrid
 {
@@ -18,7 +19,7 @@ public class GXWebGrid implements IGxJSONAble, IGXWebGrid
     boolean wrapped;
     boolean isFreestyle;
     JSONArray _ColsProps;
-	JSONObjectWrapper _Rows;
+    JSONObject _Rows;
     int _Count;
     ArrayList<GXWebRow> _rowObjs;
 	ArrayList<JSONArray> _ColsPropsCommon;
@@ -27,7 +28,7 @@ public class GXWebGrid implements IGxJSONAble, IGXWebGrid
 
     public GXWebGrid()
     {
-        _Rows = new JSONObjectWrapper();
+        _Rows = new JSONObject();
         _ColsProps = new JSONArray();
         _rowObjs = new ArrayList<>();
 		_ColsPropsCommon = new ArrayList<>();
@@ -231,7 +232,7 @@ public class GXWebGrid implements IGxJSONAble, IGXWebGrid
         return _Rows;
     }
 
-    public void FromJSONObject(Object obj)
+    public void FromJSONObject(IJsonFormattable obj)
     {
     }
 }

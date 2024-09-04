@@ -10,6 +10,11 @@ import com.genexus.util.GXGeolocation;
 import com.genexus.xml.GXXMLSerializable;
 import com.genexus.ClientContext;
 
+
+import org.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
+
 public class GXMaps {
 
     public static Double getLatitude(GXGeospatial Point) {

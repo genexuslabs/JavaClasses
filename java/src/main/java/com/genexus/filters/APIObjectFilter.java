@@ -1,6 +1,6 @@
 package com.genexus.filters;
 
-import com.genexus.json.JSONObjectWrapper;
+import json.org.json.*;
 import java.io.IOException;
 import java.io.File;
 import java.util.Map;
@@ -79,7 +79,7 @@ public class APIObjectFilter extends Filter {
             		for (String temp : result) {
 						try {
 							String read = String.join("", Files.readAllLines(Paths.get(temp)));
-							JSONObjectWrapper jo = new JSONObjectWrapper(read);
+							JSONObject jo = new JSONObject(read);
 							String apiPath = jo.getString("BasePath");
 							appPath.add(apiPath.toLowerCase());
 						}

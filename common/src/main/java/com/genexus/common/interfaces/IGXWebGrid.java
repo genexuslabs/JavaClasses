@@ -1,6 +1,6 @@
 package com.genexus.common.interfaces;
 
-import org.json.JSONArray;
+import json.org.json.JSONArray;
 
 public interface IGXWebGrid {
 	Object GetJSONObject();

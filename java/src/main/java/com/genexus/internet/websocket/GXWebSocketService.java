@@ -9,8 +9,8 @@ import com.genexus.db.Namespace;
 import com.genexus.db.UserInformation;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
-import org.json.JSONException;
-import com.genexus.json.JSONObjectWrapper;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 
 import com.genexus.Application;
 import com.genexus.GXutil;
@@ -72,7 +72,7 @@ public class GXWebSocketService {
 		try {
 
 			GXXMLSerializable nInfo = (GXXMLSerializable) Class.forName("com.genexuscore.genexus.server.SdtNotificationInfo").getConstructor().newInstance();
-			JSONObjectWrapper jInfo = new JSONObjectWrapper();
+			JSONObject jInfo = new JSONObject();
 			jInfo.put("Message", txt);
 			nInfo.FromJSONObject(jInfo);
 			parameters[1] = nInfo;

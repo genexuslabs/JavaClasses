@@ -1,8 +1,8 @@
 package com.genexus.springboot;
 
 import com.genexus.GxRestService;
-import org.json.JSONException;
-import com.genexus.json.JSONObjectWrapper;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +14,7 @@ abstract public class GxSpringBootRestService extends GxRestService {
 	@ExceptionHandler(Exception.class)
 	protected ResponseEntity<Object> handleException(Exception ex) {
 		log.error("Error executing REST service", ex);
-		JSONObjectWrapper errorJson = new JSONObjectWrapper();
+		JSONObject errorJson = new JSONObject();
 		int errCode = 500;
 		String errMessage = "Internal Server Error";
 		HttpStatus statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -27,7 +27,7 @@ abstract public class GxSpringBootRestService extends GxRestService {
 
 		try
 		{
-			JSONObjectWrapper obj = new JSONObjectWrapper();
+			JSONObject obj = new JSONObject();
 			obj.put("code", errCode);
 			obj.put("message", errMessage);
 			errorJson.put("error", obj);

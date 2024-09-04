@@ -13,9 +13,10 @@ import com.artech.base.services.AndroidContext;
 import com.genexus.util.Codecs;
 import com.genexus.util.Encryption;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import json.org.json.IJsonFormattable;
+import json.org.json.JSONArray;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 
 public abstract class HttpContext extends HttpAjaxContext implements IHttpContext
 {
@@ -612,7 +613,7 @@ public abstract class HttpContext extends HttpAjaxContext implements IHttpContex
         {
             try
             {
-                Object jsonObj;
+                IJsonFormattable jsonObj;
                 if (jsonStr.startsWith("["))
                     jsonObj = new JSONArray(jsonStr);
                 else

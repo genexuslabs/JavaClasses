@@ -9,7 +9,7 @@ import com.artech.base.services.IGxBusinessComponent;
 import com.genexus.GxSilentTrnSdt;
 import com.genexus.IGxSilentTrn;
 
-import org.json.JSONArray;
+import json.org.json.JSONArray;
 
 public class PendingEventHelper {
 

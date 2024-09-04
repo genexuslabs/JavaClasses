@@ -3,9 +3,10 @@ package com.genexus.internet;
 import java.util.ArrayList;
 import java.util.Stack;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import json.org.json.IJsonFormattable;
+import json.org.json.JSONArray;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 
 public abstract class HttpAjaxContext
 {
@@ -496,7 +497,7 @@ public abstract class HttpAjaxContext
 			return wrapper;
 		}
 
-		public void FromJSONObject(Object obj)
+		public void FromJSONObject(IJsonFormattable obj)
 		{
 		}
 

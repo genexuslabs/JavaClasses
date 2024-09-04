@@ -12,6 +12,7 @@ These are the source of the GeneXus Standard Classes for Java, valid since GeneX
 | Name  | Description
 |---|---
 | common | Classes common to Android and Java
+| gxcryptocommon | Classes common to Android and Java related to Cryptography
 | gxmail | Classes related to mail handling
 | java | Java standard classes,  output is gxclassr.jar
 | wrappercommon | Interfaces to encapsulate Java EE and Jakarta EE support,  output is gxwrappercommon.jar
@@ -24,15 +25,6 @@ These are the source of the GeneXus Standard Classes for Java, valid since GeneX
 | gxexternalproviders | Implements service provider for IBM Cloud, Google, Azure, Amazon
 | gxgeospatial | Geography data type implementation
 | gxodata | OData access
-| securityapicommons | SecurityAPI's common module
-| gxcryptography | SecurityAPI's GeneXusCryptography module
-| gxjwt | SecurityAPI's GeneXusJWT module
-| gxxmlsignature | SecurityAPI's GeneXusXmlSignature module
-| gxftps | SecurityAPI's GeneXusFTPS module
-| gxsftp | SecurityAPI's GeneXusSFTP module
-| gamsaml | GAM's External Object, SAML protocol implementation
-| gamutils | GAM external object with utilities
-| gamtotp | GAM external object for RFC6238 implementation
 
 The dependencies between the projects are specified in each pom.xml within their directory.
 
@@ -94,8 +86,4 @@ Once you compiled or packaged everything you needed, you can stop the container 
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
-
-  ## Agreement on Compatibility from now on
-  
-  With interfaces now in place since the v16 Upgrade 4 release, GeneXus SA commits to evolve them while maintaining compatibility.
 

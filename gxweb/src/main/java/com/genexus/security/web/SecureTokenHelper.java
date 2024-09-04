@@ -11,7 +11,7 @@ import com.genexus.diagnostics.core.LogManager;
 import com.genexus.security.web.jose.jwt.JWTSigner;
 import com.genexus.security.web.jose.jwt.JWTVerifier;
 
-import com.genexus.json.JSONObjectWrapper;
+import json.org.json.JSONObject;
 
 public class SecureTokenHelper {
 	
@@ -65,7 +65,7 @@ public class SecureTokenHelper {
 		{							
         	try {
 				Map<String,Object> mapObj = verifier.verify(jwtToken);
-				JSONObjectWrapper jObj = new JSONObjectWrapper(mapObj);
+				JSONObject jObj = new JSONObject(mapObj);
 				outToken.FromJSONObject(jObj);
 				ok = true;			
 			}

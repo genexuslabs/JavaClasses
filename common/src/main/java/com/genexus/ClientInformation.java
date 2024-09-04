@@ -73,12 +73,4 @@ public class ClientInformation
 			platformName =  SpecificImplementation.Application.getModelContext().getHttpContext().getHeader("DevicePlatform");
 		return platformName;
 	}
-
-	public final class DeviceTypeEnum {
-		public static final int iOS = 0;
-		public static final int Android = 1;
-		public static final int Blackberry = 2;
-		public static final int Windows = 3;
-		public static final int Web = 4;
-	}
 }

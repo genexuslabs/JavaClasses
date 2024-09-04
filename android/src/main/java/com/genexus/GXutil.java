@@ -21,7 +21,7 @@ import com.genexus.util.ExpressionEvaluator;
 import com.genexus.util.GXThreadLocal;
 import com.genexus.util.IThreadLocal;
 
-import org.json.JSONObject;
+import json.org.json.JSONObject;
 
 public final class GXutil
 {

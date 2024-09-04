@@ -6,8 +6,9 @@ import com.genexus.SdtMessages_Message;
 import com.genexus.internet.IGxJSONAble;
 import com.genexus.internet.IGxJSONSerializable;
 
-import org.json.JSONException;
-import com.genexus.json.JSONObjectWrapper;
+import json.org.json.IJsonFormattable;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 
 public class HTMLObject implements IGxJSONAble, IGxJSONSerializable
 {
@@ -40,7 +41,7 @@ public class HTMLObject implements IGxJSONAble, IGxJSONSerializable
 	protected String themeClass = "";
 	protected String columnClass = "";
 	protected String columnHeaderClass = "";
-	protected JSONObjectWrapper jsonObj = new JSONObjectWrapper();
+	protected JSONObject jsonObj = new JSONObject();
 	
 	public HTMLObject(GXWebPanel panel)
 	{
@@ -540,7 +541,7 @@ public class HTMLObject implements IGxJSONAble, IGxJSONSerializable
 		return jsonObj;
 	}
 
-	public void FromJSONObject(Object obj)
+	public void FromJSONObject(IJsonFormattable obj)
 	{
 	}
 
@@ -556,7 +557,7 @@ public class HTMLObject implements IGxJSONAble, IGxJSONSerializable
 	{
 		try
 		{
-			jsonObj = new JSONObjectWrapper(s);
+			jsonObj = new JSONObject(s);
 			FromJSONObject(jsonObj);
 			return true;
 		}

@@ -98,10 +98,6 @@
 					<groupId>com.sun.xml.fastinfoset</groupId>
 					<artifactId>FastInfoset</artifactId>
 				</exclusion>
-                <exclusion>
-                    <groupId>com.sun.mail</groupId>
-                    <artifactId>jakarta.mail</artifactId>
-                </exclusion>
     	</exclusions>
 		</dependency>
     </dependencies>

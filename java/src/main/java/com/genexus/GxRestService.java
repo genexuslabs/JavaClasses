@@ -13,13 +13,13 @@ import com.genexus.servlet.http.IHttpServletRequest;
 import com.genexus.servlet.http.IHttpServletResponse;
 import com.genexus.webpanels.HttpContextWeb;
 
-import org.json.JSONException;
-import com.genexus.json.JSONObjectWrapper;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 
 abstract public class GxRestService extends GXObjectBase {
 	private static ILogger logger = null;
 	
-	protected JSONObjectWrapper errorJson;
+	protected JSONObject errorJson;
 	protected boolean error = false;
 	protected String gamError;
 	protected boolean forbidden = false;
@@ -116,10 +116,10 @@ abstract public class GxRestService extends GXObjectBase {
 	{
 		try
 		{
-			JSONObjectWrapper obj = new JSONObjectWrapper();
+			JSONObject obj = new JSONObject();
 			obj.put("code", code);
 			obj.put("message", message);
-			errorJson = new JSONObjectWrapper();
+			errorJson = new JSONObject();
 			errorJson.put("error", obj);
 		}
 		catch(JSONException e)
@@ -243,57 +243,29 @@ abstract public class GxRestService extends GXObjectBase {
 		{
 			setTheme(theme);
 		}
-		String eTag = isPostRequest(myServletRequest) ? null : myServletRequest.getHeader("If-Modified-Since");
+		String etag = myServletRequest.getMethod().equalsIgnoreCase(POST) ? null : myServletRequest.getHeader("If-Modified-Since");
 		Date dt = Application.getStartDateTime();
 		Date newDt = new Date();
 		GXSmartCacheProvider.DataUpdateStatus status;
 		Date[] newDt_arr = new Date[] { newDt };
-		if (eTag == null)
+		if (etag == null)
 		{
 			status = GXSmartCacheProvider.DataUpdateStatus.Invalid;
-			GXSmartCacheProvider.checkDataStatus(queryId, dt, newDt_arr);
+			GXSmartCacheProvider.CheckDataStatus(queryId, dt, newDt_arr);
 		}
 		else
 		{
-			dt = HTMLDateToDatetime(eTag);
-			status = GXSmartCacheProvider.checkDataStatus(queryId, dt, newDt_arr);
+			dt = HTMLDateToDatetime(etag);
+			status = GXSmartCacheProvider.CheckDataStatus(queryId, dt, newDt_arr);
 		}
 		newDt = newDt_arr[0];
-		addHeader(myServletResponse, "Last-Modified", DateTimeToHTMLDate(newDt));
-		addCacheHeaders(myServletResponse);
+		if (myServletResponse != null) // Temporary: Jersey Service called through AWS Lambda where HttpResponse is null.
+			myServletResponse.addHeader("Last-Modified", DateTimeToHTMLDate(newDt)); 
 		if (status == GXSmartCacheProvider.DataUpdateStatus.UpToDate)
 		{
 			return false;
 		}
 		return true;
-	}
-
-	private void addCacheHeaders(IHttpServletResponse myServletResponse) {
-		/*
-		 * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
-		 * Specifying no-cache or max-age=0 indicates that
-		 * clients can cache a resource and must revalidate each time before using it.
-		 * This means HTTP request occurs each time, but it can skip downloading HTTP body if the content is valid.
-		 */
-		if (ClientInformation.getDeviceType() == ClientInformation.DeviceTypeEnum.Web) {
-			addHeader(myServletResponse, "Cache-Control", "no-cache, max-age=0");
-		}
-	}
-
-	boolean isPostRequest(IHttpServletRequest request)
-	{
-		return request.getMethod().equalsIgnoreCase(POST);
-	}
-
-	void addHeader(IHttpServletResponse response, String headerName, String headerValue)
-	{
-		if (response != null) {
-			// Temporary: Jersey Service called through AWS Lambda where HttpResponse is null.
-			response.addHeader(headerName, headerValue);
-		}
-		else {
-			logger.warn("Could add HttpHeader to Response");
-		}
 	}
 	
 	Date HTMLDateToDatetime(String s)

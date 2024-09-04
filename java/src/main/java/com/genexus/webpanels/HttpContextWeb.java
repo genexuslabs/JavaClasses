@@ -34,8 +34,8 @@ import com.genexus.internet.MsgList;
 import com.genexus.util.Base64;
 import com.genexus.util.GXFile;
 
-import org.json.JSONException;
-import com.genexus.json.JSONObjectWrapper;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 
 public class HttpContextWeb extends HttpContext {
 	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(HttpContextWeb.class);
@@ -79,7 +79,6 @@ public class HttpContextWeb extends HttpContext {
 	private static final String SAME_SITE_LAX = "Lax";
 	private static final String SAME_SITE_STRICT = "Strict";
 	private static final String SET_COOKIE = "Set-Cookie";
-	private static String httpForwardedHeadersEnabled = System.getenv("HTTP_FORWARDEDHEADERS_ENABLED");
 
 	public static final int BROWSER_OTHER		= 0;
 	public static final int BROWSER_IE 		= 1;
@@ -352,7 +351,7 @@ public class HttpContextWeb extends HttpContext {
 		return false;
 	}
 
-	public void parseGXState(JSONObjectWrapper tokenValues) {
+	public void parseGXState(JSONObject tokenValues) {
 		try {
 			Iterator it = tokenValues.keys();
 			while (it.hasNext()) {
@@ -391,14 +390,14 @@ public class HttpContextWeb extends HttpContext {
 						if (useBase64ViewState()) {
 							decoded = new String(Base64.decode(decoded), "UTF8");
 						}
-						JSONObjectWrapper tokenValues = null;
+						JSONObject tokenValues = null;
 						try {
-							tokenValues = new JSONObjectWrapper(decoded);
+							tokenValues = new JSONObject(decoded);
 						} catch (JSONException jex) {
 							log.debug("GXState JSONObject error (1)", jex);
 							char c = 0;
 							decoded = decoded.replace(Character.toString(c), "");
-							tokenValues = new JSONObjectWrapper(decoded);
+							tokenValues = new JSONObject(decoded);
 						}
 						parseGXState(tokenValues);
 					} catch (Exception ex) {
@@ -631,10 +630,8 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getRemoteAddr() {
-		boolean isEnabled = "true".equalsIgnoreCase(httpForwardedHeadersEnabled);
 		String address = getHeader("X-Forwarded-For");
-		if (isEnabled && address != null && address.length() > 0) {
-			address = address.split(",")[0].trim();
+		if (address.length() > 0){
 			return address;
 		}
 		address = request.getRemoteAddr();
@@ -951,16 +948,18 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getServerName() {
-		boolean isEnabled = "true".equalsIgnoreCase(httpForwardedHeadersEnabled);
 		String host = getHeader("X-Forwarded-Host");
-		if (isEnabled && host != null && host.length() > 0) {
-			return host.split(",")[0].trim();
+		if (host.length() > 0){
+			return host;
 		}
 		String serverNameProperty = ModelContext.getModelContext().getPreferences().getProperty("SERVER_NAME", "");
 		if (!StringUtils.isBlank(serverNameProperty)) {
 			return serverNameProperty;
 		}
-		return request != null ? request.getServerName() : "";
+		if (request != null)
+			return request.getServerName();
+
+		return "";
 	}
 
 	public int getServerPort() {
@@ -1063,10 +1062,9 @@ public class HttpContextWeb extends HttpContext {
 		loadParameters(qs);
 	}
 
-	private String removeInternalParm(String query, String parm) 
-	{
+	private String removeInternalParms(String query) {
 		query = removeEventPrefix(query);
-		int idx = query.indexOf(parm);
+		int idx = query.indexOf(GXNavigationHelper.POPUP_LEVEL);
 		if (idx == 1)
 			return "";
 		if (idx > 1)
@@ -1077,11 +1075,6 @@ public class HttpContextWeb extends HttpContext {
 			query = query.substring(0, idx);
 		}
 		return query;
-	}
-
-	private String removeInternalParms(String query) {
-		query = removeInternalParm( query, GXNavigationHelper.POPUP_LEVEL);
-		return removeInternalParm( query, GXNavigationHelper.TAB_ID);
 	}
 
 	public String getQueryString() {

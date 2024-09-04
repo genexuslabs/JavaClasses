@@ -2,9 +2,9 @@ package com.genexus.util;
 
 import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import com.genexus.json.JSONObjectWrapper;
+import json.org.json.JSONArray;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -15,7 +15,7 @@ public class ThemeData
 	
 	public static ThemeData fromJson(String json) throws JSONException
 	{
-		JSONObjectWrapper jsonObj = new JSONObjectWrapper(json);
+		JSONObject jsonObj = new JSONObject(json);
 		
 		ThemeData themeData = new ThemeData();
 		themeData.name = jsonObj.getString("name");

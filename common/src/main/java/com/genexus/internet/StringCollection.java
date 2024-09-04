@@ -1,7 +1,7 @@
 package com.genexus.internet;
 import com.genexus.util.*;
 
-import org.json.JSONArray;
+import json.org.json.*;
 
 import com.genexus.CommonUtil;
 import com.genexus.SdtMessages_Message;
@@ -145,7 +145,7 @@ public class StringCollection implements IGxJSONAble
         return jsonArr;
     }
 
-    public void FromJSONObject(Object obj)
+    public void FromJSONObject(IJsonFormattable obj)
     {
     }
 

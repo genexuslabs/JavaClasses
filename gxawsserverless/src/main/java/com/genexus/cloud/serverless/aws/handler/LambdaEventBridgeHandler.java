@@ -3,9 +3,12 @@ package com.genexus.cloud.serverless.aws.handler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.genexus.cloud.serverless.Helper;
-import com.genexus.cloud.serverless.model.*;
 import com.genexus.cloud.serverless.exception.FunctionRuntimeException;
-import com.genexus.json.JSONObjectWrapper;
+import com.genexus.cloud.serverless.model.EventMessage;
+import com.genexus.cloud.serverless.model.EventMessageResponse;
+import com.genexus.cloud.serverless.model.EventMessageSourceType;
+import com.genexus.cloud.serverless.model.EventMessages;
+import json.org.json.JSONObject;
 import org.apache.http.client.utils.DateUtils;
 
 import java.util.Map;
@@ -38,7 +41,7 @@ public class LambdaEventBridgeHandler extends LambdaBaseEventHandler implements 
 			}
 			msgItem.setMessageId(stringObjectMap.getOrDefault("id", "").toString());
 			if (stringObjectMap.containsKey("detail")) {
-				msgItem.setMessageData(new JSONObjectWrapper(jsonEventRaw).getJSONObject("detail").toString());
+				msgItem.setMessageData(new JSONObject(jsonEventRaw).getString("detail"));
 			}
 			for (Map.Entry<String, Object> entry : stringObjectMap.entrySet()) {
 				Helper.addEventMessageProperty(msgItem, entry.getKey(), entry.getValue().toString());

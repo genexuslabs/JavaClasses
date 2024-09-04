@@ -9,13 +9,12 @@ import java.text.DateFormat;
 import java.util.*;
 import com.genexus.xml.*;
 
-import org.json.JSONException;
-import com.genexus.json.JSONObjectWrapper;
+import json.org.json.*;
 import com.genexus.internet.IGxJSONAble;
 
 public final class LocationInfo implements java.io.Serializable, IGxJSONAble {
 
-	protected JSONObjectWrapper jsonObj = new JSONObjectWrapper();
+	protected JSONObject jsonObj = new JSONObject();
 	
 	
 	private GXGeospatial location;
@@ -130,9 +129,9 @@ public final class LocationInfo implements java.io.Serializable, IGxJSONAble {
 		return jsonObj;
 	}
   
-	public void FromJSONObject(Object obj)
+	public void FromJSONObject(IJsonFormattable obj)
 	{
-		JSONObjectWrapper jObj = (JSONObjectWrapper) obj;
+		JSONObject jObj = (JSONObject) obj;	
 		this.setDescription( jObj.optString("description"));
 		this.setHeading( jObj.optDouble("heading"));
 		this.setSpeed( jObj.optDouble("speed"));
@@ -145,7 +144,7 @@ public final class LocationInfo implements java.io.Serializable, IGxJSONAble {
 	{
 		try
 		{
-			jsonObj = new JSONObjectWrapper(s);
+			jsonObj = new JSONObject(s);
 			FromJSONObject(jsonObj);
 			return true;
 		}

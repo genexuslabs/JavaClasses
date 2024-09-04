@@ -4,8 +4,7 @@ import java.util.LinkedHashMap;
 
 import com.genexus.internet.IGxJSONSerializable;
 
-import com.genexus.json.JSONObjectWrapper;
-import org.json.JSONException;
+import json.org.json.*;
 
 import com.genexus.CommonUtil;
 import com.genexus.SdtMessages_Message;
@@ -101,7 +100,7 @@ public class GXProperties implements IGxJSONSerializable {
 	}
 
 	public Object GetJSONObject() {
-		JSONObjectWrapper jObj = new JSONObjectWrapper();
+		JSONObject jObj = new JSONObject();
 		int i = 0;
 		while (count() > i) {
 			GXProperty prop = item(i);
@@ -114,7 +113,7 @@ public class GXProperties implements IGxJSONSerializable {
 	}
 
 	public String toJSonString() {
-		JSONObjectWrapper jObj = (JSONObjectWrapper) GetJSONObject();
+		JSONObject jObj = (JSONObject) GetJSONObject();
 		return jObj.toString();
 	}
 
@@ -126,9 +125,10 @@ public class GXProperties implements IGxJSONSerializable {
 		this.clear();
 		if (!s.isEmpty()) {
 			try {
-				JSONObjectWrapper jObj = new JSONObjectWrapper(s);
-				for (Map.Entry<String, Object> e : jObj.entrySet()) {
-					String key = e.getKey();
+				JSONObject jObj = new JSONObject(s);
+				Iterator < String > keys = jObj.keys();
+				while (keys.hasNext()) {
+					String key = keys.next();
 					this.put(key, jObj.get(key).toString());
 				}
 				return true;

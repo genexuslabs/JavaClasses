@@ -5,9 +5,10 @@ import com.genexus.servlet.http.ICookie;
 import com.genexus.servlet.http.IHttpServletRequest;
 import com.genexus.servlet.http.IHttpServletResponse;
 import com.genexus.webpanels.WebSession;
-import org.json.JSONArray;
-import org.json.JSONException;
-import com.genexus.json.JSONObjectWrapper;
+import json.org.json.IJsonFormattable;
+import json.org.json.JSONArray;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
@@ -246,7 +247,7 @@ public abstract class HttpContext implements IHttpContext
 	public abstract String cgiGet(String parm);
     public abstract void changePostValue(String ctrl, String value);
 	public abstract boolean isFileParm( String parm);
-    public abstract void parseGXState(JSONObjectWrapper tokenValues);
+    public abstract void parseGXState(JSONObject tokenValues);
 	public abstract void deletePostValue(String ctrl);
 	public abstract void DeletePostValuePrefix(String sPrefix);
 	public abstract HttpResponse getHttpResponse();
@@ -350,7 +351,7 @@ public abstract class HttpContext implements IHttpContext
 	
 	public void deleteReferer()
 	{
-		deleteReferer(GXNavigationHelper.getUrlPopupLevel(getRequestNavUrl()));            
+		deleteReferer(getNavigationHelper(false).getUrlPopupLevel(getRequestNavUrl()));            
 	}
 
 	public void pushCurrentUrl()
@@ -959,11 +960,11 @@ public abstract class HttpContext implements IHttpContext
 	{
 		try
 		{
-			Object jsonObj;
+			IJsonFormattable jsonObj;
 			if (jsonStr.startsWith("["))
 				jsonObj = new JSONArray(jsonStr);
 			else
-				jsonObj = new JSONObjectWrapper(jsonStr);
+				jsonObj = new JSONObject(jsonStr);
 			((IGxJSONAble)SdtObj).FromJSONObject(jsonObj);
 		}
 		catch(JSONException exc) {}

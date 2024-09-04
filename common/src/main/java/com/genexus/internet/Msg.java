@@ -1,6 +1,7 @@
 package com.genexus.internet;
 
-import com.genexus.json.JSONObjectWrapper;
+import json.org.json.IJsonFormattable;
+import json.org.json.JSONObject;
 
 public class Msg implements java.io.Serializable, IGxJSONAble
 {
@@ -9,7 +10,7 @@ public class Msg implements java.io.Serializable, IGxJSONAble
   protected int type;
   protected String att;
   protected boolean gxMessage;
-  protected JSONObjectWrapper jsonObj = new JSONObjectWrapper();
+  protected JSONObject jsonObj = new JSONObject();
 
   public Msg( String description, String id, int type, String att)
   {
@@ -81,7 +82,7 @@ public class Msg implements java.io.Serializable, IGxJSONAble
       return jsonObj;
   }
 
-  public void FromJSONObject(Object obj)
+  public void FromJSONObject(IJsonFormattable obj)
   {
   }
 }

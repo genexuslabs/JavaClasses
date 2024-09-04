@@ -10,9 +10,6 @@ import java.util.Date;
 import java.util.List;
 
 import com.genexus.msoffice.excel.style.ExcelStyle;
-import org.apache.poi.xssf.usermodel.XSSFCell;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.junit.*;
 
 import com.genexus.msoffice.excel.poi.xssf.ExcelCells;
@@ -1082,32 +1079,6 @@ public class ExcelSpreadsheetTest {
 		excel.close();
 	}
 
-	@Test
-	public void testgetUnderlyingObject(){
-		ExcelSpreadsheetGXWrapper excel = create("testgetUnderlyingObject");
-		org.apache.poi.xssf.usermodel.XSSFWorkbook workbook2 = excel.getUnderlyingObject();
-		XSSFSheet testsheet = workbook2.createSheet("test sheet");
-		workbook2.setActiveSheet(workbook2.getSheetIndex(testsheet));
-		ExcelCells cells = excel.getCells(1,1,1,1);
-		XSSFCell underlyingCells = cells.getUnderlyingObject()[1];
-		underlyingCells.setCellValue("test cell value");
-
-		//test using the same excel instance
-		Assert.assertEquals(excel.getCurrentWorksheet().getName().trim(),"test sheet");
-		cells = excel.getCell(1,1);
-		Assert.assertEquals(cells.getText(),"test cell value");
-
-		excel.save();
-		excel.close();
-
-		//test after saving and opening the file again
-		excel = open("testgetUnderlyingObject");
-		Assert.assertEquals(excel.getCurrentWorksheet().getName().trim(),"test sheet");
-		cells = excel.getCell(1,1);
-		Assert.assertEquals(cells.getText(),"test cell value");
-
-	}
-
     private void logErrorCodes(ExcelSpreadsheetGXWrapper excel) {
        // System.out.println(String.format("%s - %s", excel.getErrCode(), excel.getErrDescription()));
     }
@@ -1124,7 +1095,5 @@ public class ExcelSpreadsheetTest {
 
 		}
 	}
-
-
 
 }

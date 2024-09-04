@@ -35,5 +35,8 @@ public class GXMultiCall extends GxSpringBootRestService {
 	protected int IntegratedSecurityLevel( ) {
 		return 0;
 	}
-	
+
+	protected String EncryptURLParameters() {
+		return "NO";
+	}
 }

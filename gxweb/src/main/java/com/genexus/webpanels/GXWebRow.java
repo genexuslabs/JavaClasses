@@ -1,6 +1,5 @@
 package com.genexus.webpanels;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 
 import com.genexus.CommonUtil;
@@ -10,31 +9,32 @@ import com.genexus.internet.HttpContext;
 import com.genexus.internet.IGxJSONAble;
 import com.genexus.common.interfaces.IGXWebRow;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import com.genexus.json.JSONObjectWrapper;
+import json.org.json.IJsonFormattable;
+import json.org.json.JSONArray;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 
 
 public class GXWebRow implements IGxJSONAble, IGXWebRow
 {
     ModelContext context;
     GXWebGrid _parentGrid;
-	JSONObjectWrapper _ThisRow;
+    JSONObject _ThisRow;
     JSONArray _Columns;
     JSONArray _RenderProps;
-	JSONObjectWrapper _Hiddens;
-	JSONObjectWrapper _Grids;
+    JSONObject _Hiddens;
+    JSONObject _Grids;
     int _Count;
     JSONArray _Values;
     boolean firstRowAdded;
 
     public GXWebRow()
     {
-        _ThisRow = new JSONObjectWrapper();
+        _ThisRow = new JSONObject();
         _Columns = new JSONArray();
         _RenderProps = new JSONArray();
-        _Hiddens = new JSONObjectWrapper();
-        _Grids = new JSONObjectWrapper();
+        _Hiddens = new JSONObject();
+        _Grids = new JSONObject();
         _Values = new JSONArray();
         _Count = 0;
     }
@@ -115,7 +115,6 @@ public class GXWebRow implements IGxJSONAble, IGXWebRow
 			boolean equal =  it != null && !((HttpContext)context.getHttpContext()).isAjaxCallMode() ;
             Object current = null;
 
-			ArrayList<Object> myArrayList = new ArrayList<Object>();;
             for (int i = props.length - 1; i >= 0; i--)
             {
                 Object prop = props[i];
@@ -131,7 +130,7 @@ public class GXWebRow implements IGxJSONAble, IGXWebRow
                     {
                         equal = false;
                         try{
-							myArrayList.add(0, prop);
+                        	colProps.putIndex(0, prop);
                         }catch (JSONException e){}
                         if (it == null)
                             colPropsRev.put(prop);
@@ -145,9 +144,6 @@ public class GXWebRow implements IGxJSONAble, IGXWebRow
                     _Values.put(prop);
                 }
             }
-			if (myArrayList.size() > 0)
-				colProps.putAll(myArrayList);
-
             if (this._parentGrid != null && it == null) // If is the first Row.
             {
                 this._parentGrid.GetColsPropsCommon().add(colPropsRev);
@@ -253,7 +249,7 @@ public class GXWebRow implements IGxJSONAble, IGXWebRow
         return _ThisRow;
     }
 
-    public void FromJSONObject(Object obj)
+    public void FromJSONObject(IJsonFormattable obj)
     {
     }
 }

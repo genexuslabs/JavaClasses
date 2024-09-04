@@ -8,8 +8,8 @@ import com.genexus.security.GXResult;
 import com.genexus.security.GXSecurityProvider;
 import com.genexus.security.OutData;
 
-import org.json.JSONException;
-import com.genexus.json.JSONObjectWrapper;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 
 public class GXOAuthAccessToken extends GXWebObjectStub
 {   
@@ -127,7 +127,7 @@ public class GXOAuthAccessToken extends GXWebObjectStub
 					}
 					String OauthRealm = "OAuth realm=\"" + context.getRequest().getServerName() + "\"" + ",error_code=\"" + gamError + "\"" + ",error_description=\"" + messagePermissionEncoded + "\"";
 					context.getResponse().addHeader("WWW-Authenticate", OauthRealm);
-					JSONObjectWrapper err = getError(gamError, messagePermission);
+					JSONObject err = getError(gamError, messagePermission);
 					((HttpContextWeb) context).writeText(err.toString());
 					context.getResponse().flushBuffer();
 					return;
@@ -141,8 +141,8 @@ public class GXOAuthAccessToken extends GXWebObjectStub
 							context.getResponse().setStatus(200);
 						else
 							context.getResponse().setStatus(303);
-						context.getResponse().addHeader("location", redirectURL[0]);
-						JSONObjectWrapper jObj = new JSONObjectWrapper();
+						context.getResponse().addHeader("location", redirectURL[0]); 
+						JSONObject jObj = new JSONObject();
 						jObj.put("Location", redirectURL[0]);
 						((HttpContextWeb) context).writeText(jObj.toString());
 						context.getResponse().flushBuffer();
@@ -165,14 +165,14 @@ public class GXOAuthAccessToken extends GXWebObjectStub
 			}
    	}
 
-    private JSONObjectWrapper getError(String code, String message)
+    private JSONObject getError(String code, String message)
 		{
 			try
 			{
-				JSONObjectWrapper obj = new JSONObjectWrapper();
+				JSONObject obj = new JSONObject();
 				obj.put("code", code);
 				obj.put("message", message);
-				JSONObjectWrapper errorJson = new JSONObjectWrapper();
+				JSONObject errorJson = new JSONObject();
 				errorJson.put("error", obj);
 				return errorJson;
 			}

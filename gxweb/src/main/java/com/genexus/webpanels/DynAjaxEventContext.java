@@ -2,7 +2,7 @@ package com.genexus.webpanels;
 
 import com.genexus.GXutil;
 import com.genexus.internet.IGxJSONSerializable;
-import org.json.JSONArray;
+import json.org.json.JSONArray;
 
 import java.util.HashSet;
 import java.util.Hashtable;

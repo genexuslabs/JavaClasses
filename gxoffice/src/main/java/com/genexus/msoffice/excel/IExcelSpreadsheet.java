@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.genexus.msoffice.excel.exception.ExcelException;
 import com.genexus.msoffice.excel.poi.xssf.ExcelWorksheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public interface IExcelSpreadsheet
 {
@@ -50,6 +49,4 @@ public interface IExcelSpreadsheet
 
 	boolean toggleRow(IExcelWorksheet _currentWorksheet, int i, Boolean visible);
 	boolean cloneSheet(String sheetName, String newSheetName) throws ExcelException;
-
-	XSSFWorkbook getUnderlyingObject();
 }

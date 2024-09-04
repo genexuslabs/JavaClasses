@@ -13,9 +13,7 @@ import java.net.URL;
 
 import com.genexus.ClientContext;
 import com.genexus.xml.*;
-import org.json.JSONObject;
-import org.json.JSONArray;
-import org.json.JSONException;
+import json.org.json.*;
 
 public class GXGeolocation
 {

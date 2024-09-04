@@ -6,9 +6,10 @@ import java.util.Vector;
 import com.genexus.CommonUtil;
 import com.genexus.GXutil;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import com.genexus.json.JSONObjectWrapper;
+import json.org.json.IJsonFormattable;
+import json.org.json.JSONArray;
+import json.org.json.JSONException;
+import json.org.json.JSONObject;
 
 public class HTMLChoice extends HTMLObject implements IChoice
 {
@@ -142,7 +143,7 @@ public class HTMLChoice extends HTMLObject implements IChoice
 	{
 		_IsSet = true;
 		listval.removeAllElements();
-		jsonObj = new JSONObjectWrapper();
+		jsonObj = new JSONObject();
 	}
 
 	public void removeItem(String key)
@@ -286,10 +287,10 @@ public class HTMLChoice extends HTMLObject implements IChoice
                 }
 	}
 
-        public void FromJSONObject(Object obj)
+        public void FromJSONObject(IJsonFormattable obj)
 	{
             this.removeAllItems();
-            jsonObj = (JSONObjectWrapper)obj;
+            jsonObj = (JSONObject)obj;
             try
             {
                 JSONArray jsonArrValues = (JSONArray)jsonObj.get("v");
