@@ -4,8 +4,6 @@ import java.io.*;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Properties;
-import java.nio.file.Paths;
-import java.util.regex.Pattern;
 
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
@@ -297,11 +295,21 @@ public class POP3SessionJavaMail implements GXInternetConstants, IPOP3Session {
 		return cid;
 	}
 
-	private static final String FILE_INVALID_CHARS = "[\\\\/:*?\"<>|\n\r]";
-    private static final Pattern FILE_INVALID_PATTERN = Pattern.compile(FILE_INVALID_CHARS);
 	private void saveFile(String filename, InputStream input) throws IOException {
-		filename = FILE_INVALID_PATTERN.matcher(filename).replaceAll("_");
-		File file = new File(Paths.get(attachmentsPath, filename).toString());
+		filename = filename.replace("/", "_")
+			.replace("\\", "_")
+			.replace(":", "_")
+			.replace("*", "_")
+			.replace("?", "_")
+			.replace("\"", "_")
+			.replace("<", "_")
+			.replace(">", "_")
+			.replace("|", "_")
+			.replace("\n", "_")
+            .replace("\r", "_");
+
+		File file = new File(attachmentsPath + filename);
+
 		try (FileOutputStream fos = new FileOutputStream(file); BufferedOutputStream bos = new BufferedOutputStream(fos); BufferedInputStream bis = new BufferedInputStream(input)) {
 			int aByte;
 			while ((aByte = bis.read()) != -1) {

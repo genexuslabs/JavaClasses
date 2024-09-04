@@ -2678,7 +2678,7 @@ public final class CommonUtil
 
 	public static boolean isAbsoluteURL(String url)
 	{
-		return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("ftp://") || url.startsWith("sd:");
+		return url.toLowerCase().startsWith("http://") || url.toLowerCase().startsWith("https://") || url.toLowerCase().startsWith("ftp://") || url.toLowerCase().startsWith("sd:");
 	}
 
 	public static boolean hasUrlQueryString(String url)

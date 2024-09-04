@@ -102,9 +102,4 @@ public class GXMultiCall extends GxRestService
    {
       return 0;
    }
-
-	protected String EncryptURLParameters()
-	{
-		return "NO";
-	}
 }

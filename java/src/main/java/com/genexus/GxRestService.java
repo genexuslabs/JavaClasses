@@ -268,7 +268,7 @@ abstract public class GxRestService extends GXObjectBase {
 		return true;
 	}
 
-	private void addCacheHeaders(HttpServletResponse myServletResponse) {
+	private void addCacheHeaders(IHttpServletResponse myServletResponse) {
 		/*
 		 * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
 		 * Specifying no-cache or max-age=0 indicates that
@@ -280,12 +280,12 @@ abstract public class GxRestService extends GXObjectBase {
 		}
 	}
 
-	boolean isPostRequest(HttpServletRequest request)
+	boolean isPostRequest(IHttpServletRequest request)
 	{
 		return request.getMethod().equalsIgnoreCase(POST);
 	}
 
-	void addHeader(HttpServletResponse response, String headerName, String headerValue)
+	void addHeader(IHttpServletResponse response, String headerName, String headerValue)
 	{
 		if (response != null) {
 			// Temporary: Jersey Service called through AWS Lambda where HttpResponse is null.
@@ -295,16 +295,17 @@ abstract public class GxRestService extends GXObjectBase {
 			logger.warn("Could add HttpHeader to Response");
 		}
 	}
-
+	
 	Date HTMLDateToDatetime(String s)
 	{
-		// Date Format: RFC 1123
+		// Formato fecha: RFC 1123
 		try
 		{
 			SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", java.util.Locale.US);
 			java.util.TimeZone tz = java.util.TimeZone.getTimeZone("GMT");
 			sdf.setTimeZone(tz);
 			return sdf.parse(s);
+			
 		}
 		catch(ParseException p)
 		{
@@ -320,6 +321,4 @@ abstract public class GxRestService extends GXObjectBase {
 		sdf.setTimeZone(tz);		
 		return sdf.format(dt);
 	}
-
-
 }

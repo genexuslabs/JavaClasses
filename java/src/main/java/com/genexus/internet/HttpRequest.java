@@ -103,9 +103,7 @@ public abstract class HttpRequest implements IHttpRequest
 	
 	public String getBaseURL()
 	{
-		int port = getServerPort();
-		String portS = (port == 80 || port == 443) ? "" : ":" + port;
-		return (getSecure() == 0? "http://": "https://") + getServerHost() + portS + getScriptPath();
+		return (getSecure() == 0? "http://": "https://") + getServerHost() + ":" + getServerPort() + getScriptPath();
 	}
 
 	public void getHeader(String name, long[] value)

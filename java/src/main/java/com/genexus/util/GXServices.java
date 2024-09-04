@@ -131,7 +131,7 @@ public class GXServices {
 			allowMultiple = Boolean.parseBoolean(reader.getValue());
 			reader.read();
 		}
-		GXProperties properties = processProperties(type, name, reader);
+		GXProperties properties = processProperties(reader);
 
 		GXService service = new GXService();
 		service.setName(name);
@@ -147,7 +147,7 @@ public class GXServices {
 		}
 	}
 
-	private GXProperties processProperties(String serviceType, String serviceName, XMLReader reader) {
+	private GXProperties processProperties(XMLReader reader) {
 		short result;
 		GXProperties properties = new GXProperties();
 		reader.read();
@@ -156,11 +156,6 @@ public class GXServices {
 			String name = new String(reader.getValue());
 			result = reader.readType(1, "Value");
 			String value = new String(reader.getValue());
-
-			String envValue = EnvVarReader.getEnvironmentValue(serviceType, serviceName, name);
-			if (envValue != null)
-				value = envValue;
-
 			properties.add(name, value);
 			reader.read();
 			reader.read();
