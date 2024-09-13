@@ -85,10 +85,8 @@ jobs:
             ;;
 
           beta)
-            echo "## Is BETA branch, add +100 to major number"
+            echo "## Is BETA branch"
 
-            pomMajorNumber=$(expr $pomMajorNumber + 100)
-            
             versionChangelist="-beta.$timestamp-SNAPSHOT"
             SHOULD_DEPLOY='true'
             ;;
