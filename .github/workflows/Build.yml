@@ -80,7 +80,7 @@ jobs:
           master)
             echo "## Is MASTER branch"
 
-            versionChangelist="-stable.$timestamp-SNAPSHOT"
+            versionChangelist="-preview.$timestamp-SNAPSHOT"
             SHOULD_DEPLOY='true'
             ;;
 
@@ -89,7 +89,7 @@ jobs:
 
             pomMajorNumber=$(expr $pomMajorNumber + 100)
             
-            versionChangelist="-trunk.$timestamp-SNAPSHOT"
+            versionChangelist="-beta.$timestamp-SNAPSHOT"
             SHOULD_DEPLOY='true'
             ;;
 
