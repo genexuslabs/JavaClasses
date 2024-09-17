@@ -2,8 +2,8 @@ package com.genexus.webpanels;
 import com.genexus.CommonUtil;
 import com.genexus.internet.HttpContext;
 import com.genexus.util.CacheAPI;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONException;
+import com.genexus.json.JSONObjectWrapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -261,7 +261,7 @@ public class HttpUtils
 
 	public static void CacheUploadFile(String keyId, String uploadFilePath, String fileName, String fileExtension) {
 		try {
-			JSONObject jObj = new JSONObject();
+			JSONObjectWrapper jObj = new JSONObjectWrapper();
 			jObj.put("path", uploadFilePath);
 			jObj.put("fileName", fileName);
 			jObj.put("fileExtension", fileExtension);

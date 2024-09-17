@@ -2,7 +2,7 @@ package com.artech.synchronization;
 
 import java.util.TreeMap;
 
-import json.org.json.JSONArray;
+import org.json.JSONArray;
 
 public interface ISynchronizationHelper {
 

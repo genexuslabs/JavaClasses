@@ -3,7 +3,7 @@ import java.util.*;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
 
-import json.org.json.*;
+import org.json.JSONArray;
 
 import java.io.Serializable;
 

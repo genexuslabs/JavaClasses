@@ -19,7 +19,7 @@ import org.locationtech.spatial4j.shape.impl.BufferedLineString;
 import net.sf.geographiclib.PolygonArea;
 import net.sf.geographiclib.PolygonResult;
 import net.sf.geographiclib.Geodesic;
-import org.json.JSONObject;
+import com.genexus.json.JSONObjectWrapper;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -324,7 +324,7 @@ public final class GXGeospatial implements java.io.Serializable, IGxJSONSerializ
 			PolygonArea pArea = new PolygonArea( Geodesic.WGS84 , false);
 			String geojson = this.toGeoJSON();	
 			try{
-				JSONObject obj = new JSONObject(geojson);
+				JSONObjectWrapper obj = new JSONObjectWrapper(geojson);
 				JSONArray points = obj.getJSONArray("coordinates").getJSONArray(0);
 				for (int i = 0; i < points.length(); i++) 
 				{

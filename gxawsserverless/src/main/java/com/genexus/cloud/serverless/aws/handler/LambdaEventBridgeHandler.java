@@ -8,7 +8,7 @@ import com.genexus.cloud.serverless.model.EventMessage;
 import com.genexus.cloud.serverless.model.EventMessageResponse;
 import com.genexus.cloud.serverless.model.EventMessageSourceType;
 import com.genexus.cloud.serverless.model.EventMessages;
-import json.org.json.JSONObject;
+import com.genexus.json.JSONObjectWrapper;
 import org.apache.http.client.utils.DateUtils;
 
 import java.util.Map;
@@ -41,7 +41,7 @@ public class LambdaEventBridgeHandler extends LambdaBaseEventHandler implements 
 			}
 			msgItem.setMessageId(stringObjectMap.getOrDefault("id", "").toString());
 			if (stringObjectMap.containsKey("detail")) {
-				msgItem.setMessageData(new JSONObject(jsonEventRaw).getString("detail"));
+				msgItem.setMessageData(new JSONObjectWrapper(jsonEventRaw).getJSONObject("detail").toString());
 			}
 			for (Map.Entry<String, Object> entry : stringObjectMap.entrySet()) {
 				Helper.addEventMessageProperty(msgItem, entry.getKey(), entry.getValue().toString());

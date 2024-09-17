@@ -27,6 +27,7 @@ public class SpecificImplementation {
 	public static IExtensionHTTPConnection					HTTPConnection;
 	public static ICryptoAlhorithms 						Algorithms;
 	public static IExtensionModelContext					ModelContext;
+	public static IExtensionJSONSerialization				JsonSerialization;
 	public static boolean KeepDecimals;
 	public static String MillisecondMask;
 	public static boolean SupportPending;
