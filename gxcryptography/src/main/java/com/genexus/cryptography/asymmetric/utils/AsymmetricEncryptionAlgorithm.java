@@ -1,25 +1,17 @@
 package com.genexus.cryptography.asymmetric.utils;
 
 import com.genexus.securityapicommons.commons.Error;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-/**
- * @author sgrampone
- *
- */
+@SuppressWarnings("LoggingSimilarMessage")
 public enum AsymmetricEncryptionAlgorithm {
 
-	RSA,;
+	RSA,
+	;
 
-	/**
-	 * Mapping between String name and AsymmetricEncryptionAlgorithm enum
-	 * representation
-	 *
-	 * @param asymmetricEncryptionAlgorithm
-	 *            String
-	 * @param error
-	 *            Error type for error management
-	 * @return AsymmetricEncryptionAlgorithm enum representation
-	 */
+	private static final Logger logger = LogManager.getLogger(AsymmetricEncryptionAlgorithm.class);
+
 	public static AsymmetricEncryptionAlgorithm getAsymmetricEncryptionAlgorithm(String asymmetricEncryptionAlgorithm,
 																				 Error error) {
 		switch (asymmetricEncryptionAlgorithm.toUpperCase().trim()) {
@@ -27,23 +19,18 @@ public enum AsymmetricEncryptionAlgorithm {
 				return AsymmetricEncryptionAlgorithm.RSA;
 			default:
 				error.setError("AE001", "Unrecognized AsymmetricEncryptionAlgorithm");
+				logger.error("Unrecognized AsymmetricEncryptionAlgorithm");
 				return null;
 		}
 	}
 
-	/**
-	 * @param asymmetricEncryptionAlgorithm
-	 *            AsymmetricEncryptionAlgorithm enum, algorithm name
-	 * @param error
-	 *            Error type for error management
-	 * @return String asymmetricEncryptionAlgorithm name
-	 */
 	public static String valueOf(AsymmetricEncryptionAlgorithm asymmetricEncryptionAlgorithm, Error error) {
 		switch (asymmetricEncryptionAlgorithm) {
 			case RSA:
 				return "RSA";
 			default:
 				error.setError("AE002", "Unrecognized AsymmetricEncryptionAlgorithm");
+				logger.error("Unrecognized AsymmetricEncryptionAlgorithm");
 				return "";
 		}
 	}

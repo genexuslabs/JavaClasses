@@ -1,29 +1,21 @@
 package com.genexus.cryptography.symmetric.utils;
 
 import com.genexus.securityapicommons.commons.Error;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-/**
- * @author sgrampone
- *
- */
+@SuppressWarnings("LoggingSimilarMessage")
 public enum SymmetricBlockAlgorithm {
 
 	AES, BLOWFISH, CAMELLIA, CAST5, CAST6, DES, TRIPLEDES, DSTU7624_128, DSTU7624_256, DSTU7624_512, GOST28147, NOEKEON, RC2, RC532, RC564, RC6, RIJNDAEL_128, RIJNDAEL_160, RIJNDAEL_192, RIJNDAEL_224, RIJNDAEL_256, SEED, SERPENT, SKIPJACK, SM4, THREEFISH_256, THREEFISH_512, THREEFISH_1024, TWOFISH, XTEA, TEA, NONE;
 
-	/**
-	 * Mapping between String name and SymmetricBlockAlgorithm enum representation
-	 *
-	 * @param symmetricBlockAlgorithm
-	 *            String
-	 * @param error
-	 *            Error type for error management
-	 * @return SymmetricBlockAlgorithm enum representaton
-	 */
+	private static final Logger logger = LogManager.getLogger(SymmetricBlockAlgorithm.class);
+
 	public static SymmetricBlockAlgorithm getSymmetricBlockAlgorithm(String symmetricBlockAlgorithm, Error error) {
-		if(error == null) return SymmetricBlockAlgorithm.NONE;
-		if(symmetricBlockAlgorithm == null)
-		{
+		if (error == null) return SymmetricBlockAlgorithm.NONE;
+		if (symmetricBlockAlgorithm == null) {
 			error.setError("SBA05", "Unrecognized SymmetricBlockAlgorithm");
+			logger.error("Unrecognized SymmetricBlockAlgorithm");
 			return SymmetricBlockAlgorithm.NONE;
 		}
 		switch (symmetricBlockAlgorithm.toUpperCase().trim()) {
@@ -91,18 +83,12 @@ public enum SymmetricBlockAlgorithm {
 				return SymmetricBlockAlgorithm.TEA;
 			default:
 				error.setError("SBA01", "Unrecognized SymmetricBlockAlgorithm");
+				logger.error("Unrecognized SymmetricBlockAlgorithm");
 				return null;
 		}
 
 	}
 
-	/**
-	 * @param symmetricBlockAlgorithm
-	 *            SymmetricBlockAlgorithm enum, algorithm name
-	 * @param error
-	 *            Error type for error management
-	 * @return value of SymmetricBlockAlgorithm in String
-	 */
 	public static String valueOf(SymmetricBlockAlgorithm symmetricBlockAlgorithm, Error error) {
 		if (error == null) return "SymmetricBlockAlgorithm";
 
@@ -171,17 +157,11 @@ public enum SymmetricBlockAlgorithm {
 				return "TEA";
 			default:
 				error.setError("SBA02", "Unrecognized SymmetricBlockAlgorithm");
+				logger.error("Unrecognized SymmetricBlockAlgorithm");
 				return "SymmetricBlockAlgorithm";
 		}
 	}
 
-	/**
-	 * @param algorithm
-	 *            SymmetricBlockAlgorithm enum, algorithm name
-	 * @param error
-	 *            Error type for error management
-	 * @return the specific block size for the algorithm, algorithm unknown if 0
-	 */
 	public static int getBlockSize(SymmetricBlockAlgorithm algorithm, Error error) {
 		if (error == null) return 0;
 
@@ -228,18 +208,11 @@ public enum SymmetricBlockAlgorithm {
 				return 1024;
 			default:
 				error.setError("SBA03", "Unrecognized SymmetricBlockAlgorithm");
+				logger.error("Unrecognized SymmetricBlockAlgorithm");
 				return 0;
 		}
 	}
 
-	/**
-	 * @param algorithm
-	 *            SymmetricBlockAlgorithm enum, algorithm name
-	 * @param error
-	 *            Error type for error management
-	 * @return array int with fixed length 3 with key, if array[0]=0 is range, else
-	 *         fixed values
-	 */
 	protected static int[] getKeySize(SymmetricBlockAlgorithm algorithm, Error error) {
 		int[] keySize = new int[3];
 
@@ -309,6 +282,7 @@ public enum SymmetricBlockAlgorithm {
 				break;
 			default:
 				error.setError("SBA04", "Unrecognized SymmetricBlockAlgorithm");
+				logger.error("Unrecognized SymmetricBlockAlgorithm");
 		}
 		return keySize;
 	}

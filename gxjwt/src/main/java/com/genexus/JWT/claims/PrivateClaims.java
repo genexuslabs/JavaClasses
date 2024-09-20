@@ -1,15 +1,12 @@
 package com.genexus.JWT.claims;
 
+import com.genexus.securityapicommons.commons.Error;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.genexus.securityapicommons.commons.Error;
-
 public final class PrivateClaims extends Claims {
-
-	private List<Claim> claims;
-
 
 	public PrivateClaims() {
 		super();
@@ -32,12 +29,12 @@ public final class PrivateClaims extends Claims {
 		return super.setClaim(key, value, new Error());
 	}
 
+	@SuppressWarnings("unused")
 	public boolean setDoubleClaim(String key, double value) {
 		return super.setClaim(key, value, new Error());
 	}
 
-	public boolean setClaim(String key, PrivateClaims value)
-	{
+	public boolean setClaim(String key, PrivateClaims value) {
 
 		return super.setClaim(key, value, new Error());
 	}

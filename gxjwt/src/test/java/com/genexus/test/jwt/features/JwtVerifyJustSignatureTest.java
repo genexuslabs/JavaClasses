@@ -2,54 +2,38 @@ package com.genexus.test.jwt.features;
 
 import com.genexus.JWT.JWTCreator;
 import com.genexus.JWT.claims.PrivateClaims;
-import com.genexus.JWT.utils.DateUtil;
 import com.genexus.commons.JWTOptions;
 import com.genexus.securityapicommons.keys.SymmetricKeyGenerator;
 import com.genexus.test.commons.SecurityAPITestObject;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import com.genexus.test.jwt.resources.TestUtils;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class JwtVerifyJustSignatureTest extends SecurityAPITestObject {
 
 	protected static JWTCreator jwt;
 	protected static JWTOptions options;
 	protected static SymmetricKeyGenerator keyGen;
-	protected static DateUtil du;
-	protected PrivateClaims claims;
+	protected static PrivateClaims claims;
 	protected static String token;
 	protected static String currentDate;
 	protected static String hexaKey;
 
-	public static Test suite() {
-		return new TestSuite(JwtVerifyJustSignatureTest.class);
-	}
 
-	@Override
-	public void runTest() {
-
-		testPositive_JustSign();
-		testComplete_JustSign();
-		testNegative_JustSign();
-		testPositive_Sign();
-		testNegative_Sign();
-	}
-
-	@Override
-	public void setUp() {
+	@BeforeClass
+	public static void setUp() {
 		jwt = new JWTCreator();
 		options = new JWTOptions();
-		du = new DateUtil();
 		keyGen = new SymmetricKeyGenerator();
 		claims = new PrivateClaims();
 
-		currentDate = du.getCurrentDate();
+		currentDate = TestUtils.getCurrentDate();
 		hexaKey = keyGen.doGenerateKey("GENERICRANDOM", 256);
 
 		options.addRegisteredClaim("aud", "jitsi");
 		options.addRegisteredClaim("iss", "my_client");
 		options.addRegisteredClaim("sub", "meet.jit.si");
-		String expiration = du.currentPlusSeconds(200);
+		String expiration = TestUtils.currentPlusSeconds(200);
 		options.addCustomTimeValidationClaim("exp", expiration, "20");
 
 		claims.setClaim("hola", "hola");
@@ -61,6 +45,7 @@ public class JwtVerifyJustSignatureTest extends SecurityAPITestObject {
 		token = jwt.doCreate("HS256", claims, options);
 	}
 
+	@Test
 	public void testPositive_JustSign() {
 		JWTOptions options1 = new JWTOptions();
 		options1.setSecret(hexaKey);
@@ -68,11 +53,13 @@ public class JwtVerifyJustSignatureTest extends SecurityAPITestObject {
 		True(verification, jwt);
 	}
 
+	@Test
 	public void testComplete_JustSign() {
 		boolean verification = jwt.doVerifyJustSignature(token, "HS256", options);
 		True(verification, jwt);
 	}
 
+	@Test
 	public void testNegative_JustSign() {
 		JWTOptions options1 = new JWTOptions();
 		String hexaKey1 = keyGen.doGenerateKey("GENERICRANDOM", 256);
@@ -82,12 +69,14 @@ public class JwtVerifyJustSignatureTest extends SecurityAPITestObject {
 		assertTrue(jwt.hasError());
 	}
 
+	@Test
 	public void testPositive_Sign() {
 		options.setSecret(hexaKey);
 		boolean verification = jwt.doVerifySignature(token, "HS256", options);
 		True(verification, jwt);
 	}
 
+	@Test
 	public void testNegative_Sign() {
 		String hexaKey1 = keyGen.doGenerateKey("GENERICRANDOM", 256);
 		options.setSecret(hexaKey1);

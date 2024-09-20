@@ -1,30 +1,26 @@
 package com.genexus.securityapicommons.encoders;
 
+import com.genexus.securityapicommons.keys.CertificateX509;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
 
 import com.genexus.securityapicommons.commons.SecurityAPIObject;
 import com.genexus.securityapicommons.config.EncodingUtil;
 
-/**
- * @author sgrampone
- *
- */
+
 public class Base64Encoder extends SecurityAPIObject {
 
-	/**
-	 * Base64Encoder class constructor
-	 */
+	private static final Logger logger = LogManager.getLogger(Base64Encoder.class);
+
 	public Base64Encoder() {
 		super();
 	}
 
-	/**
-	 * @param text
-	 *            String UTF-8 plain text to encode
-	 * @return Base64 String text encoded
-	 */
 	public String toBase64(String text) {
+		logger.debug("toBase64");
+		this.error.cleanError();
 		this.error.cleanError();
 		EncodingUtil eu = new EncodingUtil();
 		byte[] textBytes = eu.getBytes(text);
@@ -32,23 +28,20 @@ public class Base64Encoder extends SecurityAPIObject {
 			this.error = eu.getError();
 			return "";
 		}
-		String result = "";
+
 		try {
-			result =  Base64.toBase64String(textBytes);
+			return Base64.toBase64String(textBytes);
 		}catch(Exception e)
 		{
 			this.error.setError("BS001", e.getMessage());
+			logger.error("toBase64", e);
 			return "";
 		}
-		return result;
 	}
 
-	/**
-	 * @param base64Text
-	 *            String Base64 encoded
-	 * @return String UTF-8 plain text from Base64
-	 */
 	public String toPlainText(String base64Text) {
+		this.error.cleanError();
+		logger.debug("toPlainText");
 		this.error.cleanError();
 		byte[] bytes;
 		try {
@@ -56,6 +49,7 @@ public class Base64Encoder extends SecurityAPIObject {
 		}catch(Exception e)
 		{
 			this.error.setError("BS002", e.getMessage());
+			logger.error("toPlainText", e);
 			return "";
 		}
 		EncodingUtil eu = new EncodingUtil();
@@ -68,55 +62,31 @@ public class Base64Encoder extends SecurityAPIObject {
 		return result;
 	}
 
-	/**
-	 * @param base64Text
-	 *            String Base64 encoded
-	 * @return String Hexa representation of base64Text
-	 */
 	public String toStringHexa(String base64Text) {
 		this.error.cleanError();
-		byte[] bytes;
+		logger.debug("toStringHexa");
 		try {
-			bytes = Base64.decode(base64Text);
+			byte[] bytes = Base64.decode(base64Text);
+			return Hex.toHexString(bytes).toUpperCase();
 		}catch(Exception e)
 		{
 			this.error.setError("BS003", e.getMessage());
+			logger.error("toStringHexa", e);
 			return "";
 		}
-		String result = "";
-		try {
-			result = Hex.toHexString(bytes).toUpperCase();
-		}catch(Exception e)
-		{
-			this.error.setError("BS004", e.getMessage());
-			return "";
-		}
-		return result;
 	}
 
-	/**
-	 * @param stringHexa
-	 *            String Hexa
-	 * @return String Base64 encoded of stringHexa
-	 */
 	public String fromStringHexaToBase64(String stringHexa) {
 		this.error.cleanError();
-		byte[] stringBytes;
+		logger.debug("fromStringHexaToBase64");
 		try {
-			stringBytes = Hex.decode(stringHexa);
+			byte[] stringBytes = Hex.decode(stringHexa);
+			return Base64.toBase64String(stringBytes);
 		}catch(Exception e)
 		{
 			this.error.setError("BS005", e.getMessage());
+			logger.error("fromStringHexaToBase64", e);
 			return "";
 		}
-		String result = "";
-		try {
-			result = Base64.toBase64String(stringBytes);
-		}catch(Exception e)
-		{
-			this.error.setError("BS006", e.getMessage());
-			return "";
-		}
-		return result;
 	}
 }

@@ -5,14 +5,12 @@ import com.genexus.cryptography.symmetric.SymmetricStreamCipher;
 import com.genexus.securityapicommons.keys.SymmetricKeyGenerator;
 import com.genexus.securityapicommons.utils.SecurityUtils;
 import com.genexus.test.commons.SecurityAPITestObject;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
-public class SymmetricDomainSpacesTest extends SecurityAPITestObject{
+public class SymmetricDomainSpacesTest extends SecurityAPITestObject {
 
 	private static String plainText;
-	private static SymmetricKeyGenerator keyGen;
 	private static String key128;
 	private static String IV128;
 	private static SymmetricBlockCipher symBlockCipher;
@@ -21,10 +19,10 @@ public class SymmetricDomainSpacesTest extends SecurityAPITestObject{
 	private static String key1024;
 	private static SymmetricStreamCipher symStreamCipher;
 
-	@Override
-	protected void setUp() {
+	@BeforeClass
+	public static void setUp() {
 		plainText = "Neque porro quisquam est qui dolorem ipsum quia dolor sit amet";
-		keyGen = new SymmetricKeyGenerator();
+		SymmetricKeyGenerator keyGen = new SymmetricKeyGenerator();
 
 		key128 = keyGen.doGenerateKey(" GENERICRANDOM", 128);
 		IV128 = keyGen.doGenerateIV("GENERICRANDOM ", 128);
@@ -35,18 +33,8 @@ public class SymmetricDomainSpacesTest extends SecurityAPITestObject{
 		symStreamCipher = new SymmetricStreamCipher();
 	}
 
-	public static Test suite() {
-		return new TestSuite(SymmetricDomainSpacesTest.class);
-	}
-
-	@Override
-	public void runTest() {
-		testBlockDomains();
-		testStreamDomains();
-	}
-
-	public void testBlockDomains()
-	{
+	@Test
+	public void testBlockDomains() {
 		String encrypted = symBlockCipher.doEncrypt("AES ", "CBC ", "ZEROBYTEPADDING ", key128, IV128, plainText);
 		assertFalse(symBlockCipher.hasError());
 		String decrypted = symBlockCipher.doDecrypt(" AES", " CBC", " ZEROBYTEPADDING", key128, IV128, encrypted);
@@ -54,8 +42,8 @@ public class SymmetricDomainSpacesTest extends SecurityAPITestObject{
 		assertTrue(SecurityUtils.compareStrings(decrypted, plainText));
 	}
 
-	public void testStreamDomains()
-	{
+	@Test
+	public void testStreamDomains() {
 		String encrypted = symStreamCipher.doEncrypt("RC4 ", key1024, "", plainTextStream);
 		assertFalse(symStreamCipher.hasError());
 		String decrypted = symStreamCipher.doDecrypt(" RC4", key1024, "", encrypted);

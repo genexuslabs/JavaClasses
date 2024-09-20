@@ -2,47 +2,33 @@ package com.genexus.test.jwt.features;
 
 import com.genexus.JWT.JWTCreator;
 import com.genexus.JWT.claims.PrivateClaims;
-import com.genexus.JWT.utils.DateUtil;
 import com.genexus.commons.JWTOptions;
 import com.genexus.securityapicommons.keys.SymmetricKeyGenerator;
 import com.genexus.test.commons.SecurityAPITestObject;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import com.genexus.test.jwt.resources.TestUtils;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class JwtHeaderParametersTest extends SecurityAPITestObject {
 
 	protected static JWTCreator jwt;
 	protected static JWTOptions options;
 	protected static SymmetricKeyGenerator keyGen;
-	protected static DateUtil du;
-	protected PrivateClaims claims;
+	protected static PrivateClaims claims;
 	protected static String token;
 	protected static String currentDate;
 	protected static String hexaKey;
 
-	public static Test suite() {
-		return new TestSuite(JwtHeaderParametersTest.class);
-	}
 
-	@Override
-	public void runTest() {
-		testPositive();
-		testNegative1();
-		testNegative2();
-		testNegative3();
-	}
-
-	@Override
-	public void setUp() {
+	@BeforeClass
+	public static void setUp() {
 		jwt = new JWTCreator();
 		options = new JWTOptions();
-		du = new DateUtil();
 		keyGen = new SymmetricKeyGenerator();
 		claims = new PrivateClaims();
 
 
-		currentDate = du.getCurrentDate();
+		currentDate = TestUtils.getCurrentDate();
 		hexaKey = keyGen.doGenerateKey("GENERICRANDOM", 256);
 
 		options.addRegisteredClaim("aud", "jitsi");
@@ -58,22 +44,33 @@ public class JwtHeaderParametersTest extends SecurityAPITestObject {
 		token = jwt.doCreate("HS256", claims, options);
 	}
 
-	public void testPositive()
-	{
-		boolean verification = jwt.doVerify(token, "HS256", claims, options);
-		True(verification, jwt);
+	@Test
+	public void testPositive() {
+		JWTOptions opt = new JWTOptions();
+		opt.addRegisteredClaim("aud", "jitsi");
+		opt.addRegisteredClaim("iss", "my_client");
+		opt.addRegisteredClaim("sub", "meet.jit.si");
+		opt.addCustomTimeValidationClaim("exp", currentDate, "20");
+
+		claims.setClaim("hola", "hola");
+
+		opt.addHeaderParameter("cty", "twilio-fpa;v=1");
+		opt.setSecret(hexaKey);
+		String tok = jwt.doCreate("HS256", claims, opt);
+		boolean verification = jwt.doVerify(tok, "HS256", claims, opt);
+       	True(verification, jwt);
 	}
 
-	public void testNegative1()
-	{
+	@Test
+	public void testNegative1() {
 		options.addHeaderParameter("pepe", "whatever");
 		boolean verification = jwt.doVerify(token, "HS256", claims, options);
 		assertFalse(verification);
 		assertFalse(jwt.hasError());
 	}
 
-	public void testNegative2()
-	{
+	@Test
+	public void testNegative2() {
 		JWTOptions op = new JWTOptions();
 		op.addRegisteredClaim("aud", "jitsi");
 		op.addRegisteredClaim("iss", "my_client");
@@ -88,8 +85,8 @@ public class JwtHeaderParametersTest extends SecurityAPITestObject {
 
 	}
 
-	public void testNegative3()
-	{
+	@Test
+	public void testNegative3() {
 		JWTOptions op = new JWTOptions();
 		op.addRegisteredClaim("aud", "jitsi");
 		op.addRegisteredClaim("iss", "my_client");

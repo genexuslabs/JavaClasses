@@ -1,7 +1,5 @@
 package com.genexus.test.jwt.other;
 
-import java.util.HashMap;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genexus.JWT.JWTCreator;
@@ -10,10 +8,12 @@ import com.genexus.commons.JWTOptions;
 import com.genexus.securityapicommons.keys.SymmetricKeyGenerator;
 import com.genexus.securityapicommons.utils.SecurityUtils;
 import com.genexus.test.commons.SecurityAPITestObject;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import java.util.HashMap;
 
+@SuppressWarnings("NewClassNamingConvention")
 public class issue84141Test extends SecurityAPITestObject {
 	protected static String ID;
 	protected static JWTCreator jwt;
@@ -22,17 +22,8 @@ public class issue84141Test extends SecurityAPITestObject {
 	protected static SymmetricKeyGenerator keyGen;
 	protected static String token;
 
-	public static Test suite() {
-		return new TestSuite(issue84141Test.class);
-	}
-
-	@Override
-	public void runTest() {
-		test_TokenTimes();
-	}
-
-	@Override
-	public void setUp() {
+	@BeforeClass
+	public static void setUp() {
 		options = new JWTOptions();
 		jwt = new JWTCreator();
 		claims = new PrivateClaims();
@@ -51,7 +42,8 @@ public class issue84141Test extends SecurityAPITestObject {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static void test_TokenTimes() {
+	@Test
+	public void test_TokenTimes() {
 		String hexaKey = keyGen.doGenerateKey("GENERICRANDOM", 256);
 		options.setSecret(hexaKey);
 		token = jwt.doCreate("HS256", claims, options);

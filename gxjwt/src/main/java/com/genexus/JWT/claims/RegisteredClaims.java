@@ -1,15 +1,20 @@
 package com.genexus.JWT.claims;
 
+import com.genexus.securityapicommons.commons.Error;
+import com.genexus.securityapicommons.utils.SecurityUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.HashMap;
 import java.util.List;
 
-import com.genexus.securityapicommons.commons.Error;
-import com.genexus.securityapicommons.utils.SecurityUtils;
-
+@SuppressWarnings("LoggingSimilarMessage")
 public final class RegisteredClaims extends Claims {
 
 	private List<Claim> claims;
 	private HashMap<String, String> customTimeValidationClaims;
+
+	private static final Logger logger = LogManager.getLogger(RegisteredClaims.class);
 
 	public RegisteredClaims() {
 		super();
@@ -28,52 +33,54 @@ public final class RegisteredClaims extends Claims {
 			return super.setClaim(key, value, error);
 		} else {
 			error.setError("RCS02", "Wrong registered key value");
+			logger.error("Wrong registered key value");
 			return false;
 		}
 	}
 
+	@SuppressWarnings("UnusedReturnValue")
 	public boolean setTimeValidatingClaim(String key, String value, String customValidationSeconds, Error error) {
 		if (RegisteredClaim.exists(key) && RegisteredClaim.isTimeValidatingClaim(key)) {
 			customTimeValidationClaims.put(key, customValidationSeconds);
 			return setClaim(key, value, error);
 		} else {
 			error.setError("RCS02", "Wrong registered key value");
+			logger.error("Wrong registered key value");
 			return false;
 		}
 	}
 
 	public long getClaimCustomValidationTime(String key) {
-		String stringTime = "";
-
 		if (customTimeValidationClaims.containsKey(key)) {
 			try {
-				stringTime = customTimeValidationClaims.get(key);
+				return Long.parseLong(customTimeValidationClaims.get(key));
 			} catch (Exception e) {
+				logger.error("getClaimCustomValidationTime", e);
 				return 0;
 			}
 		} else {
 			return 0;
 		}
-
-		return Long.parseLong(stringTime);
 	}
 
 	public boolean hasCustomValidationClaims() {
-		return customTimeValidationClaims.size() != 0;
+		return !customTimeValidationClaims.isEmpty();
 	}
 
 	@Override
 	public Object getClaimValue(String key, Error error) {
 		if (RegisteredClaim.exists(key)) {
-			for (int i = 0; i < claims.size(); i++) {
-				if (SecurityUtils.compareStrings(key, claims.get(i).getKey())) {
-					return claims.get(i).getValue();
+			for (Claim claim : claims) {
+				if (SecurityUtils.compareStrings(key, claim.getKey())) {
+					return claim.getValue();
 				}
 			}
 			error.setError("RCS03", String.format("Could not find a claim with %s key value", key));
+			logger.error(String.format("Could not find a claim with %s key value", key));
 			return "";
 		} else {
 			error.setError("RCS02", "Wrong registered key value");
+			logger.error("Wrong registered key value");
 			return "";
 		}
 	}

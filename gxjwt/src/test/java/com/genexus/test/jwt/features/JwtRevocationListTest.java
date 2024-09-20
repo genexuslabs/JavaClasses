@@ -6,11 +6,10 @@ import com.genexus.JWT.utils.RevocationList;
 import com.genexus.commons.JWTOptions;
 import com.genexus.securityapicommons.keys.SymmetricKeyGenerator;
 import com.genexus.test.commons.SecurityAPITestObject;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
-public class JwtRevocationListTest extends SecurityAPITestObject{
+public class JwtRevocationListTest extends SecurityAPITestObject {
 
 	protected static String ID;
 	protected static JWTCreator jwt;
@@ -20,24 +19,14 @@ public class JwtRevocationListTest extends SecurityAPITestObject{
 	protected static String token;
 	protected static RevocationList rList;
 
-	public static Test suite() {
-		return new TestSuite(JwtRevocationListTest.class);
-	}
 
-	@Override
-	public void runTest() {
-		testPositive();
-		testNegative();
-	}
-
-	@Override
-	public void setUp() {
+	@BeforeClass
+	public static void setUp() {
 		jwt = new JWTCreator();
 		options = new JWTOptions();
 		keyGen = new SymmetricKeyGenerator();
 		claims = new PrivateClaims();
 		rList = new RevocationList();
-
 
 
 		options.addRegisteredClaim("iss", "GXSA");
@@ -55,15 +44,14 @@ public class JwtRevocationListTest extends SecurityAPITestObject{
 		token = jwt.doCreate("HS256", claims, options);
 	}
 
-	public void testPositive()
-	{
+	@Test
+	public void testPositive() {
 		boolean verification = jwt.doVerify(token, "HS256", claims, options);
-		assertTrue(verification);
 		True(verification, jwt);
 	}
 
-	public void testNegative()
-	{
+	@Test
+	public void testNegative() {
 		rList.addIDToRevocationList(ID);
 		boolean verification = jwt.doVerify(token, "HS256", claims, options);
 		assertFalse(verification);

@@ -1,18 +1,13 @@
 package com.genexus.securityapicommons.config;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-
-import org.bouncycastle.util.encoders.Hex;
-
 import com.genexus.securityapicommons.commons.SecurityAPIObject;
-import com.genexus.securityapicommons.utils.SecurityUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class EncodingUtil extends SecurityAPIObject {
 
-	/**
-	 * EncodingUtil class constructor
-	 */
+	private static final Logger logger = LogManager.getLogger(EncodingUtil.class);
+
 	public EncodingUtil() {
 		super();
 	}
@@ -25,52 +20,36 @@ public class EncodingUtil extends SecurityAPIObject {
 		}
 	}
 
-	/**
-	 * @param inputText
-	 *            String UTF-8 text
-	 * @return byte array representation of the String UTF-8 input text
-	 */
 	public byte[] getBytes(String inputText) {
-		byte[] output = null;
-		String encoding = Global.getGlobalEncoding();
-		AvailableEncoding aEncoding = AvailableEncoding.getAvailableEncoding(encoding, this.error);
+		logger.debug(String.format("getBytes - Encoding = %s ", Global.getGlobalEncoding()));
+		AvailableEncoding encoding = AvailableEncoding.getAvailableEncoding(Global.getGlobalEncoding(), this.error);
 		if (this.hasError()) {
 			return null;
 		}
-		String encodingString = AvailableEncoding.valueOf(aEncoding);
 		try {
-			output = inputText.trim().getBytes(encodingString);
-		} catch (UnsupportedEncodingException e) {
+			String encodingString = AvailableEncoding.valueOf(encoding);
+			return inputText.trim().getBytes(encodingString);
+		} catch (Exception e) {
 			this.error.setError("EU001", e.getMessage());
+			logger.error("getBytes", e);
 			return null;
 		}
-
-		this.error.cleanError();
-		return output;
 	}
 
-	/**
-	 * @param bytes
-	 *            byte array representation of a String UTF-8 text
-	 * @return String UTF-8 text
-	 */
 	public String getString(byte[] bytes) {
-		String res = null;
-		String encoding = Global.getGlobalEncoding();
-
-		AvailableEncoding aEncoding = AvailableEncoding.getAvailableEncoding(encoding, this.error);
+		logger.debug(String.format("getString - Encoding = %s ", Global.getGlobalEncoding()));
+		AvailableEncoding encoding = AvailableEncoding.getAvailableEncoding(Global.getGlobalEncoding(), this.error);
 		if (this.hasError()) {
 			return "";
 		}
-		String encodingString = AvailableEncoding.valueOf(aEncoding);
 		try {
-			res = new String(bytes, encodingString).replaceAll("[\ufffd]", "");
-		} catch (UnsupportedEncodingException e) {
+			String encodingString = AvailableEncoding.valueOf(encoding);
+			return new String(bytes, encodingString).replaceAll("[\ufffd]", "").trim();
+		} catch (Exception e) {
 			this.error.setError("EU002", e.getMessage());
+			logger.error("getString", e);
 			return "";
 		}
-		this.error.cleanError();
-		return res.trim();
 	}
 
 

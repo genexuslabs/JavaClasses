@@ -8,6 +8,8 @@ import com.genexus.securityapicommons.config.EncodingUtil;
 import com.genexus.securityapicommons.keys.CertificateX509;
 import com.genexus.securityapicommons.keys.PrivateKeyManager;
 import com.genexus.securityapicommons.utils.SecurityUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaCertStore;
 import org.bouncycastle.cms.*;
@@ -34,6 +36,8 @@ import java.util.List;
 
 public class StandardSigner extends StandardSignerObject {
 
+	private static final Logger logger = LogManager.getLogger(StandardSigner.class);
+
 	public StandardSigner() {
 		super();
 	}
@@ -42,18 +46,18 @@ public class StandardSigner extends StandardSignerObject {
 
 	public String sign(String plainText, SignatureStandardOptions options)
 	{
+		logger.debug("sign");
 		this.error.cleanError();
-
-		/******* INPUT VERIFICATION - BEGIN *******/
-		SecurityUtils.validateObjectInput("signatureStandardOptions", options, this.error);
-		SecurityUtils.validateObjectInput("private key", options.getPrivateKey(), this.error);
-		SecurityUtils.validateObjectInput("certificate", options.getCertificate(), this.error);
-		SecurityUtils.validateStringInput("plainText", plainText, this.error);
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateObjectInput(String.valueOf(StandardSigner.class), "sign", "signatureStandardOptions", options, this.error);
+		SecurityUtils.validateObjectInput(String.valueOf(StandardSigner.class), "sign","private key", options.getPrivateKey(), this.error);
+		SecurityUtils.validateObjectInput(String.valueOf(StandardSigner.class), "sign","certificate", options.getCertificate(), this.error);
+		SecurityUtils.validateStringInput(String.valueOf(StandardSigner.class), "sign","plainText", plainText, this.error);
 		if (this.hasError()) {
 			return "";
 		}
 
-		/******* INPUT VERIFICATION - END *******/
+		// INPUT VERIFICATION - END
 
 		EncodingUtil eu = new EncodingUtil();
 		byte[] inputText = eu.getBytes(plainText);
@@ -62,30 +66,28 @@ public class StandardSigner extends StandardSignerObject {
 			return "";
 		}
 
-		String result = "";
+
 		try  {
-			result = sign_internal(inputText, options.getPrivateKey(), options.getCertificate(), options.getSignatureStandard(), options.getEncapsulated());
+			return sign_internal(inputText, options.getPrivateKey(), options.getCertificate(), options.getSignatureStandard(), options.getEncapsulated());
 		} catch (Exception e) {
 			error.setError("SS002", e.getMessage());
-			result = "";
+			logger.error("sign", e);
+			return "";
 		}
-
-		return result;
 	}
 
 	public boolean verify(String signed, String plainText, SignatureStandardOptions options)
 	{
+		logger.debug("verify");
 		this.error.cleanError();
-
-		/******* INPUT VERIFICATION - BEGIN *******/
-		SecurityUtils.validateObjectInput("signatureStandardOptions", options, this.error);
-		//SecurityUtils.validateStringInput("plainText", plainText, this.error);
-		SecurityUtils.validateStringInput("signed", signed, this.error);
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateObjectInput(String.valueOf(StandardSigner.class), "verify","signatureStandardOptions", options, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(StandardSigner.class), "verify","signed", signed, this.error);
 		if (this.hasError()) {
 			return false;
 		}
 
-		/******* INPUT VERIFICATION - END *******/
+		// INPUT VERIFICATION - END
 
 		EncodingUtil eu = new EncodingUtil();
 		byte[] plainText_bytes = eu.getBytes(plainText);
@@ -94,16 +96,13 @@ public class StandardSigner extends StandardSignerObject {
 			return false;
 		}
 
-		boolean result = false;
 		try  {
-			result = verify_internal(Base64.decode(signed), plainText_bytes, options.getEncapsulated());
+			return verify_internal(Base64.decode(signed), plainText_bytes, options.getEncapsulated());
 		} catch (Exception e) {
 			error.setError("SS002", e.getMessage());
-			e.printStackTrace();
-			result = false;
+			logger.error("verify", e);
+			return false;
 		}
-
-		return result;
 	}
 
 	/******** EXTERNAL OBJECT PUBLIC METHODS - END ********/
@@ -153,22 +152,19 @@ public class StandardSigner extends StandardSignerObject {
 		SignerInformationStore signers = signedData.getSignerInfos();
 
 		Collection c = signers.getSigners();
-		Iterator it = c.iterator();
 
-		while (it.hasNext())
-		{
+		for (Object o : c) {
 
-			SignerInformation signer = (SignerInformation)it.next();
+			SignerInformation signer = (SignerInformation) o;
 			Collection certCollection = certStore.getMatches(signer.getSID());
 
 			Iterator certIt = certCollection.iterator();
-			X509CertificateHolder cert1 = (X509CertificateHolder)certIt.next();
+			X509CertificateHolder cert1 = (X509CertificateHolder) certIt.next();
 
 			SignerInformationVerifier signerInformationVerifier = new JcaSimpleSignerInfoVerifierBuilder()
 				.build(cert1);
 			boolean verifies = signer.verify(signerInformationVerifier);
-			if(!verifies)
-			{
+			if (!verifies) {
 				return false;
 			}
 		}

@@ -6,8 +6,8 @@ import com.genexus.securityapicommons.config.EncodingUtil;
 import com.genexus.securityapicommons.keys.CertificateX509;
 import com.genexus.securityapicommons.keys.PrivateKeyManager;
 import com.genexus.test.commons.SecurityAPITestObject;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class RSAStandardSigningTest extends SecurityAPITestObject {
 
@@ -23,8 +23,8 @@ public class RSAStandardSigningTest extends SecurityAPITestObject {
 	public static String alias;
 	public static String password;
 
-	@Override
-	protected void setUp() {
+	@BeforeClass
+	public static void setUp() {
 
 		path_RSA_sha1_1024 = resources.concat("/dummycerts/RSA_sha1_1024/");
 		path_RSA_sha256_1024 = resources.concat("/dummycerts/RSA_sha256_1024/");
@@ -43,39 +43,9 @@ public class RSAStandardSigningTest extends SecurityAPITestObject {
 
 	}
 
-	public static Test suite() {
-		return new TestSuite(RSAStandardSigningTest.class);
-	}
-
-	@Override
-	public void runTest() {
-		test_sha1_1024_DER();
-		test_sha1_1024_PEM();
-		test_sha1_1024_PEM_Encrypted();
-		test_sha1_1024_PKCS12();
-
-		test_sha256_1024_DER();
-		test_sha256_1024_PEM();
-		test_sha256_1024_PEM_Encrypted();
-		test_sha256_1024_PKCS12();
-
-		test_sha256_2048_DER();
-		test_sha256_2048_PEM();
-		test_sha256_2048_PEM_Encrypted();
-		test_sha256_2048_PKCS12();
-
-		test_sha512_2048_DER();
-		test_sha512_2048_PEM();
-		test_sha512_2048_PEM_Encrypted();
-		test_sha512_2048_PKCS12();
-
-		test_base64();
-
-	}
-
 	private void bulkTest(SignatureStandardOptions options) {
-		for (int i = 0; i < encodings.length; i++) {
-			eu.setEncoding(encodings[i]);
+		for (String encoding : encodings) {
+			eu.setEncoding(encoding);
 			test(options);
 		}
 	}
@@ -85,16 +55,15 @@ public class RSAStandardSigningTest extends SecurityAPITestObject {
 		StandardSigner signer = new StandardSigner();
 		String signed_encapsulated = signer.sign(plainText, options);
 		boolean result_encapsulated = signer.verify(signed_encapsulated, "", options);
-		assertTrue(result_encapsulated);
 		True(result_encapsulated, signer);
 
 		options.setEncapsulated(false);
 		String signed = signer.sign(plainText, options);
 		boolean result = signer.verify(signed, plainText, options);
-		assertTrue(result);
 		True(result, signer);
 	}
 
+	@Test
 	public void test_sha1_1024_DER() {
 
 		String pathKey = path_RSA_sha1_1024 + "sha1d_key.pem";
@@ -109,6 +78,7 @@ public class RSAStandardSigningTest extends SecurityAPITestObject {
 		bulkTest(options);
 	}
 
+	@Test
 	public void test_sha1_1024_PEM() {
 		String pathKey = path_RSA_sha1_1024 + "sha1d_key.pem";
 		String pathCert = path_RSA_sha1_1024 + "sha1_cert.pem";
@@ -123,8 +93,7 @@ public class RSAStandardSigningTest extends SecurityAPITestObject {
 
 	}
 
-
-
+	@Test
 	public void test_sha1_1024_PKCS12() {
 		String pathKey = path_RSA_sha1_1024 + "sha1_cert.p12";
 		String pathCert = path_RSA_sha1_1024 + "sha1_cert.p12";
@@ -139,6 +108,7 @@ public class RSAStandardSigningTest extends SecurityAPITestObject {
 
 	}
 
+	@Test
 	public void test_sha256_1024_DER() {
 		String pathKey = path_RSA_sha256_1024 + "sha256d_key.pem";
 		String pathCert = path_RSA_sha256_1024 + "sha256_cert.crt";
@@ -153,6 +123,7 @@ public class RSAStandardSigningTest extends SecurityAPITestObject {
 
 	}
 
+	@Test
 	public void test_sha256_1024_PEM() {
 		String pathKey = path_RSA_sha256_1024 + "sha256d_key.pem";
 		String pathCert = path_RSA_sha256_1024 + "sha256_cert.pem";
@@ -167,8 +138,7 @@ public class RSAStandardSigningTest extends SecurityAPITestObject {
 
 	}
 
-
-
+	@Test
 	public void test_sha256_1024_PKCS12() {
 		String pathKey = path_RSA_sha256_1024 + "sha256_cert.p12";
 		String pathCert = path_RSA_sha256_1024 + "sha256_cert.p12";
@@ -183,6 +153,7 @@ public class RSAStandardSigningTest extends SecurityAPITestObject {
 
 	}
 
+	@Test
 	public void test_sha256_2048_DER() {
 		String pathKey = path_RSA_sha256_2048 + "sha256d_key.pem";
 		String pathCert = path_RSA_sha256_2048 + "sha256_cert.crt";
@@ -197,6 +168,7 @@ public class RSAStandardSigningTest extends SecurityAPITestObject {
 
 	}
 
+	@Test
 	public void test_sha256_2048_PEM() {
 		String pathKey = path_RSA_sha256_2048 + "sha256d_key.pem";
 		String pathCert = path_RSA_sha256_2048 + "sha256_cert.pem";
@@ -211,8 +183,7 @@ public class RSAStandardSigningTest extends SecurityAPITestObject {
 
 	}
 
-
-
+	@Test
 	public void test_sha256_2048_PKCS12() {
 		String pathKey = path_RSA_sha256_2048 + "sha256_cert.p12";
 		String pathCert = path_RSA_sha256_2048 + "sha256_cert.p12";
@@ -227,6 +198,7 @@ public class RSAStandardSigningTest extends SecurityAPITestObject {
 
 	}
 
+	@Test
 	public void test_sha512_2048_DER() {
 		String pathKey = path_RSA_sha512_2048 + "sha512d_key.pem";
 		String pathCert = path_RSA_sha512_2048 + "sha512_cert.crt";
@@ -241,6 +213,7 @@ public class RSAStandardSigningTest extends SecurityAPITestObject {
 
 	}
 
+	@Test
 	public void test_sha512_2048_PEM() {
 		String pathKey = path_RSA_sha512_2048 + "sha512d_key.pem";
 		String pathCert = path_RSA_sha512_2048 + "sha512_cert.pem";
@@ -255,8 +228,7 @@ public class RSAStandardSigningTest extends SecurityAPITestObject {
 
 	}
 
-
-
+	@Test
 	public void test_sha512_2048_PKCS12() {
 		String pathKey = path_RSA_sha512_2048 + "sha512_cert.p12";
 		String pathCert = path_RSA_sha512_2048 + "sha512_cert.p12";
@@ -270,6 +242,7 @@ public class RSAStandardSigningTest extends SecurityAPITestObject {
 		bulkTest(options);
 	}
 
+	@Test
 	public void test_base64()
 	{
 		String base64stringCert = "MIIC/DCCAmWgAwIBAgIJAPmCVmfcc0IXMA0GCSqGSIb3DQEBCwUAMIGWMQswCQYDVQQGEwJVWTETMBEGA1UECAwKTW9udGV2aWRlbzETMBEGA1UEBwwKTW9udGV2aWRlbzEQMA4GA1UECgwHR2VuZVh1czERMA8GA1UECwwIU2VjdXJpdHkxEjAQBgNVBAMMCXNncmFtcG9uZTEkMCIGCSqGSIb3DQEJARYVc2dyYW1wb25lQGdlbmV4dXMuY29tMB4XDTIwMDcwODE4NDkxNVoXDTI1MDcwNzE4NDkxNVowgZYxCzAJBgNVBAYTAlVZMRMwEQYDVQQIDApNb250ZXZpZGVvMRMwEQYDVQQHDApNb250ZXZpZGVvMRAwDgYDVQQKDAdHZW5lWHVzMREwDwYDVQQLDAhTZWN1cml0eTESMBAGA1UEAwwJc2dyYW1wb25lMSQwIgYJKoZIhvcNAQkBFhVzZ3JhbXBvbmVAZ2VuZXh1cy5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMZ8m4ftIhfrdugi5kEszRZr5IRuqGDLTex+CfVnhnBYXyQgJXeCI0eyRYUAbNzw/9MPdFN//pV26AXeH/ajORVu1JVoOACZdNOIPFnwXXh8oBxNxLAYlqoK2rAL+/tns8rKqqS4p8HSat9tj07TUXnsYJmmbXJM/eB94Ex66D1ZAgMBAAGjUDBOMB0GA1UdDgQWBBTfXY8eOfDONCZpFE0V34mJJeCYtTAfBgNVHSMEGDAWgBTfXY8eOfDONCZpFE0V34mJJeCYtTAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBCwUAA4GBAAPv7AFlCSpJ32c/VYowlbk6UBhOKmVWBQlrAtvVQYtCKO/y9CEB8ikG19c8lHM9axnsbZR+G7g04Rfuiea3T7VPkSmUXPpz5fl6Zyk4LZg5Oji7MMMXGmr+7cpYWRhifCVwoxSgZEXt3d962IZ1Wei0LMO+4w4gnzPxqr8wVHnT";
@@ -284,7 +257,7 @@ public class RSAStandardSigningTest extends SecurityAPITestObject {
 		bulkTest(options);
 	}
 
-
+	@Test
 	public void test_sha1_1024_PEM_Encrypted() {
 		String pathKey = path_RSA_sha1_1024 + "sha1_key.pem";
 		String pathCert = path_RSA_sha1_1024 + "sha1_cert.pem";
@@ -299,6 +272,7 @@ public class RSAStandardSigningTest extends SecurityAPITestObject {
 
 	}
 
+	@Test
 	public void test_sha256_1024_PEM_Encrypted() {
 		String pathKey = path_RSA_sha256_1024 + "sha256_key.pem";
 		String pathCert = path_RSA_sha256_1024 + "sha256_cert.pem";
@@ -313,6 +287,7 @@ public class RSAStandardSigningTest extends SecurityAPITestObject {
 
 	}
 
+	@Test
 	public void test_sha256_2048_PEM_Encrypted() {
 		String pathKey = path_RSA_sha256_2048 + "sha256_key.pem";
 		String pathCert = path_RSA_sha256_2048 + "sha256_cert.pem";
@@ -327,6 +302,7 @@ public class RSAStandardSigningTest extends SecurityAPITestObject {
 
 	}
 
+	@Test
 	public void test_sha512_2048_PEM_Encrypted() {
 		String pathKey = path_RSA_sha512_2048 + "sha512_key.pem";
 		String pathCert = path_RSA_sha512_2048 + "sha512_cert.pem";

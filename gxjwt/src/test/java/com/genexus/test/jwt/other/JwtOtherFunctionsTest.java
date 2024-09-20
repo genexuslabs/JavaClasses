@@ -6,9 +6,9 @@ import com.genexus.commons.JWTOptions;
 import com.genexus.securityapicommons.keys.SymmetricKeyGenerator;
 import com.genexus.securityapicommons.utils.SecurityUtils;
 import com.genexus.test.commons.SecurityAPITestObject;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class JwtOtherFunctionsTest extends SecurityAPITestObject {
 
@@ -19,21 +19,8 @@ public class JwtOtherFunctionsTest extends SecurityAPITestObject {
 	protected static SymmetricKeyGenerator keyGen;
 	protected static String token;
 
-	public static Test suite() {
-		return new TestSuite(JwtOtherFunctionsTest.class);
-	}
-
-	@Override
-	public void runTest() {
-		generateToken();
-		testGetID();
-		testGetPayload();
-		testGetHeader();
-		testbadAlgorithm();
-	}
-
-	@Override
-	public void setUp() {
+	@BeforeClass
+	public static void setUp() {
 		options = new JWTOptions();
 		jwt = new JWTCreator();
 		claims = new PrivateClaims();
@@ -42,13 +29,15 @@ public class JwtOtherFunctionsTest extends SecurityAPITestObject {
 		options.addRegisteredClaim("iss", "GXSA");
 		options.addRegisteredClaim("sub", "subject1");
 		options.addRegisteredClaim("aud", "audience1");
-		ID = "0696bb20-6223-4a1c-9ebf-e15c74387b9c, 0696bb20-6223-4a1c-9ebf-e15c74387b9c";// &guid.Generate()
+		ID = "0696bb20-6223-4a1c-9ebf-e15c74387b9c"; // &guid.Generate()
 		options.addRegisteredClaim("jti", ID);
 		claims.setClaim("hola1", "hola1");
 		claims.setClaim("hola2", "hola2");
+		generateToken();
 	}
 
-	public void generateToken() {
+
+	public static void generateToken() {
 		String hexaKey = keyGen.doGenerateKey("GENERICRANDOM", 256);
 		options.setSecret(hexaKey);
 		token = jwt.doCreate("HS256", claims, options);
@@ -57,11 +46,13 @@ public class JwtOtherFunctionsTest extends SecurityAPITestObject {
 		True(verification, jwt);
 	}
 
+	@Test
 	public void testGetID() {
 		String tID = jwt.getTokenID(token);
-		assertTrue(SecurityUtils.compareStrings(ID, tID));
+		Assert.assertEquals(ID, tID);
 	}
 
+	@Test
 	public void testGetPayload() {
 		String payload = "{\"sub\":\"subject1\",\"aud\":\"audience1\",\"hola1\":\"hola1\",\"iss\":\"GXSA\",\"hola2\":\"hola2\",\"jti\":\""
 			+ ID + "\"}";
@@ -71,23 +62,25 @@ public class JwtOtherFunctionsTest extends SecurityAPITestObject {
 			+ ID + "\"}";
 
 		String tPayload = jwt.getPayload(token);
-		assertTrue(SecurityUtils.compareStrings(payload, tPayload) || SecurityUtils.compareStrings(payload1, tPayload)
+		Assert.assertTrue(SecurityUtils.compareStrings(payload, tPayload) || SecurityUtils.compareStrings(payload1, tPayload)
 			|| SecurityUtils.compareStrings(payload2, tPayload));
 	}
 
+	@Test
 	public void testGetHeader() {
 		String header = "{\"typ\":\"JWT\",\"alg\":\"HS256\"}";
 		String header1 = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
 		String tHeader = jwt.getHeader(token);
-		assertTrue(SecurityUtils.compareStrings(header, tHeader) || SecurityUtils.compareStrings(header1, tHeader));
+		Assert.assertTrue(SecurityUtils.compareStrings(header, tHeader) || SecurityUtils.compareStrings(header1, tHeader));
 	}
 
+	@Test
 	public void testbadAlgorithm() {
 		String hexaKey = keyGen.doGenerateKey("GENERICRANDOM", 256);
 		options.setSecret(hexaKey);
 		String token1 = jwt.doCreate("HS256", claims, options);
 		boolean verification = jwt.doVerify(token1, "RS256", claims, options);
-		assertFalse(verification);
-		assertTrue(jwt.hasError());
+		Assert.assertFalse(verification);
+		Assert.assertTrue(jwt.hasError());
 	}
 }

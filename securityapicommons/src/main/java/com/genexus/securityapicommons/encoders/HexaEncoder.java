@@ -1,63 +1,48 @@
 package com.genexus.securityapicommons.encoders;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 
 import com.genexus.securityapicommons.commons.SecurityAPIObject;
 import com.genexus.securityapicommons.config.EncodingUtil;
 
-/**
- * @author sgrampone
- *
- */
 public class HexaEncoder extends SecurityAPIObject {
 
-	/**
-	 * Hexa class contstructor
-	 */
+	private static final Logger logger = LogManager.getLogger(HexaEncoder.class);
+
 	public HexaEncoder() {
 		super();
 	}
 
-	/**
-	 * @param plainText
-	 *            String UTF-8 plain text
-	 * @return String Hexa hexadecimal representation of plainText
-	 */
 	public String toHexa(String plainText) {
 		this.error.cleanError();
+		logger.debug("toHexa");
 		EncodingUtil eu = new EncodingUtil();
 		byte[] stringBytes = eu.getBytes(plainText);
 		if (eu.hasError()) {
 			this.error = eu.getError();
 			return "";
 		}
-		String hexa = "";
-		try
-		{
-			hexa = Hex.toHexString(stringBytes, 0, stringBytes.length);
-		}catch(Exception e)
-		{
+		try {
+			return Hex.toHexString(stringBytes, 0, stringBytes.length).toUpperCase();
+		} catch (Exception e) {
 			this.error.setError("HE001", e.getMessage());
+			logger.error("toHexa", e);
 			return "";
 		}
-		return hexa.toUpperCase();
 	}
 
-	/**
-	 * @param stringHexa
-	 *            String hexadecimal representation of a text
-	 * @return String UTF-8 plain text from stringHexa
-	 */
 	public String fromHexa(String stringHexa) {
-
 		this.error.cleanError();
+
+		logger.debug("fromHexa");
 		byte[] resBytes;
-		try
-		{
+		try {
 			resBytes = Hex.decode(fixString(stringHexa));
-		}catch(Exception e)
-		{
+		} catch (Exception e) {
 			this.error.setError("HE002", e.getMessage());
+			logger.error("fromHexa", e);
 			return "";
 		}
 		EncodingUtil eu = new EncodingUtil();
@@ -70,27 +55,22 @@ public class HexaEncoder extends SecurityAPIObject {
 	}
 
 
-	public boolean isHexa(String input)
-	{
+	public boolean isHexa(String input) {
 		this.error.cleanError();
-		try
-		{
+		logger.debug("isHexa");
+		try {
 			Hex.decode(fixString(input));
-		}catch(Exception e)
-		{
+		} catch (Exception e) {
 			return false;
 		}
 		return true;
 	}
 
-	public static String fixString(String input)
-	{
-		if(!input.contains("-"))
-		{
+	public static String fixString(String input) {
+		if (!input.contains("-")) {
 			return input;
-		}else {
-			String inputStr = input.replace("-", "");
-			return inputStr;
+		} else {
+			return input.replace("-", "");
 		}
 	}
 

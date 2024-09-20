@@ -49,6 +49,11 @@
             <version>1.15</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>securityapicommons</artifactId>
             <version>${project.version}</version>
@@ -58,6 +63,12 @@
             <artifactId>securityapicommons</artifactId>
             <type>test-jar</type>
             <version>${revision}${changelist}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>3.6.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

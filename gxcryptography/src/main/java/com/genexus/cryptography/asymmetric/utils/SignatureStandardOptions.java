@@ -3,7 +3,8 @@ package com.genexus.cryptography.asymmetric.utils;
 import com.genexus.securityapicommons.commons.SecurityAPIObject;
 import com.genexus.securityapicommons.keys.CertificateX509;
 import com.genexus.securityapicommons.keys.PrivateKeyManager;
-public class SignatureStandardOptions extends SecurityAPIObject{
+
+public class SignatureStandardOptions extends SecurityAPIObject {
 
 	private CertificateX509 certificate;
 	private PrivateKeyManager privateKey;
@@ -12,12 +13,11 @@ public class SignatureStandardOptions extends SecurityAPIObject{
 
 	private boolean encapsulated;
 
-
-	public SignatureStandardOptions()
-	{
+	public SignatureStandardOptions() {
 		this.signatureStandard = SignatureStandard.CMS;
 		this.encapsulated = false;
 	}
+
 	/******** EXTERNAL OBJECT PUBLIC METHODS - BEGIN ********/
 	public void setPrivateKey(PrivateKeyManager key) {
 		this.privateKey = key;
@@ -27,13 +27,14 @@ public class SignatureStandardOptions extends SecurityAPIObject{
 		this.certificate = cert;
 	}
 
-	public boolean setSignatureStandard(String standard)
-	{
+	public boolean setSignatureStandard(String standard) {
 		this.signatureStandard = SignatureStandard.getSignatureStandard(standard, this.error);
-		return this.hasError() ? false: true;
+		return !this.hasError();
 	}
 
-	public void setEncapsulated(boolean value) {this.encapsulated = value; }
+	public void setEncapsulated(boolean value) {
+		this.encapsulated = value;
+	}
 
 	/******** EXTERNAL OBJECT PUBLIC METHODS - END ********/
 
@@ -41,9 +42,15 @@ public class SignatureStandardOptions extends SecurityAPIObject{
 		return this.privateKey;
 	}
 
-	public CertificateX509 getCertificate() { return this.certificate;}
+	public CertificateX509 getCertificate() {
+		return this.certificate;
+	}
 
-	public SignatureStandard getSignatureStandard() { return this.signatureStandard;}
+	public SignatureStandard getSignatureStandard() {
+		return this.signatureStandard;
+	}
 
-	public boolean getEncapsulated() { return this.encapsulated; }
+	public boolean getEncapsulated() {
+		return this.encapsulated;
+	}
 }

@@ -4,10 +4,10 @@ import com.genexus.cryptography.checksum.ChecksumCreator;
 import com.genexus.cryptography.symmetric.SymmetricBlockCipher;
 import com.genexus.securityapicommons.keys.SymmetricKeyGenerator;
 import com.genexus.test.commons.SecurityAPITestObject;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-public class BlockEncryptionFilesTest extends SecurityAPITestObject{
+public class BlockEncryptionFilesTest extends SecurityAPITestObject {
 
 
 	protected static String key256;
@@ -23,22 +23,20 @@ public class BlockEncryptionFilesTest extends SecurityAPITestObject{
 	protected static String IV128;
 	protected static String IV64;
 
-	private static SymmetricKeyGenerator keyGen;
-
 	protected static String pathInput;
 	protected static String pathOutputEncrypted;
 	protected static String pathOutput;
 
-	@Override
-	protected void setUp() {
+	@BeforeClass
+	public static void setUp() {
 
-		pathInput = resources.concat("/flag.jpg"); //"C:\\Temp\\flag.jpg";
+		pathInput = resources.concat("/flag.jpg");
 		pathOutputEncrypted = tempFolder.toString() + "flagEncrypted";
 		pathOutput = tempFolder + "flagOut.jpg";
 
-		keyGen = new SymmetricKeyGenerator();
+		SymmetricKeyGenerator keyGen = new SymmetricKeyGenerator();
 
-		/**** CREATE KEYS ****/
+		// CREATE KEYS
 
 		key256 = keyGen.doGenerateKey("GENERICRANDOM", 256);
 		key160 = keyGen.doGenerateKey("GENERICRANDOM", 160);
@@ -46,7 +44,7 @@ public class BlockEncryptionFilesTest extends SecurityAPITestObject{
 		key128 = keyGen.doGenerateKey("GENERICRANDOM", 128);
 		key64 = keyGen.doGenerateKey("GENERICRANDOM", 64);
 
-		/**** CREATE IVs ****/
+		// CREATE IVs
 
 		IV256 = keyGen.doGenerateIV("GENERICRANDOM", 256);
 		IV224 = keyGen.doGenerateIV("GENERICRANDOM", 224);
@@ -56,21 +54,8 @@ public class BlockEncryptionFilesTest extends SecurityAPITestObject{
 		IV64 = keyGen.doGenerateIV("GENERICRANDOM", 64);
 	}
 
-	public static Test suite() {
-		return new TestSuite(BlockEncryptionFilesTest.class);
-	}
-
-	@Override
-	public void runTest() {
-		testAES();
-		testDES();
-		testTRIPLEDES();
-		testRIJNDAEL();
-		testTWOFISH();
-	}
-
-	public void testAES()
-	{
+	@Test
+	public void testAES() {
 		testBulkFiles("AES", "CBC", "ZEROBYTEPADDING", key128, IV128);
 		testBulkFiles("AES", "CBC", "ZEROBYTEPADDING", key192, IV128);
 		testBulkFiles("AES", "CBC", "ZEROBYTEPADDING", key256, IV128);
@@ -96,19 +81,19 @@ public class BlockEncryptionFilesTest extends SecurityAPITestObject{
 		testBulkGCM("AES", key256, IV128);
 	}
 
-	public void testDES()
-	{
+	@Test
+	public void testDES() {
 		testBulkFiles("DES", "CBC", "ZEROBYTEPADDING", key64, IV64);
 	}
 
-	public void testTRIPLEDES()
-	{
+	@Test
+	public void testTRIPLEDES() {
 		testBulkFiles("TRIPLEDES", "CBC", "ZEROBYTEPADDING", key128, IV64);
 		testBulkFiles("TRIPLEDES", "CBC", "ZEROBYTEPADDING", key192, IV64);
 	}
 
-	public void testRIJNDAEL()
-	{
+	@Test
+	public void testRIJNDAEL() {
 		testBulkFiles("RIJNDAEL_128", "CBC", "ZEROBYTEPADDING", key128, IV128);
 		testBulkFiles("RIJNDAEL_128", "CBC", "ZEROBYTEPADDING", key256, IV128);
 		testBulkFiles("RIJNDAEL_256", "CBC", "ZEROBYTEPADDING", key128, IV256);
@@ -138,8 +123,8 @@ public class BlockEncryptionFilesTest extends SecurityAPITestObject{
 		testBulkGCM("RIJNDAEL_128", key256, IV128);
 	}
 
-	public void testTWOFISH()
-	{
+	@Test
+	public void testTWOFISH() {
 		testBulkFiles("TWOFISH", "CBC", "ZEROBYTEPADDING", key128, IV128);
 		testBulkFiles("TWOFISH", "CBC", "ZEROBYTEPADDING", key192, IV128);
 		testBulkFiles("TWOFISH", "CBC", "ZEROBYTEPADDING", key256, IV128);
@@ -169,10 +154,9 @@ public class BlockEncryptionFilesTest extends SecurityAPITestObject{
 
 	}
 
-	private void testBulkFiles(String algorithm, String mode, String padding, String key, String IV)
-	{
+	private void testBulkFiles(String algorithm, String mode, String padding, String key, String IV) {
 		SymmetricBlockCipher cipher = new SymmetricBlockCipher();
-		boolean encrypts = cipher.doEncryptFile(algorithm,  mode,  padding, key, IV, pathInput, pathOutputEncrypted);
+		boolean encrypts = cipher.doEncryptFile(algorithm, mode, padding, key, IV, pathInput, pathOutputEncrypted);
 		True(encrypts, cipher);
 		boolean decrypts = cipher.doDecryptFile(algorithm, mode, padding, key, IV, pathOutputEncrypted, pathOutput);
 		True(decrypts, cipher);
@@ -182,8 +166,7 @@ public class BlockEncryptionFilesTest extends SecurityAPITestObject{
 		True(checks, check);
 	}
 
-	private void testBulkGCM(String algorithm, String key, String nonce)
-	{
+	private void testBulkGCM(String algorithm, String key, String nonce) {
 		SymmetricBlockCipher cipher = new SymmetricBlockCipher();
 		boolean encrypts = cipher.doAEADEncryptFile(algorithm, "AEAD_GCM", key, 128, nonce, pathInput, pathOutputEncrypted);
 		True(encrypts, cipher);

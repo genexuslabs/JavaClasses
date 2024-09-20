@@ -1,19 +1,25 @@
 package com.genexus.JWT.claims;
 
+import com.auth0.jwt.JWTCreator.Builder;
+import com.auth0.jwt.interfaces.Verification;
+import com.genexus.securityapicommons.commons.Error;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-import com.auth0.jwt.JWTCreator.Builder;
-import com.auth0.jwt.interfaces.Verification;
-import com.genexus.securityapicommons.commons.Error;
-
-import static java.lang.Long.*;
-
+@SuppressWarnings("LoggingSimilarMessage")
 public enum RegisteredClaim {
-	iss, exp, sub, aud, nbf, iat, jti,;
+	iss, exp, sub, aud, nbf, iat, jti,
+	;
 
+	private static final Logger logger = LogManager.getLogger(RegisteredClaim.class);
+
+	@SuppressWarnings("unused")
 	public static String valueOf(RegisteredClaim registeredClaim, Error error) {
 		switch (registeredClaim) {
 			case iss:
@@ -32,6 +38,7 @@ public enum RegisteredClaim {
 				return "jti";
 			default:
 				error.setError("RCL01", "Unknown registered Claim");
+				logger.error("Unknown registered Claim");
 				return "Unknown registered claim";
 
 		}
@@ -55,6 +62,7 @@ public enum RegisteredClaim {
 				return RegisteredClaim.jti;
 			default:
 				error.setError("RCL02", "Unknown registered Claim");
+				logger.error("Unknown registered Claim");
 				return null;
 		}
 	}
@@ -134,146 +142,57 @@ public enum RegisteredClaim {
 		return verification;
 	}
 
-	public static Builder getBuilderWithClaim(String registeredClaimKey, String registeredClaimValue,
-											  Builder tokenBuilder, Error error) {
+	public static void getBuilderWithClaim(String registeredClaimKey, String registeredClaimValue,
+										   Builder tokenBuilder, Error error) {
 		RegisteredClaim regClaim = getRegisteredClaim(registeredClaimKey, error);
-		if (error.existsError()) {
-			return null;
-		} else {
-			return getBuilderWithClaim(regClaim, registeredClaimValue, tokenBuilder, error);
+		getBuilderWithClaim(regClaim, registeredClaimValue, tokenBuilder, error);
+	}
+
+	private static boolean isANumber(String value) {
+		return value.matches("-?\\d+");
+	}
+
+	public static void getBuilderWithClaim(RegisteredClaim registeredClaimKey, String registeredClaimValue,
+										   Builder tokenBuilder, Error error) {
+		logger.debug("getBuilderWithClaim");
+
+		try {
+			switch (registeredClaimKey) {
+				case iss:
+					tokenBuilder.withIssuer(registeredClaimValue);
+					break;
+				case exp:
+					tokenBuilder.withExpiresAt(solveDate(registeredClaimValue));
+					break;
+				case sub:
+					tokenBuilder.withSubject(registeredClaimValue);
+					break;
+				case aud:
+					tokenBuilder.withAudience(registeredClaimValue);
+					break;
+				case nbf:
+					tokenBuilder.withNotBefore(solveDate(registeredClaimValue));
+					break;
+				case iat:
+					tokenBuilder.withIssuedAt(solveDate(registeredClaimValue));
+					break;
+				case jti:
+					tokenBuilder.withJWTId(registeredClaimValue);
+					break;
+				default:
+					error.setError("RCL12", "Unknown registered claim");
+			}
+		} catch (Exception e) {
+			error.setError("RCL11", e.getMessage());
+			logger.error("getBuilderWithClaim", e);
 		}
 	}
 
-	private static boolean isANumber(String value)
-	{
-		return value.matches("-?\\d+") ? true: false;
-	}
-	public static Builder getBuilderWithClaim(RegisteredClaim registeredClaimKey, String registeredClaimValue,
-											  Builder tokenBuilder, Error error) {
-
+	private static Date solveDate(String value) throws ParseException {
+		logger.debug("solveDate");
 		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-		switch (registeredClaimKey) {
-
-			case iss:
-				try {
-					tokenBuilder.withIssuer(registeredClaimValue);
-				} catch (Exception e) {
-					error.setError("RCL04", e.getMessage());
-					return null;
-				}
-				break;
-
-			case exp:
-				Date date = null;
-				if(!isANumber(registeredClaimValue)) {
-					try {
-
-						date = dateFormat.parse(registeredClaimValue);
-
-					} catch (Exception e) {
-
-						error.setError("RCL05", "Date format error; expected yyyy/MM/dd HH:mm:ss");
-						return null;
-					}
-				}else {
-					try {
-						date = new Date(Long.parseLong(registeredClaimValue) * 1000);
-					}catch(Exception e)
-					{
-						error.setError("RCL05", e.getMessage());
-						return null;
-					}
-				}
-				try {
-
-					tokenBuilder.withExpiresAt(date);
-				} catch (Exception e) {
-					error.setError("RCL06", e.getMessage());
-					return null;
-				}
-
-				break;
-
-			case sub:
-				try {
-					tokenBuilder.withSubject(registeredClaimValue);
-				} catch (Exception e) {
-					error.setError("RCL07", e.getMessage());
-					return null;
-				}
-				break;
-			case aud:
-				try {
-					tokenBuilder.withAudience(registeredClaimValue);
-				} catch (Exception e) {
-					error.setError("RCL08", e.getMessage());
-					return null;
-				}
-				break;
-			case nbf:
-				Date dateNbf = null;
-				if(!isANumber(registeredClaimValue)) {
-					try {
-						dateNbf = dateFormat.parse(registeredClaimValue);
-					} catch (Exception e) {
-						error.setError("RCL05", "Date format error; expected yyyy/MM/dd HH:mm:ss");
-						return null;
-					}
-				}else{
-					try {
-						dateNbf = new Date(Long.parseLong(registeredClaimValue) * 1000);
-					}catch(Exception e)
-					{
-						error.setError("RCL05", e.getMessage());
-						return null;
-					}
-				}
-				try {
-					tokenBuilder.withNotBefore(dateNbf);
-				} catch (Exception e) {
-					error.setError("RCL09", e.getMessage());
-					return null;
-				}
-				break;
-			case iat:
-				Date dateIat = null;
-				if(!isANumber(registeredClaimValue)) {
-					try {
-						dateIat = dateFormat.parse(registeredClaimValue);
-					} catch (Exception e) {
-						error.setError("RCL05", "Date format error; expected yyyy/MM/dd HH:mm:ss");
-						return null;
-					}
-				}else{
-					try {
-						dateIat = new Date(Long.parseLong(registeredClaimValue) * 1000);
-					}catch(Exception e)
-					{
-						error.setError("RCL05", e.getMessage());
-						return null;
-					}
-				}
-				try {
-					tokenBuilder.withIssuedAt(dateIat);
-				} catch (Exception e) {
-					error.setError("RCL10", e.getMessage());
-					return null;
-				}
-				break;
-			case jti:
-				try {
-					tokenBuilder.withJWTId(registeredClaimValue);
-				} catch (Exception e) {
-					error.setError("RCL11", e.getMessage());
-					return null;
-				}
-				break;
-			default:
-				error.setError("RCL12", "Unknown registered claim");
-				return null;
-		}
-		return tokenBuilder;
+		return !isANumber(value) ? dateFormat.parse(value) : new Date(Long.parseLong(value) * 1000);
 	}
 
 }

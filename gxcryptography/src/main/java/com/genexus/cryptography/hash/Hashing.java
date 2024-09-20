@@ -1,85 +1,52 @@
 package com.genexus.cryptography.hash;
 
-import java.io.InputStream;
-
-import org.bouncycastle.crypto.Digest;
-import org.bouncycastle.crypto.digests.Blake2bDigest;
-import org.bouncycastle.crypto.digests.Blake2sDigest;
-import org.bouncycastle.crypto.digests.GOST3411Digest;
-import org.bouncycastle.crypto.digests.GOST3411_2012_256Digest;
-import org.bouncycastle.crypto.digests.GOST3411_2012_512Digest;
-import org.bouncycastle.crypto.digests.KeccakDigest;
-import org.bouncycastle.crypto.digests.MD2Digest;
-import org.bouncycastle.crypto.digests.MD4Digest;
-import org.bouncycastle.crypto.digests.MD5Digest;
-import org.bouncycastle.crypto.digests.RIPEMD128Digest;
-import org.bouncycastle.crypto.digests.RIPEMD160Digest;
-import org.bouncycastle.crypto.digests.RIPEMD256Digest;
-import org.bouncycastle.crypto.digests.RIPEMD320Digest;
-import org.bouncycastle.crypto.digests.SHA1Digest;
-import org.bouncycastle.crypto.digests.SHA224Digest;
-import org.bouncycastle.crypto.digests.SHA256Digest;
-import org.bouncycastle.crypto.digests.SHA384Digest;
-import org.bouncycastle.crypto.digests.SHA3Digest;
-import org.bouncycastle.crypto.digests.SHA512Digest;
-import org.bouncycastle.crypto.digests.SM3Digest;
-import org.bouncycastle.crypto.digests.TigerDigest;
-import org.bouncycastle.crypto.digests.WhirlpoolDigest;
-import org.bouncycastle.util.encoders.Hex;
-
 import com.genexus.cryptography.commons.HashObject;
 import com.genexus.cryptography.hash.utils.HashAlgorithm;
 import com.genexus.securityapicommons.utils.SecurityUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.bouncycastle.crypto.Digest;
+import org.bouncycastle.crypto.digests.*;
+import org.bouncycastle.util.encoders.Hex;
+
+import java.io.InputStream;
 
 public class Hashing extends HashObject {
 
-	/**
-	 * Hashing class constructor
-	 */
+	private static final Logger logger = LogManager.getLogger(Hashing.class);
+
 	public Hashing() {
 		super();
 	}
 
-	/******** EXTERNAL OBJECT PUBLIC METHODS - BEGIN ********/
-
-	/**
-	 * @param hashAlgorithm
-	 *            String HashAlgorithm enum, algorithm name
-	 * @param txtToHash
-	 *            plain text to hcalculate hash
-	 * @return String Hexa representation of the txtToHash with the algorithm
-	 *         indicated
-	 */
 	public String doHash(String hashAlgorithm, String txtToHash) {
 		this.error.cleanError();
 
-		/*******INPUT VERIFICATION - BEGIN*******/
-		SecurityUtils.validateStringInput("hashAlgorithm", hashAlgorithm, this.error);
-		SecurityUtils.validateStringInput("txtToHash", txtToHash, this.error);
-		if(this.hasError()) { return "";};
-		/*******INPUT VERIFICATION - END*******/
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateStringInput(String.valueOf(Hashing.class), "doHash", "hashAlgorithm", hashAlgorithm, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(Hashing.class), "doHash", "txtToHash", txtToHash, this.error);
+		if (this.hasError()) {
+			return "";
+		}
+		;
+		// INPUT VERIFICATION - END
 
-		HashAlgorithm hashAlgorithmObj =HashAlgorithm.getHashAlgorithm(hashAlgorithm, this.error);
+		HashAlgorithm hashAlgorithmObj = HashAlgorithm.getHashAlgorithm(hashAlgorithm, this.error);
 		InputStream input = SecurityUtils.stringToStream(txtToHash, this.error);
-		if(this.hasError()) {return null;}
+		if (this.hasError()) {
+			return null;
+		}
 
 		byte[] resBytes = calculateHash(hashAlgorithmObj, input);
 
-		return this.hasError() ? "": Hex.toHexString(resBytes).toUpperCase();
+		return this.hasError() ? "" : Hex.toHexString(resBytes).toUpperCase();
 	}
 
 	/******** EXTERNAL OBJECT PUBLIC METHODS - END ********/
 
 
-	/**
-	 * @param hashAlgorithm
-	 *            HashAlgorithm enum, algorithm name
-	 * @param txtToHash
-	 *            plain text to hcalculate hash
-	 * @return byte array of the txtToHash with the algorithm indicated
-	 */
 	public byte[] calculateHash(HashAlgorithm hashAlgorithm, InputStream input) {
-
+		logger.debug("calculateHash");
 		Digest alg = createHash(hashAlgorithm);
 		byte[] buffer = new byte[8192];
 		int n;
@@ -88,20 +55,14 @@ public class Hashing extends HashObject {
 			while ((n = input.read(buffer)) > 0) {
 				alg.update(buffer, 0, n);
 			}
-		} catch (Exception e)
-		{
+		} catch (Exception e) {
 			this.error.setError("HA001", e.getMessage());
+			logger.error("calculateHash", e);
 		}
 		alg.doFinal(retValue, 0);
 		return retValue;
 	}
 
-
-	/**
-	 * @param hashAlgorithm
-	 *            HashAlgorithm enum, algorithm name
-	 * @return Digest algorithm instantiated class
-	 */
 	public Digest createHash(HashAlgorithm hashAlgorithm) {
 		switch (hashAlgorithm) {
 			case MD5:
@@ -176,6 +137,7 @@ public class Hashing extends HashObject {
 				return new WhirlpoolDigest();
 			default:
 				this.error.setError("HA002", "Unrecognized HashAlgorithm");
+				logger.error("Unrecognized HashAlgorithm");
 				return null;
 		}
 	}

@@ -1,28 +1,27 @@
 package com.genexus.commons;
 
-import org.bouncycastle.util.encoders.Hex;
-
 import com.genexus.JWT.claims.HeaderParameters;
 import com.genexus.JWT.claims.PublicClaims;
 import com.genexus.JWT.claims.RegisteredClaims;
 import com.genexus.JWT.utils.RevocationList;
-import com.genexus.securityapicommons.commons.Key;
 import com.genexus.securityapicommons.commons.PublicKey;
 import com.genexus.securityapicommons.commons.SecurityAPIObject;
 import com.genexus.securityapicommons.keys.CertificateX509;
 import com.genexus.securityapicommons.keys.PrivateKeyManager;
+import org.bouncycastle.util.encoders.Hex;
 
 
+@SuppressWarnings("unused")
 public class JWTOptions extends SecurityAPIObject {
 
-	private PublicClaims publicClaims;
-	private RegisteredClaims registeredClaims;
+	private final PublicClaims publicClaims;
+	private final RegisteredClaims registeredClaims;
 	private byte[] secret;
 	private RevocationList revocationList;
 	private CertificateX509 certificate;
 	private PrivateKeyManager privateKey;
 	private PublicKey publicKey;
-	private HeaderParameters parameters;
+	private final HeaderParameters parameters;
 
 	public JWTOptions() {
 		publicClaims = new PublicClaims();
@@ -55,16 +54,9 @@ public class JWTOptions extends SecurityAPIObject {
 
 	}
 
-
-
-
 	public boolean addCustomTimeValidationClaim(String key, String value, String customTime) {
 		this.registeredClaims.setTimeValidatingClaim(key, value, customTime, this.error);
-		if (this.hasError()) {
-			return false;
-		} else {
-			return true;
-		}
+		return !this.hasError();
 	}
 
 	public boolean addRegisteredClaim(String registeredClaimKey, String registeredClaimValue) {
@@ -83,16 +75,14 @@ public class JWTOptions extends SecurityAPIObject {
 		this.revocationList = new RevocationList();
 	}
 
-	public void addHeaderParameter(String name, String value)
-	{
+	public void addHeaderParameter(String name, String value) {
 		this.parameters.setParameter(name, value);
 	}
 
 	/******** EXTERNAL OBJECT PUBLIC METHODS - END ********/
 
-	public PublicKey getPublicKey()
-	{
-		return (this.certificate == null) ? this.publicKey: this.certificate;
+	public PublicKey getPublicKey() {
+		return (this.certificate == null) ? this.publicKey : this.certificate;
 	}
 
 	public boolean hasPublicClaims() {
@@ -128,16 +118,11 @@ public class JWTOptions extends SecurityAPIObject {
 		return this.revocationList;
 	}
 
-	/*public CertificateX509 getCertificate() {
-		return this.certificate;
-	}*/
-
 	public PrivateKeyManager getPrivateKey() {
 		return this.privateKey;
 	}
 
-	public HeaderParameters getHeaderParameters()
-	{
+	public HeaderParameters getHeaderParameters() {
 		return this.parameters;
 	}
 }

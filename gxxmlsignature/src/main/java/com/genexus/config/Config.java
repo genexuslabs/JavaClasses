@@ -1,5 +1,6 @@
 package com.genexus.config;
 
+@SuppressWarnings("unused")
 public final class Config {
 
 	private static boolean GLOBAL_USELINEBREAKS;

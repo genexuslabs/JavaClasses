@@ -5,35 +5,34 @@ import com.genexus.securityapicommons.config.EncodingUtil;
 import com.genexus.securityapicommons.keys.SymmetricKeyGenerator;
 import com.genexus.securityapicommons.utils.SecurityUtils;
 import com.genexus.test.commons.SecurityAPITestObject;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class HmacTest extends SecurityAPITestObject {
 
 	protected static String plainText;
-	protected String[] arrayHashes;
+	protected static String[] arrayHashes;
 	protected static String password;
 	protected static String passUTF8;
-	protected String[] arrayResHashes;
+	protected static String[] arrayResHashes;
 
 	private static String[] encodings;
 	private static EncodingUtil eu;
 
-	@Override
-	protected void setUp() {
+	@BeforeClass
+	public static void setUp() {
 		SymmetricKeyGenerator keyGen = new SymmetricKeyGenerator();
 		password = keyGen.doGenerateKey("GENERICRANDOM", 128);
 		passUTF8 = "64887e525dce27351f5cb5ce85615e52";
 		plainText = "Lorem ipsum dolor sit amet";
-		arrayHashes = new String[] { "MD5", "SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "BLAKE2B_224",
+		arrayHashes = new String[]{"MD5", "SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "BLAKE2B_224",
 			"BLAKE2B_256", "BLAKE2B_384", "BLAKE2B_512", "BLAKE2S_128", "BLAKE2S_160", "BLAKE2S_224", "BLAKE2S_256",
 			"GOST3411_2012_256", "GOST3411_2012_512", "GOST3411", "KECCAK_224", "KECCAK_256", "KECCAK_288",
 			"KECCAK_384", "KECCAK_512", "MD2", "MD4", "RIPEMD128", "RIPEMD160", "RIPEMD256", "RIPEMD320",
-			"SHA3-224", "SHA3-256", "SHA3-384", "SHA3-512", /*"SHAKE_128", "SHAKE_256",*/ "SM3", "TIGER", "WHIRLPOOL" };
+			"SHA3-224", "SHA3-256", "SHA3-384", "SHA3-512", /*"SHAKE_128", "SHAKE_256",*/ "SM3", "TIGER", "WHIRLPOOL"};
 
-		encodings = new String[] { "UTF_8", "UTF_16", "UTF_16BE", "UTF_16LE", "UTF_32", "UTF_32BE", "UTF_32LE", "SJIS",
-			"GB2312" };
+		encodings = new String[]{"UTF_8", "UTF_16", "UTF_16BE", "UTF_16LE", "UTF_32", "UTF_32BE", "UTF_32LE", "SJIS",
+			"GB2312"};
 
 		eu = new EncodingUtil();
 
@@ -75,20 +74,21 @@ public class HmacTest extends SecurityAPITestObject {
 		String TIGER = "FEF8448095FC19DFCE2E6B6CAE8BA594D3DC358E910473B2";
 		String WHIRLPOOL = "594BDF03B876331E3642685A497DDEC69894403422ABCB6ADE0E77999DA030027EA613027E0E18A3D42190110DEBE75357412EB7567EEF9C7CB170BCCFC3E7EC";
 
-		arrayResHashes = new String[] { MD5, SHA1, SHA224, SHA256, SHA384, SHA512, BLAKE2B_224, BLAKE2B_256,
+		arrayResHashes = new String[]{MD5, SHA1, SHA224, SHA256, SHA384, SHA512, BLAKE2B_224, BLAKE2B_256,
 			BLAKE2B_384, BLAKE2B_512, BLAKE2S_128, BLAKE2S_160, BLAKE2S_224, BLAKE2S_256, GOST3411_2012_256,
 			GOST3411_2012_512, GOST3411, KECCAK_224, KECCAK_256, KECCAK_288, KECCAK_384, KECCAK_512, MD2, MD4,
 			RIPEMD128, RIPEMD160, RIPEMD256, RIPEMD320, SHA3_224, SHA3_256, SHA3_384, SHA3_512, /*SHAKE_128,
-				SHAKE_256,*/ SM3, TIGER, WHIRLPOOL };
+				SHAKE_256,*/ SM3, TIGER, WHIRLPOOL};
 
 	}
 
+	@Test
 	public void testBulkMacs() {
-		for (int i = 0; i < encodings.length; i++) {
-			eu.setEncoding(encodings[i]);
+		for (String encoding : encodings) {
+			eu.setEncoding(encoding);
 			Hmac mac = new Hmac();
 			for (int a = 0; a < arrayHashes.length; a++) {
-				if (SecurityUtils.compareStrings(encodings[i], "UTF_8")) {
+				if (SecurityUtils.compareStrings(encoding, "UTF_8")) {
 					String res = mac.calculate(plainText, passUTF8, arrayHashes[a]);
 					assertTrue(SecurityUtils.compareStrings(res, arrayResHashes[a]));
 					True(true, mac);
@@ -98,14 +98,5 @@ public class HmacTest extends SecurityAPITestObject {
 				True(true, mac);
 			}
 		}
-	}
-
-	public static Test suite() {
-		return new TestSuite(HmacTest.class);
-	}
-
-	@Override
-	public void runTest() {
-		testBulkMacs();
 	}
 }

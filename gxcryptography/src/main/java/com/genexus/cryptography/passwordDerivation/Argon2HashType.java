@@ -1,11 +1,17 @@
 package com.genexus.cryptography.passwordDerivation;
 
+import com.genexus.cryptography.mac.Hmac;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bouncycastle.crypto.params.Argon2Parameters;
 
 import com.genexus.securityapicommons.commons.Error;
 
+@SuppressWarnings("LoggingSimilarMessage")
 public enum Argon2HashType {
 	ARGON2_d, ARGON2_i, ARGON2_id;
+
+	private static final Logger logger = LogManager.getLogger(Argon2HashType.class);
 
 	public static Argon2HashType getArgon2HashType(String argon2HashType, Error error) {
 		switch (argon2HashType.trim()) {
@@ -17,6 +23,7 @@ public enum Argon2HashType {
 				return Argon2HashType.ARGON2_id;
 			default:
 				error.setError("PDH01", "Unrecognized Argon2HashType");
+				logger.error("Unrecognized Argon2HashType");
 				return null;
 		}
 
@@ -32,6 +39,7 @@ public enum Argon2HashType {
 				return "ARGON2_id";
 			default:
 				error.setError("PDH02", "Unrecognized Argon2HashType");
+				logger.error("Unrecognized Argon2HashType");
 				return "";
 		}
 	}
@@ -46,6 +54,7 @@ public enum Argon2HashType {
 				return Argon2Parameters.ARGON2_id;
 			default:
 				error.setError("PDH03", "Unrecognized Argon2HashType");
+				logger.error("Unrecognized Argon2HashType");
 				return 0;
 		}
 	}

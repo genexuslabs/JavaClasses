@@ -1,20 +1,26 @@
 package com.genexus.JWT.utils;
 
 
+import com.auth0.jwt.algorithms.Algorithm;
+import com.genexus.securityapicommons.commons.Error;
+import com.genexus.securityapicommons.commons.PublicKey;
+import com.genexus.securityapicommons.keys.PrivateKeyManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
-import com.auth0.jwt.algorithms.Algorithm;
-import com.genexus.securityapicommons.commons.Error;
-import com.genexus.securityapicommons.commons.PublicKey;
-import com.genexus.securityapicommons.keys.PrivateKeyManager;
 
+@SuppressWarnings("LoggingSimilarMessage")
 public enum JWTAlgorithm {
 	HS256, HS512, RS256, RS512, ES256, ES384, ES512;
 
+	private static final Logger logger = LogManager.getLogger(JWTAlgorithm.class);
+
+	@SuppressWarnings("unused")
 	public static String valueOf(JWTAlgorithm jWTAlgorithm, Error error) {
 		switch (jWTAlgorithm) {
 			case HS256:
@@ -33,6 +39,7 @@ public enum JWTAlgorithm {
 				return "ES512";
 			default:
 				error.setError("JWA01", "Unrecognized algorithm");
+				logger.error("Unrecognized algorithm");
 				return "Unrecognized algorithm";
 		}
 	}
@@ -55,6 +62,7 @@ public enum JWTAlgorithm {
 				return JWTAlgorithm.ES512;
 			default:
 				error.setError("JWA02", "Unrecognized algorithm");
+				logger.error("Unrecognized algorithm");
 				return null;
 		}
 	}
@@ -75,11 +83,12 @@ public enum JWTAlgorithm {
 	public static Algorithm getSymmetricAlgorithm(JWTAlgorithm algorithm, byte[] secret, Error error) {
 		if (isPrivate(algorithm)) {
 			error.setError("JWA03", "It is not a symmetric algorithm name");
+			logger.error("It is not a symmetric algorithm name");
 			return null;
 		} else {
-			if(secret == null)
-			{
+			if (secret == null) {
 				error.setError("JWA14", "Set the secret using JWTOptions.SetSecret function");
+				logger.error("Set the secret using JWTOptions.SetSecret function");
 				return null;
 			}
 			switch (algorithm) {
@@ -89,6 +98,7 @@ public enum JWTAlgorithm {
 					return Algorithm.HMAC512(secret);
 				default:
 					error.setError("JWA04", "Unknown symmetric algorithm");
+					logger.error("Unknown symmetric algorithm");
 					return null;
 			}
 		}
@@ -99,77 +109,60 @@ public enum JWTAlgorithm {
 												   Error error) {
 		if (!isPrivate(algorithm)) {
 			error.setError("JWA07", "It is not an asymmetric algorithm name");
+			logger.error("It is not an asymmetric algorithm name");
 			return null;
 		} else {
-			switch (algorithm) {
-				case RS256:
-					try {
+			try {
+				switch (algorithm) {
+					case RS256:
 						if (cert == null) {
 							if (key != null)
-								return Algorithm.RSA256(null, (RSAPrivateKey)key.getPrivateKey());
+								return Algorithm.RSA256(null, (RSAPrivateKey) key.getPrivateKey());
 						} else {
-							return (key != null) ? Algorithm.RSA256((RSAPublicKey)cert.getPublicKey(), (RSAPrivateKey)key.getPrivateKey())
-								: Algorithm.RSA256((RSAPublicKey)cert.getPublicKey(), null);
+							return (key != null) ? Algorithm.RSA256((RSAPublicKey) cert.getPublicKey(), (RSAPrivateKey) key.getPrivateKey())
+								: Algorithm.RSA256((RSAPublicKey) cert.getPublicKey(), null);
 						}
-					} catch (Exception e) {
-						error.setError("JWA08", e.getMessage());
-						return null;
-					}
-				case RS512:
-					try {
+					case RS512:
 						if (cert == null) {
 							if (key != null)
-								return Algorithm.RSA512(null, (RSAPrivateKey)key.getPrivateKey());
+								return Algorithm.RSA512(null, (RSAPrivateKey) key.getPrivateKey());
 						} else {
-							return (key != null) ? Algorithm.RSA512((RSAPublicKey)cert.getPublicKey(), (RSAPrivateKey)key.getPrivateKey())
-								: Algorithm.RSA512((RSAPublicKey)cert.getPublicKey(), null);
+							return (key != null) ? Algorithm.RSA512((RSAPublicKey) cert.getPublicKey(), (RSAPrivateKey) key.getPrivateKey())
+								: Algorithm.RSA512((RSAPublicKey) cert.getPublicKey(), null);
 						}
-					} catch (Exception e) {
-						error.setError("JWA09", e.getMessage());
-						return null;
-					}
-				case ES256:
-					try {
+					case ES256:
 						if (cert == null) {
 							if (key != null)
-								return Algorithm.ECDSA256(null, (ECPrivateKey)key.getPrivateKey());
+								return Algorithm.ECDSA256(null, (ECPrivateKey) key.getPrivateKey());
 						} else {
-							return (key != null) ? Algorithm.ECDSA256((ECPublicKey)cert.getPublicKey(), (ECPrivateKey)key.getPrivateKey())
-								: Algorithm.ECDSA256((ECPublicKey)cert.getPublicKey(), null);
+							return (key != null) ? Algorithm.ECDSA256((ECPublicKey) cert.getPublicKey(), (ECPrivateKey) key.getPrivateKey())
+								: Algorithm.ECDSA256((ECPublicKey) cert.getPublicKey(), null);
 						}
-					} catch (Exception e) {
-						error.setError("JWA10", e.getMessage());
-						return null;
-					}
-				case ES384:
-					try {
+					case ES384:
 						if (cert == null) {
 							if (key != null)
-								return Algorithm.ECDSA384(null, (ECPrivateKey)key.getPrivateKey());
+								return Algorithm.ECDSA384(null, (ECPrivateKey) key.getPrivateKey());
 						} else {
-							return (key != null) ? Algorithm.ECDSA384((ECPublicKey)cert.getPublicKey(), (ECPrivateKey)key.getPrivateKey())
-								: Algorithm.ECDSA384((ECPublicKey)cert.getPublicKey(), null);
+							return (key != null) ? Algorithm.ECDSA384((ECPublicKey) cert.getPublicKey(), (ECPrivateKey) key.getPrivateKey())
+								: Algorithm.ECDSA384((ECPublicKey) cert.getPublicKey(), null);
 						}
-					} catch (Exception e) {
-						error.setError("JWA11", e.getMessage());
-						return null;
-					}
-				case ES512:
-					try {
+					case ES512:
 						if (cert == null) {
 							if (key != null)
-								return Algorithm.ECDSA512(null, (ECPrivateKey)key.getPrivateKey());
+								return Algorithm.ECDSA512(null, (ECPrivateKey) key.getPrivateKey());
 						} else {
-							return (key != null) ? Algorithm.ECDSA512((ECPublicKey)cert.getPublicKey(), (ECPrivateKey)key.getPrivateKey())
-								: Algorithm.ECDSA512((ECPublicKey)cert.getPublicKey(), null);
+							return (key != null) ? Algorithm.ECDSA512((ECPublicKey) cert.getPublicKey(), (ECPrivateKey) key.getPrivateKey())
+								: Algorithm.ECDSA512((ECPublicKey) cert.getPublicKey(), null);
 						}
-					} catch (Exception e) {
-						error.setError("JWA12", e.getMessage());
+					default:
+						error.setError("JWA13", "Unknown asymmetric algorithm");
+						logger.error("Unknown asymmetric algorithm");
 						return null;
-					}
-				default:
-					error.setError("JWA13", "Unknown asymmetric algorithm");
-					return null;
+				}
+			} catch (Exception e) {
+				error.setError("JWA12", e.getMessage());
+				logger.error("getAsymmetricAlgorithm", e);
+				return null;
 			}
 		}
 

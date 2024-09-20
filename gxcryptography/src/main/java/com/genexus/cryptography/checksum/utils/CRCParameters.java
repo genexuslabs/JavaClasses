@@ -9,9 +9,7 @@ public class CRCParameters {
 	private long _init;
 	private long _finalXor;
 
-
-	public CRCParameters(int width, long polynomial, long init, boolean reflectIn, boolean reflectOut, long finalXor)
-	{
+	public CRCParameters(int width, long polynomial, long init, boolean reflectIn, boolean reflectOut, long finalXor) {
 		this._width = width;
 		this._polynomial = polynomial;
 		this._reflectIn = reflectIn;
@@ -20,33 +18,27 @@ public class CRCParameters {
 		this._finalXor = finalXor;
 	}
 
-	public int getWidth()
-	{
+	public int getWidth() {
 		return this._width;
 	}
 
-	public long getPolynomial()
-	{
+	public long getPolynomial() {
 		return this._polynomial;
 	}
 
-	public boolean getReflectIn()
-	{
+	public boolean getReflectIn() {
 		return this._reflectIn;
 	}
 
-	public boolean getReflectOut()
-	{
+	public boolean getReflectOut() {
 		return this._reflectOut;
 	}
 
-	public long getInit()
-	{
+	public long getInit() {
 		return this._init;
 	}
 
-	public long getFinalXor()
-	{
+	public long getFinalXor() {
 		return this._finalXor;
 	}
 }

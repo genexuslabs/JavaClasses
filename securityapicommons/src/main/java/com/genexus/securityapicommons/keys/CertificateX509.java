@@ -1,19 +1,9 @@
 package com.genexus.securityapicommons.keys;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Date;
-
+import com.genexus.securityapicommons.utils.SecurityUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -22,12 +12,19 @@ import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.util.encoders.Base64;
 
-import com.genexus.securityapicommons.utils.SecurityUtils;
+import java.io.*;
+import java.nio.file.Files;
+import java.security.KeyStore;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.Date;
 
 public class CertificateX509 extends com.genexus.securityapicommons.commons.Certificate {
 
+	private static final Logger logger = LogManager.getLogger(CertificateX509.class);
+
 	private String algorithmWithHash;
-	private boolean hasPublicKey;
 	private X509Certificate cert;
 	public String issuer;
 	public String subject;
@@ -36,19 +33,10 @@ public class CertificateX509 extends com.genexus.securityapicommons.commons.Cert
 	public Date notAfter;
 	public Date notBefore;
 	public int version;
-	private boolean inicialized;
 
-	/**
-	 * CertificateX509 class constructor
-	 */
 	public CertificateX509() {
 		super();
-		this.hasPublicKey = false;
-		this.inicialized = false;
-	}
-
-	public boolean Inicialized() {
-		return this.inicialized;
+		this.cert = null;
 	}
 
 	public X509Certificate Cert() {
@@ -59,99 +47,94 @@ public class CertificateX509 extends com.genexus.securityapicommons.commons.Cert
 	@Override
 	public boolean load(String path) {
 		this.error.cleanError();
-		/******* INPUT VERIFICATION - BEGIN *******/
-		SecurityUtils.validateStringInput("path", path, this.error);
+		logger.debug("load");
+		this.cert = null;
+		this.error.cleanError();
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateStringInput(String.valueOf(CertificateX509.class), "load", "path", path, this.error);
 		if (this.hasError()) {
 			return false;
 		}
 
-		/******* INPUT VERIFICATION - END *******/
+		// INPUT VERIFICATION - END
 
-		boolean result =  loadPKCS12(path, "", "");
-		if(result)
-		{
-			this.inicialized = true;
-		}
-		setAlgorithm();
-		return result;
+		return loadPKCS12(path, "", "");
 	}
 
 	@Override
 	public boolean loadPKCS12(String path, String alias, String password) {
 		this.error.cleanError();
-		/******* INPUT VERIFICATION - BEGIN *******/
-		SecurityUtils.validateStringInput("path", path, this.error);
+		logger.debug("loadPKCS12");
+		this.cert = null;
+		this.error.cleanError();
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateStringInput(String.valueOf(CertificateX509.class), "loadPKCS12", "path", path, this.error);
 		if (this.hasError()) {
 			return false;
 		}
 
-		/******* INPUT VERIFICATION - END *******/
+		// INPUT VERIFICATION - END
 
-		boolean result = false;
+
 		try {
-			result = loadPublicKeyFromFile(path, alias, password);
+			return loadPublicKeyFromFile(path, alias, password);
 		} catch (Exception e) {
 			this.error.setError("CE001", e.getMessage());
+			logger.error("loadPKCS12", e);
 			return false;
 		}
-		if (result) {
-			inicializeParameters();
-			setAlgorithm();
-		}
-		return result;
 	}
 
 	@Override
 	public boolean fromBase64(String base64Data) {
 		this.error.cleanError();
-		/******* INPUT VERIFICATION - BEGIN *******/
-		SecurityUtils.validateStringInput("base64Data", base64Data, this.error);
+		logger.debug("fromBase64");
+		this.cert = null;
+		this.error.cleanError();
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateStringInput(String.valueOf(CertificateX509.class), "fromBase64", "base64Data", base64Data, this.error);
 		if (this.hasError()) {
 			return false;
 		}
 
-		/******* INPUT VERIFICATION - END *******/
+		// INPUT VERIFICATION - END
 
-		boolean flag;
 		try {
 			byte[] dataBuffer = Base64.decode(base64Data);
 			ByteArrayInputStream bI = new ByteArrayInputStream(dataBuffer);
 			CertificateFactory cf = new CertificateFactory();
 			this.cert = (X509Certificate) cf.engineGenerateCertificate(bI);
 			inicializeParameters();
-			flag = true;
 		} catch (Exception e) {
 			this.error.setError("CE002", e.getMessage());
-			flag = false;
+			logger.error("fromBase64", e);
 		}
-		setAlgorithm();
-
-		return flag;
+		return this.cert != null;
 	}
 
 	@Override
 	public String toBase64() {
-		if (!this.inicialized) {
+		this.error.cleanError();
+		logger.debug("toBase64");
+		if (this.cert == null) {
 			this.error.setError("CE003", "Not loaded certificate");
+			logger.error("toBase64 - Not loaded certificate");
 			return "";
 		}
-		String base64Encoded = "";
 
 		try {
-			base64Encoded = new String(Base64.encode(this.cert.getEncoded()));
+			return new String(Base64.encode(this.cert.getEncoded()));
 
 		} catch (Exception e) {
 			this.error.setError("CE004", e.getMessage());
+			logger.error("toBase64", e);
+			return "";
 		}
-
-		return base64Encoded;
 	}
 
 	/******** EXTERNAL OBJECT PUBLIC METHODS - END ********/
 
-	/**
-	 * @return String certificate-s hash algorithm for sign verification
-	 */
+
 	public String getPublicKeyHash() {
 		String[] aux = this.algorithmWithHash.toUpperCase().split("WITH");
 		if (SecurityUtils.compareStrings(aux[0], "1.2.840.10045.2.1")) {
@@ -160,134 +143,94 @@ public class CertificateX509 extends com.genexus.securityapicommons.commons.Cert
 		return aux[0];
 	}
 
-	/**
-	 * stores SubjectPublicKeyInfo Data Type of public key from certificate,
-	 * algorithm and digest
-	 *
-	 * @param path     String of the certificate file
-	 * @param alias    Srting certificate's alias, required if PKCS12
-	 * @param password String certificate's password, required if PKCS12
-	 * @return boolean true if loaded correctly
-	 * @throws CertificateException
-	 * @throws IOException
-	 * @throws KeyStoreException
-	 * @throws NoSuchAlgorithmException
-	 */
-	private boolean loadPublicKeyFromFile(String path, String alias, String password)
-		throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
-		boolean result = false;
-		if (SecurityUtils.extensionIs(path, ".pem") || SecurityUtils.extensionIs(path, ".key")) {
-			result = loadPublicKeyFromPEMFile(path);
-			return result;
-		}
-		if (SecurityUtils.extensionIs(path, ".crt") || SecurityUtils.extensionIs(path, ".cer")) {
-			result = loadPublicKeyFromDERFile(path);
-			return result;
-		}
-		if (SecurityUtils.extensionIs(path, ".pfx") || SecurityUtils.extensionIs(path, ".p12")
-			|| SecurityUtils.extensionIs(path, ".jks") || SecurityUtils.extensionIs(path, ".pkcs12")) {
-			result = loadPublicKeyFromPKCS12File(path, alias, password);
-			return result;
-		}
-		this.error.setError("CE005", "Error loading certificate");
-		this.hasPublicKey = false;
-		return false;
 
+	private boolean loadPublicKeyFromFile(String path, String alias, String password) {
+		logger.debug("loadPublicKeyFromFile");
+		for (String s : pkcs8_extensions) {
+			if (FilenameUtils.getExtension(path).equals(s)) {
+				return loadPublicKeyFromPkcs8File(path);
+			}
+		}
+
+		for (String s : der_extentions) {
+			if (FilenameUtils.getExtension(path).equals(s)) {
+				return loadPublicKeyFromDERFile(path);
+			}
+		}
+		for (String s : pkcs12_extensions) {
+			if (FilenameUtils.getExtension(path).equals(s)) {
+				return loadPublicKeyFromPKCS12File(path, alias, password);
+			}
+		}
+
+		this.error.setError("CE005", "Error loading certificate");
+		logger.error("loadPublicKeyFromFile - Error loading certificate");
+		return false;
 	}
 
-	/**
-	 * stores SubjectPublicKeyInfo Data Type from certificate's public key,
-	 * asymmetric algorithm and digest
-	 *
-	 * @param path
-	 *
-	 *
-	 * @param alias    Strting certificate's alias
-	 * @param password String certificate's password
-	 * @return boolean true if loaded correctly
-	 * @throws IOException
-	 * @throws KeyStoreException
-	 * @throws NoSuchAlgorithmException
-	 * @throws CertificateException
-	 */
-	private boolean loadPublicKeyFromPKCS12File(String path, String alias, String password)
-		throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
 
-		if (alias == null || password == null) {
-			this.error.setError("CE006", "Alias and password are required for PKCS12 certificates");
+	private boolean loadPublicKeyFromPKCS12File(String path, String alias, String password) {
+		logger.debug("loadPublicKeyFromPKCS12File");
+		if (password == null) {
+			this.error.setError("CE006", "Password is required for PKCS12 certificates");
+			logger.error("loadPublicKeyFromPKCS12File - Password is required for PKCS12 certificates");
 			return false;
 		}
-		InputStream in;
-		in = SecurityUtils.inputFileToStream(path);
-		KeyStore ks;
-		try {
-			ks = KeyStore.getInstance("PKCS12");
+		try (InputStream in = new DataInputStream(Files.newInputStream(new File(path).toPath()))) {
+			KeyStore ks = KeyStore.getInstance("PKCS12");
 			ks.load(in, password.toCharArray());
-			if(SecurityUtils.compareStrings("", alias))
-			{
+			if (alias.isEmpty()) {
 				alias = ks.aliases().nextElement();
 			}
 			this.cert = (X509Certificate) ks.getCertificate(alias);
+			inicializeParameters();
 		} catch (Exception e) {
 			this.error.setError("CE007", "Path not found.");
-			return false;
+			logger.error("loadPublicKeyFromPKCS12File - Path not found.");
 		}
-		return true;
-
+		return this.cert != null;
 	}
 
-	/**
-	 * stores SubjectPublicKeyInfo Data Type from certificate's public key,
-	 * asymmetric algorithm and digest
-	 *
-	 * @param path String .pem certificate path
-	 * @return boolean true if loaded correctly
-	 * @throws IOException
-	 * @throws CertificateException
-	 */
-	private boolean loadPublicKeyFromPEMFile(String path) throws IOException, CertificateException {
-		boolean flag = false;
 
-		try (FileReader privateKeyReader = new FileReader(new File(path))) {
+	private boolean loadPublicKeyFromPkcs8File(String path) {
+		logger.debug("loadPublicKeyFromPkcs8File");
+
+		try (FileReader privateKeyReader = new FileReader(path)) {
 			try (PEMParser parser = new PEMParser(privateKeyReader)) {
 				Object obj;
 				obj = parser.readObject();
-				if (obj instanceof PrivateKeyInfo) {
+				if (obj instanceof PrivateKeyInfo || obj instanceof PEMKeyPair || obj instanceof SubjectPublicKeyInfo) {
 					this.error.setError("CE008", "The file contains a private key");
-				}
-				if ((obj instanceof PEMKeyPair) || (obj instanceof SubjectPublicKeyInfo)){
-					this.error.setError("CE009", "It is a public key not a certificate, use PublicKey Object instead");
-					flag = false;
-				}
-				if (obj instanceof X509CertificateHolder) {
+					logger.error("loadPublicKeyFromPkcs8File - The file contains a private key");
+				} else if (obj instanceof X509CertificateHolder) {
+
 					X509CertificateHolder x509 = (X509CertificateHolder) obj;
 					CertificateFactory certFactory = new CertificateFactory();
-					InputStream in;
-					in = new ByteArrayInputStream(x509.getEncoded());
-					this.cert = (X509Certificate) certFactory.engineGenerateCertificate(in);
-					flag = true;
+					try (InputStream in = new ByteArrayInputStream(x509.getEncoded())) {
+						this.cert = (X509Certificate) certFactory.engineGenerateCertificate(in);
+						inicializeParameters();
+					}
 				}
 			}
+		} catch (Exception e) {
+			this.error.setError("CE008", e.getMessage());
+			logger.error("loadPublicKeyFromPkcs8File", e);
 		}
-		return flag;
+		return this.cert != null;
 	}
 
-	/**
-	 * stores PublicKeyInfo Data Type from the certificate's public key, asymmetric
-	 * algorithm and digest
-	 *
-	 * @param path String .crt .cer file certificate
-	 * @return boolean true if loaded correctly
-	 * @throws IOException
-	 * @throws CertificateException
-	 */
-	private boolean loadPublicKeyFromDERFile(String path) throws IOException, CertificateException {
-		InputStream input;
-		input = SecurityUtils.inputFileToStream(path);
-		CertificateFactory cf = new CertificateFactory();
-		this.cert = (X509Certificate) cf.engineGenerateCertificate(input);
-		input.close();
-		return true;
+
+	private boolean loadPublicKeyFromDERFile(String path) {
+		logger.debug("loadPublicKeyFromDERFile");
+		try (InputStream in = new DataInputStream(Files.newInputStream(new File(path).toPath()))) {
+			CertificateFactory cf = new CertificateFactory();
+			this.cert = (X509Certificate) cf.engineGenerateCertificate(in);
+			inicializeParameters();
+		} catch (Exception e) {
+			this.error.setError("CE009", e.getMessage());
+			logger.error("loadPublicKeyFromDERFile", e);
+		}
+		return this.cert != null;
 	}
 
 	private void inicializeParameters() {
@@ -300,16 +243,12 @@ public class CertificateX509 extends com.genexus.securityapicommons.commons.Cert
 		this.notBefore = this.cert.getNotBefore();
 		this.algorithmWithHash = this.cert.getSigAlgName();
 		extractPublicInfo();
-		this.inicialized = true;
+		setAlgorithm();
 	}
 
-	/**
-	 * Extract public key information and certificate's signing algorithm
-	 *
-	 * @param cert java Certificate
-	 */
+
 	private void extractPublicInfo() {
-		Certificate cert1 = (Certificate) this.cert;
+		Certificate cert1 = this.cert;
 		PublicKey publicKey = cert1.getPublicKey();
 		this.subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
 	}

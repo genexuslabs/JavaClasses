@@ -29,13 +29,8 @@ public class HeaderParameters {
 		return new ArrayList<String>(map.keySet());
 	}
 
-	public boolean isEmpty()
-	{
-		if (getAll().size() == 0)
-		{
-			return true;
-		}
-		return false;
+	public boolean isEmpty() {
+		return getAll().isEmpty();
 	}
 
 }

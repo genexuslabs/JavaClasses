@@ -3,18 +3,10 @@ package com.genexus.cryptography.commons;
 import com.genexus.securityapicommons.commons.Certificate;
 import com.genexus.securityapicommons.commons.PublicKey;
 import com.genexus.securityapicommons.commons.SecurityAPIObject;
-import com.genexus.securityapicommons.keys.CertificateX509;
 import com.genexus.securityapicommons.keys.PrivateKeyManager;
 
-/**
- * @author sgrampone
- *
- */
 public abstract class AsymmetricCipherObject extends SecurityAPIObject {
 
-	/**
-	 * AsymmetricCipherObject constructor
-	 */
 	public AsymmetricCipherObject() {
 		super();
 	}

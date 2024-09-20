@@ -5,6 +5,7 @@ import com.genexus.securityapicommons.commons.Certificate;
 import com.genexus.securityapicommons.commons.PrivateKey;
 import com.genexus.securityapicommons.commons.SecurityAPIObject;
 
+@SuppressWarnings("unused")
 public abstract class XmlDSigSignerObject extends SecurityAPIObject {
 
 	public XmlDSigSignerObject() {

@@ -1,30 +1,22 @@
 package com.genexus.cryptography.symmetric.utils;
 
 import com.genexus.securityapicommons.commons.Error;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-/**
- * @author sgrampone
- *
- */
+@SuppressWarnings("LoggingSimilarMessage")
 public enum SymmetricBlockMode {
 
-	NONE, ECB, CBC, CFB, CTR, CTS, GOFB, OFB, OPENPGPCFB, SIC, /* AEAD */ AEAD_EAX, AEAD_GCM, AEAD_KCCM, AEAD_CCM,;
+	NONE, ECB, CBC, CFB, CTR, CTS, GOFB, OFB, OPENPGPCFB, SIC, /* AEAD */ AEAD_EAX, AEAD_GCM, AEAD_KCCM, AEAD_CCM,
+	;
 
-	/**
-	 *
-	 * Mapping between String name and SymmetricBlockMode enum representation
-	 *
-	 * @param symmetricBlockMode
-	 *            String
-	 * @param error
-	 *            Error type for error management
-	 * @return SymmetricBlockMode enum representation
-	 */
+	private static final Logger logger = LogManager.getLogger(SymmetricBlockMode.class);
+
 	public static SymmetricBlockMode getSymmetricBlockMode(String symmetricBlockMode, Error error) {
 		if (error == null) return SymmetricBlockMode.NONE;
-		if(symmetricBlockMode == null)
-		{
+		if (symmetricBlockMode == null) {
 			error.setError("SBM04", "Unrecognized SymmetricBlockMode");
+			logger.error("Unrecognized SymmetricBlockMode");
 			return SymmetricBlockMode.NONE;
 		}
 		switch (symmetricBlockMode.toUpperCase().trim()) {
@@ -58,17 +50,11 @@ public enum SymmetricBlockMode {
 				return SymmetricBlockMode.AEAD_CCM;
 			default:
 				error.setError("SBM01", "Unrecognized SymmetricBlockMode");
+				logger.error("Unrecognized SymmetricBlockMode");
 				return null;
 		}
 	}
 
-	/**
-	 * @param symmetricBlockMode
-	 *            SymmetricBlockMode enum, mode name
-	 * @param error
-	 *            Error type for error management
-	 * @return SymmetricBlockMode name value in String
-	 */
 	public static String valueOf(SymmetricBlockMode symmetricBlockMode, Error error) {
 		if (error == null) return "Unrecognized operation mode";
 
@@ -103,17 +89,12 @@ public enum SymmetricBlockMode {
 				return "AEAD_CCM";
 			default:
 				error.setError("SBM02", "Unrecognized SymmetricBlockMode");
+				logger.error("Unrecognized SymmetricBlockMode");
 				return "Unrecognized operation mode";
 		}
 	}
 
-	/**
-	 * @param symmetricBlockMode
-	 *            SymmetricBlockMode enum, mode name
-	 * @param error
-	 *            Error type for error management
-	 * @return boolean true if operation mode is AEAD type
-	 */
+	@SuppressWarnings("unused")
 	public static boolean isAEAD(SymmetricBlockMode symmetricBlockMode, Error error) {
 		if (error == null) return false;
 
@@ -125,6 +106,7 @@ public enum SymmetricBlockMode {
 				return true;
 			default:
 				error.setError("SBM03", "Unrecognized Symmetric AEAD BlockMode");
+				logger.error("Unrecognized Symmetric AEAD BlockMode");
 				return false;
 		}
 	}

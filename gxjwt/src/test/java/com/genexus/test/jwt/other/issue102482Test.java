@@ -6,9 +6,10 @@ import com.genexus.commons.JWTOptions;
 import com.genexus.securityapicommons.keys.SymmetricKeyGenerator;
 import com.genexus.securityapicommons.utils.SecurityUtils;
 import com.genexus.test.commons.SecurityAPITestObject;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
+@SuppressWarnings("NewClassNamingConvention")
 public class issue102482Test extends SecurityAPITestObject {
 
 	protected static JWTCreator jwt;
@@ -17,17 +18,8 @@ public class issue102482Test extends SecurityAPITestObject {
 	protected static SymmetricKeyGenerator keyGen;
 	protected static String token;
 
-	public static Test suite() {
-		return new TestSuite(issue102482Test.class);
-	}
-
-	@Override
-	public void runTest() {
-		test_AddRegisteredClaimsDate();
-	}
-
-	@Override
-	public void setUp() {
+	@BeforeClass
+	public static void setUp() {
 		options = new JWTOptions();
 		jwt = new JWTCreator();
 		claims = new PrivateClaims();
@@ -45,10 +37,10 @@ public class issue102482Test extends SecurityAPITestObject {
 
 	}
 
-	public static void test_AddRegisteredClaimsDate()
-	{
+	@Test
+	public void test_AddRegisteredClaimsDate() {
 		token = jwt.doCreate("HS256", claims, options);
-		assertFalse( SecurityUtils.compareStrings("", token));
+		assertFalse(SecurityUtils.compareStrings("", token));
 	}
 
 }

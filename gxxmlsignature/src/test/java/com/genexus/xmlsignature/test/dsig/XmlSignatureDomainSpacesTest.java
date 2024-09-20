@@ -6,8 +6,9 @@ import com.genexus.securityapicommons.keys.CertificateX509;
 import com.genexus.securityapicommons.keys.PrivateKeyManager;
 import com.genexus.test.commons.SecurityAPITestObject;
 
-import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class XmlSignatureDomainSpacesTest extends SecurityAPITestObject  {
 	private static String path_RSA_sha1_1024;
@@ -20,8 +21,8 @@ public class XmlSignatureDomainSpacesTest extends SecurityAPITestObject  {
 	private static PrivateKeyManager key;
 	private static CertificateX509 cert;
 
-	@Override
-	protected void setUp() {
+	@BeforeClass
+	public static void setUp() {
 		signer = new XmlDSigSigner();
 		path_RSA_sha1_1024 = resources.concat("/dummycerts/RSA_sha1_1024/"); //"C:\\Temp\\dummycerts\\RSA_sha1_1024\\";
 		xmlUnsigned = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<Envelope xmlns=\"http://example.org/envelope\">"
@@ -37,17 +38,7 @@ public class XmlSignatureDomainSpacesTest extends SecurityAPITestObject  {
 
 	}
 
-	public static Test suite() {
-		return new TestSuite(XmlSignatureDomainSpacesTest.class);
-	}
-
-	@Override
-	public void runTest() {
-		testDomains();
-
-
-	}
-
+	@Test
 	public void testDomains()
 	{
 		key.load(pathKey);

@@ -10,6 +10,10 @@ public class Key extends SecurityAPIObject {
 
 	protected String algorithm;
 
+	protected static  final String[] pkcs8_extensions = new String[] {"pkcs8", "key", "pem"};
+	protected static final String[] pkcs12_extensions = new String[] {"pfx", "p12", "jks", "pkcs12"};
+	protected static final String[] der_extentions = new String[] {"cer", "crt"};
+
 	public String getAlgorithm()
 	{
 		return this.algorithm;

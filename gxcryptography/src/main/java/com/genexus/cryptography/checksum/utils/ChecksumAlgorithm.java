@@ -1,7 +1,10 @@
 package com.genexus.cryptography.checksum.utils;
 
 import com.genexus.securityapicommons.commons.Error;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+@SuppressWarnings("LoggingSimilarMessage")
 public enum ChecksumAlgorithm {
 
 	CRC8, CRC8_CDMA2000, CRC8_DARC, CRC8_DVB_S2, CRC8_EBU, CRC8_I_CODE, CRC8_ITU, CRC8_MAXIM, CRC8_ROHC, CRC8_WCDMA,
@@ -9,13 +12,15 @@ public enum ChecksumAlgorithm {
 	CRC16_DECT_X, CRC16_DNP, CRC16_EN_13757, CRC16_GENIBUS, CRC16_MAXIM, CRC16_MCRF4XX, CRC16_RIELLO, CRC16_T10_DIF,
 	CRC16_TELEDISK, CRC16_TMS_37157, CRC16_USB, CRC_A, CRC16_KERMIT, CRC16_MODBUS, CRC16_X_25, CRC16_XMODEM, CRC32,
 	CRC32_BZIP2, CRC32C, CRC32D, CRC32_MPEG_2, CRC32_POSIX, CRC32Q, CRC32_JAMCRC, CRC32_XFER, MD5, SHA1, SHA256,
-	SHA512,NONE;
+	SHA512, NONE;
+
+	private static final Logger logger = LogManager.getLogger(ChecksumAlgorithm.class);
 
 	public static ChecksumAlgorithm getChecksumAlgorithm(String checksumAlgorithm, Error error) {
-		if(error == null) return ChecksumAlgorithm.NONE;
-		if (checksumAlgorithm == null)
-		{
+		if (error == null) return ChecksumAlgorithm.NONE;
+		if (checksumAlgorithm == null) {
 			error.setError("CHA04", "Unrecognized checksum algorithm");
+			logger.error("Unrecognized checksum algorithm");
 			return ChecksumAlgorithm.NONE;
 		}
 		switch (checksumAlgorithm.toUpperCase().trim()) {
@@ -113,6 +118,7 @@ public enum ChecksumAlgorithm {
 				return ChecksumAlgorithm.SHA512;
 			default:
 				error.setError("CHA01", "Unrecognized checksum algorithm");
+				logger.error("Unrecognized checksum algorithm");
 				return null;
 		}
 	}
@@ -214,14 +220,13 @@ public enum ChecksumAlgorithm {
 				return "SHA512";
 			default:
 				error.setError("CHA02", "Unrecognized checksum algorithm");
+				logger.error("Unrecognized checksum algorithm");
 				return null;
 		}
 	}
 
-	public static boolean isHash(ChecksumAlgorithm checksumAlgorithm)
-	{
-		switch(checksumAlgorithm)
-		{
+	public static boolean isHash(ChecksumAlgorithm checksumAlgorithm) {
+		switch (checksumAlgorithm) {
 			case MD5:
 			case SHA1:
 			case SHA256:
@@ -232,8 +237,7 @@ public enum ChecksumAlgorithm {
 		}
 	}
 
-	public static CRCParameters getParameters(ChecksumAlgorithm checksumAlgorithm, Error error)
-	{
+	public static CRCParameters getParameters(ChecksumAlgorithm checksumAlgorithm, Error error) {
 		if (error == null) return new CRCParameters(0, 0x00, 0x00, false, false, 0x00);
 		switch (checksumAlgorithm) {
 			case CRC8:
@@ -269,7 +273,7 @@ public enum ChecksumAlgorithm {
 			case CRC16_DDS_110:
 				return new CRCParameters(16, 0x8005, 0x800D, false, false, 0x0000);
 			case CRC16_DECT_R:
-				return new CRCParameters(16,0x0589, 0x0000, false, false, 0x0001);
+				return new CRCParameters(16, 0x0589, 0x0000, false, false, 0x0001);
 			case CRC16_DECT_X:
 				return new CRCParameters(16, 0x0589, 0x0000, false, false, 0x0000);
 			case CRC16_DNP:
@@ -311,17 +315,18 @@ public enum ChecksumAlgorithm {
 			case CRC32D:
 				return new CRCParameters(32, 0xA833982B, 0xFFFFFFFF, true, true, 0xFFFFFFFF);
 			case CRC32_MPEG_2:
-				return new CRCParameters(32, 0x04C11DB7	, 0xFFFFFFFF, false, false, 0x00000000);
+				return new CRCParameters(32, 0x04C11DB7, 0xFFFFFFFF, false, false, 0x00000000);
 			case CRC32_POSIX:
 				return new CRCParameters(32, 0x04C11DB7, 0x00000000, false, false, 0xFFFFFFFF);
 			case CRC32Q:
 				return new CRCParameters(32, 0x814141AB, 0x000000000, false, false, 0x00000000);
 			case CRC32_JAMCRC:
-				return new CRCParameters(32,0x04C11DB7, 0xFFFFFFFF, true, true, 0x00000000);
+				return new CRCParameters(32, 0x04C11DB7, 0xFFFFFFFF, true, true, 0x00000000);
 			case CRC32_XFER:
 				return new CRCParameters(32, 0x000000AF, 0x00000000, false, false, 0x0000000);
 			default:
 				error.setError("CHA03", "Unrecognized checksum algorithm");
+				logger.error("Unrecognized checksum algorithm");
 				return null;
 		}
 	}

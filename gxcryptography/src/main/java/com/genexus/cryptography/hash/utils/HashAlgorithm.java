@@ -1,28 +1,19 @@
 package com.genexus.cryptography.hash.utils;
 
 import com.genexus.securityapicommons.commons.Error;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-/**
- * @author sgrampone
- *
- */
 public enum HashAlgorithm {
 
-	NONE, MD5, SHA1, SHA224, SHA256, SHA384, SHA512, BLAKE2B_224, BLAKE2B_256, BLAKE2B_384, BLAKE2B_512, BLAKE2S_128, BLAKE2S_160, BLAKE2S_224, BLAKE2S_256, GOST3411_2012_256, GOST3411_2012_512, GOST3411, KECCAK_224, KECCAK_256, KECCAK_288, KECCAK_384, KECCAK_512, MD2, MD4, RIPEMD128, RIPEMD160, RIPEMD256, RIPEMD320, SHA3_224, SHA3_256, SHA3_384, SHA3_512, SHAKE_128, SHAKE_256, SM3, TIGER, WHIRLPOOL,;
+	NONE, MD5, SHA1, SHA224, SHA256, SHA384, SHA512, BLAKE2B_224, BLAKE2B_256, BLAKE2B_384, BLAKE2B_512, BLAKE2S_128, BLAKE2S_160, BLAKE2S_224, BLAKE2S_256, GOST3411_2012_256, GOST3411_2012_512, GOST3411, KECCAK_224, KECCAK_256, KECCAK_288, KECCAK_384, KECCAK_512, MD2, MD4, RIPEMD128, RIPEMD160, RIPEMD256, RIPEMD320, SHA3_224, SHA3_256, SHA3_384, SHA3_512, SHAKE_128, SHAKE_256, SM3, TIGER, WHIRLPOOL,
+	;
 
-	/**
-	 * Mapping between String name and HashAlgorithm enum representation
-	 *
-	 * @param hashAlgorithm
-	 *            String
-	 * @param error
-	 *            Error type for error management
-	 * @return HashAlgorithm enum representation
-	 */
+	private static final Logger logger = LogManager.getLogger(HashAlgorithm.class);
+
 	public static HashAlgorithm getHashAlgorithm(String hashAlgorithm, Error error) {
-		if(error == null) return HashAlgorithm.NONE;
-		if (hashAlgorithm == null)
-		{
+		if (error == null) return HashAlgorithm.NONE;
+		if (hashAlgorithm == null) {
 			error.setError("HAA01", "Unrecognized HashAlgorihm");
 			return HashAlgorithm.NONE;
 		}
@@ -93,9 +84,11 @@ public enum HashAlgorithm {
 				return HashAlgorithm.SHA3_512;
 			case "SHAKE_128":
 				error.setError("HAA04", "Not implemented algorithm SHAKE_128");
+				logger.error("Not implemented algorithm SHAKE_128");
 				return null;
 			case "SHAKE_256":
 				error.setError("HAA05", "Not implemented algorithm SHAKE_256");
+				logger.error("Not implemented algorithm SHAKE_256");
 				return null;
 			case "SM3":
 				return HashAlgorithm.SM3;
@@ -105,19 +98,13 @@ public enum HashAlgorithm {
 				return HashAlgorithm.WHIRLPOOL;
 			default:
 				error.setError("HAA02", "Unrecognized HashAlgorihm");
+				logger.error("Unrecognized HashAlgorihm");
 				return null;
 		}
 	}
 
-	/**
-	 * @param hashAlgorithm
-	 *            HashAlgorithm enum, algorithm name
-	 * @param error
-	 *            Error type for error management
-	 * @return String name value of HashAlgorithm
-	 */
 	public static String valueOf(HashAlgorithm hashAlgorithm, Error error) {
-		if(error == null) return "Unrecognized algorithm";
+		if (error == null) return "Unrecognized algorithm";
 		switch (hashAlgorithm) {
 			case MD5:
 				return "MD5";
@@ -191,6 +178,7 @@ public enum HashAlgorithm {
 				return "WHIRLPOOL";
 			default:
 				error.setError("HAA03", "Unrecognized HashAlgorihm");
+				logger.error("Unrecognized HashAlgorihm");
 				return "Unrecognized algorithm";
 		}
 	}

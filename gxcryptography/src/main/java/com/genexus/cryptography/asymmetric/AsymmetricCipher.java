@@ -1,19 +1,5 @@
 package com.genexus.cryptography.asymmetric;
 
-import java.io.UnsupportedEncodingException;
-
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.crypto.AsymmetricBlockCipher;
-import org.bouncycastle.crypto.BufferedAsymmetricBlockCipher;
-import org.bouncycastle.crypto.Digest;
-import org.bouncycastle.crypto.InvalidCipherTextException;
-import org.bouncycastle.crypto.encodings.ISO9796d1Encoding;
-import org.bouncycastle.crypto.encodings.OAEPEncoding;
-import org.bouncycastle.crypto.encodings.PKCS1Encoding;
-import org.bouncycastle.crypto.engines.RSAEngine;
-import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
-import org.bouncycastle.util.encoders.Base64;
-
 import com.genexus.cryptography.asymmetric.utils.AsymmetricEncryptionAlgorithm;
 import com.genexus.cryptography.asymmetric.utils.AsymmetricEncryptionPadding;
 import com.genexus.cryptography.commons.AsymmetricCipherObject;
@@ -26,16 +12,23 @@ import com.genexus.securityapicommons.config.EncodingUtil;
 import com.genexus.securityapicommons.keys.CertificateX509;
 import com.genexus.securityapicommons.keys.PrivateKeyManager;
 import com.genexus.securityapicommons.utils.SecurityUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.bouncycastle.crypto.AsymmetricBlockCipher;
+import org.bouncycastle.crypto.BufferedAsymmetricBlockCipher;
+import org.bouncycastle.crypto.Digest;
+import org.bouncycastle.crypto.InvalidCipherTextException;
+import org.bouncycastle.crypto.encodings.ISO9796d1Encoding;
+import org.bouncycastle.crypto.encodings.OAEPEncoding;
+import org.bouncycastle.crypto.encodings.PKCS1Encoding;
+import org.bouncycastle.crypto.engines.RSAEngine;
+import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
+import org.bouncycastle.util.encoders.Base64;
 
-/**
- * @author sgrampone
- *
- */
 public class AsymmetricCipher extends AsymmetricCipherObject {
 
-	/**
-	 * AsymmetricCipher class constructor
-	 */
+	private static final Logger logger = LogManager.getLogger(AsymmetricCipher.class);
+
 	public AsymmetricCipher() {
 		super();
 	}
@@ -44,53 +37,54 @@ public class AsymmetricCipher extends AsymmetricCipherObject {
 
 	@Override
 	public String doEncrypt_WithPrivateKey(String hashAlgorithm, String asymmetricEncryptionPadding, PrivateKeyManager key, String plainText) {
-
+		logger.debug("doEncrypt_WithPrivateKey");
 		this.error.cleanError();
-		/******* INPUT VERIFICATION - BEGIN *******/
-		SecurityUtils.validateObjectInput("hashAlgorithm", hashAlgorithm, this.error);
-		SecurityUtils.validateStringInput("asymmetricEncryptionPadding", asymmetricEncryptionPadding, this.error);
-		SecurityUtils.validateStringInput("plainText", plainText, this.error);
-		SecurityUtils.validateObjectInput("key", key, this.error);
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateObjectInput(String.valueOf(AsymmetricCipher.class), "doEncrypt_WithPrivateKey", "hashAlgorithm", hashAlgorithm, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(AsymmetricCipher.class), "doEncrypt_WithPrivateKey", "asymmetricEncryptionPadding", asymmetricEncryptionPadding, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(AsymmetricCipher.class), "doEncrypt_WithPrivateKey","plainText", plainText, this.error);
+		SecurityUtils.validateObjectInput(String.valueOf(AsymmetricCipher.class), "doEncrypt_WithPrivateKey","key", key, this.error);
 		if (this.hasError()) {
 			return "";
 		}
 
-		/******* INPUT VERIFICATION - END *******/
+		// INPUT VERIFICATION - END
 
 		return doEncryptInternal(hashAlgorithm, asymmetricEncryptionPadding, key, true, plainText, false);
 	}
 
 	@Override
 	public String doEncrypt_WithPublicKey(String hashAlgorithm, String asymmetricEncryptionPadding, PublicKey key, String plainText) {
-
 		this.error.cleanError();
-		/******* INPUT VERIFICATION - BEGIN *******/
-		SecurityUtils.validateObjectInput("hashAlgorithm", hashAlgorithm, this.error);
-		SecurityUtils.validateStringInput("asymmetricEncryptionPadding", asymmetricEncryptionPadding, this.error);
-		SecurityUtils.validateStringInput("plainText", plainText, this.error);
-		SecurityUtils.validateObjectInput("key", key, this.error);
+		logger.debug("doEncrypt_WithPublicKey");
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateObjectInput(String.valueOf(AsymmetricCipher.class), "doEncrypt_WithPublicKey","hashAlgorithm", hashAlgorithm, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(AsymmetricCipher.class), "doEncrypt_WithPublicKey","asymmetricEncryptionPadding", asymmetricEncryptionPadding, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(AsymmetricCipher.class), "doEncrypt_WithPublicKey","plainText", plainText, this.error);
+		SecurityUtils.validateObjectInput(String.valueOf(AsymmetricCipher.class), "doEncrypt_WithPublicKey","key", key, this.error);
 		if (this.hasError()) {
 			return "";
 		}
 
-		/******* INPUT VERIFICATION - END *******/
+		// INPUT VERIFICATION - END
 
 		return doEncryptInternal(hashAlgorithm, asymmetricEncryptionPadding, key, false, plainText, true);
 	}
 
 	@Override
 	public String doEncrypt_WithCertificate(String hashAlgorithm, String asymmetricEncryptionPadding, Certificate certificate, String plainText) {
-
-		/******* INPUT VERIFICATION - BEGIN *******/
-		SecurityUtils.validateObjectInput("hashAlgorithm", hashAlgorithm, this.error);
-		SecurityUtils.validateStringInput("asymmetricEncryptionPadding", asymmetricEncryptionPadding, this.error);
-		SecurityUtils.validateStringInput("plainText", plainText, this.error);
-		SecurityUtils.validateObjectInput("certificate", certificate, this.error);
+		this.error.cleanError();
+		logger.debug("doEncrypt_WithCertificate");
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateObjectInput(String.valueOf(AsymmetricCipher.class), "doEncrypt_WithCertificate","hashAlgorithm", hashAlgorithm, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(AsymmetricCipher.class), "doEncrypt_WithCertificate","asymmetricEncryptionPadding", asymmetricEncryptionPadding, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(AsymmetricCipher.class), "doEncrypt_WithCertificate","plainText", plainText, this.error);
+		SecurityUtils.validateObjectInput(String.valueOf(AsymmetricCipher.class), "doEncrypt_WithCertificate","certificate", certificate, this.error);
 		if (this.hasError()) {
 			return "";
 		}
 
-		/******* INPUT VERIFICATION - END *******/
+		// INPUT VERIFICATION - END
 
 		return doEncryptInternal(hashAlgorithm, asymmetricEncryptionPadding, certificate, false, plainText, false);
 	}
@@ -98,79 +92,64 @@ public class AsymmetricCipher extends AsymmetricCipherObject {
 
 	@Override
 	public String doDecrypt_WithPrivateKey(String hashAlgorithm, String asymmetricEncryptionPadding, PrivateKeyManager key, String encryptedInput) {
-
-		/******* INPUT VERIFICATION - BEGIN *******/
-		SecurityUtils.validateObjectInput("hashAlgorithm", hashAlgorithm, this.error);
-		SecurityUtils.validateStringInput("asymmetricEncryptionPadding", asymmetricEncryptionPadding, this.error);
-		SecurityUtils.validateStringInput("encryptedInput", encryptedInput, this.error);
-		SecurityUtils.validateObjectInput("key", key, this.error);
+		this.error.cleanError();
+		logger.debug("doDecrypt_WithPrivateKey");
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateObjectInput(String.valueOf(AsymmetricCipher.class), "doDecrypt_WithPrivateKey","hashAlgorithm", hashAlgorithm, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(AsymmetricCipher.class), "doDecrypt_WithPrivateKey","asymmetricEncryptionPadding", asymmetricEncryptionPadding, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(AsymmetricCipher.class), "doDecrypt_WithPrivateKey","encryptedInput", encryptedInput, this.error);
+		SecurityUtils.validateObjectInput(String.valueOf(AsymmetricCipher.class), "doDecrypt_WithPrivateKey","key", key, this.error);
 		if (this.hasError()) {
 			return "";
 		}
 
-		/******* INPUT VERIFICATION - END *******/
+		// INPUT VERIFICATION - END
 
 		return doDecryptInternal(hashAlgorithm, asymmetricEncryptionPadding, key, true, encryptedInput, false);
 	}
 
 	@Override
 	public String doDecrypt_WithPublicKey(String hashAlgorithm, String asymmetricEncryptionPadding, PublicKey key, String encryptedInput) {
-
-		/******* INPUT VERIFICATION - BEGIN *******/
-		SecurityUtils.validateObjectInput("hashAlgorithm", hashAlgorithm, this.error);
-		SecurityUtils.validateStringInput("asymmetricEncryptionPadding", asymmetricEncryptionPadding, this.error);
-		SecurityUtils.validateStringInput("encryptedInput", encryptedInput, this.error);
-		SecurityUtils.validateObjectInput("key", key, this.error);
+		this.error.cleanError();
+		logger.debug("doDecrypt_WithPublicKey");
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateObjectInput(String.valueOf(AsymmetricCipher.class), "doDecrypt_WithPublicKey","hashAlgorithm", hashAlgorithm, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(AsymmetricCipher.class), "doDecrypt_WithPublicKey","asymmetricEncryptionPadding", asymmetricEncryptionPadding, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(AsymmetricCipher.class), "doDecrypt_WithPublicKey","encryptedInput", encryptedInput, this.error);
+		SecurityUtils.validateObjectInput(String.valueOf(AsymmetricCipher.class), "doDecrypt_WithPublicKey","key", key, this.error);
 		if (this.hasError()) {
 			return "";
 		}
 
-		/******* INPUT VERIFICATION - END *******/
+		// INPUT VERIFICATION - END
 
 		return doDecryptInternal(hashAlgorithm, asymmetricEncryptionPadding, key, false, encryptedInput, true);
 	}
 
 	@Override
 	public String doDecrypt_WithCertificate(String hashAlgorithm, String asymmetricEncryptionPadding, Certificate certificate, String encryptedInput) {
-
-		/******* INPUT VERIFICATION - BEGIN *******/
-		SecurityUtils.validateObjectInput("hashAlgorithm", hashAlgorithm, this.error);
-		SecurityUtils.validateStringInput("asymmetricEncryptionPadding", asymmetricEncryptionPadding, this.error);
-		SecurityUtils.validateStringInput("encryptedInput", encryptedInput, this.error);
-		SecurityUtils.validateObjectInput("certificate", certificate, this.error);
+		this.error.cleanError();
+		logger.debug("doDecrypt_WithCertificate");
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateObjectInput(String.valueOf(AsymmetricCipher.class), "doDecrypt_WithCertificate","hashAlgorithm", hashAlgorithm, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(AsymmetricCipher.class), "doDecrypt_WithCertificate","asymmetricEncryptionPadding", asymmetricEncryptionPadding, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(AsymmetricCipher.class), "doDecrypt_WithCertificate","encryptedInput", encryptedInput, this.error);
+		SecurityUtils.validateObjectInput(String.valueOf(AsymmetricCipher.class), "doDecrypt_WithCertificate","certificate", certificate, this.error);
 		if (this.hasError()) {
 			return "";
 		}
 
-		/******* INPUT VERIFICATION - END *******/
+		// INPUT VERIFICATION - END
 
 		return doDecryptInternal(hashAlgorithm, asymmetricEncryptionPadding, certificate, false, encryptedInput, false);
 	}
 
 	/******** EXTERNAL OBJECT PUBLIC METHODS - END ********/
 
-	/**
-	 * @param asymmetricEncryptionAlgorithm
-	 *            String AsymmetricEncryptionAlgorithm enum, algorithm name
-	 * @param hashAlgorithm
-	 *            String HashAlgorithm enum, algorithm name
-	 * @param asymmetricEncryptionPadding
-	 *            String AsymmetricEncryptionPadding enum, padding name
-	 * @param keyPath
-	 *            String path to key/certificate
-	 * @param isPrivate
-	 *            boolean true if key is provate, false if it is public
-	 * @param alias
-	 *            String keystore/certificate pkcs12 format alias
-	 * @param password
-	 *            Srting keysore/certificate pkcs12 format alias
-	 * @param plainText
-	 *            String UTF-8 to encrypt
-	 * @return String Base64 encrypted plainText text
-	 */
+
 	private String doEncryptInternal(String hashAlgorithm, String asymmetricEncryptionPadding, Key key, boolean isPrivate,
 									 String plainText, boolean isPublicKey) {
-		error.cleanError();
+		logger.debug("doEncryptInternal");
 		HashAlgorithm hash = HashAlgorithm.getHashAlgorithm(hashAlgorithm, this.error);
 		AsymmetricEncryptionPadding padding = AsymmetricEncryptionPadding
 			.getAsymmetricEncryptionPadding(asymmetricEncryptionPadding, this.error);
@@ -212,35 +191,16 @@ public class AsymmetricCipher extends AsymmetricCipherObject {
 		try {
 			this.error.cleanError();
 			return doEncrypt(algorithm, hash, padding, asymKey, plainText);
-		} catch (InvalidCipherTextException e) {
-			this.error.setError("AE036", "Algoritmo inválido" + algorithm);
-			//e.printStackTrace();
+		} catch (Exception e) {
+			this.error.setError("AE036", e.getMessage());
+			logger.error("doEncryptInternal", e);
 			return "";
 		}
 	}
 
-	/**
-	 * @param asymmetricEncryptionAlgorithm
-	 *            String AsymmetricEncryptionAlgorithm enum, algorithm name
-	 * @param hashAlgorithm
-	 *            String HashAlgorithm enum, algorithm name
-	 * @param asymmetricEncryptionPadding
-	 *            String AsymmetricEncryptionPadding enum, padding name
-	 * @param keyPath
-	 *            String path to key/certificate
-	 * @param isPrivate
-	 *            boolean true if key is provate, false if it is public
-	 * @param alias
-	 *            String keystore/certificate pkcs12 format alias
-	 * @param password
-	 *            Srting keysore/certificate pkcs12 format alias
-	 * @param encryptedInput
-	 *            String Base64 to decrypt
-	 * @return String UTF-8 decypted encryptedInput text
-	 */
 	private String doDecryptInternal(String hashAlgorithm, String asymmetricEncryptionPadding, Key key, boolean isPrivate,
 									 String encryptedInput, boolean isPublicKey) {
-		this.error.cleanError();
+		logger.debug("doDecryptInternal");
 		HashAlgorithm hash = HashAlgorithm.getHashAlgorithm(hashAlgorithm, this.error);
 		AsymmetricEncryptionPadding padding = AsymmetricEncryptionPadding
 			.getAsymmetricEncryptionPadding(asymmetricEncryptionPadding, this.error);
@@ -283,31 +243,17 @@ public class AsymmetricCipher extends AsymmetricCipherObject {
 		try {
 			this.error.cleanError();
 			return doDecyrpt(algorithm, hash, padding, asymKey, encryptedInput);
-		} catch (InvalidCipherTextException | UnsupportedEncodingException e) {
-			this.error.setError("AE039", "Algoritmo inválido" + algorithm);
-			//e.printStackTrace();
+		} catch (Exception e) {
+			this.error.setError("AE039", e.getMessage());
+			logger.error("doDecryptInternal", e);
 			return "";
 		}
 	}
 
-	/**
-	 * @param asymmetricEncryptionAlgorithm
-	 *            AsymmetricEncryptionAlgorithm enum, algorithm name
-	 * @param hashAlgorithm
-	 *            HashAlgorithm enum, algorithm name
-	 * @param asymmetricEncryptionPadding
-	 *            AsymmetricEncryptionPadding enum, padding name
-	 * @param asymmetricKeyParameter
-	 *            AsymmetricKeyParameter with loaded key for specified algorithm
-	 * @param encryptedInput
-	 *            String Base64 to decrypt
-	 * @return String UTF-8 decypted encryptedInput text
-	 * @throws InvalidCipherTextException
-	 * @throws UnsupportedEncodingException
-	 */
 	private String doDecyrpt(AsymmetricEncryptionAlgorithm asymmetricEncryptionAlgorithm, HashAlgorithm hashAlgorithm,
 							 AsymmetricEncryptionPadding asymmetricEncryptionPadding, AsymmetricKeyParameter asymmetricKeyParameter,
-							 String encryptedInput) throws InvalidCipherTextException, UnsupportedEncodingException {
+							 String encryptedInput) throws InvalidCipherTextException {
+		logger.debug("doDecyrpt");
 		AsymmetricBlockCipher asymEngine = getEngine(asymmetricEncryptionAlgorithm);
 		Digest hash = getDigest(hashAlgorithm);
 		AsymmetricBlockCipher cipher = getPadding(asymEngine, hash, asymmetricEncryptionPadding);
@@ -331,23 +277,10 @@ public class AsymmetricCipher extends AsymmetricCipherObject {
 
 	}
 
-	/**
-	 * @param asymmetricEncryptionAlgorithm
-	 *            AsymmetricEncryptionAlgorithm enum, algorithm name
-	 * @param hashAlgorithm
-	 *            HashAlgorithm enum, algorithm name
-	 * @param asymmetricEncryptionPadding
-	 *            AsymmetricEncryptionPadding enum, padding name
-	 * @param asymmetricKeyParameter
-	 *            AsymmetricKeyParameter with loaded key for specified algorithm
-	 * @param encryptedInput
-	 *            String Base64 to decrypt
-	 * @returnString Base64 encrypted encryptedInput text
-	 * @throws InvalidCipherTextException
-	 */
 	private String doEncrypt(AsymmetricEncryptionAlgorithm asymmetricEncryptionAlgorithm, HashAlgorithm hashAlgorithm,
 							 AsymmetricEncryptionPadding asymmetricEncryptionPadding, AsymmetricKeyParameter asymmetricKeyParameter,
 							 String plainText) throws InvalidCipherTextException {
+		logger.debug("doEncrypt");
 		AsymmetricBlockCipher asymEngine = getEngine(asymmetricEncryptionAlgorithm);
 		Digest hash = getDigest(hashAlgorithm);
 		AsymmetricBlockCipher cipher = getPadding(asymEngine, hash, asymmetricEncryptionPadding);
@@ -373,50 +306,37 @@ public class AsymmetricCipher extends AsymmetricCipherObject {
 
 	}
 
-	/**
-	 * @param asymmetricEncryptionAlgorithm
-	 *            AsymmetricEncryptionAlgorithm enum, algorithm name
-	 * @return AsymmetricBlockCipher Engine for the specified algorithm
-	 */
-	private AsymmetricBlockCipher getEngine(AsymmetricEncryptionAlgorithm asymmetricEncryptionAlgorithm) {
 
+	@SuppressWarnings("SwitchStatementWithTooFewBranches")
+	private AsymmetricBlockCipher getEngine(AsymmetricEncryptionAlgorithm asymmetricEncryptionAlgorithm) {
+		logger.debug("getEngine");
 		switch (asymmetricEncryptionAlgorithm) {
 			case RSA:
 				return new RSAEngine();
 			default:
 				this.error.setError("AE042", "Unrecognized algorithm");
+				logger.error("Unrecognized algorithm");
 				return null;
 		}
 
 	}
 
-	/**
-	 * @param hashAlgorithm
-	 *            HashAlgorithm enum, algorithm name
-	 * @return Digest Engine for the specified algorithm
-	 */
 	private Digest getDigest(HashAlgorithm hashAlgorithm) {
+		logger.debug("getDigest");
 		Hashing hash = new Hashing();
 		Digest digest = hash.createHash(hashAlgorithm);
 		if (digest == null) {
 			this.error.setError("AE043", "Unrecognized HashAlgorithm");
+			logger.error("Unrecognized HashAlgorithm");
 			return null;
 		}
 		return digest;
 	}
 
-	/**
-	 * @param asymBlockCipher
-	 *            AsymmetricBlockCipher enum, algorithm name
-	 * @param hash
-	 *            Digest Engine for hashing
-	 * @param asymmetricEncryptionPadding
-	 *            AsymmetricEncryptionPadding enum, padding name
-	 * @return AsymmetricBlockCipher Engine specific for the algoritm, hash and
-	 *         padding
-	 */
+
 	private AsymmetricBlockCipher getPadding(AsymmetricBlockCipher asymBlockCipher, Digest hash,
 											 AsymmetricEncryptionPadding asymmetricEncryptionPadding) {
+		logger.debug("getPadding");
 		switch (asymmetricEncryptionPadding) {
 			case NOPADDING:
 				return null;
@@ -432,6 +352,7 @@ public class AsymmetricCipher extends AsymmetricCipherObject {
 				return new ISO9796d1Encoding(asymBlockCipher);
 			default:
 				error.setError("AE044", "Unrecognized AsymmetricEncryptionPadding");
+				logger.error("Unrecognized AsymmetricEncryptionPadding");
 				return null;
 		}
 	}

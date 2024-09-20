@@ -5,11 +5,11 @@ import com.genexus.securityapicommons.commons.SecurityAPIObject;
 
 public abstract class StandardSignerObject extends SecurityAPIObject {
 
-	public StandardSignerObject()
-	{
+	public StandardSignerObject() {
 		super();
 	}
 
 	public abstract String sign(String plainText, SignatureStandardOptions options);
+
 	public abstract boolean verify(String signed, String plainText, SignatureStandardOptions options);
 }
