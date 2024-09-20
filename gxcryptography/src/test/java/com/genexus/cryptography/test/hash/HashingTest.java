@@ -4,18 +4,17 @@ import com.genexus.cryptography.hash.Hashing;
 import com.genexus.securityapicommons.config.EncodingUtil;
 import com.genexus.securityapicommons.utils.SecurityUtils;
 import com.genexus.test.commons.SecurityAPITestObject;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class HashingTest extends SecurityAPITestObject {
 
 	protected static String plainText;
-	protected String[] arrayHashes;
-	protected String[] arrayResHashes;
+	protected static String[] arrayHashes;
+	protected static String[] arrayResHashes;
 
-	@Override
-	protected void setUp() {
+	@BeforeClass
+	public static void setUp() {
 		new EncodingUtil().setEncoding("UTF8");
 		String MD5 = "FEA80F2DB003D4EBC4536023814AA885";
 		String SHA1 = "38F00F8738E241DAEA6F37F6F55AE8414D7B0219";
@@ -57,18 +56,19 @@ public class HashingTest extends SecurityAPITestObject {
 
 		plainText = "Lorem ipsum dolor sit amet";
 
-		arrayHashes = new String[] { "MD5", "SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "BLAKE2B_224",
+		arrayHashes = new String[]{"MD5", "SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "BLAKE2B_224",
 			"BLAKE2B_256", "BLAKE2B_384", "BLAKE2B_512", "BLAKE2S_128", "BLAKE2S_160", "BLAKE2S_224", "BLAKE2S_256",
 			"GOST3411_2012_256", "GOST3411_2012_512", "GOST3411", "KECCAK_224", "KECCAK_256", "KECCAK_288",
 			"KECCAK_384", "KECCAK_512", "MD2", "MD4", "RIPEMD128", "RIPEMD160", "RIPEMD256", "RIPEMD320",
-			"SHA3-224", "SHA3-256", "SHA3-384", "SHA3-512", /*"SHAKE_128", "SHAKE_256",*/ "SM3", "TIGER", "WHIRLPOOL" };
-		arrayResHashes = new String[] { MD5, SHA1, SHA224, SHA256, SHA384, SHA512, BLAKE2B_224, BLAKE2B_256,
+			"SHA3-224", "SHA3-256", "SHA3-384", "SHA3-512", /*"SHAKE_128", "SHAKE_256",*/ "SM3", "TIGER", "WHIRLPOOL"};
+		arrayResHashes = new String[]{MD5, SHA1, SHA224, SHA256, SHA384, SHA512, BLAKE2B_224, BLAKE2B_256,
 			BLAKE2B_384, BLAKE2B_512, BLAKE2S_128, BLAKE2S_160, BLAKE2S_224, BLAKE2S_256, GOST3411_2012_256,
 			GOST3411_2012_512, GOST3411, KECCAK_224, KECCAK_256, KECCAK_288, KECCAK_384, KECCAK_512, MD2, MD4,
 			RIPEMD128, RIPEMD160, RIPEMD256, RIPEMD320, SHA3_224, SHA3_256, SHA3_384, SHA3_512, /*SHAKE_128,
-				SHAKE_256,*/ SM3, TIGER, WHIRLPOOL };
+				SHAKE_256,*/ SM3, TIGER, WHIRLPOOL};
 	}
 
+	@Test
 	public void testBulkHashes() {
 		Hashing hash = new Hashing();
 		for (int a = 0; a < arrayHashes.length; a++) {
@@ -76,15 +76,6 @@ public class HashingTest extends SecurityAPITestObject {
 			assertTrue(SecurityUtils.compareStrings(arrayResHashes[a], result));
 			True(SecurityUtils.compareStrings(arrayResHashes[a], result), hash);
 		}
-	}
-
-	public static Test suite() {
-		return new TestSuite(HashingTest.class);
-	}
-
-	@Override
-	public void runTest() {
-		testBulkHashes();
 	}
 
 }

@@ -2,23 +2,19 @@ package com.genexus.test.jwt.asymmetric;
 
 import com.genexus.JWT.JWTCreator;
 import com.genexus.JWT.claims.PrivateClaims;
-import com.genexus.JWT.utils.DateUtil;
-import com.genexus.JWT.utils.GUID;
 import com.genexus.commons.JWTOptions;
 import com.genexus.securityapicommons.keys.CertificateX509;
 import com.genexus.securityapicommons.keys.PrivateKeyManager;
 import com.genexus.securityapicommons.keys.SymmetricKeyGenerator;
 import com.genexus.test.commons.SecurityAPITestObject;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import com.genexus.test.jwt.resources.TestUtils;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class AsymmetricJwtTest extends SecurityAPITestObject {
 
 	protected static JWTOptions options;
 	protected static PrivateClaims claims;
-	protected static GUID guid;
-	protected static DateUtil du;
 	protected static SymmetricKeyGenerator keyGenerator;
 	protected static JWTCreator jwt;
 
@@ -30,40 +26,9 @@ public class AsymmetricJwtTest extends SecurityAPITestObject {
 	protected static String alias;
 	protected static String password;
 
+	@BeforeClass
+	public static void setUp() {
 
-	public static Test suite() {
-		return new TestSuite(AsymmetricJwtTest.class);
-	}
-
-	@Override
-	public void runTest() {
-		test_sha256_1024_DER();
-		test_sha256_1024_PEM();
-		test_sha256_1024_PEM_Encrypted();
-		test_sha256_1024_PKCS12();
-
-		test_sha256_2048_DER();
-		test_sha256_2048_PEM();
-		test_sha256_2048_PEM_Encrypted();
-		test_sha256_2048_PKCS12();
-
-		test_sha512_2048_DER();
-		test_sha256_2048_PEM();
-		test_sha256_2048_PEM_Encrypted();
-		test_sha512_2048_PKCS12();
-
-		test_sha256_EC();
-		test_sha384_EC();
-		test_sha512_EC();
-
-	}
-
-
-	@Override
-	public void setUp() {
-
-		du = new DateUtil();
-		guid = new GUID();
 		keyGenerator = new SymmetricKeyGenerator();
 		jwt = new JWTCreator();
 		options = new JWTOptions();
@@ -73,11 +38,11 @@ public class AsymmetricJwtTest extends SecurityAPITestObject {
 		options.addRegisteredClaim("sub", "subject1");
 		options.addRegisteredClaim("aud", "audience1");
 
-		options.addRegisteredClaim("jti", guid.generate());
+		options.addRegisteredClaim("jti", TestUtils.generateGUID());
 
-		options.addCustomTimeValidationClaim("exp", du.getCurrentDate(), "20");
-		options.addCustomTimeValidationClaim("iat", du.getCurrentDate(), "20");
-		options.addCustomTimeValidationClaim("nbf", du.getCurrentDate(), "20");
+		options.addCustomTimeValidationClaim("exp", TestUtils.getCurrentDate(), "20");
+		options.addCustomTimeValidationClaim("iat", TestUtils.getCurrentDate(), "20");
+		options.addCustomTimeValidationClaim("nbf", TestUtils.getCurrentDate(), "20");
 
 		claims.setClaim("hola1", "hola1");
 		claims.setClaim("hola2", "hola2");
@@ -102,6 +67,7 @@ public class AsymmetricJwtTest extends SecurityAPITestObject {
 		True(verification, jwt);
 	}
 
+	@Test
 	public void test_sha256_1024_DER() {
 		String pathKey = path_RSA_sha256_1024 + "sha256d_key.pem";
 		String pathCert = path_RSA_sha256_1024 + "sha256_cert.crt";
@@ -113,6 +79,7 @@ public class AsymmetricJwtTest extends SecurityAPITestObject {
 		bulkTest(key, cert, alg);
 	}
 
+	@Test
 	public void test_sha256_1024_PEM() {
 		String pathKey = path_RSA_sha256_1024 + "sha256d_key.pem";
 		String pathCert = path_RSA_sha256_1024 + "sha256_cert.pem";
@@ -124,8 +91,7 @@ public class AsymmetricJwtTest extends SecurityAPITestObject {
 		bulkTest(key, cert, alg);
 	}
 
-
-
+	@Test
 	public void test_sha256_1024_PKCS12() {
 		String pathKey = path_RSA_sha256_1024 + "sha256_cert.p12";
 		String pathCert = path_RSA_sha256_1024 + "sha256_cert.p12";
@@ -137,6 +103,7 @@ public class AsymmetricJwtTest extends SecurityAPITestObject {
 		bulkTest(key, cert, alg);
 	}
 
+	@Test
 	public void test_sha256_2048_DER() {
 		String pathKey = path_RSA_sha256_2048 + "sha256d_key.pem";
 		String pathCert = path_RSA_sha256_2048 + "sha256_cert.crt";
@@ -148,6 +115,7 @@ public class AsymmetricJwtTest extends SecurityAPITestObject {
 		bulkTest(key, cert, alg);
 	}
 
+	@Test
 	public void test_sha256_2048_PEM() {
 		String pathKey = path_RSA_sha256_2048 + "sha256d_key.pem";
 		String pathCert = path_RSA_sha256_2048 + "sha256_cert.pem";
@@ -159,8 +127,7 @@ public class AsymmetricJwtTest extends SecurityAPITestObject {
 		bulkTest(key, cert, alg);
 	}
 
-
-
+	@Test
 	public void test_sha256_2048_PKCS12() {
 		String pathKey = path_RSA_sha256_2048 + "sha256_cert.p12";
 		String pathCert = path_RSA_sha256_2048 + "sha256_cert.p12";
@@ -172,6 +139,7 @@ public class AsymmetricJwtTest extends SecurityAPITestObject {
 		bulkTest(key, cert, alg);
 	}
 
+	@Test
 	public void test_sha512_2048_DER() {
 		String pathKey = path_RSA_sha512_2048 + "sha512d_key.pem";
 		String pathCert = path_RSA_sha512_2048 + "sha512_cert.crt";
@@ -183,6 +151,7 @@ public class AsymmetricJwtTest extends SecurityAPITestObject {
 		bulkTest(key, cert, alg);
 	}
 
+	@Test
 	public void test_sha512_2048_PEM() {
 		String pathKey = path_RSA_sha512_2048 + "sha512d_key.pem";
 		String pathCert = path_RSA_sha512_2048 + "sha512_cert.pem";
@@ -194,8 +163,7 @@ public class AsymmetricJwtTest extends SecurityAPITestObject {
 		bulkTest(key, cert, alg);
 	}
 
-
-
+	@Test
 	public void test_sha512_2048_PKCS12() {
 		String pathKey = path_RSA_sha512_2048 + "sha512_cert.p12";
 		String pathCert = path_RSA_sha512_2048 + "sha512_cert.p12";
@@ -207,6 +175,7 @@ public class AsymmetricJwtTest extends SecurityAPITestObject {
 		bulkTest(key, cert, alg);
 	}
 
+	@Test
 	public void test_sha256_EC() {
 		String pathKey = path_EC + "key.pem";
 		String pathCert = path_EC + "cert_sha256.pem";
@@ -218,6 +187,7 @@ public class AsymmetricJwtTest extends SecurityAPITestObject {
 		bulkTest(key, cert, alg);
 	}
 
+	@Test
 	public void test_sha384_EC() {
 		String pathKey = path_EC + "key.pem";
 		String pathCert = path_EC + "cert_sha384.pem";
@@ -229,6 +199,7 @@ public class AsymmetricJwtTest extends SecurityAPITestObject {
 		bulkTest(key, cert, alg);
 	}
 
+	@Test
 	public void test_sha512_EC() {
 		String pathKey = path_EC + "key.pem";
 		String pathCert = path_EC + "cert_sha512.pem";
@@ -240,6 +211,7 @@ public class AsymmetricJwtTest extends SecurityAPITestObject {
 		bulkTest(key, cert, alg);
 	}
 
+	@Test
 	public void test_sha256_1024_PEM_Encrypted() {
 		String pathKey = path_RSA_sha256_1024 + "sha256_key.pem";
 		String pathCert = path_RSA_sha256_1024 + "sha256_cert.pem";
@@ -251,6 +223,7 @@ public class AsymmetricJwtTest extends SecurityAPITestObject {
 		bulkTest(key, cert, alg);
 	}
 
+	@Test
 	public void test_sha256_2048_PEM_Encrypted() {
 		String pathKey = path_RSA_sha256_2048 + "sha256_key.pem";
 		String pathCert = path_RSA_sha256_2048 + "sha256_cert.pem";
@@ -262,6 +235,7 @@ public class AsymmetricJwtTest extends SecurityAPITestObject {
 		bulkTest(key, cert, alg);
 	}
 
+	@Test
 	public void test_sha512_2048_PEM_Encrypted() {
 		String pathKey = path_RSA_sha512_2048 + "sha512_key.pem";
 		String pathCert = path_RSA_sha512_2048 + "sha512_cert.pem";

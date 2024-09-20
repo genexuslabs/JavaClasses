@@ -10,8 +10,9 @@ import com.genexus.securityapicommons.keys.PrivateKeyManager;
 import com.genexus.test.commons.SecurityAPITestObject;
 import com.genexus.utils.KeyInfoType;
 
-import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class PublicKeyRSASigningTest extends SecurityAPITestObject{
 
@@ -48,8 +49,8 @@ public class PublicKeyRSASigningTest extends SecurityAPITestObject{
 	private static String xmlUnsignedID;
 	private static String xmlIDSchemaPath;
 
-	@Override
-	protected void setUp() {
+	@BeforeClass
+	public static void setUp() {
 		path_RSA_sha1_1024 = resources.concat("/dummycerts/RSA_sha1_1024/");
 		path_RSA_sha256_1024 = resources.concat("/dummycerts/RSA_sha256_1024/");
 		path_RSA_sha256_2048 = resources.concat("/dummycerts/RSA_sha256_2048/");
@@ -106,23 +107,20 @@ public class PublicKeyRSASigningTest extends SecurityAPITestObject{
 			+ "  <year>2003</year>\r\n" + "  <price>39.95</price>\r\n" + "</book>\r\n" + "</bookstore>";
 	}
 
-	public static Test suite() {
-		return new TestSuite(PublicKeyRSASigningTest.class);
-	}
 
 	private void bulkTest(String pathCert, String pathKey, String pathSigned, boolean ispkcs12, boolean isEncrypted, String hash) {
-		for (int k = 0; k < arrayKeyInfoType.length; k++) {
-			options.setKeyInfoType(arrayKeyInfoType[k]);
-			optionsXPath.setKeyInfoType(arrayKeyInfoType[k]);
-			optionsID.setKeyInfoType(arrayKeyInfoType[k]);
+		for (String s : arrayKeyInfoType) {
+			options.setKeyInfoType(s);
+			optionsXPath.setKeyInfoType(s);
+			optionsID.setKeyInfoType(s);
 			PublicKey cert = new PublicKey();
 			cert.load(pathCert);
 			PrivateKeyManager key = new PrivateKeyManager();
 			if (ispkcs12) {
 				key.loadPKCS12(pathKey, alias, password);
-			} else if(isEncrypted){
+			} else if (isEncrypted) {
 				key.loadEncrypted(pathKey, password);
-			}else {
+			} else {
 				key.load(pathKey);
 			}
 
@@ -137,11 +135,13 @@ public class PublicKeyRSASigningTest extends SecurityAPITestObject{
 		XmlDSigSigner signer = new XmlDSigSigner();
 
 		String pathSignedXPath = pathSigned + "_xPAth";
-		for (int c = 0; c < arrayCanonicalization.length; c++) {
+		// TEST FILES
+		// TEST STRINGS
+		for (String s : arrayCanonicalization) {
 
-			/**** TEST FILES ****/
+			// TEST FILES
 			optionsXPath.setDSigSignatureType(dSigType);
-			optionsXPath.setCanonicalization(arrayCanonicalization[c]);
+			optionsXPath.setCanonicalization(s);
 			boolean signedFile = signer.doSignFileElementWithPublicKey(xmlUnsignedXPathFile, xPath, key, certificate,
 				xmlSignedPathRoot + pathSignedXPath + ".xml", optionsXPath, hash);
 			assertTrue(signedFile);
@@ -158,7 +158,7 @@ public class PublicKeyRSASigningTest extends SecurityAPITestObject{
 			assertTrue(verifyFile);
 			True(verifyFile, signer);
 
-			/**** TEST STRINGS ****/
+			// TEST STRINGS
 
 			String signedString = signer.doSignElementWithPublicKey(xmlUnsignedXPath, xPath, key, certificate, optionsXPath, hash);
 			boolean resultSignString = false;
@@ -177,11 +177,13 @@ public class PublicKeyRSASigningTest extends SecurityAPITestObject{
 	private void bulkTestWithKeyInfo(PublicKey certificate, PrivateKeyManager key, String pathSigned, String hash) {
 		XmlDSigSigner signer = new XmlDSigSigner();
 
-		for (int c = 0; c < arrayCanonicalization.length; c++) {
+		// TEST FILES
+		// TEST STRINGS
+		for (String s : arrayCanonicalization) {
 
-			/**** TEST FILES ****/
+			// TEST FILES
 			options.setDSigSignatureType(dSigType);
-			options.setCanonicalization(arrayCanonicalization[c]);
+			options.setCanonicalization(s);
 			boolean signedFile = signer.doSignFileWithPublicKey(xmlUnsignedPath, key, certificate,
 				xmlSignedPathRoot + pathSigned + ".xml", options, hash);
 			assertTrue(signedFile);
@@ -197,7 +199,7 @@ public class PublicKeyRSASigningTest extends SecurityAPITestObject{
 			assertTrue(verifyFile);
 			True(verifyFile, signer);
 
-			/**** TEST STRINGS ****/
+			// TEST STRINGS
 
 			String signedString = signer.doSignWithPublicKey(xmlUnsigned, key, certificate, options, hash);
 			boolean resultSignString = false;
@@ -215,11 +217,13 @@ public class PublicKeyRSASigningTest extends SecurityAPITestObject{
 	private void bulkTestWithKeyInfoID(PublicKey certificate, PrivateKeyManager key, String pathSigned, String hash) {
 		XmlDSigSigner signer = new XmlDSigSigner();
 		String pathSignedID = pathSigned + "_id";
-		for (int c = 0; c < arrayCanonicalization.length; c++) {
+		// TEST FILES
+		// TEST STRINGS
+		for (String s : arrayCanonicalization) {
 
-			/**** TEST FILES ****/
+			// TEST FILES
 			optionsID.setDSigSignatureType(dSigType);
-			optionsID.setCanonicalization(arrayCanonicalization[c]);
+			optionsID.setCanonicalization(s);
 
 			optionsID.setXmlSchemaPath(xmlIDSchemaPath);
 			boolean signedFile = signer.doSignFileElementWithPublicKey(xmlUnsignedIDPathFile, id, key, certificate,
@@ -240,7 +244,7 @@ public class PublicKeyRSASigningTest extends SecurityAPITestObject{
 			assertTrue(verifyFile);
 			True(verifyFile, signer);
 
-			/**** TEST STRINGS ****/
+			// TEST STRINGS
 			optionsID.setXmlSchemaPath(xmlIDSchemaPath);
 			String signedString = signer.doSignElementWithPublicKey(xmlUnsignedID, id, key, certificate, optionsID, hash);
 			boolean resultSignString = false;
@@ -258,15 +262,8 @@ public class PublicKeyRSASigningTest extends SecurityAPITestObject{
 		}
 	}
 
-	@Override
-	public void runTest() {
 
-		test_sha1_1024_PublicKey();
-		test_sha256_1024_PublicKey();
-		test_sha256_2048_PublicKey();
-		test_sha512_2048_PublicKey();
-	}
-
+	@Test
 	public void test_sha1_1024_PublicKey() {
 		String pathKey = path_RSA_sha1_1024 + "sha1d_key.pem";
 		String pathCert = path_RSA_sha1_1024 + "sha1_pubkey.pem";
@@ -274,6 +271,7 @@ public class PublicKeyRSASigningTest extends SecurityAPITestObject{
 		bulkTest(pathCert, pathKey, pathSigned, false, false, "SHA1");
 	}
 
+	@Test
 	public void test_sha256_1024_PublicKey() {
 		String pathKey = path_RSA_sha256_1024 + "sha256d_key.pem";
 		String pathCert = path_RSA_sha256_1024 + "sha256_pubkey.pem";
@@ -281,6 +279,7 @@ public class PublicKeyRSASigningTest extends SecurityAPITestObject{
 		bulkTest(pathCert, pathKey, pathSigned, false, false, "SHA256");
 	}
 
+	@Test
 	public void test_sha256_2048_PublicKey() {
 		String pathKey = path_RSA_sha256_2048 + "sha256d_key.pem";
 		String pathCert = path_RSA_sha256_2048 + "sha256_pubkey.pem";
@@ -288,6 +287,7 @@ public class PublicKeyRSASigningTest extends SecurityAPITestObject{
 		bulkTest(pathCert, pathKey, pathSigned, false, false, "SHA256");
 	}
 
+	@Test
 	public void test_sha512_2048_PublicKey() {
 		String pathKey = path_RSA_sha512_2048 + "sha512d_key.pem";
 		String pathCert = path_RSA_sha512_2048 + "sha512_pubkey.pem";

@@ -6,10 +6,10 @@ import com.genexus.commons.JWTOptions;
 import com.genexus.securityapicommons.keys.CertificateX509;
 import com.genexus.securityapicommons.keys.PrivateKeyManager;
 import com.genexus.test.commons.SecurityAPITestObject;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
+@SuppressWarnings("NewClassNamingConvention")
 public class issue86867Test extends SecurityAPITestObject {
 
 	protected static JWTCreator jwt;
@@ -19,17 +19,8 @@ public class issue86867Test extends SecurityAPITestObject {
 	protected static String token;
 	protected static String path_RSA_sha256_1024;
 
-	public static Test suite() {
-		return new TestSuite(issue86867Test.class);
-	}
-
-	@Override
-	public void runTest() {
-		testVerificationWithoutPrivateKey();
-	}
-
-	@Override
-	public void setUp() {
+	@BeforeClass
+	public static void setUp() {
 		options1 = new JWTOptions();
 		options2 = new JWTOptions();
 		jwt = new JWTCreator();
@@ -58,6 +49,7 @@ public class issue86867Test extends SecurityAPITestObject {
 		token = jwt.doCreate("RS256", claims, options1);
 	}
 
+	@Test
 	public void testVerificationWithoutPrivateKey() {
 		boolean validation = jwt.doVerify(token, "RS256", claims, options2);
 		assertTrue(validation);

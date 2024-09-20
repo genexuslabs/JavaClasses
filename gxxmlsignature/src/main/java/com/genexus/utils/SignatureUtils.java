@@ -1,39 +1,32 @@
 package com.genexus.utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-
+import com.genexus.securityapicommons.commons.Error;
+import com.genexus.securityapicommons.utils.SecurityUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import com.genexus.securityapicommons.commons.Error;
-import com.genexus.securityapicommons.utils.SecurityUtils;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 
 public class SignatureUtils {
 
-	final static String XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
-	final static String SCHEMA_LANG = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
-	final static String SCHEMA_SOURCE = "http://java.sun.com/xml/jaxp/properties/schemaSource";
+	private final static String XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
+	private final static String SCHEMA_LANG = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
+	private final static String SCHEMA_SOURCE = "http://java.sun.com/xml/jaxp/properties/schemaSource";
+
+	private static final Logger logger = LogManager.getLogger(SignatureUtils.class);
 
 	public static Document documentFromFile(String path, String xmlSchema, Error error) {
 
@@ -44,6 +37,7 @@ public class SignatureUtils {
 			if (xmlSchema != null && !SecurityUtils.compareStrings(xmlSchema, "")) {
 				if (!validateExtensionSchema(xmlSchema)) {
 					error.setError("SU002", "The schema file should be an xsd, dtd or xml file");
+					logger.error("documentFromFile - The schema file should be an xsd, dtd or xml file");
 					return null;
 				}
 
@@ -53,26 +47,21 @@ public class SignatureUtils {
 					dbf.setAttribute(SCHEMA_SOURCE, xmlSchema);
 				} catch (Exception e) {
 					error.setError("SU003", e.getMessage());
+					logger.error("documentFromFile", e);
 					return null;
 				}
 			}
-			Document doc = db.parse(path);
-			return doc;
-		} catch (SAXException | IOException | ParserConfigurationException e) {
+			return db.parse(path);
+		} catch (Exception e) {
 			error.setError("SU001", "Unable to load file");
+			logger.error("documentFromFile - Unable to load file");
 			return null;
 		}
 
 	}
 
-	private static final InputStream inputStringtoStream(String text, Error error) {
-		return new ByteArrayInputStream(getBytes(text, error));
-	}
-
-	public static final InputStream inputFileToStream(String path) throws IOException {
-		final File initialFile = new File(path);
-		final InputStream targetStream = new DataInputStream(new FileInputStream(initialFile));
-		return targetStream;
+	private static InputStream inputStringtoStream(String text) {
+		return new ByteArrayInputStream(getBytes(text));
 	}
 
 	public static boolean writeToFile(String text, String path, String prefix, Error error) {
@@ -80,8 +69,9 @@ public class SignatureUtils {
 			out.println(prefix);
 			out.println(text);
 			return true;
-		} catch (FileNotFoundException e) {
+		} catch (Exception e) {
 			error.setError("SU007", "Error writing file");
+			logger.error("writeToFile", e);
 			return false;
 		}
 	}
@@ -93,6 +83,7 @@ public class SignatureUtils {
 			if (xmlSchema != null && !SecurityUtils.compareStrings(xmlSchema, "")) {
 				if (!validateExtensionSchema(xmlSchema)) {
 					error.setError("SU004", "The schema file should be an xsd, dtd or xml file");
+					logger.error("documentFromString - The schema file should be an xsd, dtd or xml file");
 					return null;
 				}
 
@@ -106,29 +97,16 @@ public class SignatureUtils {
 				}
 			}
 			DocumentBuilder db = dbf.newDocumentBuilder();
-			Document doc = db.parse(inputStringtoStream(text, error));
-			return doc;
-		} catch (SAXException | IOException | ParserConfigurationException e) {
+			return db.parse(inputStringtoStream(text));
+		} catch (Exception e) {
 			error.setError("SU005", "Error reading XML");
+			logger.error("documentFromString", e);
 			return null;
 		}
 	}
 
-	/**
-	 * @param inputText
-	 *            String UTF-8 text
-	 * @return byte array representation of the String UTF-8 input text
-	 */
-	private static byte[] getBytes(String inputText, Error error) {
-		byte[] output = null;
-		try {
-			output = inputText.getBytes("UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			error.setError("DS004", "Wrong encoding, use UTF-8");
-			e.printStackTrace();
-			return null;
-		}
-		return output;
+	private static byte[] getBytes(String inputText) {
+		return inputText.getBytes(StandardCharsets.UTF_8);
 	}
 
 	public static Element getRootElement(Document doc) {
@@ -163,6 +141,7 @@ public class SignatureUtils {
 			return (Node) xPath.compile(expression).evaluate(doc, XPathConstants.NODE);
 		} catch (XPathExpressionException e) {
 			error.setError("SU008", "Could not found any node that matches de xPath predicate");
+			logger.error("getNodeFromPath", e);
 			return null;
 		}
 	}
@@ -170,6 +149,7 @@ public class SignatureUtils {
 	public static Node getNodeFromID(Document doc, String id, String xPath, Error error) {
 		if (id == null || SecurityUtils.compareStrings(id, "")) {
 			error.setError("SU010", "Error, id data is empty");
+			logger.error("getNodeFromID - Error, id data is empty");
 			return null;
 		}
 		String idToFind = xPath.substring(1);
@@ -180,6 +160,7 @@ public class SignatureUtils {
 		Node n = recursivegetNodeFromID(list, id, idToFind);
 		if (n == null) {
 			error.setError("SU009", "Could not find element with id " + idToFind);
+			logger.error("getNodeFromID - Could not find element with id " + idToFind);
 		}
 		return n;
 
@@ -202,13 +183,11 @@ public class SignatureUtils {
 			for (int i = 0; i < list.getLength(); i++) {
 				Node node = findAttribute(list.item(i), id, idToFind);
 				if (node == null) {
-					Node n1  =  recursivegetNodeFromID(list.item(i).getChildNodes(), id, idToFind);
-					if(n1 != null)
-					{
+					Node n1 = recursivegetNodeFromID(list.item(i).getChildNodes(), id, idToFind);
+					if (n1 != null) {
 						return n1;
 					}
-				}else
-				{
+				} else {
 					return node;
 				}
 			}
@@ -217,31 +196,13 @@ public class SignatureUtils {
 	}
 
 	public static boolean validateExtensionXML(String path) {
-		if (SecurityUtils.extensionIs(path, ".xml")) {
-			return true;
-		} else {
-			return false;
-		}
+		return SecurityUtils.extensionIs(path, ".xml");
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public static boolean validateExtensionSchema(String path) {
-		if (SecurityUtils.extensionIs(path, ".xsd") || SecurityUtils.extensionIs(path, ".dtd")
-			|| SecurityUtils.extensionIs(path, ".xml")) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public static KeyFactory getKeyFactory(String algorithm) throws NoSuchAlgorithmException {
-		KeyFactory kf = null;
-		if (SecurityUtils.compareStrings("ECDSA", algorithm)) {
-			kf = kf.getInstance("EC");
-		} else {
-			kf = kf.getInstance("RSA");
-		}
-		return kf;
-
+		return SecurityUtils.extensionIs(path, ".xsd") || SecurityUtils.extensionIs(path, ".dtd")
+			|| SecurityUtils.extensionIs(path, ".xml");
 	}
 
 }

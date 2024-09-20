@@ -1,30 +1,22 @@
 package com.genexus.cryptography.passwordDerivation;
 
 import com.genexus.securityapicommons.commons.Error;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-/**
- * @author sgrampone
- *
- */
+@SuppressWarnings({"LoggingSimilarMessage", "unused"})
+
 public enum PasswordDerivationAlgorithm {
-	SCrypt, Bcrypt,Argon2, NONE;
+	SCrypt, Bcrypt, Argon2, NONE;
 
-	/**
-	 * Mapping between String name and PasswordDerivationAlgorithm enum
-	 * representation
-	 *
-	 * @param passwordDerivationAlgorithm
-	 *            String
-	 * @param error
-	 *            Error type for error management
-	 * @return PasswordDerivationAlgorithm enum representation
-	 */
+	private static final Logger logger = LogManager.getLogger(PasswordDerivationAlgorithm.class);
+
 	public static PasswordDerivationAlgorithm getPasswordDerivationAlgorithm(String passwordDerivationAlgorithm,
 																			 Error error) {
 		if (error == null) return PasswordDerivationAlgorithm.NONE;
-		if(passwordDerivationAlgorithm == null)
-		{
+		if (passwordDerivationAlgorithm == null) {
 			error.setError("PDA03", "Unrecognized PasswordDerivationAlgorithm");
+			logger.error("Unrecognized PasswordDerivationAlgorithm");
 			return PasswordDerivationAlgorithm.NONE;
 		}
 		switch (passwordDerivationAlgorithm.trim()) {
@@ -36,19 +28,13 @@ public enum PasswordDerivationAlgorithm {
 				return PasswordDerivationAlgorithm.Argon2;
 			default:
 				error.setError("PDA01", "Unrecognized PasswordDerivationAlgorithm");
+				logger.error("Unrecognized PasswordDerivationAlgorithm");
 				return null;
 		}
 	}
 
-	/**
-	 * @param passwordDerivationAlgorithm
-	 *            PasswordDerivationAlgorithm enum, algorithm name
-	 * @param error
-	 *            Error type for error management
-	 * @return PasswordDerivationAlgorithm value in String
-	 */
 	public static String valueOf(PasswordDerivationAlgorithm passwordDerivationAlgorithm, Error error) {
-		if(error == null) return "Unrecognized algorithm";
+		if (error == null) return "Unrecognized algorithm";
 		switch (passwordDerivationAlgorithm) {
 			case SCrypt:
 				return "SCrypt";
@@ -58,6 +44,7 @@ public enum PasswordDerivationAlgorithm {
 				return "Argon2";
 			default:
 				error.setError("PDA02", "Unrecognized PasswordDerivationAlgorithm");
+				logger.error("Unrecognized PasswordDerivationAlgorithm");
 				return "Unrecognized algorithm";
 		}
 	}

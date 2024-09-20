@@ -1,108 +1,50 @@
 package com.genexus.cryptography.symmetric;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-
-import org.bouncycastle.crypto.BlockCipher;
-import org.bouncycastle.crypto.BufferedBlockCipher;
-import org.bouncycastle.crypto.engines.AESEngine;
-import org.bouncycastle.crypto.engines.BlowfishEngine;
-import org.bouncycastle.crypto.engines.CAST5Engine;
-import org.bouncycastle.crypto.engines.CAST6Engine;
-import org.bouncycastle.crypto.engines.CamelliaEngine;
-import org.bouncycastle.crypto.engines.DESEngine;
-import org.bouncycastle.crypto.engines.DESedeEngine;
-import org.bouncycastle.crypto.engines.DSTU7624Engine;
-import org.bouncycastle.crypto.engines.GOST28147Engine;
-import org.bouncycastle.crypto.engines.NoekeonEngine;
-import org.bouncycastle.crypto.engines.RC2Engine;
-import org.bouncycastle.crypto.engines.RC532Engine;
-import org.bouncycastle.crypto.engines.RC564Engine;
-import org.bouncycastle.crypto.engines.RC6Engine;
-import org.bouncycastle.crypto.engines.RijndaelEngine;
-import org.bouncycastle.crypto.engines.SEEDEngine;
-import org.bouncycastle.crypto.engines.SM4Engine;
-import org.bouncycastle.crypto.engines.SerpentEngine;
-import org.bouncycastle.crypto.engines.SkipjackEngine;
-import org.bouncycastle.crypto.engines.TEAEngine;
-import org.bouncycastle.crypto.engines.ThreefishEngine;
-import org.bouncycastle.crypto.engines.TwofishEngine;
-import org.bouncycastle.crypto.engines.XTEAEngine;
-import org.bouncycastle.crypto.modes.AEADBlockCipher;
-import org.bouncycastle.crypto.modes.CBCBlockCipher;
-import org.bouncycastle.crypto.modes.CCMBlockCipher;
-import org.bouncycastle.crypto.modes.CFBBlockCipher;
-import org.bouncycastle.crypto.modes.CTSBlockCipher;
-import org.bouncycastle.crypto.modes.EAXBlockCipher;
-import org.bouncycastle.crypto.modes.GCMBlockCipher;
-import org.bouncycastle.crypto.modes.GOFBBlockCipher;
-import org.bouncycastle.crypto.modes.KCCMBlockCipher;
-import org.bouncycastle.crypto.modes.OFBBlockCipher;
-import org.bouncycastle.crypto.modes.OpenPGPCFBBlockCipher;
-import org.bouncycastle.crypto.modes.SICBlockCipher;
-import org.bouncycastle.crypto.paddings.BlockCipherPadding;
-import org.bouncycastle.crypto.paddings.ISO10126d2Padding;
-import org.bouncycastle.crypto.paddings.ISO7816d4Padding;
-import org.bouncycastle.crypto.paddings.PKCS7Padding;
-import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
-import org.bouncycastle.crypto.paddings.X923Padding;
-import org.bouncycastle.crypto.paddings.ZeroBytePadding;
-import org.bouncycastle.crypto.params.AEADParameters;
-import org.bouncycastle.crypto.params.KeyParameter;
-import org.bouncycastle.crypto.params.ParametersWithIV;
-import org.bouncycastle.util.Strings;
-import org.bouncycastle.util.encoders.Base64;
-
 import com.genexus.cryptography.commons.SymmetricBlockCipherObject;
 import com.genexus.cryptography.symmetric.utils.SymmetricBlockAlgorithm;
 import com.genexus.cryptography.symmetric.utils.SymmetricBlockMode;
 import com.genexus.cryptography.symmetric.utils.SymmetricBlockPadding;
 import com.genexus.securityapicommons.config.EncodingUtil;
 import com.genexus.securityapicommons.utils.SecurityUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.bouncycastle.crypto.BlockCipher;
+import org.bouncycastle.crypto.BufferedBlockCipher;
+import org.bouncycastle.crypto.engines.*;
+import org.bouncycastle.crypto.modes.*;
+import org.bouncycastle.crypto.paddings.*;
+import org.bouncycastle.crypto.params.AEADParameters;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.ParametersWithIV;
+import org.bouncycastle.util.Strings;
+import org.bouncycastle.util.encoders.Base64;
 
-/**
- * @author sgrampone
- *
- */
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+
 public class SymmetricBlockCipher extends SymmetricBlockCipherObject {
 
-	/**
-	 * SymmetricBlockCipher class constructor
-	 */
+	private static final Logger logger = LogManager.getLogger(SymmetricBlockCipher.class);
+
 	public SymmetricBlockCipher() {
 		super();
 	}
 
-	/******** EXTERNAL OBJECT PUBLIC METHODS - BEGIN ********/
-
-	/**
-	 * @param symmetricBlockAlgorithm String SymmetricBlockAlgorithm enum, symmetric
-	 *                                block algorithm name
-	 * @param symmetricBlockMode      String SymmetricBlockModes enum, symmetric
-	 *                                block mode name
-	 * @param key                     String Hexa key for the algorithm excecution
-	 * @param macSize                 int macSize in bits for MAC length for AEAD
-	 *                                Encryption algorithm
-	 * @param nonce                   String Hexa nonce for MAC length for AEAD
-	 *                                Encryption algorithm
-	 * @param plainText               String UTF-8 plain text to encrypt
-	 * @return String Base64 encrypted text with the given algorithm and parameters
-	 */
 	public String doAEADEncrypt(String symmetricBlockAlgorithm, String symmetricBlockMode, String key, int macSize,
 								String nonce, String plainText) {
+		logger.debug("doAEADEncrypt");
 		this.error.cleanError();
-
-		/******* INPUT VERIFICATION - BEGIN *******/
-		SecurityUtils.validateStringInput("symmetricBlockAlgorithm", symmetricBlockAlgorithm, this.error);
-		SecurityUtils.validateStringInput("symmetricBlockMode", symmetricBlockMode, this.error);
-		SecurityUtils.validateStringInput("key", key, this.error);
-		SecurityUtils.validateStringInput("nonce", nonce, this.error);
-		SecurityUtils.validateStringInput("plainText", plainText, this.error);
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doAEADEncrypt", "symmetricBlockAlgorithm", symmetricBlockAlgorithm, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doAEADEncrypt", "symmetricBlockMode", symmetricBlockMode, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doAEADEncrypt", "key", key, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doAEADEncrypt", "nonce", nonce, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doAEADEncrypt", "plainText", plainText, this.error);
 		if (this.hasError()) {
 			return "";
 		}
 		;
-		/******* INPUT VERIFICATION - END *******/
+		// INPUT VERIFICATION - END
 
 		EncodingUtil eu = new EncodingUtil();
 		byte[] txtBytes = eu.getBytes(plainText);
@@ -123,34 +65,21 @@ public class SymmetricBlockCipher extends SymmetricBlockCipherObject {
 
 	}
 
-	/**
-	 * @param symmetricBlockAlgorithm String SymmetricBlockAlgorithm enum, symmetric
-	 *                                block algorithm name
-	 * @param symmetricBlockMode      String SymmetricBlockModes enum, symmetric
-	 *                                block mode name
-	 * @param key                     String Hexa key for the algorithm excecution
-	 * @param macSize                 int macSize in bits for MAC length for AEAD
-	 *                                Encryption algorithm
-	 * @param nonce                   String Hexa nonce for MAC length for AEAD
-	 *                                Encryption algorithm
-	 * @param encryptedInput          String Base64 text to decrypt
-	 * @return String plain text UTF-8 with the given algorithm and parameters
-	 */
 	public String doAEADDecrypt(String symmetricBlockAlgorithm, String symmetricBlockMode, String key, int macSize,
 								String nonce, String encryptedInput) {
+		logger.debug("doAEADDecrypt");
 		this.error.cleanError();
-
-		/******* INPUT VERIFICATION - BEGIN *******/
-		SecurityUtils.validateStringInput("symmetricBlockAlgorithm", symmetricBlockAlgorithm, this.error);
-		SecurityUtils.validateStringInput("symmetricBlockMode", symmetricBlockMode, this.error);
-		SecurityUtils.validateStringInput("key", key, this.error);
-		SecurityUtils.validateStringInput("nonce", nonce, this.error);
-		SecurityUtils.validateStringInput("encryptedInput", encryptedInput, this.error);
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doAEADDecrypt", "symmetricBlockAlgorithm", symmetricBlockAlgorithm, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doAEADDecrypt", "symmetricBlockMode", symmetricBlockMode, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doAEADDecrypt", "key", key, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doAEADDecrypt", "nonce", nonce, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doAEADDecrypt", "encryptedInput", encryptedInput, this.error);
 		if (this.hasError()) {
 			return "";
 		}
 		;
-		/******* INPUT VERIFICATION - END *******/
+		// INPUT VERIFICATION - END
 
 		byte[] input = null;
 		try {
@@ -175,35 +104,22 @@ public class SymmetricBlockCipher extends SymmetricBlockCipherObject {
 		return result.trim();
 	}
 
-	/**
-	 * @param symmetricBlockAlgorithm String SymmetricBlockAlgorithm enum, symmetric
-	 *                                block algorithm name
-	 * @param symmetricBlockMode      String SymmetricBlockModes enum, symmetric
-	 *                                block mode name
-	 * @param symmetricBlockPadding   String SymmetricBlockPadding enum, symmetric
-	 *                                block padding name
-	 * @param key                     String Hexa key for the algorithm excecution
-	 * @param IV                      String IV for the algorithm execution, must be
-	 *                                the same length as the blockSize
-	 * @param plainText               String UTF-8 plain text to encrypt
-	 * @return String Base64 encrypted text with the given algorithm and parameters
-	 */
 	public String doEncrypt(String symmetricBlockAlgorithm, String symmetricBlockMode, String symmetricBlockPadding,
 							String key, String IV, String plainText) {
+		logger.debug("doEncrypt");
 		this.error.cleanError();
-
-		/******* INPUT VERIFICATION - BEGIN *******/
-		SecurityUtils.validateStringInput("symmetricBlockAlgorithm", symmetricBlockAlgorithm, this.error);
-		SecurityUtils.validateStringInput("symmetricBlockMode", symmetricBlockMode, this.error);
-		SecurityUtils.validateStringInput("symmetricBlockPadding", symmetricBlockPadding, this.error);
-		SecurityUtils.validateStringInput("key", key, this.error);
-		SecurityUtils.validateStringInput("IV", IV, this.error);
-		SecurityUtils.validateStringInput("plainText", plainText, this.error);
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doEncrypt", "symmetricBlockAlgorithm", symmetricBlockAlgorithm, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doEncrypt", "symmetricBlockMode", symmetricBlockMode, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doEncrypt", "symmetricBlockPadding", symmetricBlockPadding, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doEncrypt", "key", key, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doEncrypt", "IV", IV, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doEncrypt", "plainText", plainText, this.error);
 		if (this.hasError()) {
 			return "";
 		}
 		;
-		/******* INPUT VERIFICATION - END *******/
+		// INPUT VERIFICATION - END
 
 		EncodingUtil eu = new EncodingUtil();
 		byte[] inputBytes = eu.getBytes(plainText);
@@ -221,35 +137,22 @@ public class SymmetricBlockCipher extends SymmetricBlockCipherObject {
 		return Strings.fromByteArray(Base64.encode(encryptedBytes)).trim();
 	}
 
-	/**
-	 * @param symmetricBlockAlgorithm String SymmetricBlockAlgorithm enum, symmetric
-	 *                                block algorithm name
-	 * @param symmetricBlockMode      String SymmetricBlockModes enum, symmetric
-	 *                                block mode name
-	 * @param symmetricBlockPadding   String SymmetricBlockPadding enum, symmetric
-	 *                                block padding name
-	 * @param key                     String Hexa key for the algorithm excecution
-	 * @param IV                      String IV for the algorithm execution, must be
-	 *                                the same length as the blockSize
-	 * @param encryptedInput          String Base64 text to decrypt
-	 * @return String plain text UTF-8 with the given algorithm and parameters
-	 */
 	public String doDecrypt(String symmetricBlockAlgorithm, String symmetricBlockMode, String symmetricBlockPadding,
 							String key, String IV, String encryptedInput) {
+		logger.debug("doDecrypt");
 		this.error.cleanError();
-
-		/******* INPUT VERIFICATION - BEGIN *******/
-		SecurityUtils.validateStringInput("symmetricBlockAlgorithm", symmetricBlockAlgorithm, this.error);
-		SecurityUtils.validateStringInput("symmetricBlockMode", symmetricBlockMode, this.error);
-		SecurityUtils.validateStringInput("symmetricBlockPadding", symmetricBlockPadding, this.error);
-		SecurityUtils.validateStringInput("key", key, this.error);
-		SecurityUtils.validateStringInput("IV", IV, this.error);
-		SecurityUtils.validateStringInput("encryptedInput", encryptedInput, this.error);
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doDecrypt", "symmetricBlockAlgorithm", symmetricBlockAlgorithm, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doDecrypt", "symmetricBlockMode", symmetricBlockMode, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doDecrypt", "symmetricBlockPadding", symmetricBlockPadding, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doDecrypt", "key", key, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doDecrypt", "IV", IV, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doDecrypt", "encryptedInput", encryptedInput, this.error);
 		if (this.hasError()) {
 			return "";
 		}
 		;
-		/******* INPUT VERIFICATION - END *******/
+		// INPUT VERIFICATION - END
 
 		byte[] input = null;
 		try {
@@ -277,18 +180,18 @@ public class SymmetricBlockCipher extends SymmetricBlockCipherObject {
 
 	public boolean doAEADEncryptFile(String symmetricBlockAlgorithm, String symmetricBlockMode, String key, int macSize,
 									 String nonce, String pathInputFile, String pathOutputFile) {
+		logger.debug("doAEADEncryptFile");
 		this.error.cleanError();
-
-		/******* INPUT VERIFICATION - BEGIN *******/
-		SecurityUtils.validateStringInput("symmetricBlockAlgorithm", symmetricBlockAlgorithm, this.error);
-		SecurityUtils.validateStringInput("symmetricBlockMode", symmetricBlockMode, this.error);
-		SecurityUtils.validateStringInput("key", key, this.error);
-		SecurityUtils.validateStringInput("nonce", nonce, this.error);
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doAEADEncryptFile", "symmetricBlockAlgorithm", symmetricBlockAlgorithm, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doAEADEncryptFile", "symmetricBlockMode", symmetricBlockMode, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doAEADEncryptFile", "key", key, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doAEADEncryptFile", "nonce", nonce, this.error);
 		if (this.hasError()) {
 			return false;
 		}
 		;
-		/******* INPUT VERIFICATION - END *******/
+		// INPUT VERIFICATION - END
 
 		return setUpFile(symmetricBlockAlgorithm, symmetricBlockMode, null, nonce, key, pathInputFile, pathOutputFile,
 			macSize, true, true);
@@ -296,18 +199,18 @@ public class SymmetricBlockCipher extends SymmetricBlockCipherObject {
 
 	public boolean doAEADDecryptFile(String symmetricBlockAlgorithm, String symmetricBlockMode, String key, int macSize,
 									 String nonce, String pathInputFile, String pathOutputFile) {
+		logger.debug("doAEADDecryptFile");
 		this.error.cleanError();
-
-		/******* INPUT VERIFICATION - BEGIN *******/
-		SecurityUtils.validateStringInput("symmetricBlockAlgorithm", symmetricBlockAlgorithm, this.error);
-		SecurityUtils.validateStringInput("symmetricBlockMode", symmetricBlockMode, this.error);
-		SecurityUtils.validateStringInput("key", key, this.error);
-		SecurityUtils.validateStringInput("nonce", nonce, this.error);
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doAEADDecryptFile", "symmetricBlockAlgorithm", symmetricBlockAlgorithm, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doAEADDecryptFile", "symmetricBlockMode", symmetricBlockMode, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doAEADDecryptFile", "key", key, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doAEADDecryptFile", "nonce", nonce, this.error);
 		if (this.hasError()) {
 			return false;
 		}
 		;
-		/******* INPUT VERIFICATION - END *******/
+		// INPUT VERIFICATION - END
 
 		return setUpFile(symmetricBlockAlgorithm, symmetricBlockMode, null, nonce, key, pathInputFile, pathOutputFile,
 			macSize, false, true);
@@ -315,19 +218,19 @@ public class SymmetricBlockCipher extends SymmetricBlockCipherObject {
 
 	public boolean doEncryptFile(String symmetricBlockAlgorithm, String symmetricBlockMode,
 								 String symmetricBlockPadding, String key, String IV, String pathInputFile, String pathOutputFile) {
+		logger.debug("doEncryptFile");
 		this.error.cleanError();
-
-		/******* INPUT VERIFICATION - BEGIN *******/
-		SecurityUtils.validateStringInput("symmetricBlockAlgorithm", symmetricBlockAlgorithm, this.error);
-		SecurityUtils.validateStringInput("symmetricBlockMode", symmetricBlockMode, this.error);
-		SecurityUtils.validateStringInput("symmetricBlockPadding", symmetricBlockPadding, this.error);
-		SecurityUtils.validateStringInput("key", key, this.error);
-		SecurityUtils.validateStringInput("IV", IV, this.error);
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doEncryptFile", "symmetricBlockAlgorithm", symmetricBlockAlgorithm, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doEncryptFile", "symmetricBlockMode", symmetricBlockMode, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doEncryptFile", "symmetricBlockPadding", symmetricBlockPadding, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doEncryptFile", "key", key, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doEncryptFile", "IV", IV, this.error);
 		if (this.hasError()) {
 			return false;
 		}
 		;
-		/******* INPUT VERIFICATION - END *******/
+		// INPUT VERIFICATION - END
 
 		return setUpFile(symmetricBlockAlgorithm, symmetricBlockMode, symmetricBlockPadding, IV, key, pathInputFile,
 			pathOutputFile, 0, true, false);
@@ -335,18 +238,19 @@ public class SymmetricBlockCipher extends SymmetricBlockCipherObject {
 
 	public boolean doDecryptFile(String symmetricBlockAlgorithm, String symmetricBlockMode,
 								 String symmetricBlockPadding, String key, String IV, String pathInputFile, String pathOutputFile) {
+		logger.debug("doDecryptFile");
 		this.error.cleanError();
-		/******* INPUT VERIFICATION - BEGIN *******/
-		SecurityUtils.validateStringInput("symmetricBlockAlgorithm", symmetricBlockAlgorithm, this.error);
-		SecurityUtils.validateStringInput("symmetricBlockMode", symmetricBlockMode, this.error);
-		SecurityUtils.validateStringInput("symmetricBlockPadding", symmetricBlockPadding, this.error);
-		SecurityUtils.validateStringInput("key", key, this.error);
-		SecurityUtils.validateStringInput("IV", IV, this.error);
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doDecryptFile", "symmetricBlockAlgorithm", symmetricBlockAlgorithm, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doDecryptFile", "symmetricBlockMode", symmetricBlockMode, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doDecryptFile", "symmetricBlockPadding", symmetricBlockPadding, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doDecryptFile", "key", key, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "doDecryptFile", "IV", IV, this.error);
 		if (this.hasError()) {
 			return false;
 		}
 		;
-		/******* INPUT VERIFICATION - END *******/
+		// INPUT VERIFICATION - END
 
 		return setUpFile(symmetricBlockAlgorithm, symmetricBlockMode, symmetricBlockPadding, IV, key, pathInputFile,
 			pathOutputFile, 0, false, false);
@@ -354,16 +258,6 @@ public class SymmetricBlockCipher extends SymmetricBlockCipherObject {
 
 	/******** EXTERNAL OBJECT PUBLIC METHODS - END ********/
 
-	/**
-	 * Gets the BufferedBlockCipher loaded with Padding, Mode and Engine to Encrypt
-	 * with a Symmetric Block Algorithm
-	 *
-	 * @param algorithm SymmetricBlockAlgorithm enum, algorithm name
-	 * @param mode      SymmetricBlockModes enum, mode name
-	 * @param padding   SymmetricBlockPadding enum, padding name
-	 * @return BufferedBlockCipher loaded with Padding, Mode and Engine to Encrypt
-	 *         with a Symmetric Block Algorithm
-	 */
 	private BufferedBlockCipher getCipher(SymmetricBlockAlgorithm algorithm, SymmetricBlockMode mode,
 										  SymmetricBlockPadding padding) {
 		BlockCipher engine = getCipherEngine(algorithm);
@@ -386,247 +280,158 @@ public class SymmetricBlockCipher extends SymmetricBlockCipherObject {
 
 	}
 
-	/**
-	 * @param mode    SymmetricBlockModes enum, mode name
-	 * @param padding SymmetricBlockPadding enum, padding name
-	 * @return boolean true if it uses CTS
-	 */
 	private boolean usesCTS(SymmetricBlockMode mode, SymmetricBlockPadding padding) {
 		return mode == SymmetricBlockMode.CTS || padding == SymmetricBlockPadding.WITHCTS;
 	}
 
-	/**
-	 * @param algorithm SymmetricBlockAlgorithm enum, algorithm name
-	 * @return BlockCipher with the algorithm Engine
-	 */
 	public BlockCipher getCipherEngine(SymmetricBlockAlgorithm algorithm) {
-
-		BlockCipher engine = null;
-
+		logger.debug("getCipherEngine");
 		switch (algorithm) {
 			case AES:
-				engine = new AESEngine();
-				break;
+				return new AESEngine();
 			case BLOWFISH:
-				engine = new BlowfishEngine();
-				break;
+				return new BlowfishEngine();
 			case CAMELLIA:
-				engine = new CamelliaEngine();
-				break;
+				return new CamelliaEngine();
 			case CAST5:
-				engine = new CAST5Engine();
-				break;
+				return new CAST5Engine();
 			case CAST6:
-				engine = new CAST6Engine();
-				break;
+				return new CAST6Engine();
 			case DES:
-				engine = new DESEngine();
-				break;
+				return new DESEngine();
 			case TRIPLEDES:
-				engine = new DESedeEngine();
-				break;
+				return new DESedeEngine();
 			case DSTU7624_128:
-				engine = new DSTU7624Engine(
+				return new DSTU7624Engine(
 					SymmetricBlockAlgorithm.getBlockSize(SymmetricBlockAlgorithm.DSTU7624_128, this.error));
-				break;
 			case DSTU7624_256:
-				engine = new DSTU7624Engine(
+				return new DSTU7624Engine(
 					SymmetricBlockAlgorithm.getBlockSize(SymmetricBlockAlgorithm.DSTU7624_256, this.error));
-				break;
 			case DSTU7624_512:
-				engine = new DSTU7624Engine(
+				return new DSTU7624Engine(
 					SymmetricBlockAlgorithm.getBlockSize(SymmetricBlockAlgorithm.DSTU7624_512, this.error));
-				break;
 			case GOST28147:
-				engine = new GOST28147Engine();
-				break;
+				return new GOST28147Engine();
 			case NOEKEON:
-				engine = new NoekeonEngine();
-				break;
+				return new NoekeonEngine();
 			case RC2:
-				engine = new RC2Engine();
-				break;
+				return new RC2Engine();
 			case RC532:
-				engine = new RC532Engine();
-				break;
+				return new RC532Engine();
 			case RC564:
-				engine = new RC564Engine();
-				break;
+				return new RC564Engine();
 			case RC6:
-				engine = new RC6Engine();
-				break;
+				return new RC6Engine();
 			case RIJNDAEL_128:
-				engine = new RijndaelEngine(
+				return new RijndaelEngine(
 					SymmetricBlockAlgorithm.getBlockSize(SymmetricBlockAlgorithm.RIJNDAEL_128, this.error));
-				break;
 			case RIJNDAEL_160:
-				engine = new RijndaelEngine(
+				return new RijndaelEngine(
 					SymmetricBlockAlgorithm.getBlockSize(SymmetricBlockAlgorithm.RIJNDAEL_160, this.error));
-				break;
 			case RIJNDAEL_192:
-				engine = new RijndaelEngine(
+				return new RijndaelEngine(
 					SymmetricBlockAlgorithm.getBlockSize(SymmetricBlockAlgorithm.RIJNDAEL_192, this.error));
-				break;
 			case RIJNDAEL_224:
-				engine = new RijndaelEngine(
+				return new RijndaelEngine(
 					SymmetricBlockAlgorithm.getBlockSize(SymmetricBlockAlgorithm.RIJNDAEL_224, this.error));
-				break;
 			case RIJNDAEL_256:
-				engine = new RijndaelEngine(
+				return new RijndaelEngine(
 					SymmetricBlockAlgorithm.getBlockSize(SymmetricBlockAlgorithm.RIJNDAEL_256, this.error));
-				break;
 			case SEED:
-				engine = new SEEDEngine();
-				break;
+				return new SEEDEngine();
 			case SERPENT:
-				engine = new SerpentEngine();
-				break;
+				return new SerpentEngine();
 			case SKIPJACK:
-				engine = new SkipjackEngine();
-				break;
+				return new SkipjackEngine();
 			case SM4:
-				engine = new SM4Engine();
-				break;
+				return new SM4Engine();
 			case TEA:
-				engine = new TEAEngine();
-				break;
+				return new TEAEngine();
 			case THREEFISH_256:
-				engine = new ThreefishEngine(
+				return new ThreefishEngine(
 					SymmetricBlockAlgorithm.getBlockSize(SymmetricBlockAlgorithm.THREEFISH_256, this.error));
-				break;
 			case THREEFISH_512:
-				engine = new ThreefishEngine(
+				return new ThreefishEngine(
 					SymmetricBlockAlgorithm.getBlockSize(SymmetricBlockAlgorithm.THREEFISH_512, this.error));
-				break;
 			case THREEFISH_1024:
-				engine = new ThreefishEngine(
+				return new ThreefishEngine(
 					SymmetricBlockAlgorithm.getBlockSize(SymmetricBlockAlgorithm.THREEFISH_1024, this.error));
-				break;
 			case TWOFISH:
-				engine = new TwofishEngine();
-				break;
+				return new TwofishEngine();
 			case XTEA:
-				engine = new XTEAEngine();
-				break;
+				return new XTEAEngine();
 			default:
 				this.error.setError("SB003", "Unrecognized symmetric block algoritm");
-				break;
+				logger.error("Unrecognized symmetric block algoritm");
+				return null;
 		}
-		return engine;
-
 	}
 
-	/**
-	 * @param padding SymmetricBlockPadding enum, padding name
-	 * @return BlockCipherPadding with loaded padding type, if padding is WITHCTS
-	 *         returns null
-	 */
 	private BlockCipherPadding getPadding(SymmetricBlockPadding padding) {
-
-		BlockCipherPadding paddingCipher = null;
-
+		logger.debug("getPadding");
 		switch (padding) {
-			case NOPADDING:
-				paddingCipher = null;
-				break;
 			case ISO10126D2PADDING:
-				paddingCipher = new ISO10126d2Padding();
-				break;
+				return new ISO10126d2Padding();
 			case PKCS7PADDING:
-				paddingCipher = new PKCS7Padding();
-				break;
-			case WITHCTS:
-				break;
+				return new PKCS7Padding();
 			case X923PADDING:
-				paddingCipher = new X923Padding();
+				return new X923Padding();
 			case ISO7816D4PADDING:
-				paddingCipher = new ISO7816d4Padding();
-				break;
+				return new ISO7816d4Padding();
 			case ZEROBYTEPADDING:
-				paddingCipher = new ZeroBytePadding();
-				break;
+				return new ZeroBytePadding();
+			case WITHCTS:
+			case NOPADDING:
 			default:
 				this.error.setError("SB004", "Unrecognized symmetric block padding.");
-				break;
+				logger.error("Unrecognized symmetric block padding.");
+				return null;
 		}
-		return paddingCipher;
 	}
 
-	/**
-	 * @param blockCipher BlockCipher engine
-	 * @param mode        SymmetricBlockModes enum, symmetric block mode name
-	 * @return AEADBlockCipher loaded with a given BlockCipher
-	 */
 	private AEADBlockCipher getAEADCipherMode(BlockCipher blockCipher, SymmetricBlockMode mode) {
-
-		AEADBlockCipher bc = null;
-
+		logger.debug("getAEADCipherMode");
 		switch (mode) {
 			case AEAD_CCM:
-				bc = new CCMBlockCipher(blockCipher);
-				break;
+				return new CCMBlockCipher(blockCipher);
 			case AEAD_EAX:
-				bc = new EAXBlockCipher(blockCipher);
-				break;
+				return new EAXBlockCipher(blockCipher);
 			case AEAD_GCM:
-				bc = new GCMBlockCipher(blockCipher);
-				break;
+				return new GCMBlockCipher(blockCipher);
 			case AEAD_KCCM:
-				bc = new KCCMBlockCipher(blockCipher);
-				break;
+				return new KCCMBlockCipher(blockCipher);
 			default:
 				this.error.setError("SB005", "Unrecognized symmetric AEAD mode");
-				break;
+				logger.error("Unrecognized symmetric AEAD mode");
+				return null;
 		}
-		return bc;
-
 	}
 
-	/**
-	 * @param blockCipher BlockCipher loaded with the algorithm Engine
-	 * @param mode        SymmetricBlockModes enum, mode name
-	 * @return BlockCipher with mode loaded
-	 */
 	private BlockCipher getCipherMode(BlockCipher blockCipher, SymmetricBlockMode mode) {
-
-		BlockCipher bc = null;
-
+		logger.debug("getCipherMode");
 		switch (mode) {
 			case ECB:
 			case NONE:
-				bc = blockCipher;
-				break;
+				return blockCipher;
 			case CBC:
-				bc = new CBCBlockCipher(blockCipher);
-				break;
-			case CFB:
-				bc = new CFBBlockCipher(blockCipher, blockCipher.getBlockSize());
-				break;
-			case CTR:
-				bc = new SICBlockCipher(blockCipher);
-				break;
 			case CTS:
-				bc = new CBCBlockCipher(blockCipher);
-				break;
-			case GOFB:
-				bc = new GOFBBlockCipher(blockCipher);
-				break;
-			case OFB:
-				bc = new OFBBlockCipher(blockCipher, blockCipher.getBlockSize());
-				break;
-			case OPENPGPCFB:
-				bc = new OpenPGPCFBBlockCipher(blockCipher);
-				break;
+				return new CBCBlockCipher(blockCipher);
+			case CFB:
+				return new CFBBlockCipher(blockCipher, blockCipher.getBlockSize());
+			case CTR:
 			case SIC:
-				blockCipher = new SICBlockCipher(blockCipher);
-				break;
-
+				return new SICBlockCipher(blockCipher);
+			case GOFB:
+				return new GOFBBlockCipher(blockCipher);
+			case OFB:
+				return new OFBBlockCipher(blockCipher, blockCipher.getBlockSize());
+			case OPENPGPCFB:
+				return new OpenPGPCFBBlockCipher(blockCipher);
 			default:
 				this.error.setError("SB006", "Unrecognized symmetric block mode");
-				break;
-
+				logger.error("Unrecognized symmetric block mode");
+				return blockCipher;
 		}
-		return bc;
 	}
 
 	private byte[] setUp(String symmetricBlockAlgorithm, String symmetricBlockMode, String symmetricBlockPadding,
@@ -635,10 +440,8 @@ public class SymmetricBlockCipher extends SymmetricBlockCipherObject {
 		SymmetricBlockAlgorithm algorithm = SymmetricBlockAlgorithm.getSymmetricBlockAlgorithm(symmetricBlockAlgorithm,
 			this.error);
 		SymmetricBlockMode mode = SymmetricBlockMode.getSymmetricBlockMode(symmetricBlockMode, this.error);
-		SymmetricBlockPadding padding = null;
-		if (!isAEAD) {
-			padding = SymmetricBlockPadding.getSymmetricBlockPadding(symmetricBlockPadding, this.error);
-		}
+
+		SymmetricBlockPadding padding = !isAEAD ? SymmetricBlockPadding.getSymmetricBlockPadding(symmetricBlockPadding, this.error) : null;
 
 		byte[] nonceBytes = SecurityUtils.hexaToByte(nonce, this.error);
 		byte[] keyBytes = SecurityUtils.hexaToByte(key, this.error);
@@ -657,6 +460,7 @@ public class SymmetricBlockCipher extends SymmetricBlockCipherObject {
 
 	private byte[] encryptAEAD(SymmetricBlockAlgorithm algorithm, SymmetricBlockMode mode, byte[] key, byte[] nonce,
 							   byte[] txt, int macSize, boolean toEncrypt, boolean isFile, String pathInput, String pathOutput) {
+		logger.debug("encryptAEAD");
 		BlockCipher engine = getCipherEngine(algorithm);
 		AEADBlockCipher bbc = getAEADCipherMode(engine, mode);
 		if (this.hasError()) {
@@ -670,16 +474,14 @@ public class SymmetricBlockCipher extends SymmetricBlockCipherObject {
 			bbc.init(toEncrypt, AEADparams);
 		} catch (Exception e) {
 			this.error.setError("SB007", e.getMessage());
+			logger.error("encryptAEAD", e);
 			return null;
 		}
 
-		byte[] outputBytes = null;
 		if (isFile) {
 			try {
 				byte[] inBuffer = new byte[1024];
-				byte[] outBuffer = new byte[bbc.getOutputSize(1024)];
-
-				outBuffer = new byte[bbc.getUnderlyingCipher().getBlockSize() + bbc.getOutputSize(inBuffer.length)];
+				byte[] outBuffer = new byte[bbc.getUnderlyingCipher().getBlockSize() + bbc.getOutputSize(inBuffer.length)];
 				int inCount = 0;
 				int outCount = 0;
 				try (FileInputStream inputStream = new FileInputStream(pathInput)) {
@@ -695,27 +497,30 @@ public class SymmetricBlockCipher extends SymmetricBlockCipherObject {
 				}
 			} catch (Exception e) {
 				this.error.setError("SB012", e.getMessage());
+				logger.error("encryptAEAD", e);
 				return null;
 			}
-			outputBytes = new byte[1];
+			return new byte[1];
 		} else {
 
-			outputBytes = new byte[bbc.getOutputSize(txt.length)];
+			byte[] outputBytes = new byte[bbc.getOutputSize(txt.length)];
 			try {
 
 				int length = bbc.processBytes(txt, 0, txt.length, outputBytes, 0);
 				bbc.doFinal(outputBytes, length);
+				return outputBytes;
 			} catch (Exception e) {
 				this.error.setError("SB008", e.getMessage());
+				logger.error("encryptAEAD", e);
 				return null;
 			}
 		}
-		return outputBytes;
 	}
 
 	private byte[] encrypt(SymmetricBlockAlgorithm algorithm, SymmetricBlockMode mode, SymmetricBlockPadding padding,
 						   byte[] key, byte[] iv, byte[] input, boolean toEncrypt, boolean isFile, String pathInput,
 						   String pathOutput) {
+		logger.debug("encrypt");
 		if (padding == null) {
 			return null;
 		}
@@ -735,15 +540,14 @@ public class SymmetricBlockCipher extends SymmetricBlockCipherObject {
 			}
 		} catch (Exception e) {
 			this.error.setError("SB009", e.getMessage());
+			logger.error("encrypt", e);
 			return null;
 		}
 
-		byte[] outputBytes = null;
 		if (isFile) {
 			try {
 				byte[] inBuffer = new byte[1024];
-				byte[] outBuffer = new byte[bbc.getOutputSize(1024)];
-				outBuffer = new byte[bbc.getBlockSize() + bbc.getOutputSize(inBuffer.length)];
+				byte[] outBuffer = new byte[bbc.getBlockSize() + bbc.getOutputSize(inBuffer.length)];
 				int inCount = 0;
 				int outCount = 0;
 				try (FileInputStream inputStream = new FileInputStream(pathInput)) {
@@ -759,35 +563,40 @@ public class SymmetricBlockCipher extends SymmetricBlockCipherObject {
 				}
 			} catch (Exception e) {
 				this.error.setError("SB012", e.getMessage());
+				logger.error("encrypt", e);
 				return null;
 			}
-			outputBytes = new byte[1];
+			return new byte[1];
 		} else {
-			outputBytes = new byte[bbc.getOutputSize(input.length)];
+			byte[] outputBytes = new byte[bbc.getOutputSize(input.length)];
 			try {
 				int length = bbc.processBytes(input, 0, input.length, outputBytes, 0);
 				bbc.doFinal(outputBytes, length);
+				return outputBytes;
 			} catch (Exception e) {
 				this.error.setError("SB010", e.getMessage());
+				logger.error("encrypt", e);
 				return null;
 			}
 		}
-		return outputBytes;
 	}
 
 	private boolean setUpFile(String symmetricBlockAlgorithm, String symmetricBlockMode, String symmetricBlockPadding,
 							  String nonce, String key, String pathInput, String pathOutput, int macSize, boolean toEncrypt,
 							  boolean isAEAD) {
-		/******* INPUT VERIFICATION - BEGIN *******/
-		SecurityUtils.validateStringInput("pathInputFile", pathInput, this.error);
-		SecurityUtils.validateStringInput("pathOutputFile", pathOutput, this.error);
+		logger.debug("setUpFile");
+
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "setUpFile", "pathInputFile", pathInput, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(SymmetricBlockCipher.class), "setUpFile", "pathOutputFile", pathOutput, this.error);
 		if (this.hasError()) {
 			return false;
 		}
 		;
-		/******* INPUT VERIFICATION - END *******/
+		// INPUT VERIFICATION - END
+
 		byte[] output = setUp(symmetricBlockAlgorithm, symmetricBlockMode, symmetricBlockPadding, nonce, key, null,
 			macSize, toEncrypt, isAEAD, true, pathInput, pathOutput);
-		return output == null ? false : true;
+		return output != null;
 	}
 }

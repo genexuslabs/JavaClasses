@@ -1,38 +1,29 @@
 package com.genexus.cryptography.asymmetric.utils;
 
+import com.genexus.securityapicommons.commons.Error;
+import com.genexus.securityapicommons.keys.CertificateX509;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.Signer;
 import org.bouncycastle.crypto.signers.DSADigestSigner;
 import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.crypto.signers.RSADigestSigner;
-
-import com.genexus.securityapicommons.commons.Error;
-import com.genexus.securityapicommons.keys.CertificateX509;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.bc.BcContentSignerBuilder;
 import org.bouncycastle.operator.bc.BcECContentSignerBuilder;
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder;
 
-/**
- * @author sgrampone
- *
- */
+@SuppressWarnings("LoggingSimilarMessage")
 public enum AsymmetricSigningAlgorithm {
 
-	RSA, ECDSA,;
+	RSA, ECDSA,
+	;
 
-	/**
-	 * Mapping between String name and AsymmetricSigningAlgorithm enum
-	 * representation
-	 *
-	 * @param asymmetricSigningAlgorithm
-	 *            String
-	 * @param error
-	 *            Error type for error management
-	 * @return AsymmetricSigningAlgorithm enum representation
-	 */
+	private static final Logger logger = LogManager.getLogger(AsymmetricSigningAlgorithm.class);
+
 	public static AsymmetricSigningAlgorithm getAsymmetricSigningAlgorithm(String asymmetricSigningAlgorithm,
 																		   Error error) {
 		switch (asymmetricSigningAlgorithm.toUpperCase().trim()) {
@@ -42,17 +33,11 @@ public enum AsymmetricSigningAlgorithm {
 				return AsymmetricSigningAlgorithm.ECDSA;
 			default:
 				error.setError("AE005", "Unrecognized AsymmetricSigningAlgorithm");
+				logger.error("Unrecognized AsymmetricSigningAlgorithm");
 				return null;
 		}
 	}
 
-	/**
-	 * @param asymmetricSigningAlgorithm
-	 *            AsymmetricSigningAlgorithm enum, algorithm name
-	 * @param error
-	 *            Error type for error management
-	 * @return String value of the algorithm
-	 */
 	public static String valueOf(AsymmetricSigningAlgorithm asymmetricSigningAlgorithm, Error error) {
 		switch (asymmetricSigningAlgorithm) {
 			case RSA:
@@ -61,49 +46,46 @@ public enum AsymmetricSigningAlgorithm {
 				return "ECDSA";
 			default:
 				error.setError("AE006", "Unrecognized AsymmetricSigningAlgorithm");
+				logger.error("Unrecognized AsymmetricSigningAlgorithm");
 				return "";
 		}
 	}
 
-	public static Signer getSigner(AsymmetricSigningAlgorithm asymmetricSigningAlgorithm, Digest hash, Error error)
-	{
-		if(hash == null)
-		{
+	public static Signer getSigner(AsymmetricSigningAlgorithm asymmetricSigningAlgorithm, Digest hash, Error error) {
+		logger.debug("getSigner");
+		if (hash == null) {
 			error.setError("AE008", "Hash digest is null");
+			logger.error("Hash digest is null");
 			return null;
 		}
-		Signer sig = null;
 		switch (asymmetricSigningAlgorithm) {
 			case RSA:
-				sig = new RSADigestSigner(hash);
-				break;
+				return new RSADigestSigner(hash);
 			case ECDSA:
 				ECDSASigner dsaSigner = new ECDSASigner();
-				sig = new DSADigestSigner(dsaSigner, hash);
-				break;
+				return new DSADigestSigner(dsaSigner, hash);
 			default:
 				error.setError("AE007", "Unrecognized AsymmetricSigningAlgorithm");
+				logger.error("Unrecognized AsymmetricSigningAlgorithm");
+				return null;
 		}
-		return sig;
 	}
 
-	public static BcContentSignerBuilder getBcContentSignerBuilder(AsymmetricSigningAlgorithm asymmetricSigningAlgorithm, CertificateX509 cert, Error error)
-	{
+	public static BcContentSignerBuilder getBcContentSignerBuilder(AsymmetricSigningAlgorithm asymmetricSigningAlgorithm, CertificateX509 cert, Error error) {
+		logger.debug("getBcContentSignerBuilder");
 		AlgorithmIdentifier signatureAlgorithm = new DefaultSignatureAlgorithmIdentifierFinder().find(
 			cert.Cert().getSigAlgName());
 		AlgorithmIdentifier digestAlgorithm = new DefaultDigestAlgorithmIdentifierFinder().find(signatureAlgorithm);
 
-		BcContentSignerBuilder sig = null;
 		switch (asymmetricSigningAlgorithm) {
 			case RSA:
-				sig = new BcRSAContentSignerBuilder(signatureAlgorithm, digestAlgorithm);
-				break;
+				return new BcRSAContentSignerBuilder(signatureAlgorithm, digestAlgorithm);
 			case ECDSA:
-				sig = new BcECContentSignerBuilder(signatureAlgorithm, digestAlgorithm);
-				break;
+				return new BcECContentSignerBuilder(signatureAlgorithm, digestAlgorithm);
 			default:
 				error.setError("AE007", "Unrecognized AsymmetricSigningAlgorithm");
+				logger.error("Unrecognized AsymmetricSigningAlgorithm");
+				return null;
 		}
-		return sig;
 	}
 }

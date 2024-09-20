@@ -3,16 +3,23 @@ package com.genexus.cryptography.checksum.utils;
 import com.genexus.securityapicommons.commons.Error;
 import com.genexus.securityapicommons.config.EncodingUtil;
 import com.genexus.securityapicommons.utils.SecurityUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.nio.charset.StandardCharsets;
+
+@SuppressWarnings("LoggingSimilarMessage")
 public enum ChecksumInputType {
 
 	BASE64, HEX, TXT, ASCII, LOCAL_FILE, NONE;
 
+	private static final Logger logger = LogManager.getLogger(ChecksumInputType.class);
+
 	public static ChecksumInputType getChecksumInputType(String checksumInputType, Error error) {
-		if(error == null) return ChecksumInputType.NONE;
-		if (checksumInputType == null)
-		{
+		if (error == null) return ChecksumInputType.NONE;
+		if (checksumInputType == null) {
 			error.setError("CHI06", "Unrecognized checksum input type");
+			logger.error("Unrecognized checksum input type");
 			return ChecksumInputType.NONE;
 		}
 		switch (checksumInputType.toUpperCase().trim()) {
@@ -28,6 +35,7 @@ public enum ChecksumInputType {
 				return ChecksumInputType.LOCAL_FILE;
 			default:
 				error.setError("CHI01", "Unrecognized checksum input type");
+				logger.error("Unrecognized checksum input type");
 				return null;
 		}
 	}
@@ -47,6 +55,7 @@ public enum ChecksumInputType {
 				return "LOCAL_FILE";
 			default:
 				error.setError("CHI02", "Unrecognized checksum input type");
+				logger.error("Unrecognized checksum input type");
 				return "";
 		}
 	}
@@ -54,38 +63,27 @@ public enum ChecksumInputType {
 	public static byte[] getBytes(ChecksumInputType checksumInputType, String input, Error error) {
 		if (error == null) return null;
 		EncodingUtil eu = new EncodingUtil();
-		byte[] aux = null;
-		switch (checksumInputType) {
-			case BASE64:
-				try {
-					aux = org.bouncycastle.util.encoders.Base64.decode(input);
-				} catch (Exception e) {
-					error.setError("CHI03", e.getMessage());
-				}
-				break;
-			case HEX:
-				aux = SecurityUtils.hexaToByte(input, error);
-				break;
-			case TXT:
-				aux = eu.getBytes(input);
-				if (eu.hasError()) {
-					error = eu.getError();
-				}
-				break;
-			case ASCII:
-				try {
-					aux = input.getBytes("US-ASCII");
-				} catch (Exception e) {
-					error.setError("CHI04", e.getMessage());
-				}
-				break;
-			case LOCAL_FILE:
-				aux = SecurityUtils.getFileBytes(input, error);
-				break;
-			default:
-				error.setError("CHII05", "Unrecognized checksum input type");
-				break;
+		try {
+			switch (checksumInputType) {
+				case BASE64:
+					return org.bouncycastle.util.encoders.Base64.decode(input);
+				case HEX:
+					return SecurityUtils.hexaToByte(input, error);
+				case TXT:
+					return eu.getBytes(input);
+				case ASCII:
+					return input.getBytes(StandardCharsets.US_ASCII);
+				case LOCAL_FILE:
+					return SecurityUtils.getFileBytes(input, error);
+				default:
+					error.setError("CHII05", "Unrecognized checksum input type");
+					logger.error("Unrecognized checksum input type");
+					return null;
+			}
+		} catch (Exception e) {
+			error.setError("CHI03", e.getMessage());
+			logger.error("getBytes", e);
+			return null;
 		}
-		return aux;
 	}
 }

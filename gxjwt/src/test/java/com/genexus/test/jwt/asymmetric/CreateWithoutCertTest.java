@@ -6,11 +6,10 @@ import com.genexus.commons.JWTOptions;
 import com.genexus.securityapicommons.keys.PrivateKeyManager;
 import com.genexus.securityapicommons.utils.SecurityUtils;
 import com.genexus.test.commons.SecurityAPITestObject;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
-public class CreateWithoutCertTest extends SecurityAPITestObject{
+public class CreateWithoutCertTest extends SecurityAPITestObject {
 
 	protected static JWTOptions options;
 	protected static PrivateClaims claims;
@@ -18,17 +17,9 @@ public class CreateWithoutCertTest extends SecurityAPITestObject{
 
 	protected static String path_RSA_sha256_1024;
 
-	public static Test suite() {
-		return new TestSuite(CreateWithoutCertTest.class);
-	}
 
-	@Override
-	public void runTest() {
-		test_sha256_1024_PEM();
-	}
-
-	@Override
-	public void setUp() {
+	@BeforeClass
+	public static void setUp() {
 
 		jwt = new JWTCreator();
 		options = new JWTOptions();
@@ -44,6 +35,7 @@ public class CreateWithoutCertTest extends SecurityAPITestObject{
 		path_RSA_sha256_1024 = resources.concat("/dummycerts/RSA_sha256_1024/");
 	}
 
+	@Test
 	public void test_sha256_1024_PEM() {
 		String pathKey = path_RSA_sha256_1024 + "sha256d_key.pem";
 		PrivateKeyManager key = new PrivateKeyManager();

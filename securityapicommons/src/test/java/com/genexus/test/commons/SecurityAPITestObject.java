@@ -2,37 +2,37 @@ package com.genexus.test.commons;
 
 import com.genexus.securityapicommons.commons.SecurityAPIObject;
 import com.genexus.securityapicommons.utils.SecurityUtils;
-
-import junit.framework.TestCase;
-import org.junit.Rule;
+import org.junit.Assert;
+import org.junit.ClassRule;
 import org.junit.rules.TemporaryFolder;
 
-public class SecurityAPITestObject extends TestCase {
+public class SecurityAPITestObject {
 
-	public String resources;
+	public static final String resources = System.getProperty("user.dir").concat("/src/test/resources");
+	;
 
-	@Rule
-	public TemporaryFolder tempFolder;
+	@ClassRule
+	public static final TemporaryFolder tempFolder = new TemporaryFolder();
 
-	public SecurityAPITestObject() {
-		resources = System.getProperty("user.dir").concat("/src/test/resources");
-		tempFolder = new TemporaryFolder();
+	public static void True(boolean result, SecurityAPIObject object) {
+		Assert.assertTrue(result);
+		Assert.assertFalse(object.hasError());
 	}
 
-	public void True(boolean result, SecurityAPIObject object)
-	{
-		assertTrue(result);
-		assertFalse(object.hasError());
+	public static void False(boolean result, SecurityAPIObject object) {
+		Assert.assertFalse(result);
+		Assert.assertTrue(object.hasError());
 	}
 
-	public void False(boolean result, SecurityAPIObject object)
-	{
-		assertFalse(result);
-		assertTrue(object.hasError());
+	public void Equals(String expected, String obtained, SecurityAPIObject object) {
+		Assert.assertTrue(SecurityUtils.compareStrings(expected, obtained) && !object.hasError());
 	}
 
-	public void Equals(String expected, String obtained, SecurityAPIObject object)
-	{
-		assertTrue(SecurityUtils.compareStrings(expected, obtained) && !object.hasError());
+	public static void assertTrue(boolean condition) {
+		Assert.assertTrue(condition);
+	}
+
+	public static void assertFalse(boolean condition) {
+		Assert.assertFalse(condition);
 	}
 }

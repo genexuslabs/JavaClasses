@@ -1,10 +1,10 @@
 package com.genexus.JWT.claims;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.genexus.securityapicommons.commons.Error;
 import com.genexus.securityapicommons.utils.SecurityUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Claims {
 
@@ -24,10 +24,11 @@ public class Claims {
 		return claims;
 	}
 
+	@SuppressWarnings("unused")
 	public Object getClaimValue(String key, Error error) {
-		for (int i = 0; i < claims.size(); i++) {
-			if (SecurityUtils.compareStrings(key, claims.get(i).getKey())) {
-				return claims.get(i).getValue();
+		for (Claim claim : claims) {
+			if (SecurityUtils.compareStrings(key, claim.getKey())) {
+				return claim.getValue();
 			}
 		}
 		error.setError("CLA01", String.format("Could not find a claim with %s key value", key));
@@ -35,11 +36,6 @@ public class Claims {
 	}
 
 	public boolean isEmpty() {
-		if (claims.size() == 0) {
-			return true;
-		} else {
-			return false;
-
-		}
+		return claims.isEmpty();
 	}
 }

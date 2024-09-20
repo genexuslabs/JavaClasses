@@ -5,10 +5,10 @@ import com.genexus.JWT.claims.PrivateClaims;
 import com.genexus.commons.JWTOptions;
 import com.genexus.securityapicommons.keys.SymmetricKeyGenerator;
 import com.genexus.test.commons.SecurityAPITestObject;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
+@SuppressWarnings("NewClassNamingConvention")
 public class Issue84142Test extends SecurityAPITestObject {
 
 	protected static JWTCreator jwt;
@@ -16,17 +16,8 @@ public class Issue84142Test extends SecurityAPITestObject {
 	protected static PrivateClaims claims;
 	protected static SymmetricKeyGenerator keyGen;
 
-	public static Test suite() {
-		return new TestSuite(Issue84142Test.class);
-	}
-
-	@Override
-	public void runTest() {
-
-	}
-
-	@Override
-	public void setUp() {
+	@BeforeClass
+	public static void setUp() {
 		options = new JWTOptions();
 		jwt = new JWTCreator();
 		claims = new PrivateClaims();
@@ -39,6 +30,7 @@ public class Issue84142Test extends SecurityAPITestObject {
 
 	}
 
+	@Test
 	public void test_expValidationPositive() {
 		options.addCustomTimeValidationClaim("exp", "2030/07/07 10:15:20", "20");
 		String token = jwt.doCreate("HS256", claims, options);
@@ -46,6 +38,7 @@ public class Issue84142Test extends SecurityAPITestObject {
 		assertTrue(validation);
 	}
 
+	@Test
 	public void test_expValidationNegative() {
 		options.addCustomTimeValidationClaim("exp", "2019/07/07 10:15:20", "20");
 		String token = jwt.doCreate("HS256", claims, options);

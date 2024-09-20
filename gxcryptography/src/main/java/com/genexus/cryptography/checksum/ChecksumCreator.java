@@ -1,10 +1,5 @@
 package com.genexus.cryptography.checksum;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
-import org.bouncycastle.util.encoders.Hex;
-
 import com.genexus.cryptography.checksum.utils.CRCParameters;
 import com.genexus.cryptography.checksum.utils.ChecksumAlgorithm;
 import com.genexus.cryptography.checksum.utils.ChecksumInputType;
@@ -12,8 +7,16 @@ import com.genexus.cryptography.commons.ChecksumObject;
 import com.genexus.cryptography.hash.Hashing;
 import com.genexus.cryptography.hash.utils.HashAlgorithm;
 import com.genexus.securityapicommons.utils.SecurityUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.bouncycastle.util.encoders.Hex;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 public class ChecksumCreator extends ChecksumObject {
+
+	private static final Logger logger = LogManager.getLogger(ChecksumCreator.class);
 
 	public ChecksumCreator() {
 		super();
@@ -22,14 +25,17 @@ public class ChecksumCreator extends ChecksumObject {
 	/********EXTERNAL OBJECT PUBLIC METHODS  - BEGIN ********/
 
 	public String generateChecksum(String input, String inputType, String checksumAlgorithm) {
+		logger.debug("generateChecksum");
 		this.error.cleanError();
-
-		/*******INPUT VERIFICATION - BEGIN*******/
-		SecurityUtils.validateStringInput("input", input, this.error);
-		SecurityUtils.validateStringInput("inputType", inputType, this.error);
-		SecurityUtils.validateStringInput("checksumAlgorithm", checksumAlgorithm, this.error);
-		if(this.hasError()) { return "";};
-		/*******INPUT VERIFICATION - END*******/
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateStringInput(String.valueOf(ChecksumCreator.class), "generateChecksum", "input", input, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(ChecksumCreator.class), "generateChecksum", "inputType", inputType, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(ChecksumCreator.class), "generateChecksum", "checksumAlgorithm", checksumAlgorithm, this.error);
+		if (this.hasError()) {
+			return "";
+		}
+		;
+		// INPUT VERIFICATION - END
 
 		ChecksumInputType chksumInputType = ChecksumInputType.getChecksumInputType(inputType, this.error);
 		byte[] inputBytes = ChecksumInputType.getBytes(chksumInputType, input, this.error);
@@ -44,24 +50,25 @@ public class ChecksumCreator extends ChecksumObject {
 			: calculateCRC(inputBytes, algorithm);
 	}
 
-	public boolean verifyChecksum(String input, String inputType, String checksumAlgorithm, String digest)
-	{
+	public boolean verifyChecksum(String input, String inputType, String checksumAlgorithm, String digest) {
+		logger.debug("verifyChecksum");
 		this.error.cleanError();
-
-		/*******INPUT VERIFICATION - BEGIN*******/
-		SecurityUtils.validateStringInput("input", input, this.error);
-		SecurityUtils.validateStringInput("inputType", inputType, this.error);
-		SecurityUtils.validateStringInput("checksumAlgorithm", checksumAlgorithm, this.error);
-		SecurityUtils.validateStringInput("digest", digest, this.error);
-		if(this.hasError()) { return false;};
-		/*******INPUT VERIFICATION - END*******/
-
-		String result = generateChecksum(input,  inputType,  checksumAlgorithm);
-		if(SecurityUtils.compareStrings(result, "") || this.hasError())
-		{
+		// INPUT VERIFICATION - BEGIN
+		SecurityUtils.validateStringInput(String.valueOf(ChecksumCreator.class), "verifyChecksum", "input", input, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(ChecksumCreator.class), "verifyChecksum", "inputType", inputType, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(ChecksumCreator.class), "verifyChecksum", "checksumAlgorithm", checksumAlgorithm, this.error);
+		SecurityUtils.validateStringInput(String.valueOf(ChecksumCreator.class), "verifyChecksum", "digest", digest, this.error);
+		if (this.hasError()) {
 			return false;
 		}
-		String resCompare = digest.toUpperCase().contains("0X") ? "0X"+result : result;
+		;
+		// INPUT VERIFICATION - END
+
+		String result = generateChecksum(input, inputType, checksumAlgorithm);
+		if (SecurityUtils.compareStrings(result, "") || this.hasError()) {
+			return false;
+		}
+		String resCompare = digest.toUpperCase().contains("0X") ? "0X" + result : result;
 		return SecurityUtils.compareStrings(resCompare, digest);
 	}
 
@@ -76,8 +83,7 @@ public class ChecksumCreator extends ChecksumObject {
 		if (aux == 0 || this.hasError()) {
 			return "";
 		}
-		switch(parms.getWidth())
-		{
+		switch (parms.getWidth()) {
 			case 8:
 				return String.format("%02X", aux);
 			case 16:
@@ -90,23 +96,21 @@ public class ChecksumCreator extends ChecksumObject {
 	}
 
 	private String calculateHash(byte[] input, ChecksumAlgorithm checksumAlgorithm) {
+		logger.debug("calculateHash");
 		HashAlgorithm alg = getHashAlgorithm(checksumAlgorithm);
 		if (this.hasError()) {
 			return "";
 		}
 		Hashing hash = new Hashing();
-		byte[] digest = null;
+
 		try (InputStream inputStream = new ByteArrayInputStream(input)) {
-			digest = hash.calculateHash(alg, inputStream);
+			byte[] digest = hash.calculateHash(alg, inputStream);
+			return Hex.toHexString(digest);
 		} catch (Exception e) {
 			error.setError("CH001", e.getMessage());
+			logger.error("calculateHash", e);
 			return "";
 		}
-		if (hash.hasError()) {
-			this.error = hash.getError();
-			return "";
-		}
-		return Hex.toHexString(digest);
 	}
 
 	private HashAlgorithm getHashAlgorithm(ChecksumAlgorithm checksumAlgorithm) {

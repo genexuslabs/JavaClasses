@@ -7,20 +7,21 @@ import com.genexus.securityapicommons.keys.PrivateKeyManager;
 import com.genexus.securityapicommons.utils.SecurityUtils;
 import com.genexus.test.commons.SecurityAPITestObject;
 
-import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class FindIDTest extends SecurityAPITestObject {
 
-	private CertificateX509 cert;
-	private PrivateKeyManager key;
-	private XmlDSigSigner signer;
-	private DSigOptions options;
-	private String xmlInput;
-	private String xPath;
+	private static CertificateX509 cert;
+	private static PrivateKeyManager key;
+	private static XmlDSigSigner signer;
+	private static DSigOptions options;
+	private static String xmlInput;
+	private static String xPath;
 
-	@Override
-	protected void setUp() {
+	@BeforeClass
+	public static void setUp() {
 		cert = new CertificateX509();
 		cert.load(resources.concat("/dummycerts/RSA_sha256_1024/sha256_cert.crt"));//"C:\\Temp\\dummycerts\\RSA_sha256_1024\\sha256_cert.crt");
 		key = new PrivateKeyManager();
@@ -35,15 +36,7 @@ public class FindIDTest extends SecurityAPITestObject {
 		xPath = "#ID2102103521011431017000298855005000016601157405784801";
 	}
 
-	public static Test suite() {
-		return new TestSuite(FindIDTest.class);
-	}
-
-	@Override
-	public void runTest() {
-		testFindID();
-	}
-
+	@Test
 	public void testFindID() {
 		String signed = signer.doSignElement(xmlInput, xPath, key, cert, options);
 		assertFalse(SecurityUtils.compareStrings(signed, ""));

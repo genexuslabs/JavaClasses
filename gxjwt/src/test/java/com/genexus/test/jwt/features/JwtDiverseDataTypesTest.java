@@ -2,47 +2,36 @@ package com.genexus.test.jwt.features;
 
 import com.genexus.JWT.JWTCreator;
 import com.genexus.JWT.claims.PrivateClaims;
-import com.genexus.JWT.utils.DateUtil;
 import com.genexus.commons.JWTOptions;
 import com.genexus.securityapicommons.keys.SymmetricKeyGenerator;
 import com.genexus.test.commons.SecurityAPITestObject;
+import com.genexus.test.jwt.resources.TestUtils;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
-public class JwtDiverseDataTypesTest extends SecurityAPITestObject{
+public class JwtDiverseDataTypesTest extends SecurityAPITestObject {
 
 	protected static JWTCreator jwt;
 	protected static JWTOptions options;
 	protected static SymmetricKeyGenerator keyGen;
-	protected static DateUtil du;
-	protected PrivateClaims claimslevel1;
-	protected PrivateClaims claimslevel2;
-	protected PrivateClaims claimslevel3;
+	protected static PrivateClaims claimslevel1;
+	protected static PrivateClaims claimslevel2;
+	protected static PrivateClaims claimslevel3;
 	protected static String token;
 	protected static String currentDate;
 	protected static String hexaKey;
 
-	public static Test suite() {
-		return new TestSuite(JwtDiverseDataTypesTest.class);
-	}
 
-	@Override
-	public void runTest() {
-		testPositive();
-	}
-
-	@Override
-	public void setUp() {
+	@BeforeClass
+	public static void setUp() {
 		jwt = new JWTCreator();
 		options = new JWTOptions();
-		du = new DateUtil();
 		keyGen = new SymmetricKeyGenerator();
 		claimslevel1 = new PrivateClaims();
 		claimslevel2 = new PrivateClaims();
 		claimslevel3 = new PrivateClaims();
 
-		currentDate = du.getCurrentDate();
+		currentDate = TestUtils.getCurrentDate();
 		hexaKey = keyGen.doGenerateKey("GENERICRANDOM", 256);
 
 		options.addRegisteredClaim("aud", "jitsi");
@@ -70,8 +59,8 @@ public class JwtDiverseDataTypesTest extends SecurityAPITestObject{
 		token = jwt.doCreate("HS256", claimslevel1, options);
 	}
 
-	public void testPositive()
-	{
+	@Test
+	public void testPositive() {
 		boolean verification = jwt.doVerify(token, "HS256", claimslevel1, options);
 		True(verification, jwt);
 	}

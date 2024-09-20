@@ -1,28 +1,20 @@
 package com.genexus.cryptography.symmetric.utils;
 
 import com.genexus.securityapicommons.commons.Error;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-/**
- * @author sgrampone
- *
- */
+@SuppressWarnings("LoggingSimilarMessage")
 public enum SymmetricStreamAlgorithm {
 	RC4, HC256, CHACHA20, SALSA20, XSALSA20, ISAAC, NONE;
 
-	/**
-	 * Mapping between String name and SymmetricStreamAlgorithm enum representation
-	 *
-	 * @param symmetricStreamAlgorithm
-	 *            String
-	 * @param error
-	 *            Error type for error management
-	 * @return SymmetricStreamAlgorithm enum representation
-	 */
+	private static final Logger logger = LogManager.getLogger(SymmetricStreamAlgorithm.class);
+
 	public static SymmetricStreamAlgorithm getSymmetricStreamAlgorithm(String symmetricStreamAlgorithm, Error error) {
 		if (error == null) return SymmetricStreamAlgorithm.NONE;
-		if( symmetricStreamAlgorithm == null)
-		{
+		if (symmetricStreamAlgorithm == null) {
 			error.setError("SSA05", "Unrecognized SymmetricStreamAlgorithm");
+			logger.error("Unrecognized SymmetricStreamAlgorithm");
 			return SymmetricStreamAlgorithm.NONE;
 		}
 
@@ -41,19 +33,13 @@ public enum SymmetricStreamAlgorithm {
 				return SymmetricStreamAlgorithm.ISAAC;
 			default:
 				error.setError("SSA01", "Unrecognized SymmetricStreamAlgorithm");
+				logger.error("Unrecognized SymmetricStreamAlgorithm");
 				return null;
 		}
 	}
 
-	/**
-	 * @param symmetrcStreamAlgorithm
-	 *            SymmetrcStreamAlgorithm enum, algorithm name
-	 * @param error
-	 *            Error type for error management
-	 * @return String SymmetrcStreamAlgorithm name value
-	 */
 	public static String valueOf(SymmetricStreamAlgorithm symmetrcStreamAlgorithm, Error error) {
-		if(error == null) return "Unrecognized algorithm";
+		if (error == null) return "Unrecognized algorithm";
 
 		switch (symmetrcStreamAlgorithm) {
 			case RC4:
@@ -70,18 +56,11 @@ public enum SymmetricStreamAlgorithm {
 				return "ISAAC";
 			default:
 				error.setError("SSA02", "Unrecognized SymmetricStreamAlgorithm");
+				logger.error("Unrecognized SymmetricStreamAlgorithm");
 				return "Unrecognized algorithm";
 		}
 	}
 
-	/**
-	 * @param algorithm
-	 *            SymmetrcStreamAlgorithm enum, algorithm name
-	 * @param error
-	 *            Error type for error management
-	 * @return array int with fixed length 3 with key, if array[0]=0 is range, else
-	 *         fixed values
-	 */
 	protected static int[] getKeySize(SymmetricStreamAlgorithm algorithm, Error error) {
 		if (error == null) return null;
 
@@ -110,18 +89,12 @@ public enum SymmetricStreamAlgorithm {
 				break;
 			default:
 				error.setError("SSA03", "Unrecognized SymmetricStreamAlgorithm");
+				logger.error("Unrecognized SymmetricStreamAlgorithm");
 				break;
 		}
 		return keySize;
 	}
 
-	/**
-	 * @param algorithm
-	 *            SymmetricStreamAlgorithm enum
-	 * @param error
-	 *            Error type for error management
-	 * @return true if the algorithm uses an IV or nonce, false if it do not
-	 */
 	public static boolean usesIV(SymmetricStreamAlgorithm algorithm, Error error) {
 		switch (algorithm) {
 			case RC4:
@@ -134,6 +107,7 @@ public enum SymmetricStreamAlgorithm {
 				return true;
 			default:
 				error.setError("SSA04", "Unrecognized SymmetricStreamAlgorithm");
+				logger.error("Unrecognized SymmetricStreamAlgorithm");
 				return true;
 		}
 

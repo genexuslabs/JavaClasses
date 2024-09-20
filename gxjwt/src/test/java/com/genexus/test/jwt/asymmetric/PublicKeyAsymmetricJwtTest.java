@@ -2,23 +2,19 @@ package com.genexus.test.jwt.asymmetric;
 
 import com.genexus.JWT.JWTCreator;
 import com.genexus.JWT.claims.PrivateClaims;
-import com.genexus.JWT.utils.DateUtil;
-import com.genexus.JWT.utils.GUID;
 import com.genexus.commons.JWTOptions;
 import com.genexus.securityapicommons.commons.PublicKey;
 import com.genexus.securityapicommons.keys.PrivateKeyManager;
 import com.genexus.securityapicommons.keys.SymmetricKeyGenerator;
 import com.genexus.test.commons.SecurityAPITestObject;
+import com.genexus.test.jwt.resources.TestUtils;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
-public class PublicKeyAsymmetricJwtTest extends SecurityAPITestObject{
+public class PublicKeyAsymmetricJwtTest extends SecurityAPITestObject {
 
 	protected static JWTOptions options;
 	protected static PrivateClaims claims;
-	protected static GUID guid;
-	protected static DateUtil du;
 	protected static SymmetricKeyGenerator keyGenerator;
 	protected static JWTCreator jwt;
 
@@ -30,19 +26,7 @@ public class PublicKeyAsymmetricJwtTest extends SecurityAPITestObject{
 	protected static String alias;
 	protected static String password;
 
-
-	public static Test suite() {
-		return new TestSuite(PublicKeyAsymmetricJwtTest.class);
-	}
-
-	@Override
-	public void runTest() {
-
-		test_sha256_1024_PublicKey();
-		test_sha256_2048_PublicKey();
-		test_sha512_2048_PublicKey();
-	}
-
+	@Test
 	public void test_sha256_1024_PublicKey() {
 		String pathKey = path_RSA_sha256_1024 + "sha256d_key.pem";
 		String pathCert = path_RSA_sha256_1024 + "sha256_pubkey.pem";
@@ -54,6 +38,7 @@ public class PublicKeyAsymmetricJwtTest extends SecurityAPITestObject{
 		bulkTest(key, cert, alg);
 	}
 
+	@Test
 	public void test_sha256_2048_PublicKey() {
 		String pathKey = path_RSA_sha256_2048 + "sha256d_key.pem";
 		String pathCert = path_RSA_sha256_2048 + "sha256_pubkey.pem";
@@ -65,6 +50,7 @@ public class PublicKeyAsymmetricJwtTest extends SecurityAPITestObject{
 		bulkTest(key, cert, alg);
 	}
 
+	@Test
 	public void test_sha512_2048_PublicKey() {
 		String pathKey = path_RSA_sha512_2048 + "sha512d_key.pem";
 		String pathCert = path_RSA_sha512_2048 + "sha512_pubkey.pem";
@@ -77,12 +63,9 @@ public class PublicKeyAsymmetricJwtTest extends SecurityAPITestObject{
 	}
 
 
+	@BeforeClass
+	public static void setUp() {
 
-	@Override
-	public void setUp() {
-
-		du = new DateUtil();
-		guid = new GUID();
 		keyGenerator = new SymmetricKeyGenerator();
 		jwt = new JWTCreator();
 		options = new JWTOptions();
@@ -92,11 +75,11 @@ public class PublicKeyAsymmetricJwtTest extends SecurityAPITestObject{
 		options.addRegisteredClaim("sub", "subject1");
 		options.addRegisteredClaim("aud", "audience1");
 
-		options.addRegisteredClaim("jti", guid.generate());
+		options.addRegisteredClaim("jti", TestUtils.generateGUID());
 
-		options.addCustomTimeValidationClaim("exp", du.getCurrentDate(), "20");
-		options.addCustomTimeValidationClaim("iat", du.getCurrentDate(), "20");
-		options.addCustomTimeValidationClaim("nbf", du.getCurrentDate(), "20");
+		options.addCustomTimeValidationClaim("exp", TestUtils.getCurrentDate(), "20");
+		options.addCustomTimeValidationClaim("iat", TestUtils.getCurrentDate(), "20");
+		options.addCustomTimeValidationClaim("nbf", TestUtils.getCurrentDate(), "20");
 
 		claims.setClaim("hola1", "hola1");
 		claims.setClaim("hola2", "hola2");

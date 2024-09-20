@@ -8,6 +8,7 @@ import com.genexus.securityapicommons.commons.SecurityAPIObject;
 import com.genexus.securityapicommons.utils.ExtensionsWhiteList;
 import com.genexus.securityapicommons.utils.SecurityUtils;
 
+@SuppressWarnings("unused")
 public class FtpsOptions extends SecurityAPIObject {
 
 	private String host;

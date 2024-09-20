@@ -6,9 +6,7 @@ public enum AvailableEncoding {
 	UTF_8, UTF_16, UTF_16BE, UTF_16LE, UTF_32, UTF_32BE, UTF_32LE, SJIS, GB2312;
 
 	public static AvailableEncoding getAvailableEncoding(String encoding, Error error) {
-		encoding = encoding.replace("-", "_");
-		encoding = encoding.toUpperCase();
-		switch (encoding.trim()) {
+		switch (encoding.replace("-", "_").toUpperCase().trim()) {
 			case "UTF_8":
 				return UTF_8;
 			case "UTF_16":
@@ -34,9 +32,7 @@ public enum AvailableEncoding {
 	}
 
 	public static boolean existsEncoding(String encoding) {
-		encoding = encoding.replace("-", "_");
-		encoding = encoding.toUpperCase();
-		switch (encoding) {
+		switch (encoding.replace("-", "_").toUpperCase().trim()) {
 			case "UTF_8":
 			case "UTF_16":
 			case "UTF_16BE":
@@ -79,7 +75,6 @@ public enum AvailableEncoding {
 
 	public static String hexaBloom(AvailableEncoding availableEncoding) {
 		switch (availableEncoding) {
-
 			case UTF_16:
 			case UTF_16BE:
 				return "fffffffffffffffd";

@@ -5,13 +5,11 @@ import com.genexus.securityapicommons.keys.CertificateX509;
 import com.genexus.securityapicommons.keys.PrivateKeyManager;
 import com.genexus.securityapicommons.utils.SecurityUtils;
 import com.genexus.test.commons.SecurityAPITestObject;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+public class AsymmetricDomainSpacesTest extends SecurityAPITestObject {
 
-public class AsymmetricDomainSpacesTest extends SecurityAPITestObject{
-
-	private static String path_RSA_sha1_1024;
 	private static String plainText;
 	private static PrivateKeyManager key;
 	private static CertificateX509 cert;
@@ -19,9 +17,9 @@ public class AsymmetricDomainSpacesTest extends SecurityAPITestObject{
 	private static String pathCert;
 	private static AsymmetricCipher asymCipher;
 
-	@Override
-	protected void setUp() {
-		path_RSA_sha1_1024 = resources.concat("/dummycerts/RSA_sha1_1024/");
+	@BeforeClass
+	public static void setUp() {
+		String path_RSA_sha1_1024 = resources.concat("/dummycerts/RSA_sha1_1024/");
 		plainText = "Lorem ipsum";
 		pathKey = path_RSA_sha1_1024 + "sha1d_key.pem";
 		pathCert = path_RSA_sha1_1024 + "sha1_cert.crt";
@@ -31,18 +29,8 @@ public class AsymmetricDomainSpacesTest extends SecurityAPITestObject{
 
 	}
 
-	public static Test suite() {
-		return new TestSuite(AsymmetricDomainSpacesTest.class);
-	}
-
-	@Override
-	public void runTest() {
-		testSpaces();
-	}
-
-	public void testSpaces()
-	{
-
+	@Test
+	public void testSpaces() {
 		key.load(pathKey);
 		cert.load(pathCert);
 		String encrypted1 = asymCipher.doEncrypt_WithPrivateKey("SHA1 ", "PCKS1PADDING ", key, plainText);

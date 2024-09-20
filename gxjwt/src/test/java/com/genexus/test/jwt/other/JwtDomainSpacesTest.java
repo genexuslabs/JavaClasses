@@ -2,50 +2,36 @@ package com.genexus.test.jwt.other;
 
 import com.genexus.JWT.JWTCreator;
 import com.genexus.JWT.claims.PrivateClaims;
-import com.genexus.JWT.utils.DateUtil;
 import com.genexus.commons.JWTOptions;
 import com.genexus.securityapicommons.keys.SymmetricKeyGenerator;
 import com.genexus.test.commons.SecurityAPITestObject;
-import com.genexus.test.jwt.features.JwtVerifyJustSignatureTest;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import com.genexus.test.jwt.resources.TestUtils;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class JwtDomainSpacesTest extends SecurityAPITestObject {
 
 	protected static JWTCreator jwt;
 	protected static JWTOptions options;
 	protected static SymmetricKeyGenerator keyGen;
-	protected static DateUtil du;
-	protected PrivateClaims claims;
+	protected static PrivateClaims claims;
 	protected static String currentDate;
 	protected static String hexaKey;
 
-	public static Test suite() {
-		return new TestSuite(JwtDomainSpacesTest.class);
-	}
-
-	@Override
-	public void runTest() {
-		testDomains();
-
-	}
-
-	@Override
-	public void setUp() {
+	@BeforeClass
+	public static void setUp() {
 		jwt = new JWTCreator();
 		options = new JWTOptions();
-		du = new DateUtil();
 		keyGen = new SymmetricKeyGenerator();
 		claims = new PrivateClaims();
 
-		currentDate = du.getCurrentDate();
+		currentDate = TestUtils.getCurrentDate();
 		hexaKey = keyGen.doGenerateKey("GENERICRANDOM", 256);
 
 		options.addRegisteredClaim("aud ", "jitsi");
 		options.addRegisteredClaim(" iss", "my_client");
 		options.addRegisteredClaim(" sub ", "meet.jit.si");
-		String expiration = du.currentPlusSeconds(200);
+		String expiration = TestUtils.currentPlusSeconds(200);
 		options.addCustomTimeValidationClaim("exp", expiration, "20");
 
 		claims.setClaim("hola", "hola");
@@ -55,6 +41,7 @@ public class JwtDomainSpacesTest extends SecurityAPITestObject {
 
 	}
 
+	@Test
 	public void testDomains() {
 
 		options.setSecret(hexaKey);

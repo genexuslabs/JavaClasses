@@ -1,22 +1,18 @@
 package com.genexus.utils;
 
+import com.genexus.securityapicommons.commons.Error;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.xml.security.signature.XMLSignature;
 
-import com.genexus.securityapicommons.commons.Error;
-
+@SuppressWarnings({"LoggingSimilarMessage", "unused"})
 public enum XMLSignatureWrapper {
 
-	RSA_SHA1, RSA_SHA256, RSA_SHA512, ECDSA_SHA1, ECDSA_SHA256,;
+	RSA_SHA1, RSA_SHA256, RSA_SHA512, ECDSA_SHA1, ECDSA_SHA256,
+	;
 
-	/**
-	 * Mapping between String name and XMLSignatureWrapper enum representation
-	 *
-	 * @param xMLSignatureWrapper
-	 *            String
-	 * @param error
-	 *            Error type for error management
-	 * @return XMLSignatureWrapper enum representation
-	 */
+	private static final Logger logger = LogManager.getLogger(XMLSignatureWrapper.class);
+
 	public static XMLSignatureWrapper getXMLSignatureWrapper(String xMLSignatureWrapper, Error error) {
 		switch (xMLSignatureWrapper.toUpperCase().trim()) {
 			case "RSA_SHA1":
@@ -31,17 +27,11 @@ public enum XMLSignatureWrapper {
 				return ECDSA_SHA256;
 			default:
 				error.setError("XSW01", "Unrecognized algorithm");
+				logger.error("Unrecognized algorithm");
 				return null;
 		}
 	}
 
-	/**
-	 * @param xMLSignatureWrapper
-	 *            XMLSignatureWrapper enum, algorithm name
-	 * @param error
-	 *            Error type for error management
-	 * @return String xMLSignatureWrapper name
-	 */
 	public static String valueOf(XMLSignatureWrapper xMLSignatureWrapper, Error error) {
 		switch (xMLSignatureWrapper) {
 			case RSA_SHA1:
@@ -56,6 +46,7 @@ public enum XMLSignatureWrapper {
 				return "ECDSA_SHA256";
 			default:
 				error.setError("XSW02", "Unrecognized algorithm");
+				logger.error("Unrecognized algorithm");
 				return null;
 		}
 	}
@@ -74,6 +65,7 @@ public enum XMLSignatureWrapper {
 				return XMLSignature.ALGO_ID_SIGNATURE_ECDSA_SHA256;
 			default:
 				error.setError("XSW03", "Unrecognized algorithm");
+				logger.error("Unrecognized algorithm");
 				return null;
 		}
 	}

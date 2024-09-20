@@ -3,8 +3,8 @@ package com.genexus.test.keys;
 import com.genexus.securityapicommons.keys.CertificateX509;
 import com.genexus.securityapicommons.keys.PrivateKeyManager;
 import com.genexus.test.commons.SecurityAPITestObject;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class LoadPKCS12First extends SecurityAPITestObject {
 
@@ -14,33 +14,23 @@ public class LoadPKCS12First extends SecurityAPITestObject {
 
 	private static PrivateKeyManager key;
 
-	public static Test suite() {
-		return new TestSuite(LoadPKCS12First.class);
-	}
-
-	@Override
-	public void runTest() {
-		testLoadCert();
-		testLoadKey();
-	}
-
-	@Override
-	public void setUp() {
+	@BeforeClass
+	public static void setUp() {
 		certPAth = resources.concat("/dummycerts/RSA_sha256_1024/sha256_cert.p12"); //"C:\\Temp\\dummycerts\\RSA_sha256_1024\\sha256_cert.p12";
 		password = "dummy";
 		cert = new CertificateX509();
 		key = new PrivateKeyManager();
 	}
 
-	public void testLoadCert()
-	{
-		boolean loaded =  cert.loadPKCS12(certPAth, "", password);
-		True(loaded, cert );
+	@Test
+	public void testLoadCert() {
+		boolean loaded = cert.loadPKCS12(certPAth, "", password);
+		True(loaded, cert);
 	}
 
-	public void testLoadKey()
-	{
-		boolean loaded =  key.loadPKCS12(certPAth, "", password);
-		True(loaded, key );
+	@Test
+	public void testLoadKey() {
+		boolean loaded = key.loadPKCS12(certPAth, "", password);
+		True(loaded, key);
 	}
 }

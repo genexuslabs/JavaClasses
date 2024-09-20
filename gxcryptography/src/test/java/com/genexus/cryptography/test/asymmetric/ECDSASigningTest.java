@@ -6,9 +6,8 @@ import com.genexus.securityapicommons.config.EncodingUtil;
 import com.genexus.securityapicommons.keys.CertificateX509;
 import com.genexus.securityapicommons.keys.PrivateKeyManager;
 import com.genexus.test.commons.SecurityAPITestObject;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class ECDSASigningTest extends SecurityAPITestObject {
 	private static String path_ecdsa_sha1;
@@ -23,8 +22,8 @@ public class ECDSASigningTest extends SecurityAPITestObject {
 	private static String[] encodings;
 	private static EncodingUtil eu;
 
-	@Override
-	protected void setUp() {
+	@BeforeClass
+	public static void setUp() {
 
 		path_ecdsa_sha1 = resources.concat("/dummycerts/ECDSA_sha1/");
 		path_ecdsa_sha256 = resources.concat("/dummycerts/ECDSA_sha256/");
@@ -35,46 +34,41 @@ public class ECDSASigningTest extends SecurityAPITestObject {
 		alias = "1";
 		password = "dummy";
 
-		encodings = new String[] { "UTF_8", "UTF_16", "UTF_16BE", "UTF_16LE", "UTF_32", "UTF_32BE", "UTF_32LE", "SJIS",
-			"GB2312" };
+		encodings = new String[]{"UTF_8", "UTF_16", "UTF_16BE", "UTF_16LE", "UTF_32", "UTF_32BE", "UTF_32LE", "SJIS",
+			"GB2312"};
 
 		eu = new EncodingUtil();
 	}
 
-	private void bulkTest(PrivateKeyManager key, PublicKey cert, String hashAlgorithm, boolean isPublicKey)
-	{
-		bulkTestText( key,  cert,  hashAlgorithm, isPublicKey);
-		bulkTestFile( key,  cert,  hashAlgorithm, isPublicKey);
+	private void bulkTest(PrivateKeyManager key, PublicKey cert, String hashAlgorithm, boolean isPublicKey) {
+		bulkTestText(key, cert, hashAlgorithm, isPublicKey);
+		bulkTestFile(key, cert, hashAlgorithm, isPublicKey);
 
 	}
 
 	private void bulkTestText(PrivateKeyManager key, PublicKey cert, String hashAlgorithm, boolean isPublicKey) {
 		AsymmetricSigner asymSig = new AsymmetricSigner();
 		String signature = asymSig.doSign(key, hashAlgorithm, plainText);
-		boolean result = isPublicKey ? asymSig.doVerifyWithPublicKey(cert, plainText, signature, hashAlgorithm): asymSig.doVerify((CertificateX509)cert, plainText, signature);
-		assertTrue(result);
+		boolean result = isPublicKey ? asymSig.doVerifyWithPublicKey(cert, plainText, signature, hashAlgorithm) : asymSig.doVerify((CertificateX509) cert, plainText, signature);
 		True(result, asymSig);
 	}
 
 	private void bulkTestFile(PrivateKeyManager key, PublicKey cert, String hashAlgorithm, boolean isPublicKey) {
 		AsymmetricSigner asymSig = new AsymmetricSigner();
 		String signature = asymSig.doSignFile(key, hashAlgorithm, pathFile);
-		boolean result = isPublicKey ? asymSig.doVerifyFileWithPublicKey(cert, pathFile, signature, hashAlgorithm): asymSig.doVerifyFile((CertificateX509)cert, pathFile, signature);
-		assertTrue(result);
+		boolean result = isPublicKey ? asymSig.doVerifyFileWithPublicKey(cert, pathFile, signature, hashAlgorithm) : asymSig.doVerifyFile((CertificateX509) cert, pathFile, signature);
 		True(result, asymSig);
 	}
 
 	private void runTestWithEncoding(PrivateKeyManager key, PublicKey cert, String hash, boolean isPublicKey) {
-		for (int i = 0; i < encodings.length; i++) {
-			eu.setEncoding(encodings[i]);
+		for (String encoding : encodings) {
+			eu.setEncoding(encoding);
 			bulkTest(key, cert, hash, isPublicKey);
 		}
 	}
 
-	public static Test suite() {
-		return new TestSuite(ECDSASigningTest.class);
-	}
 
+	@Test
 	public void test_ecdsa_sha1_PEM() {
 		String pathKey = path_ecdsa_sha1 + "sha1_key.pem";
 		String pathCert = path_ecdsa_sha1 + "sha1_cert.pem";
@@ -86,6 +80,7 @@ public class ECDSASigningTest extends SecurityAPITestObject {
 
 	}
 
+	@Test
 	public void test_ecdsa_sha1_DER() {
 		String pathKey = path_ecdsa_sha1 + "sha1_key.pem";
 		String pathCert = path_ecdsa_sha1 + "sha1_cert.crt";
@@ -97,6 +92,7 @@ public class ECDSASigningTest extends SecurityAPITestObject {
 
 	}
 
+	@Test
 	public void test_ecdsa_sha1_PKCS12() {
 		String pathKey = path_ecdsa_sha1 + "sha1_cert.p12";
 		String pathCert = path_ecdsa_sha1 + "sha1_cert.p12";
@@ -107,6 +103,7 @@ public class ECDSASigningTest extends SecurityAPITestObject {
 		runTestWithEncoding(key, cert, "SHA1", false);
 	}
 
+	@Test
 	public void test_ecdsa_sha256_PEM() {
 		String pathKey = path_ecdsa_sha256 + "sha256_key.pem";
 		String pathCert = path_ecdsa_sha256 + "sha256_cert.pem";
@@ -118,6 +115,7 @@ public class ECDSASigningTest extends SecurityAPITestObject {
 
 	}
 
+	@Test
 	public void test_ecdsa_sha256_DER() {
 		String pathKey = path_ecdsa_sha256 + "sha256_key.pem";
 		String pathCert = path_ecdsa_sha256 + "sha256_cert.crt";
@@ -129,6 +127,7 @@ public class ECDSASigningTest extends SecurityAPITestObject {
 
 	}
 
+	@Test
 	public void test_ecdsa_sha256_PKCS12() {
 		String pathKey = path_ecdsa_sha256 + "sha256_cert.p12";
 		String pathCert = path_ecdsa_sha256 + "sha256_cert.p12";
@@ -140,6 +139,7 @@ public class ECDSASigningTest extends SecurityAPITestObject {
 
 	}
 
+	@Test
 	public void test_ecdsa_sha256_PublicKey() {
 		String pathKey = path_ecdsa_sha256 + "sha256_key.pem";
 		String pathCert = path_ecdsa_sha256 + "sha256_pubkey.pem";
@@ -151,6 +151,7 @@ public class ECDSASigningTest extends SecurityAPITestObject {
 
 	}
 
+	@Test
 	public void test_ecdsa_sha1_PublicKey() {
 		String pathKey = path_ecdsa_sha1 + "sha1_key.pem";
 		String pathCert = path_ecdsa_sha1 + "sha1_pubkey.pem";
@@ -159,21 +160,6 @@ public class ECDSASigningTest extends SecurityAPITestObject {
 		PublicKey cert = new PublicKey();
 		cert.load(pathCert);
 		runTestWithEncoding(key, cert, "SHA1", true);
-
-	}
-
-	@Override
-	public void runTest() {
-		test_ecdsa_sha256_PEM();
-		test_ecdsa_sha256_DER();
-		test_ecdsa_sha256_PKCS12();
-
-		test_ecdsa_sha1_PEM();
-		test_ecdsa_sha1_DER();
-		test_ecdsa_sha1_PKCS12();
-
-		test_ecdsa_sha256_PublicKey();
-		test_ecdsa_sha1_PublicKey();
 
 	}
 

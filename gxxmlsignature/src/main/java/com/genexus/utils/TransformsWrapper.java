@@ -1,22 +1,18 @@
 package com.genexus.utils;
 
+import com.genexus.securityapicommons.commons.Error;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.xml.security.transforms.Transforms;
 
-import com.genexus.securityapicommons.commons.Error;
-
+@SuppressWarnings({"LoggingSimilarMessage", "unused"})
 public enum TransformsWrapper {
 
-	ENVELOPED, ENVELOPING, DETACHED,;
+	ENVELOPED, ENVELOPING, DETACHED,
+	;
 
-	/**
-	 * Mapping between String name and TransformsWrapper enum representation
-	 *
-	 * @param transformsWrapper
-	 *            String
-	 * @param error
-	 *            Error type for error management
-	 * @return TransformsWrapper enum representation
-	 */
+	private static final Logger logger = LogManager.getLogger(TransformsWrapper.class);
+
 	public static TransformsWrapper getTransformsWrapper(String transformsWrapper, Error error) {
 		switch (transformsWrapper.toUpperCase().trim()) {
 			case "ENVELOPED":
@@ -27,17 +23,11 @@ public enum TransformsWrapper {
 				return TransformsWrapper.DETACHED;
 			default:
 				error.setError("TRW01", "Unrecognized transformation");
+				logger.error("Unrecognized transformation");
 				return null;
 		}
 	}
 
-	/**
-	 * @param transformsWrapper
-	 *            TransformsWrapper enum, algorithm name
-	 * @param error
-	 *            Error type for error management
-	 * @return String transformsWrapper name
-	 */
 	public static String valueOf(TransformsWrapper transformsWrapper, Error error) {
 		switch (transformsWrapper) {
 			case ENVELOPED:
@@ -48,6 +38,7 @@ public enum TransformsWrapper {
 				return "DETACHED";
 			default:
 				error.setError("TRW02", "Unrecognized transformation");
+				logger.error("Unrecognized transformation");
 				return null;
 		}
 	}
@@ -62,6 +53,7 @@ public enum TransformsWrapper {
 				return "http://www.w3.org/2000/09/xmldsig#detached-signature";
 			default:
 				error.setError("TRW03", "Unrecognized transformation");
+				logger.error("Unrecognized transformation");
 				return null;
 
 		}

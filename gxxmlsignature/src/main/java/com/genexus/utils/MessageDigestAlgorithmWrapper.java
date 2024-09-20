@@ -1,23 +1,18 @@
 package com.genexus.utils;
 
+import com.genexus.securityapicommons.commons.Error;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.xml.security.algorithms.MessageDigestAlgorithm;
 
-import com.genexus.securityapicommons.commons.Error;
-
+@SuppressWarnings({"LoggingSimilarMessage", "unused"})
 public enum MessageDigestAlgorithmWrapper {
 
-	SHA1, SHA256, SHA512,;
+	SHA1, SHA256, SHA512,
+	;
 
-	/**
-	 * Mapping between String name and MessageDigestAlgorithmWrapper enum
-	 * representation
-	 *
-	 * @param messageDigestAlgorithmWrapper
-	 *            String
-	 * @param error
-	 *            Error type for error management
-	 * @return MessageDigestAlgorithmWrapper enum representation
-	 */
+	private static final Logger logger = LogManager.getLogger(MessageDigestAlgorithmWrapper.class);
+
 	public static MessageDigestAlgorithmWrapper getMessageDigestAlgorithmWrapper(String messageDigestAlgorithmWrapper,
 																				 Error error) {
 		switch (messageDigestAlgorithmWrapper.toUpperCase().trim()) {
@@ -29,17 +24,11 @@ public enum MessageDigestAlgorithmWrapper {
 				return MessageDigestAlgorithmWrapper.SHA512;
 			default:
 				error.setError("MDA01", "Not recognized digest algorithm");
+				logger.error("Not recognized digest algorithm");
 				return null;
 		}
 	}
 
-	/**
-	 * @param messageDigestAlgorithmWrapper
-	 *            MessageDigestAlgorithmWrapper enum, algorithm name
-	 * @param error
-	 *            Error type for error management
-	 * @return String messageDigestAlgorithmWrapper name
-	 */
 	public static String valueOf(MessageDigestAlgorithmWrapper messageDigestAlgorithmWrapper, Error error) {
 		switch (messageDigestAlgorithmWrapper) {
 			case SHA1:
@@ -50,6 +39,7 @@ public enum MessageDigestAlgorithmWrapper {
 				return "SHA512";
 			default:
 				error.setError("MDA02", "Not recognized digest algorithm");
+				logger.error("Not recognized digest algorithm");
 				return null;
 		}
 	}
@@ -64,6 +54,7 @@ public enum MessageDigestAlgorithmWrapper {
 				return MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA512;
 			default:
 				error.setError("MDA03", "Not recognized digest algorithm");
+				logger.error("Not recognized digest algorithm");
 				return null;
 		}
 	}
