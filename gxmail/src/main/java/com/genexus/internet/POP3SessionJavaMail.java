@@ -328,9 +328,10 @@ public class POP3SessionJavaMail implements GXInternetConstants, IPOP3Session {
 
 	public int getMessageCount() throws GXMailException {
 		try {
+			if (emailFolder == null || !emailFolder.isOpen())
+				throw new GXMailException("The email folder is either null or closed", MAIL_ServerRepliedErr);
 			if (readSinceLast)
 				return emailFolder.getNewMessageCount();
-
 			return emailFolder.getMessageCount();
 		} catch (MessagingException e) {
 			log(e.getMessage());
