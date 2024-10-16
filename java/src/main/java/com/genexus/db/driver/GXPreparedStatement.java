@@ -1506,6 +1506,27 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		}
 	}
 
+	public void setEmbedding(int index, Float[] value) throws SQLException{
+		Array sqlArray = con.createArrayOf("float4", value);
+		if	(DEBUG)
+		{
+			log(GXDBDebug.LOG_MAX, "setEmbedding - index : " + index);
+			try
+			{
+				stmt.setArray(index, sqlArray);
+			}
+			catch (SQLException sqlException)
+			{
+				if	(con.isLogEnabled()) con.logSQLException(con.getHandle(), sqlException);
+				throw sqlException;
+			}
+		}
+		else
+		{
+			stmt.setArray(index, sqlArray);
+		}
+	}
+
     public void setBinaryStream(int index, java.io.InputStream value, int length) throws SQLException
 	{
 		if	(DEBUG)

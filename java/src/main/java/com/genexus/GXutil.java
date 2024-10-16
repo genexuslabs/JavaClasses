@@ -9,6 +9,7 @@ import java.util.*;
 
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.db.DataStoreProvider;
+import com.genexus.db.GXEmbedding;
 import com.genexus.internet.HttpContext;
 import com.genexus.internet.StringCollection;
 import com.genexus.platform.INativeFunctions;
@@ -1775,6 +1776,10 @@ public final class GXutil
 			return "";
 		}
 		return url.toString();
+	}
+
+	public static String embeddingToStr(GXEmbedding embedding) {
+		return embedding.toString();
 	}
 
 }
