@@ -1744,8 +1744,7 @@ public void rollback() throws SQLException
 
 	public Array createArrayOf(String typeName, Object[] elements)
 			throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
+		return getJDBCConnection().createArrayOf(typeName, elements);
 	}
 
 	public void abort(Executor executor)
