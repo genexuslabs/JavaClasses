@@ -725,9 +725,15 @@ public class HttpClientJavaLib extends GXHttpClient {
 			return "";
 		try {
 			this.setEntity();
-			Charset charset = ContentType.getOrDefault(entity).getCharset();
-			if (charset == null) {
+			ContentType contentType = ContentType.getOrDefault(entity);
+			Charset charset;
+			if (contentType.equals(ContentType.DEFAULT_TEXT)) {
 				charset = StandardCharsets.UTF_8;
+			} else {
+				charset = contentType.getCharset();
+				if (charset == null) {
+					charset = StandardCharsets.UTF_8;
+				}
 			}
 			String res = EntityUtils.toString(entity, charset);
 			eof = true;
