@@ -3,8 +3,7 @@ package com.genexus.util;
 
 import java.util.*;
 
-import org.apache.commons.lang.StringUtils;
-
+import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.db.DynamicExecute;
@@ -671,7 +670,7 @@ class FastTokenizer
 					tk += c;
 
 				// Retorna solo si encuentra un token
-				if (!StringUtils.isEmpty(tk))
+				if (!CommonUtil.isEmpty(tk))
 					return tk;
 			}
 			else

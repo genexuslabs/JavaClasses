@@ -11,8 +11,6 @@ import java.io.*;
 import java.text.*;
 import java.util.*;
 
-import org.apache.commons.lang.StringUtils;
-
 import java.lang.reflect.*;
 import java.security.*;
 import java.math.BigInteger;
@@ -461,7 +459,7 @@ public final class CommonUtil
 	}
 	public static String charAt(String s1, int idx)
 	{
-		if (StringUtils.isEmpty(s1) || s1.length() < idx || idx <= 0)
+		if (isEmpty(s1) || s1.length() < idx || idx <= 0)
 			return "";
 		else
 			return String.valueOf(s1.charAt(idx-1));
@@ -3219,5 +3217,35 @@ public final class CommonUtil
 			classPackage += ".";
 
 		return classPackage + pgmName.replace('\\', '.').trim();
+	}
+
+	public static boolean isEmpty(String str) {
+		return str == null || str.isEmpty();
+	}
+
+	public static boolean isNotEmpty(String str) {
+		return str != null && !str.isEmpty();
+	}
+
+	public static String join(List<String> list, String delimiter) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < list.size(); i++) {
+			sb.append(list.get(i));
+			if (i < list.size() - 1) {
+				sb.append(delimiter);
+			}
+		}
+		return sb.toString();
+	}
+
+	public static String deleteWhitespace(String str) {
+		if (str == null) {
+			return null;
+		}
+		return str.replaceAll("\\s", "");
+	}
+
+	public static boolean isBlank(String str) {
+		return str == null || str.trim().isEmpty();
 	}
 }

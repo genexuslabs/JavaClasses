@@ -23,7 +23,6 @@ import java.util.StringTokenizer;
 import java.util.TimeZone;
 
 import org.apache.commons.codec.binary.Base64OutputStream;
-import org.apache.commons.lang.StringUtils;
 
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
@@ -263,7 +262,7 @@ final class SMTPSession implements GXInternetConstants,ISMTPSession
 				addresses.add(recipient.getRecipientString(addressFormat));
 				
 			}			
-			println(cmd   + ": " + StringUtils.join(addresses, ','));
+			println(cmd   + ": " + CommonUtil.join(addresses, ","));
 		}
 	}
 	

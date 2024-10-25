@@ -268,7 +268,7 @@ public final class PrivateUtilities
 		int pathLength;
 		int fileNameLength = fileName.length();
 		int extensionLength = extension.length();
-		if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS)
+		if (isWindowsPlatform())
 		{
 			pathLength = baseDir.length() + fileNameLength + extensionLength;
 			if (pathLength > 260)

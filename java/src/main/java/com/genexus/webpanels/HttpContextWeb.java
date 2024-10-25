@@ -29,7 +29,6 @@ import com.genexus.*;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import com.genexus.internet.GXNavigationHelper;
@@ -493,7 +492,7 @@ public class HttpContextWeb extends HttpContext {
 			}
 			try {
 				URL url = new URL(referer);
-				String query = (StringUtils.isNotEmpty(url.getQuery())) ? "?" + url.getQuery() : "";
+				String query = (CommonUtil.isNotEmpty(url.getQuery())) ? "?" + url.getQuery() : "";
 				referer = url.getPath() + query;
 			} catch (Exception e) {
 

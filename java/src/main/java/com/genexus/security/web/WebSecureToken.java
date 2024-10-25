@@ -2,7 +2,8 @@ package com.genexus.security.web;
 
 import java.util.Date;
 
-import org.apache.commons.lang.StringUtils;
+import com.genexus.CommonUtil;
+import com.genexus.GXutil;
 
 import json.org.json.IJsonFormattable;
 import json.org.json.JSONException;
@@ -23,11 +24,11 @@ public class WebSecureToken extends SecureToken {
 	private JSONObject _jObj = new JSONObject();
 	
 	public WebSecureToken(){			
-		_expiration = org.apache.commons.lang.time.DateUtils.addDays(new Date(), TOKEN_DAYS_EXPIRATION);
+		_expiration = GXutil.dadd(new Date(), TOKEN_DAYS_EXPIRATION);
 	}
 	
 	public WebSecureToken(String pgmName, String issuer, String value) {
-		_expiration = org.apache.commons.lang.time.DateUtils.addDays(new Date(), TOKEN_DAYS_EXPIRATION);
+		_expiration = GXutil.dadd(new Date(), TOKEN_DAYS_EXPIRATION);
 		_pgmName = pgmName;
 		_value = value;
 		_issuer = issuer;
@@ -69,7 +70,7 @@ public class WebSecureToken extends SecureToken {
     public void AddObjectProperty(String name, Object prop)
     {
     	String ptyValue = ((String)prop);
-    	if (!StringUtils.isBlank(name) && !StringUtils.isBlank(ptyValue))
+    	if (!CommonUtil.isBlank(name) && !CommonUtil.isBlank(ptyValue))
     	{
     		try {
     			_jObj.put(name, ptyValue);
@@ -97,7 +98,7 @@ public class WebSecureToken extends SecureToken {
 		this._value = getJsonPtyValueString(jObj, WebSecureToken.JSON_VALUE_NAME);
 		this._pgmName = getJsonPtyValueString(jObj, WebSecureToken.JSON_PGMNAME_NAME);
 		String expLong = getJsonPtyValueString(jObj, WebSecureToken.JSON_EXPIRATION_NAME);
-		if (!StringUtils.isBlank(expLong)){
+		if (!CommonUtil.isBlank(expLong)){
 			this._expiration.setTime(Long.parseLong(expLong));
 		}
     }

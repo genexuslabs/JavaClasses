@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
-import org.apache.commons.lang.CharEncoding;
+import java.nio.charset.StandardCharsets;
 
 import com.genexus.internet.StringCollection;
 import com.google.gson.stream.JsonReader;
@@ -15,8 +15,8 @@ public class GxJsonReader {
 
 	public GxJsonReader(InputStream stream) {
 		try {
-			reader = new JsonReader(new InputStreamReader(stream, CharEncoding.UTF_8));
-		} catch (UnsupportedEncodingException e) {
+			reader = new JsonReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+		} catch (UnsupportedOperationException e) {
 			//TODO
 		}
 	}

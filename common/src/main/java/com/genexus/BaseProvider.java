@@ -8,7 +8,6 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.genexus.xml.XMLReader;
-import org.apache.commons.lang.StringUtils;
 
 import com.genexus.GXSmartCacheProvider.DataUpdateStatus;
 import com.genexus.common.classes.AbstractGXFile;
@@ -27,7 +26,7 @@ public abstract class BaseProvider implements IGXSmartCacheProvider
 
 		protected String normalizeKey(String key)
 		{
-			if (StringUtils.isNotEmpty(key))
+			if (CommonUtil.isNotEmpty(key))
 				return key.toLowerCase();
 			else
 				return key;

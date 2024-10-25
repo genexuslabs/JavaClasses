@@ -13,8 +13,6 @@ import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import org.apache.commons.lang.NotImplementedException;
-
 import com.genexus.cryptography.GXHashing;
 import com.genexus.sd.store.validation.model.*;
 import com.genexus.sd.store.validation.model.exceptions.*;
@@ -112,7 +110,7 @@ public class AppleStoreStoreManager implements IStoreManager{
 				case 21005:
 					throw new StoreResponsePurchaseException("The receipt server is not currently available.");
 				case 21006:
-					throw new NotImplementedException();
+					throw new UnsupportedOperationException();
 				case 21007:
 					dataCache.remove(key);
 					throw new StoreResponseEnvironmentException();
@@ -121,7 +119,7 @@ public class AppleStoreStoreManager implements IStoreManager{
 				case 0:
 					break;
 				default:
-					throw new NotImplementedException();
+					throw new UnsupportedOperationException();
 			}
 			boolean found = false;
 			if (jResponse.has("receipt"))

@@ -8,8 +8,6 @@ import com.genexus.util.NameValuePair;
 import com.genexus.CommonUtil;
 import java.util.*;
 
-import org.apache.commons.lang.StringUtils;
-
 import java.math.BigDecimal;
 
 
@@ -194,7 +192,7 @@ public class XMLWriter implements IXMLWriter
 				prefix = "";
 
 			try {
-				if (StringUtils.isNotEmpty(prefix))
+				if (CommonUtil.isNotEmpty(prefix))
 					out.write("</" + prefix + ":" + node.name + ">\n");
 				else
 					out.write("</" + node.name + ">\n");

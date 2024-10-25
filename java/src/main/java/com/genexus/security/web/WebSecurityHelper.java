@@ -2,8 +2,8 @@ package com.genexus.security.web;
 
 import java.util.Date;
 
+import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
-import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import com.genexus.security.web.SecureTokenHelper.SecurityMode;
@@ -44,7 +44,7 @@ public class WebSecurityHelper {
     	 WebSecureToken token = new WebSecureToken();
     	 if(!SecureTokenHelper.verify(jwtToken, token, getSecretKey()))
     		 return false;            
-    	 boolean ret = !StringUtils.isBlank(pgmName) && token.get_pgmName().equals(pgmName) && issuer.equals(token.get_issuer()) &&
+    	 boolean ret = !CommonUtil.isBlank(pgmName) && token.get_pgmName().equals(pgmName) && issuer.equals(token.get_issuer()) &&
     			 StripInvalidChars(value).equals(StripInvalidChars(token.get_value())) && new Date().compareTo(token.get_expiration()) < 0;
 		 if (!ret && log.isDebugEnabled()) {
 			 String lsep = System.getProperty("line.separator");

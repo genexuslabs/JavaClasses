@@ -6,8 +6,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.genexus.CommonUtil;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -151,7 +151,7 @@ public class RedisClient implements ICacheService2, Closeable{
 		try {
 			jedis = pool.getResource();	
 			String json = jedis.get(key);
-			if (StringUtils.isNotEmpty(json))
+			if (CommonUtil.isNotEmpty(json))
 			{
 				return  objMapper.readValue(json, type); 
 			}

@@ -2,10 +2,8 @@ package com.genexus.security.web;
 
 import java.util.Map;
 
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.StringUtils;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.genexus.CommonUtil;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.security.web.jose.jwt.JWTSigner;
@@ -44,7 +42,7 @@ public class SecureTokenHelper {
 	                break;
 	            case SignEncrypt:
 	            case None:
-	                throw new NotImplementedException();	                	            	            
+	                throw new UnsupportedOperationException();
 	        }		
 		} 
 		catch (Exception e1) {
@@ -57,7 +55,7 @@ public class SecureTokenHelper {
 	{		
 		JWTVerifier verifier = new JWTVerifier(secretKey);
 		boolean ok = false;            
-        if (!StringUtils.isBlank(jwtToken))
+        if (!CommonUtil.isBlank(jwtToken))
 		{							
         	try {
 				Map<String,Object> mapObj = verifier.verify(jwtToken);

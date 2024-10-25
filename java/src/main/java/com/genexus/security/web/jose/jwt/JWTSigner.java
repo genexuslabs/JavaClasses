@@ -22,6 +22,7 @@ import java.util.UUID;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.genexus.CommonUtil;
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -269,7 +270,7 @@ public class JWTSigner {
     }
 
     private String join(final List<String> input, final String separator) {    	
-        return org.apache.commons.lang.StringUtils.join(input.iterator(), separator);
+        return CommonUtil.join(input, separator);
     }
 
     /**

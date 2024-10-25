@@ -1,10 +1,6 @@
 package com.genexus.sd.store.validation;
 
-//import org.apache.commons.lang.NotImplementedException;
-
 import java.util.List;
-
-import org.apache.commons.lang.NotImplementedException;
 
 import com.genexus.GXBaseCollection;
 import com.genexus.sd.store.validation.model.PurchaseResult;
@@ -128,7 +124,7 @@ public class StoreManager {
 					((GooglePlayStoreManager)mgr).setCertificatePath(GetConfigValue("googleCertificate", storeConfig));														
 				break;
 			default:
-				throw new NotImplementedException("StoreManager Platform not implemented");
+				throw new UnsupportedOperationException("StoreManager Platform not implemented");
 		}
 		return mgr;
 	}

@@ -33,7 +33,6 @@ import json.org.json.IJsonFormattable;
 import json.org.json.JSONArray;
 import json.org.json.JSONException;
 import json.org.json.JSONObject;
-import org.apache.commons.lang.StringEscapeUtils;
 
 public abstract class HttpContext 
 		extends HttpAjaxContext implements IHttpContext

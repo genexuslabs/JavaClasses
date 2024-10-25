@@ -3,11 +3,11 @@ package javapns.devices.implementations.basic;
 import java.sql.*;
 import java.util.*;
 
+import com.genexus.CommonUtil;
 import javapns.devices.*;
 import javapns.devices.exceptions.*;
 import javapns.notification.*;
 
-import org.apache.commons.lang.*;
 import com.genexus.diagnostics.core.*;
 
 /**
@@ -56,7 +56,7 @@ public class BasicDeviceFactory implements DeviceFactory {
 			throw new NullDeviceTokenException();
 		} else {
 			if (!this.devices.containsKey(id)) {
-				token = StringUtils.deleteWhitespace(token);
+				token = CommonUtil.deleteWhitespace(token);
 				BasicDevice device = new BasicDevice(id, token, new Timestamp(Calendar.getInstance().getTime().getTime()));
 				this.devices.put(id, device);
 				return device;
@@ -65,7 +65,6 @@ public class BasicDeviceFactory implements DeviceFactory {
 			}
 		}
 	}
-
 
 	/**
 	 * Get a device according to his id

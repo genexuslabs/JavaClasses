@@ -8,7 +8,6 @@ import com.genexus.*;
 import com.genexus.configuration.ConfigurationManager;
 import com.genexus.diagnostics.GXDebugInfo;
 import com.genexus.diagnostics.GXDebugManager;
-import org.apache.commons.lang.StringUtils;
 
 import com.genexus.ModelContext;
 import com.genexus.db.Namespace;
@@ -193,7 +192,7 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 				String IECompMode = context.getClientPreferences().getIE_COMPATIBILITY();
 				if (IECompMode.equals("EmulateIE7") && !httpContext.getBrowserVersion().startsWith("8") )
 					return;
-				if (StringUtils.isNotEmpty(IECompMode))
+				if (CommonUtil.isNotEmpty(IECompMode))
 					httpContext.getResponse().addHeader("X-UA-Compatible", "IE=" + IECompMode);
 		}
 	}
@@ -488,7 +487,7 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 
 	private String serialize(Object Value, String Pic)
     {
-		if (!StringUtils.isBlank(Pic)) {
+		if (!CommonUtil.isBlank(Pic)) {
 			if (Value instanceof Byte)
 			{
 				return serialize(localUtil.format(((Byte)Value).intValue(), Pic));
@@ -642,7 +641,7 @@ public abstract class GXWebObjectBase implements IErrorHandler, GXInternetConsta
 	{
 		if (this.httpContext.useSecurityTokenValidation()){
 			String jwtToken = this.httpContext.getHeader("X-GXAUTH-TOKEN");
-			jwtToken = (StringUtils.isBlank(jwtToken) && this.httpContext.isMultipartContent())?
+			jwtToken = (CommonUtil.isBlank(jwtToken) && this.httpContext.isMultipartContent())?
 					this.httpContext.cgiGet("X-GXAUTH-TOKEN"):
 					jwtToken;
 
