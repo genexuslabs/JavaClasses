@@ -8,7 +8,7 @@ import com.genexus.util.NameValuePair;
 import com.genexus.CommonUtil;
 import java.util.*;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 

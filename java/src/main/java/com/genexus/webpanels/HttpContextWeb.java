@@ -22,7 +22,7 @@ import com.genexus.*;
 import com.genexus.fileupload.IFileItemIterator;
 import com.genexus.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import com.genexus.internet.GXNavigationHelper;
