@@ -6,7 +6,7 @@
 
 	<groupId>com.genexus</groupId>
 	<artifactId>parent</artifactId>
-	<version>1.5.2</version>
+	<version>1.5.3</version>
 	<packaging>pom</packaging>
 
 	<name>GeneXus Standard Classes (Parent)</name>
@@ -32,10 +32,10 @@
 		<module>gxgeospatial</module>
 		<module>gxodata</module>
 		<module>gxexternalproviders</module>
-        <module>gxwebsocket</module>
-        <module>gxawsserverless</module>
+		<module>gxwebsocket</module>
+		<module>gxawsserverless</module>
 		<module>androidreports</module>
-    </modules>
+	</modules>
 
 	<licenses>
 		<license>
@@ -43,6 +43,13 @@
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
 		</license>
 	</licenses>
+
+	<distributionManagement>
+		<repository>
+			<id>gx-classes-azure-artifacts</id>
+			<url>https://pkgs.dev.azure.com/genexuslabs/3361ab3b-96bc-4a69-a37a-f2b255ff2f35/_packaging/releases/maven/v1</url>
+		</repository>
+	</distributionManagement>
 
 	<build>
 		<pluginManagement>
