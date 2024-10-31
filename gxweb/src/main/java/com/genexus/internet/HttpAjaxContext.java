@@ -727,8 +727,7 @@ public class HttpAjaxContext extends HttpContextWeb
 		boolean fileExists = false;
 		try
 		{
-			fileExists = ApplicationContext.getInstance().checkIfResourceExist(getDefaultPath() + staticContentBase + fileName);
-			com.genexus.diagnostics.Log.info("Searching if file exists (" + fileName + "). Found: " + String.valueOf(fileExists));
+			fileExists = ApplicationContext.getInstance().checkIfResourceExist(getDefaultPath() + staticContentBase + fileName);			
 		}
 		catch (Exception e)
 		{
