@@ -68,8 +68,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		getPoolInstance();
 		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();
 		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
-		cookies = new BasicCookieStore();
-		logger.info("Using apache http client implementation");
+		cookies = new BasicCookieStore();		
 		streamsToClose = new Vector<>();
 	}
 
