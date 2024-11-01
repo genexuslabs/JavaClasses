@@ -1,8 +1,11 @@
 package com.genexus.compression;
 
+import com.genexus.CommonUtil;
 import com.genexus.GXBaseCollection;
 import com.genexus.SdtMessages_Message;
 import com.genexus.StructSdtMessages_Message;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
@@ -11,18 +14,14 @@ import org.apache.commons.compress.archivers.sevenz.SevenZOutputFile;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-import org.apache.commons.io.IOUtils;
-import com.github.junrar.Junrar;
-import com.github.junrar.exception.RarException;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Objects;
+import java.util.Enumeration;
+import java.util.Stack;
 import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
+import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.zip.*;
 
@@ -52,7 +51,7 @@ public class GXCompressor implements IGXCompressor {
 
 	}
 	
-	public static Boolean compressFiles(ArrayList<String> files, String path, String format, GXBaseCollection<SdtMessages_Message>[] messages) {
+	public static Boolean compress(ArrayList<String> files, String path, GXBaseCollection<SdtMessages_Message>[] messages) {
 		if (files.isEmpty()){
 			log.error(NO_FILES_ADDED);
 			storageMessages(NO_FILES_ADDED, messages[0]);
@@ -69,22 +68,22 @@ public class GXCompressor implements IGXCompressor {
 			}
 			toCompress[index++] = file;
 		}
+		String format = CommonUtil.getFileType(path).toLowerCase();
 		try {
-			CompressionFormat compressionFormat = getCompressionFormat(format);
-			switch (compressionFormat) {
-				case ZIP:
+			switch (format.toLowerCase()) {
+				case "zip":
 					compressToZip(toCompress, path);
 					break;
-				case SEVENZ:
+				case "7z":
 					compressToSevenZ(toCompress, path);
 					break;
-				case TAR:
+				case "tar":
 					compressToTar(toCompress, path);
 					break;
-				case GZIP:
+				case "gz":
 					compressToGzip(toCompress, path);
 					break;
-				case JAR:
+				case "jar":
 					compressToJar(toCompress, path);
 					break;
 				default:
@@ -92,7 +91,7 @@ public class GXCompressor implements IGXCompressor {
 			}
 			return true;
 		} catch (IllegalArgumentException iae) {
-			log.error("{}{}", UNSUPPORTED_FORMAT, format, iae);
+			log.error("{}{}. Supported compression formats are zip, 7z, tar, gz and jar", UNSUPPORTED_FORMAT, format, iae);
 			storageMessages(UNSUPPORTED_FORMAT + format, messages[0]);
 			return false;
 		} catch (Exception e) {
@@ -102,20 +101,8 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 	
-	public static Boolean compressFolder(String folder, String path, String format, GXBaseCollection<SdtMessages_Message>[] messages) {
-		File toCompress = new File(folder);
-		if (!toCompress.exists()) {
-			log.error("{}{}", FOLDER_NOT_EXISTS, toCompress.getAbsolutePath());
-			storageMessages(FOLDER_NOT_EXISTS + toCompress.getAbsolutePath(), messages[0]);
-			return false;
-		}
-		ArrayList<String> list = new ArrayList<>();
-		list.add(folder);
-		return compressFiles(list, path, format, messages);
-	}
-	
-	public static Compression newCompression(String path, String format, GXBaseCollection<SdtMessages_Message>[] messages) {
-		return new Compression(path, format, messages);
+	public static Compression newCompression(String path, GXBaseCollection<SdtMessages_Message>[] messages) {
+		return new Compression(path, messages);
 	}
 
 	public static Boolean decompress(String file, String path, GXBaseCollection<SdtMessages_Message>[] messages) {
@@ -148,11 +135,8 @@ public class GXCompressor implements IGXCompressor {
 				case "jar":
 					decompressJar(toCompress, path);
 					break;
-				case "rar":
-					decompressRar(toCompress, path);
-					break;
 				default:
-					log.error("{}{}", UNSUPPORTED_FORMAT, extension);
+					log.error("{}{}. Supported decompression formats are zip, 7z, tar, gz, jar", UNSUPPORTED_FORMAT, extension);
 					storageMessages( UNSUPPORTED_FORMAT + extension, messages[0]);
 					return false;
 			}
@@ -165,374 +149,368 @@ public class GXCompressor implements IGXCompressor {
 	}
 
 	private static void compressToZip(File[] files, String outputPath) throws IOException {
-		FileOutputStream fos = new FileOutputStream(outputPath);
-		ZipOutputStream zos = new ZipOutputStream(fos);
-		for (File file : files) {
-			addFileToZip("", file, zos);
+		try (FileOutputStream fos = new FileOutputStream(outputPath);
+			 ZipOutputStream zipOut = new ZipOutputStream(fos)) {
+			for (File fileToZip : files) {
+				zipFile(fileToZip, fileToZip.getName(), zipOut);
+			}
 		}
-		zos.close();
-		fos.close();
 	}
 
-	private static void addFileToZip(String parent, File file, ZipOutputStream zos) throws IOException {
-		if (file.isHidden()) {
-			log.error("{} is a hidden file and cannot be compressed", file.getAbsolutePath());
+	private static void zipFile(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {
+		if (fileToZip.isHidden()) {
 			return;
 		}
-		String entryName = parent + file.getName();
-		if (file.isDirectory()) {
-			if (!entryName.endsWith("/")) {
-				entryName += "/";
+		if (fileToZip.isDirectory()) {
+			if (!fileName.endsWith("/")) {
+				fileName += "/";
 			}
-			ZipEntry entry = new ZipEntry(entryName);
-			entry.setTime(file.lastModified());
-			zos.putNextEntry(entry);
-			zos.closeEntry();
-			File[] children = file.listFiles();
+			zipOut.putNextEntry(new ZipEntry(fileName));
+			zipOut.closeEntry();
+			File[] children = fileToZip.listFiles();
 			if (children != null) {
-				for (File nestedFile : children) {
-					addFileToZip(entryName, nestedFile, zos);
+				for (File childFile : children) {
+					zipFile(childFile, fileName + childFile.getName(), zipOut);
 				}
 			}
 		} else {
-			FileInputStream fis = new FileInputStream(file);
-			ZipEntry entry = new ZipEntry(entryName);
-			entry.setTime(file.lastModified());
-			zos.putNextEntry(entry);
-			byte[] buffer = new byte[1024];
-			int count;
-			while ((count = fis.read(buffer)) != -1) {
-				zos.write(buffer, 0, count);
-			}
-			zos.closeEntry();
-			fis.close();
-		}
-	}
-
-	private static void compressToSevenZ(File[] files, String outputPath) throws RuntimeException {
-		File outputSevenZFile = new File(outputPath);
-		try (SevenZOutputFile sevenZOutput = new SevenZOutputFile(outputSevenZFile)) {
-			for (File file : files) {
-				addToSevenZArchive(sevenZOutput, file, "");
-			}
-		} catch (IOException e) {
-			log.error("Error while compressing to 7z", e);
-			throw new RuntimeException("Error creating 7z archive", e);
-		}
-	}
-
-	private static void addToSevenZArchive(SevenZOutputFile sevenZOutput, File file, String base) throws IOException {
-		if (file.isFile()) {
-			SevenZArchiveEntry entry = sevenZOutput.createArchiveEntry(file, base + file.getName());
-			sevenZOutput.putArchiveEntry(entry);
-			try (FileInputStream fis = new FileInputStream(file)) {
-				byte[] buffer = new byte[8192];
-				int bytesRead;
-				while ((bytesRead = fis.read(buffer)) != -1) {
-					sevenZOutput.write(buffer, 0, bytesRead);
-				}
-			}
-			sevenZOutput.closeArchiveEntry();
-		} else if (file.isDirectory()) {
-			File[] children = file.listFiles();
-			if (children != null) {
-				for (File child : children) {
-					addToSevenZArchive(sevenZOutput, child, base + file.getName() + "/");
+			try (FileInputStream fis = new FileInputStream(fileToZip)) {
+				zipOut.putNextEntry(new ZipEntry(fileName));
+				byte[] bytes = new byte[1024];
+				int length;
+				while ((length = fis.read(bytes)) >= 0) {
+					zipOut.write(bytes, 0, length);
 				}
 			}
 		}
 	}
 
-	private static void compressToTar(File[] files, String outputPath) throws RuntimeException {
-		File outputTarFile = new File(outputPath);
-		try (FileOutputStream fos = new FileOutputStream(outputTarFile);
-			 TarArchiveOutputStream taos = new TarArchiveOutputStream(fos)) {
-			taos.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
-			taos.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_POSIX);
-			taos.setAddPaxHeadersForNonAsciiNames(true);
-
+	private static void compressToSevenZ(File[] files, String outputPath) throws IOException {
+		if (files == null || outputPath == null) {
+			throw new IllegalArgumentException("Files and outputPath must not be null");
+		}
+		File outputFile = new File(outputPath);
+		if (outputFile.exists()) {
+			throw new IOException("Output file already exists");
+		}
+		try (SevenZOutputFile sevenZOutput = new SevenZOutputFile(outputFile)) {
 			for (File file : files) {
-				addFileToTar(taos, file, "");
+				if (file == null || !file.exists()) {
+					continue;
+				}
+				addFileToSevenZ(sevenZOutput, file, file.getName());
 			}
-			taos.finish();
-		} catch (IOException e) {
-			log.error("Error while compressing to tar", e);
-			throw new RuntimeException("Error creating TAR archive", e);
 		}
 	}
 
-	private static void addFileToTar(TarArchiveOutputStream taos, File file, String base) throws IOException {
+	private static void addFileToSevenZ(SevenZOutputFile sevenZOutput, File file, String entryName) throws IOException {
 		if (file.isDirectory()) {
 			File[] children = file.listFiles();
 			if (children != null) {
 				for (File child : children) {
-					addFileToTar(taos, child, base + file.getName() + "/");
+					addFileToSevenZ(sevenZOutput, child, entryName + "/" + child.getName());
 				}
 			}
-		} else if (file.isFile()) {
-			String entryName = base + file.getName();
+		} else {
+			SevenZArchiveEntry entry = sevenZOutput.createArchiveEntry(file, entryName);
+			sevenZOutput.putArchiveEntry(entry);
+			try (FileInputStream fis = new FileInputStream(file)) {
+				byte[] buffer = new byte[8192];
+				int len;
+				while ((len = fis.read(buffer)) > 0) {
+					sevenZOutput.write(buffer, 0, len);
+				}
+			}
+			sevenZOutput.closeArchiveEntry();
+		}
+	}
+
+	private static void compressToTar(File[] files, String outputPath) throws IOException {
+		if (outputPath == null || outputPath.isEmpty()) {
+			throw new IllegalArgumentException("The output path must not be null or empty");
+		}
+		File outputFile = new File(outputPath);
+		if (outputFile.exists()) {
+			throw new IOException("Output file already exists");
+		}
+		try (FileOutputStream fos = new FileOutputStream(outputFile);
+			 BufferedOutputStream bos = new BufferedOutputStream(fos);
+			 TarArchiveOutputStream tarOut = new TarArchiveOutputStream(bos)) {
+			for (File file : files) {
+				if (file == null || !file.exists()) {
+					continue;
+				}
+				addFileToTar(tarOut, file, file.getName());
+			}
+		}
+	}
+
+	private static void addFileToTar(TarArchiveOutputStream tarOut, File file, String entryName) throws IOException {
+		if (file.isDirectory()) {
+			File[] children = file.listFiles();
+			if (children != null) {
+				for (File child : children) {
+					addFileToTar(tarOut, child, entryName + "/" + child.getName());
+				}
+			}
+		} else {
 			TarArchiveEntry entry = new TarArchiveEntry(file, entryName);
 			entry.setSize(file.length());
-
-			taos.putArchiveEntry(entry);
+			tarOut.putArchiveEntry(entry);
 			try (FileInputStream fis = new FileInputStream(file)) {
-				IOUtils.copy(fis, taos);
+				byte[] buffer = new byte[8192];
+				int len;
+				while ((len = fis.read(buffer)) != -1) {
+					tarOut.write(buffer, 0, len);
+				}
 			}
-			taos.closeArchiveEntry();
+			tarOut.closeArchiveEntry();
 		}
 	}
 
 	private static void compressToGzip(File[] files, String outputPath) throws IOException {
-		File tarFile = new File(outputPath.replace(".gz", ".tar"));
-		FileOutputStream fosTar = new FileOutputStream(tarFile);
-		BufferedOutputStream bosTar = new BufferedOutputStream(fosTar);
-		TarArchiveOutputStream taos = new TarArchiveOutputStream(bosTar);
-		for (File file : files) {
-			addFilesToTar(file, "", taos);
+		if (outputPath == null || outputPath.isEmpty()) {
+			throw new IllegalArgumentException("Output path is null or empty");
 		}
-		taos.finish();
-		taos.close();
-		bosTar.close();
-		fosTar.close();
-		FileInputStream fis = new FileInputStream(tarFile);
-		FileOutputStream fosGzip = new FileOutputStream(outputPath);
-		GZIPOutputStream gzos = new GZIPOutputStream(fosGzip);
-		byte[] buffer = new byte[1024];
-		int length;
-		while ((length = fis.read(buffer)) > 0) {
-			gzos.write(buffer, 0, length);
-		}
-		gzos.finish();
-		gzos.close();
-		fosGzip.close();
-		fis.close();
-		tarFile.delete();
-	}
-
-	private static void addFilesToTar(File file, String parent, TarArchiveOutputStream taos) throws IOException {
-		String entryName = parent + file.getName();
-		if (file.isDirectory()) {
-			File[] children = file.listFiles();
-			if (children != null) {
-				if (!entryName.endsWith("/")) {
-					entryName += "/";
-				}
-				for (File child : children) {
-					addFilesToTar(child, entryName, taos);
-				}
-			}
+		File outputFile = new File(outputPath);
+		if (outputFile.exists() && !outputFile.canWrite()) {
+			throw new IOException("Cannot write to output file");
 		} else {
-			TarArchiveEntry entry = new TarArchiveEntry(file, entryName);
-			taos.putArchiveEntry(entry);
-			BufferedInputStream bis = new BufferedInputStream(Files.newInputStream(file.toPath()));
-			byte[] buffer = new byte[1024];
-			int count;
-			while ((count = bis.read(buffer)) != -1) {
-				taos.write(buffer, 0, count);
+			File parentDir = outputFile.getParentFile();
+			if (parentDir != null && !parentDir.exists() && !parentDir.mkdirs()) {
+					throw new IOException("Failed to create output directory");
 			}
-			bis.close();
-			taos.closeArchiveEntry();
 		}
-	}
-
-	private static void decompressZip(File zipFile, String directory) throws RuntimeException{
-		Path zipFilePath =  Paths.get(zipFile.toURI());
-		Path targetDir = Paths.get(directory);
-		targetDir = targetDir.toAbsolutePath();
-
-		try (InputStream fis = Files.newInputStream(zipFilePath.toFile().toPath());
-			 ZipInputStream zipIn = new ZipInputStream(fis)) {
-
-			ZipEntry entry;
-			while ((entry = zipIn.getNextEntry()) != null) {
-				Path resolvedPath = targetDir.resolve(entry.getName()).normalize();
-
-				if (!resolvedPath.startsWith(targetDir)) {
-					throw new SecurityException("Zip entry is outside of the target dir: " + entry.getName());
-				}
-
-				if (entry.isDirectory()) {
-					Files.createDirectories(resolvedPath);
-				} else {
-					Path parentDir = resolvedPath.getParent();
-					if (!Files.exists(parentDir)) {
-						Files.createDirectories(parentDir);
-					}
-					try (OutputStream out = Files.newOutputStream(resolvedPath.toFile().toPath())) {
-						byte[] buffer = new byte[4096];
-						int length;
-						while ((length = zipIn.read(buffer)) > 0) {
-							out.write(buffer, 0, length);
+		try (FileOutputStream fos = new FileOutputStream(outputFile);
+			 BufferedOutputStream bos = new BufferedOutputStream(fos);
+			 GzipCompressorOutputStream gcos = new GzipCompressorOutputStream(bos);
+			 TarArchiveOutputStream taos = new TarArchiveOutputStream(gcos)) {
+			taos.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
+			Stack<File> stack = new Stack<>();
+			Stack<String> pathStack = new Stack<>();
+			for (File file : files) {
+				if (file == null) continue;
+				stack.push(file);
+				pathStack.push("");
+			}
+			while (!stack.isEmpty()) {
+				File currentFile = stack.pop();
+				String path = pathStack.pop();
+				String entryName = path + currentFile.getName();
+				if (currentFile.isDirectory()) {
+					File[] dirFiles = currentFile.listFiles();
+					if (dirFiles != null) {
+						if (dirFiles.length == 0) {
+							TarArchiveEntry entry = new TarArchiveEntry(entryName + "/");
+							taos.putArchiveEntry(entry);
+							taos.closeArchiveEntry();
+						} else {
+							for (File child : dirFiles) {
+								stack.push(child);
+								pathStack.push(entryName + "/");
+							}
 						}
 					}
-				}
-				zipIn.closeEntry();
-			}
-		} catch (IOException e) {
-			log.error("Error while decompressing to zip", e);
-			throw new RuntimeException("Failed to decompress ZIP file: " + zipFilePath, e);
-		}
-	}
-
-	private static void decompress7z(File file, String outputPath) throws IOException {
-		Path targetDir = Paths.get(outputPath).toAbsolutePath();
-
-		try (SevenZFile sevenZFile = new SevenZFile(file)) {
-			SevenZArchiveEntry entry = sevenZFile.getNextEntry();
-			while (entry != null) {
-				Path resolvedPath = targetDir.resolve(entry.getName()).normalize();
-
-				if (!resolvedPath.startsWith(targetDir)) {
-					throw new IOException("Entry is outside of the target dir: " + entry.getName());
-				}
-
-				if (entry.isDirectory()) {
-					Files.createDirectories(resolvedPath);
 				} else {
-					File outputFile = resolvedPath.toFile();
-					File parentDir = outputFile.getParentFile();
-					if (!parentDir.exists() && !parentDir.mkdirs()) {
-						throw new IOException("Failed to create directory: " + parentDir);
+					TarArchiveEntry entry = new TarArchiveEntry(currentFile, entryName);
+					taos.putArchiveEntry(entry);
+					try (FileInputStream fis = new FileInputStream(currentFile)) {
+						byte[] buffer = new byte[1024];
+						int len;
+						while ((len = fis.read(buffer)) != -1) {
+							taos.write(buffer, 0, len);
+						}
 					}
-
-					try (FileOutputStream out = new FileOutputStream(outputFile)) {
-						byte[] content = new byte[(int) entry.getSize()];
-						sevenZFile.read(content, 0, content.length);
-						out.write(content);
-					}
+					taos.closeArchiveEntry();
 				}
-				entry = sevenZFile.getNextEntry();
-			}
-		}
-	}
-
-	private static void decompressTar(File file, String outputPath) throws IOException {
-		Path targetDir = Paths.get(outputPath).toAbsolutePath();
-		try (InputStream fi = Files.newInputStream(file.toPath());
-			 TarArchiveInputStream ti = new TarArchiveInputStream(fi)) {
-			TarArchiveEntry entry;
-			while ((entry = ti.getNextTarEntry()) != null) {
-				File outputFile = targetDir.resolve(entry.getName()).normalize().toFile();
-				if (!outputFile.toPath().startsWith(targetDir)) {
-					throw new IOException("Entry is outside of the target directory: " + entry.getName());
-				}
-				if (entry.isDirectory() && !outputFile.exists() && !outputFile.mkdirs()) {
-					throw new IOException("Failed to create directory: " + outputFile);
-				} else {
-					File parent = outputFile.getParentFile();
-					if (!parent.exists() && !parent.mkdirs()) {
-						throw new IOException("Failed to create directory: " + parent);
-					}
-					try (OutputStream out = new FileOutputStream(outputFile)) {
-						IOUtils.copy(ti, out);
-					}
-				}
-			}
-		}
-	}
-
-	private static void decompressGzip(File inputFile, String outputPath) throws IOException {
-		File outputDir = new File(outputPath);
-		if (!outputDir.exists() && !outputDir.mkdirs()) {
-			throw new IOException("Failed to create the output directory: " + outputDir.getAbsolutePath());
-		}
-		String outputFileName = inputFile.getName();
-		if (outputFileName.endsWith(".gz"))
-			outputFileName = outputFileName.substring(0, outputFileName.length() - 3);
-		else
-			throw new IllegalArgumentException("The input file does not have a .gz extension.");
-		File outputFile = new File(outputDir, outputFileName);
-		try (FileInputStream fis = new FileInputStream(inputFile);
-			 GZIPInputStream gzis = new GZIPInputStream(fis);
-			 FileOutputStream fos = new FileOutputStream(outputFile)) {
-			byte[] buffer = new byte[4096];
-			int bytesRead;
-			while ((bytesRead = gzis.read(buffer)) != -1) {
-				fos.write(buffer, 0, bytesRead);
 			}
 		}
 	}
 
 	private static void compressToJar(File[] files, String outputPath) throws IOException {
-		FileOutputStream fos = new FileOutputStream(outputPath);
-		JarOutputStream jos = new JarOutputStream(fos);
-		for (File file : files) {
-			addFileToJar("", file, jos);
+		if (outputPath == null || outputPath.isEmpty()) {
+			throw new IllegalArgumentException("Output path is null or empty");
 		}
-		jos.close();
-		fos.close();
-	}
-
-	private static void addFileToJar(String parent, File file, JarOutputStream jos) throws IOException {
-		if (file.isHidden()) {
-			log.error("{} is a hidden file and cannot be compressed", file.getAbsolutePath());
-			return;
+		File outputFile = new File(outputPath);
+		if (outputFile.exists()) {
+			throw new IOException("Output file already exists");
 		}
-		String entryName = parent + file.getName();
-		if (file.isDirectory()) {
-			if (!entryName.endsWith("/")) {
-				entryName += "/";
-			}
-			JarEntry entry = new JarEntry(entryName);
-			entry.setTime(file.lastModified());
-			jos.putNextEntry(entry);
-			jos.closeEntry();
-			for (File nestedFile : Objects.requireNonNull(file.listFiles())) {
-				addFileToJar(entryName, nestedFile, jos);
-			}
-		} else {
-			FileInputStream fis = new FileInputStream(file);
-			JarEntry entry = new JarEntry(entryName);
-			entry.setTime(file.lastModified());
-			jos.putNextEntry(entry);
+		try (JarOutputStream jos = new JarOutputStream(Files.newOutputStream(outputFile.toPath()))) {
 			byte[] buffer = new byte[1024];
-			int count;
-			while ((count = fis.read(buffer)) != -1) {
-				jos.write(buffer, 0, count);
-			}
-			jos.closeEntry();
-			fis.close();
-		}
-	}
-
-	public static void decompressJar(File jarFile, String outputPath) throws IOException {
-		if (!jarFile.exists()) {
-			throw new IOException("The jar file does not exist.");
-		}
-		File outputDir = new File(outputPath);
-		if (!outputDir.exists() && !outputDir.mkdirs()) {
-			throw new IOException("Failed to create output directory.");
-		}
-		try (JarInputStream jis = new JarInputStream(Files.newInputStream(jarFile.toPath()))) {
-			JarEntry entry;
-			byte[] buffer = new byte[1024];
-			while ((entry = jis.getNextJarEntry()) != null) {
-				File outputFile = new File(outputDir, entry.getName());
-				if (entry.isDirectory() && !outputFile.exists() && !outputFile.mkdirs()) {
-					throw new IOException("Failed to create directory " + outputFile.getAbsolutePath());
-				} else {
-					try (FileOutputStream fos = new FileOutputStream(outputFile)) {
-						int len;
-						while ((len = jis.read(buffer)) > 0) {
-							fos.write(buffer, 0, len);
+			for (File file : files) {
+				if (file == null || !file.exists()) {
+					continue;
+				}
+				String basePath = file.isDirectory() ? file.getCanonicalPath() : file.getParentFile().getCanonicalPath();
+				Stack<File> stack = new Stack<>();
+				stack.push(file);
+				while (!stack.isEmpty()) {
+					File currentFile = stack.pop();
+					String entryName = currentFile.getCanonicalPath().substring(basePath.length() + 1).replace("\\", "/");
+					if (currentFile.isDirectory()) {
+						File[] subFiles = currentFile.listFiles();
+						if (subFiles != null) {
+							for (File subFile : subFiles) {
+								stack.push(subFile);
+							}
+						}
+						if (!entryName.isEmpty()) {
+							if (!entryName.endsWith("/")) {
+								entryName += "/";
+							}
+							jos.putNextEntry(new JarEntry(entryName));
+							jos.closeEntry();
+						}
+					} else {
+						FileInputStream fis = null;
+						try {
+							jos.putNextEntry(new JarEntry(entryName));
+							fis = new FileInputStream(currentFile);
+							int len;
+							while ((len = fis.read(buffer)) > 0) {
+								jos.write(buffer, 0, len);
+							}
+							jos.closeEntry();
+						} finally {
+							if (fis != null) {
+								fis.close();
+							}
 						}
 					}
 				}
-				jis.closeEntry();
 			}
 		}
 	}
 
-	public static void decompressRar(File rarFile, String destinationPath) throws RarException, IOException{
-		Junrar.extract(rarFile, new File(destinationPath));
-	}
-
-	private static CompressionFormat getCompressionFormat(String format) {
-		try {
-			return CompressionFormat.valueOf(format.toUpperCase());
-		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException("Invalid compression format: " + format + ". Valid formats are (upper or lower): GZIP,TAR, ZIP, SEVENZ and JAR");
+	private static void decompressZip(File archive, String directory) throws IOException {
+		byte[] buffer = new byte[1024];
+		ZipInputStream zis = new ZipInputStream(Files.newInputStream(archive.toPath()));
+		ZipEntry zipEntry = zis.getNextEntry();
+		while (zipEntry != null) {
+			File newFile = new File(directory, zipEntry.getName());
+			if (zipEntry.isDirectory()) {
+				if (!newFile.isDirectory() && !newFile.mkdirs()) {
+					throw new IOException("Failed to create directory " + newFile);
+				}
+			} else {
+				File parent = newFile.getParentFile();
+				if (!parent.isDirectory() && !parent.mkdirs()) {
+					throw new IOException("Failed to create directory " + parent);
+				}
+				FileOutputStream fos = new FileOutputStream(newFile);
+				int len;
+				while ((len = zis.read(buffer)) > 0) {
+					fos.write(buffer, 0, len);
+				}
+				fos.close();
+			}
+			zipEntry = zis.getNextEntry();
 		}
+		zis.closeEntry();
+		zis.close();
 	}
 
+	private static void decompress7z(File archive, String directory) throws IOException {
+		SevenZFile sevenZFile = new SevenZFile(archive);
+		SevenZArchiveEntry entry;
+		byte[] buffer = new byte[8192];
+		while ((entry = sevenZFile.getNextEntry()) != null) {
+			File newFile = new File(directory, entry.getName());
+			if (entry.isDirectory()) {
+				if (!newFile.isDirectory() && !newFile.mkdirs()) {
+					throw new IOException("Failed to create directory " + newFile);
+				}
+			} else {
+				File parent = newFile.getParentFile();
+				if (!parent.isDirectory() && !parent.mkdirs()) {
+					throw new IOException("Failed to create directory " + parent);
+				}
+				OutputStream out = Files.newOutputStream(newFile.toPath());
+				int bytesRead;
+				while ((bytesRead = sevenZFile.read(buffer)) != -1) {
+					out.write(buffer, 0, bytesRead);
+				}
+				out.close();
+			}
+		}
+		sevenZFile.close();
+	}
+
+	private static void decompressTar(File archive, String directory) throws IOException {
+		TarArchiveInputStream tis = new TarArchiveInputStream(Files.newInputStream(archive.toPath()));
+		TarArchiveEntry entry;
+		byte[] buffer = new byte[8192];
+		while ((entry = tis.getNextTarEntry()) != null) {
+			File newFile = new File(directory, entry.getName());
+			if (entry.isDirectory()) {
+				if (!newFile.isDirectory() && !newFile.mkdirs()) {
+					throw new IOException("Failed to create directory " + newFile);
+				}
+			} else {
+				File parent = newFile.getParentFile();
+				if (!parent.isDirectory() && !parent.mkdirs()) {
+					throw new IOException("Failed to create directory " + parent);
+				}
+				OutputStream out = Files.newOutputStream(newFile.toPath());
+				int len;
+				while ((len = tis.read(buffer)) != -1) {
+					out.write(buffer, 0, len);
+				}
+				out.close();
+			}
+		}
+		tis.close();
+	}
+
+	private static void decompressGzip(File archive, String directory) throws IOException {
+		byte[] buffer = new byte[8192];
+		InputStream fi = Files.newInputStream(archive.toPath());
+		InputStream bi = new BufferedInputStream(fi);
+		InputStream gzi = new GzipCompressorInputStream(bi);
+		String fileName = archive.getName();
+		if (fileName.endsWith(".gz")) {
+			fileName = fileName.substring(0, fileName.length() - 3);
+		}
+		File outputFile = new File(directory, fileName);
+		File parent = outputFile.getParentFile();
+		if (!parent.exists()) {
+			parent.mkdirs();
+		}
+		OutputStream fo = Files.newOutputStream(outputFile.toPath());
+		int len;
+		while ((len = gzi.read(buffer)) != -1) {
+			fo.write(buffer, 0, len);
+		}
+		fo.close();
+		gzi.close();
+	}
+
+	private static void decompressJar(File archive, String directory) throws IOException {
+		byte[] buffer = new byte[1024];
+		JarFile jarFile = new JarFile(archive);
+		Enumeration<JarEntry> entries = jarFile.entries();
+		while (entries.hasMoreElements()) {
+			JarEntry entry = entries.nextElement();
+			File newFile = new File(directory, entry.getName());
+			if (entry.isDirectory()) {
+				if (!newFile.isDirectory() && !newFile.mkdirs()) {
+					throw new IOException("Failed to create directory " + newFile);
+				}
+			} else {
+				File parent = newFile.getParentFile();
+				if (!parent.isDirectory() && !parent.mkdirs()) {
+					throw new IOException("Failed to create directory " + parent);
+				}
+				InputStream is = jarFile.getInputStream(entry);
+				FileOutputStream fos = new FileOutputStream(newFile);
+				int len;
+				while ((len = is.read(buffer)) > 0) {
+					fos.write(buffer, 0, len);
+				}
+				fos.close();
+				is.close();
+			}
+		}
+		jarFile.close();
+	}
 }

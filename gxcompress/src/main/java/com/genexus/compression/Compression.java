@@ -14,49 +14,32 @@ import java.util.stream.Stream;
 public class Compression {
 	private static final Logger log = org.apache.logging.log4j.LogManager.getLogger(Compression.class);
 
-	private String path;
-	private String format;
+	private String absolutePath;
 	private GXBaseCollection<SdtMessages_Message>[] messages;
 	private ArrayList<String> filesToCompress;
 
 	public Compression() {}
 
-	public Compression(String path, String format, GXBaseCollection<SdtMessages_Message>[] messages) {
-		this.path = path;
-		this.format = format;
+	public Compression(String absolutePath, GXBaseCollection<SdtMessages_Message>[] messages) {
+		this.absolutePath = absolutePath;
 		this.messages = messages;
 		filesToCompress = new ArrayList<>();
 	}
 
-	public void setPath(String path) {
-		this.path = path;
+	public void setAbsolutePath(String path) {
+		this.absolutePath = path;
 	}
 
-	public void setFormat(String format) {
-		this.format = format;
-	}
-
-	public void addFile(String filePath) {
+	public void addElement(String filePath) {
 		filesToCompress.add(filePath);
 	}
 
-	public void addFolder(String folderPath) {
-		Path path = Paths.get(folderPath);
-		try (Stream<Path> stream = Files.walk(path)) {
-			stream.filter(Files::isRegularFile)
-				.forEach(p -> addFile(p.toAbsolutePath().toString()));
-		} catch (IOException e) {
-			log.error("Failed to process directory: {}", folderPath, e);
-		}
-	}
-
 	public Boolean save() {
-		return GXCompressor.compressFiles(filesToCompress, path, format, messages);
+		return GXCompressor.compress(filesToCompress, absolutePath, messages);
 	}
 
 	public void clear() {
-		path = "";
-		format = "";
+		absolutePath = "";
 		filesToCompress = new ArrayList<>();
 	}
 }
