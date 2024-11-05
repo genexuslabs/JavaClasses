@@ -3,7 +3,9 @@ package com.genexus.db;
 import com.genexus.CommonUtil;
 import com.genexus.GXBaseCollection;
 import com.genexus.SdtMessages_Message;
-import com.genexus.embedding.EmbeddingService;
+import com.genexus.util.saia.OpenAIRequest;
+import com.genexus.util.saia.OpenAIResponse;
+import com.genexus.util.saia.SaiaService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,13 +55,33 @@ public class GXEmbedding {
 
 	public static GXEmbedding generateEmbedding(GXEmbedding embeddingInfo, String text, GXBaseCollection<SdtMessages_Message> Messages) {
 		try {
-			List<Float> embedding = EmbeddingService.getInstance().getEmbedding(embeddingInfo.getModel(), embeddingInfo.getDimensions(), text);
+			List<Float> embedding = getEmbedding(embeddingInfo.getModel(), embeddingInfo.getDimensions(), text);
 			embeddingInfo.setEmbedding(embedding);
 		}
 		catch (Exception ex) {
 			CommonUtil.ErrorToMessages("GenerateEmbedding Error", ex.getMessage(), Messages);
 		}
 		return embeddingInfo;
+	}
+
+	public static List<Float> getEmbedding(String model, int dimensions, String input) {
+		List<String> inputList = new ArrayList<>();
+		inputList.add(input);
+		return getEmbedding(model, dimensions, inputList);
+	}
+
+	public static List<Float> getEmbedding(String model, int dimensions, List<String> inputList) {
+		OpenAIRequest aiRequest = new OpenAIRequest();
+		aiRequest.setModel(model);
+		aiRequest.setInput(inputList);
+		aiRequest.setDimension(dimensions);
+		OpenAIResponse aiResponse = SaiaService.call(aiRequest, true);
+		if (aiResponse != null)
+			return aiResponse.getData().get(0).getEmbedding().stream()
+				.map(Double::floatValue)
+				.collect(Collectors.toList());
+
+		return new ArrayList<>();
 	}
 
 	public String toString()

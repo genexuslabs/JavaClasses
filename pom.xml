@@ -86,7 +86,6 @@
 		<module>wrapperjakarta</module>
 		<module>wrappercommon</module>
         <module>java</module>
-        <module>gxembedding</module>
 		<module>gxcryptocommon</module>
 		<module>gxdynamiccall</module>
 		<module>gxmail</module>
