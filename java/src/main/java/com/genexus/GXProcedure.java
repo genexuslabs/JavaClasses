@@ -11,8 +11,10 @@ import com.genexus.internet.HttpContext;
 import com.genexus.mock.GXMockProvider;
 import com.genexus.performance.ProcedureInfo;
 import com.genexus.performance.ProceduresInfo;
-import com.genexus.util.ReorgSubmitThreadPool;
-import com.genexus.util.SubmitThreadPool;
+import com.genexus.util.*;
+import com.genexus.util.saia.OpenAIRequest;
+import com.genexus.util.saia.OpenAIResponse;
+import com.genexus.util.saia.SaiaService;
 
 public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 	public abstract void initialize();
@@ -256,5 +258,15 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 			}
 		}
 		privateExecute( );
+	}
+
+	protected String callAssistant(String assistant, GXProperties properties, Object response) {
+		OpenAIRequest aiRequest = new OpenAIRequest();
+		aiRequest.setModel(String.format("saia:agent:%s", assistant));
+		aiRequest.setVariables(properties.getList());
+		OpenAIResponse aiResponse = SaiaService.call(aiRequest);
+		if (aiResponse != null)
+			return aiResponse.getChoices().get(0).getMessage().getContent();
+		return "";
 	}
 }

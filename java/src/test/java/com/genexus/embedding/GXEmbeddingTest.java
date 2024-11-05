@@ -1,6 +1,7 @@
 package com.genexus.embedding;
 
 import com.genexus.Application;
+import com.genexus.db.GXEmbedding;
 import com.genexus.sampleapp.GXcfg;
 import com.genexus.specific.java.Connect;
 import com.genexus.specific.java.LogManager;
@@ -16,8 +17,7 @@ public class GXEmbeddingTest {
 		Connect.init();
 		LogManager.initialize(".");
 		Application.init(GXcfg.class);
-		EmbeddingService service = EmbeddingService.getInstance();
-		List<Float> embedding = service.getEmbedding("openai/text-embedding-3-small", 512, "Hello World");
+		List<Float> embedding = GXEmbedding.getEmbedding("openai/text-embedding-3-small", 512, "Hello World");
 		String result = embedding.stream()
 			.map(String::valueOf)
 			.collect(Collectors.joining(","));

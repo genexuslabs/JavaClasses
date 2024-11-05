@@ -1,6 +1,6 @@
 package com.genexus.util;
 
-import java.util.LinkedHashMap;
+import java.util.*;
 
 import com.genexus.internet.IGxJSONSerializable;
 
@@ -10,8 +10,6 @@ import org.json.JSONException;
 import com.genexus.CommonUtil;
 import com.genexus.SdtMessages_Message;
 import com.genexus.GXBaseCollection;
-import java.util.Iterator;
-import java.util.Map;
 
 public class GXProperties implements IGxJSONSerializable {
 	private LinkedHashMap < String, GXProperty > properties = new LinkedHashMap < > ();
@@ -116,6 +114,16 @@ public class GXProperties implements IGxJSONSerializable {
 	public String toJSonString() {
 		JSONObjectWrapper jObj = (JSONObjectWrapper) GetJSONObject();
 		return jObj.toString();
+	}
+
+	public List<GXProperty> getList() {
+		List<GXProperty> list = new ArrayList<>();
+		int i = 0;
+		while (count() > i) {
+			list.add(item(i));
+			i++;
+		}
+		return list;
 	}
 
 	public boolean fromJSonString(String s) {
