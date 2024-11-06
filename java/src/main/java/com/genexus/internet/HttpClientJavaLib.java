@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -21,6 +22,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.entity.ContentType;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.auth.AuthSchemeProvider;
@@ -68,8 +70,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		getPoolInstance();
 		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();
 		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
-		cookies = new BasicCookieStore();
-		logger.info("Using apache http client implementation");
+		cookies = new BasicCookieStore();		
 		streamsToClose = new Vector<>();
 	}
 
@@ -723,7 +724,17 @@ public class HttpClientJavaLib extends GXHttpClient {
 			return "";
 		try {
 			this.setEntity();
-			String res = EntityUtils.toString(entity, "UTF-8");
+			ContentType contentType = ContentType.getOrDefault(entity);
+			Charset charset;
+			if (contentType.equals(ContentType.DEFAULT_TEXT)) {
+				charset = StandardCharsets.UTF_8;
+			} else {
+				charset = contentType.getCharset();
+				if (charset == null) {
+					charset = StandardCharsets.UTF_8;
+				}
+			}
+			String res = EntityUtils.toString(entity, charset);
 			eof = true;
 			return res;
 		} catch (IOException e) {
