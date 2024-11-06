@@ -6,7 +6,7 @@ import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.messaging.queue.SimpleMessageQueue;
 import com.genexus.services.ServiceConfigurationException;
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 
 
 public class AzureQueueFactory {
