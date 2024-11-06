@@ -1,6 +1,6 @@
 package com.genexus.webpanels;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.genexus.*;
 import com.genexus.configuration.ConfigurationManager;
