@@ -729,7 +729,6 @@ public class HttpAjaxContext extends HttpContextWeb
 		{
 			File file = new File(getDefaultPath() + staticContentBase + fileName);
 			fileExists =  file.exists() && file.isFile();
-			com.genexus.diagnostics.Log.info("Searching if file exists (" + fileName + "). Found: " + String.valueOf(fileExists));
 		}
 		catch (Exception e)
 		{

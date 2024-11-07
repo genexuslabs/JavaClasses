@@ -44,7 +44,6 @@ public class APIObjectFilter extends Filter {
 				if ( qString != null && !qString.isEmpty()) {
 					fwdURI = fwdURI + QS_SEP + qString;
 				}
-				logger.info("Forwarding from " + path +" to: " + fwdURI) ;
 				httpRequest.getRequestDispatcher(fwdURI).forward(request,response);
             }
             else {
