@@ -314,6 +314,7 @@
 				</plugins>
 			</build>
 		</profile>
+		
 		<profile>
 			<id>deploy-to-azure</id>
 			<properties>
