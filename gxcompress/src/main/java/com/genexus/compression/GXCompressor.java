@@ -61,12 +61,23 @@ public class GXCompressor implements IGXCompressor {
 		int index = 0;
 		for (String filePath : files) {
 			File file = new File(filePath);
-			if (!file.exists()) {
-				log.error("{}{}", FILE_NOT_EXISTS, filePath);
-				storageMessages(FILE_NOT_EXISTS + filePath, messages[0]);
-				continue;
+			try {
+				String normalizedPath = file.getCanonicalPath();
+				if (!file.exists()) {
+					log.error("{}{}", FILE_NOT_EXISTS, filePath);
+					storageMessages(FILE_NOT_EXISTS + filePath, messages[0]);
+					continue;
+				}
+				if (normalizedPath.contains(File.separator + ".." + File.separator) ||
+					normalizedPath.endsWith(File.separator + "..") ||
+					normalizedPath.startsWith(".." + File.separator)) {
+					log.warn("Potential directory traversal attack detected: {}", filePath);
+					continue;
+				}
+				toCompress[index++] = file;
+			} catch (IOException e) {
+				log.error("Error normalizing path for file: {}", filePath, e);
 			}
-			toCompress[index++] = file;
 		}
 		String format = CommonUtil.getFileType(path).toLowerCase();
 		try {
