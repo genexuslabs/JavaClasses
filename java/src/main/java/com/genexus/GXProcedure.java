@@ -260,11 +260,11 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 		privateExecute( );
 	}
 
-	protected String callAssistant(String assistant, GXProperties properties, Object response) {
+	protected String callAssistant(String assistant, GXProperties properties, CallResult result) {
 		OpenAIRequest aiRequest = new OpenAIRequest();
 		aiRequest.setModel(String.format("saia:agent:%s", assistant));
 		aiRequest.setVariables(properties.getList());
-		OpenAIResponse aiResponse = SaiaService.call(aiRequest);
+		OpenAIResponse aiResponse = SaiaService.call(aiRequest, result);
 		if (aiResponse != null)
 			return aiResponse.getChoices().get(0).getMessage().getContent();
 		return "";

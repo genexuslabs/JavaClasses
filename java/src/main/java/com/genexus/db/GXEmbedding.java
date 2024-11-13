@@ -3,6 +3,7 @@ package com.genexus.db;
 import com.genexus.CommonUtil;
 import com.genexus.GXBaseCollection;
 import com.genexus.SdtMessages_Message;
+import com.genexus.util.CallResult;
 import com.genexus.util.saia.OpenAIRequest;
 import com.genexus.util.saia.OpenAIResponse;
 import com.genexus.util.saia.SaiaService;
@@ -75,7 +76,7 @@ public class GXEmbedding {
 		aiRequest.setModel(model);
 		aiRequest.setInput(inputList);
 		aiRequest.setDimension(dimensions);
-		OpenAIResponse aiResponse = SaiaService.call(aiRequest, true);
+		OpenAIResponse aiResponse = SaiaService.call(aiRequest, true, new CallResult());
 		if (aiResponse != null)
 			return aiResponse.getData().get(0).getEmbedding().stream()
 				.map(Double::floatValue)

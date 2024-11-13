@@ -1,6 +1,7 @@
 package com.genexus.assistant;
 
 import com.genexus.*;
+import com.genexus.util.CallResult;
 
 public final  class Assistant extends GXProcedure
 {
@@ -32,7 +33,7 @@ public final  class Assistant extends GXProcedure
 		Gxproperties.set("&Parameter1", AV3Parameter1);
 		Gxproperties.set("&Parameter2", AV4Parameter2);
 		Gxproperties.set("$context", "Los Angeles");
-		AV5OutputVariable = callAssistant( "The weatherman", Gxproperties, null) ;
+		AV5OutputVariable = callAssistant( "The weatherman", Gxproperties, new CallResult()) ;
 		cleanup();
 	}
 
