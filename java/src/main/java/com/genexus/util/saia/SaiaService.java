@@ -21,15 +21,19 @@ public class SaiaService {
 	public static OpenAIResponse call(OpenAIRequest request, boolean isEmbedding, CallResult result) {
 		try {
 			String jsonRequest = new ObjectMapper().writeValueAsString(request);
+			String providerURL = aiProvider + "/chat";;
 
 			HttpClient client = new HttpClient();
 			client.setSecure(1);
 			client.addHeader("Content-Type", "application/json");
 			client.addHeader("Authorization", "Bearer " + apiKey);
-			if (isEmbedding)
+			if (isEmbedding) {
 				client.addHeader("X-Saia-Source", "Embedding");
+				providerURL = providerURL + "/embedding";
+			}
+
 			client.addString(jsonRequest);
-			client.execute("POST", aiProvider);
+			client.execute("POST", providerURL);
 			if (client.getStatusCode() == 200) {
 				JSONObject jsonResponse = new JSONObject(client.getString());
 				return new ObjectMapper().readValue(jsonResponse.toString(), OpenAIResponse.class);
