@@ -21,5 +21,9 @@ public class TestAssistant {
 		String[] GXv_char4 = new String[1] ;
 		new com.genexus.assistant.Assistant(-1).execute( "Today", "Tomorrow", GXv_char4) ;
 		System.out.println(GXv_char4[0]);
+
+		String[] GXv_char5 = new String[1] ;
+		new com.genexus.assistant.Assistant(-1).execute( "chat", "", GXv_char5) ;
+		System.out.println(GXv_char5[0]);
 	}
 }

@@ -3,6 +3,8 @@ package com.genexus;
 
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.List;
+
 import com.genexus.db.Namespace;
 import com.genexus.db.UserInformation;
 import com.genexus.diagnostics.GXDebugInfo;
@@ -261,12 +263,22 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 	}
 
 	protected String callAssistant(String assistant, GXProperties properties, CallResult result) {
+		return callAssistant(assistant, properties, null, result);
+	}
+
+	protected String callAssistant(String assistant, GXProperties properties, List<OpenAIResponse.Message> messages, CallResult result) {
 		OpenAIRequest aiRequest = new OpenAIRequest();
 		aiRequest.setModel(String.format("saia:agent:%s", assistant));
+		if (messages != null)
+			aiRequest.setMessages(messages);
 		aiRequest.setVariables(properties.getList());
 		OpenAIResponse aiResponse = SaiaService.call(aiRequest, result);
-		if (aiResponse != null)
-			return aiResponse.getChoices().get(0).getMessage().getContent();
+		if (aiResponse != null) {
+			for (OpenAIResponse.Choice element : aiResponse.getChoices()) {
+				if (element.getFinishReason().equals("stop"))
+					return element.getMessage().getContent();
+			}
+		}
 		return "";
 	}
 }
