@@ -14,6 +14,9 @@ public class OpenAIRequest {
 	@JsonProperty("model")
 	private String model;
 
+	@JsonProperty("messages")
+	private List<OpenAIResponse.Message> messages;
+
 	@JsonProperty("prompt")
 	private String prompt;
 
@@ -49,6 +52,9 @@ public class OpenAIRequest {
 
 	public String getModel() { return model; }
 	public void setModel(String model) { this.model = model; }
+
+	public List<OpenAIResponse.Message> getMessages() { return messages; }
+	public void setMessages(List<OpenAIResponse.Message> messages) { this.messages = messages; }
 
 	public String getPrompt() { return prompt; }
 	public void setPrompt(String prompt) { this.prompt = prompt; }

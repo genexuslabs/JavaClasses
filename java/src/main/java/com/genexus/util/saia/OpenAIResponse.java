@@ -22,6 +22,9 @@ public class OpenAIResponse {
 	@JsonProperty("usage")
 	private Usage usage;
 
+	@JsonProperty("tool_calls")
+	private List<Message> tool_calls;
+
 	@JsonProperty("data")
 	private List<DataItem> data;
 
@@ -39,6 +42,9 @@ public class OpenAIResponse {
 
 	public Usage getUsage() { return usage; }
 	public void setUsage(Usage usage) { this.usage = usage; }
+
+	public List<Message> getToolCalls() { return tool_calls; }
+	public void setToolCalls(List<Message> tool_calls) { this.tool_calls = tool_calls; }
 
 	public List<DataItem> getData() { return data; }
 	public void setData(List<DataItem> data) { this.data = data; }
@@ -77,6 +83,9 @@ public class OpenAIResponse {
 		@JsonProperty("tool_calls")
 		private List<ToolCall> toolCalls;
 
+		@JsonProperty("tool_call_id")
+		private String toolCallId;
+
 		public String getRole() { return role; }
 		public void setRole(String role) { this.role = role; }
 
@@ -85,44 +94,47 @@ public class OpenAIResponse {
 
 		public List<ToolCall> getToolCalls() { return toolCalls; }
 		public void setToolCalls(List<ToolCall> toolCalls) { this.toolCalls = toolCalls; }
+
+		public String getToolCallId() { return toolCallId; }
+		public void setToolCallId(String toolCallId) { this.toolCallId = toolCallId; }
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static class ToolCall {
 
-		@JsonProperty("tool_name")
-		private String toolName;
+		@JsonProperty("id")
+		private String id;
 
-		@JsonProperty("tool_input")
-		private ToolInput toolInput;
+		@JsonProperty("type")
+		private String type;
 
-		@JsonProperty("tool_output")
-		private String toolOutput;
+		@JsonProperty("function")
+		private Function function;
 
-		public String getToolName() { return toolName; }
-		public void setToolName(String toolName) { this.toolName = toolName; }
+		public String getId() { return id; }
+		public void setId(String id) { this.id = id; }
 
-		public ToolInput getToolInput() { return toolInput; }
-		public void setToolInput(ToolInput toolInput) { this.toolInput = toolInput; }
+		public String getType() { return type; }
+		public void setType(String type) { this.type = type; }
 
-		public String getToolOutput() { return toolOutput; }
-		public void setToolOutput(String toolOutput) { this.toolOutput = toolOutput; }
+		public Function getFunction() { return function; }
+		public void setFunction(Function function) { this.function = function; }
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
-	public static class ToolInput {
+	public static class Function {
 
-		@JsonProperty("prompt")
-		private String prompt;
+		@JsonProperty("name")
+		private String name;
 
-		@JsonProperty("size")
-		private String size;
+		@JsonProperty("arguments")
+		private String arguments;
 
-		public String getPrompt() { return prompt; }
-		public void setPrompt(String prompt) { this.prompt = prompt; }
+		public String getName() { return name; }
+		public void setName(String name) { this.name = name; }
 
-		public String getSize() { return size; }
-		public void setSize(String size) { this.size = size; }
+		public String getArguments() { return arguments; }
+		public void setArguments(String arguments) { this.arguments = arguments; }
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
