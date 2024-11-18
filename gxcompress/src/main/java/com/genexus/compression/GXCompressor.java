@@ -34,9 +34,10 @@ public class GXCompressor implements IGXCompressor {
 	private static final String GENERIC_ERROR = "An error occurred during the compression/decompression process: ";
 	private static final String NO_FILES_ADDED = "No files have been added for compression.";
 	private static final String FILE_NOT_EXISTS = "File does not exist: ";
-	private static final String FOLDER_NOT_EXISTS = "The specified folder does not exist: ";
-	private static final String UNSUPPORTED_FORMAT = "Unsupported compression/decompression format: ";
+	private static final String UNSUPPORTED_FORMAT = " is an unsupported format. Supported formats are zip, 7z, tar, gz and jar.";
 	private static final String EMPTY_FILE = "The selected file is empty: ";
+	private static final String DIRECTORY_ATTACK = "Potential directory traversal attack detected: ";
+	private static final String MAX_FILESIZE_EXCEEDED = "The files selected for compression exceed the maximum permitted file size of ";
 
 	private static void storageMessages(String error, GXBaseCollection<SdtMessages_Message> messages) {
 		try {
@@ -48,15 +49,15 @@ public class GXCompressor implements IGXCompressor {
 		} catch (Exception e) {
 			log.error("Failed to store the following error message: {}", error, e);
 		}
-
 	}
 	
-	public static Boolean compress(ArrayList<String> files, String path, GXBaseCollection<SdtMessages_Message>[] messages) {
+	public static Boolean compress(ArrayList<String> files, String path, long maxCombinedFileSize, GXBaseCollection<SdtMessages_Message>[] messages) {
 		if (files.isEmpty()){
 			log.error(NO_FILES_ADDED);
 			storageMessages(NO_FILES_ADDED, messages[0]);
 			return false;
 		}
+		long totalSize = 0;
 		File[] toCompress = new File[files.size()];
 		int index = 0;
 		for (String filePath : files) {
@@ -71,8 +72,16 @@ public class GXCompressor implements IGXCompressor {
 				if (normalizedPath.contains(File.separator + ".." + File.separator) ||
 					normalizedPath.endsWith(File.separator + "..") ||
 					normalizedPath.startsWith(".." + File.separator)) {
-					log.warn("Potential directory traversal attack detected: {}", filePath);
-					continue;
+					log.error(DIRECTORY_ATTACK + "{}", filePath);
+					storageMessages(DIRECTORY_ATTACK + filePath, messages[0]);
+					return false;
+				}
+				long fileSize = file.length();
+				totalSize += fileSize;
+				if (totalSize > maxCombinedFileSize) {
+					log.error(MAX_FILESIZE_EXCEEDED + "{}", maxCombinedFileSize);
+					storageMessages(MAX_FILESIZE_EXCEEDED + maxCombinedFileSize, messages[0]);
+					return false;
 				}
 				toCompress[index++] = file;
 			} catch (IOException e) {
@@ -98,13 +107,11 @@ public class GXCompressor implements IGXCompressor {
 					compressToJar(toCompress, path);
 					break;
 				default:
+					log.error("{}" + UNSUPPORTED_FORMAT, format);
+					storageMessages(format + UNSUPPORTED_FORMAT, messages[0]);
 					return false;
 			}
 			return true;
-		} catch (IllegalArgumentException iae) {
-			log.error("{}{}. Supported compression formats are zip, 7z, tar, gz and jar", UNSUPPORTED_FORMAT, format, iae);
-			storageMessages(UNSUPPORTED_FORMAT + format, messages[0]);
-			return false;
 		} catch (Exception e) {
 			log.error(GENERIC_ERROR, e);
 			storageMessages(e.getMessage(),  messages[0]);
@@ -147,8 +154,8 @@ public class GXCompressor implements IGXCompressor {
 					decompressJar(toCompress, path);
 					break;
 				default:
-					log.error("{}{}. Supported decompression formats are zip, 7z, tar, gz, jar", UNSUPPORTED_FORMAT, extension);
-					storageMessages( UNSUPPORTED_FORMAT + extension, messages[0]);
+					log.error("{}" + UNSUPPORTED_FORMAT, extension);
+					storageMessages(extension + UNSUPPORTED_FORMAT, messages[0]);
 					return false;
 			}
 			return true;
