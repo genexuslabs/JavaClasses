@@ -15,13 +15,15 @@ public class Compression {
 	private static final Logger log = org.apache.logging.log4j.LogManager.getLogger(Compression.class);
 
 	private String absolutePath;
+	private long maxCombinedFileSize;
 	private GXBaseCollection<SdtMessages_Message>[] messages;
 	private ArrayList<String> filesToCompress;
 
 	public Compression() {}
 
-	public Compression(String absolutePath, GXBaseCollection<SdtMessages_Message>[] messages) {
+	public Compression(String absolutePath, long maxCombinedFileSize, GXBaseCollection<SdtMessages_Message>[] messages) {
 		this.absolutePath = absolutePath;
+		this.maxCombinedFileSize = maxCombinedFileSize;
 		this.messages = messages;
 		filesToCompress = new ArrayList<>();
 	}
@@ -35,7 +37,7 @@ public class Compression {
 	}
 
 	public Boolean save() {
-		return GXCompressor.compress(filesToCompress, absolutePath, messages);
+		return GXCompressor.compress(filesToCompress, absolutePath, maxCombinedFileSize, messages);
 	}
 
 	public void clear() {
