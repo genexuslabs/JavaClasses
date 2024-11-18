@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.xml.XMLReader;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.genexus.GXSmartCacheProvider.DataUpdateStatus;
 import com.genexus.common.classes.AbstractGXFile;

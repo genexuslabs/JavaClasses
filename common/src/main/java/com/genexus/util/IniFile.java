@@ -245,6 +245,10 @@ public class IniFile {
 
 	public String getPropertyEncrypted(String section, String key) {
 		String val = getProperty(section, key);
+		return decryptValue(val, key);
+	}
+
+	public String decryptValue(String val, String key) {
 		if (val != null) {
 			int checkSumLength = Encryption.getCheckSumLength();
 
