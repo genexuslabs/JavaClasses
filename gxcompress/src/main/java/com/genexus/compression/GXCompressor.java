@@ -78,7 +78,7 @@ public class GXCompressor implements IGXCompressor {
 				}
 				long fileSize = file.length();
 				totalSize += fileSize;
-				if (totalSize > maxCombinedFileSize) {
+				if (totalSize > maxCombinedFileSize && maxCombinedFileSize > -1) {
 					log.error(MAX_FILESIZE_EXCEEDED + "{}", maxCombinedFileSize);
 					storageMessages(MAX_FILESIZE_EXCEEDED + maxCombinedFileSize, messages[0]);
 					return false;
@@ -119,8 +119,8 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 	
-	public static Compression newCompression(String path, GXBaseCollection<SdtMessages_Message>[] messages) {
-		return new Compression(path, messages);
+	public static Compression newCompression(String path, long maxCombinedFileSize, GXBaseCollection<SdtMessages_Message>[] messages) {
+		return new Compression(path, maxCombinedFileSize, messages);
 	}
 
 	public static Boolean decompress(String file, String path, GXBaseCollection<SdtMessages_Message>[] messages) {
