@@ -24,8 +24,8 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeUtility;
 
 import com.genexus.common.interfaces.SpecificImplementation;
-import com.sun.mail.pop3.POP3Folder;
-import com.sun.mail.pop3.POP3Store;
+import org.eclipse.angus.mail.pop3.POP3Folder;
+import org.eclipse.angus.mail.pop3.POP3Store;
 
 public class POP3SessionJavaMail implements GXInternetConstants, IPOP3Session {
 	public static final ILogger logger = LogManager.getLogger(POP3SessionJavaMail.class);
@@ -328,9 +328,10 @@ public class POP3SessionJavaMail implements GXInternetConstants, IPOP3Session {
 
 	public int getMessageCount() throws GXMailException {
 		try {
+			if (emailFolder == null || !emailFolder.isOpen())
+				throw new GXMailException("The email folder is either null or closed", MAIL_ServerRepliedErr);
 			if (readSinceLast)
 				return emailFolder.getNewMessageCount();
-
 			return emailFolder.getMessageCount();
 		} catch (MessagingException e) {
 			log(e.getMessage());
