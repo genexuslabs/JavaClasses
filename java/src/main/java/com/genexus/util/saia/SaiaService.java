@@ -7,7 +7,7 @@ import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.internet.HttpClient;
 import com.genexus.util.CallResult;
-import json.org.json.JSONObject;
+import org.json.JSONObject;
 
 public class SaiaService {
 	private static final ILogger logger = LogManager.getLogger(SaiaService.class);
