@@ -118,7 +118,6 @@ public abstract class GXWebObjectStub extends HttpServlet
 			}
 			else
 			{
-				init(httpContext);
 				if (IntegratedSecurityLevel() == SECURITY_GXOBJECT)
 				{
 					httpContext.doNotCompress(true);
@@ -177,6 +176,7 @@ public abstract class GXWebObjectStub extends HttpServlet
 					GXSecurityProvider.getInstance().checksession(-2, modelContext, reqUrl, flag);
 					if(!flag[0])
 					{
+						httpContext.setStream();
 						((HttpContextWeb)httpContext).redirect(loginObjectURL, true);
 					}
 					else
@@ -196,6 +196,7 @@ public abstract class GXWebObjectStub extends HttpServlet
 						String notAuthorizedObject = Application.getClientContext().getClientPreferences().getProperty("IntegratedSecurityNotAuthorizedWeb", "");
 						notAuthorizedObject = GXutil.getClassName(notAuthorizedObject);
 						String notAuthorizedObjectURL = URLRouter.getURLRoute(notAuthorizedObject.toLowerCase(), new String[]{}, new String[]{}, httpContext.getRequest().getContextPath(), modelContext.getPackageName());
+						httpContext.setStream();
 						if (flag[0])
 						{
 							((HttpContextWeb)httpContext).redirect(notAuthorizedObjectURL, true);
