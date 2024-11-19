@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.genexus.db.ServiceCursorBase;
 import com.genexus.db.service.GXType;
 import com.genexus.db.service.VarValue;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONException;
+import com.genexus.json.JSONObjectWrapper;
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -217,12 +217,12 @@ public class CosmosDBHelper {
 		}
 		return false;
 	}
-	public static JSONObject addItemValue(String name, VarValue parm, JSONObject jsonObject) throws JSONException, SQLException {
+	public static JSONObjectWrapper addItemValue(String name, VarValue parm, JSONObjectWrapper jsonObject) throws JSONException, SQLException {
 		if (parm == null) {
 			throw new SQLException(String.format("Cannot assign attribute value (name: %s)", name));
 		}
 		if (jsonObject == null)
-			jsonObject = new JSONObject();
+			jsonObject = new JSONObjectWrapper();
 		if (parm.value!= null) {
 			String[] dateStr = new String[1];
 			if (tryConvertToDateISOFormat(parm, dateStr))
@@ -237,7 +237,7 @@ public class CosmosDBHelper {
 				jsonObject.put(name, parm.value);
 		}
 		else
-			jsonObject.put(name, JSONObject.NULL);
+			jsonObject.put(name, JSONObjectWrapper.NULL);
 		return jsonObject;
 	}
 }

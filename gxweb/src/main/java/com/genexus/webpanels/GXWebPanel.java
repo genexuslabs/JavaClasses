@@ -23,10 +23,10 @@ import com.genexus.security.GXSecurityProvider;
 
 import com.genexus.security.web.SecureTokenHelper;
 import com.genexus.security.web.WebSecurityHelper;
-import json.org.json.IJsonFormattable;
-import json.org.json.JSONArray;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
+import com.genexus.json.JSONObjectWrapper;
+import org.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 
 class DataIntegrityException extends Exception
@@ -524,7 +524,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 
 		private void parseInputJSonMessage(String jsonMessage, GXWebPanel targetObj) throws JSONException {
 			try {
-				JSONObject objMessage = new JSONObject(jsonMessage);
+				JSONObjectWrapper objMessage = new JSONObjectWrapper(jsonMessage);
 				if (objMessage.has("parms"))
 					inParmsValues = objMessage.getJSONArray("parms");
 				if (objMessage.has("hsh"))
@@ -581,12 +581,12 @@ public abstract class GXWebPanel extends GXWebObjectBase
 				for (int i = 0; i < gridNames.length(); i++) {
 					try {
 						JSONObject grid = (JSONObject)gxGrids.get(gridNames.getString(i));
-						if (grid.getInt("id") != 0 && !grid.getString("lastRow").equals(""))
+						if (grid.getInt("id") != 0 && !grid.get("lastRow").toString().equals(""))
 						{
 							int lastRow = grid.getInt("lastRow") + 1;
 							try{
-								SetFieldValue("sGXsfl_" + grid.getString("id") + "_idx", String.format("%04d", lastRow) + pRow);
-								SetFieldValue("nGXsfl_" + grid.getString("id") + "_idx", String.valueOf(lastRow));
+								SetFieldValue("sGXsfl_" + grid.get("id").toString() + "_idx", String.format("%04d", lastRow) + pRow);
+								SetFieldValue("nGXsfl_" + grid.get("id").toString() + "_idx", String.valueOf(lastRow));
 							}
 							catch(Exception ex1)
 							{
@@ -609,7 +609,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 					String key;
 					try {
 						key = names.getString(i);
-						String value = gxState.getString(key);
+						String value = gxState.get(key).toString();
 						if ((!targetObj.httpContext.isFileParm( key)) && (!value.equals(""))) {
 							targetObj.httpContext.changePostValue(key, value);
 						}
@@ -664,7 +664,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 				for (int i=0; i< events.length(); i++ )
 				{
 					String eventName = events.getString(i);
-					JSONObject eventMetadata = new JSONObject(targetObj.eventsMetadata.get(eventName));
+					JSONObjectWrapper eventMetadata = new JSONObjectWrapper(targetObj.eventsMetadata.get(eventName));
 					eventHandlers[eventCount] = eventMetadata.getString("handler");
 					JSONArray eventInputParms = eventMetadata.getJSONArray("iparms");
 					for (int j=0; j< eventInputParms.length(); j++ )
@@ -751,7 +751,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
             if (field != null)
             {
 				Class[] cArg = new Class[1];
-				cArg[0] = IJsonFormattable.class;
+				cArg[0] = Object.class;
    				Method mth = field.getType().getMethod("FromJSONObject", cArg);
                 if (mth != null)
                 {
@@ -776,9 +776,9 @@ public abstract class GXWebPanel extends GXWebObjectBase
 					cArg[0] = String.class;
 					Object fieldInstance = PrivateUtilities.getFieldValue(targetObj, fieldName);
 					Method mth;
-					if (value instanceof IJsonFormattable)
+					if (value instanceof JSONArray || value instanceof JSONObjectWrapper)
 					{
-						mth = field.getType().getMethod("FromJSONObject", new Class[]{IJsonFormattable.class});
+						mth = field.getType().getMethod("FromJSONObject", new Class[]{Object.class});
 						mth.invoke(fieldInstance , new Object[]{value});
 					}
 					else
@@ -929,7 +929,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 										for (int j = 0; j < colValuesLen; j++) {
 											String varName = String.format("%s%s_%s%s", cmpContext, (String)parm.get("fld"), String.format("%04d", rowIdx), parentRow);
 											objValue = columnValues.get(j);
-											if (objValue.getClass() == Double.class)
+											if (objValue.getClass() == java.math.BigDecimal.class || objValue.getClass() == Double.class)
 											{
 												DecimalFormat df = (DecimalFormat) NumberFormat.getInstance(localUtil.getLocale());
 												df.setMaximumFractionDigits(Integer.MAX_VALUE);
@@ -937,7 +937,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 											}
 											else
 											{
-												strValue = columnValues.getString(j);
+												strValue = columnValues.get(j).toString();
 											}
 											targetObj.httpContext.changePostValue(varName, strValue);
 											rowIdx++;
@@ -975,7 +975,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 											for (int j = 0; j < hideCodeValuesLen; j++) {
 												String varName = String.format("%sGXHC%s_%s%s", cmpContext, (String)parm.get("fld"), String.format("%04d", rowIdx), parentRow);
 												objValue = hideCodeValues.get(j);
-												if (objValue.getClass() == Double.class)
+												if (objValue.getClass() == java.math.BigDecimal.class || objValue.getClass() == Double.class)
 												{
 													DecimalFormat df = (DecimalFormat) NumberFormat.getInstance(localUtil.getLocale());
 													df.setMaximumFractionDigits(Integer.MAX_VALUE);
@@ -1192,7 +1192,7 @@ public abstract class GXWebPanel extends GXWebObjectBase
 		{
 			try
 			{
-				JSONObject jsonCmd = new JSONObject();
+				JSONObjectWrapper jsonCmd = new JSONObjectWrapper();
 				jsonCmd.put("url", url);
 				jsonCmd.put("target", target);
 				httpContext.appendAjaxCommand("calltarget", jsonCmd);
