@@ -61,6 +61,6 @@ public class SaiaService {
 		msg.setgxTv_SdtMessages_Message_Id(id);
 		msg.setgxTv_SdtMessages_Message_Type(type);
 		msg.setgxTv_SdtMessages_Message_Description(description);
-
+		result.addMessage(msg);
 	}
 }
