@@ -3,7 +3,7 @@ package com.genexus.security.web;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genexus.diagnostics.core.ILogger;

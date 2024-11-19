@@ -12,7 +12,7 @@ import java.net.URLEncoder;
 import java.text.*;
 import java.util.*;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.*;
 import java.security.*;

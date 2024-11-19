@@ -2,7 +2,8 @@ package com.genexus.security.web;
 
 import java.util.Date;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 
 import org.json.JSONException;
 import com.genexus.json.JSONObjectWrapper;
@@ -21,12 +22,12 @@ public class WebSecureToken extends SecureToken {
 	
 	private JSONObjectWrapper _jObj = new JSONObjectWrapper();
 	
-	public WebSecureToken(){			
-		_expiration = org.apache.commons.lang.time.DateUtils.addDays(new Date(), TOKEN_DAYS_EXPIRATION);
+	public WebSecureToken(){
+		_expiration = DateUtils.addDays(new Date(), TOKEN_DAYS_EXPIRATION);
 	}
 	
 	public WebSecureToken(String pgmName, String issuer, String value) {
-		_expiration = org.apache.commons.lang.time.DateUtils.addDays(new Date(), TOKEN_DAYS_EXPIRATION);
+		_expiration = DateUtils.addDays(new Date(), TOKEN_DAYS_EXPIRATION);
 		_pgmName = pgmName;
 		_value = value;
 		_issuer = issuer;

@@ -3,7 +3,7 @@ package com.genexus.util;
 
 import java.util.*;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.genexus.ModelContext;
 import com.genexus.common.interfaces.SpecificImplementation;

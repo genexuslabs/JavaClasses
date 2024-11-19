@@ -1,5 +1,5 @@
 package com.genexus.security.web;
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 
 import com.genexus.internet.IGxJSONAble;
 

@@ -13,19 +13,19 @@ import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
-import software.amazon.awssdk.utils.IoUtils;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-import com.genexus.Application;
 import com.genexus.util.GXService;
 import com.genexus.util.StorageUtils;
 import com.genexus.StructSdtMessages_Message;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
+import software.amazon.awssdk.utils.IoUtils;
 
 import java.io.*;
 import java.net.URI;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -75,13 +75,11 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 	private String endpointUrl = ".s3.amazonaws.com/";
 	private int defaultExpirationMinutes = DEFAULT_EXPIRATION_MINUTES;
 	private Boolean pathStyleUrls = false;
+	private Boolean objectOwnershipEnabled;
+	private final String bucketOwnerEnforced = "Bucket owner enforced";
 
 	public String getName() {
 		return NAME;
-	}
-
-	public ExternalProviderS3V2(String service) throws Exception {
-		this(Application.getGXServices().get(service));
 	}
 
 	public ExternalProviderS3V2() throws Exception {
@@ -100,6 +98,9 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 		String bucket = getEncryptedPropertyValue(BUCKET, BUCKET_DEPRECATED);
 		String folder = getPropertyValue(FOLDER, FOLDER_DEPRECATED, "");
 		clientRegion = getPropertyValue(REGION, REGION_DEPRECATED, DEFAULT_REGION);
+
+		objectOwnershipEnabled = !getPropertyValue(DEFAULT_ACL, DEFAULT_STORAGE_PRIVACY, "").contains(bucketOwnerEnforced);
+
 		String endpointValue = getPropertyValue(STORAGE_ENDPOINT, STORAGE_ENDPOINT_DEPRECATED, "");
 		if (endpointValue.equals("custom")) {
 			endpointValue = getPropertyValue(STORAGE_CUSTOM_ENDPOINT, STORAGE_CUSTOM_ENDPOINT_DEPRECATED);
@@ -112,7 +113,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 		}
 
 		if (this.client == null) {
-			if (clientRegion.length() == 0) {
+			if (clientRegion.isEmpty()) {
 				clientRegion = DEFAULT_REGION;
 			}
 
@@ -142,7 +143,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 			logger.debug("Using IAM Credentials");
 		}
 
-		if (endpoint.length() > 0 && !endpoint.contains(".amazonaws.com")) {
+		if (!endpoint.isEmpty() && !endpoint.contains(".amazonaws.com")) {
 			pathStyleUrls = true;
 
 			s3Client = builder
@@ -222,7 +223,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 					.build(),
 				ResponseTransformer.toBytes());
 			try (InputStream objectData = objectBytes.asInputStream()) {
-				try (OutputStream outputStream = new FileOutputStream(localFile)) {
+				try (OutputStream outputStream = Files.newOutputStream(Paths.get(localFile))) {
 					int read;
 					byte[] bytes = new byte[1024];
 					while ((read = objectData.read(bytes)) != -1) {
@@ -230,67 +231,21 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 					}
 				}
 			}
-		} catch (FileNotFoundException ex) {
-			logger.error("Error while downloading file to the external provider", ex);
 		} catch (IOException ex) {
 			logger.error("Error while downloading file to the external provider", ex);
 		}
 	}
 
 	public String upload(String localFile, String externalFileName, ResourceAccessControlList acl) {
-		client.putObject(PutObjectRequest.builder()
-				.bucket(bucket)
-				.key(externalFileName)
-				.build(),
-			RequestBody.fromFile(Paths.get(localFile)));
-		// As of December 2023, some S3-compatible storages do not
-		// implement every AWS S3 feature such as setting an object ACL
-		if (endpointUrl.contains(".amazonaws.com"))
-			client.putObjectAcl(PutObjectAclRequest.builder()
-				.bucket(bucket)
-				.key(externalFileName)
-				.acl(internalToAWSACL(acl))
-				.build());
-		return getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
-	}
-
-	private ObjectCannedACL internalToAWSACL(ResourceAccessControlList acl) {
-		if (acl == ResourceAccessControlList.Default) {
-			acl = this.defaultAcl;
-		}
-
-		ObjectCannedACL accessControl = ObjectCannedACL.PRIVATE;
-		if (acl == ResourceAccessControlList.Private) {
-			accessControl = ObjectCannedACL.PRIVATE;
-		} else if (acl == ResourceAccessControlList.PublicRead) {
-			accessControl = ObjectCannedACL.PUBLIC_READ;
-		} else if (acl == ResourceAccessControlList.PublicReadWrite) {
-			accessControl = ObjectCannedACL.PUBLIC_READ_WRITE;
-		}
-		return accessControl;
+		return objectOwnershipEnabled ?
+			uploadWithACL(localFile, externalFileName, acl) :
+			uploadWithoutACL(localFile, externalFileName);
 	}
 
 	public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
-		try {
-			ByteBuffer byteBuffer = ByteBuffer.wrap(IoUtils.toByteArray(input));
-			PutObjectRequest.Builder putObjectRequestBuilder = PutObjectRequest.builder()
-				.bucket(bucket)
-				.key(externalFileName)
-				.contentType(externalFileName.endsWith(".tmp") ? "image/jpeg" : null);
-			if (endpointUrl.contains(".amazonaws.com"))
-				putObjectRequestBuilder = putObjectRequestBuilder.acl(internalToAWSACL(acl));
-			PutObjectRequest putObjectRequest = putObjectRequestBuilder.build();
-
-			PutObjectResponse response = client.putObject(putObjectRequest, RequestBody.fromByteBuffer(byteBuffer));
-			if (!response.sdkHttpResponse().isSuccessful()) {
-				logger.error("Error while uploading file: " + response.sdkHttpResponse().statusText().orElse("Unknown error"));
-			}
-
-			return getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
-		} catch (IOException ex) {
-			logger.error("Error while uploading file to the external provider.", ex);
-			return "";
-		}
+		return objectOwnershipEnabled ?
+			uploadWithACL(externalFileName, input, acl) :
+			uploadWithoutACL(externalFileName, input);
 	}
 
 	public String get(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
@@ -306,41 +261,9 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 	}
 
 	private String getResourceUrl(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
-		if (internalToAWSACL(acl) == ObjectCannedACL.PRIVATE) {
-			expirationMinutes = expirationMinutes > 0 ? expirationMinutes : defaultExpirationMinutes;
-			Instant expiration = Instant.now().plus(Duration.ofMinutes(expirationMinutes));
-
-			GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-				.bucket(bucket)
-				.key(externalFileName)
-				.build();
-
-			PresignedGetObjectRequest presignedGetObjectRequest =
-				presigner.presignGetObject(r -> r.signatureDuration(Duration.between(Instant.now(), expiration))
-					.getObjectRequest(getObjectRequest));
-
-			return presignedGetObjectRequest.url().toString();
-		} else {
-			try {
-				int lastIndex = Math.max(externalFileName.lastIndexOf('/'), externalFileName.lastIndexOf('\\'));
-				String path = externalFileName.substring(0, lastIndex + 1);
-				String fileName = externalFileName.substring(lastIndex + 1);
-				String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString());
-
-				String url = String.format(
-					"https://%s.s3.%s.amazonaws.com/%s%s",
-					bucket,
-					clientRegion,
-					path,
-					encodedFileName
-				);
-
-				return url;
-			} catch (UnsupportedEncodingException uee) {
-				logger.error("Failed to encode resource URL for " + externalFileName, uee);
-				return "";
-			}
-		}
+		return objectOwnershipEnabled ?
+			getResourceUrlWithACL(externalFileName, acl, expirationMinutes) :
+			getResourceUrlWithoutACL(externalFileName, expirationMinutes);
 	}
 
 	public void delete(String objectName, ResourceAccessControlList acl) {
@@ -358,50 +281,15 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 	}
 
 	public String copy(String objectName, String newName, ResourceAccessControlList acl) {
-		CopyObjectRequest.Builder requestBuilder = CopyObjectRequest.builder()
-			.sourceBucket(bucket)
-			.sourceKey(objectName)
-			.destinationBucket(bucket)
-			.destinationKey(newName);
-		if (endpointUrl.contains(".amazonaws.com"))
-			requestBuilder = requestBuilder.acl(internalToAWSACL(acl));
-		CopyObjectRequest request = requestBuilder.build();
-		client.copyObject(request);
-		return getResourceUrl(newName, acl, defaultExpirationMinutes);
+		return objectOwnershipEnabled ?
+			copyWithACL(objectName, newName, acl) :
+			copyWithoutACL(objectName, newName);
 	}
 
 	public String copy(String objectUrl, String newName, String tableName, String fieldName, ResourceAccessControlList acl) {
-		String resourceFolderName = buildPath(folder, tableName, fieldName);
-		String resourceKey = resourceFolderName + StorageUtils.DELIMITER + newName;
-
-		try {
-			objectUrl = new URI(objectUrl).getPath();
-		} catch (Exception e) {
-			logger.error("Failed to Parse Storage Object URI for Copy operation", e);
-		}
-
-		Map<String, String> metadata = new HashMap<>();
-		metadata.put("Table", tableName);
-		metadata.put("Field", fieldName);
-		metadata.put("KeyValue", StorageUtils.encodeNonAsciiCharacters(resourceKey));
-
-		GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-			.bucket(bucket)
-			.key(objectUrl)
-			.build();
-		ResponseBytes<GetObjectResponse> objectBytes = client.getObjectAsBytes(getObjectRequest);
-
-		PutObjectRequest.Builder putObjectRequestBuilder = PutObjectRequest.builder()
-			.bucket(bucket)
-			.key(resourceKey)
-			.metadata(metadata)
-			.contentType(getContentType(newName));
-		if (endpointUrl.contains(".amazonaws.com"))
-			putObjectRequestBuilder = putObjectRequestBuilder.acl(internalToAWSACL(acl));
-		PutObjectRequest putObjectRequest = putObjectRequestBuilder.build();
-		client.putObject(putObjectRequest, RequestBody.fromBytes(objectBytes.asByteArray()));
-
-		return getResourceUrl(resourceKey, acl, defaultExpirationMinutes);
+		return objectOwnershipEnabled ?
+			copyWithACL(objectUrl, newName, tableName, fieldName, acl) :
+			copyWithoutACL(objectUrl, newName, tableName, fieldName);
 	}
 
 	private String getContentType(String fileName) {
@@ -425,45 +313,45 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 	}
 
 	private static Map<String, String> contentTypes  = new HashMap<String, String>() {{
-			put("txt" 	, "text/plain");
-			put("rtx" 	, "text/richtext");
-			put("htm" 	, "text/html");
-			put("html" , "text/html");
-			put("xml" 	, "text/xml");
-			put("aif"	, "audio/x-aiff");
-			put("au"	, "audio/basic");
-			put("wav"	, "audio/wav");
-			put("bmp"	, "image/bmp");
-			put("gif"	, "image/gif");
-			put("jpe"	, "image/jpeg");
-			put("jpeg"	, "image/jpeg");
-			put("jpg"	, "image/jpeg");
-			put("jfif"	, "image/pjpeg");
-			put("tif"	, "image/tiff");
-			put("tiff"	, "image/tiff");
-			put("png"	, "image/x-png");
-			put("3gp"	, "video/3gpp");
-			put("3g2"	, "video/3gpp2");
-			put("mpg"	, "video/mpeg");
-			put("mpeg"	, "video/mpeg");
-			put("mov"	, "video/quicktime");
-			put("qt"	, "video/quicktime");
-			put("avi"	, "video/x-msvideo");
-			put("exe"	, "application/octet-stream");
-			put("dll"	, "application/x-msdownload");
-			put("ps"	, "application/postscript");
-			put("pdf"	, "application/pdf");
-			put("svg"	, "image/svg+xml");
-			put("tgz"	, "application/x-compressed");
-			put("zip"	, "application/x-zip-compressed");
-			put("gz"	, "application/x-gzip");
-			put("json"	, "application/json");
+		put("txt" 	, "text/plain");
+		put("rtx" 	, "text/richtext");
+		put("htm" 	, "text/html");
+		put("html" , "text/html");
+		put("xml" 	, "text/xml");
+		put("aif"	, "audio/x-aiff");
+		put("au"	, "audio/basic");
+		put("wav"	, "audio/wav");
+		put("bmp"	, "image/bmp");
+		put("gif"	, "image/gif");
+		put("jpe"	, "image/jpeg");
+		put("jpeg"	, "image/jpeg");
+		put("jpg"	, "image/jpeg");
+		put("jfif"	, "image/pjpeg");
+		put("tif"	, "image/tiff");
+		put("tiff"	, "image/tiff");
+		put("png"	, "image/x-png");
+		put("3gp"	, "video/3gpp");
+		put("3g2"	, "video/3gpp2");
+		put("mpg"	, "video/mpeg");
+		put("mpeg"	, "video/mpeg");
+		put("mov"	, "video/quicktime");
+		put("qt"	, "video/quicktime");
+		put("avi"	, "video/x-msvideo");
+		put("exe"	, "application/octet-stream");
+		put("dll"	, "application/x-msdownload");
+		put("ps"	, "application/postscript");
+		put("pdf"	, "application/pdf");
+		put("svg"	, "image/svg+xml");
+		put("tgz"	, "application/x-compressed");
+		put("zip"	, "application/x-zip-compressed");
+		put("gz"	, "application/x-gzip");
+		put("json"	, "application/json");
 	}};
 
 	private String buildPath(String... pathPart) {
 		ArrayList<String> pathParts = new ArrayList<>();
 		for (String part : pathPart) {
-			if (part.length() > 0) {
+			if (!part.isEmpty()) {
 				pathParts.add(part);
 			}
 		}
@@ -681,6 +569,263 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 		return (!pathStyleUrls) ?
 			"https://" + bucket + ".s3.amazonaws.com/" :
 			".s3.amazonaws.com//" + bucket + "/";
+	}
+
+	// With ACL implementation
+
+	private String uploadWithACL(String localFile, String externalFileName, ResourceAccessControlList acl) {
+		client.putObject(PutObjectRequest.builder()
+				.bucket(bucket)
+				.key(externalFileName)
+				.build(),
+			RequestBody.fromFile(Paths.get(localFile)));
+		if (endpointUrl.contains(".amazonaws.com"))
+			client.putObjectAcl(PutObjectAclRequest.builder()
+				.bucket(bucket)
+				.key(externalFileName)
+				.acl(internalToAWSACLWithACL(acl))
+				.build());
+		return getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
+	}
+
+	private ObjectCannedACL internalToAWSACLWithACL(ResourceAccessControlList acl) {
+		if (acl == ResourceAccessControlList.Default)
+			acl = this.defaultAcl;
+
+		ObjectCannedACL accessControl = ObjectCannedACL.PRIVATE;
+		if (acl == ResourceAccessControlList.Private)
+			accessControl = ObjectCannedACL.PRIVATE;
+		else if (acl == ResourceAccessControlList.PublicRead)
+			accessControl = ObjectCannedACL.PUBLIC_READ;
+		else if (acl == ResourceAccessControlList.PublicReadWrite)
+			accessControl = ObjectCannedACL.PUBLIC_READ_WRITE;
+		return accessControl;
+	}
+
+	private String uploadWithACL(String externalFileName, InputStream input, ResourceAccessControlList acl) {
+		try {
+			ByteBuffer byteBuffer = ByteBuffer.wrap(IoUtils.toByteArray(input));
+			PutObjectRequest.Builder putObjectRequestBuilder = PutObjectRequest.builder()
+				.bucket(bucket)
+				.key(externalFileName)
+				.contentType(externalFileName.endsWith(".tmp") ? "image/jpeg" : null);
+			if (endpointUrl.contains(".amazonaws.com"))
+				putObjectRequestBuilder = putObjectRequestBuilder.acl(internalToAWSACLWithACL(acl));
+			PutObjectRequest putObjectRequest = putObjectRequestBuilder.build();
+
+			PutObjectResponse response = client.putObject(putObjectRequest, RequestBody.fromByteBuffer(byteBuffer));
+			if (!response.sdkHttpResponse().isSuccessful()) {
+				logger.error("Error while uploading file: " + response.sdkHttpResponse().statusText().orElse("Unknown error"));
+			}
+
+			return getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
+		} catch (IOException ex) {
+			logger.error("Error while uploading file to the external provider.", ex);
+			return "";
+		}
+	}
+
+	private String getResourceUrlWithACL(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
+		if (internalToAWSACLWithACL(acl) == ObjectCannedACL.PRIVATE) {
+			expirationMinutes = expirationMinutes > 0 ? expirationMinutes : defaultExpirationMinutes;
+			Instant expiration = Instant.now().plus(Duration.ofMinutes(expirationMinutes));
+
+			GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+				.bucket(bucket)
+				.key(externalFileName)
+				.build();
+
+			PresignedGetObjectRequest presignedGetObjectRequest =
+				presigner.presignGetObject(r -> r.signatureDuration(Duration.between(Instant.now(), expiration))
+					.getObjectRequest(getObjectRequest));
+
+			return presignedGetObjectRequest.url().toString();
+		} else {
+			try {
+				int lastIndex = Math.max(externalFileName.lastIndexOf('/'), externalFileName.lastIndexOf('\\'));
+				String path = externalFileName.substring(0, lastIndex + 1);
+				String fileName = externalFileName.substring(lastIndex + 1);
+				String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString());
+
+				String url = String.format(
+					"https://%s.s3.%s.amazonaws.com/%s%s",
+					bucket,
+					clientRegion,
+					path,
+					encodedFileName
+				);
+
+				return url;
+			} catch (UnsupportedEncodingException uee) {
+				logger.error("Failed to encode resource URL for " + externalFileName, uee);
+				return "";
+			}
+		}
+	}
+
+	private String copyWithACL(String objectName, String newName, ResourceAccessControlList acl) {
+		CopyObjectRequest.Builder requestBuilder = CopyObjectRequest.builder()
+			.sourceBucket(bucket)
+			.sourceKey(objectName)
+			.destinationBucket(bucket)
+			.destinationKey(newName);
+		if (endpointUrl.contains(".amazonaws.com"))
+			requestBuilder = requestBuilder.acl(internalToAWSACLWithACL(acl));
+		CopyObjectRequest request = requestBuilder.build();
+		client.copyObject(request);
+		return getResourceUrl(newName, acl, defaultExpirationMinutes);
+	}
+
+	private String copyWithACL(String objectUrl, String newName, String tableName, String fieldName, ResourceAccessControlList acl) {
+		String resourceFolderName = buildPath(folder, tableName, fieldName);
+		String resourceKey = resourceFolderName + StorageUtils.DELIMITER + newName;
+
+		try {
+			objectUrl = new URI(objectUrl).getPath();
+		} catch (Exception e) {
+			logger.error("Failed to Parse Storage Object URI for Copy operation", e);
+		}
+
+		Map<String, String> metadata = new HashMap<>();
+		metadata.put("Table", tableName);
+		metadata.put("Field", fieldName);
+		metadata.put("KeyValue", StorageUtils.encodeNonAsciiCharacters(resourceKey));
+
+		GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+			.bucket(bucket)
+			.key(objectUrl)
+			.build();
+		ResponseBytes<GetObjectResponse> objectBytes = client.getObjectAsBytes(getObjectRequest);
+
+		PutObjectRequest.Builder putObjectRequestBuilder = PutObjectRequest.builder()
+			.bucket(bucket)
+			.key(resourceKey)
+			.metadata(metadata)
+			.contentType(getContentType(newName));
+		if (endpointUrl.contains(".amazonaws.com"))
+			putObjectRequestBuilder = putObjectRequestBuilder.acl(internalToAWSACLWithACL(acl));
+		PutObjectRequest putObjectRequest = putObjectRequestBuilder.build();
+		client.putObject(putObjectRequest, RequestBody.fromBytes(objectBytes.asByteArray()));
+
+		return getResourceUrl(resourceKey, acl, defaultExpirationMinutes);
+	}
+
+	// Without ACL implementation
+
+	private enum BucketPrivacy {PRIVATE, PUBLIC};
+	private final BucketPrivacy ownerEnforcedBucketPrivacy = getPropertyValue(DEFAULT_ACL, DEFAULT_STORAGE_PRIVACY, "").contains(bucketOwnerEnforced) ?
+		(getPropertyValue(DEFAULT_ACL, DEFAULT_STORAGE_PRIVACY, "").contains("private") ? BucketPrivacy.PRIVATE : BucketPrivacy.PUBLIC)
+		: null;
+
+	private String uploadWithoutACL(String localFile, String externalFileName) {
+		client.putObject(PutObjectRequest.builder()
+				.bucket(bucket)
+				.key(externalFileName)
+				.build(),
+			RequestBody.fromFile(Paths.get(localFile)));
+		return getResourceUrlWithoutACL(externalFileName, defaultExpirationMinutes);
+	}
+
+	private String uploadWithoutACL(String externalFileName, InputStream input) {
+		try {
+			ByteBuffer byteBuffer = ByteBuffer.wrap(IoUtils.toByteArray(input));
+			PutObjectRequest.Builder putObjectRequestBuilder = PutObjectRequest.builder()
+				.bucket(bucket)
+				.key(externalFileName)
+				.contentType(externalFileName.endsWith(".tmp") ? "image/jpeg" : null);
+			PutObjectRequest putObjectRequest = putObjectRequestBuilder.build();
+
+			PutObjectResponse response = client.putObject(putObjectRequest, RequestBody.fromByteBuffer(byteBuffer));
+			if (!response.sdkHttpResponse().isSuccessful()) {
+				logger.error("Error while uploading file: " + response.sdkHttpResponse().statusText().orElse("Unknown error"));
+			}
+
+			return getResourceUrlWithoutACL(externalFileName, defaultExpirationMinutes);
+		} catch (IOException ex) {
+			logger.error("Error while uploading file to the external provider.", ex);
+			return "";
+		}
+	}
+
+	private String getResourceUrlWithoutACL(String externalFileName, int expirationMinutes) {
+		if (ownerEnforcedBucketPrivacy == BucketPrivacy.PRIVATE) {
+			expirationMinutes = expirationMinutes > 0 ? expirationMinutes : defaultExpirationMinutes;
+			Instant expiration = Instant.now().plus(Duration.ofMinutes(expirationMinutes));
+
+			GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+				.bucket(bucket)
+				.key(externalFileName)
+				.build();
+
+			PresignedGetObjectRequest presignedGetObjectRequest =
+				presigner.presignGetObject(r -> r.signatureDuration(Duration.between(Instant.now(), expiration))
+					.getObjectRequest(getObjectRequest));
+
+			return presignedGetObjectRequest.url().toString();
+		} else if (ownerEnforcedBucketPrivacy == BucketPrivacy.PUBLIC){
+			try {
+				int lastIndex = Math.max(externalFileName.lastIndexOf('/'), externalFileName.lastIndexOf('\\'));
+				String path = externalFileName.substring(0, lastIndex + 1);
+				String fileName = externalFileName.substring(lastIndex + 1);
+				String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString());
+
+				String url = String.format(
+					"https://%s.s3.%s.amazonaws.com/%s%s",
+					bucket,
+					clientRegion,
+					path,
+					encodedFileName
+				);
+
+				return url;
+			} catch (UnsupportedEncodingException uee) {
+				logger.error("Failed to encode resource URL for {}", externalFileName, uee);
+				return "";
+			}
+		} else return "";
+	}
+
+	private String copyWithoutACL(String objectName, String newName) {
+		CopyObjectRequest.Builder requestBuilder = CopyObjectRequest.builder()
+			.sourceBucket(bucket)
+			.sourceKey(objectName)
+			.destinationBucket(bucket)
+			.destinationKey(newName);
+		CopyObjectRequest request = requestBuilder.build();
+		client.copyObject(request);
+		return getResourceUrlWithoutACL(newName, defaultExpirationMinutes);
+	}
+
+	private String copyWithoutACL(String objectUrl, String newName, String tableName, String fieldName) {
+		String resourceFolderName = buildPath(folder, tableName, fieldName);
+		String resourceKey = resourceFolderName + StorageUtils.DELIMITER + newName;
+
+		try {
+			objectUrl = new URI(objectUrl).getPath();
+		} catch (Exception e) {
+			logger.error("Failed to Parse Storage Object URI for Copy operation", e);
+		}
+
+		Map<String, String> metadata = new HashMap<>();
+		metadata.put("Table", tableName);
+		metadata.put("Field", fieldName);
+		metadata.put("KeyValue", StorageUtils.encodeNonAsciiCharacters(resourceKey));
+
+		GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+			.bucket(bucket)
+			.key(objectUrl)
+			.build();
+		ResponseBytes<GetObjectResponse> objectBytes = client.getObjectAsBytes(getObjectRequest);
+
+		PutObjectRequest.Builder putObjectRequestBuilder = PutObjectRequest.builder()
+			.bucket(bucket)
+			.key(resourceKey)
+			.metadata(metadata)
+			.contentType(getContentType(newName));
+		PutObjectRequest putObjectRequest = putObjectRequestBuilder.build();
+		client.putObject(putObjectRequest, RequestBody.fromBytes(objectBytes.asByteArray()));
+
+		return getResourceUrlWithoutACL(resourceKey, defaultExpirationMinutes);
 	}
 }
 

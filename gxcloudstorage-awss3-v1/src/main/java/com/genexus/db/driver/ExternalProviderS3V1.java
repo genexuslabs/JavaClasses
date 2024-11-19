@@ -8,7 +8,6 @@ import com.amazonaws.services.s3.S3ClientOptions;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import com.amazonaws.HttpMethod;
-import com.genexus.Application;
 import com.genexus.util.GXService;
 import com.genexus.util.StorageUtils;
 import com.genexus.StructSdtMessages_Message;
@@ -28,6 +27,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
 
 public class ExternalProviderS3V1 extends ExternalProviderBase implements ExternalProvider  {
 	private static Logger logger = LogManager.getLogger(ExternalProviderS3V1.class);
@@ -72,10 +72,6 @@ public class ExternalProviderS3V1 extends ExternalProviderBase implements Extern
 
 	public String getName(){
 		return NAME;
-	}
-
-	public ExternalProviderS3V1(String service) throws Exception{
-		this(Application.getGXServices().get(service));
 	}
 
 	public ExternalProviderS3V1() throws Exception{

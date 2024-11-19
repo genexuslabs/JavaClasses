@@ -27,7 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import com.genexus.json.JSONObjectWrapper;
 import org.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 class DataIntegrityException extends Exception
 {
