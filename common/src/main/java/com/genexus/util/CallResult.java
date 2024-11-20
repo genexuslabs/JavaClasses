@@ -24,7 +24,7 @@ public class CallResult {
 	public void addMessage(SdtMessages_Message message) {
 		messages.add(message);
 	}
-	public GXBaseCollection<SdtMessages_Message> getmessages() {
+	public GXBaseCollection<SdtMessages_Message> getMessages() {
 		return messages;
 	}
 }
