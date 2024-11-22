@@ -188,6 +188,6 @@ jobs:
     if: github.repository_owner == 'genexuslabs' && needs.build.outputs.SHOULD_DEPLOY == 'true'
     with: 
       VERSION: ${{ needs.build.outputs.MAVEN_VERSION }}
-      COMMIT_MESSAGE: ${{ needs.build.outputs.COMMIT_MESSAGE }}
+      PACKAGE_NAMES: ${{ needs.build.outputs.PACKAGES_NAME }}
       COMMITTER: ${{ needs.build.outputs.LAST_COMMITTER }}
     secrets: inherit
