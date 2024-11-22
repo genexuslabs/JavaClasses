@@ -1,15 +1,15 @@
 package com.genexus.assistant;
 
-import com.genexus.*;
+import com.genexus.GXProcedure;
+import com.genexus.ModelContext;
 import com.genexus.util.CallResult;
 import com.genexus.util.saia.OpenAIResponse;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public final  class Assistant extends GXProcedure
 {
-	public Assistant( int remoteHandle )
+	public Assistant(int remoteHandle )
 	{
 		super( remoteHandle , new ModelContext( Assistant.class ), "" );
 	}
@@ -34,9 +34,8 @@ public final  class Assistant extends GXProcedure
 	protected void privateExecute( )
 	{
 		Gxproperties = new com.genexus.util.GXProperties();
-		List<OpenAIResponse.Message> messages = null;
+		ArrayList messages = new ArrayList();;
 		if (AV3Parameter1.equals("chat")) {
-			messages = new ArrayList<>();
 			OpenAIResponse.Message message = new OpenAIResponse.Message();
 			message.setRole("user");
 			message.setContent("Dime el clima en Lima - Peru");
@@ -55,7 +54,7 @@ public final  class Assistant extends GXProcedure
 			Gxproperties.set("&Parameter2", AV4Parameter2);
 			Gxproperties.set("$context", "Los Angeles");
 		}
-		AV5OutputVariable = callAssistant( "The weatherman", Gxproperties, messages, new CallResult()) ;
+		AV5OutputVariable = callAgent( "The weatherman", Gxproperties, messages, new CallResult()) ;
 		cleanup();
 	}
 
