@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.genexus.util.GXProperty;
 
-import java.util.List;
+import java.util.ArrayList;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -15,13 +15,13 @@ public class OpenAIRequest {
 	private String model;
 
 	@JsonProperty("messages")
-	private List<OpenAIResponse.Message> messages;
+	private ArrayList<OpenAIResponse.Message> messages;
 
 	@JsonProperty("prompt")
 	private String prompt;
 
 	@JsonProperty("input")
-	private List<String> input;
+	private ArrayList<String> input;
 
 	@JsonProperty("max_tokens")
 	private Integer maxTokens;
@@ -33,7 +33,7 @@ public class OpenAIRequest {
 	private Boolean stream;
 
 	@JsonProperty("stop")
-	private List<String> stop;
+	private ArrayList<String> stop;
 
 	@JsonProperty("presence_penalty")
 	private Double presencePenalty;
@@ -45,7 +45,7 @@ public class OpenAIRequest {
 	private String user;
 
 	@JsonProperty("variables")
-	private List<GXProperty> variables;
+	private ArrayList<GXProperty> variables;
 
 	@JsonProperty("dimensions")
 	private int dimension;
@@ -53,14 +53,14 @@ public class OpenAIRequest {
 	public String getModel() { return model; }
 	public void setModel(String model) { this.model = model; }
 
-	public List<OpenAIResponse.Message> getMessages() { return messages; }
-	public void setMessages(List<OpenAIResponse.Message> messages) { this.messages = messages; }
+	public ArrayList<OpenAIResponse.Message> getMessages() { return messages; }
+	public void setMessages(ArrayList<OpenAIResponse.Message> messages) { this.messages = messages; }
 
 	public String getPrompt() { return prompt; }
 	public void setPrompt(String prompt) { this.prompt = prompt; }
 
-	public List<String> getInput() { return input; }
-	public void setInput(List<String> input) { this.input = input; }
+	public ArrayList<String> getInput() { return input; }
+	public void setInput(ArrayList<String> input) { this.input = input; }
 
 	public Integer getMaxTokens() { return maxTokens; }
 	public void setMaxTokens(Integer maxTokens) { this.maxTokens = maxTokens; }
@@ -71,8 +71,8 @@ public class OpenAIRequest {
 	public Boolean getStream() { return stream; }
 	public void setStream(Boolean stream) { this.stream = stream; }
 
-	public List<String> getStop() { return stop; }
-	public void setStop(List<String> stop) { this.stop = stop; }
+	public ArrayList<String> getStop() { return stop; }
+	public void setStop(ArrayList<String> stop) { this.stop = stop; }
 
 	public Double getPresencePenalty() { return presencePenalty; }
 	public void setPresencePenalty(Double presencePenalty) { this.presencePenalty = presencePenalty; }
@@ -83,8 +83,8 @@ public class OpenAIRequest {
 	public String getUser() { return user; }
 	public void setUser(String user) { this.user = user; }
 
-	public List<GXProperty> getVariables() { return variables; }
-	public void setVariables(List<GXProperty> variables) { this.variables = variables; }
+	public ArrayList<GXProperty> getVariables() { return variables; }
+	public void setVariables(ArrayList<GXProperty> variables) { this.variables = variables; }
 
 	public int getDimension() { return dimension; }
 	public void setDimension(int dimension) { this.dimension = dimension; }

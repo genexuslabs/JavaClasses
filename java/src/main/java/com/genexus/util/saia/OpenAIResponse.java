@@ -2,7 +2,8 @@ package com.genexus.util.saia;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
+
+import java.util.ArrayList;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OpenAIResponse {
@@ -17,16 +18,16 @@ public class OpenAIResponse {
 	private long created;
 
 	@JsonProperty("choices")
-	private List<Choice> choices;
+	private ArrayList<Choice> choices;
 
 	@JsonProperty("usage")
 	private Usage usage;
 
 	@JsonProperty("tool_calls")
-	private List<Message> tool_calls;
+	private ArrayList<Message> tool_calls;
 
 	@JsonProperty("data")
-	private List<DataItem> data;
+	private ArrayList<DataItem> data;
 
 	public String getId() { return id; }
 	public void setId(String id) { this.id = id; }
@@ -37,17 +38,17 @@ public class OpenAIResponse {
 	public long getCreated() { return created; }
 	public void setCreated(long created) { this.created = created; }
 
-	public List<Choice> getChoices() { return choices; }
-	public void setChoices(List<Choice> choices) { this.choices = choices; }
+	public ArrayList<Choice> getChoices() { return choices; }
+	public void setChoices(ArrayList<Choice> choices) { this.choices = choices; }
 
 	public Usage getUsage() { return usage; }
 	public void setUsage(Usage usage) { this.usage = usage; }
 
-	public List<Message> getToolCalls() { return tool_calls; }
-	public void setToolCalls(List<Message> tool_calls) { this.tool_calls = tool_calls; }
+	public ArrayList<Message> getToolCalls() { return tool_calls; }
+	public void setToolCalls(ArrayList<Message> tool_calls) { this.tool_calls = tool_calls; }
 
-	public List<DataItem> getData() { return data; }
-	public void setData(List<DataItem> data) { this.data = data; }
+	public ArrayList<DataItem> getData() { return data; }
+	public void setData(ArrayList<DataItem> data) { this.data = data; }
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static class Choice {
@@ -81,7 +82,7 @@ public class OpenAIResponse {
 		private String content;
 
 		@JsonProperty("tool_calls")
-		private List<ToolCall> toolCalls;
+		private ArrayList<ToolCall> toolCalls;
 
 		@JsonProperty("tool_call_id")
 		private String toolCallId;
@@ -92,8 +93,8 @@ public class OpenAIResponse {
 		public String getContent() { return content; }
 		public void setContent(String content) { this.content = content; }
 
-		public List<ToolCall> getToolCalls() { return toolCalls; }
-		public void setToolCalls(List<ToolCall> toolCalls) { this.toolCalls = toolCalls; }
+		public ArrayList<ToolCall> getToolCalls() { return toolCalls; }
+		public void setToolCalls(ArrayList<ToolCall> toolCalls) { this.toolCalls = toolCalls; }
 
 		public String getToolCallId() { return toolCallId; }
 		public void setToolCallId(String toolCallId) { this.toolCallId = toolCallId; }
@@ -169,7 +170,7 @@ public class OpenAIResponse {
 		private String object;
 
 		@JsonProperty("embedding")
-		private List<Double> embedding;
+		private ArrayList<Double> embedding;
 
 		public String getId() { return id; }
 		public void setId(String id) { this.id = id; }
@@ -177,7 +178,7 @@ public class OpenAIResponse {
 		public String getObject() { return object; }
 		public void setObject(String object) { this.object = object; }
 
-		public List<Double> getEmbedding() { return embedding; }
-		public void setEmbedding(List<Double> embedding) { this.embedding = embedding; }
+		public ArrayList<Double> getEmbedding() { return embedding; }
+		public void setEmbedding(ArrayList<Double> embedding) { this.embedding = embedding; }
 	}
 }
