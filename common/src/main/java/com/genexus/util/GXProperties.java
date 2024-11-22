@@ -116,8 +116,8 @@ public class GXProperties implements IGxJSONSerializable {
 		return jObj.toString();
 	}
 
-	public List<GXProperty> getList() {
-		List<GXProperty> list = new ArrayList<>();
+	public ArrayList<GXProperty> getList() {
+		ArrayList<GXProperty> list = new ArrayList<>();
 		int i = 0;
 		while (count() > i) {
 			list.add(item(i));

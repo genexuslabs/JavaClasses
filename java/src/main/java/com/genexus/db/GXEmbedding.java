@@ -66,12 +66,12 @@ public class GXEmbedding {
 	}
 
 	public static List<Float> getEmbedding(String model, int dimensions, String input) {
-		List<String> inputList = new ArrayList<>();
+		ArrayList<String> inputList = new ArrayList<>();
 		inputList.add(input);
 		return getEmbedding(model, dimensions, inputList);
 	}
 
-	public static List<Float> getEmbedding(String model, int dimensions, List<String> inputList) {
+	public static List<Float> getEmbedding(String model, int dimensions, ArrayList<String> inputList) {
 		OpenAIRequest aiRequest = new OpenAIRequest();
 		aiRequest.setModel(model);
 		aiRequest.setInput(inputList);

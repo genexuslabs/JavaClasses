@@ -2,6 +2,7 @@
 package com.genexus;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -262,14 +263,14 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 		privateExecute( );
 	}
 
-	protected String callAssistant(String assistant, GXProperties properties, CallResult result) {
-		return callAssistant(assistant, properties, null, result);
+	protected String callAssistant(String agent, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result) {
+		return callAgent(agent, properties, messages, result);
 	}
 
-	protected String callAssistant(String assistant, GXProperties properties, List<OpenAIResponse.Message> messages, CallResult result) {
+	protected String callAgent(String agent, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result) {
 		OpenAIRequest aiRequest = new OpenAIRequest();
-		aiRequest.setModel(String.format("saia:agent:%s", assistant));
-		if (messages != null)
+		aiRequest.setModel(String.format("saia:agent:%s", agent));
+		if (!messages.isEmpty())
 			aiRequest.setMessages(messages);
 		aiRequest.setVariables(properties.getList());
 		OpenAIResponse aiResponse = SaiaService.call(aiRequest, result);
