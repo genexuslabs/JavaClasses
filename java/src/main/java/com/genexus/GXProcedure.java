@@ -4,7 +4,6 @@ package com.genexus;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import com.genexus.db.Namespace;
 import com.genexus.db.UserInformation;
@@ -263,6 +262,10 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 		privateExecute( );
 	}
 
+	protected String callTool(String name, String arguments) throws Exception {
+		return "";
+	}
+
 	protected String callAssistant(String agent, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result) {
 		return callAgent(agent, properties, messages, result);
 	}
@@ -276,10 +279,34 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 		OpenAIResponse aiResponse = SaiaService.call(aiRequest, result);
 		if (aiResponse != null) {
 			for (OpenAIResponse.Choice element : aiResponse.getChoices()) {
-				if (element.getFinishReason().equals("stop"))
+				String finishReason = element.getFinishReason();
+				if (finishReason.equals("stop"))
 					return element.getMessage().getContent();
+				if (finishReason.equals("tool_calls")) {
+					messages.add(element.getMessage());
+					for (OpenAIResponse.ToolCall tollCall :element.getMessage().getToolCalls()) {
+						processToolCall(tollCall, messages);
+					}
+					return callAgent(agent, properties, messages, result);
+				}
 			}
 		}
 		return "";
+	}
+
+	private void processToolCall(OpenAIResponse.ToolCall toolCall, ArrayList<OpenAIResponse.Message> messages) {
+		String result;
+		String functionName = toolCall.getFunction().getName();
+		try {
+			result = callTool(functionName, toolCall.getFunction().getArguments());
+		}
+		catch (Exception e) {
+			result = String.format("Error calling tool %s", functionName);
+		}
+		OpenAIResponse.Message toolCallMessage = new OpenAIResponse.Message();
+		toolCallMessage.setRole("tool");
+		toolCallMessage.setContent(result);
+		toolCallMessage.setToolCallId(toolCall.getId());
+		messages.add(toolCallMessage);
 	}
 }

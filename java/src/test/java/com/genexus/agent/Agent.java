@@ -48,6 +48,15 @@ public final  class Agent extends GXProcedure
 			message.setContent("Que me puedes contar de la ciudad que te pedi el clima previamente?");
 			messages.add(message);
 		}
+		else if (AV3Parameter1.equals("toolcall")) {
+			OpenAIResponse.Message message = new OpenAIResponse.Message();
+			message.setRole("user");
+			message.setContent("Necesito nombre y descripcion del producto 1779");
+			messages.add(message);
+			AV5OutputVariable = callAgent( "ProductInfo", Gxproperties, messages, new CallResult()) ;
+			cleanup();
+			return;
+		}
 		else {
 			Gxproperties.set("&Parameter1", AV3Parameter1);
 			Gxproperties.set("&Parameter2", AV4Parameter2);
@@ -60,6 +69,17 @@ public final  class Agent extends GXProcedure
 	protected void cleanup( )
 	{
 		this.aP2[0] = AV5OutputVariable;
+	}
+
+	protected String callTool(String name, String arguments) throws Exception {
+		switch (name) {
+			case "GetProductName":
+				return "Televisor Panavox 80 pulgadas";
+			case "GetProductDescription":
+				return "Flor de Televisor el Panavox de 80 pulgadas";
+			default:
+				return String.format("Unknown function %s", name);
+		}
 	}
 
 	public void initialize( )
