@@ -3,7 +3,9 @@ import java.util.*;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
-import json.org.json.*;
+
+import org.json.JSONArray;
+
 import java.io.Serializable;
 
 public class GXNavigationHelper implements Serializable
