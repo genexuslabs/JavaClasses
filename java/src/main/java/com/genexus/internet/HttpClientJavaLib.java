@@ -13,8 +13,6 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.*;
 import java.net.URI;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.net.ssl.SSLContext;
 
 import org.apache.http.*;
@@ -95,7 +93,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 	@Override
 	protected void finalize() {
 		this.closeOpenedStreams();
-		executor.shutdown();
 	}
 
 	private ConnectionKeepAliveStrategy generateKeepAliveStrategy() {
@@ -617,9 +614,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 		finally {
 			if (Application.isJMXEnabled()){
-				if (executor.isShutdown())
-					executor = Executors.newSingleThreadExecutor();
-				executor.submit(this::displayHTTPConnections);
+				this.displayHTTPConnections();
 			}
 			if (getIsURL()) {
 				this.setHost(getPrevURLhost());
@@ -631,8 +626,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			resetStateAdapted();
 		}
 	}
-
-	private static ExecutorService executor = Executors.newSingleThreadExecutor();
+	
 	private synchronized void displayHTTPConnections(){
 		Iterator<HttpRoute> iterator = storedRoutes.iterator();
 		while (iterator.hasNext()) {
