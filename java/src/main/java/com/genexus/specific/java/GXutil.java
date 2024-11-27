@@ -13,8 +13,8 @@ import java.util.TimeZone;
 
 import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONException;
+import com.genexus.json.JSONObjectWrapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -202,7 +202,7 @@ public class GXutil implements IExtensionGXutil {
 		if (com.genexus.CommonUtil.isUploadPrefix(value) && CacheAPI.files().contains(uploadId)) {
 			String uploadValueJson = CacheAPI.files().get(uploadId);
 			try {
-				JSONObject json = new JSONObject(uploadValueJson);
+				JSONObjectWrapper json = new JSONObjectWrapper(uploadValueJson);
 				value = (String)json.get(fieldName);
 			}
 			catch (JSONException e) {

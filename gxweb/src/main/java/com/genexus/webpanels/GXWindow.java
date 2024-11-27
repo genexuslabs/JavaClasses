@@ -4,8 +4,7 @@ import com.genexus.internet.HttpAjaxContext;
 import com.genexus.internet.IGxJSONAble;
 import com.genexus.common.interfaces.IGXWindow;
 
-import json.org.json.IJsonFormattable;
-import json.org.json.JSONArray;
+import org.json.JSONArray;
 
 public class GXWindow implements IGxJSONAble, IGXWindow
 {
@@ -152,7 +151,7 @@ public class GXWindow implements IGxJSONAble, IGXWindow
         return jArr;
     }
 
-    public void FromJSONObject(IJsonFormattable obj)
+    public void FromJSONObject(Object obj)
     {
     }
 

@@ -4,8 +4,8 @@ import HTTPClient.ParseException;
 import HTTPClient.URI;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONException;
+import com.genexus.json.JSONObjectWrapper;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -807,7 +807,7 @@ public abstract class GXHttpClient implements IHttpClient{
 
 		private boolean isJsonString(String value){
 			try {
-				JSONObject json = new JSONObject(value);
+				JSONObjectWrapper json = new JSONObjectWrapper(value);
 				return true;
 			} catch (JSONException e) {
 				return false;
