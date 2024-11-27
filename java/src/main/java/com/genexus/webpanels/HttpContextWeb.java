@@ -34,8 +34,8 @@ import com.genexus.internet.MsgList;
 import com.genexus.util.Base64;
 import com.genexus.util.GXFile;
 
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONException;
+import com.genexus.json.JSONObjectWrapper;
 
 public class HttpContextWeb extends HttpContext {
 	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(HttpContextWeb.class);
@@ -352,7 +352,7 @@ public class HttpContextWeb extends HttpContext {
 		return false;
 	}
 
-	public void parseGXState(JSONObject tokenValues) {
+	public void parseGXState(JSONObjectWrapper tokenValues) {
 		try {
 			Iterator it = tokenValues.keys();
 			while (it.hasNext()) {
@@ -391,14 +391,14 @@ public class HttpContextWeb extends HttpContext {
 						if (useBase64ViewState()) {
 							decoded = new String(Base64.decode(decoded), "UTF8");
 						}
-						JSONObject tokenValues = null;
+						JSONObjectWrapper tokenValues = null;
 						try {
-							tokenValues = new JSONObject(decoded);
+							tokenValues = new JSONObjectWrapper(decoded);
 						} catch (JSONException jex) {
 							log.debug("GXState JSONObject error (1)", jex);
 							char c = 0;
 							decoded = decoded.replace(Character.toString(c), "");
-							tokenValues = new JSONObject(decoded);
+							tokenValues = new JSONObjectWrapper(decoded);
 						}
 						parseGXState(tokenValues);
 					} catch (Exception ex) {
@@ -1063,9 +1063,10 @@ public class HttpContextWeb extends HttpContext {
 		loadParameters(qs);
 	}
 
-	private String removeInternalParms(String query) {
+	private String removeInternalParm(String query, String parm) 
+	{
 		query = removeEventPrefix(query);
-		int idx = query.indexOf(GXNavigationHelper.POPUP_LEVEL);
+		int idx = query.indexOf(parm);
 		if (idx == 1)
 			return "";
 		if (idx > 1)
@@ -1076,6 +1077,11 @@ public class HttpContextWeb extends HttpContext {
 			query = query.substring(0, idx);
 		}
 		return query;
+	}
+
+	private String removeInternalParms(String query) {
+		query = removeInternalParm( query, GXNavigationHelper.POPUP_LEVEL);
+		return removeInternalParm( query, GXNavigationHelper.TAB_ID);
 	}
 
 	public String getQueryString() {

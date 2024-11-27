@@ -8,8 +8,6 @@ import java.util.Collections;
 
 import com.genexus.diagnostics.Log;
 
-import json.org.json.JSONObject;
-
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
 import org.springframework.core.io.ClassPathResource;
