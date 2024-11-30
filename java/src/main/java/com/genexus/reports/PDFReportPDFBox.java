@@ -28,7 +28,6 @@ import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.*;
-import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.graphics.state.RenderingMode;
@@ -61,6 +60,8 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	ConcurrentHashMap<String, PDImageXObject> documentImages;
 	public int runDirection = 0;
 	private int page;
+	private PDPageContentStream auxContentStream;
+	private boolean useAuxContentStream;
 
 	private final float DEFAULT_PDFBOX_LEADING = 1.2f;
 
@@ -228,41 +229,41 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 
 	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue,
 						   int styleTop, int styleBottom, int styleRight, int styleLeft, int cornerRadioTL, int cornerRadioTR, int cornerRadioBL, int cornerRadioBR) {
-		try (PDPageContentStream cb = getNewPDPageContentStream()){
-
-			float penAux = (float)convertScale(pen);
-			float rightAux = (float)convertScale(right);
-			float bottomAux = (float)convertScale(bottom);
-			float leftAux = (float)convertScale(left);
-			float topAux = (float)convertScale(top);
+		PDPageContentStream cb = null;
+		try{
+			cb = useAuxContentStream ? auxContentStream : getNewPDPageContentStream();
+			float penAux = (float) convertScale(pen);
+			float rightAux = (float) convertScale(right);
+			float bottomAux = (float) convertScale(bottom);
+			float leftAux = (float) convertScale(left);
+			float topAux = (float) convertScale(top);
 
 			cb.saveGraphicsState();
 
 			float x1, y1, x2, y2;
 			x1 = leftAux + leftMargin;
-			y1 = pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin;
+			y1 = pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin;
 			x2 = rightAux + leftMargin;
-			y2 = pageSize.getUpperRightY() - topAux - topMargin -bottomMargin;
+			y2 = pageSize.getUpperRightY() - topAux - topMargin - bottomMargin;
 
 			cb.setLineWidth(penAux);
 			cb.setLineCapStyle(2);
 
-			if (cornerRadioBL==0 && cornerRadioBR==0 && cornerRadioTL==0 && cornerRadioTR==0 && styleBottom==0 && styleLeft==0 && styleRight==0 && styleTop==0) {
+			if (cornerRadioBL == 0 && cornerRadioBR == 0 && cornerRadioTL == 0 && cornerRadioTR == 0 && styleBottom == 0 && styleLeft == 0 && styleRight == 0 && styleTop == 0) {
 				if (pen > 0)
 					cb.setStrokingColor(foreRed, foreGreen, foreBlue);
 				else
-					cb.setStrokingColor (backRed, backGreen, backBlue);
+					cb.setStrokingColor(backRed, backGreen, backBlue);
 
 				cb.addRect(x1, y1, x2 - x1, y2 - y1);
 
-				if (backMode!=0) {
+				if (backMode != 0) {
 					cb.setNonStrokingColor(new Color(backRed, backGreen, backBlue));
 					cb.fillAndStroke();
 				}
 				cb.closePath();
 				cb.stroke();
-			}
-			else {
+			} else {
 				float w = x2 - x1;
 				float h = y2 - y1;
 				if (w < 0) {
@@ -274,18 +275,18 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					h = -h;
 				}
 
-				float cRadioTL = (float)convertScale(cornerRadioTL);
-				float cRadioTR = (float)convertScale(cornerRadioTR);
-				float cRadioBL = (float)convertScale(cornerRadioBL);
-				float cRadioBR = (float)convertScale(cornerRadioBR);
+				float cRadioTL = (float) convertScale(cornerRadioTL);
+				float cRadioTR = (float) convertScale(cornerRadioTR);
+				float cRadioBL = (float) convertScale(cornerRadioBL);
+				float cRadioBR = (float) convertScale(cornerRadioBR);
 
-				int max = (int)Math.min(w, h);
-				cRadioTL = Math.max(0, Math.min(cRadioTL, max/2));
-				cRadioTR = Math.max(0, Math.min(cRadioTR, max/2));
-				cRadioBL = Math.max(0, Math.min(cRadioBL, max/2));
-				cRadioBR = Math.max(0, Math.min(cRadioBR, max/2));
+				int max = (int) Math.min(w, h);
+				cRadioTL = Math.max(0, Math.min(cRadioTL, max / 2));
+				cRadioTR = Math.max(0, Math.min(cRadioTR, max / 2));
+				cRadioBL = Math.max(0, Math.min(cRadioBL, max / 2));
+				cRadioBR = Math.max(0, Math.min(cRadioBR, max / 2));
 
-				if (backMode!=0) {
+				if (backMode != 0) {
 					cb.setStrokingColor(backRed, backGreen, backBlue);
 					cb.setLineWidth(0);
 					roundRectangle(cb, x1, y1, w, h,
@@ -308,6 +309,15 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			log.debug("GxDrawRect -> (" + left + "," + top + ") - (" + right + "," + bottom + ")  BackMode: " + backMode + " Pen:" + pen);
 		} catch (Exception e) {
 			log.error("GxDrawRect failed: ", e);
+		} finally {
+			try {
+				if (cb != null && !useAuxContentStream)
+					cb.close();
+				else if (useAuxContentStream)
+					useAuxContentStream = false;
+			} catch (IOException ioe) {
+				log.error("Failed to close content stream", ioe);
+			}
 		}
 	}
 
@@ -574,6 +584,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			log.error("setAsianFont failed: ", e);
 		}
 	}
+
 	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border, int valign) {
 		PDPageContentStream cb =  null;
 		try {
@@ -583,6 +594,8 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				printRectangle = true;
 
 			if (printRectangle && (border == 1 || backFill)) {
+				auxContentStream = cb;
+				useAuxContentStream = true;
 				GxDrawRect(left, top, right, bottom, border, foreColor.getRed(), foreColor.getGreen(), foreColor.getBlue(), backFill ? 1 : 0, backColor.getRed(), backColor.getGreen(), backColor.getBlue(), 0, 0);
 			}
 
@@ -739,11 +752,9 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 							rectangle.setUpperRightY(this.pageSize.getUpperRightY() - topAux - topMargin -bottomMargin);
 							break;
 					}
-					PDPageContentStream contentStream = getNewPDPageContentStream();
-					contentStream.setNonStrokingColor(backColor);
-					contentStream.addRect(rectangle.getLowerLeftX(), rectangle.getLowerLeftY(),rectangle.getWidth(), rectangle.getHeight());
-					contentStream.fill();
-					contentStream.close();
+					cb.setNonStrokingColor(backColor);
+					cb.addRect(rectangle.getLowerLeftX(), rectangle.getLowerLeftY(),rectangle.getWidth(), rectangle.getHeight());
+					cb.fill();
 				}
 
 				float underlineSeparation = lineHeight / 5;
@@ -1075,6 +1086,8 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 
 	private void resolveTextStyling(PDPageContentStream contentStream, String text, float x, float y, boolean isWrapped){
 		try {
+			contentStream.setNonStrokingColor(foreColor);
+			contentStream.setRenderingMode(RenderingMode.FILL);
 			if (this.fontBold && this.fontItalic){
 				contentStream.setStrokingColor(foreColor);
 				contentStream.setLineWidth(fontSize * 0.05f);
