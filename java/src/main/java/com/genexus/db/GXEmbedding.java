@@ -20,6 +20,7 @@ public class GXEmbedding {
 	private List<Float> embedding;
 
 	public GXEmbedding() {
+		embedding = new ArrayList<>();
 	}
 
 	public GXEmbedding(String model, int dimensions) {
