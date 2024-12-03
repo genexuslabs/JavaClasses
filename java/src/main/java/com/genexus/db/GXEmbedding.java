@@ -10,6 +10,7 @@ import com.genexus.util.saia.SaiaService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,7 +27,7 @@ public class GXEmbedding {
 	public GXEmbedding(String model, int dimensions) {
 		this.model = model;
 		this.dimensions = dimensions;
-		embedding = new ArrayList<>(dimensions);
+		embedding = new ArrayList<>(Collections.nCopies(dimensions, 0.0f));
 	}
 
 	public GXEmbedding(Float[] embedding, String model, int dimensions) {
@@ -48,7 +49,8 @@ public class GXEmbedding {
 	}
 
 	public void setEmbedding(List<Float> embedding) {
-		this.embedding = embedding;
+		if (!embedding.isEmpty())
+			this.embedding = embedding;
 	}
 
 	public Float[] getFloatArray() {
@@ -67,6 +69,8 @@ public class GXEmbedding {
 	}
 
 	public static List<Float> getEmbedding(String model, int dimensions, String input) {
+		if (input.isEmpty())
+			return new ArrayList<>();
 		ArrayList<String> inputList = new ArrayList<>();
 		inputList.add(input);
 		return getEmbedding(model, dimensions, inputList);

@@ -1,6 +1,8 @@
 package com.genexus.embedding;
 
 import com.genexus.Application;
+import com.genexus.GXBaseCollection;
+import com.genexus.SdtMessages_Message;
 import com.genexus.db.GXEmbedding;
 import com.genexus.sampleapp.GXcfg;
 import com.genexus.specific.java.Connect;
@@ -23,5 +25,11 @@ public class GXEmbeddingTest {
 			.collect(Collectors.joining(","));
 		System.out.println("Embedding: " + result);
 		Assert.assertNotNull(embedding);
+
+		GXBaseCollection<SdtMessages_Message> AV8Messages = new GXBaseCollection<>();
+		GXEmbedding A7ProductEmbedding = new GXEmbedding("openai/text-embedding-3-small",512) ;
+		GXEmbedding AV9ProductEmbedding = GXEmbedding.generateEmbedding(A7ProductEmbedding, "", AV8Messages) ;
+		result = AV9ProductEmbedding.toString();
+		System.out.println("Empty Embedding: " + result);
 	}
 }
