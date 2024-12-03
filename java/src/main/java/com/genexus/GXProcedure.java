@@ -5,10 +5,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genexus.db.Namespace;
 import com.genexus.db.UserInformation;
 import com.genexus.diagnostics.GXDebugInfo;
 import com.genexus.diagnostics.GXDebugManager;
+import com.genexus.internet.HttpClient;
 import com.genexus.internet.HttpContext;
 import com.genexus.mock.GXMockProvider;
 import com.genexus.performance.ProcedureInfo;
@@ -17,6 +19,7 @@ import com.genexus.util.*;
 import com.genexus.util.saia.OpenAIRequest;
 import com.genexus.util.saia.OpenAIResponse;
 import com.genexus.util.saia.SaiaService;
+import org.json.JSONObject;
 
 public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 	public abstract void initialize();
@@ -32,7 +35,8 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
     UserInformation ui=null;
 	
 	private Date beginExecute; 
-	
+	private HttpClient client;
+
 	public static final int IN_NEW_UTL = -2;
 
 	public GXProcedure(int remoteHandle, ModelContext context, String location) {
@@ -271,12 +275,19 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 	}
 
 	protected String callAgent(String agent, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result) {
+		return callAgent(agent, false, properties, messages, result);
+	}
+
+	protected String callAgent(String agent, boolean stream, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result) {
 		OpenAIRequest aiRequest = new OpenAIRequest();
 		aiRequest.setModel(String.format("saia:agent:%s", agent));
 		if (!messages.isEmpty())
 			aiRequest.setMessages(messages);
 		aiRequest.setVariables(properties.getList());
-		OpenAIResponse aiResponse = SaiaService.call(aiRequest, result);
+		if (stream)
+			aiRequest.setStream(true);
+		client = new HttpClient();
+		OpenAIResponse aiResponse = SaiaService.call(aiRequest, client, result);
 		if (aiResponse != null) {
 			for (OpenAIResponse.Choice element : aiResponse.getChoices()) {
 				String finishReason = element.getFinishReason();
@@ -284,14 +295,20 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 					return element.getMessage().getContent();
 				if (finishReason.equals("tool_calls")) {
 					messages.add(element.getMessage());
-					for (OpenAIResponse.ToolCall tollCall :element.getMessage().getToolCalls()) {
-						processToolCall(tollCall, messages);
-					}
-					return callAgent(agent, properties, messages, result);
+					return processNotChunkedResponse(agent, stream, properties, messages, result, element.getMessage().getToolCalls());
 				}
 			}
+		} else if (client.getStatusCode() == 200) {
+			return readChunk(agent, properties, messages, result);
 		}
 		return "";
+	}
+
+	private String processNotChunkedResponse(String agent, boolean stream, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result, ArrayList<OpenAIResponse.ToolCall> toolCalls) {
+		for (OpenAIResponse.ToolCall tollCall : toolCalls) {
+			processToolCall(tollCall, messages);
+		}
+		return callAgent(agent, stream, properties, messages, result);
 	}
 
 	private void processToolCall(OpenAIResponse.ToolCall toolCall, ArrayList<OpenAIResponse.Message> messages) {
@@ -308,5 +325,37 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 		toolCallMessage.setContent(result);
 		toolCallMessage.setToolCallId(toolCall.getId());
 		messages.add(toolCallMessage);
+	}
+
+	protected String readChunk() {
+		return readChunk(null, null, null, null);
+	}
+
+	protected String readChunk(String agent, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result) {
+		String data = client.readChunk();
+		if (data.isEmpty())
+			return "";
+		int index = data.indexOf("data:") + "data:".length();
+		String chunkJson = data.substring(index).trim();
+		try {
+			JSONObject jsonResponse = new JSONObject(chunkJson);
+			OpenAIResponse chunkResponse = new ObjectMapper().readValue(jsonResponse.toString(), OpenAIResponse.class);
+			OpenAIResponse.Choice choise = chunkResponse.getChoices().get(0);
+			if (choise.getFinishReason() != null && choise.getFinishReason().equals("tool_calls") && agent != null) {
+				messages.add(choise.getMessage());
+				return processNotChunkedResponse(agent, true, properties, messages, result, choise.getMessage().getToolCalls());
+			}
+			String chunkString = choise.getDelta().getContent();
+			if (chunkString == null)
+				return "";
+			return chunkString;
+		}
+		catch (Exception e) {
+			return "";
+		}
+	}
+
+	protected boolean isStreamEOF() {
+		return client.getEof();
 	}
 }
