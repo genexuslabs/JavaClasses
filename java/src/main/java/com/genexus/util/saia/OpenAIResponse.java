@@ -59,6 +59,9 @@ public class OpenAIResponse {
 		@JsonProperty("message")
 		private Message message;
 
+		@JsonProperty("delta")
+		private Message delta;
+
 		@JsonProperty("finish_reason")
 		private String finishReason;
 
@@ -67,6 +70,9 @@ public class OpenAIResponse {
 
 		public Message getMessage() { return message; }
 		public void setMessage(Message message) { this.message = message; }
+
+		public Message getDelta() { return message; }
+		public void setDelta(Message message) { this.message = message; }
 
 		public String getFinishReason() { return finishReason; }
 		public void setFinishReason(String finishReason) { this.finishReason = finishReason; }

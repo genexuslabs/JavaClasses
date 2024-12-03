@@ -26,8 +26,15 @@ public class TestAgent {
 		new Agent(-1).execute( "chat", "", GXv_char5) ;
 		System.out.println(GXv_char5[0]);
 
+		String[] GXv_char8 = new String[1] ;
+		new Agent(-1).execute( "chat_stream", "", GXv_char8) ;
+
 		String[] GXv_char6 = new String[1] ;
 		new Agent(-1).execute( "toolcall", "", GXv_char6) ;
+		System.out.println();
 		System.out.println(GXv_char6[0]);
+
+		String[] GXv_char7 = new String[1] ;
+		new Agent(-1).execute( "toolcall_stream", "", GXv_char7) ;
 	}
 }
