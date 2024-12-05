@@ -4,6 +4,7 @@ import com.genexus.Application;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
+import com.genexus.servlet.CorsFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -50,6 +51,15 @@ public class GXConfig implements WebMvcConfigurer {
 			logger.error("Error setting context folders ", e);
 		}
 	}
+
+	@Bean
+	public FilterRegistrationBean<CorsFilter> corsFilter() {
+		FilterRegistrationBean<CorsFilter> registrationBean = new FilterRegistrationBean<>();
+		registrationBean.setFilter(new CorsFilter());
+		registrationBean.addUrlPatterns("/*");
+		return registrationBean;
+	}
+
 
 	@Bean
 	public FilterRegistrationBean<UrlRewriteFilter> urlRewriteFilter() {
