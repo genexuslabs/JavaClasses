@@ -22,6 +22,7 @@ public class GXDynamicCall {
 	public GXDynamicCall(int remoteHandle, ModelContext context){
 		this.remoteHandle = remoteHandle;
 		this.context = context;
+		this.properties = new GXProperties();
 	}
 
 	public GXProperties getProperties() {
@@ -74,7 +75,7 @@ public class GXDynamicCall {
 		{
 			Class<?> auxClass=null;
 			try {
-				auxClass = Class.forName(this.externalName);
+				auxClass = loadClass(this.externalName, properties.get("PackageName"));
 			} catch (ClassNotFoundException e) {
 				CommonUtil.ErrorToMessages("Load class Error", e.getMessage(), errors);
 				errorsArray.addAll(errors.getStruct());
@@ -92,7 +93,7 @@ public class GXDynamicCall {
 		Constructor<?> constructor=null;
 		if (!this.externalName.isEmpty()) {
 			try {
-				Class<?> objClass = Class.forName(this.externalName);
+				Class<?> objClass = loadClass(this.externalName, properties.get("PackageName"));
 				Object[] auxConstParameters;
 				Class<?>[] auxConstructorTypes;
 				if (constructParameters != null && constructParameters.size() > 0) {
@@ -253,5 +254,14 @@ public class GXDynamicCall {
 			}
 			originalParameter.set(i, objectToUpdate);
 		}
+	}
+
+	private Class<?> loadClass(String className, String sPackage) throws ClassNotFoundException {
+		String classPackage="";
+		if(sPackage != null && !sPackage.isEmpty())
+		 classPackage+=  sPackage + ".";
+		classPackage+= className;
+		Class<?> c = Class.forName(classPackage);;
+		return c;
 	}
 }
