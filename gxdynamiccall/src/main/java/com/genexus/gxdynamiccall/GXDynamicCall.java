@@ -7,36 +7,38 @@ import java.util.Vector;
 
 import com.genexus.CommonUtil;
 import com.genexus.GXBaseCollection;
+import com.genexus.ModelContext;
 import com.genexus.SdtMessages_Message;
-import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.util.GXProperties;
 
 public class GXDynamicCall {
 
-	private GXDynCallProperties properties;
+	private GXProperties properties;
 	private Object instanceObject;
-	private String objectName;
+	private String externalName;
+	private int remoteHandle;
+	private ModelContext context;
 
-	public GXDynamicCall(){
-		properties = new GXDynCallProperties();
-		properties.setPackageName(SpecificImplementation.Application.getPACKAGE());
+	public GXDynamicCall(int remoteHandle, ModelContext context){
+		this.remoteHandle = remoteHandle;
+		this.context = context;
+		this.properties = new GXProperties();
 	}
 
-	public GXDynCallProperties getProperties() {
+	public GXProperties getProperties() {
 		return properties;
 	}
 
-	public void setProperties(GXDynCallProperties properties) {
+	public void setProperties(GXProperties properties) {
 		this.properties = properties;
 	}
 
-	public String getObjectName(){
-		return objectName;
-		
+	public String getExternalName(){
+		return externalName;
 	}
 
-	public void setObjectName(String name){
-		objectName=name;
-		properties.setExternalName(name);
+	public void setExternalName(String name){
+		externalName=name;
 	}
 
 	public void execute(Vector<Object> parameters, Vector<SdtMessages_Message> errorsArray) {
@@ -73,7 +75,7 @@ public class GXDynamicCall {
 		{
 			Class<?> auxClass=null;
 			try {
-				auxClass = loadClass(properties.getExternalName(),properties.getPackageName());
+				auxClass = loadClass(this.externalName, properties.get("PackageName"));
 			} catch (ClassNotFoundException e) {
 				CommonUtil.ErrorToMessages("Load class Error", e.getMessage(), errors);
 				errorsArray.addAll(errors.getStruct());
@@ -88,12 +90,10 @@ public class GXDynamicCall {
 
 	public void create(Vector<Object> constructParameters, Vector<SdtMessages_Message> errors) {
 		GXBaseCollection<SdtMessages_Message> error =new GXBaseCollection<SdtMessages_Message>();
-		String objectNameToInvoke;
 		Constructor<?> constructor=null;
-		objectNameToInvoke = constructParameters==null?objectName:properties.getExternalName();
-		if (!objectNameToInvoke.isEmpty()) {
+		if (!this.externalName.isEmpty()) {
 			try {
-				Class<?> objClass = loadClass(objectNameToInvoke, properties.getPackageName());
+				Class<?> objClass = loadClass(this.externalName, properties.get("PackageName"));
 				Object[] auxConstParameters;
 				Class<?>[] auxConstructorTypes;
 				if (constructParameters != null && constructParameters.size() > 0) {
@@ -104,9 +104,9 @@ public class GXDynamicCall {
 						auxConstructorTypes[i] = obj.getClass(); 
 						i++;
 					}
-				} else {								
-					auxConstParameters = new Object[] {Integer.valueOf(-1)};
-					auxConstructorTypes = new Class[] {int.class};
+				} else {				
+					auxConstParameters = new Object[] {this.remoteHandle, this.context};
+					auxConstructorTypes = new Class[] {int.class, ModelContext.class};
 				}
 				try{
 				 	constructor =  objClass.getConstructor(auxConstructorTypes);
@@ -258,7 +258,7 @@ public class GXDynamicCall {
 
 	private Class<?> loadClass(String className, String sPackage) throws ClassNotFoundException {
 		String classPackage="";
-		if(sPackage != null)
+		if(sPackage != null && !sPackage.isEmpty())
 		 classPackage+=  sPackage + ".";
 		classPackage+= className;
 		Class<?> c = Class.forName(classPackage);;
