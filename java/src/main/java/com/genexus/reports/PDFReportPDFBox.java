@@ -4,10 +4,7 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.genexus.ApplicationContext;
@@ -28,7 +25,6 @@ import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.*;
-import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.graphics.state.RenderingMode;
@@ -48,7 +44,6 @@ import javax.imageio.IIOException;
 public class PDFReportPDFBox extends GXReportPDFCommons{
 	private PDRectangle pageSize;
 	private PDFont baseFont;
-	private String baseFontName;
 	private BitMatrix barcode = null;
 	private String barcodeType = null;
 	private PDDocument document;
@@ -61,6 +56,8 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	ConcurrentHashMap<String, PDImageXObject> documentImages;
 	public int runDirection = 0;
 	private int page;
+	private PDPageContentStream auxContentStream;
+	private boolean useAuxContentStream;
 
 	private final float DEFAULT_PDFBOX_LEADING = 1.2f;
 
@@ -84,10 +81,6 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 		catch(Exception e) {
 			log.error("Failed to initialize new PDFBox document: ", e);
 		}
-	}
-
-	private PDPageContentStream getNewPDPageContentStream() throws IOException {
-		return new PDPageContentStream(document, document.getPage(page - 1), PDPageContentStream.AppendMode.APPEND,false);
 	}
 
 	private void drawRectangle(PDPageContentStream cb, float x, float y, float w, float h,
@@ -228,41 +221,41 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 
 	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue,
 						   int styleTop, int styleBottom, int styleRight, int styleLeft, int cornerRadioTL, int cornerRadioTR, int cornerRadioBL, int cornerRadioBR) {
-		try (PDPageContentStream cb = getNewPDPageContentStream()){
-
-			float penAux = (float)convertScale(pen);
-			float rightAux = (float)convertScale(right);
-			float bottomAux = (float)convertScale(bottom);
-			float leftAux = (float)convertScale(left);
-			float topAux = (float)convertScale(top);
+		PDPageContentStream cb = null;
+		try{
+			cb = useAuxContentStream ? auxContentStream : currentPageContentStream;
+			float penAux = (float) convertScale(pen);
+			float rightAux = (float) convertScale(right);
+			float bottomAux = (float) convertScale(bottom);
+			float leftAux = (float) convertScale(left);
+			float topAux = (float) convertScale(top);
 
 			cb.saveGraphicsState();
 
 			float x1, y1, x2, y2;
 			x1 = leftAux + leftMargin;
-			y1 = pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin;
+			y1 = pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin;
 			x2 = rightAux + leftMargin;
-			y2 = pageSize.getUpperRightY() - topAux - topMargin -bottomMargin;
+			y2 = pageSize.getUpperRightY() - topAux - topMargin - bottomMargin;
 
 			cb.setLineWidth(penAux);
 			cb.setLineCapStyle(2);
 
-			if (cornerRadioBL==0 && cornerRadioBR==0 && cornerRadioTL==0 && cornerRadioTR==0 && styleBottom==0 && styleLeft==0 && styleRight==0 && styleTop==0) {
+			if (cornerRadioBL == 0 && cornerRadioBR == 0 && cornerRadioTL == 0 && cornerRadioTR == 0 && styleBottom == 0 && styleLeft == 0 && styleRight == 0 && styleTop == 0) {
 				if (pen > 0)
 					cb.setStrokingColor(foreRed, foreGreen, foreBlue);
 				else
-					cb.setStrokingColor (backRed, backGreen, backBlue);
+					cb.setStrokingColor(backRed, backGreen, backBlue);
 
 				cb.addRect(x1, y1, x2 - x1, y2 - y1);
 
-				if (backMode!=0) {
+				if (backMode != 0) {
 					cb.setNonStrokingColor(new Color(backRed, backGreen, backBlue));
 					cb.fillAndStroke();
 				}
 				cb.closePath();
 				cb.stroke();
-			}
-			else {
+			} else {
 				float w = x2 - x1;
 				float h = y2 - y1;
 				if (w < 0) {
@@ -274,18 +267,18 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					h = -h;
 				}
 
-				float cRadioTL = (float)convertScale(cornerRadioTL);
-				float cRadioTR = (float)convertScale(cornerRadioTR);
-				float cRadioBL = (float)convertScale(cornerRadioBL);
-				float cRadioBR = (float)convertScale(cornerRadioBR);
+				float cRadioTL = (float) convertScale(cornerRadioTL);
+				float cRadioTR = (float) convertScale(cornerRadioTR);
+				float cRadioBL = (float) convertScale(cornerRadioBL);
+				float cRadioBR = (float) convertScale(cornerRadioBR);
 
-				int max = (int)Math.min(w, h);
-				cRadioTL = Math.max(0, Math.min(cRadioTL, max/2));
-				cRadioTR = Math.max(0, Math.min(cRadioTR, max/2));
-				cRadioBL = Math.max(0, Math.min(cRadioBL, max/2));
-				cRadioBR = Math.max(0, Math.min(cRadioBR, max/2));
+				int max = (int) Math.min(w, h);
+				cRadioTL = Math.max(0, Math.min(cRadioTL, max / 2));
+				cRadioTR = Math.max(0, Math.min(cRadioTR, max / 2));
+				cRadioBL = Math.max(0, Math.min(cRadioBL, max / 2));
+				cRadioBR = Math.max(0, Math.min(cRadioBR, max / 2));
 
-				if (backMode!=0) {
+				if (backMode != 0) {
 					cb.setStrokingColor(backRed, backGreen, backBlue);
 					cb.setLineWidth(0);
 					roundRectangle(cb, x1, y1, w, h,
@@ -308,11 +301,20 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			log.debug("GxDrawRect -> (" + left + "," + top + ") - (" + right + "," + bottom + ")  BackMode: " + backMode + " Pen:" + pen);
 		} catch (Exception e) {
 			log.error("GxDrawRect failed: ", e);
+		} finally {
+			try {
+				if (cb != null && !useAuxContentStream)
+					cb.close();
+				else if (useAuxContentStream)
+					useAuxContentStream = false;
+			} catch (IOException ioe) {
+				log.error("Failed to close content stream", ioe);
+			}
 		}
 	}
 
 	public void GxDrawLine(int left, int top, int right, int bottom, int width, int foreRed, int foreGreen, int foreBlue, int style) {
-		try (PDPageContentStream cb = getNewPDPageContentStream()){
+		try (PDPageContentStream cb = currentPageContentStream){
 
 			float widthAux = (float)convertScale(width);
 			float rightAux = (float)convertScale(right);
@@ -351,7 +353,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	}
 
 	public void GxDrawBitMap(String bitmap, int left, int top, int right, int bottom, int aspectRatio) {
-		try (PDPageContentStream cb = getNewPDPageContentStream()){
+		try (PDPageContentStream cb = currentPageContentStream){
 			PDImageXObject image;
 			try {
 				if (documentImages != null && documentImages.containsKey(bitmap)) {
@@ -415,6 +417,31 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 		catch(IOException ioe) {
 			log.error("GxDrawBitMap failed:", ioe);
 		}
+	}
+
+	private static final int MAX_FONT_CACHE_SIZE = 50;
+	private final Map<String, PDFont> fontCache = new LinkedHashMap<String, PDFont>(MAX_FONT_CACHE_SIZE, 0.75f, true) {
+		@Override
+		protected boolean removeEldestEntry(Map.Entry<String, PDFont> eldest) {
+			return size() > MAX_FONT_CACHE_SIZE;
+		}
+	};
+
+	private PDFont getCachedFont(String fontName, PDDocument document) throws IOException {
+		PDFont font = fontCache.get(fontName);
+		if (font == null) {
+			File fontFile = new File(getFontLocation(fontName));
+			if (fontFile.exists()) {
+				font = PDType0Font.load(document, fontFile);
+			} else {
+				font = createPDType1FontFromName(fontName);
+				if (font == null) {
+					font = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+				}
+			}
+			fontCache.put(fontName, font);
+		}
+		return font;
 	}
 
 	public void GxAttris(String fontName, int fontSize, boolean fontBold, boolean fontItalic, boolean fontUnderline, boolean fontStrikethru, int Pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue) {
@@ -482,11 +509,8 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 						}
 					}
 					baseFont = createPDType1FontFromName(fontName);
-					if (baseFont != null)
-						baseFontName = baseFont.getName();
 					if (baseFont == null){
-						baseFont = PDType0Font.load(document, new File(getFontLocation(fontName)));
-						baseFontName = fontName;
+						baseFont = getCachedFont(fontName, document);
 					}
 
 				}
@@ -508,19 +532,14 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				if (fontPath.equals("")) {
 					fontPath = PDFFontDescriptor.getTrueTypeFontLocation(fontName, props);
 					if (fontPath.equals("")) {
-						baseFont = PDType1Font.HELVETICA;
-						baseFontName = baseFont.getName();
+						baseFont = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
 						foundFont = false;
 					}
 				}
 				if (foundFont){
 					baseFont = createPDType1FontFromName(fontName);
-					if (baseFont != null)
-						baseFontName = baseFont.getName();
-					else{
-						baseFont = PDType0Font.load(document, new File(getFontLocation(fontName)));
-						baseFontName = fontName;
-					}
+					if (baseFont == null)
+						baseFont = getCachedFont(fontName, document);
 				}
 			}
 		}
@@ -532,33 +551,33 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	private static PDType1Font createPDType1FontFromName(String fontName) {
 		switch (fontName) {
 			case "Times-Roman":
-				return PDType1Font.TIMES_ROMAN;
+				return new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN);
 			case "Times-Bold":
-				return PDType1Font.TIMES_BOLD;
+				return new PDType1Font(Standard14Fonts.FontName.TIMES_BOLD);
 			case "Times-Italic":
-				return PDType1Font.TIMES_ITALIC;
+				return new PDType1Font(Standard14Fonts.FontName.TIMES_ITALIC);
 			case "Times-BoldItalic":
-				return PDType1Font.TIMES_BOLD_ITALIC;
+				return new PDType1Font(Standard14Fonts.FontName.TIMES_BOLD_ITALIC);
 			case "Helvetica":
-				return PDType1Font.HELVETICA;
+				return new PDType1Font(Standard14Fonts.FontName.HELVETICA);
 			case "Helvetica-Bold":
-				return PDType1Font.HELVETICA_BOLD;
+				return new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
 			case "Helvetica-Oblique":
-				return PDType1Font.HELVETICA_OBLIQUE;
+				return new PDType1Font(Standard14Fonts.FontName.HELVETICA_OBLIQUE);
 			case "Helvetica-BoldOblique":
-				return PDType1Font.HELVETICA_BOLD_OBLIQUE;
+				return new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD_OBLIQUE);
 			case "Courier":
-				return PDType1Font.COURIER;
+				return new PDType1Font(Standard14Fonts.FontName.COURIER);
 			case "Courier-Bold":
-				return PDType1Font.COURIER_BOLD;
+				return new PDType1Font(Standard14Fonts.FontName.COURIER_BOLD);
 			case "Courier-Oblique":
-				return PDType1Font.COURIER_OBLIQUE;
+				return new PDType1Font(Standard14Fonts.FontName.COURIER_OBLIQUE);
 			case "Courier-BoldOblique":
-				return PDType1Font.COURIER_BOLD_OBLIQUE;
+				return new PDType1Font(Standard14Fonts.FontName.COURIER_BOLD_OBLIQUE);
 			case "Symbol":
-				return PDType1Font.SYMBOL;
+				return new PDType1Font(Standard14Fonts.FontName.SYMBOL);
 			case "ZapfDingbats":
-				return PDType1Font.ZAPF_DINGBATS;
+				return new PDType1Font(Standard14Fonts.FontName.ZAPF_DINGBATS);
 			default:
 				return null;
 		}
@@ -568,29 +587,48 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 		try {
 			String fontPath = getFontLocation(fontName);
 			baseFont = PDType0Font.load(document, new File(fontPath));
-			baseFontName = fontName;
 		}
 		catch(Exception e) {
 			log.error("setAsianFont failed: ", e);
 		}
 	}
+
+	private PDFont getOrLoadFont(String fontName, PDDocument doc) throws IOException {
+		PDFont cachedFont = fontCache.get(fontName);
+		if (cachedFont != null) {
+			return cachedFont;
+		}
+		PDFont font = createPDType1FontFromName(fontName);
+		if (font == null) {
+			String fontPath = getFontLocation(fontName);
+			if (!fontPath.isEmpty()) {
+				font = PDType0Font.load(doc, new File(fontPath));
+			} else {
+				font = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+			}
+		}
+		fontCache.put(fontName, font);
+		return font;
+	}
+
 	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border, int valign) {
 		PDPageContentStream cb =  null;
 		try {
-			cb = getNewPDPageContentStream();
+			cb = currentPageContentStream;
 			boolean printRectangle = false;
 			if (props.getBooleanGeneralProperty(Const.BACK_FILL_IN_CONTROLS, true))
 				printRectangle = true;
 
 			if (printRectangle && (border == 1 || backFill)) {
+				auxContentStream = cb;
+				useAuxContentStream = true;
 				GxDrawRect(left, top, right, bottom, border, foreColor.getRed(), foreColor.getGreen(), foreColor.getBlue(), backFill ? 1 : 0, backColor.getRed(), backColor.getGreen(), backColor.getBlue(), 0, 0);
 			}
 
 			sTxt = CommonUtil.rtrim(sTxt);
 
-			PDFont font = createPDType1FontFromName(baseFont.getFontDescriptor().getFontName());
-			if (font == null)
-				font = PDType0Font.load(document, new File(getFontLocation(baseFontName)));
+			String descriptorFontName = baseFont.getFontDescriptor().getFontName();
+			PDFont font = getOrLoadFont(descriptorFontName, document);
 
 			cb.setFont(font,fontSize);
 			cb.setNonStrokingColor(foreColor);
@@ -656,7 +694,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 							GxStartPage();
 
 							cb.close();
-							cb = getNewPDPageContentStream();
+							cb = currentPageContentStream;
 						}
 						if (this.supportedHTMLTags.contains(element.normalName()))
 							processHTMLElement(cb, htmlRectangle, spaceHandler, element);
@@ -739,11 +777,9 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 							rectangle.setUpperRightY(this.pageSize.getUpperRightY() - topAux - topMargin -bottomMargin);
 							break;
 					}
-					PDPageContentStream contentStream = getNewPDPageContentStream();
-					contentStream.setNonStrokingColor(backColor);
-					contentStream.addRect(rectangle.getLowerLeftX(), rectangle.getLowerLeftY(),rectangle.getWidth(), rectangle.getHeight());
-					contentStream.fill();
-					contentStream.close();
+					cb.setNonStrokingColor(backColor);
+					cb.addRect(rectangle.getLowerLeftX(), rectangle.getLowerLeftY(),rectangle.getWidth(), rectangle.getHeight());
+					cb.fill();
 				}
 
 				float underlineSeparation = lineHeight / 5;
@@ -773,7 +809,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 							underline.setUpperRightY(this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);
 							break;
 					}
-					PDPageContentStream contentStream = getNewPDPageContentStream();
+					PDPageContentStream contentStream = currentPageContentStream;
 					contentStream.setNonStrokingColor(foreColor);
 					contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY(),underline.getWidth(), underline.getHeight());
 					contentStream.fill();
@@ -804,7 +840,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 							underline.setUpperRightY(this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
 							break;
 					}
-					PDPageContentStream contentStream = getNewPDPageContentStream();
+					PDPageContentStream contentStream = currentPageContentStream;
 					contentStream.setNonStrokingColor(foreColor);
 					contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY() - strikethruSeparation * 1/3, underline.getWidth(), underline.getHeight());
 					contentStream.fill();
@@ -892,7 +928,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	private void processHTMLElement(PDPageContentStream cb, PDRectangle htmlRectangle, SpaceHandler spaceHandler, Element blockElement) throws Exception{
 		this.fontBold = false;
 		String tagName = blockElement.normalName();
-		PDFont htmlFont = PDType1Font.TIMES_ROMAN;
+		PDFont htmlFont = new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN);
 
 		if (tagName.equals("div") || tagName.equals("span")) {
 			for (Node child : blockElement.childNodes())
@@ -905,7 +941,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			return;
 		}
 
-		float lineHeight = (PDType1Font.TIMES_ROMAN.getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * fontSize) * DEFAULT_PDFBOX_LEADING;
+		float lineHeight = (new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN).getFontDescriptor().getFontBoundingBox().getHeight() / 1000 * fontSize) * DEFAULT_PDFBOX_LEADING;
 		float leading = (float)(Double.valueOf(props.getGeneralProperty(Const.LEADING)).doubleValue());
 
 		float llx = htmlRectangle.getLowerLeftX();
@@ -1029,7 +1065,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 
 	private float renderHTMLContent(PDPageContentStream contentStream, String text, float fontSize, float llx, float lly, float urx, float ury) {
 		try {
-			PDFont defaultHTMLFont = PDType1Font.TIMES_ROMAN;
+			PDFont defaultHTMLFont = new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN);
 			List<String> lines = new ArrayList<>();
 			String[] words = text.split(" ");
 			StringBuilder currentLine = new StringBuilder();
@@ -1075,12 +1111,14 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 
 	private void resolveTextStyling(PDPageContentStream contentStream, String text, float x, float y, boolean isWrapped){
 		try {
+			contentStream.setNonStrokingColor(foreColor);
+			contentStream.setRenderingMode(RenderingMode.FILL);
 			if (this.fontBold && this.fontItalic){
 				contentStream.setStrokingColor(foreColor);
 				contentStream.setLineWidth(fontSize * 0.05f);
 				contentStream.setRenderingMode(RenderingMode.FILL_STROKE);
 				contentStream.beginText();
-				contentStream.moveTextPositionByAmount(x, y);
+				contentStream.newLineAtOffset(x, y);
 				contentStream.setTextMatrix(new Matrix(1, 0, 0.2f, 1, x + 0.2f * y, y));
 				contentStream.newLineAtOffset(-0.2f * y, 0);
 			} else if (this.fontBold && !this.fontItalic){
@@ -1088,10 +1126,10 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				contentStream.setLineWidth(fontSize * 0.05f);
 				contentStream.setRenderingMode(RenderingMode.FILL_STROKE);
 				contentStream.beginText();
-				contentStream.moveTextPositionByAmount(x, y);
+				contentStream.newLineAtOffset(x, y);
 			} else if (!this.fontBold && this.fontItalic){
 				contentStream.beginText();
-				contentStream.moveTextPositionByAmount(x, y);
+				contentStream.newLineAtOffset(x, y);
 				contentStream.setTextMatrix(new Matrix(1, 0, 0.2f, 1, x + 0.2f * y, y));
 				contentStream.newLineAtOffset(-0.2f * y, 0);
 			} else {
@@ -1359,10 +1397,30 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			log.error("GxEndDocument failed: ", e);;
 		}
 	}
+
+	private PDPageContentStream currentPageContentStream;
+
 	public void GxStartPage() {
-		document.addPage(new PDPage(this.pageSize));
-		pages = pages + 1;
-		page = page + 1;
+		PDPage page = new PDPage(this.pageSize);
+		document.addPage(page);
+		pages++;
+		this.page++;
+		try {
+			currentPageContentStream = new PDPageContentStream(document, page, PDPageContentStream.AppendMode.APPEND, false);
+		} catch (IOException e) {
+			log.error("Failed to start page content stream: ", e);
+		}
+	}
+
+	public void GxEndPage() {
+		try {
+			if (currentPageContentStream != null) {
+				currentPageContentStream.close();
+				currentPageContentStream = null;
+			}
+		} catch (IOException e) {
+			log.error("Failed to close page content stream: ", e);
+		}
 	}
 
 }
