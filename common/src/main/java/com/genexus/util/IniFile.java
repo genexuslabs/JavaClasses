@@ -10,7 +10,7 @@ import com.genexus.*;
 
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
-import json.org.json.*;
+import com.genexus.json.JSONObjectWrapper;
 
 
 public class IniFile {
@@ -245,6 +245,10 @@ public class IniFile {
 
 	public String getPropertyEncrypted(String section, String key) {
 		String val = getProperty(section, key);
+		return decryptValue(val, key);
+	}
+
+	public String decryptValue(String val, String key) {
 		if (val != null) {
 			int checkSumLength = Encryption.getCheckSumLength();
 
@@ -362,7 +366,7 @@ public class IniFile {
 				GXFileInfo mapping = new GXFileInfo(envMapping);
 				try {
 					String jsonTxt = mapping.readAllText("");
-					JSONObject jObject = new JSONObject(jsonTxt);
+					JSONObjectWrapper jObject = new JSONObjectWrapper(jsonTxt);
 
 					s_confMapping = new ConcurrentHashMap<String,String>(); 
 					

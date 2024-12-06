@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -12,8 +13,6 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.*;
 import java.net.URI;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.net.ssl.SSLContext;
 
 import org.apache.http.*;
@@ -21,6 +20,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.entity.ContentType;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.auth.AuthSchemeProvider;
@@ -68,8 +68,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		getPoolInstance();
 		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();
 		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
-		cookies = new BasicCookieStore();
-		logger.info("Using apache http client implementation");
+		cookies = new BasicCookieStore();		
 		streamsToClose = new Vector<>();
 	}
 
@@ -94,7 +93,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 	@Override
 	protected void finalize() {
 		this.closeOpenedStreams();
-		executor.shutdown();
 	}
 
 	private ConnectionKeepAliveStrategy generateKeepAliveStrategy() {
@@ -616,9 +614,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 		finally {
 			if (Application.isJMXEnabled()){
-				if (executor.isShutdown())
-					executor = Executors.newSingleThreadExecutor();
-				executor.submit(this::displayHTTPConnections);
+				this.displayHTTPConnections();
 			}
 			if (getIsURL()) {
 				this.setHost(getPrevURLhost());
@@ -630,8 +626,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			resetStateAdapted();
 		}
 	}
-
-	private static ExecutorService executor = Executors.newSingleThreadExecutor();
+	
 	private synchronized void displayHTTPConnections(){
 		Iterator<HttpRoute> iterator = storedRoutes.iterator();
 		while (iterator.hasNext()) {
@@ -723,7 +718,17 @@ public class HttpClientJavaLib extends GXHttpClient {
 			return "";
 		try {
 			this.setEntity();
-			String res = EntityUtils.toString(entity, "UTF-8");
+			ContentType contentType = ContentType.getOrDefault(entity);
+			Charset charset;
+			if (contentType.equals(ContentType.DEFAULT_TEXT)) {
+				charset = StandardCharsets.UTF_8;
+			} else {
+				charset = contentType.getCharset();
+				if (charset == null) {
+					charset = StandardCharsets.UTF_8;
+				}
+			}
+			String res = EntityUtils.toString(entity, charset);
 			eof = true;
 			return res;
 		} catch (IOException e) {

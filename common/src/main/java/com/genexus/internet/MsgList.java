@@ -4,7 +4,7 @@ import java.util.Vector;
 
 import com.genexus.SdtMessages_Message;
 
-import json.org.json.*;
+import org.json.JSONArray;
 
 import com.genexus.GXBaseCollection;
 
@@ -148,7 +148,7 @@ public class MsgList extends java.util.Vector<Msg> implements IGxJSONAble
             return jsonArr;
         }
 
-        public void FromJSONObject(IJsonFormattable obj)
+        public void FromJSONObject(Object obj)
         {
         }
 }

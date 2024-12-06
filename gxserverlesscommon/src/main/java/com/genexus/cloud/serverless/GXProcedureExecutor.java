@@ -9,7 +9,7 @@ import com.genexus.cloud.serverless.model.EventMessageResponse;
 import com.genexus.cloud.serverless.model.EventMessages;
 import com.genexus.cloud.serverless.model.EventMessagesList;
 import com.genexus.db.DynamicExecute;
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
