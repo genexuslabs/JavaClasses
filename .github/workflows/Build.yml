@@ -187,6 +187,5 @@ jobs:
     with: 
       VERSION: ${{ needs.build.outputs.MAVEN_VERSION }}
       PACKAGE_NAMES: ${{ needs.build.outputs.PACKAGES_NAME }}
-      COMMIT_MESSAGE: ${{ needs.build.outputs.COMMIT_MESSAGE }}
       COMMITTER: ${{ needs.build.outputs.LAST_COMMITTER }}
     secrets: inherit
