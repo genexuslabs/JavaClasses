@@ -486,16 +486,26 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 			try (CloseableHttpClient httpClient = this.httpClientBuilder.build()) {
 				if (method.equalsIgnoreCase("GET")) {
-					HttpGetWithBody httpget = new HttpGetWithBody(url.trim());
-					httpget.setConfig(reqConfig);
-					Set<String> keys = getheadersToSend().keySet();
-					for (String header : keys) {
-						httpget.addHeader(header, getheadersToSend().get(header));
+					byte[] data = getData();
+					if (data.length > 0) {
+						HttpGetWithBody httpGetWithBody = new HttpGetWithBody(url.trim());
+						httpGetWithBody.setConfig(reqConfig);
+						Set<String> keys = getheadersToSend().keySet();
+						for (String header : keys) {
+							httpGetWithBody.addHeader(header, getheadersToSend().get(header));
+						}
+						httpGetWithBody.setEntity(new ByteArrayEntity(data));
+						response = httpClient.execute(httpGetWithBody, httpClientContext);
 					}
-
-					httpget.setEntity(new ByteArrayEntity(getData()));
-
-					response = httpClient.execute(httpget, httpClientContext);
+					else {
+						HttpGet httpget = new HttpGet(url.trim());
+						httpget.setConfig(reqConfig);
+						Set<String> keys = getheadersToSend().keySet();
+						for (String header : keys) {
+							httpget.addHeader(header, getheadersToSend().get(header));
+						}
+						response = httpClient.execute(httpget, httpClientContext);
+					}
 
 				} else if (method.equalsIgnoreCase("POST")) {
 					HttpPost httpPost = new HttpPost(url.trim());
