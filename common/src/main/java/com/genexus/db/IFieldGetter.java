@@ -33,4 +33,5 @@ public interface IFieldGetter
 	String getMultimediaUri(int columnIndex) throws SQLException;
 	String getMultimediaUri(int columnIndex, boolean absPath) throws SQLException;
 	java.util.UUID getGUID(int columnIndex) throws SQLException;
+	Float[] getGxembedding(int columnIndex) throws SQLException;
 }
