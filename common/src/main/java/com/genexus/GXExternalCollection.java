@@ -98,6 +98,22 @@ public class GXExternalCollection<T extends GXXMLSerializable> extends GXBaseCol
 		}
 		return struct;
 	}
-	
+
+	public ArrayList getExternalInstance() {
+		ArrayList list = new ArrayList();
+		for (T Item : this)
+		{
+			try
+			{
+				list.add(Item.getClass().getMethod("getExternalInstance", new Class[]{}).invoke(Item));
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		return list;
+	}
+
 }
 

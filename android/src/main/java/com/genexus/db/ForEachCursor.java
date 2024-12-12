@@ -217,6 +217,7 @@ public class ForEachCursor extends Cursor
 	    public void setBLOBFile(int index, String fileName) throws SQLException {}
 	    public void setBLOBFile(int index, String fileName, boolean isMultiMedia) throws SQLException {}
 		public void setBLOBFile(int index, String fileName, boolean isMultiMedia, boolean downloadContent) throws SQLException {}
+		public void setEmbedding(int index, Float[] value) throws SQLException {}
 
 		public void setVarchar(int index, String value, int length, boolean allowsNull) throws SQLException {}
 	    public void setLongVarchar(int index, String value, boolean allowsNull) throws SQLException {}
