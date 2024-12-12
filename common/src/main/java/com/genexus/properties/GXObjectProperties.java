@@ -8,7 +8,9 @@ public class GXObjectProperties
 	private String errorMessage = "";
 	private int errorCode = 0;
 	private int statusCode = 0;
+  private String statusMessage = "";
 	private int protocol = 1;
+
 
 	public Location getLocation()
 	{
@@ -45,7 +47,14 @@ public class GXObjectProperties
 	{
 		errorMessage = value;
 	}
-
+	public String getStatusMessage()
+	{
+		return statusMessage;
+	}
+	public void setStatusMessage(String value)
+	{
+		statusMessage = value;
+	}
 	public int getProtocol()
 	{
 		return protocol; 
