@@ -167,7 +167,7 @@ public class Preferences implements IPreferences {
 	}
 
 	public String getLUCENE_INDEX_DIRECTORY() {
-		return getProperty("LUCENE_INDEX_DIRECTORY", "");
+		return getProperty("LUCENE_INDEX_DIRECTORY", "LuceneIndex");
 	}
 
 	public String getINDEX_QUEUE_MAX_SIZE() {

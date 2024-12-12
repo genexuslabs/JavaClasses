@@ -46,7 +46,7 @@ public final  class ausemockdataaccess extends GXProcedure
       privateExecute();
    }
 
-   private void privateExecute( )
+   protected void privateExecute( )
    {
       /*
          INSERT RECORD ON TABLE Transaction1

@@ -16,15 +16,14 @@ import com.genexus.db.DynamicExecute;
 import com.genexus.internet.IGxJSONAble;
 import com.genexus.internet.IGxJSONSerializable;
 import com.genexus.internet.StringCollection;
+import com.genexus.json.JSONArrayWrapper;
 import com.genexus.util.GXMap;
 import com.genexus.util.Quicksort;
 import com.genexus.xml.XMLReader;
-
 import com.genexus.xml.XMLWriter;
 
-import json.org.json.IJsonFormattable;
-import json.org.json.JSONArray;
-import json.org.json.JSONException;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 public class GXSimpleCollection<T> extends GXBaseList<T> {
 
@@ -34,7 +33,7 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 	protected String xmlElementsName;
 	protected String containedXmlNamespace = "";
 	protected int remoteHandle = -1;
-	protected JSONArray jsonArr = new JSONArray();
+	protected JSONArrayWrapper jsonArr = new JSONArrayWrapper();
 
 	public GXSimpleCollection()
 	{
@@ -980,7 +979,7 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 	}
 	public void tojson(boolean includeState)
 	{
-		jsonArr = new JSONArray();
+		jsonArr = new JSONArrayWrapper();
 		int size = size();
 		for (int i = 0; i < size; i++)
 		{
@@ -1031,7 +1030,7 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 		tojson(includeState);
 		return jsonArr;
 	}
-	public void FromJSONObject(IJsonFormattable obj)
+	public void FromJSONObject(Object obj)
 	{
 		
 		this.clear();
@@ -1059,7 +1058,7 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 					{
 						Constructor constructor = elementsType.getConstructor(parTypes);
 						currObj = constructor.newInstance(arglist);
-						((IGxJSONAble)currObj).FromJSONObject((IJsonFormattable)jsonObj);
+						((IGxJSONAble)currObj).FromJSONObject(jsonObj);
 					}
 					if (IGxJSONSerializable.class.isAssignableFrom(elementsType))
 					{
@@ -1119,7 +1118,7 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 	{
 		try
 		{
-			jsonArr = new JSONArray(s);
+			jsonArr = new JSONArrayWrapper(s);
 			FromJSONObject(jsonArr);
 			return true;
 		}
@@ -1145,7 +1144,7 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 		this.clear();
 		try
 		{
-			jsonArr = new JSONArray(s);
+			jsonArr = new JSONArrayWrapper(s);
 			for (int i = 0; i < jsonArr.length(); i++)
 			{
 				JSONArray jsonObj = jsonArr.getJSONArray(i);
@@ -1225,7 +1224,7 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 	{
 		this.clear();
 		try {
-			jsonArr = new JSONArray(s);
+			jsonArr = new JSONArrayWrapper(s);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -1292,7 +1291,7 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 
 	public JSONArray getRawJSONArray()
 	{
-		return jsonArr;
+		return (JSONArray)jsonArr;
 	}
 
 	// toString of GxUnknownObjectCollection as client proc expect, table info + rows.
@@ -1317,7 +1316,7 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 			result = result + ",[";
 			GxUnknownObjectCollection tableCollection = (GxUnknownObjectCollection)super.get(i);
 			int tableCollectionSize = tableCollection.size();
-			jsonObj = new json.org.json.JSONArray();
+			jsonObj = new JSONArray();
 			for (int j = 1; j <= tableCollectionSize; j++)
 			{
 				jsonObj.put((StringCollection)tableCollection.item(j));
@@ -1350,6 +1349,18 @@ public class GXSimpleCollection<T> extends GXBaseList<T> {
 	}
 	public boolean update(){
 		return false;
+	}
+
+	public boolean addRange( GXSimpleCollection<T> baseList, Number index) {
+		return super.addRange(baseList, index);
+	}
+
+	public boolean removeRange( int index, Number count) {
+		return  super.removeRange(index, count);
+	}
+
+	public boolean setElement( int index, T element) {
+		return super.setElement(index, element);
 	}
 
 

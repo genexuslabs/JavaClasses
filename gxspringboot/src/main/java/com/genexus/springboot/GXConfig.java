@@ -1,19 +1,78 @@
 package com.genexus.springboot;
 
+import com.genexus.Application;
+import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
+import com.genexus.servlet.CorsFilter;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.tuckey.web.filters.urlrewrite.UrlRewriteFilter;
 
 @Configuration
 @EnableWebMvc
 public class GXConfig implements WebMvcConfigurer {
+	public static final ILogger logger = LogManager.getLogger(GXConfig.class);
+	private static final String REWRITE_FILE = "rewrite.config";
 
 	@Override
 	public void configurePathMatch(PathMatchConfigurer configurer) {
 		AntPathMatcher matcher = new AntPathMatcher();
 		matcher.setCaseSensitive(false);
 		configurer.setPathMatcher(matcher);
+	}
+
+	@Value("${server.servlet.context-parameters.gxcfg}")
+	private String gxConfig;
+
+	@Override
+	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+		try {
+			Application.init(Class.forName(gxConfig));
+
+			String webImageDir = Application.getClientContext().getClientPreferences().getWEB_IMAGE_DIR();
+			String blobPath = SpecificImplementation.Application.getDefaultPreferences().getBLOB_PATH().replace("\\", "");
+
+			registry.addResourceHandler(webImageDir + "**")
+				.addResourceLocations("classpath:" + webImageDir);
+
+			registry.addResourceHandler("/" + blobPath + "/**")
+				.addResourceLocations("file:./" + blobPath + "/");
+		}
+		catch (ClassNotFoundException e) {
+			logger.error("Error setting context folders ", e);
+		}
+	}
+
+	@Bean
+	public FilterRegistrationBean<CorsFilter> corsFilter() {
+		FilterRegistrationBean<CorsFilter> registrationBean = new FilterRegistrationBean<>();
+		registrationBean.setFilter(new CorsFilter());
+		registrationBean.addUrlPatterns("/*");
+		return registrationBean;
+	}
+
+
+	@Bean
+	public FilterRegistrationBean<UrlRewriteFilter> urlRewriteFilter() {
+		FilterRegistrationBean<UrlRewriteFilter> registrationBean = new FilterRegistrationBean<>();
+		registrationBean.setFilter(new UrlRewriteFilter());
+		registrationBean.addUrlPatterns("/*");
+		if (new ClassPathResource(REWRITE_FILE).exists()) {
+			registrationBean.addInitParameter("modRewriteConf", "true");
+			registrationBean.addInitParameter("confPath", REWRITE_FILE);
+		}
+		else {
+			registrationBean.setEnabled(false);
+		}
+		return registrationBean;
 	}
 }

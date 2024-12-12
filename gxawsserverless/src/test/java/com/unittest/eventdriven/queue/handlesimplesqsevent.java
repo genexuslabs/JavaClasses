@@ -25,7 +25,7 @@ public final class handlesimplesqsevent extends GXProcedure {
 		privateExecute();
 	}
 
-	private void privateExecute() {
+	protected void privateExecute() {
 		System.out.println("START Queue Event received");
 		System.out.println(AV13RAWMessage);
 		System.out.println("END Queue Event received");

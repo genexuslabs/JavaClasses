@@ -22,7 +22,7 @@ import com.genexus.*;
 import com.genexus.fileupload.IFileItemIterator;
 import com.genexus.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import com.genexus.internet.GXNavigationHelper;
@@ -34,8 +34,8 @@ import com.genexus.internet.MsgList;
 import com.genexus.util.Base64;
 import com.genexus.util.GXFile;
 
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONException;
+import com.genexus.json.JSONObjectWrapper;
 
 public class HttpContextWeb extends HttpContext {
 	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(HttpContextWeb.class);
@@ -79,6 +79,7 @@ public class HttpContextWeb extends HttpContext {
 	private static final String SAME_SITE_LAX = "Lax";
 	private static final String SAME_SITE_STRICT = "Strict";
 	private static final String SET_COOKIE = "Set-Cookie";
+	private static String httpForwardedHeadersEnabled = System.getenv("HTTP_FORWARDEDHEADERS_ENABLED");
 
 	public static final int BROWSER_OTHER		= 0;
 	public static final int BROWSER_IE 		= 1;
@@ -143,7 +144,7 @@ public class HttpContextWeb extends HttpContext {
 		}
 		;
 		String Resource = path;
-		String basePath = getDefaultPath();
+		String basePath = getDefaultPath(true);
 		if (Resource.startsWith(basePath) && Resource.length() >= basePath.length())
 			Resource = Resource.substring(basePath.length());
 		if (ContextPath != null && !ContextPath.equals("") && Resource.startsWith(ContextPath))
@@ -351,7 +352,7 @@ public class HttpContextWeb extends HttpContext {
 		return false;
 	}
 
-	public void parseGXState(JSONObject tokenValues) {
+	public void parseGXState(JSONObjectWrapper tokenValues) {
 		try {
 			Iterator it = tokenValues.keys();
 			while (it.hasNext()) {
@@ -390,14 +391,14 @@ public class HttpContextWeb extends HttpContext {
 						if (useBase64ViewState()) {
 							decoded = new String(Base64.decode(decoded), "UTF8");
 						}
-						JSONObject tokenValues = null;
+						JSONObjectWrapper tokenValues = null;
 						try {
-							tokenValues = new JSONObject(decoded);
+							tokenValues = new JSONObjectWrapper(decoded);
 						} catch (JSONException jex) {
 							log.debug("GXState JSONObject error (1)", jex);
 							char c = 0;
 							decoded = decoded.replace(Character.toString(c), "");
-							tokenValues = new JSONObject(decoded);
+							tokenValues = new JSONObjectWrapper(decoded);
 						}
 						parseGXState(tokenValues);
 					} catch (Exception ex) {
@@ -516,6 +517,9 @@ public class HttpContextWeb extends HttpContext {
 	public void setContextPath(String path) {}
 
 	public String getRealPath(String path) {
+		if (ApplicationContext.getInstance().isSpringBootApp())
+			return path;
+
 		String realPath = path;
 
 		File file = new File(path);
@@ -627,8 +631,10 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getRemoteAddr() {
+		boolean isEnabled = "true".equalsIgnoreCase(httpForwardedHeadersEnabled);
 		String address = getHeader("X-Forwarded-For");
-		if (address.length() > 0){
+		if (isEnabled && address != null && address.length() > 0) {
+			address = address.split(",")[0].trim();
 			return address;
 		}
 		address = request.getRemoteAddr();
@@ -945,18 +951,16 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getServerName() {
+		boolean isEnabled = "true".equalsIgnoreCase(httpForwardedHeadersEnabled);
 		String host = getHeader("X-Forwarded-Host");
-		if (host.length() > 0){
-			return host;
+		if (isEnabled && host != null && host.length() > 0) {
+			return host.split(",")[0].trim();
 		}
 		String serverNameProperty = ModelContext.getModelContext().getPreferences().getProperty("SERVER_NAME", "");
 		if (!StringUtils.isBlank(serverNameProperty)) {
 			return serverNameProperty;
 		}
-		if (request != null)
-			return request.getServerName();
-
-		return "";
+		return request != null ? request.getServerName() : "";
 	}
 
 	public int getServerPort() {
@@ -1059,9 +1063,10 @@ public class HttpContextWeb extends HttpContext {
 		loadParameters(qs);
 	}
 
-	private String removeInternalParms(String query) {
+	private String removeInternalParm(String query, String parm) 
+	{
 		query = removeEventPrefix(query);
-		int idx = query.indexOf(GXNavigationHelper.POPUP_LEVEL);
+		int idx = query.indexOf(parm);
 		if (idx == 1)
 			return "";
 		if (idx > 1)
@@ -1072,6 +1077,11 @@ public class HttpContextWeb extends HttpContext {
 			query = query.substring(0, idx);
 		}
 		return query;
+	}
+
+	private String removeInternalParms(String query) {
+		query = removeInternalParm( query, GXNavigationHelper.POPUP_LEVEL);
+		return removeInternalParm( query, GXNavigationHelper.TAB_ID);
 	}
 
 	public String getQueryString() {
@@ -1255,8 +1265,15 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public String getDefaultPath() {
-		if (ApplicationContext.getInstance().isSpringBootApp())
-			return "";
+		return getDefaultPath(false);
+	}
+	public String getDefaultPath(boolean useAbsolutePath) {
+		if (ApplicationContext.getInstance().isSpringBootApp()) {
+			if (useAbsolutePath)
+				return new File("").getAbsolutePath();
+			else
+				return "";
+		}
 
 		if (servletContext == null)
 			return "";

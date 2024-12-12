@@ -9,8 +9,8 @@ import com.genexus.db.Namespace;
 import com.genexus.db.UserInformation;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONException;
+import com.genexus.json.JSONObjectWrapper;
 
 import com.genexus.Application;
 import com.genexus.GXutil;
@@ -22,7 +22,7 @@ import com.genexus.xml.GXXMLSerializable;
 import com.genexus.websocket.ISession;
 
 public class GXWebSocketService {
-	public static final ILogger logger = LogManager.getLogger(GXWebSocketService.class);
+	public static ILogger logger;
 	private volatile static GXWebSocketService instance;
 
 	private String[] handlerCache = new String[HandlerType.values().length];
@@ -41,6 +41,10 @@ public class GXWebSocketService {
 				}
 			}
 		}
+
+		if (logger == null)
+			logger = LogManager.getLogger(GXWebSocketService.class);
+
 		return instance;
 	}
 
@@ -68,7 +72,7 @@ public class GXWebSocketService {
 		try {
 
 			GXXMLSerializable nInfo = (GXXMLSerializable) Class.forName("com.genexuscore.genexus.server.SdtNotificationInfo").getConstructor().newInstance();
-			JSONObject jInfo = new JSONObject();
+			JSONObjectWrapper jInfo = new JSONObjectWrapper();
 			jInfo.put("Message", txt);
 			nInfo.FromJSONObject(jInfo);
 			parameters[1] = nInfo;
@@ -176,7 +180,7 @@ public class GXWebSocketService {
 				try {
 					session.getSession().sendEndPointText(message);
 					result = SendResponseType.OK;
-				} catch (IOException e) {
+				} catch (IOException | IllegalStateException e) {
 					result = SendResponseType.SendFailed;
 					logger.warn("WebSocket - sendMessage failed", e);
 				}

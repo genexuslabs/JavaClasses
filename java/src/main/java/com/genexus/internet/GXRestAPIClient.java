@@ -1,15 +1,14 @@
 package com.genexus.internet;
 
 import java.util.*;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.math.BigDecimal;
 import java.text.ParseException;
 
-import json.org.json.IJsonFormattable;
-import json.org.json.JSONArray;
+import org.json.JSONArray;
 import com.genexus.internet.IGxJSONAble;
 import com.genexus.xml.GXXMLSerializable;
 import com.genexus.internet.IGxJSONSerializable;
@@ -25,7 +24,7 @@ public class GXRestAPIClient {
 	
 	private String name;
 	private Location location;
-	private String protocol = "REST";
+	private int protocol = 1;
 	private String httpMethod = "GET";
 	private int  errorCode;	
 	private String errorMessage;
@@ -73,7 +72,7 @@ public class GXRestAPIClient {
 		return location;
 	}
 
-	public String getProtocol() {
+	public int getProtocol() {
 		return protocol;
 	}
 
@@ -107,7 +106,7 @@ public class GXRestAPIClient {
 		location = value;
 	}
 
-	public void setProtocol( String value) {
+	public void setProtocol( int value) {
 		protocol = value;
 	}
 
@@ -304,7 +303,7 @@ public class GXRestAPIClient {
 		catch (Exception e) {
 			errorCode = DESERIALIZING_ERROR_CODE;
 			errorMessage = DESERIALIZING_ERROR_MSG;
-			logger.error(DESERIALIZING_ERROR_MSG + " " + sdtClass, e);
+			logError(DESERIALIZING_ERROR_CODE, DESERIALIZING_ERROR_MSG + " " + sdtClass, e);
 			return null;
 		}		
 	}
@@ -342,20 +341,20 @@ public class GXRestAPIClient {
 		try {
 			if (jsonResponse != null) {
 				if (jsonResponse.has(varName))
-					jsonstr = jsonResponse.getString(varName);
+					jsonstr = jsonResponse.get(varName).toString();
 				else if (jsonResponse.length() == 1 && jsonResponse.has(""))
-					jsonstr = jsonResponse.getString("");								
+					jsonstr = jsonResponse.get("").toString();
 			}
 			else {
 				errorCode = RESPONSE_ERROR_CODE;
 				errorMessage = RESPONSE_ERROR_MSG;
-				logger.error(RESPONSE_ERROR_MSG );							
+				logError(RESPONSE_ERROR_CODE, RESPONSE_ERROR_MSG);
 			}
 		}
 		catch( JSONException e) {
 			errorCode = PARSING_ERROR_CODE;
 			errorMessage = PARSING_ERROR_MSG;
-			logger.error(PARSING_ERROR_MSG, e);			
+			logError(PARSING_ERROR_CODE, PARSING_ERROR_MSG, e);
 		}
 		return jsonstr;	
 	}
@@ -376,10 +375,10 @@ public class GXRestAPIClient {
 			if (jsonResponse != null) {
 				Boolean dSuccess = false;
 				if (jsonResponse.has(varName) && jsonResponse.length() == 1) {
-					dSuccess = sdt.fromJSonString(jsonResponse.getString(varName), null);
+					dSuccess = sdt.fromJSonString(jsonResponse.get(varName).toString(), null);
 				} 
 				else if (jsonResponse.length() == 1 && jsonResponse.has("")) {
-					dSuccess = sdt.fromJSonString(jsonResponse.getString(""), null);
+					dSuccess = sdt.fromJSonString(jsonResponse.get("").toString(), null);
 				} 
 				else if (jsonResponse.length()>= 1) {
 					dSuccess = sdt.fromJSonString(httpClient.getString(), null);			
@@ -388,21 +387,21 @@ public class GXRestAPIClient {
 				{
 					errorCode = RESPONSE_ERROR_CODE;
 					errorMessage = RESPONSE_ERROR_MSG;
-					logger.error(RESPONSE_ERROR_MSG + " " + sdtClass);			
+					logError( RESPONSE_ERROR_CODE, RESPONSE_ERROR_MSG + " " + sdtClass);
 					return null;
 				}
 			}
 			else {
 				errorCode = RESPONSE_ERROR_CODE;
 				errorMessage = RESPONSE_ERROR_MSG;
-				logger.error(RESPONSE_ERROR_MSG + " " + sdtClass);			
+				logError( RESPONSE_ERROR_CODE,RESPONSE_ERROR_MSG + " " + sdtClass);
 				return null;
 			}
 		} 
-		catch (json.org.json.JSONException e) {
+		catch (JSONException e) {
 			errorCode = PARSING_ERROR_CODE;
 			errorMessage = PARSING_ERROR_MSG;
-			logger.error(PARSING_ERROR_MSG + " " + sdtClass, e);
+			logError(PARSING_ERROR_CODE, PARSING_ERROR_MSG + " " + sdtClass, e);
 			return null;
 		}
 		return sdt;
@@ -429,7 +428,7 @@ public class GXRestAPIClient {
 
 			if (jsonarr != null) {
 				for (int i=0; i < jsonarr.length(); i++) {
-    				JSONObject o = jsonarr.getJSONObject(i);
+					JSONObject o = jsonarr.getJSONObject(i);
 					T sdt = elementClass.newInstance();
 					sdt.fromJSonString(o.toString(),null);
 					col.add(sdt);
@@ -438,18 +437,18 @@ public class GXRestAPIClient {
 			else {
 				errorCode = RESPONSE_ERROR_CODE;
 				errorMessage = RESPONSE_ERROR_MSG;
-				logger.error(RESPONSE_ERROR_MSG + " " + elementClass);
+				logError(RESPONSE_ERROR_CODE,RESPONSE_ERROR_MSG + " " + elementClass);
 			}	
 		} 
-		catch (json.org.json.JSONException e) {
+		catch (JSONException e) {
 			errorCode = PARSING_ERROR_CODE;
 			errorMessage = PARSING_ERROR_MSG;
-			logger.error(PARSING_ERROR_MSG + " " + elementClass ,e );
+			logError(PARSING_ERROR_CODE,PARSING_ERROR_MSG + " " + elementClass ,e );
 		}
 		catch (Exception e) {
 			errorCode = DESERIALIZING_ERROR_CODE;
 			errorMessage = DESERIALIZING_ERROR_MSG;
-			logger.error(DESERIALIZING_ERROR_MSG + " " + elementClass, e);
+			logError(DESERIALIZING_ERROR_CODE, DESERIALIZING_ERROR_MSG + " " + elementClass, e);
 		}
 	}
 
@@ -463,16 +462,16 @@ public class GXRestAPIClient {
         } 		
 		try {
 			if (jsonResponse.has(varName)) {
-				coll.fromJSonString(jsonResponse.getString(varName), null);
+				coll.fromJSonString(jsonResponse.get(varName).toString(), null);
 			} 
 			else if (jsonResponse.length() == 1 && jsonResponse.has("")) {
-				coll.fromJSonString(jsonResponse.getString(varName), null);
+				coll.fromJSonString(jsonResponse.get(varName).toString(), null);
 			} 
 		} 
-		catch (json.org.json.JSONException e) {
+		catch (JSONException e) {
 			errorCode = PARSING_ERROR_CODE;
 			errorMessage = PARSING_ERROR_MSG;
-			logger.error(PARSING_ERROR_MSG + " " + elementClasss, e);			
+			logError(PARSING_ERROR_CODE,PARSING_ERROR_MSG + " " + elementClasss, e);
 		}
 		return coll;
 	}
@@ -507,15 +506,18 @@ public class GXRestAPIClient {
 			httpClient.addHeader( "Content-Type", contentType);
 		}
 		else {
-			if (this.httpMethod == "POST" || this.httpMethod == "PUT") {
+			if (httpMethod == "POST" || httpMethod == "PUT") {
 				bodyString = "{}";
 				httpClient.addString(bodyString);
 				httpClient.addHeader("Content-Type", contentType);
 			}
 		}
-		String serviceuri = ((this.location.getSecure() > 0) ? "https" : "http") + "://" + this.location.getHost();
-		serviceuri += (this.location.getPort() != 80) ? ":" + Integer.toString(this.location.getPort()): "";
-		serviceuri += "/" + this.location.getBaseURL() + "/" + this.location.getResourceName();
+		if (location.getAuthenticationMethod() == 4 && location.getAccessToken() != null &&  ! location.getAccessToken().trim().isEmpty())  {
+			httpClient.addHeader("Authorization", location.getAccessToken());
+		}
+		String serviceuri = ((location.getSecure() > 0) ? "https" : "http") + "://" + location.getHost();
+		serviceuri += (location.getPort() != 80) ? ":" + Integer.toString(location.getPort()): "";
+		serviceuri += "/" + location.getBaseURL() + "/" + location.getResourceName();
 		serviceuri += queryString;
 		httpClient.execute( this.httpMethod, serviceuri);
 		responseCode = httpClient.getStatusCode();
@@ -525,17 +527,30 @@ public class GXRestAPIClient {
 		if (responseCode >= 300 || httpClient.getErrCode() > 0) {
 			errorCode =  httpClient.getErrCode();
 			errorMessage = httpClient.getErrDescription();
-		}
+    }
 		else {
 			try {
-				jsonResponse = new JSONObject(httpClient.getString());
+				String response = httpClient.getString();
+				if (response.trim().startsWith("["))
+				{
+					// unwrapped list response
+					response = "{\"\":" + response + "}";
+				}
+				jsonResponse = new JSONObject(response);
 			}
 			catch( JSONException e) {
 				errorCode = PARSING_ERROR_CODE;
 				errorMessage = PARSING_ERROR_MSG;
-				logger.error(PARSING_ERROR_MSG, e);
+				logError(PARSING_ERROR_CODE, PARSING_ERROR_MSG, e);
 				jsonResponse = new JSONObject();
 			}
 		}
+	}
+
+	private void logError(int code, String msg)	{
+		logger.error("Error: " + Integer.toString(code) + " " + msg);
+	}
+	private void logError(int code, String msg, Exception e)	{
+		logger.error("Error: " + Integer.toString(code) + " " + msg, e);
 	}
 }
