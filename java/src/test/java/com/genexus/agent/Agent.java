@@ -108,7 +108,7 @@ public final  class Agent extends GXProcedure
 		this.aP2[0] = AV5OutputVariable;
 	}
 
-	protected String callTool(String name, String arguments) throws Exception {
+	protected String callTool(String name, String arguments) {
 		switch (name) {
 			case "TranslateDescription":
 				return "The Panavox Television 80 inches are wonderful";

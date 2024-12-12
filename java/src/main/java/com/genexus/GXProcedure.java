@@ -266,7 +266,7 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 		privateExecute( );
 	}
 
-	protected String callTool(String name, String arguments) throws Exception {
+	protected String callTool(String name, String arguments) {
 		return "";
 	}
 
@@ -317,7 +317,7 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 		try {
 			result = callTool(functionName, toolCall.getFunction().getArguments());
 		}
-		catch (Exception e) {
+		catch (Throwable e) {
 			result = String.format("Error calling tool %s", functionName);
 		}
 		OpenAIResponse.Message toolCallMessage = new OpenAIResponse.Message();
