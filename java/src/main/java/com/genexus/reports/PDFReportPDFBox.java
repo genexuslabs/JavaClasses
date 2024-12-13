@@ -44,6 +44,7 @@ import javax.imageio.IIOException;
 public class PDFReportPDFBox extends GXReportPDFCommons{
 	private PDRectangle pageSize;
 	private PDFont baseFont;
+	private String baseFontName;
 	private BitMatrix barcode = null;
 	private String barcodeType = null;
 	private PDDocument document;
@@ -56,12 +57,9 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	ConcurrentHashMap<String, PDImageXObject> documentImages;
 	public int runDirection = 0;
 	private int page;
-	private PDPageContentStream auxContentStream;
-	private boolean useAuxContentStream;
-
 	private final float DEFAULT_PDFBOX_LEADING = 1.2f;
-
 	private Set<String> supportedHTMLTags = new HashSet<>();
+	private PDPageContentStream currentPageContentStream;
 
 	static {
 		log = org.apache.logging.log4j.LogManager.getLogger(PDFReportPDFBox.class);
@@ -221,9 +219,8 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 
 	public void GxDrawRect(int left, int top, int right, int bottom, int pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue,
 						   int styleTop, int styleBottom, int styleRight, int styleLeft, int cornerRadioTL, int cornerRadioTR, int cornerRadioBL, int cornerRadioBR) {
-		PDPageContentStream cb = null;
-		try{
-			cb = useAuxContentStream ? auxContentStream : currentPageContentStream;
+		try {
+			PDPageContentStream cb = currentPageContentStream;
 			float penAux = (float) convertScale(pen);
 			float rightAux = (float) convertScale(right);
 			float bottomAux = (float) convertScale(bottom);
@@ -301,15 +298,6 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			log.debug("GxDrawRect -> (" + left + "," + top + ") - (" + right + "," + bottom + ")  BackMode: " + backMode + " Pen:" + pen);
 		} catch (Exception e) {
 			log.error("GxDrawRect failed: ", e);
-		} finally {
-			try {
-				if (cb != null && !useAuxContentStream)
-					cb.close();
-				else if (useAuxContentStream)
-					useAuxContentStream = false;
-			} catch (IOException ioe) {
-				log.error("Failed to close content stream", ioe);
-			}
 		}
 	}
 
@@ -427,23 +415,6 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 		}
 	};
 
-	private PDFont getCachedFont(String fontName, PDDocument document) throws IOException {
-		PDFont font = fontCache.get(fontName);
-		if (font == null) {
-			File fontFile = new File(getFontLocation(fontName));
-			if (fontFile.exists()) {
-				font = PDType0Font.load(document, fontFile);
-			} else {
-				font = createPDType1FontFromName(fontName);
-				if (font == null) {
-					font = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
-				}
-			}
-			fontCache.put(fontName, font);
-		}
-		return font;
-	}
-
 	public void GxAttris(String fontName, int fontSize, boolean fontBold, boolean fontItalic, boolean fontUnderline, boolean fontStrikethru, int Pen, int foreRed, int foreGreen, int foreBlue, int backMode, int backRed, int backGreen, int backBlue) {
 		boolean isCJK = false;
 		boolean embeedFont = isEmbeddedFont(fontName);
@@ -510,7 +481,8 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					}
 					baseFont = createPDType1FontFromName(fontName);
 					if (baseFont == null){
-						baseFont = getCachedFont(fontName, document);
+						baseFont = getOrLoadFont(fontName, document);
+						baseFontName = fontName;
 					}
 
 				}
@@ -530,16 +502,22 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				String fontPath = getFontLocation(fontName);
 				boolean foundFont = true;
 				if (fontPath.equals("")) {
-					fontPath = PDFFontDescriptor.getTrueTypeFontLocation(fontName, props);
+					fontName = fontName.endsWith(style) ? fontName.substring(0, fontName.length() - style.length()) : fontName;
+					fontPath = getFontLocation(fontName);
+					baseFont = getOrLoadFont(fontName, document);
+					baseFontName = fontName;
 					if (fontPath.equals("")) {
 						baseFont = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+						baseFontName = "Helvetica";
 						foundFont = false;
 					}
 				}
 				if (foundFont){
 					baseFont = createPDType1FontFromName(fontName);
-					if (baseFont == null)
-						baseFont = getCachedFont(fontName, document);
+					if (baseFont == null){
+						baseFont = getOrLoadFont(fontName, document);
+						baseFontName = fontName;
+					}
 				}
 			}
 		}
@@ -585,8 +563,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 
 	public void setAsianFont(String fontName, String style) {
 		try {
-			String fontPath = getFontLocation(fontName);
-			baseFont = PDType0Font.load(document, new File(fontPath));
+			baseFont = getOrLoadFont(fontName, document);
 		}
 		catch(Exception e) {
 			log.error("setAsianFont failed: ", e);
@@ -612,23 +589,19 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	}
 
 	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border, int valign) {
-		PDPageContentStream cb =  null;
 		try {
-			cb = currentPageContentStream;
+			PDPageContentStream cb = currentPageContentStream;
 			boolean printRectangle = false;
 			if (props.getBooleanGeneralProperty(Const.BACK_FILL_IN_CONTROLS, true))
 				printRectangle = true;
 
 			if (printRectangle && (border == 1 || backFill)) {
-				auxContentStream = cb;
-				useAuxContentStream = true;
 				GxDrawRect(left, top, right, bottom, border, foreColor.getRed(), foreColor.getGreen(), foreColor.getBlue(), backFill ? 1 : 0, backColor.getRed(), backColor.getGreen(), backColor.getBlue(), 0, 0);
 			}
 
 			sTxt = CommonUtil.rtrim(sTxt);
 
-			String descriptorFontName = baseFont.getFontDescriptor().getFontName();
-			PDFont font = getOrLoadFont(descriptorFontName, document);
+			PDFont font = getOrLoadFont(baseFontName, document);
 
 			cb.setFont(font,fontSize);
 			cb.setNonStrokingColor(foreColor);
@@ -693,7 +666,6 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 							GxEndPage();
 							GxStartPage();
 
-							cb.close();
 							cb = currentPageContentStream;
 						}
 						if (this.supportedHTMLTags.contains(element.normalName()))
@@ -780,6 +752,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					cb.setNonStrokingColor(backColor);
 					cb.addRect(rectangle.getLowerLeftX(), rectangle.getLowerLeftY(),rectangle.getWidth(), rectangle.getHeight());
 					cb.fill();
+					cb.setNonStrokingColor(foreColor);
 				}
 
 				float underlineSeparation = lineHeight / 5;
@@ -813,7 +786,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					contentStream.setNonStrokingColor(foreColor);
 					contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY(),underline.getWidth(), underline.getHeight());
 					contentStream.fill();
-					contentStream.close();
+					cb.setNonStrokingColor(foreColor);
 				}
 
 				if (fontStrikethru) {
@@ -844,7 +817,6 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					contentStream.setNonStrokingColor(foreColor);
 					contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY() - strikethruSeparation * 1/3, underline.getWidth(), underline.getHeight());
 					contentStream.fill();
-					contentStream.close();
 				}
 
 				if(sTxt.trim().equalsIgnoreCase("{{Pages}}")) {
@@ -902,13 +874,6 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			}
 		} catch (Exception ioe){
 			log.error("GxDrawText failed: ", ioe);
-		} finally {
-			try {
-				if (cb != null) cb.close();
-			}
-			catch (IOException ioe) {
-				log.error("GxDrawText failed to close a content stream to one of it's pages: ", ioe);
-			}
 		}
 	}
 
@@ -1397,8 +1362,6 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			log.error("GxEndDocument failed: ", e);;
 		}
 	}
-
-	private PDPageContentStream currentPageContentStream;
 
 	public void GxStartPage() {
 		PDPage page = new PDPage(this.pageSize);
