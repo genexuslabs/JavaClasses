@@ -2,6 +2,7 @@ package com.genexus.webpanels;
 
 import java.io.PrintWriter;
 
+import com.genexus.Application;
 import com.genexus.GXObjectBase;
 import com.genexus.mock.GXMockProvider;
 import com.genexus.servlet.IServletContext;
@@ -121,5 +122,16 @@ public abstract class GXWebProcedure extends GXObjectBase {
 			}
 		}
 		privateExecute( );
+	}
+
+	protected boolean batchCursorHolder(){
+		return false;
+	}
+	protected void exitApp() {
+		if (batchCursorHolder()) {
+			try {
+				Application.getConnectionManager().flushBuffers(remoteHandle, this);
+			} catch (Exception exception) { ; }
+		}
 	}
 }
