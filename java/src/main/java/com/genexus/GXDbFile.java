@@ -134,7 +134,8 @@ public class GXDbFile
 		{
 			name = PrivateUtilities.encodeFileName(name);
 		}
-		name = PrivateUtilities.checkFileNameLength(file.replace(name, ""), name, type);
+		else
+			name = PrivateUtilities.checkFileNameLength(file.replace(name, ""), name, type);
 				
 		if (!addScheme)
 		{
