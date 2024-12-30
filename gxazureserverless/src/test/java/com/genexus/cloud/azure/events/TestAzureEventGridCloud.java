@@ -19,7 +19,6 @@ public class TestAzureEventGridCloud {
 
 	@Test
 	public void testEventGridCloudFunction() throws Exception {
-
 		eventGridCloudFunction = new AzureEventGridCloudHandler();
 		CloudEvent message = loadmessages();
 		context = new MockExecutionContext("TestEventGridCloud","13e2d1f9-6838-4927-a6a8-0160e8601ab2");
@@ -33,8 +32,7 @@ public class TestAzureEventGridCloud {
 		context.getLogger().info("Logger is not null");
 	}
 
-	private CloudEvent loadmessages()
-	{
+	private CloudEvent loadmessages() {
 		String id = "ac6105de-9715-4753-9c80-4c07c4c8bda3";
 
 		CloudEvent message1 = Mockito.mock(CloudEvent.class);
@@ -50,5 +48,4 @@ public class TestAzureEventGridCloud {
 
 		return message1;
 	}
-
 }

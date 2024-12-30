@@ -31,10 +31,8 @@ public class AzureQueueHandler extends AzureEventHandler {
 				EventMessage msg = new EventMessage();
 				msg.setMessageId(id);
 				msg.setMessageSourceType(EventMessageSourceType.QUEUE_MESSAGE);
-
 				msg.setMessageDate(new Date());
 				msg.setMessageData(message);
-
 				List<EventMessageProperty> msgAtts = msg.getMessageProperties();
 
 				msgAtts.add(new EventMessageProperty("Id", id));
@@ -45,7 +43,6 @@ public class AzureQueueHandler extends AzureEventHandler {
 				msgAtts.add(new EventMessageProperty("PopReceipt", popReceipt));
 				msgs.add(msg);
 		}
-
 		try {
 			EventMessageResponse response = dispatchEvent(msgs, message);
 			if (response.hasFailed()) {

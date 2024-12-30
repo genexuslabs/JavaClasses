@@ -3,7 +3,6 @@ package com.genexus.cloud.azure.events;
 import com.genexus.cloud.serverless.azure.handler.AzureCosmosDBHandler;
 import com.microsoft.azure.functions.ExecutionContext;
 import org.junit.Test;
-import org.junit.jupiter.api.BeforeEach;
 
 import java.util.ArrayList;
 import java.util.HashMap;

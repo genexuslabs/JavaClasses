@@ -65,7 +65,6 @@ public class GXProcedureExecutor {
 		if (methodSignatureIdx < 0) {
 			throw new NotImplementedException("Expected signature method did not match");
 		}
-
 	}
 
 	public EventMessageResponse execute(ModelContext modelContext, EventMessages msgs, EventMessagesList msgsList, String rawJsonEvent) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, JsonProcessingException {

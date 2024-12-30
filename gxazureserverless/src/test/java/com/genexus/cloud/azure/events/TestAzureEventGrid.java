@@ -1,4 +1,5 @@
 package com.genexus.cloud.azure.events;
+
 import com.azure.core.util.BinaryData;
 import com.azure.messaging.eventgrid.EventGridEvent;
 import com.genexus.cloud.serverless.azure.handler.AzureEventGridHandler;
@@ -22,7 +23,6 @@ public class TestAzureEventGrid {
 
 	@Test
 	public void testEventGridFunctionRaw() throws Exception {
-
 		EventGridEvent message = loadmessages();
 		context = new MockExecutionContext("TestEventGridRaw","13e2d1f9-6838-4927-a6a8-0160e8601ab5");
 		eventGridFunction.run(message,context);
@@ -31,8 +31,7 @@ public class TestAzureEventGrid {
 		context.getLogger().info("Logger is not null");
 	}
 
-	private EventGridEvent loadmessages()
-	{
+	private EventGridEvent loadmessages() {
 		String id = "ac6105de-9715-4753-9c80-4c07c4c8bda3";
 		long sequenceNumber = 1123456789;
 		String subject = "testsubject1";

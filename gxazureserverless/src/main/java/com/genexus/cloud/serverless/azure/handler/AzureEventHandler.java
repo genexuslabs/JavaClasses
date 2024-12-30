@@ -53,6 +53,5 @@ public class AzureEventHandler extends ServerlessBaseEventHandler<AzureFunctionC
 	@Override
 	protected void InitializeServerlessConfig(){
 	}
-
 }
 

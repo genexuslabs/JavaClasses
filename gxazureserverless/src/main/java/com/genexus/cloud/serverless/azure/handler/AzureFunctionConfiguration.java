@@ -12,25 +12,22 @@ public class AzureFunctionConfiguration extends ServerlessFunctionConfiguration 
 
 	public AzureFunctionConfiguration() {
 	}
-	public AzureFunctionConfiguration(String functionName, String gxEntrypoint)
-	{
+	public AzureFunctionConfiguration(String functionName, String gxEntrypoint) {
 		this.functionName = functionName;
 		this.gxEntrypoint = gxEntrypoint;
 	}
 	public void setFunctionName(String functionName) {
-
 		this.functionName = functionName;
 	}
 	public void setGXEntrypoint(String gxEntrypoint) {
-
 		this.gxEntrypoint = gxEntrypoint;
 	}
 
 	public String getFunctionName() {
 		return functionName;
 	}
-	public String getGXEntrypoint() {
 
+	public String getGXEntrypoint() {
 		return gxEntrypoint;
 	}
 	@Override
@@ -42,5 +39,4 @@ public class AzureFunctionConfiguration extends ServerlessFunctionConfiguration 
 	public String getGXClassName() {
 		return getGXEntrypoint();
 	}
-
 }

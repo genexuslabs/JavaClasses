@@ -23,7 +23,6 @@ public class TestAzureServiceBusHandler {
 
 	@Test
 	public void testSBTriggerFunctionRaw() throws Exception {
-
 		List<ServiceBusReceivedMessage> messages = loadmessages();
 
 		context = new MockExecutionContext("TestServiceBusRaw","13e2d1f9-6838-4927-a6a8-0160e8601ab0");
@@ -34,17 +33,15 @@ public class TestAzureServiceBusHandler {
 	}
 	@Test
 	public void testSBTriggerFunctionMessage() throws Exception {
-
 		List<ServiceBusReceivedMessage> messages = loadmessages();
 		context = new MockExecutionContext("TestServiceBusMessage","13e2d1f9-6838-4927-a6a8-0160e8601ab1");
 		sbqueueFunction.run(messages,context);
 
 		assertNotNull(context.getLogger());
 		context.getLogger().info("Logger is not null");
-
 	}
-	private List<ServiceBusReceivedMessage> loadmessages()
-	{
+
+	private List<ServiceBusReceivedMessage> loadmessages() {
 		String id = "ac6105de-9715-4753-9c80-4c07c4c8bda3";
 		long sequenceNumber = 1123456789;
 		String subject = "testsubject1";
