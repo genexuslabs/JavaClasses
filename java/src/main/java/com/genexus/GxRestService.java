@@ -81,7 +81,6 @@ abstract public class GxRestService extends GXObjectBase {
 
 	private void initLogger(IServletContext myContext) {
 		if (logger == null) {
-		//	logger = com.genexus.specific.java.LogManager.initialize(myContext.getRealPath("/"), GxRestService.class);
 			logger = LogManager.getLogger(GxRestService.class);
 		}
 	}

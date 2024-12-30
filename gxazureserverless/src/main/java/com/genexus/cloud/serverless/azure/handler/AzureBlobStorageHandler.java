@@ -1,5 +1,4 @@
 package com.genexus.cloud.serverless.azure.handler;
-import com.genexus.cloud.serverless.Helper;
 import com.genexus.cloud.serverless.model.*;
 
 import com.microsoft.azure.functions.annotation.*;
@@ -18,7 +17,7 @@ public class AzureBlobStorageHandler extends AzureEventHandler{
 		super();
 	}
 	public void run(
-		@BlobTrigger(name = "content", path = "%blob_path%", dataType = "binary") byte[] content,
+		@BlobTrigger(name = "content", source = "EventGrid", path = "%blob_path%", dataType = "binary") byte[] content,
 		@BindingName("name") String name,
 		final ExecutionContext context
 	) throws Exception {
@@ -28,17 +27,13 @@ public class AzureBlobStorageHandler extends AzureEventHandler{
 
 		switch (executor.getMethodSignatureIdx()) {
 			case 0:
-
 				EventMessage msg = new EventMessage();
 				msg.setMessageId(context.getInvocationId());
 				msg.setMessageSourceType(EventMessageSourceType.BLOB);
-
 				Instant nowUtc = Instant.now();
 				msg.setMessageDate(Date.from(nowUtc));
 				msg.setMessageData(Base64.getEncoder().encodeToString(content));
-
 				List<EventMessageProperty> msgAtts = msg.getMessageProperties();
-
 				msgAtts.add(new EventMessageProperty("Id", context.getInvocationId()));
 				msgAtts.add(new EventMessageProperty("name", name));
 
@@ -48,7 +43,6 @@ public class AzureBlobStorageHandler extends AzureEventHandler{
 			case 2:
 				rawMessage = Base64.getEncoder().encodeToString(content);
 		}
-
 		try {
 			EventMessageResponse response = dispatchEvent(msgs, rawMessage);
 			if (response.hasFailed()) {

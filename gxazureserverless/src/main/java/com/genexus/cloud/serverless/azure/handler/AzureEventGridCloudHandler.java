@@ -23,7 +23,6 @@ public class AzureEventGridCloudHandler extends AzureEventHandler{
 	public void run(
 		@EventGridTrigger(name = "eventgridEvent") String eventJson,
 		final ExecutionContext context) throws Exception {
-
 		context.getLogger().info("GeneXus Event Grid CloudEvents trigger handler. Function processed: " + context.getFunctionName() + " Invocation Id: " + context.getInvocationId());
 		setupServerlessMappings(context.getFunctionName());
 		setupEventGridMessage(eventJson);
@@ -34,32 +33,28 @@ public class AzureEventGridCloudHandler extends AzureEventHandler{
 				logger.error(String.format("Messages were not handled. Error: %s", response.getErrorMessage()));
 				throw new RuntimeException(response.getErrorMessage()); //Throw the exception so the runtime can Retry the operation.
 			}
-
 		} catch (Exception e) {
 			logger.error("HandleRequest execution error", e);
 			throw e; 		//Throw the exception so the runtime can Retry the operation.
 		}
 	}
 	protected void setupEventGridMessage(String eventJson) throws JsonProcessingException {
-
 		switch (executor.getMethodSignatureIdx()) {
 			case 0:
-
 				try {
 					ObjectMapper objectMapper = new ObjectMapper();
 					objectMapper.registerModule(io.cloudevents.jackson.JsonFormat.getCloudEventJacksonModule());
 					CloudEvent cloudEvent = objectMapper.readValue(eventJson, CloudEvent.class);
 
 					EventMessage msg = new EventMessage();
+
 					msg.setMessageId(cloudEvent.getId());
 					msg.setMessageSourceType(cloudEvent.getType());
 					msg.setMessageVersion("");
-
 					msg.setMessageDate(new Date());
 					msg.setMessageData(Objects.requireNonNull(cloudEvent.getData()).toString());
 
 					List<EventMessageProperty> msgAtts = msg.getMessageProperties();
-
 					msgAtts.add(new EventMessageProperty("Id", cloudEvent.getId()));
 					msgAtts.add(new EventMessageProperty("Subject", cloudEvent.getSubject()));
 					msgAtts.add(new EventMessageProperty("DataContentType", cloudEvent.getDataContentType()));
@@ -70,7 +65,7 @@ public class AzureEventGridCloudHandler extends AzureEventHandler{
 					if (cloudEvent.getSpecVersion() != null)
 						msgAtts.add(new EventMessageProperty("SpecVersion", cloudEvent.getSpecVersion().toString()));
 					if (cloudEvent.getTime() != null)
-					msgAtts.add(new EventMessageProperty("Time", cloudEvent.getTime().toString()));
+						msgAtts.add(new EventMessageProperty("Time", cloudEvent.getTime().toString()));
 
 					msgs.add(msg);
 				}
@@ -83,5 +78,4 @@ public class AzureEventGridCloudHandler extends AzureEventHandler{
 				rawMessage = eventJson;
 		}
 	}
-
 }

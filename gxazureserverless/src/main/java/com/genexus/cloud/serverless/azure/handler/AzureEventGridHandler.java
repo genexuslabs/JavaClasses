@@ -31,28 +31,23 @@ public class AzureEventGridHandler  extends AzureEventHandler {
 				logger.error(String.format("Messages were not handled. Error: %s", response.getErrorMessage()));
 				throw new RuntimeException(response.getErrorMessage()); //Throw the exception so the runtime can Retry the operation.
 			}
-
 		} catch (Exception e) {
 			logger.error("HandleRequest execution error", e);
 			throw e; 		//Throw the exception so the runtime can Retry the operation.
 		}
-
-
 	}
-	protected void setupEventGridMessage(EventGridEvent event) {
 
+	protected void setupEventGridMessage(EventGridEvent event) {
 		switch (executor.getMethodSignatureIdx()) {
 			case 0:
 				EventMessage msg = new EventMessage();
 				msg.setMessageId(event.getId());
 				msg.setMessageSourceType(event.getEventType());
 				msg.setMessageVersion(event.getDataVersion());
-
 				msg.setMessageDate(new Date());
 				msg.setMessageData(event.getData().toString());
 
 				List<EventMessageProperty> msgAtts = msg.getMessageProperties();
-
 				msgAtts.add(new EventMessageProperty("Id", event.getId()));
 
 				msgAtts.add(new EventMessageProperty("Subject",event.getSubject()));
@@ -61,7 +56,6 @@ public class AzureEventGridHandler  extends AzureEventHandler {
 					msgAtts.add(new EventMessageProperty("EventTime",event.getEventTime().toString()));
 
 				msgs.add(msg);
-
 				break;
 			case 1:
 			case 2:

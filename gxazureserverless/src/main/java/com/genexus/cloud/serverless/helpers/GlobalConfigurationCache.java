@@ -41,9 +41,8 @@ public class GlobalConfigurationCache {
 				}
 				initialized = true;
 			}
-			else
-			{
-				logger.error(String.format("Global configuration cache could not be initialized."));
+			else {
+				logger.error("Global configuration cache could not be initialized.");
 			}
 		}
 	}

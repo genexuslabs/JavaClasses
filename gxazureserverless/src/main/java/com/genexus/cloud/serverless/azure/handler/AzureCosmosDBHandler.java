@@ -25,7 +25,6 @@ public class AzureCosmosDBHandler extends AzureEventHandler{
 		EventMessages msgs = new EventMessages();
 		EventMessagesList eventMessagesList = new EventMessagesList();
 		String rawMessage= "";
-
 		setupServerlessMappings(context.getFunctionName());
 
 		switch (executor.getMethodSignatureIdx()) {
@@ -39,20 +38,18 @@ public class AzureCosmosDBHandler extends AzureEventHandler{
 				rawMessage = Helper.toJSONString(items);
 				break;
 		}
-
 		try {
 			EventMessageResponse response = dispatchEvent(msgs, eventMessagesList, rawMessage);
 			if (response.hasFailed()) {
 				logger.error(String.format("Messages were not handled. Error: %s", response.getErrorMessage()));
 				throw new RuntimeException(response.getErrorMessage()); //Throw the exception so the runtime can Retry the operation.
 			}
-
 		} catch (Exception e) {
 			logger.error("HandleRequest execution error", e);
 			throw e; 		//Throw the exception so the runtime can Retry the operation.
 		}
-
 	}
+
 	private EventMessagesList setupEventMessagesList(List<Map<String,Object>> jsonList)
 	{
 		EventMessagesList messagesList = new EventMessagesList();
@@ -61,10 +58,10 @@ public class AzureCosmosDBHandler extends AzureEventHandler{
 		}
 		return messagesList;
 	}
+
 	private EventMessages setupEventMessages(Guid.GUID eventId, List<Map<String,Object>> jsonList)
 	{
 		EventMessages msgs = new EventMessages();
-
 		for (Map<String, Object> json : jsonList) {
 
 			String idValue = "";
@@ -73,7 +70,6 @@ public class AzureCosmosDBHandler extends AzureEventHandler{
 			msg.setMessageSourceType(EventMessageSourceType.COSMOSDB);
 
 			List<EventMessageProperty> msgAtts = msg.getMessageProperties();
-
 			for (Map.Entry<String, Object> entry : json.entrySet()) {
 				String key = entry.getKey();
 				String value = entry.getValue().toString();

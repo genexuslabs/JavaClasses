@@ -17,8 +17,8 @@ import java.util.Optional;
 public class AzureFunctionConfigurationHelper {
 	private final static ILogger logger = LogManager.initialize(".", AzureFunctionConfiguration.class);
 	private final static String FUNCTION_CONFIG_PATH = "gxazmappings.json";
-	public static List<AzureFunctionConfiguration> getFunctionsMapConfiguration() throws FunctionConfigurationException {
 
+	public static List<AzureFunctionConfiguration> getFunctionsMapConfiguration() throws FunctionConfigurationException {
 		File configFile = new File(FUNCTION_CONFIG_PATH);
 
 		if (configFile.exists()) {
@@ -36,15 +36,14 @@ public class AzureFunctionConfigurationHelper {
 		}
 	}
 
-	public static String getFunctionConfigurationEntryPoint(String functionName, AzureFunctionConfiguration functionConfiguration)
-	{
+	public static String getFunctionConfigurationEntryPoint(String functionName, AzureFunctionConfiguration functionConfiguration) {
 		if (functionConfiguration != null)
 			return functionConfiguration.getGXClassName();
 		else return null;
 	}
 
 	public static AzureFunctionConfiguration getAzureFunctionConfiguration(String functionName, List<AzureFunctionConfiguration> mappings)  throws FunctionConfigurationException {
-		Optional<AzureFunctionConfiguration> config = null;
+		Optional<AzureFunctionConfiguration> config = Optional.empty();
 		if (mappings != null) {
 			config = mappings.stream()
 				.filter(c -> functionName.equals(c.getFunctionName()))
@@ -52,5 +51,4 @@ public class AzureFunctionConfigurationHelper {
 		}
 		return config.orElseThrow(() -> new FunctionConfigurationException(String.format("Configuration not found for Azure function %s at gxazmappings.json.", functionName)));
 	}
-
 }

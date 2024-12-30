@@ -48,6 +48,5 @@ public class TestAzureQueueHandler {
 
 		assertNotNull(context.getLogger());
 		context.getLogger().info("Logger is not null");
-
 	}
 }

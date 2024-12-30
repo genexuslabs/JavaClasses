@@ -1,6 +1,6 @@
 package com.genexus.cloud.azure.events;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.genexus.cloud.serverless.azure.handler.AzureQueueHandler;
 import com.genexus.cloud.serverless.azure.handler.AzureTimerHandler;
 import com.microsoft.azure.functions.ExecutionContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,7 +19,6 @@ public class TestAzureTimerHandler {
 	}
 	@Test
 	public void testTimerTriggerFunctionRaw() throws Exception {
-
 		AzureTimerHandler.TimerScheduleStatus timerScheduleStatus = new AzureTimerHandler.TimerScheduleStatus();
 		timerScheduleStatus.setLast("2025-01-01T00:00:00.000Z");
 		timerScheduleStatus.setNext("2025-01-01T00:00:00.000Z");
@@ -33,6 +32,5 @@ public class TestAzureTimerHandler {
 
 		assertNotNull(context.getLogger());
 		context.getLogger().info("Logger is not null");
-
 	}
 }

@@ -34,14 +34,13 @@ public class AzureServiceBusTopicHandler extends AzureEventHandler {
 				logger.error(String.format("Messages were not handled. Error: %s", response.getErrorMessage()));
 				throw new RuntimeException(response.getErrorMessage()); //Throw the exception so the runtime can Retry the operation.
 			}
-
 		} catch (Exception e) {
 			logger.error("HandleRequest execution error", e);
 			throw e; 		//Throw the exception so the runtime can Retry the operation.
 		}
 	}
-	protected void setupServiceBusMessages(List<ServiceBusReceivedMessage> messages) {
 
+	protected void setupServiceBusMessages(List<ServiceBusReceivedMessage> messages) {
 		switch (executor.getMethodSignatureIdx()) {
 			case 0:
 				msgs = ServiceBusMessagesSetup.setupservicebuslistmsgs(messages);

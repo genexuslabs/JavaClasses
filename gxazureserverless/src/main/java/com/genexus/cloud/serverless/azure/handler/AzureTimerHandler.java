@@ -29,11 +29,9 @@ public class AzureTimerHandler extends AzureEventHandler {
 		EventMessages msgs = new EventMessages();
 
 		if (executor.getMethodSignatureIdx() == 0) {
-
 			try {
 				TimerObject timerObject = new ObjectMapper().readValue(TimerInfo, new TypeReference<TimerObject>() {
 				});
-
 				EventMessage msg = new EventMessage();
 				msg.setMessageId(context.getInvocationId());
 				msg.setMessageSourceType(EventMessageSourceType.TIMER);
@@ -46,7 +44,6 @@ public class AzureTimerHandler extends AzureEventHandler {
 				msgAtts.add(new EventMessageProperty("Id", context.getInvocationId()));
 				boolean adjustForSDT = timerObject.timerSchedule.getAdjustForDST();
 				msgAtts.add(new EventMessageProperty("AdjustForDST", Boolean.toString(adjustForSDT)));
-
 				msgAtts.add(new EventMessageProperty("Next", timerObject.timerScheduleStatus.getNext()));
 				msgAtts.add(new EventMessageProperty("Last", timerObject.timerScheduleStatus.getLast()));
 				msgAtts.add(new EventMessageProperty("LastUpdated", timerObject.timerScheduleStatus.getLastUpdated()));
@@ -55,13 +52,11 @@ public class AzureTimerHandler extends AzureEventHandler {
 				msgAtts.add(new EventMessageProperty("IsPastDue", Boolean.toString(isPastDue)));
 
 				msgs.add(msg);
-
 			} catch (Exception e) {
 				logger.error("Message could not be processed.");
 				throw e;
 			}
 		}
-
 		try {
 			EventMessageResponse response = dispatchEvent(msgs, TimerInfo);
 			if (response.hasFailed()) {
@@ -73,6 +68,7 @@ public class AzureTimerHandler extends AzureEventHandler {
 			throw e; 		//Throw the exception so the runtime can Retry the operation.
 		}
 	}
+
 	public static class TimerObject{
 
 		@JsonProperty("ScheduleStatus")
