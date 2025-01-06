@@ -45,6 +45,7 @@ public final class handlesbqueueazureevent2 extends GXProcedure {
 			AV10EventMessage = (com.genexus.genexusserverlessapi.SdtEventMessage) ((com.genexus.genexusserverlessapi.SdtEventMessage) AV8EventMessages.getgxTv_SdtEventMessages_Eventmessage().elementAt(-1 + AV16GXV1));
 			System.out.println("MessageData: " + AV10EventMessage.getgxTv_SdtEventMessage_Eventmessagedata());
 			System.out.println("MessageId: " + AV10EventMessage.getgxTv_SdtEventMessage_Eventmessageid());
+			System.out.println("MessageDate: " + AV10EventMessage.getgxTv_SdtEventMessage_Eventmessagedate());
 			AV9EventMessageResponse.setgxTv_SdtEventMessageResponse_Handlefailure(AV10EventMessage.getgxTv_SdtEventMessage_Eventmessagedata() == "");
 			if (AV9EventMessageResponse.getgxTv_SdtEventMessageResponse_Handlefailure()) {
 				System.out.println("EventMessageData could not be parsed.");

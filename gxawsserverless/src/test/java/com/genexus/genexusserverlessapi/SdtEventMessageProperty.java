@@ -1,38 +1,36 @@
-package com.genexus.genexusserverlessapi;
+package com.genexus.genexusserverlessapi ;
+import com.genexus.*;
+import com.genexus.*;
+import com.genexus.xml.*;
+import com.genexus.search.*;
+import com.genexus.webpanels.*;
+import java.util.*;
 
-import com.genexus.GXutil;
-import com.genexus.GxUserType;
-import com.genexus.ModelContext;
-import com.genexus.xml.XMLReader;
-import com.genexus.xml.XMLWriter;
-
-import java.util.HashMap;
-
-public final  class SdtEventMessageResponse extends GxUserType
+public final  class SdtEventMessageProperty extends GxUserType
 {
-   public SdtEventMessageResponse( )
+   public SdtEventMessageProperty( )
    {
-      this(  new ModelContext(SdtEventMessageResponse.class));
+      this(  new ModelContext(SdtEventMessageProperty.class));
    }
 
-   public SdtEventMessageResponse( ModelContext context )
+   public SdtEventMessageProperty( ModelContext context )
    {
-      super( context, "SdtEventMessageResponse");
+      super( context, "SdtEventMessageProperty");
    }
 
-   public SdtEventMessageResponse( int remoteHandle ,
+   public SdtEventMessageProperty( int remoteHandle ,
                                    ModelContext context )
    {
-      super( remoteHandle, context, "SdtEventMessageResponse");
+      super( remoteHandle, context, "SdtEventMessageProperty");
    }
 
-   public SdtEventMessageResponse( StructSdtEventMessageResponse struct )
+   public SdtEventMessageProperty( StructSdtEventMessageProperty struct )
    {
       this();
       setStruct(struct);
    }
 
-   private static HashMap mapper = new HashMap();
+   private static java.util.HashMap mapper = new java.util.HashMap();
    static
    {
    }
@@ -42,7 +40,7 @@ public final  class SdtEventMessageResponse extends GxUserType
       return (String) mapper.get(value);
    }
 
-   public short readxml( XMLReader oReader ,
+   public short readxml( com.genexus.xml.XMLReader oReader ,
                          String sName )
    {
       short GXSoapError = 1;
@@ -56,9 +54,9 @@ public final  class SdtEventMessageResponse extends GxUserType
          {
             readOk = (short)(0) ;
             readElement = false ;
-            if ( GXutil.strcmp2( oReader.getLocalName(), "HandleFailure") )
+            if ( GXutil.strcmp2( oReader.getLocalName(), "PropertyId") )
             {
-               gxTv_SdtEventMessageResponse_Handlefailure = (boolean)((((GXutil.strcmp(oReader.getValue(), "true")==0)||(GXutil.strcmp(oReader.getValue(), "1")==0) ? 1 : 0)==0)?false:true) ;
+               gxTv_SdtEventMessageProperty_Propertyid = oReader.getValue() ;
                readElement = true ;
                if ( GXSoapError > 0 )
                {
@@ -66,9 +64,9 @@ public final  class SdtEventMessageResponse extends GxUserType
                }
                GXSoapError = oReader.read() ;
             }
-            if ( GXutil.strcmp2( oReader.getLocalName(), "ErrorMessage") )
+            if ( GXutil.strcmp2( oReader.getLocalName(), "PropertyValue") )
             {
-               gxTv_SdtEventMessageResponse_Errormessage = oReader.getValue() ;
+               gxTv_SdtEventMessageProperty_Propertyvalue = oReader.getValue() ;
                readElement = true ;
                if ( GXSoapError > 0 )
                {
@@ -93,21 +91,21 @@ public final  class SdtEventMessageResponse extends GxUserType
       return GXSoapError ;
    }
 
-   public void writexml( XMLWriter oWriter ,
+   public void writexml( com.genexus.xml.XMLWriter oWriter ,
                          String sName ,
                          String sNameSpace )
    {
       writexml(oWriter, sName, sNameSpace, true);
    }
 
-   public void writexml( XMLWriter oWriter ,
+   public void writexml( com.genexus.xml.XMLWriter oWriter ,
                          String sName ,
                          String sNameSpace ,
                          boolean sIncludeState )
    {
       if ( (GXutil.strcmp("", sName)==0) )
       {
-         sName = "EventMessageResponse" ;
+         sName = "EventMessageProperty" ;
       }
       if ( (GXutil.strcmp("", sNameSpace)==0) )
       {
@@ -122,12 +120,12 @@ public final  class SdtEventMessageResponse extends GxUserType
       {
          sNameSpace = GXutil.right( sNameSpace, GXutil.len( sNameSpace)-10) ;
       }
-      oWriter.writeElement("HandleFailure", GXutil.booltostr( gxTv_SdtEventMessageResponse_Handlefailure));
+      oWriter.writeElement("PropertyId", gxTv_SdtEventMessageProperty_Propertyid);
       if ( GXutil.strcmp(sNameSpace, "ServerlessAPI") != 0 )
       {
          oWriter.writeAttribute("xmlns", "ServerlessAPI");
       }
-      oWriter.writeElement("ErrorMessage", gxTv_SdtEventMessageResponse_Errormessage);
+      oWriter.writeElement("PropertyValue", gxTv_SdtEventMessageProperty_Propertyvalue);
       if ( GXutil.strcmp(sNameSpace, "ServerlessAPI") != 0 )
       {
          oWriter.writeAttribute("xmlns", "ServerlessAPI");
@@ -148,30 +146,30 @@ public final  class SdtEventMessageResponse extends GxUserType
    public void tojson( boolean includeState ,
                        boolean includeNonInitialized )
    {
-      AddObjectProperty("HandleFailure", gxTv_SdtEventMessageResponse_Handlefailure, false, false);
-      AddObjectProperty("ErrorMessage", gxTv_SdtEventMessageResponse_Errormessage, false, false);
+      AddObjectProperty("PropertyId", gxTv_SdtEventMessageProperty_Propertyid, false, false);
+      AddObjectProperty("PropertyValue", gxTv_SdtEventMessageProperty_Propertyvalue, false, false);
    }
 
-   public boolean getgxTv_SdtEventMessageResponse_Handlefailure( )
+   public String getgxTv_SdtEventMessageProperty_Propertyid( )
    {
-      return gxTv_SdtEventMessageResponse_Handlefailure ;
+      return gxTv_SdtEventMessageProperty_Propertyid ;
    }
 
-   public void setgxTv_SdtEventMessageResponse_Handlefailure( boolean value )
+   public void setgxTv_SdtEventMessageProperty_Propertyid( String value )
    {
-      gxTv_SdtEventMessageResponse_N = (byte)(0) ;
-      gxTv_SdtEventMessageResponse_Handlefailure = value ;
+      sdtIsNull = (byte)(0) ;
+      gxTv_SdtEventMessageProperty_Propertyid = value ;
    }
 
-   public String getgxTv_SdtEventMessageResponse_Errormessage( )
+   public String getgxTv_SdtEventMessageProperty_Propertyvalue( )
    {
-      return gxTv_SdtEventMessageResponse_Errormessage ;
+      return gxTv_SdtEventMessageProperty_Propertyvalue ;
    }
 
-   public void setgxTv_SdtEventMessageResponse_Errormessage( String value )
+   public void setgxTv_SdtEventMessageProperty_Propertyvalue( String value )
    {
-      gxTv_SdtEventMessageResponse_N = (byte)(0) ;
-      gxTv_SdtEventMessageResponse_Errormessage = value ;
+      sdtIsNull = (byte)(0) ;
+      gxTv_SdtEventMessageProperty_Propertyvalue = value ;
    }
 
    public void initialize( int remoteHandle )
@@ -181,46 +179,47 @@ public final  class SdtEventMessageResponse extends GxUserType
 
    public void initialize( )
    {
-      gxTv_SdtEventMessageResponse_N = (byte)(1) ;
-      gxTv_SdtEventMessageResponse_Errormessage = "" ;
+      gxTv_SdtEventMessageProperty_Propertyid = "" ;
+      sdtIsNull = (byte)(1) ;
+      gxTv_SdtEventMessageProperty_Propertyvalue = "" ;
       sTagName = "" ;
    }
 
    public byte isNull( )
    {
-      return gxTv_SdtEventMessageResponse_N ;
+      return sdtIsNull ;
    }
 
-   public com.genexus.genexusserverlessapi.SdtEventMessageResponse Clone( )
+   public com.genexus.genexusserverlessapi.SdtEventMessageProperty Clone( )
    {
-      return (com.genexus.genexusserverlessapi.SdtEventMessageResponse)(clone()) ;
+      return (com.genexus.genexusserverlessapi.SdtEventMessageProperty)(clone()) ;
    }
 
-   public void setStruct( StructSdtEventMessageResponse struct )
+   public void setStruct( com.genexus.genexusserverlessapi.StructSdtEventMessageProperty struct )
    {
       if ( struct != null )
       {
-         setgxTv_SdtEventMessageResponse_Handlefailure(struct.getHandlefailure());
-         setgxTv_SdtEventMessageResponse_Errormessage(struct.getErrormessage());
+         setgxTv_SdtEventMessageProperty_Propertyid(struct.getPropertyid());
+         setgxTv_SdtEventMessageProperty_Propertyvalue(struct.getPropertyvalue());
       }
    }
 
    @SuppressWarnings("unchecked")
-   public StructSdtEventMessageResponse getStruct( )
+   public com.genexus.genexusserverlessapi.StructSdtEventMessageProperty getStruct( )
    {
-      StructSdtEventMessageResponse struct = new StructSdtEventMessageResponse ();
-      struct.setHandlefailure(getgxTv_SdtEventMessageResponse_Handlefailure());
-      struct.setErrormessage(getgxTv_SdtEventMessageResponse_Errormessage());
+      com.genexus.genexusserverlessapi.StructSdtEventMessageProperty struct = new com.genexus.genexusserverlessapi.StructSdtEventMessageProperty ();
+      struct.setPropertyid(getgxTv_SdtEventMessageProperty_Propertyid());
+      struct.setPropertyvalue(getgxTv_SdtEventMessageProperty_Propertyvalue());
       return struct ;
    }
 
-   protected byte gxTv_SdtEventMessageResponse_N ;
+   protected byte sdtIsNull ;
    protected short readOk ;
    protected short nOutParmCount ;
+   protected String gxTv_SdtEventMessageProperty_Propertyid ;
+   protected String gxTv_SdtEventMessageProperty_Propertyvalue ;
    protected String sTagName ;
-   protected boolean gxTv_SdtEventMessageResponse_Handlefailure ;
    protected boolean readElement ;
    protected boolean formatError ;
-   protected String gxTv_SdtEventMessageResponse_Errormessage ;
 }
 

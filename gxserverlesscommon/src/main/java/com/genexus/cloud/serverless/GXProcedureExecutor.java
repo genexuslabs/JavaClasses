@@ -77,7 +77,7 @@ public class GXProcedureExecutor {
 				Class<?> inputClass = Class.forName(MESSAGE_COLLECTION_INPUT_CLASS_NAME);
 				Object msgsInput = inputClass.getConstructor().newInstance();
 				if (GxUserType.class.isAssignableFrom(inputClass)) {
-					((GxUserType) msgsInput).fromJSonString(Helper.toJSONString(msgs));
+					((GxUserType) msgsInput).fromJSonString(JSONHelper.toJSONString(msgs));
 				}
 				parameters = new Object[]{msgsInput, new Object[]{}};
 				break;
@@ -95,7 +95,7 @@ public class GXProcedureExecutor {
 				Class<?> inputListClass = Class.forName(MESSAGE_COLLECTION_LIST_CLASS_NAME);
 				Object msgsListInput = inputListClass.getConstructor().newInstance();
 				if (GxUserType.class.isAssignableFrom(inputListClass)) {
-					((GxUserType) msgsListInput).fromJSonString(Helper.toJSONString(msgsList));
+					((GxUserType) msgsListInput).fromJSonString(JSONHelper.toJSONString(msgsList));
 				}
 				parameters = new Object[]{msgsListInput, new Object[]{}};
 				break;

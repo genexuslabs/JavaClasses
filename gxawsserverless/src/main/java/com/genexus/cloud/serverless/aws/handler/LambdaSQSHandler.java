@@ -60,7 +60,7 @@ public class LambdaSQSHandler extends LambdaBaseEventHandler implements RequestH
 		String errorMessage;
 
 		try {
-			EventMessageResponse response = dispatchEvent(msgs, Helper.toJSONString(sqsEvent));
+			EventMessageResponse response = dispatchEvent(msgs, JSONHelper.toJSONString(sqsEvent));
 			wasHandled = !response.hasFailed();
 			errorMessage = response.getErrorMessage();
 		} catch (Exception e) {

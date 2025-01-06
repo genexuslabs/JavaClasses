@@ -1,6 +1,5 @@
-package com.genexus.genexusserverlessapi;
-
-import com.genexus.ModelContext;
+package com.genexus.genexusserverlessapi ;
+import com.genexus.*;
 
 public final  class StructSdtEventMessageResponse implements Cloneable, java.io.Serializable
 {
@@ -32,7 +31,7 @@ public final  class StructSdtEventMessageResponse implements Cloneable, java.io.
 
    public void setHandlefailure( boolean value )
    {
-      gxTv_SdtEventMessageResponse_N = (byte)(0) ;
+      sdtIsNull = (byte)(0) ;
       gxTv_SdtEventMessageResponse_Handlefailure = value ;
    }
 
@@ -43,11 +42,11 @@ public final  class StructSdtEventMessageResponse implements Cloneable, java.io.
 
    public void setErrormessage( String value )
    {
-      gxTv_SdtEventMessageResponse_N = (byte)(0) ;
+      sdtIsNull = (byte)(0) ;
       gxTv_SdtEventMessageResponse_Errormessage = value ;
    }
 
-   protected byte gxTv_SdtEventMessageResponse_N ;
+   protected byte sdtIsNull ;
    protected boolean gxTv_SdtEventMessageResponse_Handlefailure ;
    protected String gxTv_SdtEventMessageResponse_Errormessage ;
 }

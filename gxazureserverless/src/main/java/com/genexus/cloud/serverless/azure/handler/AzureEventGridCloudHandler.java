@@ -45,9 +45,7 @@ public class AzureEventGridCloudHandler extends AzureEventHandler{
 					ObjectMapper objectMapper = new ObjectMapper();
 					objectMapper.registerModule(io.cloudevents.jackson.JsonFormat.getCloudEventJacksonModule());
 					CloudEvent cloudEvent = objectMapper.readValue(eventJson, CloudEvent.class);
-
 					EventMessage msg = new EventMessage();
-
 					msg.setMessageId(cloudEvent.getId());
 					msg.setMessageSourceType(cloudEvent.getType());
 					msg.setMessageVersion("");
@@ -66,7 +64,6 @@ public class AzureEventGridCloudHandler extends AzureEventHandler{
 						msgAtts.add(new EventMessageProperty("SpecVersion", cloudEvent.getSpecVersion().toString()));
 					if (cloudEvent.getTime() != null)
 						msgAtts.add(new EventMessageProperty("Time", cloudEvent.getTime().toString()));
-
 					msgs.add(msg);
 				}
 				catch (Exception e) {

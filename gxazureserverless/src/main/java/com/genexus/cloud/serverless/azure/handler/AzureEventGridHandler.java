@@ -1,7 +1,7 @@
 package com.genexus.cloud.serverless.azure.handler;
 
 import com.azure.messaging.eventgrid.EventGridEvent;
-import com.genexus.cloud.serverless.Helper;
+import com.genexus.cloud.serverless.JSONHelper;
 import com.genexus.cloud.serverless.model.*;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.annotation.EventGridTrigger;
@@ -59,7 +59,7 @@ public class AzureEventGridHandler  extends AzureEventHandler {
 				break;
 			case 1:
 			case 2:
-				rawMessage = Helper.toJSONString(event);
+				rawMessage = JSONHelper.toJSONString(event);
 		}
 	}
 }

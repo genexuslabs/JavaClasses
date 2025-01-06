@@ -5,6 +5,7 @@ import com.genexus.cloud.serverless.model.*;
 import com.microsoft.azure.functions.annotation.*;
 import com.microsoft.azure.functions.ExecutionContext;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.*;
 
@@ -23,18 +24,26 @@ public class AzureQueueHandler extends AzureEventHandler {
 		final ExecutionContext context) throws Exception {
 
 		context.getLogger().info("GeneXus Queue trigger handler. Function processed: " + context.getFunctionName() + " Invocation Id: " + context.getInvocationId());
-
 		setupServerlessMappings(context.getFunctionName());
-
 		EventMessages msgs = new EventMessages();
 		if (executor.getMethodSignatureIdx() == 0) {
 				EventMessage msg = new EventMessage();
 				msg.setMessageId(id);
 				msg.setMessageSourceType(EventMessageSourceType.QUEUE_MESSAGE);
-				msg.setMessageDate(new Date());
+				try {
+					String sanitizedTime = insertionTime.replace("\"", "");
+					if (!sanitizedTime.endsWith("Z")) {
+						sanitizedTime += "Z";
+					}
+					Instant instant = Instant.from(Instant.parse(sanitizedTime));
+					msg.setMessageDate(Date.from(instant));
+				}
+				catch (Exception exception)
+				{
+					context.getLogger().severe(exception.toString());
+				}
 				msg.setMessageData(message);
 				List<EventMessageProperty> msgAtts = msg.getMessageProperties();
-
 				msgAtts.add(new EventMessageProperty("Id", id));
 				msgAtts.add(new EventMessageProperty("DequeueCount", Long.toString(dequeCount)));
 				msgAtts.add(new EventMessageProperty("ExpirationTime", expirationTime));

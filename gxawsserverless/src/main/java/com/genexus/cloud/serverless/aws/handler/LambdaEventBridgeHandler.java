@@ -2,7 +2,7 @@ package com.genexus.cloud.serverless.aws.handler;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.genexus.cloud.serverless.Helper;
+import com.genexus.cloud.serverless.JSONHelper;
 import com.genexus.cloud.serverless.model.*;
 import com.genexus.cloud.serverless.exception.FunctionRuntimeException;
 import com.genexus.json.JSONObjectWrapper;
@@ -22,7 +22,7 @@ public class LambdaEventBridgeHandler extends LambdaBaseEventHandler implements 
 
 	@Override
 	public String handleRequest(Map<String, Object> stringObjectMap, Context context) {
-		String jsonEventRaw = Helper.toJSONString(stringObjectMap);
+		String jsonEventRaw = JSONHelper.toJSONString(stringObjectMap);
 
 		logger.debug("handleRequest started with event: " + jsonEventRaw);
 
@@ -41,7 +41,7 @@ public class LambdaEventBridgeHandler extends LambdaBaseEventHandler implements 
 				msgItem.setMessageData(new JSONObjectWrapper(jsonEventRaw).getJSONObject("detail").toString());
 			}
 			for (Map.Entry<String, Object> entry : stringObjectMap.entrySet()) {
-				Helper.addEventMessageProperty(msgItem, entry.getKey(), entry.getValue().toString());
+				JSONHelper.addEventMessageProperty(msgItem, entry.getKey(), entry.getValue().toString());
 			}
 			msgs.add(msgItem);
 			response = dispatchEvent(msgs, jsonEventRaw);
@@ -60,6 +60,6 @@ public class LambdaEventBridgeHandler extends LambdaBaseEventHandler implements 
 			logger.error(String.format("Messages were not handled. Error: %s", response.getErrorMessage()));
 			throw new RuntimeException(response.getErrorMessage());
 		}
-		return Helper.toJSONString(response);
+		return JSONHelper.toJSONString(response);
 	}
 }

@@ -1,5 +1,6 @@
 package com.genexus.cloud.serverless.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ public class EventMessage {
 	@JsonProperty("EventMessageId")
 	private String messageId;
 
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
 	@JsonProperty("EventMessageDate")
 	private Date messageDate;
 
