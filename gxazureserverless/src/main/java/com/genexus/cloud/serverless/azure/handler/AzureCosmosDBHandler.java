@@ -1,5 +1,5 @@
 package com.genexus.cloud.serverless.azure.handler;
-import com.genexus.cloud.serverless.Helper;
+import com.genexus.cloud.serverless.JSONHelper;
 import com.genexus.cloud.serverless.model.*;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.annotation.CosmosDBTrigger;
@@ -35,7 +35,7 @@ public class AzureCosmosDBHandler extends AzureEventHandler{
 				eventMessagesList = setupEventMessagesList(items);
 				break;
 			default:
-				rawMessage = Helper.toJSONString(items);
+				rawMessage = JSONHelper.toJSONString(items);
 				break;
 		}
 		try {
@@ -54,7 +54,7 @@ public class AzureCosmosDBHandler extends AzureEventHandler{
 	{
 		EventMessagesList messagesList = new EventMessagesList();
 		for (Map<String, Object> json : jsonList) {
-			messagesList.addItem(Helper.toJSONString(json));
+			messagesList.addItem(JSONHelper.toJSONString(json));
 		}
 		return messagesList;
 	}

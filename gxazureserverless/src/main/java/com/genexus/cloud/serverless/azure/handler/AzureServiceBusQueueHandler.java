@@ -1,18 +1,12 @@
 package com.genexus.cloud.serverless.azure.handler;
 
-import com.azure.messaging.servicebus.ServiceBusReceivedMessage;
-import com.genexus.cloud.serverless.Helper;
-import com.genexus.cloud.serverless.helpers.ServiceBusMessagesSetup;
+import com.genexus.cloud.serverless.helpers.ServiceBusBatchMessageProcessor;
+import com.genexus.cloud.serverless.helpers.ServiceBusProcessedMessage;
 import com.genexus.cloud.serverless.model.*;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.annotation.*;
 
-import java.util.List;
-
 public class AzureServiceBusQueueHandler extends AzureEventHandler {
-
-	EventMessages msgs = new EventMessages();
-	String rawMessage = "";
 
 	public AzureServiceBusQueueHandler() throws Exception {
 		super();
@@ -20,16 +14,16 @@ public class AzureServiceBusQueueHandler extends AzureEventHandler {
 
 	public void run(
 		@ServiceBusQueueTrigger(name = "messages", queueName = "%queue_name%", connection = "%queue_connection%", cardinality = Cardinality.MANY)
-		List<ServiceBusReceivedMessage> messages,
+		String[] messages,
 		final ExecutionContext context
 	) throws Exception {
 
 		context.getLogger().info("GeneXus Service Bus Queue trigger handler. Function processed: " + context.getFunctionName() + " Invocation Id: " + context.getInvocationId());
-
 		setupServerlessMappings(context.getFunctionName());
-		setupServiceBusMessages(messages);
+		ServiceBusBatchMessageProcessor queueBatchMessageProcessor = new ServiceBusBatchMessageProcessor();
+		ServiceBusProcessedMessage queueMessage = queueBatchMessageProcessor.processQueueMessage(executor,messages);
 		try {
-			EventMessageResponse response = dispatchEvent(msgs, rawMessage);
+			EventMessageResponse response = dispatchEvent(queueMessage.getEventMessages(),queueMessage.getRawMessage());
 			if (response.hasFailed()) {
 				logger.error(String.format("Messages were not handled. Error: %s", response.getErrorMessage()));
 				throw new RuntimeException(response.getErrorMessage()); //Throw the exception so the runtime can Retry the operation.
@@ -37,17 +31,6 @@ public class AzureServiceBusQueueHandler extends AzureEventHandler {
 		} catch (Exception e) {
 			logger.error("HandleRequest execution error", e);
 			throw e; 		//Throw the exception so the runtime can Retry the operation.
-		}
-	}
-
-	protected void setupServiceBusMessages(List<ServiceBusReceivedMessage> messages) {
-		switch (executor.getMethodSignatureIdx()) {
-			case 0:
-				msgs = ServiceBusMessagesSetup.setupservicebuslistmsgs(messages);
-				break;
-			case 1:
-			case 2:
-				rawMessage = Helper.toJSONString(messages);
 		}
 	}
 }

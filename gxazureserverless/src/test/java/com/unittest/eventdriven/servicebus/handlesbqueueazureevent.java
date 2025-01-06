@@ -1,7 +1,7 @@
 package com.unittest.eventdriven.servicebus;
 
 import com.genexus.GXProcedure;
-import com.genexus.GXutil;
+
 import com.genexus.ModelContext;
 import com.genexus.genexusserverlessapi.SdtEventMessageResponse;
 

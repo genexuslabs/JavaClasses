@@ -6,25 +6,25 @@ import com.genexus.search.*;
 import com.genexus.webpanels.*;
 import java.util.*;
 
-public final  class SdtEventMessageResponse extends GxUserType
+public final  class SdtEventMessagesList extends GxUserType
 {
-   public SdtEventMessageResponse( )
+   public SdtEventMessagesList( )
    {
-      this(  new ModelContext(SdtEventMessageResponse.class));
+      this(  new ModelContext(SdtEventMessagesList.class));
    }
 
-   public SdtEventMessageResponse( ModelContext context )
+   public SdtEventMessagesList( ModelContext context )
    {
-      super( context, "SdtEventMessageResponse");
+      super( context, "SdtEventMessagesList");
    }
 
-   public SdtEventMessageResponse( int remoteHandle ,
-                                   ModelContext context )
+   public SdtEventMessagesList( int remoteHandle ,
+                                ModelContext context )
    {
-      super( remoteHandle, context, "SdtEventMessageResponse");
+      super( remoteHandle, context, "SdtEventMessagesList");
    }
 
-   public SdtEventMessageResponse( StructSdtEventMessageResponse struct )
+   public SdtEventMessagesList( StructSdtEventMessagesList struct )
    {
       this();
       setStruct(struct);
@@ -54,25 +54,25 @@ public final  class SdtEventMessageResponse extends GxUserType
          {
             readOk = (short)(0) ;
             readElement = false ;
-            if ( GXutil.strcmp2( oReader.getLocalName(), "HandleFailure") )
+            if ( GXutil.strcmp2( oReader.getLocalName(), "items") )
             {
-               gxTv_SdtEventMessageResponse_Handlefailure = (boolean)((((GXutil.strcmp(oReader.getValue(), "true")==0)||(GXutil.strcmp(oReader.getValue(), "1")==0) ? 1 : 0)==0)?false:true) ;
+               if ( gxTv_SdtEventMessagesList_Items == null )
+               {
+                  gxTv_SdtEventMessagesList_Items = new GXSimpleCollection<String>(String.class, "internal", "");
+               }
+               if ( oReader.getIsSimple() == 0 )
+               {
+                  GXSoapError = gxTv_SdtEventMessagesList_Items.readxmlcollection(oReader, "items", "Item") ;
+               }
                readElement = true ;
                if ( GXSoapError > 0 )
                {
                   readOk = (short)(1) ;
                }
-               GXSoapError = oReader.read() ;
-            }
-            if ( GXutil.strcmp2( oReader.getLocalName(), "ErrorMessage") )
-            {
-               gxTv_SdtEventMessageResponse_Errormessage = oReader.getValue() ;
-               readElement = true ;
-               if ( GXSoapError > 0 )
+               if ( GXutil.strcmp2( oReader.getLocalName(), "items") )
                {
-                  readOk = (short)(1) ;
+                  GXSoapError = oReader.read() ;
                }
-               GXSoapError = oReader.read() ;
             }
             if ( ! readElement )
             {
@@ -105,7 +105,7 @@ public final  class SdtEventMessageResponse extends GxUserType
    {
       if ( (GXutil.strcmp("", sName)==0) )
       {
-         sName = "EventMessageResponse" ;
+         sName = "EventMessagesList" ;
       }
       if ( (GXutil.strcmp("", sNameSpace)==0) )
       {
@@ -120,15 +120,18 @@ public final  class SdtEventMessageResponse extends GxUserType
       {
          sNameSpace = GXutil.right( sNameSpace, GXutil.len( sNameSpace)-10) ;
       }
-      oWriter.writeElement("HandleFailure", GXutil.booltostr( gxTv_SdtEventMessageResponse_Handlefailure));
-      if ( GXutil.strcmp(sNameSpace, "ServerlessAPI") != 0 )
+      if ( gxTv_SdtEventMessagesList_Items != null )
       {
-         oWriter.writeAttribute("xmlns", "ServerlessAPI");
-      }
-      oWriter.writeElement("ErrorMessage", gxTv_SdtEventMessageResponse_Errormessage);
-      if ( GXutil.strcmp(sNameSpace, "ServerlessAPI") != 0 )
-      {
-         oWriter.writeAttribute("xmlns", "ServerlessAPI");
+         String sNameSpace1;
+         if ( GXutil.strcmp(sNameSpace, "ServerlessAPI") == 0 )
+         {
+            sNameSpace1 = "[*:nosend]" + "ServerlessAPI" ;
+         }
+         else
+         {
+            sNameSpace1 = "ServerlessAPI" ;
+         }
+         gxTv_SdtEventMessagesList_Items.writexmlcollection(oWriter, "items", sNameSpace1, "Item", sNameSpace1);
       }
       oWriter.writeEndElement();
    }
@@ -146,30 +149,48 @@ public final  class SdtEventMessageResponse extends GxUserType
    public void tojson( boolean includeState ,
                        boolean includeNonInitialized )
    {
-      AddObjectProperty("HandleFailure", gxTv_SdtEventMessageResponse_Handlefailure, false, false);
-      AddObjectProperty("ErrorMessage", gxTv_SdtEventMessageResponse_Errormessage, false, false);
+      if ( gxTv_SdtEventMessagesList_Items != null )
+      {
+         AddObjectProperty("items", gxTv_SdtEventMessagesList_Items, false, false);
+      }
    }
 
-   public boolean getgxTv_SdtEventMessageResponse_Handlefailure( )
+   public GXSimpleCollection<String> getgxTv_SdtEventMessagesList_Items( )
    {
-      return gxTv_SdtEventMessageResponse_Handlefailure ;
-   }
-
-   public void setgxTv_SdtEventMessageResponse_Handlefailure( boolean value )
-   {
+      if ( gxTv_SdtEventMessagesList_Items == null )
+      {
+         gxTv_SdtEventMessagesList_Items = new GXSimpleCollection<String>(String.class, "internal", "");
+      }
+      gxTv_SdtEventMessagesList_Items_N = (byte)(0) ;
       sdtIsNull = (byte)(0) ;
-      gxTv_SdtEventMessageResponse_Handlefailure = value ;
+      return gxTv_SdtEventMessagesList_Items ;
    }
 
-   public String getgxTv_SdtEventMessageResponse_Errormessage( )
+   public void setgxTv_SdtEventMessagesList_Items( GXSimpleCollection<String> value )
    {
-      return gxTv_SdtEventMessageResponse_Errormessage ;
-   }
-
-   public void setgxTv_SdtEventMessageResponse_Errormessage( String value )
-   {
+      gxTv_SdtEventMessagesList_Items_N = (byte)(0) ;
       sdtIsNull = (byte)(0) ;
-      gxTv_SdtEventMessageResponse_Errormessage = value ;
+      gxTv_SdtEventMessagesList_Items = value ;
+   }
+
+   public void setgxTv_SdtEventMessagesList_Items_SetNull( )
+   {
+      gxTv_SdtEventMessagesList_Items_N = (byte)(1) ;
+      gxTv_SdtEventMessagesList_Items = null ;
+   }
+
+   public boolean getgxTv_SdtEventMessagesList_Items_IsNull( )
+   {
+      if ( gxTv_SdtEventMessagesList_Items == null )
+      {
+         return true ;
+      }
+      return false ;
+   }
+
+   public byte getgxTv_SdtEventMessagesList_Items_N( )
+   {
+      return gxTv_SdtEventMessagesList_Items_N ;
    }
 
    public void initialize( int remoteHandle )
@@ -179,8 +200,8 @@ public final  class SdtEventMessageResponse extends GxUserType
 
    public void initialize( )
    {
+      gxTv_SdtEventMessagesList_Items_N = (byte)(1) ;
       sdtIsNull = (byte)(1) ;
-      gxTv_SdtEventMessageResponse_Errormessage = "" ;
       sTagName = "" ;
    }
 
@@ -189,36 +210,34 @@ public final  class SdtEventMessageResponse extends GxUserType
       return sdtIsNull ;
    }
 
-   public com.genexus.genexusserverlessapi.SdtEventMessageResponse Clone( )
+   public com.genexus.genexusserverlessapi.SdtEventMessagesList Clone( )
    {
-      return (com.genexus.genexusserverlessapi.SdtEventMessageResponse)(clone()) ;
+      return (com.genexus.genexusserverlessapi.SdtEventMessagesList)(clone()) ;
    }
 
-   public void setStruct( com.genexus.genexusserverlessapi.StructSdtEventMessageResponse struct )
+   public void setStruct( com.genexus.genexusserverlessapi.StructSdtEventMessagesList struct )
    {
       if ( struct != null )
       {
-         setgxTv_SdtEventMessageResponse_Handlefailure(struct.getHandlefailure());
-         setgxTv_SdtEventMessageResponse_Errormessage(struct.getErrormessage());
+         setgxTv_SdtEventMessagesList_Items(new GXSimpleCollection<String>(String.class, "internal", "", struct.getItems()));
       }
    }
 
    @SuppressWarnings("unchecked")
-   public com.genexus.genexusserverlessapi.StructSdtEventMessageResponse getStruct( )
+   public com.genexus.genexusserverlessapi.StructSdtEventMessagesList getStruct( )
    {
-      com.genexus.genexusserverlessapi.StructSdtEventMessageResponse struct = new com.genexus.genexusserverlessapi.StructSdtEventMessageResponse ();
-      struct.setHandlefailure(getgxTv_SdtEventMessageResponse_Handlefailure());
-      struct.setErrormessage(getgxTv_SdtEventMessageResponse_Errormessage());
+      com.genexus.genexusserverlessapi.StructSdtEventMessagesList struct = new com.genexus.genexusserverlessapi.StructSdtEventMessagesList ();
+      struct.setItems(getgxTv_SdtEventMessagesList_Items().getStruct());
       return struct ;
    }
 
+   protected byte gxTv_SdtEventMessagesList_Items_N ;
    protected byte sdtIsNull ;
    protected short readOk ;
    protected short nOutParmCount ;
    protected String sTagName ;
-   protected boolean gxTv_SdtEventMessageResponse_Handlefailure ;
    protected boolean readElement ;
    protected boolean formatError ;
-   protected String gxTv_SdtEventMessageResponse_Errormessage ;
+   protected GXSimpleCollection<String> gxTv_SdtEventMessagesList_Items=null ;
 }
 

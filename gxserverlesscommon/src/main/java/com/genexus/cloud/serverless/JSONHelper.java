@@ -1,21 +1,28 @@
 package com.genexus.cloud.serverless;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.genexus.cloud.serverless.model.EventMessage;
 import com.genexus.cloud.serverless.model.EventMessageProperty;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 
-public class Helper {
+import java.text.SimpleDateFormat;
 
-	private static final ILogger logger = LogManager.getLogger(Helper.class);
+public class JSONHelper {
+
+	private static final ILogger logger = LogManager.getLogger(JSONHelper.class);
 
 	public static String toJSONString(Object dtoObject) {
 		try {
-			ObjectMapper mapper = new ObjectMapper();
-			mapper.registerModule(new JavaTimeModule());
-			return mapper.writeValueAsString(dtoObject);
+
+			JsonMapper jsonMapper = new JsonMapper();
+			jsonMapper.registerModule(new JavaTimeModule());
+			jsonMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+			jsonMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+			String json = jsonMapper.writeValueAsString(dtoObject);
+			return json;
 		}
 		catch (Exception e) {
 			logger.error("Failed to serialize object to jsonString", e);

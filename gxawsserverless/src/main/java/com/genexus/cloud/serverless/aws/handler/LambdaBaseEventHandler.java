@@ -63,7 +63,7 @@ public class LambdaBaseEventHandler {
 	}
 
 	protected EventMessageResponse dispatchEvent(EventMessages eventMessages, String lambdaRawMessageBody) throws Exception {
-		String jsonStringMessages = Helper.toJSONString(eventMessages);
+		String jsonStringMessages = JSONHelper.toJSONString(eventMessages);
 
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format("dispatchEventMessages (%s) - serialized messages: %s", functionConfiguration.getEntryPointClassName(), jsonStringMessages));
