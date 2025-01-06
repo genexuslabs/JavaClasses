@@ -61,7 +61,7 @@ public abstract class ServerlessBaseEventHandler <T extends ServerlessFunctionCo
 	}
 
 	protected EventMessageResponse dispatchEvent(EventMessages eventMessages, EventMessagesList eventMessagesList, String rawMessageBody) throws Exception {
-		String jsonStringMessages = Helper.toJSONString(eventMessages);
+		String jsonStringMessages = JSONHelper.toJSONString(eventMessages);
 
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format("dispatchEventMessages (%s) - serialized messages: %s", functionConfiguration.getGXClassName(), jsonStringMessages));
