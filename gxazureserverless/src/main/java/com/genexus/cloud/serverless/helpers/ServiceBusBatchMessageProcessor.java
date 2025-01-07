@@ -4,10 +4,14 @@ import com.genexus.cloud.serverless.GXProcedureExecutor;
 import com.genexus.cloud.serverless.JSONHelper;
 import com.genexus.cloud.serverless.model.EventMessage;
 import com.genexus.cloud.serverless.model.EventMessages;
+import com.microsoft.azure.functions.ExecutionContext;
 import com.sun.jna.platform.win32.Guid;
 
+import java.time.Instant;
+import java.util.Date;
+
 public class ServiceBusBatchMessageProcessor {
-	public ServiceBusProcessedMessage processQueueMessage(GXProcedureExecutor executor, String[] messages) {
+	public ServiceBusProcessedMessage processQueueMessage(ExecutionContext context, GXProcedureExecutor executor, String[] messages) {
 		String rawMessage = "";
 		EventMessages eventMessages = new EventMessages();
 		switch (executor.getMethodSignatureIdx()) {
@@ -15,7 +19,8 @@ public class ServiceBusBatchMessageProcessor {
 				for(String message : messages)
 				{
 					EventMessage msg = new EventMessage();
-					msg.setMessageId(Guid.GUID.newGuid().toString()); // This is a fake Id.
+					msg.setMessageId(context.getInvocationId()); // This is a fake Id.
+					msg.setMessageDate(Date.from(Instant.now())); //This is the time of processing not the enqueued time. Until now, this metadata is not available.
 					msg.setMessageData(message);
 					eventMessages.add(msg);
 				}
