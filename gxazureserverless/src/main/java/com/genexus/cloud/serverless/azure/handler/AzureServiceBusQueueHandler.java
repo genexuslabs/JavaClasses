@@ -21,7 +21,7 @@ public class AzureServiceBusQueueHandler extends AzureEventHandler {
 		context.getLogger().info("GeneXus Service Bus Queue trigger handler. Function processed: " + context.getFunctionName() + " Invocation Id: " + context.getInvocationId());
 		setupServerlessMappings(context.getFunctionName());
 		ServiceBusBatchMessageProcessor queueBatchMessageProcessor = new ServiceBusBatchMessageProcessor();
-		ServiceBusProcessedMessage queueMessage = queueBatchMessageProcessor.processQueueMessage(executor,messages);
+		ServiceBusProcessedMessage queueMessage = queueBatchMessageProcessor.processQueueMessage(context, executor, messages);
 		try {
 			EventMessageResponse response = dispatchEvent(queueMessage.getEventMessages(),queueMessage.getRawMessage());
 			if (response.hasFailed()) {
