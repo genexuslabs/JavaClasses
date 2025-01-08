@@ -3,11 +3,8 @@ import com.genexus.cloud.serverless.JSONHelper;
 import com.genexus.cloud.serverless.model.*;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.annotation.CosmosDBTrigger;
-import com.sun.jna.platform.win32.Guid;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class AzureCosmosDBHandler extends AzureEventHandler{
 
@@ -15,13 +12,12 @@ public class AzureCosmosDBHandler extends AzureEventHandler{
 		super();
 	}
 	public void run(
-		@CosmosDBTrigger(name = "itemIn", databaseName = "%CosmosDB_Database_Name%", containerName = "%Container_Name%", leaseContainerName = "%lease_Container_Name%", connection = "%CosmosDB_Connection%") List<Map<String,Object>> items ,
+		@CosmosDBTrigger(name = "itemIn", databaseName = "%CosmosDB_Database_Name%", containerName = "%Container_Name%", leaseContainerName = "%lease_Container_Name%", connection = "connection") List<Object> items ,
 		final ExecutionContext context) throws Exception {
 
 		context.getLogger().info("GeneXus CosmosDB trigger handler. Function processed: " + context.getFunctionName() + " Invocation Id: " + context.getInvocationId());
 
-		Guid.GUID eventId = new Guid.GUID(context.getInvocationId());
-
+		UUID eventId = UUID.randomUUID();
 		EventMessages msgs = new EventMessages();
 		EventMessagesList eventMessagesList = new EventMessagesList();
 		String rawMessage= "";
@@ -29,10 +25,10 @@ public class AzureCosmosDBHandler extends AzureEventHandler{
 
 		switch (executor.getMethodSignatureIdx()) {
 			case 0:
-				msgs = setupEventMessages(eventId,items);
+				msgs = setupEventMessages(eventId,TryGetDocuments(items));
 				break;
 			case 4:
-				eventMessagesList = setupEventMessagesList(items);
+				eventMessagesList = setupEventMessagesList(TryGetDocuments(items));
 				break;
 			default:
 				rawMessage = JSONHelper.toJSONString(items);
@@ -50,6 +46,26 @@ public class AzureCosmosDBHandler extends AzureEventHandler{
 		}
 	}
 
+	private List<Map<String,Object>> TryGetDocuments(List<Object> items){
+		List<Map<String,Object>> documents = new ArrayList<>();
+		if (items != null && !items.isEmpty()) {
+			for (Object item : items) {
+				if (item instanceof Map) {
+					try {
+						Map<String, Object> document = (Map<String, Object>) item;
+						documents.add(document);
+					}
+					catch (Exception ex)
+					{
+						logger.error(String.format("Messages were not handled. Error trying to read Cosmos DB data. %s", ex.toString()));
+						throw new RuntimeException(String.format("Error trying to read Cosmos DB data. %s", ex.toString())); //Throw the exception so the runtime can Retry the operation.
+					}
+				}
+			}
+			return documents;
+		}
+		return null;
+	}
 	private EventMessagesList setupEventMessagesList(List<Map<String,Object>> jsonList)
 	{
 		EventMessagesList messagesList = new EventMessagesList();
@@ -59,7 +75,7 @@ public class AzureCosmosDBHandler extends AzureEventHandler{
 		return messagesList;
 	}
 
-	private EventMessages setupEventMessages(Guid.GUID eventId, List<Map<String,Object>> jsonList)
+	private EventMessages setupEventMessages(UUID eventId, List<Map<String,Object>> jsonList)
 	{
 		EventMessages msgs = new EventMessages();
 		for (Map<String, Object> json : jsonList) {
