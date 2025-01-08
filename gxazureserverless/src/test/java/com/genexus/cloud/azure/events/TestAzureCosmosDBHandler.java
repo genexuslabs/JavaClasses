@@ -15,12 +15,11 @@ public class TestAzureCosmosDBHandler {
 	private AzureCosmosDBHandler cosmosDBFunction;
 	private ExecutionContext context;
 
-
 	@Test
 	public void testCosmosDBFunction() throws Exception {
 
 		cosmosDBFunction = new AzureCosmosDBHandler();
-		List<Map<String, Object>> list = new ArrayList<>(2);
+		List<Object> list = new ArrayList<>(2);
 
 		Map<String, Object> map1 = new HashMap<>();
 		map1.put("UserId", "ac7f12fd-9784-4c93-94cd-7e02a7b1cf4b");

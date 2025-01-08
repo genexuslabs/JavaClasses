@@ -32,7 +32,7 @@ public class AzureQueueHandler extends AzureEventHandler {
 				msg.setMessageSourceType(EventMessageSourceType.QUEUE_MESSAGE);
 				try {
 					String sanitizedTime = insertionTime.replace("\"", "");
-					if (!sanitizedTime.endsWith("Z")) {
+					if (!sanitizedTime.endsWith("Z") && !sanitizedTime.matches(".*[+-]\\d{2}:\\d{2}$")) {
 						sanitizedTime += "Z";
 					}
 					Instant instant = Instant.from(Instant.parse(sanitizedTime));

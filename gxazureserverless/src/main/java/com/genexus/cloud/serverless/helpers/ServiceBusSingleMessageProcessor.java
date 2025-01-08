@@ -20,7 +20,7 @@ public class ServiceBusSingleMessageProcessor {
 				msg.setMessageSourceType(EventMessageSourceType.SERVICE_BUS_MESSAGE);
 				try {
 					String sanitizedTime = enqueuedTimeUtc.replace("\"", "");
-					if (!sanitizedTime.endsWith("Z")) {
+					if (!sanitizedTime.endsWith("Z") && !sanitizedTime.matches(".*[+-]\\d{2}:\\d{2}$")) {
 						sanitizedTime += "Z";
 					}
 					Instant instant = Instant.from(Instant.parse(sanitizedTime));
