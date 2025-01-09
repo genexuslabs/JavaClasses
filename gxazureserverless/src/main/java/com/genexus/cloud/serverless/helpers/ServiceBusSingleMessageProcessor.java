@@ -18,18 +18,7 @@ public class ServiceBusSingleMessageProcessor {
 				EventMessage msg = new EventMessage();
 				msg.setMessageId(messageId);
 				msg.setMessageSourceType(EventMessageSourceType.SERVICE_BUS_MESSAGE);
-				try {
-					String sanitizedTime = enqueuedTimeUtc.replace("\"", "");
-					if (!sanitizedTime.endsWith("Z") && !sanitizedTime.matches(".*[+-]\\d{2}:\\d{2}$")) {
-						sanitizedTime += "Z";
-					}
-					Instant instant = Instant.from(Instant.parse(sanitizedTime));
-					msg.setMessageDate(Date.from(instant));
-				}
-				catch (Exception exception)
-				{
-					context.getLogger().severe(exception.toString());
-				}
+				msg.setMessageDate(Date.from(Instant.now()));
 				msg.setMessageData(message);
 				List<EventMessageProperty> msgProperties = msg.getMessageProperties();
 				msgProperties.add(new EventMessageProperty("Id", messageId));

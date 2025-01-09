@@ -30,18 +30,7 @@ public class AzureQueueHandler extends AzureEventHandler {
 				EventMessage msg = new EventMessage();
 				msg.setMessageId(id);
 				msg.setMessageSourceType(EventMessageSourceType.QUEUE_MESSAGE);
-				try {
-					String sanitizedTime = insertionTime.replace("\"", "");
-					if (!sanitizedTime.endsWith("Z") && !sanitizedTime.matches(".*[+-]\\d{2}:\\d{2}$")) {
-						sanitizedTime += "Z";
-					}
-					Instant instant = Instant.from(Instant.parse(sanitizedTime));
-					msg.setMessageDate(Date.from(instant));
-				}
-				catch (Exception exception)
-				{
-					context.getLogger().severe(exception.toString());
-				}
+				msg.setMessageDate(Date.from(Instant.now()));
 				msg.setMessageData(message);
 				List<EventMessageProperty> msgAtts = msg.getMessageProperties();
 				msgAtts.add(new EventMessageProperty("Id", id));
