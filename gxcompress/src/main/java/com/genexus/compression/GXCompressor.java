@@ -4,8 +4,8 @@ import com.genexus.CommonUtil;
 import com.genexus.GXBaseCollection;
 import com.genexus.SdtMessages_Message;
 import com.genexus.StructSdtMessages_Message;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
+import org.apache.commons.compress.compressors.gzip.GzipParameters;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
@@ -18,10 +18,9 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Stack;
 import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 import java.util.zip.*;
 
@@ -287,61 +286,105 @@ public class GXCompressor implements IGXCompressor {
 	}
 
 	private static void compressToGzip(File[] files, String outputPath) throws IOException {
+		if (files == null || files.length == 0) {
+			throw new IllegalArgumentException("No files to compress");
+		}
 		if (outputPath == null || outputPath.isEmpty()) {
 			throw new IllegalArgumentException("Output path is null or empty");
 		}
 		File outputFile = new File(outputPath);
 		if (outputFile.exists() && !outputFile.canWrite()) {
 			throw new IOException("Cannot write to output file");
-		} else {
-			File parentDir = outputFile.getParentFile();
-			if (parentDir != null && !parentDir.exists() && !parentDir.mkdirs()) {
-					throw new IOException("Failed to create output directory");
-			}
 		}
-		try (FileOutputStream fos = new FileOutputStream(outputFile);
-			 BufferedOutputStream bos = new BufferedOutputStream(fos);
-			 GzipCompressorOutputStream gcos = new GzipCompressorOutputStream(bos);
-			 TarArchiveOutputStream taos = new TarArchiveOutputStream(gcos)) {
-			taos.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
-			Stack<File> stack = new Stack<>();
-			Stack<String> pathStack = new Stack<>();
-			for (File file : files) {
-				if (file == null) continue;
-				stack.push(file);
-				pathStack.push("");
+		File parentDir = outputFile.getParentFile();
+		if (parentDir != null && !parentDir.exists() && !parentDir.mkdirs()) {
+			throw new IOException("Failed to create output directory");
+		}
+		boolean singleFile = files.length == 1 && files[0].isFile();
+		File tempFile = File.createTempFile("compress_", ".tmp", parentDir);
+		if (singleFile) {
+			try (
+				FileInputStream fis = new FileInputStream(files[0]);
+				FileOutputStream fos = new FileOutputStream(tempFile);
+				BufferedOutputStream bos = new BufferedOutputStream(fos);
+				GzipCompressorOutputStream gcos = new GzipCompressorOutputStream(bos)
+			) {
+				byte[] buffer = new byte[8192];
+				int len;
+				while ((len = fis.read(buffer)) != -1) {
+					gcos.write(buffer, 0, len);
+				}
 			}
-			while (!stack.isEmpty()) {
-				File currentFile = stack.pop();
-				String path = pathStack.pop();
-				String entryName = path + currentFile.getName();
-				if (currentFile.isDirectory()) {
-					File[] dirFiles = currentFile.listFiles();
-					if (dirFiles != null) {
-						if (dirFiles.length == 0) {
+		} else {
+			try (
+				FileOutputStream fos = new FileOutputStream(tempFile);
+				BufferedOutputStream bos = new BufferedOutputStream(fos);
+				GzipCompressorOutputStream gcos = new GzipCompressorOutputStream(bos);
+				TarArchiveOutputStream taos = new TarArchiveOutputStream(gcos)
+			) {
+				taos.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
+				Stack<File> fileStack = new Stack<>();
+				Stack<String> pathStack = new Stack<>();
+				for (File f : files) {
+					if (f != null) {
+						fileStack.push(f);
+						pathStack.push("");
+					}
+				}
+				while (!fileStack.isEmpty()) {
+					File currentFile = fileStack.pop();
+					String path = pathStack.pop();
+					String entryName = path + currentFile.getName();
+					if (currentFile.isDirectory()) {
+						File[] children = currentFile.listFiles();
+						if (children != null && children.length > 0) {
+							for (File child : children) {
+								fileStack.push(child);
+								pathStack.push(entryName + "/");
+							}
+						} else {
 							TarArchiveEntry entry = new TarArchiveEntry(entryName + "/");
 							taos.putArchiveEntry(entry);
 							taos.closeArchiveEntry();
-						} else {
-							for (File child : dirFiles) {
-								stack.push(child);
-								pathStack.push(entryName + "/");
+						}
+					} else {
+						TarArchiveEntry entry = new TarArchiveEntry(currentFile, entryName);
+						taos.putArchiveEntry(entry);
+						try (FileInputStream fis = new FileInputStream(currentFile)) {
+							byte[] buffer = new byte[8192];
+							int len;
+							while ((len = fis.read(buffer)) != -1) {
+								taos.write(buffer, 0, len);
 							}
 						}
+						taos.closeArchiveEntry();
 					}
-				} else {
-					TarArchiveEntry entry = new TarArchiveEntry(currentFile, entryName);
-					taos.putArchiveEntry(entry);
-					try (FileInputStream fis = new FileInputStream(currentFile)) {
-						byte[] buffer = new byte[1024];
-						int len;
-						while ((len = fis.read(buffer)) != -1) {
-							taos.write(buffer, 0, len);
-						}
-					}
-					taos.closeArchiveEntry();
 				}
 			}
+		}
+		if (!tempFile.exists()) {
+			throw new IOException("Failed to create the archive");
+		}
+		String finalName = outputPath;
+		if (singleFile) {
+			if (!finalName.toLowerCase().endsWith(".gz")) {
+				finalName += ".gz";
+			}
+		} else {
+			if (finalName.toLowerCase().endsWith(".tar.gz")) {
+				// do nothing
+			} else if (finalName.toLowerCase().endsWith(".gz")) {
+				finalName = finalName.substring(0, finalName.length() - 3) + ".tar.gz";
+			} else {
+				finalName += ".tar.gz";
+			}
+		}
+		File finalFile = new File(finalName);
+		if (finalFile.exists() && !finalFile.delete()) {
+			throw new IOException("Failed to delete existing file with desired name");
+		}
+		if (!tempFile.renameTo(finalFile)) {
+			throw new IOException("Failed to rename archive to desired name");
 		}
 	}
 
@@ -481,54 +524,117 @@ public class GXCompressor implements IGXCompressor {
 	}
 
 	private static void decompressGzip(File archive, String directory) throws IOException {
-		byte[] buffer = new byte[8192];
-		InputStream fi = Files.newInputStream(archive.toPath());
-		InputStream bi = new BufferedInputStream(fi);
-		InputStream gzi = new GzipCompressorInputStream(bi);
-		String fileName = archive.getName();
-		if (fileName.endsWith(".gz")) {
-			fileName = fileName.substring(0, fileName.length() - 3);
+		if (!archive.exists() || !archive.isFile()) {
+			throw new IllegalArgumentException("The archive file does not exist or is not a file.");
 		}
-		File outputFile = new File(directory, fileName);
-		File parent = outputFile.getParentFile();
-		if (!parent.exists()) {
-			parent.mkdirs();
+		File targetDir = new File(directory);
+		if (!targetDir.exists() || !targetDir.isDirectory()) {
+			throw new IllegalArgumentException("The specified directory does not exist or is not a directory.");
 		}
-		OutputStream fo = Files.newOutputStream(outputFile.toPath());
-		int len;
-		while ((len = gzi.read(buffer)) != -1) {
-			fo.write(buffer, 0, len);
+		File tempFile = File.createTempFile("decompressed_", ".tmp");
+		try (
+			FileInputStream fis = new FileInputStream(archive);
+			GZIPInputStream gzipInputStream = new GZIPInputStream(fis);
+			FileOutputStream fos = new FileOutputStream(tempFile)
+		) {
+			byte[] buffer = new byte[8192];
+			int len;
+			while ((len = gzipInputStream.read(buffer)) != -1) {
+				fos.write(buffer, 0, len);
+			}
 		}
-		fo.close();
-		gzi.close();
+
+		boolean isTar = false;
+		try (FileInputStream tempFis = new FileInputStream(tempFile);
+			 TarArchiveInputStream testTar = new TarArchiveInputStream(tempFis)) {
+			TarArchiveEntry testEntry = testTar.getNextTarEntry();
+			if (testEntry != null) {
+				isTar = true;
+			}
+		} catch (IOException ignored) {}
+		if (isTar) {
+			try (FileInputStream tarFis = new FileInputStream(tempFile);
+				 TarArchiveInputStream tarInput = new TarArchiveInputStream(tarFis)) {
+
+				TarArchiveEntry entry;
+				while ((entry = tarInput.getNextTarEntry()) != null) {
+					File outFile = new File(targetDir, entry.getName());
+					if (entry.isDirectory()) {
+						if (!outFile.exists() && !outFile.mkdirs()) {
+							throw new IOException("Failed to create directory: " + outFile);
+						}
+					} else {
+						File parent = outFile.getParentFile();
+						if (!parent.exists() && !parent.mkdirs()) {
+							throw new IOException("Failed to create directory: " + parent);
+						}
+						try (FileOutputStream os = new FileOutputStream(outFile)) {
+							byte[] buffer = new byte[8192];
+							int count;
+							while ((count = tarInput.read(buffer)) != -1) {
+								os.write(buffer, 0, count);
+							}
+						}
+					}
+				}
+			}
+		} else {
+			String name = archive.getName();
+			if (name.toLowerCase().endsWith(".gz")) {
+				name = name.substring(0, name.length() - 3);
+			}
+			File singleOutFile = new File(targetDir, name);
+			if (!tempFile.renameTo(singleOutFile)) {
+				try (
+					FileInputStream in = new FileInputStream(tempFile);
+					FileOutputStream out = new FileOutputStream(singleOutFile)
+				) {
+					byte[] buffer = new byte[8192];
+					int len;
+					while ((len = in.read(buffer)) != -1) {
+						out.write(buffer, 0, len);
+					}
+				}
+			}
+		}
+		if (!tempFile.delete()) {
+			tempFile.deleteOnExit();
+		}
 	}
 
 	private static void decompressJar(File archive, String directory) throws IOException {
-		byte[] buffer = new byte[1024];
-		JarFile jarFile = new JarFile(archive);
-		Enumeration<JarEntry> entries = jarFile.entries();
-		while (entries.hasMoreElements()) {
-			JarEntry entry = entries.nextElement();
-			File newFile = new File(directory, entry.getName());
-			if (entry.isDirectory()) {
-				if (!newFile.isDirectory() && !newFile.mkdirs()) {
-					throw new IOException("Failed to create directory " + newFile);
-				}
-			} else {
-				File parent = newFile.getParentFile();
-				if (!parent.isDirectory() && !parent.mkdirs()) {
-					throw new IOException("Failed to create directory " + parent);
-				}
-				InputStream is = jarFile.getInputStream(entry);
-				FileOutputStream fos = new FileOutputStream(newFile);
-				int len;
-				while ((len = is.read(buffer)) > 0) {
-					fos.write(buffer, 0, len);
-				}
-				fos.close();
-				is.close();
+		if (!archive.exists() || !archive.isFile()) {
+			throw new IOException("Invalid archive file.");
+		}
+		File targetDir = new File(directory);
+		if (!targetDir.exists()) {
+			if (!targetDir.mkdirs()) {
+				throw new IOException("Failed to create target directory.");
 			}
 		}
-		jarFile.close();
+		try (JarInputStream jarInputStream = new JarInputStream(Files.newInputStream(archive.toPath()))) {
+			JarEntry entry;
+			while ((entry = jarInputStream.getNextJarEntry()) != null) {
+				File outputFile = new File(targetDir, entry.getName());
+				if (entry.isDirectory()) {
+					if (!outputFile.exists() && !outputFile.mkdirs()) {
+						throw new IOException("Failed to create directory: " + outputFile.getAbsolutePath());
+					}
+				} else {
+					File parent = outputFile.getParentFile();
+					if (!parent.exists() && !parent.mkdirs()) {
+						throw new IOException("Failed to create parent directory: " + parent.getAbsolutePath());
+					}
+					try (FileOutputStream fos = new FileOutputStream(outputFile)) {
+						byte[] buffer = new byte[1024];
+						int bytesRead;
+						while ((bytesRead = jarInputStream.read(buffer)) != -1) {
+							fos.write(buffer, 0, bytesRead);
+						}
+					}
+				}
+				jarInputStream.closeEntry();
+			}
+		}
 	}
 }
