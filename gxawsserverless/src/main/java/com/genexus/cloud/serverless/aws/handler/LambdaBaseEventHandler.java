@@ -3,8 +3,7 @@ package com.genexus.cloud.serverless.aws.handler;
 import com.genexus.ApplicationContext;
 import com.genexus.ModelContext;
 import com.genexus.cloud.serverless.*;
-import com.genexus.cloud.serverless.model.EventMessageResponse;
-import com.genexus.cloud.serverless.model.EventMessages;
+import com.genexus.cloud.serverless.model.*;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.specific.java.Connect;
 import com.genexus.specific.java.LogManager;
@@ -64,7 +63,7 @@ public class LambdaBaseEventHandler {
 	}
 
 	protected EventMessageResponse dispatchEvent(EventMessages eventMessages, String lambdaRawMessageBody) throws Exception {
-		String jsonStringMessages = Helper.toJSONString(eventMessages);
+		String jsonStringMessages = JSONHelper.toJSONString(eventMessages);
 
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format("dispatchEventMessages (%s) - serialized messages: %s", functionConfiguration.getEntryPointClassName(), jsonStringMessages));
@@ -74,7 +73,7 @@ public class LambdaBaseEventHandler {
 		EventMessageResponse response = null;
 
 		try {
-			response = executor.execute(modelContext, eventMessages, lambdaRawMessageBody);
+			response = executor.execute(modelContext, eventMessages, null, lambdaRawMessageBody);
 		} catch (Exception e) {
 			logger.error(String.format("dispatchEventmessages - program '%s' execution error", entryPointClass.getName()), e);
 			throw e;
