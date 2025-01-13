@@ -20,7 +20,6 @@ public class AzureFunctionConfigurationHelper {
 
 	public static List<AzureFunctionConfiguration> getFunctionsMapConfiguration() throws FunctionConfigurationException {
 		File configFile = new File(FUNCTION_CONFIG_PATH);
-
 		if (configFile.exists()) {
 			try {
 				String jsonConfig = new String(Files.readAllBytes(Paths.get(FUNCTION_CONFIG_PATH)));

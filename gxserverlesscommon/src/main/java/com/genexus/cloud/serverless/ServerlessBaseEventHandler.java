@@ -1,18 +1,21 @@
 package com.genexus.cloud.serverless;
 
+import com.genexus.Application;
 import com.genexus.ApplicationContext;
+import com.genexus.ConfigFileFinder;
 import com.genexus.ModelContext;
 import com.genexus.cloud.serverless.model.EventMessageResponse;
 import com.genexus.cloud.serverless.model.EventMessages;
 import com.genexus.cloud.serverless.model.EventMessagesList;
-import com.genexus.diagnostics.core.ILogger;
 import com.genexus.specific.java.Connect;
 import com.genexus.util.IniFile;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public abstract class ServerlessBaseEventHandler <T extends ServerlessFunctionConfiguration> {
 
+	protected static Logger logger = LogManager.getLogger(ServerlessBaseEventHandler.class);
 	protected T functionConfiguration;
-	protected static ILogger logger = null;
 	protected Class entryPointClass = null;
 	protected static GXProcedureExecutor executor;
 	private static final String GX_APPLICATION_CLASS = "GXcfg";
@@ -35,18 +38,15 @@ public abstract class ServerlessBaseEventHandler <T extends ServerlessFunctionCo
 		initialize();
 	}
 	private void initialize() throws Exception {
-
-		logger = com.genexus.specific.java.LogManager.initialize(".", ServerlessBaseEventHandler.class);
 		Connect.init();
-
-		IniFile config = com.genexus.ConfigFileFinder.getConfigFile(null, "client.cfg", null);
+		IniFile config = ConfigFileFinder.getConfigFile(null, "client.cfg", null);
 		String packageName = config.getProperty("Client", "PACKAGE", null);
 		String cfgClassName = packageName.isEmpty() ? GX_APPLICATION_CLASS : String.format("%s.%s", packageName, GX_APPLICATION_CLASS);
 		try {
 			Class cfgClass;
 			cfgClass = Class.forName(cfgClassName);
 			logger.debug("Finished loading cfgClassName " + cfgClassName);
-			com.genexus.Application.init(cfgClass);
+			Application.init(cfgClass);
 			ApplicationContext.getInstance().setPoolConnections(true);
 		} catch (Exception e) {
 			logger.error(String.format("Failed to initialize GX AppConfig Class: %s", cfgClassName), e);
@@ -60,6 +60,30 @@ public abstract class ServerlessBaseEventHandler <T extends ServerlessFunctionCo
 		return dispatchEvent(eventMessages,eventMessagesList,rawMessageBody);
 	}
 
+	protected void ExecuteDynamic(EventMessages msgs, String rawMessage) throws Exception {
+		try {
+			EventMessageResponse response = dispatchEvent(msgs, rawMessage);
+			if (response.hasFailed()) {
+				logger.error(String.format("Messages were not handled. Error: %s", response.getErrorMessage()));
+				throw new RuntimeException(response.getErrorMessage()); //Throw the exception so the runtime can Retry the operation.
+			}
+		} catch (Exception e) {
+			logger.error(String.format("HandleRequest execution error: %s",e));
+			throw e; 		//Throw the exception so the runtime can Retry the operation.
+		}
+	}
+	protected void ExecuteDynamic(EventMessages msgs, EventMessagesList eventMessagesList, String rawMessage) throws Exception {
+		try {
+			EventMessageResponse response = dispatchEvent(msgs, eventMessagesList, rawMessage);
+			if (response.hasFailed()) {
+				logger.error(String.format("Messages were not handled. Error: %s", response.getErrorMessage()));
+				throw new RuntimeException(response.getErrorMessage()); //Throw the exception so the runtime can Retry the operation.
+			}
+		} catch (Exception e) {
+			logger.error(String.format("HandleRequest execution error: %s",e));
+			throw e; 		//Throw the exception so the runtime can Retry the operation.
+		}
+	}
 	protected EventMessageResponse dispatchEvent(EventMessages eventMessages, EventMessagesList eventMessagesList, String rawMessageBody) throws Exception {
 		String jsonStringMessages = JSONHelper.toJSONString(eventMessages);
 

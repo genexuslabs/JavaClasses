@@ -3,16 +3,13 @@ package com.genexus.cloud.serverless.azure.handler;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.genexus.cloud.serverless.model.*;
-
 import com.microsoft.azure.functions.annotation.*;
 import com.microsoft.azure.functions.ExecutionContext;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.*;
 
+import com.genexus.cloud.serverless.model.*;
 
 public class AzureTimerHandler extends AzureEventHandler {
 
@@ -24,10 +21,8 @@ public class AzureTimerHandler extends AzureEventHandler {
 		final ExecutionContext context) throws Exception {
 
 		context.getLogger().info("GeneXus Timer trigger handler. Function processed: " + context.getFunctionName() + " Invocation Id: " + context.getInvocationId());
-
 		setupServerlessMappings(context.getFunctionName());
 		EventMessages msgs = new EventMessages();
-
 		if (executor.getMethodSignatureIdx() == 0) {
 			try {
 				TimerObject timerObject = new ObjectMapper().readValue(TimerInfo, new TypeReference<TimerObject>() {
@@ -35,38 +30,24 @@ public class AzureTimerHandler extends AzureEventHandler {
 				EventMessage msg = new EventMessage();
 				msg.setMessageId(context.getInvocationId());
 				msg.setMessageSourceType(EventMessageSourceType.TIMER);
-
 				Instant nowUtc = Instant.now();
 				msg.setMessageDate(Date.from(nowUtc));
-
 				List<EventMessageProperty> msgAtts = msg.getMessageProperties();
-
 				msgAtts.add(new EventMessageProperty("Id", context.getInvocationId()));
 				boolean adjustForSDT = timerObject.timerSchedule.getAdjustForDST();
 				msgAtts.add(new EventMessageProperty("AdjustForDST", Boolean.toString(adjustForSDT)));
 				msgAtts.add(new EventMessageProperty("Next", timerObject.timerScheduleStatus.getNext()));
 				msgAtts.add(new EventMessageProperty("Last", timerObject.timerScheduleStatus.getLast()));
 				msgAtts.add(new EventMessageProperty("LastUpdated", timerObject.timerScheduleStatus.getLastUpdated()));
-
 				boolean isPastDue = timerObject.getIsPastDue();
 				msgAtts.add(new EventMessageProperty("IsPastDue", Boolean.toString(isPastDue)));
-
 				msgs.add(msg);
 			} catch (Exception e) {
-				logger.error("Message could not be processed.");
+				context.getLogger().severe("Message could not be processed.");
 				throw e;
 			}
 		}
-		try {
-			EventMessageResponse response = dispatchEvent(msgs, TimerInfo);
-			if (response.hasFailed()) {
-				logger.error(String.format("Messages were not handled. Error: %s", response.getErrorMessage()));
-				throw new RuntimeException(response.getErrorMessage()); //Throw the exception so the runtime can Retry the operation.
-			}
-		} catch (Exception e) {
-			logger.error("HandleRequest execution error", e);
-			throw e; 		//Throw the exception so the runtime can Retry the operation.
-		}
+		ExecuteDynamic(msgs, TimerInfo);
 	}
 
 	public static class TimerObject{

@@ -1,4 +1,5 @@
 package com.genexus.cloud.serverless.azure.handler;
+
 import com.genexus.cloud.serverless.JSONHelper;
 import com.genexus.cloud.serverless.model.*;
 import com.microsoft.azure.functions.ExecutionContext;
@@ -16,37 +17,26 @@ public class AzureCosmosDBHandler extends AzureEventHandler{
 		final ExecutionContext context) throws Exception {
 
 		context.getLogger().info("GeneXus CosmosDB trigger handler. Function processed: " + context.getFunctionName() + " Invocation Id: " + context.getInvocationId());
-
 		UUID eventId = UUID.randomUUID();
 		EventMessages msgs = new EventMessages();
 		EventMessagesList eventMessagesList = new EventMessagesList();
 		String rawMessage= "";
 		setupServerlessMappings(context.getFunctionName());
-
 		switch (executor.getMethodSignatureIdx()) {
 			case 0:
-				msgs = setupEventMessages(eventId,TryGetDocuments(items));
+				msgs = setupEventMessages(eventId,TryGetDocuments(items, context));
 				break;
 			case 4:
-				eventMessagesList = setupEventMessagesList(TryGetDocuments(items));
+				eventMessagesList = setupEventMessagesList(TryGetDocuments(items, context));
 				break;
 			default:
 				rawMessage = JSONHelper.toJSONString(items);
 				break;
 		}
-		try {
-			EventMessageResponse response = dispatchEvent(msgs, eventMessagesList, rawMessage);
-			if (response.hasFailed()) {
-				logger.error(String.format("Messages were not handled. Error: %s", response.getErrorMessage()));
-				throw new RuntimeException(response.getErrorMessage()); //Throw the exception so the runtime can Retry the operation.
-			}
-		} catch (Exception e) {
-			logger.error("HandleRequest execution error", e);
-			throw e; 		//Throw the exception so the runtime can Retry the operation.
-		}
+		ExecuteDynamic(msgs,eventMessagesList,rawMessage);
 	}
 
-	private List<Map<String,Object>> TryGetDocuments(List<Object> items){
+	private List<Map<String,Object>> TryGetDocuments(List<Object> items, ExecutionContext context){
 		List<Map<String,Object>> documents = new ArrayList<>();
 		if (items != null && !items.isEmpty()) {
 			for (Object item : items) {
@@ -57,7 +47,7 @@ public class AzureCosmosDBHandler extends AzureEventHandler{
 					}
 					catch (Exception ex)
 					{
-						logger.error(String.format("Messages were not handled. Error trying to read Cosmos DB data. %s", ex.toString()));
+						context.getLogger().severe(String.format("Messages were not handled. Error trying to read Cosmos DB data. %s", ex.toString()));
 						throw new RuntimeException(String.format("Error trying to read Cosmos DB data. %s", ex.toString())); //Throw the exception so the runtime can Retry the operation.
 					}
 				}
@@ -66,6 +56,7 @@ public class AzureCosmosDBHandler extends AzureEventHandler{
 		}
 		return null;
 	}
+
 	private EventMessagesList setupEventMessagesList(List<Map<String,Object>> jsonList)
 	{
 		EventMessagesList messagesList = new EventMessagesList();

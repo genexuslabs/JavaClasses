@@ -28,7 +28,6 @@ public class TestAzureQueueHandler {
 
 		context = new MockExecutionContext("TestQueueRaw","13e2d1f9-6838-4927-a6a8-0160e8601ab0");
 		queueFunction.run(testMessage,id,dequeCount,expirationTime,insertionTime, nextVisibleTime,popReceipt,context);
-
 		assertNotNull(context.getLogger());
 		context.getLogger().info("Logger is not null");
 
@@ -45,7 +44,6 @@ public class TestAzureQueueHandler {
 
 		context = new MockExecutionContext("TestQueueEventMessage","758093bf-68c1-47a5-8f93-cc2882e961e7");
 		queueFunction.run(testMessage,id,dequeCount,expirationTime,insertionTime, nextVisibleTime,popReceipt,context);
-
 		assertNotNull(context.getLogger());
 		context.getLogger().info("Logger is not null");
 	}
