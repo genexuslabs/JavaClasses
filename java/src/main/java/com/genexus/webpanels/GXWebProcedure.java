@@ -2,6 +2,7 @@ package com.genexus.webpanels;
 
 import java.io.PrintWriter;
 
+import com.genexus.Application;
 import com.genexus.servlet.IServletContext;
 import com.genexus.servlet.ServletContext;
 import com.genexus.servlet.http.IHttpServletRequest;
@@ -105,5 +106,17 @@ public abstract class GXWebProcedure extends GXWebObjectBase
 	protected void callWebObject(String url)
 	{
 		httpContext.wjLoc = url;
-	}	
+	}
+
+	protected boolean batchCursorHolder(){
+		return false;
+	}
+
+	protected void exitApp() {
+		if (batchCursorHolder()) {
+			try {
+				Application.getConnectionManager().flushBuffers(remoteHandle, this);
+			} catch (Exception exception) { ; }
+		}
+	}
 }
