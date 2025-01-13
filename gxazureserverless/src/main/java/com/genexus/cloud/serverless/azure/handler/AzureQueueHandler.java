@@ -1,10 +1,8 @@
 package com.genexus.cloud.serverless.azure.handler;
 
 import com.genexus.cloud.serverless.model.*;
-
 import com.microsoft.azure.functions.annotation.*;
 import com.microsoft.azure.functions.ExecutionContext;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.*;
@@ -13,6 +11,7 @@ public class AzureQueueHandler extends AzureEventHandler {
 	public AzureQueueHandler() throws Exception {
 		super();
 	}
+
 	public void run(
 		@QueueTrigger(name = "message", queueName = "%queue_name%") String message,
 		@BindingName("Id") final String id,
@@ -41,15 +40,6 @@ public class AzureQueueHandler extends AzureEventHandler {
 				msgAtts.add(new EventMessageProperty("PopReceipt", popReceipt));
 				msgs.add(msg);
 		}
-		try {
-			EventMessageResponse response = dispatchEvent(msgs, message);
-			if (response.hasFailed()) {
-				logger.error(String.format("Messages were not handled. Error: %s", response.getErrorMessage()));
-				throw new RuntimeException(response.getErrorMessage()); //Throw the exception so the runtime can Retry the operation.
-			}
-		} catch (Exception e) {
-			logger.error("HandleRequest execution error", e);
-			throw e; 		//Throw the exception so the runtime can Retry the operation.
-		}
+		ExecuteDynamic(msgs, message);
 	}
 }

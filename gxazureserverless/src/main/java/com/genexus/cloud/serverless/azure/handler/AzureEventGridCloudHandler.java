@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genexus.cloud.serverless.model.EventMessage;
 import com.genexus.cloud.serverless.model.EventMessageProperty;
-import com.genexus.cloud.serverless.model.EventMessageResponse;
 import com.genexus.cloud.serverless.model.EventMessages;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.annotation.EventGridTrigger;
@@ -25,20 +24,11 @@ public class AzureEventGridCloudHandler extends AzureEventHandler{
 		final ExecutionContext context) throws Exception {
 		context.getLogger().info("GeneXus Event Grid CloudEvents trigger handler. Function processed: " + context.getFunctionName() + " Invocation Id: " + context.getInvocationId());
 		setupServerlessMappings(context.getFunctionName());
-		setupEventGridMessage(eventJson);
-
-		try {
-			EventMessageResponse response = dispatchEvent(msgs, rawMessage);
-			if (response.hasFailed()) {
-				logger.error(String.format("Messages were not handled. Error: %s", response.getErrorMessage()));
-				throw new RuntimeException(response.getErrorMessage()); //Throw the exception so the runtime can Retry the operation.
-			}
-		} catch (Exception e) {
-			logger.error("HandleRequest execution error", e);
-			throw e; 		//Throw the exception so the runtime can Retry the operation.
-		}
+		setupEventGridMessage(eventJson, context);
+		ExecuteDynamic(msgs, rawMessage);
 	}
-	protected void setupEventGridMessage(String eventJson) throws JsonProcessingException {
+
+	protected void setupEventGridMessage(String eventJson, ExecutionContext context) throws JsonProcessingException {
 		switch (executor.getMethodSignatureIdx()) {
 			case 0:
 				try {
@@ -67,7 +57,7 @@ public class AzureEventGridCloudHandler extends AzureEventHandler{
 					msgs.add(msg);
 				}
 				catch (Exception e) {
-					logger.error("HandleRequest execution error", e);
+					context.getLogger().severe(String.format("HandleRequest execution error: %s",e.getMessage()));
 					throw e;}
 				break;
 			case 1:
