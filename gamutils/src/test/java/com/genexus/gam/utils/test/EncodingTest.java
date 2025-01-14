@@ -1,7 +1,10 @@
 package com.genexus.gam.utils.test;
 
 import com.genexus.gam.GamUtilsEO;
+import com.genexus.gam.utils.Encoding;
+import com.genexus.gam.utils.Random;
 import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.util.encoders.UrlBase64;
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,6 +33,29 @@ public class EncodingTest {
 			return "";
 		}
 	}
+
+	@Test
+	public void testHexaToBase64()
+	{
+		int i = 0;
+		do {
+			String randomHexa = Random.hexaBits(128);
+			String testing = b64ToHexa(Encoding.hexaToBase64(randomHexa));
+			Assert.assertEquals("testB64ToB64Url", randomHexa, testing);
+			i++;
+		} while (i < 50);
+	}
+
+	private static String b64ToHexa(String base64) {
+		try {
+			byte[] bytes = Base64.decode(base64);
+			return Hex.toHexString(bytes);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+
 
 
 }

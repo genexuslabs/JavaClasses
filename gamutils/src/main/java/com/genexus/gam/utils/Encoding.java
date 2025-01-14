@@ -4,6 +4,7 @@ package com.genexus.gam.utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.util.encoders.UrlBase64;
 
 public class Encoding {
@@ -16,6 +17,18 @@ public class Encoding {
 			return new String(UrlBase64.encode(Base64.decode(input)), "UTF-8").replaceAll("[\ufffd]", "");
 		} catch (Exception e) {
 			logger.error("b64ToB64Url", e);
+			return "";
+		}
+	}
+
+	public static String hexaToBase64(String hexa)
+	{
+		logger.debug("hexaToBase64");
+		try{
+			return Base64.toBase64String(Hex.decode(hexa));
+		}catch (Exception e)
+		{
+			logger.error("hexaToBase64", e);
 			return "";
 		}
 	}
