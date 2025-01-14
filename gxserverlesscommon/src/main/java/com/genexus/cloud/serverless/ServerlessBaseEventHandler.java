@@ -55,22 +55,9 @@ public abstract class ServerlessBaseEventHandler <T extends ServerlessFunctionCo
 		InitializeServerlessConfig();
 	}
 
-	protected EventMessageResponse dispatchEvent(EventMessages eventMessages, String rawMessageBody) throws Exception {
-		EventMessagesList eventMessagesList = new EventMessagesList();
-		return dispatchEvent(eventMessages,eventMessagesList,rawMessageBody);
-	}
-
 	protected void ExecuteDynamic(EventMessages msgs, String rawMessage) throws Exception {
-		try {
-			EventMessageResponse response = dispatchEvent(msgs, rawMessage);
-			if (response.hasFailed()) {
-				logger.error(String.format("Messages were not handled. Error: %s", response.getErrorMessage()));
-				throw new RuntimeException(response.getErrorMessage()); //Throw the exception so the runtime can Retry the operation.
-			}
-		} catch (Exception e) {
-			logger.error(String.format("HandleRequest execution error: %s",e));
-			throw e; 		//Throw the exception so the runtime can Retry the operation.
-		}
+		EventMessagesList eventMessagesList = new EventMessagesList();
+		ExecuteDynamic(msgs,eventMessagesList,rawMessage);
 	}
 	protected void ExecuteDynamic(EventMessages msgs, EventMessagesList eventMessagesList, String rawMessage) throws Exception {
 		try {
