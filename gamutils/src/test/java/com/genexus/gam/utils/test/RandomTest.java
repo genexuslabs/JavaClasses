@@ -6,6 +6,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
+
 public class RandomTest {
 
 	private static int l128;
@@ -70,6 +72,28 @@ public class RandomTest {
 			}catch(Exception e)
 			{
 				Assert.fail("testHexaBits not hexa characters" + e.getMessage());
+			}
+		}
+	}
+
+	@Test
+	public void TestUtf8Bits()
+	{
+		int[] lengths = new int[]{32, 64, 128, 256, 512, 1024};
+
+		for (int n : lengths) {
+			String utf8 = GamUtilsEO.randomUtf8Bits(n);
+			Assert.assertFalse("TestUtf8Bits", utf8.isEmpty());
+			try
+			{
+				byte[] decoded = utf8.getBytes(StandardCharsets.UTF_8);//Hex.decode(hexa);
+				if(decoded.length != (n + 7) / 8)
+				{
+					Assert.fail("TestUtf8Bits wrong utf8 length");
+				}
+			}catch(Exception e)
+			{
+				Assert.fail("TestUtf8Bits not utf8 characters" + e.getMessage());
 			}
 		}
 	}

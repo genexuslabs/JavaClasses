@@ -2,8 +2,12 @@ package com.genexus.gam.utils.json;
 
 import com.genexus.gam.utils.keys.PrivateKeyUtil;
 import com.genexus.gam.utils.keys.PublicKeyUtil;
+import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -20,20 +24,20 @@ public class Jwt {
 
 	/******** EXTERNAL OBJECT PUBLIC METHODS - BEGIN ********/
 
-	public static boolean verify(String path, String alias, String password, String token) {
+	public static boolean verify(String path, String alias, String password, String token, String secret, boolean isSymmetric) {
 		logger.debug("verify");
 		try {
-			return verify(PublicKeyUtil.getPublicKey(path, alias, password, token), token);
+			return !isSymmetric ? verify_internal(PublicKeyUtil.getPublicKey(path, alias, password, token), token, "", isSymmetric) : verify_internal(null, token, secret, isSymmetric);
 		} catch (Exception e) {
 			logger.error("verify", e);
 			return false;
 		}
 	}
 
-	public static String create(String path, String alias, String password, String payload, String header) {
+	public static String create(String path, String alias, String password, String payload, String header, String secret, boolean isSymmetric) {
 		logger.debug("create");
 		try {
-			return create(PrivateKeyUtil.getPrivateKey(path, alias, password), payload, header);
+			return !isSymmetric ? create_internal(PrivateKeyUtil.getPrivateKey(path, alias, password), payload, header, "", isSymmetric): create_internal(null, payload, header, secret, isSymmetric);
 		}catch (Exception e)
 		{
 			logger.error("create", e);
@@ -61,26 +65,41 @@ public class Jwt {
 		}
 	}
 
-	/******** EXTERNAL OBJECT PUBLIC METHODS - END ********/
-
-	private static boolean verify(RSAPublicKey publicKey, String token) {
-		try {
-			SignedJWT signedJWT = SignedJWT.parse(token);
-			JWSVerifier verifier = new RSASSAVerifier(publicKey);
-			return signedJWT.verify(verifier);
-		} catch (Exception e) {
-			logger.error("verify", e);
+	public static boolean verifyAlgorithm(String algorithm, String token)
+	{
+		logger.debug("verifyAlgorithm");
+		try{
+			return SignedJWT.parse(token).getHeader().getAlgorithm().equals(JWSAlgorithm.parse(algorithm));
+		}catch (Exception e)
+		{
+			logger.error("verifyAlgorithm", e);
 			return false;
 		}
 	}
 
-	private static String create(RSAPrivateKey privateKey, String payload, String header) {
+	/******** EXTERNAL OBJECT PUBLIC METHODS - END ********/
+
+	private static boolean verify_internal(RSAPublicKey publicKey, String token, String secret, boolean isSymmetric){
+		logger.debug("verify_internal");
+		try {
+			SignedJWT signedJWT = SignedJWT.parse(token);
+			JWSVerifier verifier = isSymmetric ? new MACVerifier(secret):new RSASSAVerifier(publicKey);
+			return signedJWT.verify(verifier);
+		} catch (Exception e) {
+			logger.error("verify_internal", e);
+			return false;
+		}
+	}
+
+	private static String create_internal(RSAPrivateKey privateKey, String payload, String header, String secret, boolean isSymmetric) {
+		logger.debug("create_internal");
 		try {
 			SignedJWT signedJWT = new SignedJWT(JWSHeader.parse(header), JWTClaimsSet.parse(payload));
-			signedJWT.sign(new RSASSASigner(privateKey));
+			JWSSigner signer = isSymmetric ? new MACSigner(secret): new RSASSASigner(privateKey);
+			signedJWT.sign(signer);
 			return signedJWT.serialize();
 		} catch (Exception e) {
-			logger.error("create", e);
+			logger.error("create_internal", e);
 			return "";
 		}
 	}

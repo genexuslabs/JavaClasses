@@ -44,6 +44,20 @@ public class Jwk {
 		}
 	}
 
+	public static String getAlgorithm(String jwkString) {
+		if (jwkString.isEmpty()) {
+			logger.error("getAlgorithm jwkString parameter is empty");
+			return "";
+		}
+		try {
+			return JWK.parse(jwkString).getAlgorithm().toString();
+		} catch (Exception e) {
+			logger.error("getPublic", e);
+			return "";
+		}
+	}
+
+
 	/*public static boolean verifyJWT(String jwkString, String token) {
 		if (jwkString.isEmpty()) {
 			logger.error("verifyJWT jwkString parameter is empty");

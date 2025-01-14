@@ -27,4 +27,12 @@ public class JwkTest {
 			Assert.fail("Exception on testPublicJwk" + e.getMessage());
 		}
 	}
+
+	@Test
+	public void testGetAlgorithm()
+	{
+		String jwk = GamUtilsEO.generateKeyPair();
+		String algorithm = GamUtilsEO.getJwkAlgorithm(jwk);
+		Assert.assertEquals("testGetAlgorithm", algorithm, "RS256");
+	}
 }
