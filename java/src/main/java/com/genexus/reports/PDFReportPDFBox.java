@@ -13,7 +13,6 @@ import com.genexus.ModelContext;
 import com.genexus.platform.NativeFunctions;
 import com.genexus.webpanels.HttpContextWeb;
 import com.genexus.reports.fonts.PDFFont;
-import com.genexus.reports.fonts.PDFFontDescriptor;
 import com.genexus.reports.fonts.Type1FontMetrics;
 
 import com.google.zxing.BarcodeFormat;
@@ -591,70 +590,79 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	public void GxDrawText(String sTxt, int left, int top, int right, int bottom, int align, int htmlformat, int border, int valign) {
 		try {
 			PDPageContentStream cb = currentPageContentStream;
-			boolean printRectangle = false;
-			if (props.getBooleanGeneralProperty(Const.BACK_FILL_IN_CONTROLS, true))
-				printRectangle = true;
 
+			boolean printRectangle = props.getBooleanGeneralProperty(Const.BACK_FILL_IN_CONTROLS, true);
+			int originalTop = top;
+			int originalBottom = bottom;
+
+			// Draw rectangle (border or background fill) if needed
 			if (printRectangle && (border == 1 || backFill)) {
-				GxDrawRect(left, top, right, bottom, border, foreColor.getRed(), foreColor.getGreen(), foreColor.getBlue(), backFill ? 1 : 0, backColor.getRed(), backColor.getGreen(), backColor.getBlue(), 0, 0);
+				GxDrawRect(
+					left, top, right, bottom, border,
+					foreColor.getRed(), foreColor.getGreen(), foreColor.getBlue(),
+					backFill ? 1 : 0,
+					backColor.getRed(), backColor.getGreen(), backColor.getBlue(),
+					0, 0, 0, 0, 0, 0, 0, 0
+				);
 			}
 
 			sTxt = CommonUtil.rtrim(sTxt);
 
+			// Set up the font and color
 			PDFont font = getOrLoadFont(baseFontName, document);
-
-			cb.setFont(font,fontSize);
+			cb.setFont(font, fontSize);
 			cb.setNonStrokingColor(foreColor);
-			float captionHeight = baseFont.getFontMatrix().transformPoint(0, font.getFontDescriptor().getCapHeight()).y * fontSize;
+
+			float captionHeight = baseFont.getFontMatrix()
+				.transformPoint(0, font.getFontDescriptor().getCapHeight()).y * fontSize;
+			float lineHeight = (baseFont.getFontDescriptor().getFontBoundingBox().getUpperRightY()
+				- baseFont.getFontDescriptor().getFontBoundingBox().getLowerLeftY()) / 1000 * fontSize;
+
+			float textBlockHeight = (float) convertScale(bottom - top);
 			float rectangleWidth = baseFont.getStringWidth(sTxt) / 1000 * fontSize;
-			float lineHeight = (baseFont.getFontDescriptor().getFontBoundingBox().getUpperRightY() - baseFont.getFontDescriptor().getFontBoundingBox().getLowerLeftY())/ 1000 * fontSize;
-			float textBlockHeight = (float)convertScale(bottom-top);
-			int linesCount =   (int)(textBlockHeight/lineHeight);
+			int linesCount = (int) (textBlockHeight / lineHeight);
+
 			int bottomOri = bottom;
 			int topOri = top;
 
-			if (linesCount >= 2 && !((align & 16) == 16) && htmlformat != 1) {
-				if (valign == PDFReportPDFBox.VerticalAlign.TOP.value())
-					bottom = top + (int)reconvertScale(lineHeight);
-				else if (valign == PDFReportPDFBox.VerticalAlign.BOTTOM.value())
-					top = bottom - (int)reconvertScale(lineHeight);
+			// Adjust top/bottom for multi-line support
+			if (linesCount >= 2 && (align & 16) != 16 && htmlformat != 1) {
+				if (valign == PDFReportPDFBox.VerticalAlign.TOP.value()) {
+					bottom = top + (int) reconvertScale(lineHeight);
+				} else if (valign == PDFReportPDFBox.VerticalAlign.BOTTOM.value()) {
+					top = bottom - (int) reconvertScale(lineHeight);
+				}
 			}
 
-			float bottomAux = (float)convertScale(bottom) - ((float)convertScale(bottom-top) - captionHeight)/2;
-			float topAux = (float)convertScale(top) + ((float)convertScale(bottom-top) - captionHeight)/2;
+			float bottomAux = (float) ((float) convertScale(bottom)
+				- (convertScale(bottom - top) - captionHeight) / 2);
+			float topAux = (float) ((float) convertScale(top)
+				+ (convertScale(bottom - top) - captionHeight) / 2);
 
-			float startHeight = bottomAux - topAux - captionHeight;
-
-			float leftAux = (float)convertScale(left);
-			float rightAux = (float)convertScale(right);
+			float leftAux = (float) convertScale(left);
+			float rightAux = (float) convertScale(right);
 			int alignment = align & 3;
-			boolean autoResize = (align & 256) == 256;
+			boolean autoResize = ((align & 256) == 256);
 
+			// Handle HTML format
 			if (htmlformat == 1) {
 				log.debug("WARNING: HTML rendering is not natively supported by PDFBOX 2.0.27. Handcrafted support is provided but it is not intended to cover all possible use cases");
-				try {
-					bottomAux = (float)convertScale(bottom);
-					topAux = (float)convertScale(top);
-					float drawingPageHeight = this.pageSize.getUpperRightY() - topMargin - bottomMargin;
 
+				try {
+					float drawingPageHeight = this.pageSize.getUpperRightY() - topMargin - bottomMargin;
 					float llx = leftAux + leftMargin;
 					float lly = drawingPageHeight - bottomAux;
 					float urx = rightAux + leftMargin;
 					float ury = drawingPageHeight - topAux;
 
-					// Define the rectangle where the content will be displayed
-					PDRectangle htmlRectangle = new PDRectangle();
-					htmlRectangle.setLowerLeftX(llx);
-					htmlRectangle.setLowerLeftY(lly);
-					htmlRectangle.setUpperRightX(urx);
-					htmlRectangle.setUpperRightY(ury);
+					PDRectangle htmlRectangle = new PDRectangle(llx, lly, urx - llx, ury - lly);
 					SpaceHandler spaceHandler = new SpaceHandler(htmlRectangle.getUpperRightY(), htmlRectangle.getHeight());
 
 					loadSupportedHTMLTags();
-
 					Document htmlDocument = Jsoup.parse(sTxt);
 					Elements allElements = htmlDocument.getAllElements();
-					for (Element element : allElements){
+
+					for (Element element : allElements) {
 						if (pageHeightExceeded(bottomMargin, spaceHandler.getCurrentYPosition())) {
 							llx = leftAux + leftMargin;
 							lly = drawingPageHeight - bottomAux;
@@ -662,183 +670,209 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 							ury = drawingPageHeight - topAux;
 							htmlRectangle = new PDRectangle(llx, lly, urx - llx, ury - lly);
 							spaceHandler = new SpaceHandler(htmlRectangle.getUpperRightY(), htmlRectangle.getHeight());
+
 							bottomAux -= drawingPageHeight;
 							GxEndPage();
 							GxStartPage();
 
 							cb = currentPageContentStream;
 						}
-						if (this.supportedHTMLTags.contains(element.normalName()))
+						if (this.supportedHTMLTags.contains(element.normalName())) {
 							processHTMLElement(cb, htmlRectangle, spaceHandler, element);
+						}
 					}
 
 				} catch (Exception e) {
 					log.error("GxDrawText failed to print HTML text : ", e);
 				}
 			}
-			else
-			if (barcodeType != null){
+			// Handle Barcode
+			else if (barcodeType != null) {
 				log.debug("Barcode: --> " + barcode.getClass().getName());
 				try {
 					PDRectangle rectangle = new PDRectangle();
+					float pageTopY = this.pageSize.getUpperRightY() - topMargin - bottomMargin;
+					float bottomConverted = (float) convertScale(bottom);
+					float topConverted = (float) convertScale(top);
+
 					switch (alignment) {
-						case 1: // Center Alignment
-							rectangle.setLowerLeftX( (leftAux + rightAux) / 2 + leftMargin - rectangleWidth / 2);
-							rectangle.setLowerLeftY(this.pageSize.getUpperRightY() - (float)convertScale(bottom) - topMargin - bottomMargin);
+						case 1: // Center
+							rectangle.setLowerLeftX((leftAux + rightAux) / 2 + leftMargin - rectangleWidth / 2);
+							rectangle.setLowerLeftY(pageTopY - bottomConverted);
 							rectangle.setUpperRightX((leftAux + rightAux) / 2 + leftMargin + rectangleWidth / 2);
-							rectangle.setUpperRightY(this.pageSize.getUpperRightY() - (float)convertScale(top) - topMargin - bottomMargin);
+							rectangle.setUpperRightY(pageTopY - topConverted);
 							break;
-						case 2: // Right Alignment
-							rectangle.setLowerLeftX( rightAux + leftMargin - rectangleWidth);
-							rectangle.setLowerLeftY(this.pageSize.getUpperRightY() - (float)convertScale(bottom) - topMargin - bottomMargin);
+						case 2: // Right
+							rectangle.setLowerLeftX(rightAux + leftMargin - rectangleWidth);
+							rectangle.setLowerLeftY(pageTopY - bottomConverted);
 							rectangle.setUpperRightX(rightAux + leftMargin);
-							rectangle.setUpperRightY(this.pageSize.getUpperRightY() - (float)convertScale(top) - topMargin - bottomMargin);
+							rectangle.setUpperRightY(pageTopY - topConverted);
 							break;
-						case 0: // Left Alignment
-							rectangle.setLowerLeftX( leftAux + leftMargin);
-							rectangle.setLowerLeftY(this.pageSize.getUpperRightY() - (float)convertScale(bottom) - topMargin - bottomMargin);
+						default: // Left
+							rectangle.setLowerLeftX(leftAux + leftMargin);
+							rectangle.setLowerLeftY(pageTopY - bottomConverted);
 							rectangle.setUpperRightX(leftAux + leftMargin + rectangleWidth);
-							rectangle.setUpperRightY(this.pageSize.getUpperRightY() - (float)convertScale(top) - topMargin - bottomMargin);
+							rectangle.setUpperRightY(pageTopY - topConverted);
 							break;
 					}
-					if (barcodeType.equals("barcode128")){
+
+					if ("barcode128".equals(barcodeType)) {
 						Code128Writer barcodeWriter = new Code128Writer();
-						barcode = barcodeWriter.encode(sTxt, BarcodeFormat.CODE_128, Math.round(rectangle.getWidth()), Math.round(rectangle.getHeight()));
+						barcode = barcodeWriter.encode(sTxt, BarcodeFormat.CODE_128,
+							Math.round(rectangle.getWidth()), Math.round(rectangle.getHeight()));
 					}
 
 					BufferedImage imageCode = new BufferedImage(barcode.getWidth(), barcode.getHeight(), BufferedImage.TYPE_INT_RGB);
-					for (int x = 0; x < barcode.getWidth(); x++)
+					for (int x = 0; x < barcode.getWidth(); x++) {
 						for (int y = 0; y < barcode.getHeight(); y++) {
 							int color;
-							if (foreColor == null || backColor == null)
+							if (foreColor == null || backColor == null) {
 								color = Color.BLACK.getRGB();
-							else
+							} else {
 								color = barcode.get(x, y) ? foreColor.getRGB() : backColor.getRGB();
+							}
 							imageCode.setRGB(x, y, color);
 						}
+					}
+
 					float scale = Math.min(rectangle.getHeight() / imageCode.getHeight(), 1.0f);
 					float newImageWidth = imageCode.getWidth() * scale;
 					float newImageHeight = imageCode.getHeight() * scale;
-					cb.drawImage(LosslessFactory.createFromImage(document, imageCode),leftAux + leftMargin, rectangle.getLowerLeftY(),newImageWidth, newImageHeight);
-				}
-				catch (Exception ex) {
+
+					cb.drawImage(
+						LosslessFactory.createFromImage(document, imageCode),
+						leftAux + leftMargin,
+						rectangle.getLowerLeftY(),
+						newImageWidth,
+						newImageHeight
+					);
+				} catch (Exception ex) {
 					log.error("GxDrawText: Error generating Barcode " + barcode.getClass().getName(), ex);
 				}
 			}
+			// Handle regular text
 			else {
+				if (backFill) {
+					float llx = leftAux + leftMargin;
+					float lly = pageSize.getUpperRightY() - (float) convertScale(originalBottom) - topMargin - bottomMargin;
+					float urx = rightAux + leftMargin;
+					float ury = pageSize.getUpperRightY() - (float) convertScale(originalTop) - topMargin - bottomMargin;
 
-				if(backFill) {
-					PDRectangle rectangle = new PDRectangle();
-					switch(alignment) {
-						case 1: // Center Alignment
-							rectangle.setLowerLeftX((leftAux + rightAux)/2 + leftMargin - rectangleWidth/2);
-							rectangle.setLowerLeftY(this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin);
-							rectangle.setUpperRightX((leftAux + rightAux)/2 + leftMargin + rectangleWidth/2);
-							rectangle.setUpperRightY(this.pageSize.getUpperRightY() - topAux - topMargin -bottomMargin);
-							break;
-						case 2: // Right Alignment
-							rectangle.setLowerLeftX(rightAux + leftMargin - rectangleWidth);
-							rectangle.setLowerLeftY(this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin);
-							rectangle.setUpperRightX(rightAux + leftMargin);
-							rectangle.setUpperRightY(this.pageSize.getUpperRightY() - topAux - topMargin -bottomMargin);
-							break;
-						case 0: // Left Alignment
-							rectangle.setLowerLeftX(leftAux + leftMargin);
-							rectangle.setLowerLeftY(this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin);
-							rectangle.setUpperRightX(leftAux + leftMargin + rectangleWidth);
-							rectangle.setUpperRightY(this.pageSize.getUpperRightY() - topAux - topMargin -bottomMargin);
-							break;
-					}
+					cb.saveGraphicsState();
 					cb.setNonStrokingColor(backColor);
-					cb.addRect(rectangle.getLowerLeftX(), rectangle.getLowerLeftY(),rectangle.getWidth(), rectangle.getHeight());
+					cb.addRect(llx, lly, urx - llx, ury - lly);
 					cb.fill();
+					cb.restoreGraphicsState();
 					cb.setNonStrokingColor(foreColor);
 				}
 
 				float underlineSeparation = lineHeight / 5;
-				int underlineHeight = (int)underlineSeparation + (int)(underlineSeparation/4);
+				int underlineHeight = (int) underlineSeparation + (int) (underlineSeparation / 4);
 				PDRectangle underline;
+				float startHeight = bottomAux - topAux - captionHeight;
 
+				// Underline
 				if (fontUnderline) {
 					underline = new PDRectangle();
+					float lowerLeftY = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight - underlineSeparation;
+					float upperRightY = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight - underlineHeight;
 
-					switch(alignment) {
-						case 1: // Center Alignment
-							underline.setLowerLeftX((leftAux + rightAux)/2 + leftMargin - rectangleWidth/2);
-							underline.setLowerLeftY(this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation);
-							underline.setUpperRightX((leftAux + rightAux)/2 + leftMargin + rectangleWidth/2);
-							underline.setUpperRightY(this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineHeight);
+					switch (alignment) {
+						case 1: // Center
+							underline.setLowerLeftX((leftAux + rightAux) / 2 + leftMargin - rectangleWidth / 2);
+							underline.setLowerLeftY(lowerLeftY);
+							underline.setUpperRightX((leftAux + rightAux) / 2 + leftMargin + rectangleWidth / 2);
+							underline.setUpperRightY(upperRightY);
 							break;
-						case 2: // Right Alignment
+						case 2: // Right
 							underline.setLowerLeftX(rightAux + leftMargin - rectangleWidth);
-							underline.setLowerLeftY(this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation);
+							underline.setLowerLeftY(lowerLeftY);
 							underline.setUpperRightX(rightAux + leftMargin);
-							underline.setUpperRightY(this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);
+							underline.setUpperRightY(upperRightY);
 							break;
-						case 0: // Left Alignment
+						default: // Left
 							underline.setLowerLeftX(leftAux + leftMargin);
-							underline.setLowerLeftY(this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation);
+							underline.setLowerLeftY(lowerLeftY);
 							underline.setUpperRightX(leftAux + leftMargin + rectangleWidth);
-							underline.setUpperRightY(this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight);
+							underline.setUpperRightY(upperRightY);
 							break;
 					}
+
 					PDPageContentStream contentStream = currentPageContentStream;
 					contentStream.setNonStrokingColor(foreColor);
-					contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY(),underline.getWidth(), underline.getHeight());
+					contentStream.addRect(
+						underline.getLowerLeftX(),
+						underline.getLowerLeftY(),
+						underline.getWidth(),
+						underline.getHeight()
+					);
 					contentStream.fill();
 					cb.setNonStrokingColor(foreColor);
 				}
 
+				// Strikethru
 				if (fontStrikethru) {
 					underline = new PDRectangle();
 					float strikethruSeparation = lineHeight / 2;
+					float lowerLeftY = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin
+						+ startHeight - underlineSeparation + strikethruSeparation;
+					float upperRightY = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin
+						+ startHeight - underlineHeight + strikethruSeparation;
 
-					switch(alignment) {
-						case 1: // Center Alignment
-							underline.setLowerLeftX((leftAux + rightAux)/2 + leftMargin - rectangleWidth/2);
-							underline.setLowerLeftY(this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation);
-							underline.setUpperRightX((leftAux + rightAux)/2 + leftMargin + rectangleWidth/2);
-							underline.setUpperRightY(this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
+					switch (alignment) {
+						case 1: // Center
+							underline.setLowerLeftX((leftAux + rightAux) / 2 + leftMargin - rectangleWidth / 2);
+							underline.setLowerLeftY(lowerLeftY);
+							underline.setUpperRightX((leftAux + rightAux) / 2 + leftMargin + rectangleWidth / 2);
+							underline.setUpperRightY(upperRightY);
 							break;
-						case 2: // Right Alignment
+						case 2: // Right
 							underline.setLowerLeftX(rightAux + leftMargin - rectangleWidth);
-							underline.setLowerLeftY(this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation);
+							underline.setLowerLeftY(lowerLeftY);
 							underline.setUpperRightX(rightAux + leftMargin);
-							underline.setUpperRightY(this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
+							underline.setUpperRightY(upperRightY);
 							break;
-						case 0: // Left Alignment
+						default: // Left
 							underline.setLowerLeftX(leftAux + leftMargin);
-							underline.setLowerLeftY(this.pageSize.getUpperRightY() - bottomAux - topMargin -bottomMargin + startHeight - underlineSeparation + strikethruSeparation);
+							underline.setLowerLeftY(lowerLeftY);
 							underline.setUpperRightX(leftAux + leftMargin + rectangleWidth);
-							underline.setUpperRightY(this.pageSize.getUpperRightY() - bottomAux  - topMargin -bottomMargin + startHeight - underlineHeight + strikethruSeparation);
+							underline.setUpperRightY(upperRightY);
 							break;
 					}
+
 					PDPageContentStream contentStream = currentPageContentStream;
 					contentStream.setNonStrokingColor(foreColor);
-					contentStream.addRect(underline.getLowerLeftX(), underline.getLowerLeftY() - strikethruSeparation * 1/3, underline.getWidth(), underline.getHeight());
+					contentStream.addRect(
+						underline.getLowerLeftX(),
+						underline.getLowerLeftY() - strikethruSeparation * (1f / 3f),
+						underline.getWidth(),
+						underline.getHeight()
+					);
 					contentStream.fill();
 				}
 
-				if(sTxt.trim().equalsIgnoreCase("{{Pages}}")) {
+				// Handle {{Pages}}
+				if (sTxt.trim().equalsIgnoreCase("{{Pages}}")) {
 					if (!templateCreated) {
 						templateFont = new PDType0Font(baseFont.getCOSObject());
 						templateFontSize = fontSize;
 						templateColorFill = foreColor;
 						templateX = leftAux + leftMargin;
-						templateY = this.pageSize.getUpperRightY() -  bottomAux - topMargin -bottomMargin;
+						templateY = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin;
 						templateCreated = true;
 					}
 					return;
 				}
 
 				float textBlockWidth = rightAux - leftAux;
-				float TxtWidth = baseFont.getStringWidth(sTxt)/ 1000 * fontSize;
-				boolean justified = (alignment == 3) && textBlockWidth < TxtWidth;
+				float txtWidth = baseFont.getStringWidth(sTxt) / 1000 * fontSize;
+				boolean justified = (alignment == 3) && textBlockWidth < txtWidth;
 				boolean wrap = ((align & 16) == 16);
 
+				// Multi-line or justified text
 				if (wrap || justified) {
-					bottomAux = (float)convertScale(bottomOri);
-					topAux = (float)convertScale(topOri);
+					bottomAux = (float) convertScale(bottomOri);
+					topAux = (float) convertScale(topOri);
 
 					float llx = leftAux + leftMargin;
 					float lly = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin;
@@ -846,36 +880,37 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					float ury = this.pageSize.getUpperRightY() - topAux - topMargin - bottomMargin;
 
 					showWrappedTextAligned(cb, font, alignment, sTxt, llx, lly, urx, ury);
-
-				}
-				else {
-					startHeight=0;
+				} else {
+					// Auto-resize or truncate
 					if (!autoResize) {
-						String newsTxt = sTxt;
-						while(TxtWidth > textBlockWidth && (newsTxt.length()-1>=0)) {
-							sTxt = newsTxt;
-							newsTxt = newsTxt.substring(0, newsTxt.length()-1);
-							TxtWidth = baseFont.getStringWidth(newsTxt) / 1000 * fontSize;
+						String tmpTxt = sTxt;
+						while (txtWidth > textBlockWidth && (tmpTxt.length() - 1 >= 0)) {
+							sTxt = tmpTxt;
+							tmpTxt = tmpTxt.substring(0, tmpTxt.length() - 1);
+							txtWidth = baseFont.getStringWidth(tmpTxt) / 1000 * fontSize;
 						}
 					}
-					switch(alignment) {
-						case 1: // Center Alignment
-							showTextAligned(cb, font,alignment, sTxt, ((leftAux + rightAux) / 2) + leftMargin, this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight);
+
+					// Single line alignment
+					float yPos = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin;
+					switch (alignment) {
+						case 1: // Center
+							showTextAligned(cb, font, alignment, sTxt, ((leftAux + rightAux) / 2) + leftMargin, yPos);
 							break;
-						case 2: // Right Alignment
-							showTextAligned(cb, font, alignment, sTxt, rightAux + leftMargin, this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight);
+						case 2: // Right
+							showTextAligned(cb, font, alignment, sTxt, rightAux + leftMargin, yPos);
 							break;
-						case 0: // Left Alignment
-						case 3: // Justified, only one text line
-							showTextAligned(cb, font, alignment, sTxt, leftAux + leftMargin, this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin + startHeight);
+						default: // Left or Justified (only one line)
+							showTextAligned(cb, font, alignment, sTxt, leftAux + leftMargin, yPos);
 							break;
 					}
 				}
 			}
-		} catch (Exception ioe){
+		} catch (Exception ioe) {
 			log.error("GxDrawText failed: ", ioe);
 		}
 	}
+
 
 	private void loadSupportedHTMLTags(){
 		this.supportedHTMLTags.add("p");
