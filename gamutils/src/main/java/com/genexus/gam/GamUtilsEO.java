@@ -42,10 +42,6 @@ public class GamUtilsEO {
 		return Random.hexaBits(bits);
 	}
 
-	public static String randomUtf8Bits(int bits) {
-		return Random.utf8Bits(bits);
-	}
-
 	//**JWK**//
 
 	public static String generateKeyPair() {
