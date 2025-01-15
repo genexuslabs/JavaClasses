@@ -149,9 +149,9 @@ public class JwtTest {
 			"  \"alg\": \"HS256\",\n" +
 			"  \"typ\": \"JWT\"\n" +
 			"}";
-		int[] lengths = new int[]{256, 512, 1024};
+		int[] lengths = new int[]{32, 64, 128};
 		for (int n : lengths) {
-			String secret = GamUtilsEO.randomUtf8Bits(n);
+			String secret = GamUtilsEO.randomAlphanumeric(n);
 			String token = GamUtilsEO.createJwtSha(secret, payload, header);
 			Assert.assertFalse("test_json_Sha256 create", token.isEmpty());
 			boolean result = GamUtilsEO.verifyJwtSha(secret, token);
@@ -166,9 +166,9 @@ public class JwtTest {
 			"  \"alg\": \"HS512\",\n" +
 			"  \"typ\": \"JWT\"\n" +
 			"}";
-		int[] lengths = new int[]{512, 1024};
+		int[] lengths = new int[]{64, 128};
 		for (int n : lengths) {
-			String secret = GamUtilsEO.randomUtf8Bits(n);
+			String secret = GamUtilsEO.randomAlphanumeric(n);
 			String token = GamUtilsEO.createJwtSha(secret, payload, header);
 			Assert.assertFalse("test_json_Sha512 create", token.isEmpty());
 			boolean result = GamUtilsEO.verifyJwtSha(secret, token);
@@ -183,7 +183,7 @@ public class JwtTest {
 			"  \"alg\": \"HS512\",\n" +
 			"  \"typ\": \"JWT\"\n" +
 			"}";
-		String secret = GamUtilsEO.randomUtf8Bits(512);
+		String secret = GamUtilsEO.randomAlphanumeric(64);
 		String token = GamUtilsEO.createJwtSha(secret, payload, header);
 		boolean resultSha512 = GamUtilsEO.verifyAlgorithm("HS512", token);
 		Assert.assertTrue("test_VerifyAlgorithm_True", resultSha512);
@@ -196,7 +196,7 @@ public class JwtTest {
 			"  \"alg\": \"HS512\",\n" +
 			"  \"typ\": \"JWT\"\n" +
 			"}";
-		String secret = GamUtilsEO.randomUtf8Bits(512);
+		String secret = GamUtilsEO.randomAlphanumeric(64);
 		String token = GamUtilsEO.createJwtSha(secret, payload, header);
 		boolean resultSha512 = GamUtilsEO.verifyAlgorithm("RS256", token);
 		Assert.assertFalse("test_VerifyAlgorithm_False", resultSha512);

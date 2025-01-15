@@ -60,25 +60,4 @@ public class Random {
 		}
 		return sb.toString().replaceAll("\\s", "");
 	}
-
-	public static String utf8Bits(int bits)
-	{
-		int targetBytes = (bits + 7) / 8;
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < targetBytes; i++) {
-			sb.append("a");
-		}
-		String result = sb.toString();
-		byte[] utf8Bytes = sb.toString().getBytes(StandardCharsets.UTF_8);
-		if (utf8Bytes.length > targetBytes) {
-			return new String(utf8Bytes, 0, targetBytes, StandardCharsets.UTF_8);
-		} else if (utf8Bytes.length < targetBytes) {
-			StringBuilder paddedString = new StringBuilder(sb.toString());
-			for (int i = utf8Bytes.length; i < targetBytes; i++) {
-				paddedString.append("0");
-			}
-			return paddedString.toString();
-		}
-		return result;
-	}
 }
