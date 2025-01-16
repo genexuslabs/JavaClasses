@@ -2,20 +2,19 @@ package com.genexus.webpanels;
 
 import com.genexus.internet.IGxJSONAble;
 
-import json.org.json.IJsonFormattable;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONException;
+import com.genexus.json.JSONObjectWrapper;
 
 public class GXWebColumn implements IGxJSONAble
 {
-	private JSONObject _Properties;
+	private JSONObjectWrapper _Properties;
 
     public GXWebColumn()
     {
-        _Properties = new JSONObject();
+        _Properties = new JSONObjectWrapper();
     }
 
-    public JSONObject GetProperties()
+    public JSONObjectWrapper GetProperties()
     {
         return _Properties;
     }
@@ -66,6 +65,6 @@ public class GXWebColumn implements IGxJSONAble
         return _Properties;
     }
 
-    public void FromJSONObject(IJsonFormattable obj) {
+    public void FromJSONObject(Object obj) {
     }
 }

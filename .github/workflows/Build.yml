@@ -80,16 +80,14 @@ jobs:
           master)
             echo "## Is MASTER branch"
 
-            versionChangelist="-stable.$timestamp-SNAPSHOT"
+            versionChangelist="-preview.$timestamp-SNAPSHOT"
             SHOULD_DEPLOY='true'
             ;;
 
           beta)
-            echo "## Is BETA branch, add +100 to major number"
+            echo "## Is BETA branch"
 
-            pomMajorNumber=$(expr $pomMajorNumber + 100)
-            
-            versionChangelist="-trunk.$timestamp-SNAPSHOT"
+            versionChangelist="-beta.$timestamp-SNAPSHOT"
             SHOULD_DEPLOY='true'
             ;;
 
@@ -189,6 +187,5 @@ jobs:
     with: 
       VERSION: ${{ needs.build.outputs.MAVEN_VERSION }}
       PACKAGE_NAMES: ${{ needs.build.outputs.PACKAGES_NAME }}
-      COMMIT_MESSAGE: ${{ needs.build.outputs.COMMIT_MESSAGE }}
       COMMITTER: ${{ needs.build.outputs.LAST_COMMITTER }}
     secrets: inherit

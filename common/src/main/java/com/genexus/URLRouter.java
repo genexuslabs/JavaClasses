@@ -12,6 +12,8 @@ import com.genexus.util.GXFileCollection;
 
 import java.io.*;
 import java.util.regex.Pattern;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 
 public class URLRouter
@@ -120,14 +122,33 @@ public class URLRouter
 		return queryString;
 	}
 
-	private static void load()
-	{
-		String line;
-		InputStream is = null;
-		String defaultPath = SpecificImplementation.Application.getModelContext().getHttpContext().getDefaultPath();
+	private static void load() {
+		if (com.genexus.ApplicationContext.getInstance().isSpringBootApp())
+			loadRewriteFilesSB();
+		else
+			loadRewriteFiles();
+	}
+
+	private static void loadRewriteFilesSB() {
+		PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+		try {
+			Resource[] resources = resolver.getResources("./*.rewrite");
+			for (Resource resource : resources) {
+				loadRewriteInputStream(resource.getInputStream());
+			}
+		}
+		catch (IOException e)
+		{
+			logger.error(e.toString(), e);
+		}
+	}
+
+	private static void loadRewriteFiles() {
 		String appPackage = SpecificImplementation.Application.getClientPreferences().getPACKAGE();
-		if	(!appPackage.equals(""))
+		if (!appPackage.equals(""))
 			appPackage = File.separatorChar + appPackage.replace('.', File.separatorChar);
+		InputStream is;
+		String defaultPath = SpecificImplementation.Application.getModelContext().getHttpContext().getDefaultPath();
 		String classesDirectoryPath = defaultPath + File.separator + "WEB-INF" + File.separatorChar + "classes" + appPackage;
 		GXDirectory classesDirectory = new GXDirectory(classesDirectoryPath);
 		GXFileCollection rewriteFiles = classesDirectory.getFiles(".rewrite");
@@ -137,34 +158,36 @@ public class URLRouter
 			{
 				serverRelative = true;
 				AbstractGXFile rewriteFile = rewriteFiles.item(i);
-				try
-				{
-					is = SpecificImplementation.Messages.getInputStream(rewriteFile.getName());
+				is = SpecificImplementation.Messages.getInputStream(rewriteFile.getName());
 
-					if (is != null)
-					{
-						try (BufferedReader bufread = new BufferedReader(new InputStreamReader(is, "UTF8"))) {
-							line = bufread.readLine();
-							while (line != null) {
-								parseLine(line);
-								line = bufread.readLine();
-							}
-						}
-					}
-				}
-				catch (UnsupportedEncodingException e)
+				if (is != null)
 				{
-					logger.error(e.toString(), e);
-				}
-				catch (FileNotFoundException e)
-				{
-					logger.info("There is no URLRouter file");
-				}
-				catch (IOException e)
-				{
-					logger.error(e.toString(), e);
+					loadRewriteInputStream(is);
 				}
 			}
+		}
+	}
+
+	private static void loadRewriteInputStream(InputStream is) {
+		String line;
+		try (BufferedReader bufread = new BufferedReader(new InputStreamReader(is, "UTF8"))) {
+				line = bufread.readLine();
+				while (line != null) {
+					parseLine(line);
+					line = bufread.readLine();
+				}
+		}
+		catch (UnsupportedEncodingException e)
+		{
+			logger.error(e.toString(), e);
+		}
+		catch (FileNotFoundException e)
+		{
+			logger.info("There is no URLRouter file");
+		}
+		catch (IOException e)
+		{
+			logger.error(e.toString(), e);
 		}
 	}
 

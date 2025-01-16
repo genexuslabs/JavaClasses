@@ -1,8 +1,8 @@
 package com.genexus.db.dynamodb;
 
 import com.genexus.db.service.VarValue;
-import json.org.json.JSONArray;
-import json.org.json.JSONObject;
+import org.json.JSONArray;
+import com.genexus.json.JSONObjectWrapper;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
@@ -87,7 +87,7 @@ public class DynamoDBHelper
 		else if(attValue.bool() != null)
 			return attValue.bool().toString();
 		else if (attValue.hasM())
-			return new JSONObject(convertToDictionary(attValue.m())).toString();
+			return new JSONObjectWrapper(convertToDictionary(attValue.m())).toString();
 		else if (attValue.hasL())
 			return new JSONArray(attValue.l().stream().map(DynamoDBHelper::getString).collect(Collectors.toList())).toString();
 		return null;

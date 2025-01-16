@@ -14,7 +14,7 @@
 	<url>https://github.com/genexuslabs/JavaClasses</url>
 
 	<properties>
-		<revision>4.7</revision>
+		<revision>4.8</revision>
 		<changelist>-SNAPSHOT</changelist>
 		<sha1/>
 
@@ -100,6 +100,8 @@
 		<module>gxwebsocket</module>
 		<module>gxwebsocketjakarta</module>
 		<module>gxawsserverless</module>
+      		<module>gxserverlesscommon</module>
+	        <module>gxazureserverless</module>
 		<module>androidreports</module>
 		<module>gxqueue</module>
 		<module>gxqueue-awssqs</module>
