@@ -9,6 +9,9 @@ import org.json.JSONObject;
 import java.math.BigDecimal;
 import java.io.*;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.*;
 import java.util.*;
 
@@ -176,6 +179,62 @@ public final class CommonUtil
 			throw new ExceptionInInitializerError("GXUtil static constructor error: " + e.getMessage());
 		}
 	}
+
+	public static String getContentType(String fileName) {
+		Path path = Paths.get(fileName);
+		String defaultContentType = "application/octet-stream";
+
+		try {
+			String probedContentType = Files.probeContentType(path);
+			if (probedContentType == null || probedContentType.equals(defaultContentType))
+				return findContentTypeByExtension(fileName);
+			return probedContentType;
+		} catch (IOException ioe) {
+			return findContentTypeByExtension(fileName);
+		}
+	}
+
+	private static String findContentTypeByExtension(String fileName) {
+		String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+		String contentType = contentTypes.get(fileExtension);
+		return contentType != null ? contentTypes.get(fileExtension) : "application/octet-stream";
+	}
+
+	private static Map<String, String> contentTypes  = new HashMap<String, String>() {{
+		put("txt" 	, "text/plain");
+		put("rtx" 	, "text/richtext");
+		put("htm" 	, "text/html");
+		put("html" , "text/html");
+		put("xml" 	, "text/xml");
+		put("aif"	, "audio/x-aiff");
+		put("au"	, "audio/basic");
+		put("wav"	, "audio/wav");
+		put("bmp"	, "image/bmp");
+		put("gif"	, "image/gif");
+		put("jpe"	, "image/jpeg");
+		put("jpeg"	, "image/jpeg");
+		put("jpg"	, "image/jpeg");
+		put("jfif"	, "image/pjpeg");
+		put("tif"	, "image/tiff");
+		put("tiff"	, "image/tiff");
+		put("png"	, "image/x-png");
+		put("3gp"	, "video/3gpp");
+		put("3g2"	, "video/3gpp2");
+		put("mpg"	, "video/mpeg");
+		put("mpeg"	, "video/mpeg");
+		put("mov"	, "video/quicktime");
+		put("qt"	, "video/quicktime");
+		put("avi"	, "video/x-msvideo");
+		put("exe"	, "application/octet-stream");
+		put("dll"	, "application/x-msdownload");
+		put("ps"	, "application/postscript");
+		put("pdf"	, "application/pdf");
+		put("svg"	, "image/svg+xml");
+		put("tgz"	, "application/x-compressed");
+		put("zip"	, "application/x-zip-compressed");
+		put("gz"	, "application/x-gzip");
+		put("json"	, "application/json");
+	}};
 	
 	public static String removeAllQuotes(String fileName)
 	{
