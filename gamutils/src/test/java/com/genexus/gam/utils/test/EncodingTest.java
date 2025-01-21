@@ -35,6 +35,17 @@ public class EncodingTest {
 	}
 
 	@Test
+	public void testToBase64Url() {
+		int i = 0;
+		do {
+			String randomString = GamUtilsEO.randomAlphanumeric(128);
+			String testing = GamUtilsEO.toBase64Url(randomString);
+			Assert.assertEquals("testB64ToB64Url", randomString, GamUtilsEO.fromBase64Url(testing));
+			i++;
+		} while (i < 50);
+	}
+
+	@Test
 	public void testHexaToBase64()
 	{
 		int i = 0;
@@ -55,7 +66,6 @@ public class EncodingTest {
 			return "";
 		}
 	}
-
 
 
 }
