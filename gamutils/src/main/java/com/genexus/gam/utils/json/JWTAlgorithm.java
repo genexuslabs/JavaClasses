@@ -22,6 +22,8 @@ public enum JWTAlgorithm {
 			case HS384:
 				return JWSAlgorithm.HS384;
 			case RS256:
+				return JWSAlgorithm.RS256;
+			case RS512:
 				return JWSAlgorithm.RS512;
 			default:
 				logger.error("getJWSAlgorithm - not implemented algorithm");
