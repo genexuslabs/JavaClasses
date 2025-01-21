@@ -57,25 +57,17 @@ public class GamUtilsEO {
 	}
 
 	//**JWT**//
-	public static boolean verifyJwtRsa(String path, String alias, String password, String token) {
-		return Jwt.verify(path, alias, password, token, "", false);
+	public static boolean verifyJwt(String path, String alias, String password, String token) {
+		return Jwt.verify(path, alias, password, token);
 	}
 
-	public static String createJwtRsa(String path, String alias, String password, String payload, String header) {
-		return Jwt.create(path, alias, password, payload, header, "", false);
-	}
-
-	public static boolean verifyJwtSha(String secret, String token) {
-		return Jwt.verify("", "", "", token, secret, true);
+	public static String createJwt(String path, String alias, String password, String payload, String header) {
+		return Jwt.create(path, alias, password, payload, header);
 	}
 
 	public static boolean verifyAlgorithm(String expectedAlgorithm, String token)
 	{
 		return Jwt.verifyAlgorithm(expectedAlgorithm, token);
-	}
-
-	public static String createJwtSha(String secret, String payload, String header) {
-		return Jwt.create("", "", "",  payload, header, secret, true);
 	}
 
 	public static long createUnixTimestamp(Date date) {
@@ -96,6 +88,10 @@ public class GamUtilsEO {
 	}
 
 	public static String hexaToBase64(String hexa) { return Encoding.hexaToBase64(hexa); }
+
+	public static String toBase64Url(String input) { return Encoding.toBase64Url(input); }
+
+	public static String fromBase64Url(String base64) { return Encoding.fromBase64Url(base64); }
 
 	/********EXTERNAL OBJECT PUBLIC METHODS  - END ********/
 }
