@@ -53,9 +53,9 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	private String barcodeType = null;
 	private PDDocument document;
 	private PDDocumentCatalog writer;
-	private PDPageContentStream template;
-	private PDFormXObject formXObjecttemplate;
-	private PDType0Font templateFont;
+	private PDFont templateFont;
+	private float templateX;
+	private float templateY;
 	public boolean lineCapProjectingSquare = true;
 	public boolean barcode128AsImage = true;
 	ConcurrentHashMap<String, PDImageXObject> documentImages;
@@ -813,21 +813,14 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 
 				if(sTxt.trim().equalsIgnoreCase("{{Pages}}")) {
 					if (!templateCreated) {
-						formXObjecttemplate = new PDFormXObject(document);
-						template = new PDPageContentStream(document, formXObjecttemplate, outputStream);
-						formXObjecttemplate.setResources(new PDResources());
-						formXObjecttemplate.setBBox(new PDRectangle(right - left, bottom - top));
+						templateFont = baseFont;
+						templateFontSize = fontSize;
+						templateColorFill = foreColor;
+						templateX = leftAux + leftMargin;
+						templateY = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin;
 						templateCreated = true;
 					}
-					PDFormXObject form = new PDFormXObject(document);
-					PDPageContentStream contentStream = getNewPDPageContentStream();
-					contentStream.transform(Matrix.getTranslateInstance(leftAux + leftMargin, leftAux + leftMargin));
-					contentStream.drawForm(form);
-					contentStream.close();
-					templateFont = new PDType0Font(baseFont.getCOSObject());
-					templateFontSize = fontSize;
-					templateColorFill = foreColor;
-					return;
+					sTxt = String.valueOf(this.page);
 				}
 
 				float textBlockWidth = rightAux - leftAux;
@@ -1239,25 +1232,6 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			if(document.getNumberOfPages() == 0) {
 				document.addPage(new PDPage(this.pageSize));
 				pages++;
-			}
-			if (template != null) {
-				try{
-					template.beginText();
-					template.setFont(baseFont, fontSize);
-					template.setTextMatrix(new Matrix());
-					template.setNonStrokingColor(templateColorFill);
-					template.showText(String.valueOf(pages));
-					template.endText();
-					template.close();
-					for (PDPage page : document.getPages()){
-						try (PDPageContentStream templatePainter = new PDPageContentStream(document, page, PDPageContentStream.AppendMode.APPEND,false)) {
-							templatePainter.drawForm(formXObjecttemplate);
-						}
-					}
-					template.close();
-				} catch (IOException e){
-					log.error("GxEndDocument: failed to apply template" , e);;
-				}
 			}
 			int copies = 1;
 			try {
