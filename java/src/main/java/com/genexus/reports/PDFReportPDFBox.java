@@ -48,7 +48,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	private String barcodeType = null;
 	private PDDocument document;
 	private PDDocumentCatalog writer;
-	private PDType0Font templateFont;
+	private PDFont templateFont;
 	private float templateX;
 	private float templateY;
 	public boolean lineCapProjectingSquare = true;
@@ -854,14 +854,14 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				// Handle {{Pages}}
 				if (sTxt.trim().equalsIgnoreCase("{{Pages}}")) {
 					if (!templateCreated) {
-						templateFont = new PDType0Font(baseFont.getCOSObject());
+						templateFont = baseFont;
 						templateFontSize = fontSize;
 						templateColorFill = foreColor;
 						templateX = leftAux + leftMargin;
 						templateY = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin;
 						templateCreated = true;
 					}
-					return;
+					sTxt = String.valueOf(this.page);
 				}
 
 				float textBlockWidth = rightAux - leftAux;
@@ -1270,20 +1270,6 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			if(document.getNumberOfPages() == 0) {
 				document.addPage(new PDPage(this.pageSize));
 				pages++;
-			}
-			if (templateCreated) {
-				for (PDPage page : document.getPages()){
-					try (PDPageContentStream templatePainter = new PDPageContentStream(document, page, PDPageContentStream.AppendMode.APPEND,true, true)) {
-						templatePainter.beginText();
-						templatePainter.setFont(templateFont, templateFontSize);
-						templatePainter.setNonStrokingColor(templateColorFill);
-						templatePainter.newLineAtOffset(templateX, templateY);
-						templatePainter.showText(String.valueOf(pages));
-						templatePainter.endText();
-					} catch (IOException e){
-						log.error("GxEndDocument: failed to apply template" , e);;
-					}
-				}
 			}
 			int copies = 1;
 			try {
