@@ -209,31 +209,58 @@ public class GXFile extends AbstractGXFile {
         return ErrCode == 0;
     }
 
-    public void delete() {
-        if (sourceSeted()) {
-            resetErrors();
-            try {
-                if (!(FileSource.isFile() && FileSource.exists())) {
-                    ErrCode = 2;
-                    ErrDescription = "The file couldn't be deleted; file does not exist";
-                } else {
-                    try {
-                        ret = FileSource.delete();
-                        if (!ret) {
-                            setUnknownError();
-                        }
-                    } catch (SecurityException e) {
-                        ErrCode = 100;
-                        ErrDescription = e.getMessage();
-                    }
-                }
-            } catch (Exception e) {
-                setUnknownError(e);
-            }
-        }
-    }
+	public void delete() {
+		if (sourceSeted()) {
+			resetErrors();
+			try {
+				if (!(FileSource.isFile() && FileSource.exists())) {
+					ErrCode = 2;
+					ErrDescription = "The file couldn't be deleted because it does not exist";
+					return;
+				}
 
-    public boolean exists() {
+				try {
+					if (fileWriter != null) {
+						fileWriter.close();
+						fileWriter = null;
+					}
+					if (lineIterator != null) {
+						lineIterator.close();
+						lineIterator = null;
+					}
+					if (this.getStream() != null) {
+						this.getStream().close();
+					}
+				} catch (Exception ignored) {}
+
+				System.gc();
+
+				boolean ret = FileSource.delete();
+				if (!ret) {
+					try {
+						String filePath = FileSource.getFileInstance().getAbsolutePath();
+						ProcessBuilder pb;
+						if (System.getProperty("os.name").toLowerCase().contains("win")) {
+							pb = new ProcessBuilder("cmd.exe", "/c", "del /F /Q \"" + filePath + "\"");
+						} else {
+							pb = new ProcessBuilder("rm", "-f", filePath);
+						}
+						pb.start().waitFor();
+						if (FileSource.exists()) {
+							setUnknownError();
+						}
+					} catch (Exception e) {
+						setUnknownError(e);
+					}
+				}
+			} catch (Exception e) {
+				setUnknownError(e);
+			}
+		}
+	}
+
+
+	public boolean exists() {
         if (sourceSeted()) {
             try {
                 resetErrors();
