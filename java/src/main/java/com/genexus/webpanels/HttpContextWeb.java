@@ -1065,7 +1065,6 @@ public class HttpContextWeb extends HttpContext {
 
 	private String removeInternalParm(String query, String parm) 
 	{
-		query = removeEventPrefix(query);
 		int idx = query.indexOf(parm);
 		if (idx == 1)
 			return "";
@@ -1080,6 +1079,7 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	private String removeInternalParms(String query) {
+		query = removeEventPrefix(query);
 		query = removeInternalParm( query, GXNavigationHelper.POPUP_LEVEL);
 		return removeInternalParm( query, GXNavigationHelper.TAB_ID);
 	}
