@@ -108,11 +108,6 @@
     		<version>5.0.0</version>
 		</dependency>
 		<dependency>
-		    <groupId>com.lowagie</groupId>
-		    <artifactId>itextasian</artifactId>
-		    <version>1.5.2</version>
-		</dependency>
-		<dependency>
     		<groupId>org.apache.pdfbox</groupId>
     		<artifactId>pdfbox</artifactId>
     		<version>3.0.3</version>
