@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 public abstract class GXWebReport extends GXWebProcedure {
 	private static Logger log = org.apache.logging.log4j.LogManager.getLogger(GXWebReport.class);
@@ -107,7 +108,7 @@ public abstract class GXWebReport extends GXWebProcedure {
 		int y[] = {
 			gxYPage
 		};
-		setResponseOuputFileName();
+		setResponseOutputFileName();
 
 		getPrinter().GxRVSetLanguage(localUtil._language);
 		boolean ret = getPrinter().GxPrintInit(output, x, y, iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
@@ -118,19 +119,27 @@ public abstract class GXWebReport extends GXWebProcedure {
 		return ret;
 	}
 
-	private void setResponseOuputFileName() {
-		String outputFileName = filename != null ? filename : getClass().getSimpleName();
-		String outputFileType = filetype != null ? "." + filetype.toLowerCase() : ".pdf";
+	private void setResponseOutputFileName() {
+		String outputFileName = (filename != null ? filename : getClass().getSimpleName());
+		String outputFileType = (filetype != null ? "." + filetype.toLowerCase() : ".pdf");
 
 		try {
-			// Encode the filename in UTF-8 according to RFC 5987
 			String encodedFileName = URLEncoder.encode(outputFileName, "UTF-8").replace("+", "%20");
-			String dispositionHeader = "inline; filename=\"" + asciiFileName(outputFileName) +
-				"\"; filename*=UTF-8''" + encodedFileName + outputFileType;
+			boolean isAscii = StandardCharsets.US_ASCII.newEncoder().canEncode(outputFileName);
+			String fallbackFileName = outputFileName;
+			if (!isAscii) {
+				fallbackFileName = outputFileName.replaceAll("[^\\p{ASCII}]", "");
+				if (fallbackFileName.isEmpty()) {
+					fallbackFileName = "download";
+				}
+			}
+			String contentDispositionValue =
+				"inline; filename=\"" + fallbackFileName + outputFileType + "\"; " +
+					"filename*=UTF-8''" + encodedFileName + outputFileType;
 
-			httpContext.getResponse().addHeader("Content-Disposition", dispositionHeader);
+			httpContext.getResponse().addHeader("Content-Disposition", contentDispositionValue);
 		} catch (UnsupportedEncodingException e) {
-			log.error("Failed to encode the name of the report", e);
+			httpContext.getResponse().addHeader("Content-Disposition", "inline; filename=\"download" + outputFileType + "\"");
 		}
 	}
 
