@@ -4,8 +4,8 @@ import HTTPClient.ParseException;
 import HTTPClient.URI;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONException;
+import com.genexus.json.JSONObjectWrapper;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -568,44 +568,48 @@ public abstract class GXHttpClient implements IHttpClient{
 		return url;
 	}
 
+
+	protected File fileToPost;
+	protected String fileToPostName;
+
 	@SuppressWarnings("unchecked")
 	protected byte[] getData()
 	{
 		byte[] out = new byte[0];
 
-		for (Object key: getVariablesToSend().keySet())
+		for (Object key : getVariablesToSend().keySet())
 		{
-			String value = getMultipartTemplate().getFormDataTemplate((String)key, (String)getVariablesToSend().get(key));
-			getContentToSend().add(0, value); //Variables al principio
+			String value = getMultipartTemplate().getFormDataTemplate((String) key, (String) getVariablesToSend().get(key));
+			getContentToSend().add(0, value); // Variables al principio
 		}
 
 		for (int idx = 0; idx < getContentToSend().size(); idx++)
 		{
 			Object curr = getContentToSend().elementAt(idx);
 
-			if	(curr instanceof String)
+			if (curr instanceof String)
 			{
 				try
 				{
-					if(contentEncoding != null)
+					if (contentEncoding != null)
 					{
-						out = addToArray(out, ((String)curr).getBytes(contentEncoding));
-					}else
+						out = addToArray(out, ((String) curr).getBytes(contentEncoding));
+					} else
 					{
 						out = addToArray(out, (String) curr);
 					}
-				}catch(UnsupportedEncodingException e)
+				} catch (UnsupportedEncodingException e)
 				{
 					System.err.println(e.toString());
 					out = addToArray(out, (String) curr);
 				}
 			}
-			else if	(curr instanceof Object[])
+			else if (curr instanceof Object[])
 			{
-				StringWriter writer = (StringWriter)((Object[])curr)[0];
-				StringBuffer encoding = (StringBuffer)((Object[])curr)[1];
+				StringWriter writer = (StringWriter) ((Object[]) curr)[0];
+				StringBuffer encoding = (StringBuffer) ((Object[]) curr)[1];
 
-				if(encoding == null || encoding.length() == 0)
+				if (encoding == null || encoding.length() == 0)
 				{
 					encoding = new StringBuffer("UTF-8");
 				}
@@ -613,29 +617,32 @@ public abstract class GXHttpClient implements IHttpClient{
 				{
 					out = addToArray(out, writer.toString().getBytes(encoding.toString()));
 				}
-				catch(UnsupportedEncodingException e)
+				catch (UnsupportedEncodingException e)
 				{
 					out = addToArray(out, writer.toString());
 				}
 			}
-			else if	(curr instanceof byte[])
+			else if (curr instanceof byte[])
 			{
 				out = addToArray(out, (byte[]) curr);
 			}
-			else //File or FormFile
+			else // File or FormFile
 			{
 				File file;
 				if (curr instanceof FormFile)
 				{
-					FormFile formFile = (FormFile)curr;
+					FormFile formFile = (FormFile) curr;
 					out = startMultipartFile(out, formFile.name, formFile.file);
 					file = new File(formFile.file);
+					fileToPostName = formFile.name;
 				}
 				else
 				{
 					file = (File) curr;
 				}
-				try (BufferedInputStream bis = new java.io.BufferedInputStream(new FileInputStream(file)))
+				fileToPost = file;
+
+				try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file)))
 				{
 					out = addToArray(out, CommonUtil.readToByteArray(bis));
 				}
@@ -807,7 +814,7 @@ public abstract class GXHttpClient implements IHttpClient{
 
 		private boolean isJsonString(String value){
 			try {
-				JSONObject json = new JSONObject(value);
+				JSONObjectWrapper json = new JSONObjectWrapper(value);
 				return true;
 			} catch (JSONException e) {
 				return false;

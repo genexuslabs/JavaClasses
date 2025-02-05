@@ -1,17 +1,21 @@
 package com.genexus.internet;
 import java.util.*;
-import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
+import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 
-import json.org.json.*;
+import org.json.JSONArray;
 
 import java.io.Serializable;
 
 public class GXNavigationHelper implements Serializable
     {
-				private static final long serialVersionUID = 2608956804836620190L;    	
+		private static final long serialVersionUID = 2608956804836620190L;    	
+        private static final ILogger logger = LogManager.getLogger(GXNavigationHelper.class);
     	
         public static String POPUP_LEVEL = "gxPopupLevel";
+        public static String TAB_ID = "gxTabId";
+		public static String TAB_ID_HEADER = "X-Gx-Tabid";
         public static String CALLED_AS_POPUP = "gxCalledAsPopup";
 
         private Hashtable<String, Stack<String>> referers;
@@ -114,13 +118,13 @@ public class GXNavigationHelper implements Serializable
                 referers.remove(popupLevel);
         }
 
-        public String getUrlPopupLevel(String url)
+        static public String getUrlComponent(String url, String key) 
         {
             url = SpecificImplementation.GXutil.URLDecode(url);
-            String popupLevel = "-1";
+            String result = "";
             if (url != null)
             {
-                int pIdx = url.indexOf(POPUP_LEVEL);
+                int pIdx = url.indexOf(key);
                 if (pIdx != -1)
                 {
                     int eqIdx = url.indexOf("=", pIdx);
@@ -131,16 +135,22 @@ public class GXNavigationHelper implements Serializable
                         {
                             try
                             {
-                                popupLevel = url.substring(eqIdx+1, cIdx);
+                                result = url.substring(eqIdx+1, cIdx);
                             }
-                            catch(Exception e)
+                            catch(IndexOutOfBoundsException e)
                             {
-                                popupLevel = "-1";
+                                logger.error(String.format("Searching parm:'%1$s' in url:'%2$s'", key, url), e);
                             }
                         }
                     }
                 }
             }
-            return popupLevel;
+            return result;
+        }
+
+        static public String getUrlPopupLevel(String url)
+        {
+            String result = getUrlComponent( url, POPUP_LEVEL);
+            return result.isEmpty() ? "-1":result;
         }
     }

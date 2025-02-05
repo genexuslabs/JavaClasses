@@ -3,7 +3,7 @@ package com.genexus.security.web;
 import java.util.Date;
 
 import com.genexus.GXutil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import com.genexus.security.web.SecureTokenHelper.SecurityMode;

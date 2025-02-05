@@ -8,7 +8,6 @@ import com.amazonaws.services.s3.S3ClientOptions;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import com.amazonaws.HttpMethod;
-import com.genexus.Application;
 import com.genexus.util.GXService;
 import com.genexus.util.StorageUtils;
 import com.genexus.StructSdtMessages_Message;
@@ -73,10 +72,6 @@ public class ExternalProviderS3V1 extends ExternalProviderBase implements Extern
 
 	public String getName(){
 		return NAME;
-	}
-
-	public ExternalProviderS3V1(String service) throws Exception{
-		this(Application.getGXServices().get(service));
 	}
 
 	public ExternalProviderS3V1() throws Exception{
@@ -173,21 +168,31 @@ public class ExternalProviderS3V1 extends ExternalProviderBase implements Extern
 	}
 
 	public void download(String externalFileName, String localFile, ResourceAccessControlList acl) {
+		S3ObjectInputStream objectData = null;
 		try {
 			S3Object object = client.getObject(new GetObjectRequest(bucket, externalFileName));
-			try (InputStream objectData = object.getObjectContent()) {
-				try (OutputStream outputStream = new FileOutputStream(new File(localFile))){
-					int read;
-					byte[] bytes = new byte[1024];
-					while ((read = objectData.read(bytes)) != -1) {
-						outputStream.write(bytes, 0, read);
-					}
+			objectData = object.getObjectContent();
+			File file = new File(localFile);
+			File parentDir = file.getParentFile();
+			if (parentDir != null && !parentDir.exists())
+				parentDir.mkdirs();
+
+			try (OutputStream outputStream = new FileOutputStream(file)) {
+				int read;
+				byte[] bytes = new byte[1024];
+				while ((read = objectData.read(bytes)) != -1) {
+					outputStream.write(bytes, 0, read);
 				}
 			}
 		} catch (FileNotFoundException ex) {
 			logger.error("Error while downloading file to the external provider", ex);
 		} catch (IOException ex) {
 			logger.error("Error while downloading file to the external provider", ex);
+		} finally {
+			try {
+				if (objectData != null)
+					objectData.close();
+			} catch (IOException ioe) {logger.error("Error while draining the S3ObjectInputStream", ioe);}
 		}
 	}
 

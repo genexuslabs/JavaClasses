@@ -20,9 +20,9 @@ import com.sap.conn.jco.JCoMetaData;
 import com.sap.conn.jco.JCoStructure;
 import com.sap.conn.jco.JCoTable;
 
-import json.org.json.JSONArray;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
+import com.genexus.json.JSONObjectWrapper;
 
 public class EnterpriseConnect
 {
@@ -33,10 +33,12 @@ public class EnterpriseConnect
 	
 	public EnterpriseConnect(ModelContext context)
 	{
-		Object destination = context.getContextProperty("SAPSessionName");
-		if (destination !=null)
-		{
-			destinationName = (String)destination;
+		if (context !=null) {
+			Object destination = context.getContextProperty("SAPSessionName");
+			if (destination !=null)
+			{
+				destinationName = (String)destination;
+			}
 		}
 	}
 	
@@ -136,7 +138,7 @@ public class EnterpriseConnect
 				if (item != null)
 				{
 					setValues = true;
-					JSONObject jObj = (JSONObject ) item.GetJSONObject();
+					JSONObjectWrapper jObj = (JSONObjectWrapper ) item.GetJSONObject();
 					jTable.appendRow();
 					jTable.lastRow();
 					Iterator<?> keys = jObj.keys();
@@ -171,8 +173,11 @@ public class EnterpriseConnect
 						{
 							jTable.setValue(key, jObj.getString(key));
 						}
-						else if (jcoType == JCoMetaData.TYPE_INT2 || jcoType == JCoMetaData.TYPE_INT1 
-							      || jcoType == JCoMetaData.TYPE_BYTE)
+						else if (jcoType == JCoMetaData.TYPE_BYTE)
+						{
+							jTable.setValue(key, jObj.getString(key));
+						}
+						else if (jcoType == JCoMetaData.TYPE_INT2 || jcoType == JCoMetaData.TYPE_INT1)
 						{
 							jTable.setValue(key, jObj.getInt(key));
 						}
@@ -205,14 +210,27 @@ public class EnterpriseConnect
 			JCoStructure jStruct = function.getImportParameterList().getStructure(parameterName);	
 			if (value != null)
 			{
-				JSONObject jObj = (JSONObject ) value.GetJSONObject();		
+				JSONObjectWrapper jObj = (JSONObjectWrapper ) value.GetJSONObject();
 				Iterator<?> keys = jObj.keys();
 				while( keys.hasNext() )
 				{
 					String key = (String)keys.next();
 					int jcoType = jStruct.getMetaData().getType(key);	
 				
-					if( jObj.get(key) instanceof String )
+					if (jcoType == JCoMetaData.TYPE_BYTE)
+					{
+						if ( jStruct.getMetaData().getLength(key) <= 4)
+						{
+							jStruct.setValue(key, jObj.getInt(key));
+						}
+						else if ( jStruct.getMetaData().getLength(key) <= 8)
+						{
+							jStruct.setValue(key, jObj.getLong(key));						
+						}
+						else
+							jStruct.setValue(key, jObj.getString(key).getBytes());
+					}
+					else if( jObj.get(key) instanceof String )
 					{
 						jStruct.setValue(key, jObj.getString(key));
 					}					
@@ -228,8 +246,11 @@ public class EnterpriseConnect
 					{
 						jStruct.setValue(key, jObj.getString(key));
 					}
-					else if (jcoType == JCoMetaData.TYPE_INT2 || jcoType == JCoMetaData.TYPE_INT1 
-					      || jcoType == JCoMetaData.TYPE_BYTE)
+					else if (jcoType == JCoMetaData.TYPE_BYTE)
+					{
+						jStruct.setValue(key, jObj.getString(key));
+					}
+					else if (jcoType == JCoMetaData.TYPE_INT2 || jcoType == JCoMetaData.TYPE_INT1)
 					{
 						jStruct.setValue(key, jObj.getInt(key));
 					}
@@ -265,8 +286,8 @@ public class EnterpriseConnect
 			try
 			{
 				for(int i = 0; i <  tbl.getNumRows(); i++)
-				{					
-					JSONObject jRow = new JSONObject();
+				{
+					JSONObjectWrapper jRow = new JSONObjectWrapper();
 					tbl.setRow(i);
 					for(JCoField field : tbl)
 					{
@@ -275,8 +296,11 @@ public class EnterpriseConnect
 						{
 							jRow.put(field.getName(), field.getLong());
 						}
-						else if (field.getType() == JCoMetaData.TYPE_INT2 || field.getType() == JCoMetaData.TYPE_INT1 
-								|| field.getType() == JCoMetaData.TYPE_BYTE )
+						else if (field.getType() == JCoMetaData.TYPE_BYTE )
+						{
+							jRow.put(field.getName(), new String(field.getByteArray()));
+						}
+						else if (field.getType() == JCoMetaData.TYPE_INT2 || field.getType() == JCoMetaData.TYPE_INT1)
 						{
 							jRow.put(field.getName(), field.getInt());
 						}
@@ -307,8 +331,8 @@ public class EnterpriseConnect
 		try
 		{
 			IGxJSONAble struct = value[0];
-			JCoStructure jStruct = function.getExportParameterList().getStructure(parameterName);				
-			JSONObject jRow = new JSONObject();
+			JCoStructure jStruct = function.getExportParameterList().getStructure(parameterName);
+			JSONObjectWrapper jRow = new JSONObjectWrapper();
 			for(JCoField field : jStruct)
 			{
 			   if ( field.getType() == JCoMetaData.TYPE_NUM || 
@@ -339,6 +363,11 @@ public class EnterpriseConnect
 	{		
 		value[0] = function.getExportParameterList().getDate(parameterName);
 	}		
+	
+	public void getValue(String parameterName, byte[] value)
+	{		
+		value[0] = function.getExportParameterList().getByte(parameterName);
+	}
 	
 	public void getValue(String parameterName, int[] value)
 	{		

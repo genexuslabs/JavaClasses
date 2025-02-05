@@ -4,15 +4,18 @@ import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.util.*;
 
-import json.org.json.JSONObject;
+import org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.io.*;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.*;
 import java.util.*;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.*;
 import java.security.*;
@@ -176,10 +179,66 @@ public final class CommonUtil
 			throw new ExceptionInInitializerError("GXUtil static constructor error: " + e.getMessage());
 		}
 	}
+
+	public static String getContentType(String fileName) {
+		Path path = Paths.get(fileName);
+		String defaultContentType = "application/octet-stream";
+
+		try {
+			String probedContentType = Files.probeContentType(path);
+			if (probedContentType == null || probedContentType.equals(defaultContentType))
+				return findContentTypeByExtension(fileName);
+			return probedContentType;
+		} catch (IOException ioe) {
+			return findContentTypeByExtension(fileName);
+		}
+	}
+
+	private static String findContentTypeByExtension(String fileName) {
+		String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+		String contentType = contentTypes.get(fileExtension);
+		return contentType != null ? contentTypes.get(fileExtension) : "application/octet-stream";
+	}
+
+	private static Map<String, String> contentTypes  = new HashMap<String, String>() {{
+		put("txt" 	, "text/plain");
+		put("rtx" 	, "text/richtext");
+		put("htm" 	, "text/html");
+		put("html" , "text/html");
+		put("xml" 	, "text/xml");
+		put("aif"	, "audio/x-aiff");
+		put("au"	, "audio/basic");
+		put("wav"	, "audio/wav");
+		put("bmp"	, "image/bmp");
+		put("gif"	, "image/gif");
+		put("jpe"	, "image/jpeg");
+		put("jpeg"	, "image/jpeg");
+		put("jpg"	, "image/jpeg");
+		put("jfif"	, "image/pjpeg");
+		put("tif"	, "image/tiff");
+		put("tiff"	, "image/tiff");
+		put("png"	, "image/x-png");
+		put("3gp"	, "video/3gpp");
+		put("3g2"	, "video/3gpp2");
+		put("mpg"	, "video/mpeg");
+		put("mpeg"	, "video/mpeg");
+		put("mov"	, "video/quicktime");
+		put("qt"	, "video/quicktime");
+		put("avi"	, "video/x-msvideo");
+		put("exe"	, "application/octet-stream");
+		put("dll"	, "application/x-msdownload");
+		put("ps"	, "application/postscript");
+		put("pdf"	, "application/pdf");
+		put("svg"	, "image/svg+xml");
+		put("tgz"	, "application/x-compressed");
+		put("zip"	, "application/x-zip-compressed");
+		put("gz"	, "application/x-gzip");
+		put("json"	, "application/json");
+	}};
 	
 	public static String removeAllQuotes(String fileName)
 	{
-		StringBuffer out = new StringBuffer();
+		StringBuilder out = new StringBuilder();
 		int len = fileName.length();
 		for (int i = 0; i < len; i++)
 			if	(fileName.charAt(i) != '"')
@@ -1023,7 +1082,7 @@ public final class CommonUtil
 			return s;
 
 		int index, start, subLength;
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		subLength = subString.length();
 
 		for (start = 0, index = s.indexOf(subString, start); index >= 0; start = index + subLength, index = s.indexOf(subString, start))
@@ -1080,7 +1139,7 @@ public final class CommonUtil
 		if	(size <= 0)
 			return "";
 
-		StringBuffer ret = new StringBuffer(size);
+		StringBuilder ret = new StringBuilder(size);
 
 		for (int i = 0; i < size; i++)
 		{
@@ -1095,7 +1154,7 @@ public final class CommonUtil
 		if	(size <= 0)
 			return "";
 
-		StringBuffer ret = new StringBuffer(size);
+		StringBuilder ret = new StringBuilder(size);
 
 		for (int i = 0; i < size; i++)
 		{
@@ -1218,7 +1277,7 @@ public final class CommonUtil
 		}
 		catch (Exception e)
 		{
-			StringBuffer out = new StringBuffer();
+			StringBuilder out = new StringBuilder();
 
 			boolean first = true;
 			int len = text.length();
@@ -1282,8 +1341,8 @@ public final class CommonUtil
 		return BigDecimal.ZERO;
 	}
 
-	private static StringBuffer extractNumericStringValue(String text, String sDSep) {
-		StringBuffer out = new StringBuffer();
+	private static StringBuilder extractNumericStringValue(String text, String sDSep) {
+		StringBuilder out = new StringBuilder();
 
 		char dSep = (sDSep.length() > 0) ? sDSep.charAt(0) : '.';
 		boolean point = false;
@@ -1861,7 +1920,7 @@ public final class CommonUtil
 
 	public static String getTimeFormat(String time)
 	{
-		StringBuffer ret = new StringBuffer(time);
+		StringBuilder ret = new StringBuilder(time);
 		char hora;
 		boolean app = false;
 		char append = ' ';
@@ -2337,7 +2396,7 @@ public final class CommonUtil
 	public static String format(String value, String v1, String v2, String v3, String v4, String v5, String v6, String v7, String v8, String v9)
 	{
 		String[] vs = {v1, v2, v3, v4, v5, v6, v7, v8, v9};
-		StringBuffer stringBuilder = new StringBuffer();
+		StringBuilder stringBuilder = new StringBuilder();
 		int valueLength = value.length();
 		if (value != null && !value.equals(""))
 		{
@@ -2560,7 +2619,7 @@ public final class CommonUtil
    				int point = num.indexOf('.');
    				int scale = num.length() - (point == -1 ? num.length () : point + 1) - scaleAdj;
 
-  				StringBuffer val = new StringBuffer(point == -1 ? num : num.substring(0, point) + num.substring (point + 1));
+				StringBuilder val = new StringBuilder(point == -1 ? num : num.substring(0, point) + num.substring (point + 1));
 
   				// correct for negative scale as per BigDecimal javadoc
   				for(; scale<0; scale++)
@@ -2907,7 +2966,7 @@ public final class CommonUtil
 		if	(decimals < 0) decimals = 0;
 		if	(digits < 0)   digits   = 0;
 
-		StringBuffer b = new StringBuffer();
+		StringBuilder b = new StringBuilder();
 		boolean hasSign = (val < 0);
 
 		if	(hasSign)
@@ -3116,7 +3175,7 @@ public final class CommonUtil
 	}
 
 	public static String quoteString(String in, boolean entities8bit, boolean encodeQuotes) {
-		StringBuffer out = new StringBuffer();
+		StringBuilder out = new StringBuilder();
 		for (int i = 0; i < in.length(); i++)
 		{
 			char currentChar = in.charAt(i);
@@ -3383,7 +3442,7 @@ public final class CommonUtil
 		if (hashtable == null)
 			return null;
 
-		StringBuffer qbuf = new StringBuffer();
+		StringBuilder qbuf = new StringBuilder();
 		for (Enumeration en = hashtable.keys(); en.hasMoreElements();) {
 			Object key = en.nextElement();
 			qbuf.append((key == null ? null : URLEncode((String)key,"UTF-8")) + "=" +
