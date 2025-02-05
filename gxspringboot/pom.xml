@@ -18,6 +18,12 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>gxclassR</artifactId>
 			<version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>gxwrapperjavax</artifactId>
+                </exclusion>
+            </exclusions>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
