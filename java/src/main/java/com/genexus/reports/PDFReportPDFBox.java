@@ -29,6 +29,8 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.graphics.state.RenderingMode;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionJavaScript;
 import org.apache.pdfbox.pdmodel.interactive.viewerpreferences.PDViewerPreferences;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.pdfbox.text.TextPosition;
 import org.apache.pdfbox.util.Matrix;
 
 import org.jsoup.Jsoup;
@@ -1268,11 +1270,11 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	private void replaceTemplatePages() throws IOException {
 		int totalPages = document.getNumberOfPages();
 		for (int i = 0; i < totalPages; i++) {
-			final org.apache.pdfbox.pdmodel.PDPage page = document.getPage(i);
-			final java.util.List<float[]> replacements = new java.util.ArrayList<>();
-			org.apache.pdfbox.text.PDFTextStripper stripper = new org.apache.pdfbox.text.PDFTextStripper() {
+			final PDPage page = document.getPage(i);
+			final List<float[]> replacements = new java.util.ArrayList<>();
+			PDFTextStripper stripper = new PDFTextStripper() {
 				@Override
-				protected void writeString(String text, java.util.List<org.apache.pdfbox.text.TextPosition> textPositions) throws IOException {
+				protected void writeString(String text, List<org.apache.pdfbox.text.TextPosition> textPositions) throws IOException {
 					String placeholder = "{{pages}}";
 					int index = text.indexOf(placeholder);
 					while (index != -1 && index + placeholder.length() <= textPositions.size()) {
@@ -1281,7 +1283,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 						float minY = Float.MAX_VALUE;
 						float maxY = 0;
 						for (int j = index; j < index + placeholder.length(); j++) {
-							org.apache.pdfbox.text.TextPosition tp = textPositions.get(j);
+							TextPosition tp = textPositions.get(j);
 							float tpX = tp.getXDirAdj();
 							float tpY = tp.getYDirAdj();
 							float tpWidth = tp.getWidthDirAdj();
@@ -1320,8 +1322,8 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			stripper.setEndPage(i + 1);
 			stripper.getText(document);
 			if (!replacements.isEmpty()) {
-				try (org.apache.pdfbox.pdmodel.PDPageContentStream cs = new org.apache.pdfbox.pdmodel.PDPageContentStream(
-					document, page, org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode.APPEND, true, true)) {
+				try (PDPageContentStream cs = new PDPageContentStream(
+					document, page, PDPageContentStream.AppendMode.APPEND, true, true)) {
 					for (float[] rep : replacements) {
 						cs.addRect(rep[0], rep[1], rep[2], rep[3]);
 						cs.setNonStrokingColor(java.awt.Color.WHITE);
