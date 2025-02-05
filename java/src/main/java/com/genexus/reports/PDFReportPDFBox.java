@@ -61,6 +61,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	private final float DEFAULT_PDFBOX_LEADING = 1.2f;
 	private Set<String> supportedHTMLTags = new HashSet<>();
 	private PDPageContentStream currentPageContentStream;
+	private final String pagesPlaceHolder = "{{pages}}";
 
 	static {
 		log = org.apache.logging.log4j.LogManager.getLogger(PDFReportPDFBox.class);
@@ -854,7 +855,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				}
 
 				// Handle {{Pages}}
-				if (sTxt.trim().equalsIgnoreCase("{{Pages}}")) {
+				if (sTxt.trim().equalsIgnoreCase(pagesPlaceHolder)) {
 					if (!templateCreated) {
 						templateFont = baseFont;
 						templateFontSize = fontSize;
@@ -863,7 +864,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 						templateY = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin;
 						templateCreated = true;
 					}
-					sTxt = "{{pages}}";
+					sTxt = pagesPlaceHolder;
 				}
 
 				float textBlockWidth = rightAux - leftAux;
@@ -1274,8 +1275,8 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			final List<float[]> replacements = new java.util.ArrayList<>();
 			PDFTextStripper stripper = new PDFTextStripper() {
 				@Override
-				protected void writeString(String text, List<org.apache.pdfbox.text.TextPosition> textPositions) throws IOException {
-					String placeholder = "{{pages}}";
+				protected void writeString(String text, List<TextPosition> textPositions) throws IOException {
+					String placeholder = pagesPlaceHolder;
 					int index = text.indexOf(placeholder);
 					while (index != -1 && index + placeholder.length() <= textPositions.size()) {
 						float minX = Float.MAX_VALUE;
