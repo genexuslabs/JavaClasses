@@ -4,6 +4,11 @@ import com.genexus.db.UserInformation;
 import com.genexus.internet.HttpContext;
 import com.genexus.reports.*;
 import com.genexus.webpanels.GXWebProcedure;
+import org.apache.logging.log4j.Logger;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 public abstract class GXWebReport extends GXWebProcedure
 {
@@ -99,11 +104,14 @@ public abstract class GXWebReport extends GXWebProcedure
 		return ret;
 	}
 
-	protected boolean initPrinter(String output, int gxXPage, int gxYPage, String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex)
-	{
-		int x[] = {gxXPage};
-		int y[] = {gxYPage};
-		setResponseOuputFileName();
+	protected boolean initPrinter(String output, int gxXPage, int gxYPage, String iniFile, String form, String printer, int mode, int orientation, int pageSize, int pageLength, int pageWidth, int scale, int copies, int defSrc, int quality, int color, int duplex) {
+		int x[] = {
+			gxXPage
+		};
+		int y[] = {
+			gxYPage
+		};
+		setResponseOutputFileName();
 
 		getPrinter().GxRVSetLanguage(localUtil._language);
       	boolean ret = getPrinter().GxPrintInit(output, x, y, iniFile, form, printer, mode, orientation, pageSize, pageLength, pageWidth, scale, copies, defSrc, quality, color, duplex);
@@ -114,10 +122,44 @@ public abstract class GXWebReport extends GXWebProcedure
 		return ret;
 	}
 
-	private void setResponseOuputFileName(){
-		String outputFileName = filename!=null ? filename : getClass().getSimpleName();
-		String outputFileType = filetype!=null ? "." + filetype.toLowerCase(): ".pdf";
-		httpContext.getResponse().addHeader("content-disposition", "inline; filename=" + outputFileName + outputFileType);
+	private void setResponseOutputFileName() {
+		String outputFileName = (filename != null ? filename : getClass().getSimpleName());
+		String outputFileType = (filetype != null ? "." + filetype.toLowerCase() : ".pdf");
+
+		try {
+			String encodedFileName = URLEncoder.encode(outputFileName, "UTF-8").replace("+", "%20");
+			boolean isAscii = StandardCharsets.US_ASCII.newEncoder().canEncode(outputFileName);
+			String fallbackFileName = outputFileName;
+			if (!isAscii) {
+				fallbackFileName = outputFileName.replaceAll("[^\\p{ASCII}]", "");
+				if (fallbackFileName.isEmpty()) {
+					fallbackFileName = "download";
+				}
+			}
+			String contentDispositionValue =
+				"inline; filename=\"" + fallbackFileName + outputFileType + "\"; " +
+					"filename*=UTF-8''" + encodedFileName + outputFileType;
+
+			httpContext.getResponse().addHeader("Content-Disposition", contentDispositionValue);
+		} catch (UnsupportedEncodingException e) {
+			httpContext.getResponse().addHeader("Content-Disposition", "inline; filename=\"download" + outputFileType + "\"");
+		}
+	}
+
+	/**
+	 * Returns an ASCII version of the filename.
+	 * Non-ASCII characters are replaced with underscore to ensure ASCII compliance.
+	 */
+	private String asciiFileName(String fileName) {
+		StringBuilder asciiFileName = new StringBuilder();
+		for (char character: fileName.toCharArray()) {
+			if ((character <= 127)) {
+				asciiFileName.append(character);
+			} else {
+				asciiFileName.append("_");
+			}
+		}
+		return asciiFileName.toString();
 	}
 
 	protected void endPrinter()
