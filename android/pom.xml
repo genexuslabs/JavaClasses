@@ -27,10 +27,6 @@
                     <groupId>commons-io</groupId>
                     <artifactId>commons-io</artifactId>
                 </exclusion>
-                <exclusion>  <!-- exclude bouncycastle from android -->
-                    <groupId>org.bouncycastle</groupId>
-                    <artifactId>bcprov-jdk18on</artifactId>
-                </exclusion>
             </exclusions>
 		</dependency>
         <dependency>
@@ -55,14 +51,6 @@
             <artifactId>commons-io</artifactId>
             <version>2.2</version>
         </dependency>
-        <!-- add explicit bouncycastle in Android, version used in Android Flexible client -->
-        <!-- keep in sync version here and in Android Flexible client -->
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.65</version>
-        </dependency>
-
 	</dependencies>
 
 	<build>
