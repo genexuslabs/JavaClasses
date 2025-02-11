@@ -1,11 +1,11 @@
-| Branch | Status
-|---|---
-|master |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Amaster)
-|beta   |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Abeta)
-
 # GeneXus Standard Classes for Java
-
 These are the source of the GeneXus Standard Classes for Java, valid since GeneXus 16 Upgrade 4.
+
+## Repo Status
+| Branch | Build | Security
+|---|---|---
+|master |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Amaster)|[![CodeQL](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml)
+|beta   |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Abeta)|[![CodeQL](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml)
 
 ## Modules
 
@@ -13,7 +13,6 @@ These are the source of the GeneXus Standard Classes for Java, valid since GeneX
 |---|---
 | common | Classes common to Android and Java
 | gxcryptocommon | Classes common to Android and Java related to Cryptography
-| apacheandroid | Android apache class dependence. These were separated by size issues. They are candidates to disappear in the near future
 | gxmail | Classes related to mail handling
 | java | Java standard classes,  output is gxclassr.jar
 | wrappercommon | Interfaces to encapsulate Java EE and Jakarta EE support,  output is gxwrappercommon.jar

@@ -1,5 +1,6 @@
 package com.genexus.test.cache.redis;
 
+import com.genexus.Application;
 import com.genexus.cache.redis.RedisClient;
 import com.genexus.db.CacheValue;
 import org.apache.logging.log4j.LogManager;
@@ -24,6 +25,7 @@ public class TestRedisCacheClient {
 
 		Connect.init();
 		com.genexus.specific.java.LogManager.initialize(".");
+		Application.init(com.genexus.sampleapp.GXcfg.class);
 	}
 
 	@Test

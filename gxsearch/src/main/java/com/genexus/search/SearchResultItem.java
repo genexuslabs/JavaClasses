@@ -5,9 +5,8 @@ import java.util.List;
 import java.text.ParseException;
 import com.genexus.internet.StringCollection;
 
-import json.org.json.IJsonFormattable;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONException;
+import com.genexus.json.JSONObjectWrapper;
 
 import org.apache.lucene.document.DateField;
 import org.apache.lucene.document.DateTools;
@@ -26,19 +25,19 @@ public class SearchResultItem implements ISearchResultItem, Serializable, IGxJSO
 	private static final long serialVersionUID = 1L;
 	private Document m_document;
 	private float m_score;
-    private JSONObject _Properties;
+    private JSONObjectWrapper _Properties;
 
     public SearchResultItem() {
-        _Properties = new JSONObject();
+        _Properties = new JSONObjectWrapper();
     }
 
 	protected SearchResultItem(Document doc, float score)
 	{
-            _Properties = new JSONObject();
+            _Properties = new JSONObjectWrapper();
 		m_document = doc;
 		m_score = score;
 	}
-        public JSONObject GetProperties()
+        public JSONObjectWrapper GetProperties()
         {
             return _Properties;
         }
@@ -114,7 +113,7 @@ public class SearchResultItem implements ISearchResultItem, Serializable, IGxJSO
             return _Properties;
         }
 
-        public void FromJSONObject(IJsonFormattable obj) {
+        public void FromJSONObject(Object obj) {
         }
         public void AddObjectProperty(String name, Object prop)
         {

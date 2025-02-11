@@ -25,7 +25,7 @@ public final class handlerruntimeexception extends GXProcedure {
 		privateExecute();
 	}
 
-	private void privateExecute() {
+	protected void privateExecute() {
 		System.out.println("START Schedule Event received");
 		throw new RuntimeException("Handler error");
 	}

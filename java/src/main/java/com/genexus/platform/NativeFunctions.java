@@ -4,7 +4,7 @@ import com.genexus.CommonUtil;
 
 public class NativeFunctions
 {
-    private static INativeFunctions instance;
+    private volatile static INativeFunctions instance;
 
     private static Boolean isMicrosoft;
 

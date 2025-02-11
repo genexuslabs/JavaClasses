@@ -4,9 +4,8 @@ package com.genexus.webpanels;
 import com.genexus.*;
 import com.genexus.internet.HttpContext;
 
-import json.org.json.JSONArray;
-import json.org.json.JSONObject;
-import com.genexus.ws.rs.core.*;
+import org.json.JSONArray;
+import com.genexus.json.JSONObjectWrapper;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.InputStream;
@@ -15,13 +14,21 @@ import java.io.InputStream;
 public class GXObjectUploadServices extends GXWebObjectStub
 {   
 	boolean isRestCall = false;
-	IResponseBuilder builder = null;
-	public IResponseBuilder doInternalRestExecute(HttpContext context) throws Exception
+	String keyId;
+	String jsonResponse = null;
+
+	public String doInternalRestExecute(HttpContext context) throws Exception
 	{
 		isRestCall = true;
 		doExecute(context);
-		return builder;
+		return jsonResponse;
 	}
+
+	public String getKeyId()
+	{
+		return keyId;
+	}
+
 	public void doInternalExecute(HttpContext context) throws Exception
 	{
 		doExecute(context);
@@ -33,7 +40,6 @@ public class GXObjectUploadServices extends GXWebObjectStub
 		String ext = "";
         WebApplicationStartup.init(com.genexus.Application.gxCfg, context);
         context.setStream();
-		String keyId;
 		try
 		{
 			String fileDirPath = Preferences.getDefaultPreferences().getPRIVATE_PATH();
@@ -57,7 +63,7 @@ public class GXObjectUploadServices extends GXWebObjectStub
 						fileName = CommonUtil.getFileName(file.getName()) + "." + ext;
 						long fileSize = file.getSize();
 						savedFileName = file.getPath();
-						JSONObject jObj = new JSONObject();
+						JSONObjectWrapper jObj = new JSONObjectWrapper();
 						jObj.put("name", fileName);
 						jObj.put("size", fileSize);
 						jObj.put("extension", ext);
@@ -68,7 +74,7 @@ public class GXObjectUploadServices extends GXWebObjectStub
 						}
 					}
 				}
-				JSONObject jObjResponse = new JSONObject();
+				JSONObjectWrapper jObjResponse = new JSONObjectWrapper();
 				jObjResponse.put("files", jsonArray);
 				((HttpContextWeb) context).writeText(jObjResponse.toString());
 				context.getResponse().flushBuffer();
@@ -92,7 +98,7 @@ public class GXObjectUploadServices extends GXWebObjectStub
 				try (InputStream is = context.getRequest().getInputStream().getInputStream()) {
 					FileItem fileItem = new FileItem(filePath, false, "", is);
 					savedFileName = fileItem.getPath();
-					JSONObject jObj = new JSONObject();
+					JSONObjectWrapper jObj = new JSONObjectWrapper();
 					jObj.put("object_id", HttpUtils.getUploadFileId(keyId));
 					if (!isRestCall) {
 						context.getResponse().setContentType("application/json");
@@ -102,9 +108,7 @@ public class GXObjectUploadServices extends GXWebObjectStub
 						context.getResponse().flushBuffer();
 					}
 					else {
-						String jsonResponse = jObj.toString();
-						builder = Response.statusWrapped(201).entityWrapped(jsonResponse);
-						builder.header("GeneXus-Object-Id", keyId);
+						jsonResponse = jObj.toString();
 					}
 					if (!savedFileName.isEmpty()) {
 						HttpUtils.CacheUploadFile(keyId, savedFileName, fileName, ext);

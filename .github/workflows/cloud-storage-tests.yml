@@ -32,9 +32,15 @@ jobs:
         fetch-depth: 1
 
     - name: Setup Java JDK
-      uses: actions/setup-java@v1.4.3
+      uses: actions/setup-java@v4
       with:
-        java-version: 1.9
+        java-version: ${{ vars.JAVA_VERSION }}
+        distribution: 'temurin'
+
+    - name: Setup Maven
+      uses: stCarolas/setup-maven@v4.5
+      with:
+        maven-version: ${{ vars.MAVEN_VERSION }}
 
     - name: Setup Maven settings
       uses: whelk-io/maven-settings-xml-action@v14
@@ -43,33 +49,34 @@ jobs:
         servers: '[{ "id": "github-genexuslabs", "username": "genexusbot", "password": "${{ secrets.SECURE_TOKEN }}" }]'
 
     - name: Install
-      run: mvn -B install --file $POM_PATH
+      run: mvn -B install --file $POM_PATH -DskipTests
 
     - name: Test Cloud Storage
+      env:
+        AWSS3_TEST_ENABLED: true
+        STORAGE_AWSS3_ACCESS_KEY: "${{ secrets.AWSS3_ACCESS_KEY }}"
+        STORAGE_AWSS3_SECRET_KEY: "${{ secrets.AWSS3_SECRET_KEY }}"
+        STORAGE_AWSS3_BUCKET_NAME: genexus-s3-test
+        STORAGE_AWSS3_FOLDER_NAME: gxclasses
+        STORAGE_AWSS3_REGION: us-east-1
+        IBMCOS_TEST_ENABLED: true
+        STORAGE_IBMCOS_ACCESS_KEY: "${{ secrets.IBMCOS_ACCESS_KEY }}"
+        STORAGE_IBMCOS_SECRET_KEY: "${{ secrets.IBMCOS_SECRET_KEY }}"
+        STORAGE_IBMCOS_BUCKET_NAME: gxclasses-unit-tests
+        STORAGE_IBMCOS_FOLDER_NAME: tests
+        STORAGE_IBMCOS_REGION: us-south
+        AZUREBS_TEST_ENABLED: true
+        STORAGE_AZUREBS_ACCESS_KEY: "${{ secrets.AZUREBS_ACCESS_KEY }}"
+        STORAGE_AZUREBS_ACCOUNT_NAME: "${{ secrets.AZUREBS_ACCOUNT_NAME }}"
+        STORAGE_AZUREBS_FOLDER_NAME: tests
+        STORAGE_AZUREBS_PUBLIC_CONTAINER_NAME: contluispublic
+        STORAGE_AZUREBS_PRIVATE_CONTAINER_NAME: contluisprivate
+        GOOGLECS_TEST_ENABLED: true
+        STORAGE_GOOGLECS_PROJECT_ID: gxjavacloudstorageunittests
+        STORAGE_GOOGLECS_BUCKET_NAME: javaclasses-unittests
+        STORAGE_GOOGLECS_FOLDER_NAME: gxclasses
+        STORAGE_GOOGLECS_APPLICATION_NAME: gxjavacloudstorageunittests
       run: |
-        export AWSS3_TEST_ENABLED=true
-        export STORAGE_AWSS3_ACCESS_KEY="${{ secrets.AWSS3_ACCESS_KEY }}"
-        export STORAGE_AWSS3_SECRET_KEY="${{ secrets.AWSS3_SECRET_KEY }}"
-        export STORAGE_AWSS3_BUCKET_NAME=genexus-s3-test
-        export STORAGE_AWSS3_FOLDER_NAME=gxclasses
-        export STORAGE_AWSS3_REGION=us-east-1
-        export IBMCOS_TEST_ENABLED=true
-        export STORAGE_IBMCOS_ACCESS_KEY="${{ secrets.IBMCOS_ACCESS_KEY }}"
-        export STORAGE_IBMCOS_SECRET_KEY="${{ secrets.IBMCOS_SECRET_KEY }}"
-        export STORAGE_IBMCOS_BUCKET_NAME=gxclasses-unit-tests
-        export STORAGE_IBMCOS_FOLDER_NAME=tests
-        export STORAGE_IBMCOS_REGION=us-south
-        export AZUREBS_TEST_ENABLED=true
-        export STORAGE_AZUREBS_ACCESS_KEY="${{ secrets.AZUREBS_ACCESS_KEY }}"
-        export STORAGE_AZUREBS_ACCOUNT_NAME="${{ secrets.AZUREBS_ACCOUNT_NAME }}"
-        export STORAGE_AZUREBS_FOLDER_NAME=tests
-        export STORAGE_AZUREBS_PUBLIC_CONTAINER_NAME=contluispublic
-        export STORAGE_AZUREBS_PRIVATE_CONTAINER_NAME=contluisprivate
-        export GOOGLECS_TEST_ENABLED=true
         export STORAGE_GOOGLECS_KEY="${{ secrets.GOOGLECS_KEY }}"
-        export STORAGE_GOOGLECS_PROJECT_ID=gxjavacloudstorageunittests
-        export STORAGE_GOOGLECS_BUCKET_NAME=javaclasses-unittests
-        export STORAGE_GOOGLECS_FOLDER_NAME=gxclasses
-        export STORAGE_GOOGLECS_APPLICATION_NAME=gxjavacloudstorageunittests
-
+        
         mvn -B -pl gxcloudstorage-tests test --file $POM_PATH

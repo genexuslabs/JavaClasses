@@ -1,23 +1,29 @@
 package com.genexus.util;
 import java.io.*;
 import java.util.Vector;
+
+import com.genexus.ApplicationContext;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.db.driver.ResourceAccessControlList;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.apache.commons.io.IOCase;
+import org.springframework.core.io.ClassPathResource;
 
 import java.util.Date;
 
 public class GXFileInfo implements IGXFileInfo {
 
 	private File fileSource;
+	private ClassPathResource resource;
 	private boolean isDirectory;
 
 	public GXFileInfo(File file){
 		this(file, false);
 	}
 	public GXFileInfo(File file, boolean isDirectory){
+		if (ApplicationContext.getInstance().isSpringBootApp() && ! file.exists() && !file.getPath().equals(""))
+			resource = new ClassPathResource(file.getPath());
 		fileSource = file;
 		this.isDirectory = isDirectory;
 	}
@@ -33,12 +39,20 @@ public class GXFileInfo implements IGXFileInfo {
 		}
 	}
 	public boolean exists(){
+		if (resource != null && !isDirectory) {
+			if (!fileSource.exists() && !resource.exists())
+				return false;
+			return true;
+		}
+
 		if ((isDirectory && fileSource.isDirectory()) || (!isDirectory && fileSource.isFile())) {
 			return fileSource.exists();
 		}
 		return false;
 	}
 	public boolean isFile(){
+		if (resource != null)
+			return true;
 		return fileSource.isFile();
 	}
 	public boolean isDirectory(){
@@ -79,6 +93,13 @@ public class GXFileInfo implements IGXFileInfo {
 		return fileSource.getAbsolutePath();
 	}
 	public long length(){
+		if (resource != null && !fileSource.exists())
+			try {
+				return resource.contentLength();
+			}
+			catch (IOException _) {
+				return 0;
+			}
 		return fileSource.length();
 	}
 	public Date lastModified(){
@@ -130,8 +151,12 @@ public class GXFileInfo implements IGXFileInfo {
         
         public InputStream getStream(){
             try {
+				if (resource != null && !fileSource.exists()) {
+					return resource.getInputStream();
+				}
+
                 return new FileInputStream(fileSource);
-            } catch (FileNotFoundException ex) {
+            } catch (Exception ex) {
                 return null;
             }
         }

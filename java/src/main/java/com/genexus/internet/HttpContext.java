@@ -1,21 +1,21 @@
 package com.genexus.internet;
 
-import java.io.*;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Hashtable;
-
-import json.org.json.IJsonFormattable;
-import json.org.json.JSONArray;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
-import org.apache.logging.log4j.Logger;
-
 import com.genexus.*;
 import com.genexus.servlet.http.ICookie;
 import com.genexus.servlet.http.IHttpServletRequest;
 import com.genexus.servlet.http.IHttpServletResponse;
 import com.genexus.webpanels.WebSession;
+import org.json.JSONArray;
+import org.json.JSONException;
+import com.genexus.json.JSONObjectWrapper;
+import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Hashtable;
 
 public abstract class HttpContext implements IHttpContext
 {
@@ -89,11 +89,6 @@ public abstract class HttpContext implements IHttpContext
 	{
 		ignoreSpa = true;
 	}
-
-	public void setChunked()
-	{
-		isChunked = true;
-	}
 	
 	public boolean isSoapRequest()
 	{
@@ -114,7 +109,7 @@ public abstract class HttpContext implements IHttpContext
 	public com.genexus.xml.XMLWriter GX_xmlwrt = new com.genexus.xml.XMLWriter();
 
 	protected com.genexus.util.FastByteArrayOutputStream buffer;
-	protected boolean buffered;
+	protected ResponseBufferMode bufferMode = ResponseBufferMode.SERVER_DEFAULT;
 	protected boolean compressed;
 	protected boolean doNotCompress;
 	protected ModelContext context;
@@ -131,7 +126,6 @@ public abstract class HttpContext implements IHttpContext
 	protected boolean wrapped = false;
 	protected int drawGridsAtServer = -1;
 	private boolean ignoreSpa = false;
-	private boolean isChunked = false;
 
 	private static HashMap<String, Messages> cachedMessages = new HashMap<String, Messages>();
 	protected String currentLanguage = null;
@@ -180,7 +174,7 @@ public abstract class HttpContext implements IHttpContext
 		ctx.GX_msglist		=  GX_msglist;
 		ctx.GX_xmlwrt		=  GX_xmlwrt;
 		ctx.buffer			=  buffer;
-		ctx.buffered		=  buffered;
+		ctx.bufferMode		=  bufferMode;
 		ctx.compressed		=  compressed;
 		ctx.out				=  out;
 		ctx.writer			=  writer;
@@ -252,7 +246,7 @@ public abstract class HttpContext implements IHttpContext
 	public abstract String cgiGet(String parm);
     public abstract void changePostValue(String ctrl, String value);
 	public abstract boolean isFileParm( String parm);
-    public abstract void parseGXState(JSONObject tokenValues);
+    public abstract void parseGXState(JSONObjectWrapper tokenValues);
 	public abstract void deletePostValue(String ctrl);
 	public abstract void DeletePostValuePrefix(String sPrefix);
 	public abstract HttpResponse getHttpResponse();
@@ -356,7 +350,7 @@ public abstract class HttpContext implements IHttpContext
 	
 	public void deleteReferer()
 	{
-		deleteReferer(getNavigationHelper(false).getUrlPopupLevel(getRequestNavUrl()));            
+		deleteReferer(GXNavigationHelper.getUrlPopupLevel(getRequestNavUrl()));            
 	}
 
 	public void pushCurrentUrl()
@@ -383,12 +377,13 @@ public abstract class HttpContext implements IHttpContext
 			}
 		}        	
 		getResponse().setStatus(statusCode);
-		try {
-			getResponse().sendError(statusCode, statusDescription);
-		}
-		catch(Exception e) {
-			if (logger.isErrorEnabled()) {
-				logger.error("Could not send Response Error Code", e);
+		if (!ApplicationContext.getInstance().isSpringBootApp()) {
+			try {
+				getResponse().sendError(statusCode, statusDescription);
+			} catch (Exception e) {
+				if (logger.isErrorEnabled()) {
+					logger.error("Could not send Response Error Code", e);
+				}
 			}
 		}
 		setAjaxCallMode();
@@ -567,11 +562,22 @@ public abstract class HttpContext implements IHttpContext
 	}
 
 
-	public void writeBytes(byte[] bytes) throws IOException
-	{
-            out.write(bytes);
-			if (isChunked || getHttpResponse().getHeader("Transfer-Encoding").equalsIgnoreCase("chunked"))
-				out.flush();
+	public void writeBytes(byte[] bytes) throws IOException {
+		out.write(bytes);
+
+		if (bufferMode == ResponseBufferMode.DISABLED) {
+			tryFlushStream();
+		}
+	}
+
+	private void tryFlushStream() {
+		try {
+			out.flush();
+		}
+		catch (IOException e)
+		{
+			logger.debug("Failed to flush Http stream", e);
+		}
 	}
 
 	public OutputStream getOutputStream()
@@ -605,9 +611,9 @@ public abstract class HttpContext implements IHttpContext
 		}
 	}
 
-	public void setBuffered(boolean buffered)
+	public void setResponseBufferMode(ResponseBufferMode bufferMode)
 	{
-		this.buffered = buffered;
+		this.bufferMode = bufferMode;
 	}
 
 	public void setCompression(boolean compressed)
@@ -755,7 +761,7 @@ public abstract class HttpContext implements IHttpContext
 
 		if	(file.startsWith("/"))
 		{
-			if (file.startsWith(getContextPath()) || file.startsWith(getDefaultPath()))
+			if (file.startsWith(getContextPath()) || (!getDefaultPath().isEmpty() && file.startsWith(getDefaultPath())))
 				return out;
 			return getContextPath() + out;
 		}
@@ -913,7 +919,7 @@ public abstract class HttpContext implements IHttpContext
 								{"rtx" 	, "text/richtext"},
 								{"htm" 	, "text/html"},
 								{"html" , "text/html"},
-								{"xml" 	, "text/xml"},
+								{"xml" 	, "application/xml"},
 								{"aif"	, "audio/x-aiff"},
 								{"au"	, "audio/basic"},
 								{"wav"	, "audio/wav"},
@@ -953,13 +959,19 @@ public abstract class HttpContext implements IHttpContext
 	{
 		try
 		{
-			IJsonFormattable jsonObj;
+			Object jsonObj;
 			if (jsonStr.startsWith("["))
 				jsonObj = new JSONArray(jsonStr);
 			else
-				jsonObj = new JSONObject(jsonStr);
+				jsonObj = new JSONObjectWrapper(jsonStr);
 			((IGxJSONAble)SdtObj).FromJSONObject(jsonObj);
 		}
 		catch(JSONException exc) {}
+	}
+
+	public enum ResponseBufferMode {
+		DISABLED, // The response buffer is disabled and the server does not use any buffering.
+		SERVER_DEFAULT, // The server uses its default buffering behavior, which includes a buffer size. When the buffer is full, it flushes the response.
+		ENABLED // Not recommended: The response buffer is enabled and actively used by the server with a Custom GeneXus implementation.
 	}
 }

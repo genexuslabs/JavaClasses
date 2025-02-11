@@ -1,9 +1,13 @@
 package com.genexus;
 
+import com.genexus.db.UserInformation;
+import com.genexus.sampleapp.GXcfg;
 import com.genexus.specific.java.Connect;
 import com.genexus.specific.java.LogManager;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.UUID;
 
@@ -13,6 +17,7 @@ public class TestCommonUtil {
 	{
 		Connect.init();
 		LogManager.initialize(".");
+		Application.init(GXcfg.class);
 	}
 
 	@Test
@@ -131,8 +136,116 @@ public class TestCommonUtil {
 		expectedResult = "Alex is 26 years old";
 		result = CommonUtil.format(value, "Alex", "26", "10", "10", "", "", "", "", "");
 		Assert.assertEquals(expectedResult, result);
+
+		UserInformation ui = (UserInformation) GXObjectHelper.getUserInformation(ModelContext.getModelContext(GXcfg.class), -1);
+		long decimalValue = -150;
+		String picture = "$ZZZ,ZZZ,ZZ9";
+		expectedResult = "-$        150";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		result = ui.getLocalUtil().format(DecimalUtil.doubleToDec(decimalValue), picture);
+		Assert.assertEquals(expectedResult, result);
+		
+		picture  = "$ ZZZ,ZZZ,ZZ9";
+		expectedResult  = "-$         150";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		result = ui.getLocalUtil().format(DecimalUtil.doubleToDec(decimalValue), picture);
+		Assert.assertEquals(expectedResult, result);
+
+		picture = "ZZZ,ZZZ,ZZ9";
+		expectedResult = "        -150";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		result = ui.getLocalUtil().format(DecimalUtil.doubleToDec(decimalValue), picture);
+		Assert.assertEquals(expectedResult, result);
+
+		decimalValue = 150;
+		picture  = "$ZZZ,ZZZ,ZZ9";
+		expectedResult  = "$        150";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		decimalValue = 5;
+		picture = "$ 9.99";
+		expectedResult = "$ 5.00";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		decimalValue = -666;
+		picture = "+ZZZ9";
+		expectedResult = "-666";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result.trim());
+
+		decimalValue = -123456789;
+		picture = "ZZZ,ZZZ,ZZ9";
+		expectedResult = "-123,456,789";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		result = ui.getLocalUtil().format(DecimalUtil.doubleToDec(decimalValue), picture);
+		Assert.assertEquals(expectedResult, result);
+
+		BigDecimal bigDecimalValue = new BigDecimal(-12.5);
+		picture = "+99.9";
+		expectedResult = "-12.5";
+
+		result = ui.getLocalUtil().format(bigDecimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		bigDecimalValue = new BigDecimal(-12.5);
+		picture = "$Z9.9";
+		expectedResult = "-$12.5";
+
+		result = ui.getLocalUtil().format(bigDecimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		decimalValue = 87654321;
+		picture = "\\\" ZZ,ZZZ,ZZ9";
+		expectedResult = "\\\" 87,654,321";
+
+		result = ui.getLocalUtil().format(decimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
+		double doubleValue = 123456.12;
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "ZZZZZZZZZZ9.ZZZZZZ", "     123456.120000");
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "99999999999.999999", "00000123456.120000");
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "ZZZZZZZZZZ9.999999", "     123456.120000");
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "##########9.######", "         123456.12");
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "??????????9.??????", "     123456.12    ");
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "\\# ??????????9.??????", "#      123456.12    ");
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "##,###,###,##9.######", "           123,456.12");
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "??,???,???,??9.??????", "       123,456.12    ");
+
+		doubleValue = 0;
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "###########.######", "                  ");
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "???????????.??????", "                  ");
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "\\# ??????????9.??????", "#            0      ");
+
+		doubleValue = 0.1;
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "???????????.??????", "           .1     ");
+
+		doubleValue = -123456.12;
+		doLocalUtilFormatAssert(ui, doubleValue, new BigDecimal(doubleValue), "(??????????9.??????)", "(     123456.12    )");
 	}
 
+	private void doLocalUtilFormatAssert(UserInformation ui, double doubleValue, BigDecimal bigDecimalValue, String picture, String expectedResult) {
+		String result = ui.getLocalUtil().format(doubleValue, picture);
+		Assert.assertEquals(expectedResult, result);
+		result = ui.getLocalUtil().format(bigDecimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+	}
 	@Test
 	public void testConvertObjectTo() {
 		initialize();
@@ -155,7 +268,7 @@ public class TestCommonUtil {
 		try{
 			Class integerClass = Class.forName("java.lang.Integer");
 			result = CommonUtil.convertObjectTo(obj, integerClass, true);
-			Assert.assertEquals(Integer.valueOf("0"), result);
+			Assert.assertEquals(null, result);
 		} catch (Exception e){
 			Assert.fail("Test failed " + e);
 		}
@@ -175,7 +288,7 @@ public class TestCommonUtil {
 		try{
 			Class stringClass = Class.forName("java.lang.String");
 			result = CommonUtil.convertObjectTo(obj, stringClass, true);
-			Assert.assertEquals("", result);
+			Assert.assertEquals(null, result);
 		} catch (Exception e){
 			Assert.fail("Test failed " + e);
 		}
@@ -215,7 +328,7 @@ public class TestCommonUtil {
 		try{
 			Class booleanClass = Class.forName("java.lang.Boolean");
 			result = CommonUtil.convertObjectTo(obj, booleanClass, true);
-			Assert.assertEquals(false, result);
+			Assert.assertEquals(null, result);
 		} catch (Exception e){
 			Assert.fail("Test failed " + e);
 		}

@@ -20,31 +20,37 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.genexus</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>gxcloudstorage-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.genexus</groupId>
-            <artifactId>gxcloudstorage-awss3</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.genexus</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>gxcloudstorage-ibmcos</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.genexus</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>gxcloudstorage-googlecloudstorage</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.genexus</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>gxcloudstorage-azureblob</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>gxcloudstorage-awss3-v1</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>gxcloudstorage-awss3-v2</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

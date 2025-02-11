@@ -498,6 +498,7 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		String retstr;
 		Date retdate = CommonUtil.nullDate();
 		int year = 0, month = 0, day = 0;
+		boolean getnexttoken = true;
 
 		if (dfropen_in_use)
 		{
@@ -506,6 +507,8 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 				String stringDelimitedField = actline.nextToken(fdel);
 				if(fdel.equals(stringDelimitedField) || stringDelimitedField.equals(""))
 				{ // Si el token debe estar vac�o...
+					if (fdel.equals(stringDelimitedField))
+						getnexttoken = false;
 					stringDelimitedField = "";
 				}
 
@@ -563,7 +566,8 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		date[0] = retdate;
 		try
 		{
-			String stringDelimitedField = actline.nextToken(fdel);
+			if (getnexttoken)
+				actline.nextToken(fdel);
 		}
 		catch(Exception e)
 		{//Se sabe que se puede leer un token que no existe al final de la linea
@@ -756,12 +760,27 @@ public class DelimitedFilesSafe implements IDelimitedFilesSafe
 		return 0;
 	}
 
+	public byte dfwpnum(long num, int dec)
+	{
+		return dfwpnum(new BigDecimal(num), dec);
+	}
+
+	public byte dfwpnum(BigDecimal num, int dec)
+	{
+		String doubnum = CommonUtil.ltrim(CommonUtil.str(num, 20 + dec, dec, true));
+		return dfwpnum(doubnum, dec);
+	}
 	public byte dfwpnum(double num, int dec)
+	{
+		String doubnum = CommonUtil.ltrim(CommonUtil.str(num, 20 + dec, dec));
+		return dfwpnum(doubnum, dec);
+	}
+
+	private byte dfwpnum(String doubnum, int dec)
 	{
 		byte retval = GX_ASCDEL_SUCCESS;
 		if (dfwopen_in_use)
 		{
-			String doubnum = CommonUtil.ltrim(CommonUtil.str(num, 20 + dec, dec));
 			int k = doubnum.indexOf(".");
 			if (dec == 0)
 			{

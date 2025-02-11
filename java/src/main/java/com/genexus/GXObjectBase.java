@@ -2,6 +2,8 @@ package com.genexus;
 
 import com.genexus.db.Namespace;
 import com.genexus.db.UserInformation;
+import com.genexus.diagnostics.GXDebugInfo;
+import com.genexus.diagnostics.GXDebugManager;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.internet.HttpContext;
@@ -223,5 +225,40 @@ public abstract class GXObjectBase extends GXRestServiceWrapper implements IErro
 	public void submit(int id, Object [] submitParms){
 	}
 	public void submitReorg(int id, Object [] submitParms) throws SQLException {
+	}
+
+	private GXDebugInfo dbgInfo = null;
+	protected void trkCleanup()
+	{
+		if(dbgInfo != null)
+			dbgInfo.onCleanup();
+	}
+
+	protected void initialize(int objClass, int objId, int dbgLines, long hash)
+	{
+		dbgInfo = GXDebugManager.getInstance().getDbgInfo(context, objClass, objId, dbgLines, hash);
+	}
+
+	protected void trk(int lineNro)
+	{
+		if(dbgInfo != null)
+			dbgInfo.trk(lineNro);
+	}
+
+	protected void trk(int lineNro, int lineNro2)
+	{
+		if(dbgInfo != null)
+			dbgInfo.trk(lineNro, lineNro2);
+	}
+
+	protected void trkrng(int lineNro, int lineNro2)
+	{
+		trkrng(lineNro, 0, lineNro2, 0);
+	}
+
+	protected void trkrng(int lineNro, int colNro, int lineNro2, int colNro2)
+	{
+		if(dbgInfo != null)
+			dbgInfo.trkRng(lineNro, colNro, lineNro2, colNro2);
 	}
 }

@@ -1361,6 +1361,12 @@ public class LocalUtil
 
 	String alignAndPad(String text, char pad, String picture, boolean floating, NumberFormat numberFormat, String originalPicture)
 	{
+		String signPrefix = "";
+		if (text.startsWith("-") && picture.startsWith("?"))
+		{
+			signPrefix = "-";
+			text = text.substring(1);
+		}
 		DecimalFormat df = (DecimalFormat) numberFormat;
 		char decimalSeparator  = df.getDecimalFormatSymbols().getDecimalSeparator();
 
@@ -1378,7 +1384,10 @@ public class LocalUtil
 			}
 			else
 			{
-				return (alignRight(text, picture.length()));
+				if (text.length() < picture.length())
+					return (alignRight(text, picture.length()));
+				else
+					return text;
 			}
 		}
 
@@ -1386,9 +1395,11 @@ public class LocalUtil
 
 		StringBuffer sText = new StringBuffer(text);
 
-		if (!CommonUtil.in(text, decimalSeparator) )
+
+		if (!CommonUtil.in(text, decimalSeparator))
 		{
-			sText.append(decimalSeparator);
+			if (picture.charAt(posSep +1) != '#' && picture.charAt(posSep +1) != '?')
+				sText.append(decimalSeparator);
 			posText = sText.length() - 1;
 		}
 
@@ -1401,8 +1412,18 @@ public class LocalUtil
 			sText.append(pad);
 		}*/
 
-		while (sText.length() < picture.length() )
-			sText.append(pad);
+		int offset = 0;
+		while (sText.length() + offset < picture.length() )
+		{
+			char charAt = picture.charAt(sText.length());
+			if (charAt == '?')
+				sText.append(' ');
+			else
+				if (charAt != '#')
+					sText.append(pad);
+				else
+					offset ++;
+		}
 
 
 		if (floating || originalPicture.startsWith("$"))
@@ -1411,7 +1432,7 @@ public class LocalUtil
 		}
 		else
 		{
-			return sText.toString();
+			return signPrefix + sText.toString();
 		}
 	}
 
@@ -1443,6 +1464,7 @@ public class LocalUtil
 		int originalPictLength = picture.length();
 		picture = takeSymbolsFromPicture(picture);
 		int newPictLength = picture.length();
+		boolean hasSymbol = originalPictLength > newPictLength;
 		int j = 0;
 		String valueStr = String.valueOf(value);
 		int valueStrLength = valueStr.length();
@@ -1491,7 +1513,7 @@ public class LocalUtil
 	    if	((!isAllZ(picture) || value != 0) && continua)
 		{
 			DecimalFormat df = (DecimalFormat) numberFormat;
-			df.applyPattern(PictureFormatter.pictureToNumberFormat(withoutSuffixPicture.replace('9','0').replace('Z','#')));
+			df.applyPattern(pictureToNumberFormat(withoutSuffixPicture));
 			if ( CommonUtil.in(picture, '.') || CommonUtil.in(picture, ','))
 			{
 				formatted = alignAndPad(df.format(value), '0', withoutSuffixPicture, floating, numberFormat, originalPicture);
@@ -1502,7 +1524,7 @@ public class LocalUtil
 			}
 		}
 
-		if( originalPictLength > newPictLength && !floating) formatted = addSymbolsToText(formatted, originalPicture);
+		if( originalPictLength > newPictLength && !floating) formatted = addSymbolsToText(formatted, originalPicture, hasSymbol);
 		int negativeSign = 0;
 		if (preffix.startsWith("("))
 		{
@@ -1529,13 +1551,19 @@ public class LocalUtil
 		for (int i = 0; i < picture.length(); i++)
 		{
 			char a = picture.charAt(i);
-			if( (a=='Z') || (a=='9') || (a==',')  || (a=='%') || (a==')') || (a=='('))
+			if( (a=='?') || (a=='#') || (a=='Z') || (a=='9') || (a==',')  || (a=='%') || (a==')') || (a=='(') || (a==' '))
 			{
 				pictureWithoutSymbols.append(a);
 			}
 			else if (a=='.' && !dotRemove)
 			{
 				pictureWithoutSymbols.append(a);
+			}
+			else if (a=='\\')
+			{
+				i++;
+				if (picture.charAt(i--) == '"')
+					pictureWithoutSymbols.append('"');
 			}
 		}
 		return pictureWithoutSymbols.toString();
@@ -1559,12 +1587,13 @@ public class LocalUtil
 		return false;
 	}
 
-	private String addSymbolsToText(String text, String originalPicture)
+	private String addSymbolsToText(String text, String originalPicture, boolean hasSymbol)
 	{
 		StringBuffer formattedText = new StringBuffer();
 		int textIdx = text.length() - 1;
 		
 		boolean dotAsLiteral = dotAsLiteral(originalPicture);
+		boolean isNegative = false;
 		for (int i = originalPicture.length() - 1; i >= 0;)
 		{
 			char a = originalPicture.charAt(i--);
@@ -1572,12 +1601,28 @@ public class LocalUtil
 			{
 				if (!(a =='+' && text.startsWith("-")))
 					formattedText.append(a);
+				if (a == ' ')
+					textIdx--;
 				if( i >= 0) a = originalPicture.charAt(i--);
 				else break;
 			}
-			if( textIdx >= 0 ) formattedText.append(text.charAt(textIdx--));
+			if( textIdx >= 0)
+			{
+				char textChar = text.charAt(textIdx--);
+				if (textChar != '-' || !hasSymbol || textIdx < 0)
+					formattedText.append(textChar);
+				else
+				{
+					formattedText.append(' ');
+					isNegative = true;
+				}
+			}
 		}
 		while( textIdx >= 0 ) formattedText.append(text.charAt(textIdx--));
+
+		if (isNegative)
+			formattedText.append('-');
+
 		String formattedString = formattedText.reverse().toString();
 		if (formattedString.endsWith("DB"))
 		{
@@ -1616,6 +1661,7 @@ public class LocalUtil
 		int originalPictLength = picture.length();
 		picture = takeSymbolsFromPicture(picture);
 		int newPictLength = picture.length();
+		boolean hasSymbol = originalPictLength > newPictLength;
 		int j = 0;
 		String valueStr = String.valueOf(value);
 		int valueStrLength = valueStr.length();
@@ -1645,6 +1691,7 @@ public class LocalUtil
 		}
 
 		String preffix = picturePreffix(picture);
+		String suffix = pictureSuffix(picture);
 		if (preffix.startsWith("("))
 		{
 			if (value.compareTo(java.math.BigDecimal.ZERO) == -1)
@@ -1655,16 +1702,17 @@ public class LocalUtil
 			{
 				picture = picture.replace('(', 'Z').substring(0, picture.length() - 1);
 				preffix = "";
+				suffix = "";
 			}
 		}
 		boolean floating = (preffix.trim().length() > 1 && preffix.replace(preffix.charAt(0), new String(" ").charAt(0)).trim().equals(""));
 
-		String withoutSuffixPicture = removePictureSuffix("%", removePicturePreffix(preffix,picture));
+		String withoutSuffixPicture = removePictureSuffix(suffix, removePicturePreffix(preffix,picture));
 
 	    if	((!isAllZ(picture) || value.compareTo(java.math.BigDecimal.ZERO) != 0) && continua)
 		{
 			DecimalFormat df = (DecimalFormat) numberFormat;
-			df.applyPattern(PictureFormatter.pictureToNumberFormat(withoutSuffixPicture.replace('9','0').replace('Z','#')));
+			df.applyPattern(pictureToNumberFormat(withoutSuffixPicture));
 			if ( CommonUtil.in(picture, '.') || CommonUtil.in(picture, ','))
 			{
 				formatted = alignAndPad(df.format(value), '0', withoutSuffixPicture, floating, numberFormat, originalPicture);
@@ -1674,23 +1722,33 @@ public class LocalUtil
 				formatted = df.format(value);
 			}
 		}
-		if( originalPictLength > newPictLength && !floating) formatted = addSymbolsToText(formatted, originalPicture);
+		if( originalPictLength > newPictLength && !floating && !originalPicture.startsWith("\\")) formatted = addSymbolsToText(formatted, originalPicture, hasSymbol);
 		int negativeSign = 0;
 		if (preffix.startsWith("("))
 		{
-			negativeSign = -1;
+			negativeSign = -2;
 		}
-		else if (value.signum() == -1)
+		else if (value.signum() == -1 && !originalPicture.startsWith("+"))
 		{
 			negativeSign = 1;
 		}
 		if (floating)
 		{
-			return alignRight(preffix.substring(preffix.length() -1) + addPictureSuffix("%", originalPicture, addPicturePreffix(preffix, originalPicture, formatted)), originalPictLength + negativeSign);
+			return alignRight(preffix.substring(preffix.length() -1) + addPictureSuffix(suffix, originalPicture, addPicturePreffix(preffix, originalPicture, formatted)), originalPictLength + negativeSign);
 		}
 		else
 		{
-			return addPictureSuffix("%", originalPicture, addPicturePreffix(preffix, originalPicture, alignRight(formatted, originalPictLength + negativeSign)));
+			if (preffix.equals("(") && originalPicture.charAt(1) == '#')
+				return alignRight(addPictureSuffix(suffix, originalPicture, addPicturePreffix(preffix, originalPicture, CommonUtil.ltrim(formatted))), originalPictLength);
+
+			if (originalPicture.startsWith("\\"))
+			{
+				negativeSign = -2;
+				if (preffix.equals("\"") && originalPicture.startsWith("\\\\"))
+					negativeSign--;
+				return originalPicture.charAt(1) + addPictureSuffix(suffix, originalPicture, addPicturePreffix(preffix, originalPicture, alignRight(formatted, originalPictLength + negativeSign)));
+			}
+			return addPictureSuffix(suffix, originalPicture, addPicturePreffix(preffix, originalPicture, alignRight(formatted, originalPictLength + negativeSign)));
 		}
 	}
 
@@ -1703,7 +1761,10 @@ public class LocalUtil
 		String formatted = "";
 		String originalPicture = picture;
 
+		if (picture.startsWith("\\"))
+			picture = picture.substring(2);
 		String preffix = picturePreffix(picture);
+		String suffix = pictureSuffix(picture);
 		if (preffix.startsWith("("))
 		{
 			if (value < 0)
@@ -1712,18 +1773,19 @@ public class LocalUtil
 			}
 			else
 			{
-				picture = picture.replace('(', 'Z').substring(0, picture.length() - 1);
+				picture = picture.replace('(', 'Z').replace(')', '?');
 				preffix = "";
+				suffix = "";
 			}
 		}
 		boolean floating = (preffix.trim().length() > 1 && preffix.replace(preffix.charAt(0), new String(" ").charAt(0)).trim().equals(""));
 
-		String withoutSuffixPicture = removePictureSuffix("%", removePicturePreffix(preffix,picture));
+		String withoutSuffixPicture = removePictureSuffix(suffix, removePicturePreffix(preffix,picture));
 
 		int negativeSign = 0;
 		if (preffix.startsWith("("))
 		{
-			negativeSign = -1;
+			negativeSign = -2;
 		}
 		else if (value < 0)
 		{
@@ -1732,16 +1794,24 @@ public class LocalUtil
 		if	(!isAllZ(picture) || value != 0)
 		{
 			DecimalFormat df = (DecimalFormat) numberFormat;
-			df.applyPattern(PictureFormatter.pictureToNumberFormat(withoutSuffixPicture.replace('9','0').replace('Z','#')));
+			df.applyPattern(pictureToNumberFormat(withoutSuffixPicture));
 			if ( CommonUtil.in(picture, '.') || CommonUtil.in(picture, ','))
 			{
 				if (floating)
 				{
-					return alignRight(preffix.substring(preffix.length() -1) + addPictureSuffix("%", picture, addPicturePreffix(preffix, picture, alignAndPad(df.format(value), '0', withoutSuffixPicture, floating, numberFormat, originalPicture))), picture.length()+negativeSign);
+					return alignRight(preffix.substring(preffix.length() -1) + addPictureSuffix(suffix, picture, addPicturePreffix(preffix, picture, alignAndPad(df.format(value), '0', withoutSuffixPicture, floating, numberFormat, originalPicture))), picture.length()+negativeSign);
 				}
 				else
 				{
-					return addPictureSuffix("%", picture, addPicturePreffix(preffix, picture, alignAndPad(df.format(value), '0', withoutSuffixPicture, floating, numberFormat, originalPicture)));
+					if (preffix.equals("(") && picture.charAt(1) == '#')
+						return alignRight(addPictureSuffix(suffix, picture, addPicturePreffix(preffix, picture, CommonUtil.ltrim(alignAndPad(df.format(value), '0', withoutSuffixPicture, floating, numberFormat, originalPicture)))), picture.length());
+
+					if (originalPicture.startsWith("\\"))
+					{
+						return originalPicture.charAt(1) + addPictureSuffix(suffix, picture, addPicturePreffix(preffix, picture, alignRight(alignAndPad(df.format(value), '0', withoutSuffixPicture, floating, numberFormat, originalPicture), picture.length()+negativeSign)));
+					}
+
+					return addPictureSuffix(suffix, picture, addPicturePreffix(preffix, picture, alignRight(alignAndPad(df.format(value), '0', withoutSuffixPicture, floating, numberFormat, originalPicture), picture.length()+negativeSign)));
 				}
 			}
 			formatted = df.format(value);
@@ -1749,11 +1819,11 @@ public class LocalUtil
 
 		if (floating)
 		{
-			return alignRight(preffix.substring(preffix.length() -1) + addPictureSuffix("%", picture, addPicturePreffix(preffix, picture, formatted)), picture.length()+negativeSign);
+			return alignRight(preffix.substring(preffix.length() -1) + addPictureSuffix(suffix, picture, addPicturePreffix(preffix, picture, formatted)), picture.length()+negativeSign);
 		}
 		else
 		{
-			return addPictureSuffix("%", picture, addPicturePreffix(preffix, picture, alignRight(formatted, picture.length()+negativeSign)));
+			return addPictureSuffix(suffix, picture, addPicturePreffix(preffix, picture, alignRight(formatted, picture.length()+negativeSign)));
 		}
 	}
 
@@ -1785,7 +1855,7 @@ public class LocalUtil
 
 			while(i < len)
 			{
-				if (GXPicture.isSeparator(picture.charAt(i)))
+				if (GXPicture.isSeparator(picture.charAt(i)) && picture.charAt(i) != ' ' && picture.charAt(i) != '\\')
 				{
 					preffix = preffix + picture.charAt(i);
 				}
@@ -1794,6 +1864,27 @@ public class LocalUtil
 					return preffix;
 				}
 				i++;
+			}
+			return preffix;
+		}
+
+		private String pictureSuffix(String picture)
+		{
+			int i = picture.length() -1;
+			int len = 0;
+			String preffix = "";
+
+			while(i > len)
+			{
+				if (GXPicture.isSeparator(picture.charAt(i)) && picture.charAt(i) != ' ')
+				{
+					preffix = preffix + picture.charAt(i);
+				}
+				else
+				{
+					return preffix;
+				}
+				i--;
 			}
 			return preffix;
 		}
@@ -1810,13 +1901,15 @@ public class LocalUtil
 
         private String addPicturePreffix(String suffix, String originalPicture, String value)
         {
-                if (originalPicture.startsWith(suffix))
-                {
-                        return suffix + value;
-                }
-
-                return value;
+			if (originalPicture.startsWith(suffix) || (suffix.equals("\"") && originalPicture.startsWith("\\\\")))
+				return suffix + value;
+			return value;
         }
+
+	private String pictureToNumberFormat(String withoutSuffixPicture)
+	{
+		return PictureFormatter.pictureToNumberFormat(withoutSuffixPicture.replace('9','0').replace('Z','#'));
+	}
 
 	public long ctol(String value)
 	{

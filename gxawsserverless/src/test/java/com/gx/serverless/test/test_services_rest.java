@@ -148,8 +148,11 @@ public final  class test_services_rest extends GxRestService
 		super.init( "POST" );
 		try
 		{
-			builder = new com.genexus.webpanels.GXObjectUploadServices().doInternalRestExecute(restHttpContext);
+			com.genexus.webpanels.GXObjectUploadServices gxObjectUpload = new com.genexus.webpanels.GXObjectUploadServices();
+			String jsonResponse = gxObjectUpload.doInternalRestExecute(restHttpContext);
 			cleanup();
+			builder = com.genexus.ws.rs.core.Response.statusWrapped(201).entityWrapped(jsonResponse);
+			builder.header("GeneXus-Object-Id", gxObjectUpload.getKeyId());
 			return (javax.ws.rs.core.Response) builder.build() ;
 		}
 		catch ( Exception e )

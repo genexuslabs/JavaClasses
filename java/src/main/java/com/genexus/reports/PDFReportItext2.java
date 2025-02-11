@@ -7,6 +7,7 @@ import java.io.StringReader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.genexus.ApplicationContext;
 import com.genexus.CommonUtil;
 import com.genexus.ModelContext;
 import com.genexus.platform.NativeFunctions;
@@ -36,6 +37,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.genexus.reports.fonts.PDFFont;
 import com.genexus.reports.fonts.PDFFontDescriptor;
 import com.genexus.reports.fonts.Type1FontMetrics;
+import org.springframework.core.io.ClassPathResource;
 
 public class PDFReportItext2 extends GXReportPDFCommons
 {
@@ -377,13 +379,16 @@ public class PDFReportItext2 extends GXReportPDFCommons
 						}					
 						// Si la ruta a la imagen NO es absoluta, en aplicaciones Web le agregamos al comienzo la ruta al root de la aplicación
 						// más la staticContentBaseURL si ésta es relativa.
-						image = com.lowagie.text.Image.getInstance(defaultRelativePrepend + bitmap);
-						if(image == null) { // Si all\uFFFDEno se encuentra la imagen, entonces la buscamos bajo el webAppDir (para mantener compatibilidad)
-							bitmap = webAppDir + bitmap;
-							image = com.lowagie.text.Image.getInstance(bitmap);
+						bitmap = defaultRelativePrepend + bitmap;
+						if (ApplicationContext.getInstance().isSpringBootApp() && !new File(bitmap).exists()) {
+							image = com.lowagie.text.Image.getInstance(new ClassPathResource(bitmap).getContentAsByteArray());
 						}
 						else {
-							bitmap = defaultRelativePrepend + bitmap;
+							image = com.lowagie.text.Image.getInstance(bitmap);
+							if (image == null) { // Si all\uFFFDEno se encuentra la imagen, entonces la buscamos bajo el webAppDir (para mantener compatibilidad)
+								bitmap = webAppDir + bitmap;
+								image = com.lowagie.text.Image.getInstance(bitmap);
+							}
 						}
 					}
 					else {
@@ -403,7 +408,7 @@ public class PDFReportItext2 extends GXReportPDFCommons
 
 			log.debug("GxDrawBitMap -> '" + bitmap + "' [" + left + "," + top + "] - Size: (" + (right - left) + "," + (bottom - top) + ")");
 
-	        if(image != null) { // Si la imagen NO se encuentra, no hago nada
+			if(image != null) { // Si la imagen NO se encuentra, no hago nada
 				float rightAux = (float)convertScale(right);
 				float bottomAux = (float)convertScale(bottom);
 				float leftAux = (float)convertScale(left);
@@ -412,11 +417,28 @@ public class PDFReportItext2 extends GXReportPDFCommons
 				image.setAbsolutePosition(leftAux + leftMargin, this.pageSize.getTop() - bottomAux - topMargin - bottomMargin);
 				if (aspectRatio == 0)
 					image.scaleAbsolute(rightAux - leftAux , bottomAux - topAux);
-				else
+				else {
 					image.scaleToFit(rightAux - leftAux , bottomAux - topAux);
+					String verticalAlignment = System.getenv("IMAGE_VERTICAL_ALIGNMENT");
+					verticalAlignment = (verticalAlignment != null) ? verticalAlignment.toUpperCase() : "";
+					if (verticalAlignment.equals("TOP") || verticalAlignment.equals("MIDDLE") || verticalAlignment.equals("BOTTOM")) {
+						float imageHeight = image.getScaledHeight();
+						float yPosition;
+						if (verticalAlignment.equals("TOP")) {
+							yPosition = this.pageSize.getTop() - topAux - imageHeight - topMargin - bottomMargin;
+						} else if (verticalAlignment.equals("MIDDLE")) {
+							float centerY = (topAux + bottomAux) / 2;
+							yPosition = this.pageSize.getTop() - centerY - imageHeight / 2 - topMargin - bottomMargin;
+						} else {
+							yPosition = this.pageSize.getTop() - bottomAux - topMargin - bottomMargin;
+						}
+						image.setAbsolutePosition(leftAux + leftMargin, yPosition);
+					}
+				}
 				PdfContentByte cb = writer.getDirectContent();
 				cb.addImage(image);
 			}
+
 		}
 		catch(DocumentException de) {
 			log.error("GxDrawBitMap failed:", de);

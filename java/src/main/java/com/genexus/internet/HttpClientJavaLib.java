@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -11,14 +12,16 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.*;
-import com.genexus.ModelContext;
-import com.genexus.util.IniFile;
+import java.net.URI;
+import javax.net.ssl.SSLContext;
+
 import org.apache.http.*;
-import com.genexus.CommonUtil;
-import com.genexus.specific.java.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.entity.ContentType;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
@@ -43,17 +46,21 @@ import org.apache.http.impl.auth.NTLMSchemeFactory;
 import org.apache.http.impl.auth.SPNegoSchemeFactory;
 import org.apache.http.impl.client.*;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
-import com.genexus.webpanels.HttpContextWeb;
-import java.net.URI;
 
-import javax.net.ssl.SSLContext;
+import com.genexus.webpanels.HttpContextWeb;
+import com.genexus.ModelContext;
+import com.genexus.management.HTTPConnectionJMX;
+import com.genexus.management.HTTPPoolJMX;
+import com.genexus.util.IniFile;
+import com.genexus.Application;
+import com.genexus.CommonUtil;
+import com.genexus.specific.java.*;
 
 public class HttpClientJavaLib extends GXHttpClient {
 
@@ -61,8 +68,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		getPoolInstance();
 		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();
 		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
-		cookies = new BasicCookieStore();
-		logger.info("Using apache http client implementation");
+		cookies = new BasicCookieStore();		
 		streamsToClose = new Vector<>();
 	}
 
@@ -75,10 +81,18 @@ public class HttpClientJavaLib extends GXHttpClient {
 			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
 			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_SIZE", "1000")));
 			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_PER_ROUTE", "1000")));
+
+			if (Application.isJMXEnabled())
+				HTTPPoolJMX.CreateHTTPPoolJMX(connManager);
 		}
 		else {
 			connManager.closeExpiredConnections();
 		}
+	}
+
+	@Override
+	protected void finalize() {
+		this.closeOpenedStreams();
 	}
 
 	private ConnectionKeepAliveStrategy generateKeepAliveStrategy() {
@@ -110,7 +124,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	private static Logger logger = org.apache.logging.log4j.LogManager.getLogger(HttpClientJavaLib.class);
-
 	private static PoolingHttpClientConnectionManager connManager = null;
 	private Integer statusCode = 0;
 	private String reasonLine = "";
@@ -127,8 +140,9 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private static IniFile clientCfg = new ModelContext(ModelContext.getModelContextPackageClass()).getPreferences().getIniFile();
 	private static final String SET_COOKIE = "Set-Cookie";
 	private static final String COOKIE = "Cookie";
-
 	private java.util.Vector<InputStream> streamsToClose;
+	private static HashSet<HttpRoute> storedRoutes = new HashSet<>();
+
 
 	private void closeOpenedStreams()
 	{
@@ -284,11 +298,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 	private CookieStore setAllStoredCookies() {
 		CookieStore cookiesToSend = new BasicCookieStore();
 		if (!ModelContext.getModelContext().isNullHttpContext()) { 	// Caso de ejecucion de varias instancia de HttpClientJavaLib, por lo que se obtienen cookies desde sesion web del browser
-
-			String selfWebCookie = ((HttpContextWeb) ModelContext.getModelContext().getHttpContext()).getCookie(SET_COOKIE);
-			if (!selfWebCookie.isEmpty())
-				this.addHeader(COOKIE, selfWebCookie.replace("+",";"));
-
+			if (getIncludeCookies()) {
+				String selfWebCookie = ((HttpContextWeb) ModelContext.getModelContext().getHttpContext()).getCookie(SET_COOKIE);
+				if (!selfWebCookie.isEmpty())
+					this.addHeader(COOKIE, selfWebCookie.replace("+", ";"));
+			}
 		} else {	// Caso se ejecucion de una misma instancia HttpClientJavaLib mediante command line
 			if (!getIncludeCookies())
 				cookies.clear();
@@ -472,16 +486,26 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 			try (CloseableHttpClient httpClient = this.httpClientBuilder.build()) {
 				if (method.equalsIgnoreCase("GET")) {
-					HttpGetWithBody httpget = new HttpGetWithBody(url.trim());
-					httpget.setConfig(reqConfig);
-					Set<String> keys = getheadersToSend().keySet();
-					for (String header : keys) {
-						httpget.addHeader(header, getheadersToSend().get(header));
+					byte[] data = getData();
+					if (data.length > 0) {
+						HttpGetWithBody httpGetWithBody = new HttpGetWithBody(url.trim());
+						httpGetWithBody.setConfig(reqConfig);
+						Set<String> keys = getheadersToSend().keySet();
+						for (String header : keys) {
+							httpGetWithBody.addHeader(header, getheadersToSend().get(header));
+						}
+						httpGetWithBody.setEntity(new ByteArrayEntity(data));
+						response = httpClient.execute(httpGetWithBody, httpClientContext);
 					}
-
-					httpget.setEntity(new ByteArrayEntity(getData()));
-
-					response = httpClient.execute(httpget, httpClientContext);
+					else {
+						HttpGet httpget = new HttpGet(url.trim());
+						httpget.setConfig(reqConfig);
+						Set<String> keys = getheadersToSend().keySet();
+						for (String header : keys) {
+							httpget.addHeader(header, getheadersToSend().get(header));
+						}
+						response = httpClient.execute(httpget, httpClientContext);
+					}
 
 				} else if (method.equalsIgnoreCase("POST")) {
 					HttpPost httpPost = new HttpPost(url.trim());
@@ -599,8 +623,10 @@ public class HttpClientJavaLib extends GXHttpClient {
 			this.reasonLine = "";
 		}
 		finally {
-			if (getIsURL())
-			{
+			if (Application.isJMXEnabled()){
+				this.displayHTTPConnections();
+			}
+			if (getIsURL()) {
 				this.setHost(getPrevURLhost());
 				this.setBaseURL(getPrevURLbaseURL());
 				this.setPort(getPrevURLport());
@@ -608,6 +634,20 @@ public class HttpClientJavaLib extends GXHttpClient {
 				setIsURL(false);
 			}
 			resetStateAdapted();
+		}
+	}
+	
+	private synchronized void displayHTTPConnections(){
+		Iterator<HttpRoute> iterator = storedRoutes.iterator();
+		while (iterator.hasNext()) {
+			HttpRoute route = iterator.next();
+			HTTPConnectionJMX.DestroyHTTPConnectionJMX(route);
+			iterator.remove();
+		}
+
+		for (HttpRoute route : connManager.getRoutes()){
+			HTTPConnectionJMX.CreateHTTPConnectionJMX(route);
+			storedRoutes.add(route);
 		}
 	}
 
@@ -688,13 +728,16 @@ public class HttpClientJavaLib extends GXHttpClient {
 			return "";
 		try {
 			this.setEntity();
-			String res = EntityUtils.toString(entity, "UTF-8");
+			Charset charset = ContentType.getOrDefault(entity).getCharset();
+			String res = EntityUtils.toString(entity, charset);
+			if (res.matches(".*[Ã-ÿ].*")) {
+				res = EntityUtils.toString(entity, StandardCharsets.UTF_8);
+			}
 			eof = true;
 			return res;
 		} catch (IOException e) {
 			setExceptionsCatch(e);
-		} catch (IllegalArgumentException e) {
-		}
+		} catch (IllegalArgumentException e) {}
 		return "";
 	}
 
@@ -736,12 +779,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	public void cleanup() {
 		resetErrorsAndConnParams();
-	}
-
-	@Override
-	protected void finalize()
-	{
-		this.closeOpenedStreams();
 	}
 
 }

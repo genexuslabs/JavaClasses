@@ -272,7 +272,7 @@ public final class PrivateUtilities
 		int pathLength;
 		int fileNameLength = fileName.length();
 		int extensionLength = extension.length();
-		if (org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS)
+		if (isWindowsPlatform())
 		{
 			pathLength = baseDir.length() + fileNameLength + extensionLength;
 			if (pathLength > 260)
@@ -524,7 +524,7 @@ public final class PrivateUtilities
 				}
 				c = c.getSuperclass();
 
-				if (c.getSimpleName().equals("GXRestServiceWrapper")) {
+				if (c == null || c.getSimpleName().equals("GXRestServiceWrapper")) {
 					return null;
 				}
 			}
@@ -558,7 +558,7 @@ public final class PrivateUtilities
 			}
 			c = c.getSuperclass();
 
-			if (c.getSimpleName().equals("GXRestServiceWrapper")) {
+			if (c == null || c.getSimpleName().equals("GXRestServiceWrapper")) {
 				return null;
 			}
 		}

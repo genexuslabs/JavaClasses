@@ -116,41 +116,28 @@ public class GxImageUtil {
 	private static final Pattern IMAGE_PATTERN = Pattern.compile("\\.(jpg|jpeg|png|bmp|webp|jfif)([/?]|$)", Pattern.CASE_INSENSITIVE);
 
 	private static String writeImage(BufferedImage bufferedImage, String destinationFilePathOrUrl) throws IOException {
-		IHttpContext httpContext = com.genexus.ModelContext.getModelContext().getHttpContext();
-		if (destinationFilePathOrUrl.toLowerCase().startsWith("http://") || destinationFilePathOrUrl.toLowerCase().startsWith("https://") || (httpContext.isHttpContextWeb() && destinationFilePathOrUrl.startsWith(httpContext.getContextPath()))){
-
-			String newFileName;
-			if (!IMAGE_PATTERN.matcher(destinationFilePathOrUrl).find()) {
-				URL imageUrl = new URL(destinationFilePathOrUrl);
-				HttpURLConnection connection = null;
-				String format;
-				try {
-					connection = (HttpURLConnection) imageUrl.openConnection();
-					format = connection.getContentType().split("/")[1];
-				} finally {
-					if (connection != null) connection.disconnect();
-				}
-				newFileName = PrivateUtilities.getTempFileName(format);
-			} else
-				newFileName = PrivateUtilities.getTempFileName(CommonUtil.getFileType(destinationFilePathOrUrl));
-
-			try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
-				ImageIO.write(bufferedImage, CommonUtil.getFileType(newFileName), outStream);
-				try (ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray())) {
-					GXFile file = getGXFile(newFileName);
-					file.create(inStream, true);
-					file.close();
-					return file.getURI();
-				}
+		String newFileName;
+		if (!IMAGE_PATTERN.matcher(destinationFilePathOrUrl).find()) {
+			URL imageUrl = new URL(destinationFilePathOrUrl);
+			HttpURLConnection connection = null;
+			String format;
+			try {
+				connection = (HttpURLConnection) imageUrl.openConnection();
+				format = connection.getContentType().split("/")[1];
+			} finally {
+				if (connection != null) connection.disconnect();
 			}
+			newFileName = PrivateUtilities.getTempFileName(format);
+		} else
+			newFileName = PrivateUtilities.getTempFileName(CommonUtil.getFileType(destinationFilePathOrUrl));
 
-		} else {
-			String newFileName = PrivateUtilities.getTempFileName(CommonUtil.getFileType(destinationFilePathOrUrl));
-			try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
-				ImageIO.write(bufferedImage, CommonUtil.getFileType(newFileName), outStream);
-				outStream.flush();
-				byte[] imageInByte = outStream.toByteArray();
-				return GXutil.blobFromBytes(imageInByte,CommonUtil.getFileType(newFileName));
+		try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
+			ImageIO.write(bufferedImage, CommonUtil.getFileType(newFileName), outStream);
+			try (ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray())) {
+				GXFile file = getGXFile(Preferences.getDefaultPreferences().getPRIVATE_PATH() + newFileName);
+				file.create(inStream, true);
+				file.close();
+				return file.getURI();
 			}
 		}
 	}
@@ -321,18 +308,23 @@ public class GxImageUtil {
 		int width = buffImage.getWidth();
 		int height = buffImage.getHeight();
 
-		int nWidth = (int) Math.floor((double) width * cos + (double) height * sin);
-		int nHeight = (int) Math.floor((double) height * cos + (double) width * sin);
+		int nWidth = (int) Math.floor(width * cos + height * sin);
+		int nHeight = (int) Math.floor(height * cos + width * sin);
 
 		BufferedImage rotatedImage = new BufferedImage(nWidth, nHeight, BufferedImage.TYPE_INT_ARGB);
 
 		Graphics2D graphics = rotatedImage.createGraphics();
+
+		graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		graphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
 		AffineTransform at = new AffineTransform();
-		at.translate((nWidth - width) / 2, (nHeight - height) / 2);
-		at.rotate(radian, (double) (width / 2), (double) (height / 2));
+		at.translate((double) (nWidth - width) / 2, (double) (nHeight - height) / 2);
+		at.rotate(radian, width / 2.0, height / 2.0);
+
 		graphics.setTransform(at);
 		graphics.drawImage(buffImage, 0, 0, null);
-		graphics.drawRect(0, 0, nWidth - 1, nHeight - 1);
 		graphics.dispose();
 
 		return rotatedImage;

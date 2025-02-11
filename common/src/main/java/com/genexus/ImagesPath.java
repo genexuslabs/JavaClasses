@@ -28,7 +28,7 @@ public class ImagesPath
 			image = realImage;
 		}
 
-		return imageList.get(KBId + getHashKey(image, theme, httpContext));
+		return imageList.get(KBId + getHashKey(image, theme.replace('\\', '.'), httpContext));
 	}
 
 	public static String getImageSrcSet(IHttpContext httpContext, String baseImage)

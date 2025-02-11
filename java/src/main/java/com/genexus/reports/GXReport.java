@@ -71,18 +71,14 @@ public abstract class GXReport extends GXProcedure {
 			}
 			else if  (getOutputType() == OUTPUT_PDF)
 			{
-				try {
-					String implementation = com.genexus.Application.getClientContext().getClientPreferences().getPDF_RPT_LIBRARY();
-					if (implementation.equals("ITEXT"))
-						reportHandler = new PDFReportItext2(context);
-					else if (implementation.equals("ITEXT8"))
-						reportHandler = new PDFReportItext8(context);
-					else
-						reportHandler = new PDFReportPDFBox(context);
-					((GXReportPDFCommons) reportHandler).setOutputStream(getOutputStream());
-				} catch (Exception e) {
-					log.error("Failed to set output stream: ", e);
-				}
+				String implementation = com.genexus.Application.getClientContext().getClientPreferences().getPDF_RPT_LIBRARY();
+				if (implementation.equals("ITEXT"))
+					reportHandler = new PDFReportItext2(context);
+				else if (implementation.equals("ITEXT8"))
+					reportHandler = new PDFReportItext8(context);
+				else
+					reportHandler = new PDFReportPDFBox(context);
+				((GXReportPDFCommons) reportHandler).setOutputStream(getOutputStream());
 			}
 			else {
 				throw new RuntimeException("Unrecognized report type: " + getOutputType());
@@ -139,7 +135,7 @@ public abstract class GXReport extends GXProcedure {
 	}
 
 	protected java.io.OutputStream getOutputStream() {
-		throw new RuntimeException("Output stream not set");
+		return null;
 	}
 	
 	//M�todos para la implementaci�n de reportes din�micos

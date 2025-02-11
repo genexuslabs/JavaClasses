@@ -2,7 +2,9 @@ package com.genexus.webpanels;
 
 import java.io.PrintWriter;
 
+import com.genexus.Application;
 import com.genexus.GXObjectBase;
+import com.genexus.mock.GXMockProvider;
 import com.genexus.servlet.IServletContext;
 import com.genexus.servlet.ServletContext;
 import com.genexus.servlet.http.IHttpServletRequest;
@@ -19,8 +21,7 @@ import com.genexus.diagnostics.core.LogManager;
 import com.genexus.internet.HttpContext;
 import com.genexus.ws.GXHandlerChain;
 
-public abstract class GXWebProcedure extends GXObjectBase
-{
+public abstract class GXWebProcedure extends GXObjectBase {
 	private static final ILogger logger = LogManager.getLogger(GXWebProcedure.class);
 
 	public static final int IN_NEW_UTL = -2;
@@ -32,10 +33,8 @@ public abstract class GXWebProcedure extends GXObjectBase
 		super(httpContext);
 	}
 
-	public GXWebProcedure(WebServiceContext wsContext)
-	{	
-		try
-		{
+	public GXWebProcedure(WebServiceContext wsContext) {
+		try {
 			MessageContext msg = new MessageContext(wsContext);
 			IHttpServletRequest request = new HttpServletRequest(msg.get(msg.getSERVLET_REQUEST()));
 			IHttpServletResponse response = new HttpServletResponse(msg.get(msg.getSERVLET_RESPONSE()));
@@ -45,8 +44,7 @@ public abstract class GXWebProcedure extends GXObjectBase
 			httpContext.getHttpRequest().setSoapMessageBody(messageBody);
 			init(httpContext, getClass());
 		}
-		catch(Throwable e)
-		{
+		catch(Throwable e) {
 			logger.error("Could not initialize Web Service", e);
 		}
 	}
@@ -64,34 +62,29 @@ public abstract class GXWebProcedure extends GXObjectBase
 		}
 	}
 
-	protected void initState(ModelContext context, UserInformation ui)
-	{
+	protected void initState(ModelContext context, UserInformation ui) {
 		super.initState(context, ui);
 
 		if(httpContext.getHttpSecure() == 0)httpContext.setHeader("pragma", "no-cache");
-		if (isChunked()) {
-			httpContext.setChunked();
-			httpContext.setCompression(false);
-		}
 
+		if (!isBufferedResponse()) {
+			httpContext.setResponseBufferMode(HttpContext.ResponseBufferMode.DISABLED);
+		}
 		initialize();
 	}
 
-	protected boolean isChunked() {
-		return false;
+	protected boolean isBufferedResponse() {
+		return true;
 	}
 
-	protected void preExecute()
-	{
+	protected void preExecute() {
 		httpContext.setStream();
       	httpContext.GX_xmlwrt.setWriter(new PrintWriter(httpContext.getOutputStream()));
 	}
 
-   	protected void cleanup()
-   	{
+   	protected void cleanup() {
       	super.cleanup();
-      	if (httpContext != null && !httpContext.willRedirect() && httpContext.isLocalStorageSupported())
-      	{
+      	if (httpContext != null && !httpContext.willRedirect() && httpContext.isLocalStorageSupported()) {
       		httpContext.deleteReferer();
       	}
    	}
@@ -101,9 +94,7 @@ public abstract class GXWebProcedure extends GXObjectBase
 		return false;
 	}
 
-
-	public void release()
-	{
+	public void release() {
 	}
 
 	protected boolean isSpaSupported()
@@ -114,5 +105,33 @@ public abstract class GXWebProcedure extends GXObjectBase
 	protected void callWebObject(String url)
 	{
 		httpContext.wjLoc = url;
-	}	
+	}
+
+	protected void privateExecute() {
+	}
+
+	protected String[] getParametersInternalNames( ) {
+		return null ;
+	}
+
+	protected void mockExecute() {
+		if (GXMockProvider.getProvier() != null) {
+			if (GXMockProvider.getProvier().handle(remoteHandle, context, this, getParametersInternalNames())) {
+				cleanup();
+				return;
+			}
+		}
+		privateExecute( );
+	}
+
+	protected boolean batchCursorHolder(){
+		return false;
+	}
+	protected void exitApp() {
+		if (batchCursorHolder()) {
+			try {
+				Application.getConnectionManager().flushBuffers(remoteHandle, this);
+			} catch (Exception exception) { ; }
+		}
+	}
 }

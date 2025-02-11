@@ -14,9 +14,7 @@ public abstract class ExternalProviderBase {
 	static final String DEFAULT_ACL = "DEFAULT_ACL";
 	static final String DEFAULT_EXPIRATION = "DEFAULT_EXPIRATION";
 	static final String FOLDER = "FOLDER_NAME";
-
-	@Deprecated
-	static final String DEFAULT_ACL_DEPRECATED = "STORAGE_PROVIDER_DEFAULT_ACL";
+	static final String DEFAULT_STORAGE_PRIVACY = "STORAGE_PROVIDER_DEFAULT_ACL";
 	@Deprecated
 	static final String DEFAULT_EXPIRATION_DEPRECATED = "STORAGE_PROVIDER_DEFAULT_EXPIRATION";
 
@@ -32,8 +30,19 @@ public abstract class ExternalProviderBase {
 		init();
 	}
 
+
+	/**
+	 * Starts the necessary processes required for the usage of an External Object.
+	 * This method ensures that the Provider is installed correctly before any
+	 * operations are performed. It should be called at the beginning to set up
+	 * the environment for the External Object.
+	 */
+	public void start() {
+
+	}
+
 	private void init() {
-		String aclS = getPropertyValue(DEFAULT_ACL, DEFAULT_ACL_DEPRECATED, "");
+		String aclS = getPropertyValue(DEFAULT_ACL, DEFAULT_STORAGE_PRIVACY, "");
 		if (aclS.length() > 0) {
 			this.defaultAcl = ResourceAccessControlList.parse(aclS);
 		}
