@@ -511,67 +511,24 @@ public class HttpClientJavaLib extends GXHttpClient {
 					HttpPost httpPost = new HttpPost(url.trim());
 					httpPost.setConfig(reqConfig);
 					Set<String> keys = getheadersToSend().keySet();
-					boolean hasContentType = false;
-
+					boolean hasConentType = false;
 					for (String header : keys) {
 						httpPost.addHeader(header, getheadersToSend().get(header));
-						if (header.equalsIgnoreCase("Content-Type")) {
-							hasContentType = true;
-						}
+						if (header.equalsIgnoreCase("Content-type"))
+							hasConentType = true;
 					}
+					if (!hasConentType)        // Si no se setea Content-type, se pone uno default
+						httpPost.addHeader("Content-type", "application/x-www-form-urlencoded");
 
-					if (getIsMultipart()) {
-						if (!hasContentType) {
-							httpPost.addHeader("Content-Type", "multipart/form-data");
-						}
-
-						String boundary = "----Boundary" + System.currentTimeMillis();
-						httpPost.removeHeaders("Content-Type");
-						httpPost.addHeader("Content-Type", "multipart/form-data; boundary=" + boundary);
-
-						ByteArrayOutputStream bos = new ByteArrayOutputStream();
-
-						for (Map.Entry<String, String> entry : ((Map<String, String>) getVariablesToSend()).entrySet()) {
-							if ("fileFieldName".equals(entry.getKey())) {
-								continue;
-							}
-							bos.write(("--" + boundary + "\r\n").getBytes(StandardCharsets.UTF_8));
-							bos.write(("Content-Disposition: form-data; name=\"" + entry.getKey() + "\"\r\n\r\n").getBytes(StandardCharsets.UTF_8));
-							bos.write(entry.getValue().getBytes(StandardCharsets.UTF_8));
-							bos.write("\r\n".getBytes(StandardCharsets.UTF_8));
-						}
-						if (getData() != null && getData().length > 0) {
-							String fileFieldName = getVariablesToSend().containsKey("fileFieldName") ?
-								(String) getVariablesToSend().get("fileFieldName") : fileToPostName;
-							String fileName = fileToPost != null ? fileToPost.getName() : "uploadedFile";
-							String contentType = fileToPost != null ? CommonUtil.getContentType(fileName) : "application/octet-stream";
-
-							bos.write(("--" + boundary + "\r\n").getBytes(StandardCharsets.UTF_8));
-							bos.write(("Content-Disposition: form-data; name=\"" + fileFieldName + "\"; filename=\"" + fileName + "\"\r\n").getBytes(StandardCharsets.UTF_8));
-							bos.write(("Content-Type: " + contentType + "\r\n\r\n").getBytes(StandardCharsets.UTF_8));
-							bos.write(getData());
-							bos.write("\r\n".getBytes(StandardCharsets.UTF_8));
-						}
-
-						bos.write(("--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
-						ByteArrayEntity dataToSend = new ByteArrayEntity(bos.toByteArray());
-						httpPost.setEntity(dataToSend);
-					} else {
-						if (!hasContentType) {
-							httpPost.addHeader("Content-Type", "application/x-www-form-urlencoded");
-						}
-
-						ByteArrayEntity dataToSend;
-						if (getVariablesToSend().size() > 0) {
-							String formData = CommonUtil.hashtable2query(getVariablesToSend());
-							dataToSend = new ByteArrayEntity(formData.getBytes(StandardCharsets.UTF_8));
-						} else {
-							dataToSend = new ByteArrayEntity(getData());
-						}
-						httpPost.setEntity(dataToSend);
-					}
+					ByteArrayEntity dataToSend;
+					if (!getIsMultipart() && getVariablesToSend().size() > 0)
+						dataToSend = new ByteArrayEntity(CommonUtil.hashtable2query(getVariablesToSend()).getBytes());
+					else
+						dataToSend = new ByteArrayEntity(getData());
+					httpPost.setEntity(dataToSend);
 
 					response = httpClient.execute(httpPost, httpClientContext);
+
 				} else if (method.equalsIgnoreCase("PUT")) {
 					HttpPut httpPut = new HttpPut(url.trim());
 					httpPut.setConfig(reqConfig);
