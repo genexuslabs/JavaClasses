@@ -1,5 +1,6 @@
 package com.genexus.json;
 
+import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.json.JSONException;
 
@@ -14,7 +15,7 @@ public class JSONTokenerWrapper extends JSONTokener{
 		this.back();
 		if (c == '{') {
 			try {
-				return new JSONObjectWrapper(this);
+				return new JSONObjectWrapper((JSONObject) super.nextValue());
 			} catch (StackOverflowError e) {
 				throw new JSONException("JSON Array or Object depth too large to process.", e);
 			}
