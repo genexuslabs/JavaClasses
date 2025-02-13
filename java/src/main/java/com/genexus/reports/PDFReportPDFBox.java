@@ -29,6 +29,8 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.graphics.state.RenderingMode;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionJavaScript;
 import org.apache.pdfbox.pdmodel.interactive.viewerpreferences.PDViewerPreferences;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.pdfbox.text.TextPosition;
 import org.apache.pdfbox.util.Matrix;
 
 import org.jsoup.Jsoup;
@@ -59,6 +61,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	private final float DEFAULT_PDFBOX_LEADING = 1.2f;
 	private Set<String> supportedHTMLTags = new HashSet<>();
 	private PDPageContentStream currentPageContentStream;
+	private final static String PAGES_PLACEHOLDER = "{{pages}}";
 
 	static {
 		log = org.apache.logging.log4j.LogManager.getLogger(PDFReportPDFBox.class);
@@ -852,7 +855,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				}
 
 				// Handle {{Pages}}
-				if (sTxt.trim().equalsIgnoreCase("{{Pages}}")) {
+				if (sTxt.trim().equalsIgnoreCase(PAGES_PLACEHOLDER)) {
 					if (!templateCreated) {
 						templateFont = baseFont;
 						templateFontSize = fontSize;
@@ -861,7 +864,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 						templateY = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin;
 						templateCreated = true;
 					}
-					sTxt = String.valueOf(this.page);
+					sTxt = PAGES_PLACEHOLDER;
 				}
 
 				float textBlockWidth = rightAux - leftAux;
@@ -1265,12 +1268,86 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 		return new PDRectangle((int)(width / PAGE_SCALE_X) + leftMargin, (int)(length / PAGE_SCALE_Y) + topMargin);
 	}
 
+	private void replaceTemplatePages() throws IOException {
+		int totalPages = document.getNumberOfPages();
+		for (int i = 0; i < totalPages; i++) {
+			final PDPage page = document.getPage(i);
+			final List<float[]> replacements = new java.util.ArrayList<>();
+			PDFTextStripper stripper = new PDFTextStripper() {
+				@Override
+				protected void writeString(String text, List<TextPosition> textPositions) throws IOException {
+					String placeholder = PAGES_PLACEHOLDER;
+					int index = text.indexOf(placeholder);
+					while (index != -1 && index + placeholder.length() <= textPositions.size()) {
+						float minX = Float.MAX_VALUE;
+						float maxX = 0;
+						float minY = Float.MAX_VALUE;
+						float maxY = 0;
+						for (int j = index; j < index + placeholder.length(); j++) {
+							TextPosition tp = textPositions.get(j);
+							float tpX = tp.getXDirAdj();
+							float tpY = tp.getYDirAdj();
+							float tpWidth = tp.getWidthDirAdj();
+							float tpHeight = tp.getHeightDir();
+							if (tpX < minX) {
+								minX = tpX;
+							}
+							if (tpX + tpWidth > maxX) {
+								maxX = tpX + tpWidth;
+							}
+							if (tpY < minY) {
+								minY = tpY;
+							}
+							if (tpY + tpHeight > maxY) {
+								maxY = tpY + tpHeight;
+							}
+						}
+						float bboxWidth = maxX - minX;
+						float bboxHeight = maxY - minY;
+						float origBoxBottom = pageSize.getHeight() - maxY;
+						float originalCenterX = minX + bboxWidth / 2;
+						float originalCenterY = origBoxBottom + bboxHeight / 2;
+						float newCenterY = originalCenterY + (bboxHeight * 0.5f);
+						float enlargedWidth = bboxWidth * 2.5f;
+						float enlargedHeight = bboxHeight * 2.5f;
+						float rectX = originalCenterX - (enlargedWidth / 2);
+						float rectY = newCenterY - (enlargedHeight / 2);
+						float baselineY = newCenterY;
+						replacements.add(new float[] { rectX, rectY, enlargedWidth, enlargedHeight, baselineY });
+						index = text.indexOf(placeholder, index + placeholder.length());
+					}
+					super.writeString(text, textPositions);
+				}
+			};
+			stripper.setStartPage(i + 1);
+			stripper.setEndPage(i + 1);
+			stripper.getText(document);
+			if (!replacements.isEmpty()) {
+				try (PDPageContentStream cs = new PDPageContentStream(
+					document, page, PDPageContentStream.AppendMode.APPEND, true, true)) {
+					for (float[] rep : replacements) {
+						cs.addRect(rep[0], rep[1], rep[2], rep[3]);
+						cs.setNonStrokingColor(java.awt.Color.WHITE);
+						cs.fill();
+						cs.beginText();
+						cs.setFont(templateFont, templateFontSize);
+						cs.setNonStrokingColor(templateColorFill);
+						cs.newLineAtOffset(rep[0], rep[4]);
+						cs.showText(String.valueOf(totalPages));
+						cs.endText();
+					}
+				}
+			}
+		}
+	}
+
 	public void GxEndDocument() {
 		try {
 			if(document.getNumberOfPages() == 0) {
 				document.addPage(new PDPage(this.pageSize));
 				pages++;
 			}
+			replaceTemplatePages();
 			int copies = 1;
 			try {
 				copies = Integer.parseInt(printerSettings.getProperty(form, Const.COPIES));
