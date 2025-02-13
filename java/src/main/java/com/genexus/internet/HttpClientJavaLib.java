@@ -486,16 +486,26 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 			try (CloseableHttpClient httpClient = this.httpClientBuilder.build()) {
 				if (method.equalsIgnoreCase("GET")) {
-					HttpGetWithBody httpget = new HttpGetWithBody(url.trim());
-					httpget.setConfig(reqConfig);
-					Set<String> keys = getheadersToSend().keySet();
-					for (String header : keys) {
-						httpget.addHeader(header, getheadersToSend().get(header));
+					byte[] data = getData();
+					if (data.length > 0) {
+						HttpGetWithBody httpGetWithBody = new HttpGetWithBody(url.trim());
+						httpGetWithBody.setConfig(reqConfig);
+						Set<String> keys = getheadersToSend().keySet();
+						for (String header : keys) {
+							httpGetWithBody.addHeader(header, getheadersToSend().get(header));
+						}
+						httpGetWithBody.setEntity(new ByteArrayEntity(data));
+						response = httpClient.execute(httpGetWithBody, httpClientContext);
 					}
-
-					httpget.setEntity(new ByteArrayEntity(getData()));
-
-					response = httpClient.execute(httpget, httpClientContext);
+					else {
+						HttpGet httpget = new HttpGet(url.trim());
+						httpget.setConfig(reqConfig);
+						Set<String> keys = getheadersToSend().keySet();
+						for (String header : keys) {
+							httpget.addHeader(header, getheadersToSend().get(header));
+						}
+						response = httpClient.execute(httpget, httpClientContext);
+					}
 
 				} else if (method.equalsIgnoreCase("POST")) {
 					HttpPost httpPost = new HttpPost(url.trim());
@@ -718,23 +728,16 @@ public class HttpClientJavaLib extends GXHttpClient {
 			return "";
 		try {
 			this.setEntity();
-			ContentType contentType = ContentType.getOrDefault(entity);
-			Charset charset;
-			if (contentType.equals(ContentType.DEFAULT_TEXT)) {
-				charset = StandardCharsets.UTF_8;
-			} else {
-				charset = contentType.getCharset();
-				if (charset == null) {
-					charset = StandardCharsets.UTF_8;
-				}
-			}
+			Charset charset = ContentType.getOrDefault(entity).getCharset();
 			String res = EntityUtils.toString(entity, charset);
+			if (res.matches(".*[Ã-ÿ].*")) {
+				res = EntityUtils.toString(entity, StandardCharsets.UTF_8);
+			}
 			eof = true;
 			return res;
 		} catch (IOException e) {
 			setExceptionsCatch(e);
-		} catch (IllegalArgumentException e) {
-		}
+		} catch (IllegalArgumentException e) {}
 		return "";
 	}
 
