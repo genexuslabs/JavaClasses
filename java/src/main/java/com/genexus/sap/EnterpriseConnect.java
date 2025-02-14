@@ -217,7 +217,20 @@ public class EnterpriseConnect
 					String key = (String)keys.next();
 					int jcoType = jStruct.getMetaData().getType(key);	
 				
-					if( jObj.get(key) instanceof String )
+					if (jcoType == JCoMetaData.TYPE_BYTE)
+					{
+						if ( jStruct.getMetaData().getLength(key) <= 4)
+						{
+							jStruct.setValue(key, jObj.getInt(key));
+						}
+						else if ( jStruct.getMetaData().getLength(key) <= 8)
+						{
+							jStruct.setValue(key, jObj.getLong(key));						
+						}
+						else
+							jStruct.setValue(key, jObj.getString(key).getBytes());
+					}
+					else if( jObj.get(key) instanceof String )
 					{
 						jStruct.setValue(key, jObj.getString(key));
 					}					

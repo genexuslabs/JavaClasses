@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 import com.genexus.internet.MsgList;
 import com.genexus.security.GXResult;
 import com.genexus.security.GXSecurityProvider;
@@ -80,7 +81,7 @@ abstract public class GxRestService extends GXObjectBase {
 
 	private void initLogger(IServletContext myContext) {
 		if (logger == null) {
-			logger = com.genexus.specific.java.LogManager.initialize(myContext.getRealPath("/"), GxRestService.class);
+			logger = LogManager.getLogger(GxRestService.class);
 		}
 	}
 
