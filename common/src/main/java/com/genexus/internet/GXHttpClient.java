@@ -792,7 +792,7 @@ public abstract class GXHttpClient implements IHttpClient{
 		}
 		String getFormDataTemplate(String varName, String value){
 			String contentType = getContentTypeFromString(value);
-			return "\r\n--" + boundary + "\r\nContent-Disposition: form-data; name=\"" + varName + "\"\r\n" + ((contentType != null)? "Content-Type: " + contentType + "\r\n" : "") + "\r\n" + value;
+			return "--" + boundary + "\r\nContent-Disposition: form-data; name=\"" + varName + "\"\r\n" + ((contentType != null)? "Content-Type: " + contentType + "\r\n" : "") + "\r\n" + value;
 		}
 
 		private String getContentTypeFromString(String value){
