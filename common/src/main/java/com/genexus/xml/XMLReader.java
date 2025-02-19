@@ -814,7 +814,27 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 		}
 	}
 
-	
+	public void openFromInputStream(InputStream inputStream)
+	{
+		reset();
+		try
+		{
+			streamToClose = inputStream;
+			if (documentEncoding.length() > 0)
+				inputSource = new XMLInputSource(null, null, null, inputStream, documentEncoding);
+			else
+				inputSource = new XMLInputSource(null, null, null, inputStream, null);
+
+			parserConfiguration.setInputSource(inputSource);
+		}
+		catch (IOException e)
+		{
+			errCode = ERROR_IO;
+			errDescription = e.getMessage();
+		}
+	}
+
+
 	public void openFromString(String s)
 	{
 		reset();
