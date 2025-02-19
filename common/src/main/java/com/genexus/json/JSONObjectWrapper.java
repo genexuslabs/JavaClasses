@@ -3,8 +3,11 @@ package com.genexus.json;
 import java.util.*;
 
 import java.util.Map.Entry;
+
+import com.genexus.common.interfaces.SpecificImplementation;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 public class JSONObjectWrapper extends JSONObject implements java.io.Serializable{
 	private Map<String, Object> map;
 
@@ -15,7 +18,11 @@ public class JSONObjectWrapper extends JSONObject implements java.io.Serializabl
 	}
 
 	public JSONObjectWrapper(String string) {
-		super(new JSONTokenerWrapper(string));
+		super(SpecificImplementation.JsonSerialization != null
+			? SpecificImplementation.JsonSerialization.getJSONTokener(string)
+			: new JSONTokenerWrapper(string)
+		);
+
 		if (map == null)
 			map = new LinkedHashMap<String, Object>();
 	}
