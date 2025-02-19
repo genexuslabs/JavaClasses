@@ -1,5 +1,6 @@
 package com.genexus.db.driver;
 
+import com.genexus.CommonUtil;
 import software.amazon.awssdk.auth.credentials.*;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.ResponseInputStream;
@@ -25,7 +26,6 @@ import software.amazon.awssdk.utils.IoUtils;
 
 import java.io.*;
 import java.net.URI;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -251,13 +251,26 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 	public String get(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
 		// Send a request to AWS S3 to retrieve the metadata for the specified object to see if
 		// the object exists and is accessible under the provided credentials and permissions.
-		HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
-			.bucket(bucket)
-			.key(externalFileName)
-			.build();
-		client.headObject(headObjectRequest);
-
-		return getResourceUrl(externalFileName, acl, expirationMinutes);
+		try {
+			HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
+				.bucket(bucket)
+				.key(externalFileName)
+				.build();
+			client.headObject(headObjectRequest);
+			return getResourceUrl(externalFileName, acl, expirationMinutes);
+		} catch (Exception e) {
+			int lastIndex = Math.max(externalFileName.lastIndexOf('/'), externalFileName.lastIndexOf('\\'));
+			String path = lastIndex >= 0 ? externalFileName.substring(0, lastIndex + 1) : "";
+			String fileName = lastIndex >= 0 ? externalFileName.substring(lastIndex + 1) : externalFileName;
+			String encodedFileName = CommonUtil.encodeUtf8Once(fileName);
+			String encodedExternalFileName = path + encodedFileName;
+			HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
+				.bucket(bucket)
+				.key(encodedExternalFileName)
+				.build();
+			client.headObject(headObjectRequest);
+			return getResourceUrl(encodedExternalFileName, acl, expirationMinutes);
+		}
 	}
 
 	private String getResourceUrl(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
@@ -645,7 +658,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 				int lastIndex = Math.max(externalFileName.lastIndexOf('/'), externalFileName.lastIndexOf('\\'));
 				String path = externalFileName.substring(0, lastIndex + 1);
 				String fileName = externalFileName.substring(lastIndex + 1);
-				String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString());
+				String encodedFileName = CommonUtil.encodeUtf8Once(fileName);
 
 				String url = String.format(
 					"https://%s.s3.%s.amazonaws.com/%s%s",
@@ -656,8 +669,8 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 				);
 
 				return url;
-			} catch (UnsupportedEncodingException uee) {
-				logger.error("Failed to encode resource URL for " + externalFileName, uee);
+			} catch (Exception e) {
+				logger.error("Failed to encode resource URL for " + externalFileName, e);
 				return "";
 			}
 		}
