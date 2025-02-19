@@ -1,6 +1,9 @@
 package com.genexus.util;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Hashtable;
 
 import com.genexus.ApplicationContext;
@@ -47,32 +50,6 @@ public class GXServices {
 		instance = null;
 	}
 
-	public static void loadFromFile(String basePath, String fileName, GXServices services){
-		if (basePath.equals("")) {
-			basePath = services.configBaseDirectory();
-		}
-		String fullPath = basePath + fileName;
-		XMLReader reader = new XMLReader();
-		reader.open(fullPath);
-		reader.readType(1, "Services");
-		reader.read();
-		if (reader.getErrCode() == 0) {
-			while (!reader.getName().equals("Services")) {
-				services.processService(reader);
-				reader.read();
-				if (reader.getName().equals("Service") && reader.getNodeType() == 2) //</Service>
-					reader.read();
-			}
-			reader.close();
-		}
-		else
-		{
-			if (!ApplicationContext.getInstance().getReorganization())
-			{
-				logger.debug("GXServices - Could not load Services Config: " + fullPath + " - " + reader.getErrDescription());
-			}
-		}
-	}
 
 	private String configBaseDirectory() {
 		String baseDir = "";
@@ -99,14 +76,71 @@ public class GXServices {
 	}
 
 	private void readServices(String basePath) {
-
-		if (basePath.equals(""))
+		if (basePath.equals("")) {
 			basePath = configBaseDirectory();
-		if (new File(basePath + SERVICES_DEV_FILE).exists()){
-			loadFromFile(basePath, SERVICES_DEV_FILE, this);
 		}
-		if (new File(basePath + SERVICES_FILE).exists()){
-			loadFromFile(basePath, SERVICES_FILE, this);
+
+		if (!readFromFileSystem(basePath, SERVICES_DEV_FILE)) {
+			readFromClasspath(SERVICES_DEV_FILE);
+		}
+
+		if (!readFromFileSystem(basePath, SERVICES_FILE)) {
+			readFromClasspath(SERVICES_FILE);
+		}
+	}
+
+	private boolean readFromFileSystem(String basePath, String fileName) {
+		File file = new File(basePath + fileName);
+		if (file.exists()) {
+			loadFromFile(basePath, fileName, this);
+			return true;
+		}
+		return false;
+	}
+
+	private boolean readFromClasspath(String fileName) {
+		InputStream inputStream = getClass().getClassLoader().getResourceAsStream(fileName);
+		if (inputStream == null) {
+			return false;
+		}
+		try {
+			loadFromStream(inputStream, fileName, this);
+			return true;
+		} catch (IOException e) {
+			logger.debug("GXServices - Could not load Services Config from classpath: " + fileName + " - " + e.getMessage());
+		}
+		return false;
+	}
+
+	public static void loadFromFile(String basePath, String fileName, GXServices services) {
+		if (basePath.equals("")) {
+			basePath = services.configBaseDirectory();
+		}
+		String fullPath = basePath + fileName;
+		try (InputStream inputStream = new FileInputStream(fullPath)) {
+			loadFromStream(inputStream, fullPath, services);
+		} catch (IOException e) {
+			logger.debug("GXServices - Could not load Services Config from file: " + fullPath + " - " + e.getMessage());
+		}
+	}
+
+	public static void loadFromStream(InputStream inputStream, String source, GXServices services) throws IOException {
+		XMLReader reader = new XMLReader();
+		reader.open(inputStream);
+		reader.readType(1, "Services");
+		reader.read();
+		if (reader.getErrCode() == 0) {
+			while (!reader.getName().equals("Services")) {
+				services.processService(reader);
+				reader.read();
+				if (reader.getName().equals("Service") && reader.getNodeType() == 2) //</Service>
+					reader.read();
+			}
+			reader.close();
+		} else {
+			if (!ApplicationContext.getInstance().getReorganization()) {
+				logger.debug("GXServices - Could not load Services Config: " + source + " - " + reader.getErrDescription());
+			}
 		}
 	}
 
