@@ -1,11 +1,13 @@
-package com.genexus.json;
+package com.genexus.specific.android;
 
-import org.json.JSONTokener;
 import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
-public class JSONTokenerWrapper extends JSONTokener{
+import com.genexus.json.JSONObjectWrapper;
 
-	public JSONTokenerWrapper(String string) {
+public class AndroidJSONTokenerWrapper extends JSONTokener {
+	public AndroidJSONTokenerWrapper(String string) {
 		super(string);
 	}
 
@@ -14,7 +16,7 @@ public class JSONTokenerWrapper extends JSONTokener{
 		this.back();
 		if (c == '{') {
 			try {
-				return new JSONObjectWrapper(this);
+				return new JSONObjectWrapper((JSONObject) super.nextValue());
 			} catch (StackOverflowError e) {
 				throw new JSONException("JSON Array or Object depth too large to process.", e);
 			}
