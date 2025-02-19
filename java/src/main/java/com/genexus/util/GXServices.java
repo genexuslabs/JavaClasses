@@ -126,7 +126,7 @@ public class GXServices {
 
 	public static void loadFromStream(InputStream inputStream, String source, GXServices services) throws IOException {
 		XMLReader reader = new XMLReader();
-		reader.open(inputStream);
+		reader.openFromInputStream(inputStream);
 		reader.readType(1, "Services");
 		reader.read();
 		if (reader.getErrCode() == 0) {
