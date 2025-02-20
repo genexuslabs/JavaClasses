@@ -9,9 +9,7 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 
 import org.json.JSONArray;
-import com.genexus.internet.IGxJSONAble;
 import com.genexus.xml.GXXMLSerializable;
-import com.genexus.internet.IGxJSONSerializable;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.*;
 import com.genexus.diagnostics.core.ILogger;
@@ -32,18 +30,15 @@ public class GXRestAPIClient {
 	private String responseMessage;
 	
 	private String contentType = "application/json; charset=utf-8";
-	private String queryString = "";
-	private String bodyString = "";
+	static final String CONTENT_TYPE_LABEL = "Content-Type";
+	static final String AUTHORIZTION_LABEL = "Authorization";
 
 	private JSONObject jsonResponse;
 	private HashMap<String, String> queryVars = new HashMap<String, String>();
 	private HashMap<String, String> bodyVars = new HashMap<String, String>();
 	private HashMap<String, String> headerVars = new HashMap<String, String>();
-	private HashMap<String, String> responseData = new HashMap<String, String>();
 
-	static final String DATE_FMT = "yyyy-MM-dd";
-	static final String DATETIME_FMT = "yyyy-MM-dd'T'HH:mm:ss";
-	static final String DATETIME_FMT_MS = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+
 	static final String DATE_NULL = "0000-00-00";
 	static final String DATETIME_NULL = "0000-00-00T00:00:00";
 
@@ -55,6 +50,40 @@ public class GXRestAPIClient {
 	static final String RESPONSE_ERROR_MSG = "Invalid response";
 	static final String PARSING_ERROR_MSG = "Error parsing response";
 	static final String DESERIALIZING_ERROR_MSG = "Error serializing/deserializing object";
+
+	public enum  DateFormat {
+		
+		DATE_FMT(1, "yyyy-MM-dd"),
+		DATETIME_FMT(3, "yyyy-MM-dd'T'HH:mm:ss"),
+		DATETIME_FMT_MS(4,  "yyyy-MM-dd'T'HH:mm:ss.SSS");
+
+		private final int fmtId;
+		private final String fmtString;
+
+		DateFormat(int fmtId, String fmtString) {
+			this.fmtId = fmtId;
+			this.fmtString = fmtString;
+		}
+
+		public int getId() {
+			return fmtId;
+		}
+
+		public String getFormat() {
+			return fmtString;
+		}
+		
+		public static DateFormat fromId(int fmtId) {
+			for (DateFormat format : DateFormat.values()) {
+				if (format.getId() == fmtId) {
+					return format;
+				}
+			}
+			throw new IllegalArgumentException("Unknown error code: " + fmtId);
+		}
+	}
+
+
 			
 	public GXRestAPIClient() { 
 		responseCode = 0;
@@ -152,16 +181,11 @@ public class GXRestAPIClient {
 		queryVars.put(varName, Double.toString(varValue));
 	}
 	
-	public void addQueryVar(String varName, Date varValue) {		
-		SimpleDateFormat df = new SimpleDateFormat(DATE_FMT);
-		queryVars.put(varName,  df.format(varValue));
-	}
+	public void addQueryVar(String varName, Date varValue, int fmtId) {
+		DateFormat fmt = DateFormat.fromId(fmtId);
+		String fmtString = fmt.getFormat();
 
-	public void addQueryVar(String varName, Date varValue, boolean hasMilliseconds) {
-		String fmt = DATETIME_FMT;
-		if (hasMilliseconds)
-			fmt = DATETIME_FMT_MS;
-		SimpleDateFormat df = new SimpleDateFormat(fmt);
+		SimpleDateFormat df = new SimpleDateFormat(fmtString);
 		queryVars.put(varName,  df.format(varValue));
 	}
 
@@ -213,17 +237,12 @@ public class GXRestAPIClient {
 		headerVars.put(varName, quoteString(Double.toString(varValue)));
 	}
 
-	public void addHeaderVar(String varName, Date varValue) {		
-		SimpleDateFormat df = new SimpleDateFormat(DATE_FMT);
-		headerVars.put(varName,  quoteString(df.format(varValue)));
-	}
+	public void addHeaderVar(String varName, Date varValue, int fmtId) {
+		DateFormat fmt = DateFormat.fromId(fmtId);
+		String fmtString = fmt.getFormat();
 
-	public void addHeaderVar(String varName, Date varValue, boolean hasMilliseconds) {
-		String fmt = DATETIME_FMT;
-		if (hasMilliseconds)
-			fmt = DATETIME_FMT_MS;
-		SimpleDateFormat df = new SimpleDateFormat(fmt);
-		headerVars.put( varName, quoteString(df.format(varValue)));
+		SimpleDateFormat df = new SimpleDateFormat(fmtString);
+		headerVars.put(varName,  df.format(varValue));
 	}
 
 	public void addHeaderVar(String varName, short varValue) {
@@ -271,21 +290,11 @@ public class GXRestAPIClient {
 	public void addBodyVar(String varName, String varValue) {
 		bodyVars.put( varName, quoteString(varValue));			
 	}
-
-	public void addBodyVar(String varName, double varValue) {
-		bodyVars.put(varName, quoteString(Double.toString(varValue)));
-	}
-
-	public void addBodyVar(String varName, Date varValue) {		
-		SimpleDateFormat df = new SimpleDateFormat(DATE_FMT);
-		bodyVars.put(varName,  quoteString(df.format(varValue)));
-	}
-
-	public void addBodyVar(String varName, Date varValue, boolean hasMilliseconds) {
-		String fmt = DATETIME_FMT;
-		if (hasMilliseconds)
-			fmt = DATETIME_FMT_MS;
-		SimpleDateFormat df = new SimpleDateFormat(fmt);
+	
+	public void addBodyVar(String varName, Date varValue, int fmtId) {
+		DateFormat fmt = DateFormat.fromId(fmtId);
+		String fmtString = fmt.getFormat();
+		SimpleDateFormat df = new SimpleDateFormat(fmtString);		
 		bodyVars.put( varName, quoteString(df.format(varValue)));
 	}
 
@@ -327,7 +336,7 @@ public class GXRestAPIClient {
 			if (val.startsWith(DATE_NULL))
 				return CommonUtil.newNullDate();
 			else	
-			return new SimpleDateFormat(DATE_FMT).parse(val);
+				return new SimpleDateFormat(DateFormat.DATETIME_FMT.getFormat()).parse(val);
 		}
 		catch (ParseException e) {
 		    return CommonUtil.newNullDate();
@@ -337,9 +346,9 @@ public class GXRestAPIClient {
 	public Date getBodyDateTime(String varName, Boolean hasMilliseconds) {	
 		try{
 			String val = getJsonStr(varName);
-			String fmt = DATETIME_FMT;
+			String fmt = DateFormat.DATETIME_FMT.getFormat();
 			if (hasMilliseconds)
-				fmt = DATETIME_FMT_MS;
+				fmt = DateFormat.DATETIME_FMT_MS.getFormat();
 			
 			if (val.startsWith(DATETIME_NULL))
 				return CommonUtil.newNullDate();
@@ -382,16 +391,14 @@ public class GXRestAPIClient {
 		return new BigDecimal(getJsonStr(varName));
 	}
 
-	public long getBodyLong(String varName) {
-		long value =0;
+	public long getBodyLong(String varName) {		
 		try{
-			value =  Long.parseLong(getJsonStr(varName));
+			return Long.parseLong(getJsonStr(varName));
 		}
 		catch(NumberFormatException ex)
 		{
-			value = Double.valueOf(getJsonStr(varName)).longValue();
-		}
-		return value;
+			return Double.valueOf(getJsonStr(varName)).longValue();
+		}		
 	}
 
 	public int getBodyInt(String varName) {
@@ -551,7 +558,9 @@ public class GXRestAPIClient {
 	
 	public void RestExecute() {
 		String separator = "";
-		queryString = "";
+		String queryString = "";
+		String bodyString = "";
+
 		if (queryVars.size() > 0) {
 			separator = "?";
 			for( Map.Entry<String, String> entry : queryVars.entrySet()) {
@@ -559,38 +568,36 @@ public class GXRestAPIClient {
 				separator = "&";
 			}
 		}
-		bodyString = "";
 		if (bodyVars.size() > 0) {
 			separator = "";
 			for( Map.Entry<String, String> entry : bodyVars.entrySet()) {
-    			bodyString +=  separator + "\"" + entry.getKey() + "\":" + entry.getValue() + "";
+    			bodyString +=  separator + "\"" + entry.getKey() + "\":" + entry.getValue();
 				separator = ",";
 			}
 		}
 		if (bodyString.length() > 0) {
 			bodyString = "{" + bodyString + "}";
 			httpClient.addString( bodyString);
-			httpClient.addHeader( "Content-Type", contentType);
+			httpClient.addHeader( CONTENT_TYPE_LABEL, contentType);
 		}
 		else {
-			if (httpMethod == "POST" || httpMethod == "PUT") {
+			if (httpMethod.equals("POST") || httpMethod.equals( "PUT")) {
 				bodyString = "{}";
 				httpClient.addString(bodyString);
-				httpClient.addHeader("Content-Type", contentType);
+				httpClient.addHeader(CONTENT_TYPE_LABEL, contentType);
 			}
 		}
 		if (location.getAuthenticationMethod() == 4 && location.getAccessToken() != null &&  ! location.getAccessToken().trim().isEmpty())  {
-			httpClient.addHeader("Authorization", location.getAccessToken());
+			httpClient.addHeader(AUTHORIZTION_LABEL, location.getAccessToken());
 		}
-		if (headerVars.size() > 0) {
-			separator = "";
+		if (headerVars.size() > 0) {			
 			for( Map.Entry<String, String> entry : headerVars.entrySet()) {
 				httpClient.addHeader(entry.getKey(), entry.getValue());
 			}
 		}
 		headerVars.clear();
 		String serviceuri = ((location.getSecure() > 0) ? "https" : "http") + "://" + location.getHost();
-		serviceuri += (location.getPort() != 80) ? ":" + Integer.toString(location.getPort()): "";
+		serviceuri += (location.getPort() != 80) ? ":" + location.getPort(): "";
 		serviceuri += "/" + location.getBaseURL() + "/" + location.getResourceName();
 		serviceuri += queryString;
 		httpClient.execute( this.httpMethod, serviceuri);
@@ -622,9 +629,9 @@ public class GXRestAPIClient {
 	}
 
 	private void logError(int code, String msg)	{
-		logger.error("Error: " + Integer.toString(code) + " " + msg);
+		logger.error("Error: " + code + " " + msg);
 	}
 	private void logError(int code, String msg, Exception e)	{
-		logger.error("Error: " + Integer.toString(code) + " " + msg, e);
+		logger.error("Error: " + code + " " + msg, e);
 	}
 }
