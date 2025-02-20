@@ -39,6 +39,7 @@ public class GXRestAPIClient {
 	private JSONObject jsonResponse;
 	private HashMap<String, String> queryVars = new HashMap<String, String>();
 	private HashMap<String, String> bodyVars = new HashMap<String, String>();
+	private HashMap<String, String> headerVars = new HashMap<String, String>();
 	private HashMap<String, String> responseData = new HashMap<String, String>();
 
 	static final String DATE_FMT = "yyyy-MM-dd";
@@ -182,6 +183,71 @@ public class GXRestAPIClient {
 	private String quoteString(String value) {
 		return "\"" + value + "\"";
 	}
+
+	///  Add Header parameters
+	
+	public <T extends GXXMLSerializable> void addHeaderVar(String varName, GXBaseCollection<T> varValue) {
+		if ( varValue != null) {
+			headerVars.put(varName, varValue.toJSonString(false));
+		}
+	}
+
+	public void addHeaderVar(String varName, GXXMLSerializable varValue) {
+		if ( varValue != null) {
+			headerVars.put(varName, varValue.toJSonString(false));
+		}
+	}
+	
+	public void addHeaderVar(String varName, String varValue) {
+		headerVars.put( varName, quoteString(varValue));			
+	}
+
+	public void addHeaderVar(String varName, double varValue) {
+		headerVars.put(varName, quoteString(Double.toString(varValue)));
+	}
+
+	public void addHeaderVar(String varName, Date varValue) {		
+		SimpleDateFormat df = new SimpleDateFormat(DATE_FMT);
+		headerVars.put(varName,  quoteString(df.format(varValue)));
+	}
+
+	public void addHeaderVar(String varName, Date varValue, boolean hasMilliseconds) {
+		String fmt = DATETIME_FMT;
+		if (hasMilliseconds)
+			fmt = DATETIME_FMT_MS;
+		SimpleDateFormat df = new SimpleDateFormat(fmt);
+		headerVars.put( varName, quoteString(df.format(varValue)));
+	}
+
+	public void addHeaderVar(String varName, short varValue) {
+		headerVars.put( varName, Short.toString(varValue));
+	}
+
+	public void addHeaderVar(String varName, int varValue) {
+		headerVars.put( varName, Integer.toString(varValue));
+	}
+
+	public void addHeaderVar(String varName, long varValue) {
+		headerVars.put( varName, Long.toString(varValue));
+	}
+
+	public void addHeaderVar(String varName, Boolean varValue) {
+		headerVars.put( varName, varValue.toString());
+	}
+
+	public void addHeaderVar(String varName, BigDecimal varValue) {
+		headerVars.put( varName, varValue.toString());
+	}
+
+	public void addHeaderVar(String varName, java.util.UUID varValue) {
+		headerVars.put( varName, quoteString(varValue.toString()));
+	}
+
+	public void addHeaderVar(String varName, IGxJSONSerializable varValue) {
+		headerVars.put( varName, quoteString(varValue.toJSonString()));
+	}
+
+	/// 
 
 	public <T extends GXXMLSerializable> void addBodyVar(String varName, GXBaseCollection<T> varValue) {
 		if ( varValue != null) {
@@ -411,6 +477,7 @@ public class GXRestAPIClient {
 		fillCollection(varName, elementClass, col);
 		return col;
 	}
+
 	private <T extends GXXMLSerializable>  void fillCollection(String varName, Class<T> elementClass, GXBaseCollection col) {
 		JSONArray jsonarr = new JSONArray();
 		try {			
@@ -508,6 +575,13 @@ public class GXRestAPIClient {
 		if (location.getAuthenticationMethod() == 4 && location.getAccessToken() != null &&  ! location.getAccessToken().trim().isEmpty())  {
 			httpClient.addHeader("Authorization", location.getAccessToken());
 		}
+		if (headerVars.size() > 0) {
+			separator = "";
+			for( Map.Entry<String, String> entry : headerVars.entrySet()) {
+				httpClient.addHeader(entry.getKey(), entry.getValue());
+			}
+		}
+		headerVars.clear();
 		String serviceuri = ((location.getSecure() > 0) ? "https" : "http") + "://" + location.getHost();
 		serviceuri += (location.getPort() != 80) ? ":" + Integer.toString(location.getPort()): "";
 		serviceuri += "/" + location.getBaseURL() + "/" + location.getResourceName();
