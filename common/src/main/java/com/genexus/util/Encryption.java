@@ -3,21 +3,10 @@ package com.genexus.util;
 import java.security.InvalidKeyException;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
-import java.nio.charset.StandardCharsets;
 
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import org.apache.commons.codec.binary.Base64;
-import org.bouncycastle.crypto.BlockCipher;
-import org.bouncycastle.crypto.BufferedBlockCipher;
-import org.bouncycastle.crypto.DataLengthException;
-import org.bouncycastle.crypto.InvalidCipherTextException;
-import org.bouncycastle.crypto.engines.RijndaelEngine;
-import org.bouncycastle.crypto.modes.CBCBlockCipher;
-import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
-import org.bouncycastle.crypto.paddings.ZeroBytePadding;
-import org.bouncycastle.crypto.params.KeyParameter;
-import org.bouncycastle.crypto.params.ParametersWithIV;
 import org.bouncycastle.util.encoders.Hex;
 
 import java.io.UnsupportedEncodingException;
@@ -29,8 +18,6 @@ public class Encryption
     public static String AJAX_ENCRYPTION_KEY = "GX_AJAX_KEY";
 	public static String AJAX_ENCRYPTION_IV = "GX_AJAX_IV";
 	public static String AJAX_SECURITY_TOKEN = "AJAX_SECURITY_TOKEN";
-	public static String GX_AJAX_PRIVATE_KEY = "595D54FF4A612E69FF4F3FFFFF0B01FF";
-	public static String GX_AJAX_PRIVATE_IV = "8722E2EA52FD44F599D35D1534485D8E";
 	private static int[] VALID_KEY_LENGHT_IN_BYTES = new int[]{32, 48, 64};
 
 	static public class InvalidGXKeyException extends RuntimeException
@@ -343,78 +330,5 @@ public class Encryption
 				out[i] = (byte) next(4);
 			}
 		}
-	}
-        
-        public static String getRijndaelKey()
-        {
-			SecureRandom rdm = new SecureRandom();
-            byte[] bytes = new byte[16];
-            rdm.nextBytes(bytes);
-            StringBuffer buffer = new StringBuffer(32);
-            for (int i = 0; i < 16; i++)
-            {
-                buffer.append(CommonUtil.padl(Integer.toHexString((int)bytes[i]), 2, "0"));
-            }
-            return buffer.toString().toUpperCase();
-        }
-
-	public static String decryptRijndael(String ivEncrypted, String key, boolean[] candecrypt) {
-
-		try {
-			candecrypt[0] = false;
-			String encrypted = ivEncrypted.length() >= GX_AJAX_PRIVATE_IV.length() ? ivEncrypted.substring(GX_AJAX_PRIVATE_IV.length()) : ivEncrypted;
-			byte[] inputBytes = Hex.decode(encrypted.trim().getBytes());
-			byte[] outputBytes;
-			String decrypted = "";
-			if (inputBytes != null) {
-				try {
-					outputBytes = aesCipher(inputBytes, false, key, GX_AJAX_PRIVATE_IV);
-				} catch (DataLengthException | IllegalStateException | InvalidCipherTextException e) {
-					return ivEncrypted;
-				}
-
-				String result = new String(outputBytes, StandardCharsets.US_ASCII).replaceAll("[\ufffd]", "");
-				if (result != null) {
-					candecrypt[0] = true;
-					decrypted = result.trim();
-				}
-			}
-			return decrypted;
-		}catch(Exception ex){
-			return ivEncrypted;
-		}
-	}
-
-	public static String encryptRijndael(String plainText, String key) {
-		byte[] inputBytes = plainText.trim().getBytes(StandardCharsets.US_ASCII);
-		byte[] outputBytes;
-		try {
-			outputBytes = aesCipher(inputBytes, true, key, GX_AJAX_PRIVATE_IV);
-		} catch (DataLengthException | IllegalStateException | InvalidCipherTextException e) {
-			logger.error("encryptRijndael error", e);
-			return "";
-		}
-		return Hex.toHexString(outputBytes);
-	}
-
-
-	private static byte[] aesCipher(byte[] inputBytes, boolean init, String key, String iv)
-		throws DataLengthException, IllegalStateException, InvalidCipherTextException {
-		byte[] byteKey = Hex.decode(key);
-		byte[] byteIV = Hex.decode(iv);
-		KeyParameter keyParam = new KeyParameter(byteKey);
-		ParametersWithIV keyParamWithIV = new ParametersWithIV(keyParam, byteIV);
-
-		BlockCipher engineWithMode = new CBCBlockCipher(new RijndaelEngine());
-
-		BufferedBlockCipher bbc = new PaddedBufferedBlockCipher(engineWithMode, new ZeroBytePadding());
-		bbc.init(init, keyParamWithIV);
-		byte[] outputBytes = new byte[bbc.getOutputSize(inputBytes.length)];
-		if (inputBytes != null) {
-			int length = bbc.processBytes(inputBytes, 0, inputBytes.length, outputBytes, 0);
-			bbc.doFinal(outputBytes, length);
-
-		}
-		return outputBytes;
 	}
 }

@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.util.*;
 
 import com.genexus.*;
@@ -22,6 +24,17 @@ import com.genexus.common.interfaces.IGXWebRow;
 
 import com.genexus.webpanels.HttpContextWeb;
 import com.genexus.webpanels.WebUtils;
+import org.bouncycastle.crypto.BlockCipher;
+import org.bouncycastle.crypto.BufferedBlockCipher;
+import org.bouncycastle.crypto.DataLengthException;
+import org.bouncycastle.crypto.InvalidCipherTextException;
+import org.bouncycastle.crypto.engines.RijndaelEngine;
+import org.bouncycastle.crypto.modes.CBCBlockCipher;
+import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
+import org.bouncycastle.crypto.paddings.ZeroBytePadding;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.ParametersWithIV;
+import org.bouncycastle.util.encoders.Hex;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,6 +43,8 @@ import com.genexus.json.JSONObjectWrapper;
 public class HttpAjaxContext extends HttpContextWeb
 {
 	private static String GX_AJAX_REQUEST_HEADER = "GxAjaxRequest";
+	private static String GX_AJAX_PRIVATE_KEY = "595D54FF4A612E69FF4F3FFFFF0B01FF";
+	private static String GX_AJAX_PRIVATE_IV = "8722E2EA52FD44F599D35D1534485D8E";
 
 	public static final int TYPE_RESET		= 0;
 	public static final int TYPE_SUBMIT		= 1;
@@ -363,7 +378,7 @@ public class HttpAjaxContext extends HttpContextWeb
 		{
 			if (!recoverEncryptionKey())
 			{
-				webPutSessionValue(Encryption.AJAX_ENCRYPTION_KEY, Encryption.getRijndaelKey());
+				webPutSessionValue(Encryption.AJAX_ENCRYPTION_KEY, getRijndaelKey());
 			}
 		}
 		return (String)getSessionValue(Encryption.AJAX_ENCRYPTION_KEY);
@@ -377,7 +392,7 @@ public class HttpAjaxContext extends HttpContextWeb
 			if (clientKey != null && clientKey.trim().length() > 0)
 			{
 				boolean candecrypt[]=new boolean[1];
-				clientKey = Encryption.decryptRijndael(Encryption.GX_AJAX_PRIVATE_IV + clientKey, Encryption.GX_AJAX_PRIVATE_KEY, candecrypt);
+				clientKey = decryptRijndael(GX_AJAX_PRIVATE_IV + clientKey, GX_AJAX_PRIVATE_KEY, candecrypt);
 				if (candecrypt[0])
 				{
 					webPutSessionValue(Encryption.AJAX_ENCRYPTION_KEY, clientKey);
@@ -398,7 +413,7 @@ public class HttpAjaxContext extends HttpContextWeb
 		{
 			String key = getAjaxEncryptionKey();
 			boolean candecrypt[] = new boolean[1];
-			String decrypted = Encryption.decryptRijndael(encrypted, key, candecrypt);
+			String decrypted = decryptRijndael(encrypted, key, candecrypt);
 			validEncryptedParm = candecrypt[0];
 			if (!validEncryptedParm)
 			{
@@ -743,10 +758,10 @@ public class HttpAjaxContext extends HttpContextWeb
 		{
 			String key = getAjaxEncryptionKey();
 			ajax_rsp_assign_hidden(Encryption.AJAX_ENCRYPTION_KEY, key);
-			ajax_rsp_assign_hidden(Encryption.AJAX_ENCRYPTION_IV, Encryption.GX_AJAX_PRIVATE_IV);
+			ajax_rsp_assign_hidden(Encryption.AJAX_ENCRYPTION_IV, GX_AJAX_PRIVATE_IV);
 			try
 			{
-				ajax_rsp_assign_hidden(Encryption.AJAX_SECURITY_TOKEN, Encryption.encryptRijndael(key, Encryption.GX_AJAX_PRIVATE_KEY));
+				ajax_rsp_assign_hidden(Encryption.AJAX_SECURITY_TOKEN, encryptRijndael(key, GX_AJAX_PRIVATE_KEY));
 			}
 			catch(Exception exc) {}
 			encryptionKeySended = true;
@@ -1784,4 +1799,75 @@ public class HttpAjaxContext extends HttpContextWeb
                         return jArr;
                 }
         }
+
+	private static String getRijndaelKey()
+	{
+		SecureRandom rdm = new SecureRandom();
+		byte[] bytes = new byte[16];
+		rdm.nextBytes(bytes);
+		StringBuffer buffer = new StringBuffer(32);
+		for (int i = 0; i < 16; i++)
+		{
+			buffer.append(CommonUtil.padl(Integer.toHexString((int)bytes[i]), 2, "0"));
+		}
+		return buffer.toString().toUpperCase();
+	}
+
+	private static String decryptRijndael(String ivEncrypted, String key, boolean[] candecrypt) {
+		try {
+			candecrypt[0] = false;
+			String encrypted = ivEncrypted.length() >= GX_AJAX_PRIVATE_IV.length() ? ivEncrypted.substring(GX_AJAX_PRIVATE_IV.length()) : ivEncrypted;
+			byte[] inputBytes = Hex.decode(encrypted.trim().getBytes());
+			byte[] outputBytes;
+			String decrypted = "";
+			if (inputBytes != null) {
+				try {
+					outputBytes = aesCipher(inputBytes, false, key, GX_AJAX_PRIVATE_IV);
+				} catch (DataLengthException | IllegalStateException | InvalidCipherTextException e) {
+					return ivEncrypted;
+				}
+
+				String result = new String(outputBytes, StandardCharsets.US_ASCII).replaceAll("[\ufffd]", "");
+				if (result != null) {
+					candecrypt[0] = true;
+					decrypted = result.trim();
+				}
+			}
+			return decrypted;
+		}catch(Exception ex){
+			return ivEncrypted;
+		}
+	}
+
+	private static String encryptRijndael(String plainText, String key) {
+		byte[] inputBytes = plainText.trim().getBytes(StandardCharsets.US_ASCII);
+		byte[] outputBytes;
+		try {
+			outputBytes = aesCipher(inputBytes, true, key, GX_AJAX_PRIVATE_IV);
+		} catch (DataLengthException | IllegalStateException | InvalidCipherTextException e) {
+			logger.error("encryptRijndael error", e);
+			return "";
+		}
+		return Hex.toHexString(outputBytes);
+	}
+
+	private static byte[] aesCipher(byte[] inputBytes, boolean init, String key, String iv)
+		throws DataLengthException, IllegalStateException, InvalidCipherTextException {
+		byte[] byteKey = Hex.decode(key);
+		byte[] byteIV = Hex.decode(iv);
+		KeyParameter keyParam = new KeyParameter(byteKey);
+		ParametersWithIV keyParamWithIV = new ParametersWithIV(keyParam, byteIV);
+
+		BlockCipher engineWithMode = new CBCBlockCipher(new RijndaelEngine());
+
+		BufferedBlockCipher bbc = new PaddedBufferedBlockCipher(engineWithMode, new ZeroBytePadding());
+		bbc.init(init, keyParamWithIV);
+		byte[] outputBytes = new byte[bbc.getOutputSize(inputBytes.length)];
+		if (inputBytes != null) {
+			int length = bbc.processBytes(inputBytes, 0, inputBytes.length, outputBytes, 0);
+			bbc.doFinal(outputBytes, length);
+
+		}
+		return outputBytes;
+	}
 }
