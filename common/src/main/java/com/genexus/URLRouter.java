@@ -115,7 +115,7 @@ public class URLRouter
 		for (int i = 0; i < parms.length; i++)
 		{
 			if (!useNamedParameters || parms.length != parmsName.length)
-				queryString = queryString + parms[i] + ((i < parms.length -1)? "," : "");
+				queryString = queryString + parms[i] + ((i < parms.length -1 || (i == parms.length -1 && parms[i].isEmpty()) ) ? "," : "");
 			else
 				queryString = queryString + parmsName[i] + "=" + parms[i] + ((i < parms.length -1)? "&" : "");
 		}

@@ -2,6 +2,7 @@ package com.genexus.specific.android;
 
 import com.genexus.common.interfaces.IExtensionJSONSerialization;
 import com.genexus.json.JSONObjectWrapper;
+import org.json.JSONTokener;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -17,5 +18,10 @@ public class AndroidJSONSerialization implements IExtensionJSONSerialization {
 		}
 
 		return map.entrySet().iterator();
+	}
+
+	@Override
+	public JSONTokener getJSONTokener(String s) {
+		return new AndroidJSONTokenerWrapper(s);
 	}
 }
