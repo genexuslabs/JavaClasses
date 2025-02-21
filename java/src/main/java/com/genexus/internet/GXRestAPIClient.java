@@ -31,7 +31,7 @@ public class GXRestAPIClient {
 	
 	private String contentType = "application/json; charset=utf-8";
 	static final String CONTENT_TYPE_LABEL = "Content-Type";
-	static final String AUTHORIZTION_LABEL = "Authorization";
+	static final String AUTHORIZATION_LABEL = "Authorization";
 
 	private JSONObject jsonResponse;
 	private HashMap<String, String> queryVars = new HashMap<String, String>();
@@ -551,9 +551,8 @@ public class GXRestAPIClient {
 	}
 
 	public void addUploadFile(String filePath, String fileName) {		
-		httpClient.addFile(filePath, fileName);
-		String mimeType = SpecificImplementation.Application.getContentType(filePath);
-		contentType = mimeType;
+		httpClient.addFile(filePath, fileName);		
+		contentType = SpecificImplementation.Application.getContentType(filePath);;
 	}
 	
 	public void RestExecute() {
@@ -588,7 +587,7 @@ public class GXRestAPIClient {
 			}
 		}
 		if (location.getAuthenticationMethod() == 4 && location.getAccessToken() != null &&  ! location.getAccessToken().trim().isEmpty())  {
-			httpClient.addHeader(AUTHORIZTION_LABEL, location.getAccessToken());
+			httpClient.addHeader(AUTHORIZATION_LABEL, location.getAccessToken());
 		}
 		if (headerVars.size() > 0) {			
 			for( Map.Entry<String, String> entry : headerVars.entrySet()) {
