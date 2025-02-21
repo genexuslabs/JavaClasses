@@ -563,15 +563,22 @@ public abstract class GXHttpClient implements IHttpClient{
 		return url;
 	}
 
+	boolean firstMultiPart;
 	@SuppressWarnings("unchecked")
 	protected byte[] getData()
 	{
 		byte[] out = new byte[0];
 
+		firstMultiPart = false;
+		int variablesCount = getVariablesToSend().size();
+		int count = 1;
 		for (Object key: getVariablesToSend().keySet())
 		{
+			if (count == variablesCount)
+				firstMultiPart = true;
 			String value = getMultipartTemplate().getFormDataTemplate((String)key, (String)getVariablesToSend().get(key));
 			getContentToSend().add(0, value); //Variables al principio
+			count++;
 		}
 
 		for (int idx = 0; idx < getContentToSend().size(); idx++)
@@ -787,7 +794,10 @@ public abstract class GXHttpClient implements IHttpClient{
 		}
 		String getFormDataTemplate(String varName, String value){
 			String contentType = getContentTypeFromString(value);
-			return "\r\n--" + boundary + "\r\nContent-Disposition: form-data; name=\"" + varName + "\";\r\n" + ((contentType != null)? "Content-Type: " + contentType + "\r\n" : "") + "\r\n" + value;
+			String beginformDataTemplate = "\r\n--";
+			if (firstMultiPart)
+				beginformDataTemplate = "--";
+			return beginformDataTemplate + boundary + "\r\nContent-Disposition: form-data; name=\"" + varName + "\"\r\n" + ((contentType != null)? "Content-Type: " + contentType + "\r\n" : "") + "\r\n" + value;
 		}
 
 		private String getContentTypeFromString(String value){
