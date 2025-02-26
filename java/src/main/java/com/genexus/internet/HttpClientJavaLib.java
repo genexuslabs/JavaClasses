@@ -712,7 +712,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			return "";
 		try {
 			this.setEntity();
-			Charset charset = ContentType.getOrDefault(entity).getCharset();
+			Charset charset = ContentType.getOrDefault(response.getEntity()).getCharset();
 			String res = EntityUtils.toString(entity, charset);
 			if (res.matches(".*[Ã-ÿ].*")) {
 				res = EntityUtils.toString(entity, StandardCharsets.UTF_8);
