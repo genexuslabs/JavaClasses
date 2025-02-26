@@ -708,14 +708,15 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	public String getString() {
-		if (response == null) return "";
+		if (response == null)
+			return "";
 		try {
 			this.setEntity();
-			byte[] bytes = EntityUtils.toByteArray(entity);
 			Charset charset = ContentType.getOrDefault(entity).getCharset();
-			String res = new String(bytes, charset);
-			if (res.matches(".*[Ã-ÿ].*"))
-				res = new String(bytes, StandardCharsets.UTF_8);
+			String res = EntityUtils.toString(entity, charset);
+			if (res.matches(".*[Ã-ÿ].*")) {
+				res = EntityUtils.toString(entity, StandardCharsets.UTF_8);
+			}
 			eof = true;
 			return res;
 		} catch (IOException e) {
