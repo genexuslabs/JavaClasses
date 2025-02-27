@@ -29,6 +29,8 @@ public class DefaultExceptionErrorHandler
 		}	
 		if (!context.inErrorHandler) 
 		{
+			if (e.getCause() != null && e.getCause() instanceof SQLException)
+				e = ((SQLException)e.getCause());
 			if	(errorHandler != null)
 			{
 					context.globals.Gx_err = (short) cursor.status;

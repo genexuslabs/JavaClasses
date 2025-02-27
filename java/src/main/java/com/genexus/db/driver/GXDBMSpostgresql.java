@@ -84,9 +84,10 @@ public class GXDBMSpostgresql implements GXDBMS
 	public boolean ObjectLocked(SQLException e)
 	{
 		String sqlstate = e.getSQLState().toLowerCase();
-		if (sqlstate.indexOf("55p03")>=0)
-			return true;
-		return false;
+		String sqlstateCause = "";
+		if (e.getCause() != null && e.getCause() instanceof SQLException)
+			sqlstateCause = ((SQLException)e.getCause()).getSQLState().toLowerCase();
+		return sqlstate.contains("55p03") || sqlstateCause.contains("55p03");
 	}
 
 	public boolean ObjectNotFound(SQLException e)
