@@ -288,7 +288,7 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 			aiRequest.setStream(true);
 		client = new HttpClient();
 		OpenAIResponse aiResponse = SaiaService.call(aiRequest, client, result);
-		if (aiResponse != null) {
+		if (aiResponse != null && aiResponse.getChoices() != null) {
 			for (OpenAIResponse.Choice element : aiResponse.getChoices()) {
 				String finishReason = element.getFinishReason();
 				if (finishReason.equals("stop"))
