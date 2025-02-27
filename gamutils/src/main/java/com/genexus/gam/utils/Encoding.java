@@ -59,4 +59,16 @@ public class Encoding {
 			return "";
 		}
 	}
+
+	public static String base64ToHexa(String base64)
+	{
+		logger.debug("base64ToHexa");
+		try{
+			return Hex.toHexString(Base64.decode(base64));
+		}catch (Exception e)
+		{
+			logger.error("base64ToHexa", e);
+			return "";
+		}
+	}
 }

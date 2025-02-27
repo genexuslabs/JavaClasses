@@ -93,5 +93,7 @@ public class GamUtilsEO {
 
 	public static String fromBase64Url(String base64) { return Encoding.fromBase64Url(base64); }
 
+	public static String base64ToHexa(String base64) { return Encoding.base64ToHexa(base64); }
+
 	/********EXTERNAL OBJECT PUBLIC METHODS  - END ********/
 }
