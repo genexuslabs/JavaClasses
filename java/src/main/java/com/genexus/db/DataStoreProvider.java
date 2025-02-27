@@ -272,9 +272,7 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 			cursor.status = 0;
 			try
 			{
-				executeSavePointOperation("SAVEPOINT gxselectforupdate", cursor);				
 				cursor.postExecute(this, getDataSource());
-				executeSavePointOperation("RELEASE SAVEPOINT gxselectforupdate", cursor);				
 			}
 			catch (SQLException e)
 			{
@@ -344,7 +342,6 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 								{
 								}
 							}
-							executeSavePointOperation("ROLLBACK TO SAVEPOINT gxselectforupdate", cursor);
 				    }				    
 				}
 			    retryCount = retryCount + 1;
@@ -430,23 +427,6 @@ public class DataStoreProvider extends DataStoreProviderBase implements
 		}
 	}
 	
-	
-	private void executeSavePointOperation(String operation, Cursor cursor) 
-	{
-		if (getDataSource().dbms.getId() == GXDBMS.DBMS_POSTGRESQL && GXutil.dbmsVersion( context, remoteHandle, getDataSource().name) > 7 && cursor instanceof ForEachCursor && cursor.isCurrentOf())
-		{
-	    	try
-	    	{
-	    		SentenceProvider.executeStatement(this, operation);
-	    	}
-	    	catch (Exception ex)
-	    	{
-	    		System.err.println(operation + " error " + ex.getMessage());
-	    		ex.printStackTrace();
-	    	}			
-		}
-	}	
-
 	static Object lock = new Object();
 	
 	public void readNext(int cursorIdx)
