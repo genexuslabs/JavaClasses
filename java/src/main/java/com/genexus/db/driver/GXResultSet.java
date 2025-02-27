@@ -831,6 +831,25 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		return result.getBytes(columnIndex);
 	}
 
+	public Float[] getGxembedding (int columnIndex) throws SQLException
+	{
+		if	(DEBUG )
+			log(GXDBDebug.LOG_MAX, "Warning: getEmbedding");
+
+		return(Float[]) convertVectorStringToFloatArray(result.getArray(columnIndex).toString());
+	}
+
+	private static Float[] convertVectorStringToFloatArray(String vectorString) {
+		vectorString = vectorString.replace("[", "").replace("]", "").trim();
+		String[] stringValues = vectorString.split(",");
+		Float[] floatArray = new Float[stringValues.length];
+
+		for (int i = 0; i < stringValues.length; i++) {
+			floatArray[i] = Float.parseFloat(stringValues[i].trim());
+		}
+		return floatArray;
+	}
+
 	public java.util.UUID getGUID(int columnIndex) throws SQLException
 	{
 		java.util.UUID value;

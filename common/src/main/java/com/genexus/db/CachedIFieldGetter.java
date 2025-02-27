@@ -220,6 +220,11 @@ public class CachedIFieldGetter implements IFieldGetter, Serializable
 		else 
 			return ((byte[][])value[index])[0];
 	}
+
+	public Float[] getGxembedding(int columnIndex) throws SQLException
+	{
+		return ((Float[][])value[getColumnIndex(columnIndex)])[0];
+	}
 		
 	public java.sql.Date getDate(int columnIndex) throws SQLException
 	{
