@@ -1,6 +1,7 @@
 package com.genexus.gam;
 
 import com.genexus.gam.utils.Encoding;
+import com.genexus.gam.utils.Pkce;
 import com.genexus.gam.utils.Random;
 import com.genexus.gam.utils.cryptography.Encryption;
 import com.genexus.gam.utils.cryptography.Hash;
@@ -94,6 +95,12 @@ public class GamUtilsEO {
 	public static String fromBase64Url(String base64) { return Encoding.fromBase64Url(base64); }
 
 	public static String base64ToHexa(String base64) { return Encoding.base64ToHexa(base64); }
+
+	//**PKCE**//
+
+	public static String pkce_create(int len, String option) { return Pkce.create(len, option); }
+
+	public static boolean pkce_verify(String code_verifier, String code_challenge, String option) { return Pkce.verify(code_verifier, code_challenge, option); }
 
 	/********EXTERNAL OBJECT PUBLIC METHODS  - END ********/
 }
