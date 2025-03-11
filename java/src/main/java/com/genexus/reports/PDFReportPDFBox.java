@@ -652,11 +652,14 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				log.debug("WARNING: HTML rendering is not natively supported by PDFBOX 2.0.27. Handcrafted support is provided but it is not intended to cover all possible use cases");
 
 				try {
+					float htmlBottomAux = (float)convertScale(bottom);
+					float htmlTopAux = (float)convertScale(top);
+
 					float drawingPageHeight = this.pageSize.getUpperRightY() - topMargin - bottomMargin;
 					float llx = leftAux + leftMargin;
-					float lly = drawingPageHeight - bottomAux;
+					float lly = drawingPageHeight - htmlBottomAux;
 					float urx = rightAux + leftMargin;
-					float ury = drawingPageHeight - topAux;
+					float ury = drawingPageHeight - htmlTopAux;
 
 					PDRectangle htmlRectangle = new PDRectangle(llx, lly, urx - llx, ury - lly);
 					SpaceHandler spaceHandler = new SpaceHandler(htmlRectangle.getUpperRightY(), htmlRectangle.getHeight());
@@ -668,13 +671,13 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					for (Element element : allElements) {
 						if (pageHeightExceeded(bottomMargin, spaceHandler.getCurrentYPosition())) {
 							llx = leftAux + leftMargin;
-							lly = drawingPageHeight - bottomAux;
+							lly = drawingPageHeight - htmlBottomAux;
 							urx = rightAux + leftMargin;
-							ury = drawingPageHeight - topAux;
+							ury = drawingPageHeight - htmlTopAux;
 							htmlRectangle = new PDRectangle(llx, lly, urx - llx, ury - lly);
 							spaceHandler = new SpaceHandler(htmlRectangle.getUpperRightY(), htmlRectangle.getHeight());
 
-							bottomAux -= drawingPageHeight;
+							htmlBottomAux -= drawingPageHeight;
 							GxEndPage();
 							GxStartPage();
 
