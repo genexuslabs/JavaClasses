@@ -482,9 +482,9 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 						}
 					}
 					baseFont = createPDType1FontFromName(fontName);
+					baseFontName = fontName;
 					if (baseFont == null){
 						baseFont = getOrLoadFont(fontName, document);
-						baseFontName = fontName;
 					}
 
 				}
