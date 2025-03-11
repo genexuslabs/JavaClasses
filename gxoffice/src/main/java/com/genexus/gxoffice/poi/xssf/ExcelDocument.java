@@ -2,6 +2,7 @@ package com.genexus.gxoffice.poi.xssf;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 
 import com.genexus.util.GxFileInfoSourceType;
 import org.apache.poi.ss.usermodel.Row;
