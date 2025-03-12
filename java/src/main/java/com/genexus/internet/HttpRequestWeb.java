@@ -18,13 +18,13 @@ public class HttpRequestWeb extends HttpRequest
 	{	
 		super(httpContext);				
 	}
-	
-	public String getScriptName()
-	{
+
+	public String getScriptName() {
 		if (httpContext.getRequest() != null) {
-			String servletPath = httpContext.getRequest().getServletPath();
-			if (servletPath != null)
-				return servletPath.substring(servletPath.lastIndexOf("/") +1 , servletPath.length());
+			String requestURI = httpContext.getRequest().getRequestURI();
+			if (requestURI != null) {
+				return requestURI.substring(requestURI.lastIndexOf("/") + 1);
+			}
 		}
 		return "";
 	}
