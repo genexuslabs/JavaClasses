@@ -36,6 +36,20 @@ public class TestRedisCacheClient {
 	}
 
 	@Test
+	public void connect_full_ssl_url()
+	{
+		RedisClient redis = getRedisClient("rediss://localhost:6379", "");
+		Assert.assertNotNull("Redis instance could not be created", redis);
+	}
+
+	@Test
+	public void connect_full_url_database()
+	{
+		RedisClient redis = getRedisClient("redis://localhost:6379/4", "");
+		Assert.assertNotNull("Redis instance could not be created", redis);
+	}
+
+	@Test
 	public void connect_error_full_url()
 	{
 		RedisClient redis = getRedisClient("redis://localhost:1111", "");
