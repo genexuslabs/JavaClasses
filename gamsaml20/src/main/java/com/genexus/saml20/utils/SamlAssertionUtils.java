@@ -1,7 +1,7 @@
-package com.genexus.utils;
+package com.genexus.saml20.utils;
 
-import com.genexus.utils.xml.Attribute;
-import com.genexus.utils.xml.Element;
+import com.genexus.saml20.utils.xml.Attribute;
+import com.genexus.saml20.utils.xml.Element;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xml.security.c14n.Canonicalizer;
@@ -15,11 +15,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class SamlAssertionUtils {
@@ -199,7 +197,7 @@ public class SamlAssertionUtils {
 		atributeList.add(new Attribute(_saml_protocolNS, "Response", "Destination"));
 		atributeList.add(new Attribute(_saml_protocolNS, "StatusCode", "Value"));
 
-		List<com.genexus.utils.xml.Element> elementList = new ArrayList<Element>();
+		List<Element> elementList = new ArrayList<Element>();
 		elementList.add(new Element(_saml_assertionNS, "Issuer"));
 		elementList.add(new Element(_saml_assertionNS, "Audience"));
 		elementList.add(new Element(_saml_assertionNS, "NameID"));
@@ -210,12 +208,12 @@ public class SamlAssertionUtils {
 	public static String getLogoutInfo(Document doc)
 	{
 		logger.trace("getLogoutInfo");
-		List<com.genexus.utils.xml.Attribute> atributeList = new ArrayList<Attribute>();
+		List<Attribute> atributeList = new ArrayList<Attribute>();
 		atributeList.add(new Attribute(_saml_protocolNS, "LogoutResponse", "Destination"));
 		atributeList.add(new Attribute(_saml_protocolNS, "LogoutResponse", "InResponseTo"));
 		atributeList.add(new Attribute(_saml_protocolNS, "StatusCode", "Value"));
 
-		List<com.genexus.utils.xml.Element> elementList = new ArrayList<Element>();
+		List<Element> elementList = new ArrayList<Element>();
 		elementList.add(new Element(_saml_assertionNS, "Issuer"));
 
 		return printJson(doc, atributeList, elementList);

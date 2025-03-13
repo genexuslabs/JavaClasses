@@ -1,8 +1,8 @@
-package com.genexus;
+package com.genexus.saml20;
 
-import com.genexus.utils.DSig;
-import com.genexus.utils.Encoding;
-import com.genexus.utils.SamlAssertionUtils;
+import com.genexus.saml20.utils.DSig;
+import com.genexus.saml20.utils.Encoding;
+import com.genexus.saml20.utils.SamlAssertionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;

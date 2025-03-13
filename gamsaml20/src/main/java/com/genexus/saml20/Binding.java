@@ -1,4 +1,4 @@
-package com.genexus;
+package com.genexus.saml20;
 
 @SuppressWarnings("unused")
 public abstract class Binding {
