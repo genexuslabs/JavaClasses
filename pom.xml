@@ -123,6 +123,7 @@
         <module>gxcompress</module>
         <module>gamutils</module>
 		<module>gamtotp</module>
+		<module>gamsaml20</module>
     </modules>
 
 	<dependencies>
