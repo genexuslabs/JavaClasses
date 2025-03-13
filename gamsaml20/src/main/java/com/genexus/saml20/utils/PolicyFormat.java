@@ -10,11 +10,9 @@ public enum PolicyFormat {
 
 	private static final Logger logger = LogManager.getLogger(PolicyFormat.class);
 
-	public static PolicyFormat getPolicyFormat(String format)
-	{
+	public static PolicyFormat getPolicyFormat(String format) {
 		logger.trace("GetPolicyFormat");
-		switch(format.toUpperCase().trim())
-		{
+		switch (format.toUpperCase().trim()) {
 			case "UNSPECIFIED":
 				return UNSPECIFIED;
 			case "EMAIL":
@@ -37,11 +35,9 @@ public enum PolicyFormat {
 		}
 	}
 
-	public static String valueOf(PolicyFormat format)
-	{
+	public static String valueOf(PolicyFormat format) {
 		logger.trace("ValueOf");
-		switch (format)
-		{
+		switch (format) {
 			case UNSPECIFIED:
 				return "UNSPECIFIED";
 			case EMAIL:
@@ -64,11 +60,9 @@ public enum PolicyFormat {
 		}
 	}
 
-	public static String getPolicyFormatXmlValue(PolicyFormat format)
-	{
+	public static String getPolicyFormatXmlValue(PolicyFormat format) {
 		logger.trace("GetPolicyFormatXmlValue");
-		switch (format)
-		{
+		switch (format) {
 			case UNSPECIFIED:
 				return "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified";
 			case EMAIL:

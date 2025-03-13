@@ -21,8 +21,7 @@ public class SamlParms {
 	private String trustCertAlias;
 
 
-	public SamlParms()
-	{
+	public SamlParms() {
 		id = "";
 		destination = "";
 		acs = "";
@@ -41,163 +40,131 @@ public class SamlParms {
 		trustCertPath = "";
 	}
 
-	public void setId(String value)
-	{
+	public void setId(String value) {
 		id = value;
 	}
 
-	public String getId()
-	{
+	public String getId() {
 		return id;
 	}
 
-	public void setDestination(String value)
-	{
+	public void setDestination(String value) {
 		destination = value;
 	}
 
-	public String getDestination()
-	{
+	public String getDestination() {
 		return destination;
 	}
 
-	public void setAcs(String value)
-	{
+	public void setAcs(String value) {
 		acs = value;
 	}
 
-	public String getAcs()
-	{
+	public String getAcs() {
 		return acs;
 	}
 
-	public void setIssuer(String value)
-	{
+	public void setIssuer(String value) {
 		issuer = value;
 	}
 
-	public String getIssuer()
-	{
+	public String getIssuer() {
 		return issuer;
 	}
 
-	public void setCertPath(String value)
-	{
+	public void setCertPath(String value) {
 		certPath = value;
 	}
 
-	public String getCertPath()
-	{
+	public String getCertPath() {
 		return certPath;
 	}
 
-	public void setCertPass(String value)
-	{
+	public void setCertPass(String value) {
 		certPass = value;
 	}
 
-	public String getCertPass()
-	{
+	public String getCertPass() {
 		return certPass;
 	}
 
-	public void setCertAlias(String value)
-	{
+	public void setCertAlias(String value) {
 		certAlias = value;
 	}
 
-	public String getCertAlias()
-	{
+	public String getCertAlias() {
 		return certAlias;
 	}
 
-	public void setPolicyFormat(String value)
-	{
+	public void setPolicyFormat(String value) {
 		policyFormat = value;
 	}
 
-	public String getPolicyFormat()
-	{
+	public String getPolicyFormat() {
 		return policyFormat;
 	}
 
-	public void setAuthnContext(String value)
-	{
+	public void setAuthnContext(String value) {
 		authnContext = value;
 	}
 
-	public String getAuthnContext()
-	{
+	public String getAuthnContext() {
 		return authnContext;
 	}
 
-	public void setSPName(String value)
-	{
+	public void setSPName(String value) {
 		spName = value;
 	}
 
-	public String getSPName()
-	{
+	public String getSPName() {
 		return spName;
 	}
 
-	public void setForceAuthn(boolean value)
-	{
+	public void setForceAuthn(boolean value) {
 		forceAuthn = value;
 	}
 
-	public boolean getForceAuthn()
-	{
+	public boolean getForceAuthn() {
 		return forceAuthn;
 	}
 
-	public void setNameID(String value)
-	{
+	public void setNameID(String value) {
 		nameID = value;
 	}
 
-	public String getNameID()
-	{
+	public String getNameID() {
 		return nameID;
 	}
 
-	public void setSessionIndex(String value)
-	{
+	public void setSessionIndex(String value) {
 		sessionIndex = value;
 	}
 
-	public String getSessionIndex()
-	{
+	public String getSessionIndex() {
 		return sessionIndex;
 	}
 
-	public void setTrustCertPath(String value)
-	{
+	public void setTrustCertPath(String value) {
 		trustCertPath = value;
 	}
 
-	public String getTrustCertPath()
-	{
+	public String getTrustCertPath() {
 		return trustCertPath;
 	}
 
-	public void setTrustCertPass(String value)
-	{
+	public void setTrustCertPass(String value) {
 		trustCertPass = value;
 	}
 
-	public String getTrustCertPass()
-	{
+	public String getTrustCertPass() {
 		return trustCertPass;
 	}
 
-	public void setTrustCertAlias(String value)
-	{
+	public void setTrustCertAlias(String value) {
 		trustCertAlias = value;
 	}
 
-	public String getTrustCertAlias()
-	{
+	public String getTrustCertAlias() {
 		return trustCertAlias;
 	}
 }

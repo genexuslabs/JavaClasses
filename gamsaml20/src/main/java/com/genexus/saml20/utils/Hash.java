@@ -15,11 +15,9 @@ public enum Hash {
 
 	private static final Logger logger = LogManager.getLogger(Hash.class);
 
-	public static Hash getHash(String hash)
-	{
+	public static Hash getHash(String hash) {
 		logger.trace("GetHash");
-		switch(hash.toUpperCase().trim())
-		{
+		switch (hash.toUpperCase().trim()) {
 			case "SHA1":
 				return SHA1;
 			case "SHA256":
@@ -32,10 +30,8 @@ public enum Hash {
 		}
 	}
 
-	public static String valueOf(Hash hash)
-	{
-		switch(hash)
-		{
+	public static String valueOf(Hash hash) {
+		switch (hash) {
 			case SHA1:
 				return "SHA1";
 			case SHA256:
@@ -47,11 +43,9 @@ public enum Hash {
 		}
 	}
 
-	public static String getSigAlg(Hash hash)
-	{
+	public static String getSigAlg(Hash hash) {
 		logger.trace("GetSigAlg");
-		switch(hash)
-		{
+		switch (hash) {
 			case SHA1:
 				return "http://www.w3.org/2001/04/xmldsig-more#rsa-sha1";
 			case SHA256:
@@ -64,11 +58,9 @@ public enum Hash {
 		}
 	}
 
-	public static Digest getDigest(Hash hash)
-	{
+	public static Digest getDigest(Hash hash) {
 		logger.trace("getDigest");
-		switch (hash)
-		{
+		switch (hash) {
 			case SHA1:
 				return new SHA1Digest();
 			case SHA256:

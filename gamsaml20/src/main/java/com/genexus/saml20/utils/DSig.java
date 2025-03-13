@@ -23,25 +23,22 @@ public class DSig {
 		logger.trace("validateSignatures");
 		X509Certificate cert = Keys.loadCertificate(certPath, certAlias, certPassword);
 
-		NodeList nodes = findElementsByPath(xmlDoc,"//*[@ID]");
+		NodeList nodes = findElementsByPath(xmlDoc, "//*[@ID]");
 
 		NodeList signatures = xmlDoc.getElementsByTagNameNS(Constants.SignatureSpecNS, Constants._TAG_SIGNATURE);
 
-		for (int i = 0; i < signatures.getLength(); i++)
-		{
+		for (int i = 0; i < signatures.getLength(); i++) {
 			Element signedElement = findNodeById(nodes, getSignatureID((Element) signatures.item(i)));
-			if(signedElement == null)
-			{
+			if (signedElement == null) {
 				return false;
 			}
 			signedElement.setIdAttribute("ID", true);
 			try {
-				XMLSignature signature = new XMLSignature((Element) signatures.item(i), "") ;
-				if (!signature.checkSignatureValue(cert)){
+				XMLSignature signature = new XMLSignature((Element) signatures.item(i), "");
+				if (!signature.checkSignatureValue(cert)) {
 					return false;
 				}
-			}catch (Exception e)
-			{
+			} catch (Exception e) {
 				logger.error("validateSignatures", e);
 				return false;
 			}
@@ -50,38 +47,31 @@ public class DSig {
 	}
 
 
-	private static String getSignatureID(Element signatureElement)
-	{
+	private static String getSignatureID(Element signatureElement) {
 		return signatureElement.getElementsByTagNameNS(Constants.SignatureSpecNS, Constants._TAG_REFERENCE).item(0).getAttributes().getNamedItem(Constants._ATT_URI).getNodeValue();
 	}
 
-	private static NodeList findElementsByPath(Document doc, String xPath)
-	{
+	private static NodeList findElementsByPath(Document doc, String xPath) {
 		logger.trace("findElementsByPath");
 		try {
 			XPathFactory xpathFactory = XPathFactory.newInstance();
 			XPath xpath = xpathFactory.newXPath();
 			XPathExpression expr = xpath.compile(xPath);
 			return (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
-		}catch (Exception e)
-		{
+		} catch (Exception e) {
 			logger.error("findElementsByPath", e);
 			return null;
 		}
 	}
 
-	private static Element findNodeById(NodeList nodes, String id)
-	{
+	private static Element findNodeById(NodeList nodes, String id) {
 		logger.trace("findNodeById");
-		if(nodes == null)
-		{
+		if (nodes == null) {
 			logger.error("findNodeById - Document node list is empty");
 			return null;
 		}
-		for(int i = 0; i < nodes.getLength(); i++)
-		{
-			if (nodes.item(i).getAttributes().getNamedItem("ID").getNodeValue().equals(id.substring(1)))
-			{
+		for (int i = 0; i < nodes.getLength(); i++) {
+			if (nodes.item(i).getAttributes().getNamedItem("ID").getNodeValue().equals(id.substring(1))) {
 				return (Element) nodes.item(i);
 			}
 		}
