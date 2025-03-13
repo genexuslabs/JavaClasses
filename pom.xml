@@ -111,6 +111,7 @@
 		<module>gxcloudstorage-tests</module>
         <module>gxobservability</module>
         <module>gxcloudstorage-awss3-v2</module>
+        <module>gamsaml20</module>
     </modules>
 
 	<dependencies>
