@@ -1,5 +1,6 @@
-package com.genexus;
+package com.genexus.saml20;
 
+import com.genexus.saml20.utils.*;
 import com.genexus.utils.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

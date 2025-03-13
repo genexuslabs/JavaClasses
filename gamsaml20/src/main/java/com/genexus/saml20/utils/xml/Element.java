@@ -1,4 +1,4 @@
-package com.genexus.utils.xml;
+package com.genexus.saml20.utils.xml;
 
 import org.w3c.dom.Document;
 
