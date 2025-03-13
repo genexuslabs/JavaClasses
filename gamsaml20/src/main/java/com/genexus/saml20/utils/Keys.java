@@ -25,27 +25,23 @@ public class Keys {
 
 	private static final Logger logger = LogManager.getLogger(Keys.class);
 
-	public static AsymmetricKeyParameter loadPrivateKey(String path, String alias, String password)
-	{
-		return isBase64(path) ? privateKeyFromBase64(path): loadPrivateKeyFromJKS(path, alias, password);
+	public static AsymmetricKeyParameter loadPrivateKey(String path, String alias, String password) {
+		return isBase64(path) ? privateKeyFromBase64(path) : loadPrivateKeyFromJKS(path, alias, password);
 	}
 
-	public static X509Certificate loadCertificate(String path, String alias, String password)
-	{
-		return isBase64(path) ? loadCertificateFromBase64(path): loadCertificateFromJKS(path, alias, password);
+	public static X509Certificate loadCertificate(String path, String alias, String password) {
+		return isBase64(path) ? loadCertificateFromBase64(path) : loadCertificateFromJKS(path, alias, password);
 	}
 
-	private static String getCertPath(String path)
-	{
+	private static String getCertPath(String path) {
 		//boolean isAbsolute = new File(path).isAbsolute();
 
-		logger.debug("cuurent dir: " +new File(".").toPath().toAbsolutePath());
+		logger.debug("cuurent dir: " + new File(".").toPath().toAbsolutePath());
 
 		return System.getProperty("user.dir");
 	}
 
-	private static AsymmetricKeyParameter privateKeyFromBase64(String b64)
-	{
+	private static AsymmetricKeyParameter privateKeyFromBase64(String b64) {
 		logger.trace("privateKeyFromBase64");
 		try {
 			byte[] keyBytes = Base64.decode(b64);
@@ -59,8 +55,7 @@ public class Keys {
 		}
 	}
 
-	private static X509Certificate loadCertificateFromBase64(String b64)
-	{
+	private static X509Certificate loadCertificateFromBase64(String b64) {
 		logger.trace("loadCertificateFromBase64");
 		try {
 			byte[] dataBuffer = Base64.decode(b64);
@@ -73,8 +68,7 @@ public class Keys {
 		}
 	}
 
-	private static AsymmetricKeyParameter loadPrivateKeyFromJKS(String path, String alias, String password)
-	{
+	private static AsymmetricKeyParameter loadPrivateKeyFromJKS(String path, String alias, String password) {
 		logger.trace("loadPrivateKeyFromJKS");
 		logger.debug(MessageFormat.format("Path: {0} , alias: {1}", path, alias));
 		getCertPath(path);
@@ -86,7 +80,7 @@ public class Keys {
 			}
 			if (ks.getKey(alias, password.toCharArray()) != null) {
 				PrivateKey privateKey = (PrivateKey) ks.getKey(alias, password.toCharArray());
-				PrivateKeyInfo keyinfo =  PrivateKeyInfo.getInstance(privateKey.getEncoded());
+				PrivateKeyInfo keyinfo = PrivateKeyInfo.getInstance(privateKey.getEncoded());
 				return PrivateKeyFactory.createKey(keyinfo);
 			}
 		} catch (Exception e) {
@@ -102,8 +96,8 @@ public class Keys {
 		logger.debug("pasword: " + password);
 		logger.debug(MessageFormat.format("path: {0}, alias: {1}", path, alias));
 		Path p = new File(path).toPath();
-		logger.debug("Res path: "+ p.toAbsolutePath());
-		System.out.println("Res path: "+ p.toAbsolutePath());
+		logger.debug("Res path: " + p.toAbsolutePath());
+		System.out.println("Res path: " + p.toAbsolutePath());
 		try (InputStream in = new DataInputStream(Files.newInputStream(p))) {
 			KeyStore ks = KeyStore.getInstance("JKS");
 			ks.load(in, password.toCharArray());
@@ -119,18 +113,15 @@ public class Keys {
 
 	}
 
-	public static boolean isBase64(String path)
-	{
-		try
-		{
+	public static boolean isBase64(String path) {
+		try {
 			Base64.decode(path);
 			return true;
-		}
-		catch(Exception e)
-		{
+		} catch (Exception e) {
 			return false;
 		}
 	}
+
 	public static String getHash(String path, String alias, String password) {
 		String algorithmWithHash = loadCertificateFromJKS(path, alias, password).getSigAlgName();
 		String[] aux = algorithmWithHash.toUpperCase().split("WITH");

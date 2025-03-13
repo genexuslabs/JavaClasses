@@ -23,8 +23,7 @@ public class Encoding {
 
 	private static final Logger logger = LogManager.getLogger(Encoding.class);
 
-	public static String delfateAndEncodeXmlParameter(String parm)
-	{
+	public static String delfateAndEncodeXmlParameter(String parm) {
 		logger.trace("delfateAndEncodeXmlParameter");
 
 		try {
@@ -34,20 +33,18 @@ public class Encoding {
 			deflaterStream.write(parm.getBytes(StandardCharsets.UTF_8));
 			deflaterStream.finish();
 
-			String base64 =  Base64.toBase64String(bytesOut.toByteArray());
+			String base64 = Base64.toBase64String(bytesOut.toByteArray());
 			logger.debug(MessageFormat.format("Base64: {0}", base64));
-			return  URLEncoder.encode(base64, StandardCharsets.UTF_8.name());
-		}catch(Exception e)
-		{
+			return URLEncoder.encode(base64, StandardCharsets.UTF_8.name());
+		} catch (Exception e) {
 			logger.error("delfateAndEncodeXmlParameter", e);
 			return "";
 		}
 	}
 
-	public static String decodeAndInflateXmlParameter(String parm)
-	{
+	public static String decodeAndInflateXmlParameter(String parm) {
 		logger.trace("decodeAndInflateXmlParameter");
-		try{
+		try {
 			String base64 = URLDecoder.decode(parm, StandardCharsets.UTF_8.name());
 			byte[] bytes = Base64.decode(base64);
 			byte[] uncompressedData = new byte[4096];
@@ -56,27 +53,22 @@ public class Encoding {
 			int len = inflater.inflate(uncompressedData);
 			inflater.end();
 			return new String(uncompressedData, 0, len, StandardCharsets.UTF_8);
-		}catch (Exception e)
-		{
+		} catch (Exception e) {
 			logger.error("decodeAndInflateXmlParameter", e);
 			return "";
 		}
 	}
 
-	public static String documentToString(Document doc)
-	{
+	public static String documentToString(Document doc) {
 		logger.trace("documentToString");
-		try(StringWriter writer = new StringWriter())
-		{
+		try (StringWriter writer = new StringWriter()) {
 			DOMSource domSource = new DOMSource(doc);
 			StreamResult result = new StreamResult(writer);
 			TransformerFactory tf = TransformerFactory.newInstance();
 			Transformer transformer = tf.newTransformer();
 			transformer.transform(domSource, result);
 			return writer.toString();
-		}
-		catch(Exception e)
-		{
+		} catch (Exception e) {
 			logger.error("documentToString", e);
 			return null;
 		}

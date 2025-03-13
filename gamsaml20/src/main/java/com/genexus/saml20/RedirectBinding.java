@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings("unused")
-public class RedirectBinding extends Binding{
+public class RedirectBinding extends Binding {
 
 	private static final Logger logger = LogManager.getLogger(RedirectBinding.class);
 
@@ -29,13 +29,11 @@ public class RedirectBinding extends Binding{
 	// EXTERNAL OBJECT PUBLIC METHODS  - BEGIN
 
 
-	public RedirectBinding()
-	{
+	public RedirectBinding() {
 		logger.trace("RedirectBinding constructor");
 	}
 
-	public void init(String queryString)
-	{
+	public void init(String queryString) {
 		logger.trace("init");
 		logger.debug(MessageFormat.format("init - queryString : {0}", queryString));
 		this.redirectMessage = parseRedirect(queryString);
@@ -46,66 +44,55 @@ public class RedirectBinding extends Binding{
 	}
 
 
-	public static String login(SamlParms parms, String relayState)
-	{
+	public static String login(SamlParms parms, String relayState) {
 		Document request = SamlAssertionUtils.createLoginRequest(parms.getId(), parms.getDestination(), parms.getAcs(), parms.getIssuer(), parms.getPolicyFormat(), parms.getAuthnContext(), parms.getSPName(), parms.getForceAuthn());
 		return generateQuery(request, parms.getDestination(), parms.getCertPath(), parms.getCertPass(), parms.getCertAlias(), relayState);
 	}
 
-	public static String logout(SamlParms parms, String relayState)
-	{
+	public static String logout(SamlParms parms, String relayState) {
 		Document request = SamlAssertionUtils.createLogoutRequest(parms.getId(), parms.getIssuer(), parms.getNameID(), parms.getSessionIndex(), parms.getDestination());
 		return generateQuery(request, parms.getDestination(), parms.getCertPath(), parms.getCertPass(), parms.getCertAlias(), relayState);
 	}
 
-	public boolean verifySignatures(SamlParms parms)
-	{
+	public boolean verifySignatures(SamlParms parms) {
 		logger.debug("verifySignatures");
 
-		try
-		{
+		try {
 			return DSig.validateSignatures(this.xmlDoc, parms.getTrustCertPath(), parms.getTrustCertAlias(), parms.getTrustCertPass());
-		}catch(Exception e)
-		{
+		} catch (Exception e) {
 			logger.error("verifySignature", e);
 			return false;
 		}
 	}
 
-	public String getLogoutAssertions()
-	{
+	public String getLogoutAssertions() {
 		logger.trace("getLogoutAssertions");
 		return SamlAssertionUtils.getLogoutInfo(this.xmlDoc);
 	}
 
-	public String getRelayState()
-	{
+	public String getRelayState() {
 		logger.trace("getRelayState");
 		try {
 			return this.redirectMessage.get("RelayState") == null ? "" : URLDecoder.decode(this.redirectMessage.get("RelayState"), StandardCharsets.UTF_8.name());
-		}catch (Exception e)
-		{
+		} catch (Exception e) {
 			logger.error("getRelayState", e);
 			return "";
 		}
 	}
 
-	public String getLoginAssertions()
-	{
+	public String getLoginAssertions() {
 		//Getting user's data by URL parms (GET) is deemed insecure so we are not implementing this method for redirect binding
 		logger.error("getLoginAssertions - NOT IMPLEMENTED insecure SAML implementation");
 		return "";
 	}
 
-	public String getRoles(String name)
-	{
+	public String getRoles(String name) {
 		//Getting user's data by URL parms (GET) is deemed insecure so we are not implementing this method for redirect binding
 		logger.error("getRoles - NOT IMPLEMENTED insecure SAML implementation");
 		return "";
 	}
 
-	public String getLoginAttribute(String name)
-	{
+	public String getLoginAttribute(String name) {
 		//Getting user's data by URL parms (GET) is deemed insecure so we are not implementing this method for redirect binding
 		logger.error("getLoginAttribute - NOT IMPLEMENTED insecure SAML implementation");
 		return "";
@@ -113,22 +100,19 @@ public class RedirectBinding extends Binding{
 
 	// EXTERNAL OBJECT PUBLIC METHODS  - END
 
-	private static Map<String, String> parseRedirect(String request)
-	{
+	private static Map<String, String> parseRedirect(String request) {
 		logger.trace("parseRedirect");
-		Map<String,String> result = new HashMap<>();
+		Map<String, String> result = new HashMap<>();
 		String[] redirect = request.split("&");
 
-		for(String s : redirect)
-		{
+		for (String s : redirect) {
 			String[] res = s.split("=");
 			result.put(res[0], res[1]);
 		}
 		return result;
 	}
 
-	private static String generateQuery(Document request, String destination, String certPath, String certPass, String alias, String relayState)
-	{
+	private static String generateQuery(Document request, String destination, String certPath, String certPass, String alias, String relayState) {
 		logger.trace("generateQuery");
 		try {
 			String samlRequestParameter = Encoding.delfateAndEncodeXmlParameter(Encoding.documentToString(request));
@@ -143,25 +127,22 @@ public class RedirectBinding extends Binding{
 
 			logger.debug(MessageFormat.format("generateQuery - query: {0}", query));
 			return MessageFormat.format("{0}?{1}", destination, query);
-		}catch (Exception e)
-		{
+		} catch (Exception e) {
 			logger.error("generateQuery", e);
 			return "";
 		}
 
 	}
 
-	private static String signRequest_RedirectBinding(String query, String path, String password, Hash hash, String alias)
-	{
+	private static String signRequest_RedirectBinding(String query, String path, String password, Hash hash, String alias) {
 		logger.trace("signRequest_RedirectBinding");
-		RSADigestSigner signer= new RSADigestSigner(Hash.getDigest(hash));
+		RSADigestSigner signer = new RSADigestSigner(Hash.getDigest(hash));
 		byte[] inputText = query.getBytes(StandardCharsets.UTF_8);
 		try (InputStream inputStream = new ByteArrayInputStream(inputText)) {
 			setUpSigner(signer, inputStream, Keys.loadPrivateKey(path, alias, password), true);
 			byte[] outputBytes = signer.generateSignature();
 			return Base64.toBase64String(outputBytes);
-		}catch (Exception e)
-		{
+		} catch (Exception e) {
 			logger.error("signRequest_RedirectBinding", e);
 			return "";
 		}

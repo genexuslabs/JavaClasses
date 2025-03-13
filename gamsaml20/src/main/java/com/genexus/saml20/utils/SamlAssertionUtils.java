@@ -27,8 +27,7 @@ public class SamlAssertionUtils {
 	private static final String _saml_protocolNS = "urn:oasis:names:tc:SAML:2.0:protocol"; //saml2p
 	private static final String _saml_assertionNS = "urn:oasis:names:tc:SAML:2.0:assertion"; //saml2
 
-	public static Document loadDocument(String xml)
-	{
+	public static Document loadDocument(String xml) {
 		logger.trace("loadDocument");
 		try {
 			ByteArrayInputStream inputStream = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
@@ -44,15 +43,13 @@ public class SamlAssertionUtils {
 
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			return db.parse(inputStream);
-		}catch (Exception e)
-		{
+		} catch (Exception e) {
 			logger.error("loadDocument", e);
 			return null;
 		}
 	}
 
-	public static Document createLogoutRequest(String id, String issuer, String nameID, String sessionIndex, String destination)
-	{
+	public static Document createLogoutRequest(String id, String issuer, String nameID, String sessionIndex, String destination) {
 		logger.trace("createLogoutRequest");
 
 		ZonedDateTime nowUtc = ZonedDateTime.now(java.time.ZoneOffset.UTC);
@@ -69,12 +66,12 @@ public class SamlAssertionUtils {
 		Document doc = builder.newDocument();
 
 		org.w3c.dom.Element request = doc.createElementNS(saml2p, "saml2p:LogoutRequest");
-		request.setAttribute("ID",id);
+		request.setAttribute("ID", id);
 		request.setAttribute("Version", "2.0");
 		request.setAttribute("IssueInstant", issueInstant);
 		//request.setAttribute("ProtocolBinding", "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
 		request.setAttribute("Destination", destination);
-		request.setAttribute("Reason",  "urn:oasis:names:tc:SAML:2.0:logout:user");
+		request.setAttribute("Reason", "urn:oasis:names:tc:SAML:2.0:logout:user");
 
 		org.w3c.dom.Element issuerElem = doc.createElementNS(saml2, "saml2:Issuer");
 		issuerElem.setTextContent(issuer);
@@ -94,8 +91,7 @@ public class SamlAssertionUtils {
 		return doc;
 	}
 
-	public static Document createLoginRequest(String id, String destination, String acsUrl, String issuer, String policyFormat, String authContext, String spname, boolean forceAuthn)
-	{
+	public static Document createLoginRequest(String id, String destination, String acsUrl, String issuer, String policyFormat, String authContext, String spname, boolean forceAuthn) {
 		logger.trace("createLoginRequest");
 
 		ZonedDateTime nowUtc = ZonedDateTime.now(java.time.ZoneOffset.UTC);
@@ -113,7 +109,7 @@ public class SamlAssertionUtils {
 		Document doc = builder.newDocument();
 
 		org.w3c.dom.Element request = doc.createElementNS(samlp, "saml2p:AuthnRequest");
-		request.setAttribute("ID",id);
+		request.setAttribute("ID", id);
 		request.setAttribute("Version", "2.0");
 		request.setAttribute("IssueInstant", issueInstant);
 		//request.setAttribute("ProtocolBinding", "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
@@ -121,18 +117,18 @@ public class SamlAssertionUtils {
 		request.setAttribute("AssertionConsumerServiceURL", acsUrl);
 		request.setAttribute("ForceAuthn", Boolean.toString(forceAuthn));
 
-		org.w3c.dom.Element issuerElem = doc.createElementNS(saml,"saml2:Issuer");
+		org.w3c.dom.Element issuerElem = doc.createElementNS(saml, "saml2:Issuer");
 		issuerElem.setTextContent(issuer);
 		request.appendChild(issuerElem);
 
-		org.w3c.dom.Element policy = doc.createElementNS(samlp,"saml2p:NameIDPolicy");
+		org.w3c.dom.Element policy = doc.createElementNS(samlp, "saml2p:NameIDPolicy");
 		assert pf != null;
 		policy.setAttribute("Format", PolicyFormat.getPolicyFormatXmlValue(pf));
 		policy.setAttribute("AllowCreate", "true");
 		policy.setAttribute("SPNameQualifier", spname);
 		request.appendChild(policy);
 
-		org.w3c.dom.Element authContextElem = doc.createElementNS(samlp,"saml2p:RequestedAuthnContext");
+		org.w3c.dom.Element authContextElem = doc.createElementNS(samlp, "saml2p:RequestedAuthnContext");
 		authContextElem.setAttribute("Comparison", "exact");
 
 		org.w3c.dom.Element authnContextClass = doc.createElementNS(saml, "saml2:AuthnContextClassRef");
@@ -147,21 +143,19 @@ public class SamlAssertionUtils {
 		return doc;
 	}
 
-	private static DocumentBuilder createDocumentBuilder()  {
+	private static DocumentBuilder createDocumentBuilder() {
 		logger.trace("createDocumentBuilder");
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			factory.setNamespaceAware(true);
 			return factory.newDocumentBuilder();
-		}catch (Exception e)
-		{
+		} catch (Exception e) {
 			logger.error("createDocumentBuilder", e);
 			return null;
 		}
 	}
 
-	public static Document canonicalizeXml(String xml)
-	{
+	public static Document canonicalizeXml(String xml) {
 		//delete comments from the xml - security meassure
 		logger.trace("canoncalizeXml");
 		logger.debug(MessageFormat.format("xmlString: {0}", xml));
@@ -179,15 +173,13 @@ public class SamlAssertionUtils {
 
 			return loadDocument(canonicalizedXML);
 
-		}catch (Exception e)
-		{
+		} catch (Exception e) {
 			logger.error("canoncalizeXml", e);
 			return null;
 		}
 	}
 
-	public static String getLoginInfo(Document xmlDoc)
-	{
+	public static String getLoginInfo(Document xmlDoc) {
 		List<Attribute> atributeList = new ArrayList<Attribute>();
 		atributeList.add(new Attribute(_saml_assertionNS, "SubjectConfirmationData", "InResponseTo"));
 		atributeList.add(new Attribute(_saml_assertionNS, "Conditions", "NotOnOrAfter"));
@@ -205,8 +197,7 @@ public class SamlAssertionUtils {
 		return printJson(xmlDoc, atributeList, elementList);
 	}
 
-	public static String getLogoutInfo(Document doc)
-	{
+	public static String getLogoutInfo(Document doc) {
 		logger.trace("getLogoutInfo");
 		List<Attribute> atributeList = new ArrayList<Attribute>();
 		atributeList.add(new Attribute(_saml_protocolNS, "LogoutResponse", "Destination"));
@@ -219,13 +210,11 @@ public class SamlAssertionUtils {
 		return printJson(doc, atributeList, elementList);
 	}
 
-	public static String getLoginAttribute(Document doc, String name)
-	{
+	public static String getLoginAttribute(Document doc, String name) {
 		logger.trace("getLoginAttribute");
 		NodeList nodes = getAtttributeElements(doc);
 
-		for(int i= 0; i < nodes.getLength(); i++)
-		{
+		for (int i = 0; i < nodes.getLength(); i++) {
 			if (nodes.item(i).getAttributes().getNamedItem("Name").getNodeValue().equals(name)) {
 				String value = getAttributeContent(nodes.item(i));
 				logger.debug(MessageFormat.format("getLoginAttribute -- attribute name: {0}, value: {1}", name, value));
@@ -236,19 +225,15 @@ public class SamlAssertionUtils {
 		return "";
 	}
 
-	public static String getRoles(Document doc, String name)
-	{
+	public static String getRoles(Document doc, String name) {
 		logger.trace("getRoles");
 		NodeList nodes = getAtttributeElements(doc);
 		List<String> roles = new ArrayList<>();
-		for(int i= 0; i < nodes.getLength(); i++)
-		{
+		for (int i = 0; i < nodes.getLength(); i++) {
 			if (nodes.item(i).getAttributes().getNamedItem("Name").getNodeValue().equals(name)) {
 				NodeList nList = nodes.item(i).getChildNodes();
-				for(int j = 0 ; j <nList.getLength(); j++)
-				{
-					if(!nList.item(j).getTextContent().trim().isEmpty())
-					{
+				for (int j = 0; j < nList.getLength(); j++) {
+					if (!nList.item(j).getTextContent().trim().isEmpty()) {
 						roles.add(nList.item(j).getTextContent().trim());
 					}
 				}
@@ -264,48 +249,38 @@ public class SamlAssertionUtils {
 
 			}
 		}
-		logger.debug(MessageFormat.format( "GetRoles -- Could not find attribute with name {0}", name));
+		logger.debug(MessageFormat.format("GetRoles -- Could not find attribute with name {0}", name));
 		return "";
 	}
 
-	private static String getAttributeContent(Node node)
-	{
+	private static String getAttributeContent(Node node) {
 		String value = node.getChildNodes().item(0).getTextContent().trim();
 		return value.isEmpty() ? ((org.w3c.dom.Element) node).getElementsByTagName("AttributeValue").item(0).getTextContent() : value;
 	}
 
-	private static NodeList getAtttributeElements(Document doc)
-	{
+	private static NodeList getAtttributeElements(Document doc) {
 		NodeList nodes = doc.getElementsByTagNameNS(_saml_assertionNS, "Attribute");
-		return nodes.getLength() == 0 ? doc.getElementsByTagName("Attribute"): nodes;
+		return nodes.getLength() == 0 ? doc.getElementsByTagName("Attribute") : nodes;
 	}
 
-	private static String printJson(Document xmlDoc, List<Attribute> atributes, List<Element> elements)
-	{
+	private static String printJson(Document xmlDoc, List<Attribute> atributes, List<Element> elements) {
 		logger.trace("PrintJson");
 		StringBuilder json = new StringBuilder("{");
-		for (Attribute at : atributes)
-		{
+		for (Attribute at : atributes) {
 			String value = at.printJson(xmlDoc);
-			if (value != null)
-			{
+			if (value != null) {
 				json.append(MessageFormat.format("{0},", value));
 			}
 
 		}
 
 		int counter = 0;
-		for (Element el : elements)
-		{
+		for (Element el : elements) {
 			String value = el.printJson(xmlDoc);
-			if (value != null)
-			{
-				if (counter != elements.size() - 1)
-				{
+			if (value != null) {
+				if (counter != elements.size() - 1) {
 					json.append(MessageFormat.format("{0},", value));
-				}
-				else
-				{
+				} else {
 					json.append(MessageFormat.format("{0} }", value));
 				}
 			}
