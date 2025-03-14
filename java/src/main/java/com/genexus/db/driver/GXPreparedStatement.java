@@ -13,6 +13,7 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -1506,14 +1507,35 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		}
 	}
 
+	private static byte[] floatArrayToByteArray(Float[] floats) {
+		ByteBuffer buffer = ByteBuffer.allocate(floats.length * Float.BYTES);
+
+		for (Float f : floats) {
+			if (f != null) {
+				buffer.putFloat(f);
+			} else {
+				buffer.putFloat(0.0f);
+			}
+		}
+		return buffer.array();
+	}
+
 	public void setEmbedding(int index, Float[] value) throws SQLException{
-		Array sqlArray = con.createArrayOf("float4", value);
+		byte[] bytes = null;
+		Array sqlArray = null;
+		if (con.getDBMS().getId() == GXDBMS.DBMS_POSTGRESQL)
+			sqlArray = con.createArrayOf("float4", value);
+		else
+			bytes = floatArrayToByteArray(value);
 		if	(DEBUG)
 		{
 			log(GXDBDebug.LOG_MAX, "setEmbedding - index : " + index);
 			try
 			{
-				stmt.setArray(index, sqlArray);
+				if (con.getDBMS().getId() == GXDBMS.DBMS_POSTGRESQL)
+					stmt.setArray(index, sqlArray);
+				else
+					stmt.setBytes(index, bytes);
 			}
 			catch (SQLException sqlException)
 			{
@@ -1523,7 +1545,10 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 		}
 		else
 		{
-			stmt.setArray(index, sqlArray);
+			if (con.getDBMS().getId() == GXDBMS.DBMS_POSTGRESQL)
+				stmt.setArray(index, sqlArray);
+			else
+				stmt.setBytes(index, bytes);
 		}
 	}
 

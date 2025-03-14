@@ -190,6 +190,7 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 			try
 			{
 				version = dma.getDatabaseProductVersion();
+				dataSource.setDbmsVersion(version);
 			}
 			catch (SQLException e)
 			{

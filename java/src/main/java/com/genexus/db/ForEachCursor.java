@@ -340,6 +340,8 @@ public class ForEachCursor extends Cursor implements IForEachCursor
 				boolean isLike = false;
 		    if(value.equals("like"))
 		    	isLike = true;
+			else if (value.equals("Distance"))
+				value = ds.getDistanceFunction();
 		    else if(!value.equals("=") && !value.equals(">") && !value.equals(">=")
 		            && !value.equals("<=") && !value.equals("<") && !value.equals("<>"))
 		    {
