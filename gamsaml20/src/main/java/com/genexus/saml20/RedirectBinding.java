@@ -45,13 +45,13 @@ public class RedirectBinding extends Binding {
 
 
 	public static String login(SamlParms parms, String relayState) {
-		Document request = SamlAssertionUtils.createLoginRequest(parms.getId(), parms.getDestination(), parms.getAcs(), parms.getIssuer(), parms.getPolicyFormat(), parms.getAuthnContext(), parms.getSPName(), parms.getForceAuthn());
-		return generateQuery(request, parms.getDestination(), parms.getCertPath(), parms.getCertPass(), parms.getCertAlias(), relayState);
+		Document request = SamlAssertionUtils.createLoginRequest(parms.getId(), parms.getEndPointLocation(), parms.getAcs(), parms.getIdentityProviderEntityID(), parms.getPolicyFormat(), parms.getAuthnContext(), parms.getServiceProviderEntityID(), parms.getForceAuthn());
+		return generateQuery(request, parms.getEndPointLocation(), parms.getCertPath(), parms.getCertPass(), parms.getCertAlias(), relayState);
 	}
 
 	public static String logout(SamlParms parms, String relayState) {
-		Document request = SamlAssertionUtils.createLogoutRequest(parms.getId(), parms.getIssuer(), parms.getNameID(), parms.getSessionIndex(), parms.getDestination());
-		return generateQuery(request, parms.getDestination(), parms.getCertPath(), parms.getCertPass(), parms.getCertAlias(), relayState);
+		Document request = SamlAssertionUtils.createLogoutRequest(parms.getId(), parms.getServiceProviderEntityID(), parms.getNameID(), parms.getSessionIndex(), parms.getSingleLogoutEndpoint());
+		return generateQuery(request, parms.getSingleLogoutEndpoint(), parms.getCertPath(), parms.getCertPass(), parms.getCertAlias(), relayState);
 	}
 
 	public boolean verifySignatures(SamlParms parms) {

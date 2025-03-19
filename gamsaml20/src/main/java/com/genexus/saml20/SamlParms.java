@@ -4,15 +4,16 @@ package com.genexus.saml20;
 public class SamlParms {
 
 	private String id;
-	private String destination;
+	private String endPointLocation; //IdP Login URL
+	private String singleLogoutEndpoint; //IdP Logout URL
 	private String acs;
-	private String issuer;
+	private String identityProviderEntityID; //issuer
 	private String certPath;
 	private String certPass;
 	private String certAlias;
 	private String policyFormat;
 	private String authnContext;
-	private String spName;
+	private String serviceProviderEntityID; //spName
 	private boolean forceAuthn;
 	private String nameID;
 	private String sessionIndex;
@@ -23,15 +24,16 @@ public class SamlParms {
 
 	public SamlParms() {
 		id = "";
-		destination = "";
+		endPointLocation = "";
+		singleLogoutEndpoint = "";
 		acs = "";
-		issuer = "";
+		identityProviderEntityID = "";
 		certPath = "";
 		certPass = "";
 		certAlias = "";
 		policyFormat = "";
 		authnContext = "";
-		spName = "";
+		serviceProviderEntityID = "";
 		forceAuthn = false;
 		nameID = "";
 		sessionIndex = "";
@@ -48,12 +50,20 @@ public class SamlParms {
 		return id;
 	}
 
-	public void setDestination(String value) {
-		destination = value;
+	public void setEndPointLocation(String value) {
+		endPointLocation = value;
 	}
 
-	public String getDestination() {
-		return destination;
+	public String getEndPointLocation() {
+		return endPointLocation;
+	}
+
+	public void setSingleLogoutEndpoint(String value) {
+		singleLogoutEndpoint = value;
+	}
+
+	public String getSingleLogoutEndpoint() {
+		return singleLogoutEndpoint;
 	}
 
 	public void setAcs(String value) {
@@ -64,12 +74,12 @@ public class SamlParms {
 		return acs;
 	}
 
-	public void setIssuer(String value) {
-		issuer = value;
+	public void setIdentityProviderEntityID(String value) {
+		identityProviderEntityID = value;
 	}
 
-	public String getIssuer() {
-		return issuer;
+	public String getIdentityProviderEntityID() {
+		return identityProviderEntityID;
 	}
 
 	public void setCertPath(String value) {
@@ -112,12 +122,12 @@ public class SamlParms {
 		return authnContext;
 	}
 
-	public void setSPName(String value) {
-		spName = value;
+	public void setServiceProviderEntityID(String value) {
+		serviceProviderEntityID = value;
 	}
 
-	public String getSPName() {
-		return spName;
+	public String getServiceProviderEntityID() {
+		return serviceProviderEntityID;
 	}
 
 	public void setForceAuthn(boolean value) {
