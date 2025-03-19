@@ -1,18 +1,15 @@
 package com.genexus;
-import com.genexus.ModelContext;
+
 import com.genexus.common.interfaces.IPendingEventHelper;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.util.GXProperties;
 
-import java.io.InputStream; 
-import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
-
-import com.genexus.xml.GXXMLSerializer;
+import java.util.Set;
 
 public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 {
@@ -20,7 +17,7 @@ public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 	static final String SET_METHOD_PREFIX = "setgxTv_";
 	static final String GET_METHOD_PREFIX = "getgxTv_";
 	IPendingEventHelper pendingHelper;
-	GXProperties dirties = new GXProperties();
+	Set<String> dirties = new HashSet<>();
 
 	IGxSilentTrn trn;
 	public GxSilentTrnSdt( ModelContext context, String type)
@@ -238,14 +235,12 @@ public class GxSilentTrnSdt extends com.genexus.xml.GXXMLSerializable
 
 	public void SetDirty(String fieldName)
 	{
-		dirties.put(fieldName.toLowerCase(), "true");
+		dirties.add(fieldName.toLowerCase());
 	}
 	@Override
 	public boolean IsDirty(String fieldName)
 	{
-		if (dirties.containsKey(fieldName.toLowerCase()))
-			return true;
-		return false;
+		return dirties.contains(fieldName.toLowerCase());
 	}
 
 	public GXProperties getMetadata()
