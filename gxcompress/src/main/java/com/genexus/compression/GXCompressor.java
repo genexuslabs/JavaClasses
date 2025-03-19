@@ -5,7 +5,6 @@ import com.genexus.GXBaseCollection;
 import com.genexus.SdtMessages_Message;
 import com.genexus.StructSdtMessages_Message;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
-import org.apache.commons.compress.compressors.gzip.GzipParameters;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
@@ -501,7 +500,7 @@ public class GXCompressor implements IGXCompressor {
 		TarArchiveInputStream tis = new TarArchiveInputStream(Files.newInputStream(archive.toPath()));
 		TarArchiveEntry entry;
 		byte[] buffer = new byte[8192];
-		while ((entry = tis.getNextTarEntry()) != null) {
+		while ((entry = tis.getNextEntry()) != null) {
 			File newFile = new File(directory, entry.getName());
 			if (entry.isDirectory()) {
 				if (!newFile.isDirectory() && !newFile.mkdirs()) {
@@ -547,7 +546,7 @@ public class GXCompressor implements IGXCompressor {
 		boolean isTar = false;
 		try (FileInputStream tempFis = new FileInputStream(tempFile);
 			 TarArchiveInputStream testTar = new TarArchiveInputStream(tempFis)) {
-			TarArchiveEntry testEntry = testTar.getNextTarEntry();
+			TarArchiveEntry testEntry = testTar.getNextEntry();
 			if (testEntry != null) {
 				isTar = true;
 			}
@@ -557,7 +556,7 @@ public class GXCompressor implements IGXCompressor {
 				 TarArchiveInputStream tarInput = new TarArchiveInputStream(tarFis)) {
 
 				TarArchiveEntry entry;
-				while ((entry = tarInput.getNextTarEntry()) != null) {
+				while ((entry = tarInput.getNextEntry()) != null) {
 					File outFile = new File(targetDir, entry.getName());
 					if (entry.isDirectory()) {
 						if (!outFile.exists() && !outFile.mkdirs()) {
