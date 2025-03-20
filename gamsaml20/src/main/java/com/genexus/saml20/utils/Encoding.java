@@ -73,4 +73,16 @@ public class Encoding {
 			return null;
 		}
 	}
+
+	public static byte[] decodeParameter(String parm) {
+		logger.trace("decodeParameter");
+		try {
+			String base64 = URLDecoder.decode(parm, StandardCharsets.UTF_8.name());
+			return Base64.decode(base64);
+		} catch (Exception e) {
+			logger.error("decodeParameter", e);
+			return null;
+		}
+
+	}
 }

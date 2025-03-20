@@ -5,8 +5,10 @@ import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
+import org.bouncycastle.crypto.util.PublicKeyFactory;
 import org.bouncycastle.jcajce.provider.asymmetric.x509.CertificateFactory;
 import org.bouncycastle.util.encoders.Base64;
 
@@ -18,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyStore;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 
@@ -31,6 +34,18 @@ public class Keys {
 
 	public static X509Certificate loadCertificate(String path, String alias, String password) {
 		return isBase64(path) ? loadCertificateFromBase64(path) : loadCertificateFromJKS(path, alias, password);
+	}
+
+	public static AsymmetricKeyParameter getAsymmetricKeyParameter(X509Certificate cert) {
+		logger.trace("getAsymmetricKeyParameter");
+		try {
+			PublicKey publicKey = cert.getPublicKey();
+			SubjectPublicKeyInfo subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
+			return PublicKeyFactory.createKey(subjectPublicKeyInfo);
+		} catch (Exception e) {
+			logger.error("getAsymmetricKeyParameter", e);
+			return null;
+		}
 	}
 
 	private static String getCertPath(String path) {

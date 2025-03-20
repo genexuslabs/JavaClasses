@@ -72,4 +72,19 @@ public enum Hash {
 				return null;
 		}
 	}
+
+	public static Hash getHashFromSigAlg(String sigAlg) {
+		logger.trace("getHashFromSigAlg");
+		switch (sigAlg.trim()) {
+			case "http://www.w3.org/2001/04/xmldsig-more#rsa-sha1":
+				return SHA1;
+			case "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256":
+				return SHA256;
+			case "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512":
+				return SHA512;
+			default:
+				logger.error(MessageFormat.format("getHashFromSigAlg - not implemented signature algorithm: {0}", sigAlg));
+				return null;
+		}
+	}
 }
