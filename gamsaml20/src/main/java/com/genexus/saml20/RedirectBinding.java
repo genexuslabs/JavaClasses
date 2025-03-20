@@ -6,7 +6,6 @@ import org.apache.logging.log4j.Logger;
 import org.bouncycastle.crypto.Signer;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
 import org.bouncycastle.crypto.signers.RSADigestSigner;
-import org.bouncycastle.jcajce.provider.asymmetric.RSA;
 import org.bouncycastle.util.encoders.Base64;
 import org.w3c.dom.Document;
 
@@ -60,7 +59,7 @@ public class RedirectBinding extends Binding {
 		logger.debug("verifySignatures");
 
 		try {
-			return DSig.validateSignatures(this.xmlDoc, parms.getTrustCertPath(), parms.getTrustCertAlias(), parms.getTrustCertPass());
+			return verifySignature_internal(parms.getCertPath(), parms.getCertPass(), parms.getCertAlias());
 		} catch (Exception e) {
 			logger.error("verifySignature", e);
 			return false;
@@ -102,8 +101,8 @@ public class RedirectBinding extends Binding {
 
 	// EXTERNAL OBJECT PUBLIC METHODS  - END
 
-	private boolean VerifySignature_internal(String certPath, String certPass, String certAlias) {
-		logger.trace("VerifySignature_internal");
+	private boolean verifySignature_internal(String certPath, String certPass, String certAlias) {
+		logger.trace("verifySignature_internal");
 
 		byte[] signature = Encoding.decodeParameter(this.redirectMessage.get("Signature"));
 
@@ -127,7 +126,7 @@ public class RedirectBinding extends Binding {
 			setUpSigner(signer, inputStream, Keys.getAsymmetricKeyParameter(cert), false);
 			return signer.verifySignature(signature);
 		} catch (Exception e) {
-			logger.error("VerifySignature_internal", e);
+			logger.error("verifySignature_internal", e);
 			return false;
 		}
 	}
