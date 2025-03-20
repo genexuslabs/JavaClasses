@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 import org.bouncycastle.crypto.Signer;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
 import org.bouncycastle.crypto.signers.RSADigestSigner;
+import org.bouncycastle.jcajce.provider.asymmetric.RSA;
 import org.bouncycastle.util.encoders.Base64;
 import org.w3c.dom.Document;
 
@@ -14,6 +15,7 @@ import java.io.InputStream;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -99,6 +101,36 @@ public class RedirectBinding extends Binding {
 	}
 
 	// EXTERNAL OBJECT PUBLIC METHODS  - END
+
+	private boolean VerifySignature_internal(String certPath, String certPass, String certAlias) {
+		logger.trace("VerifySignature_internal");
+
+		byte[] signature = Encoding.decodeParameter(this.redirectMessage.get("Signature"));
+
+		String signedMessage;
+		if (this.redirectMessage.containsKey("RelayState")) {
+			signedMessage = MessageFormat.format("SAMLResponse={0}", this.redirectMessage.get("SAMLResponse"));
+			signedMessage += MessageFormat.format("&RelayState={0}", this.redirectMessage.get("RelayState"));
+			signedMessage += MessageFormat.format("&SigAlg={0}", this.redirectMessage.get("SigAlg"));
+		} else {
+			signedMessage = MessageFormat.format("SAMLResponse={0}", this.redirectMessage.get("SAMLResponse"));
+			signedMessage += MessageFormat.format("&SigAlg={0}", this.redirectMessage.get("SigAlg"));
+		}
+
+		byte[] query = signedMessage.getBytes(StandardCharsets.UTF_8);
+
+		X509Certificate cert = Keys.loadCertificate(certPath, certPass, certAlias);
+
+		try (InputStream inputStream = new ByteArrayInputStream(query)) {
+			String sigalg = URLDecoder.decode(this.redirectMessage.get("SigAlg"), StandardCharsets.UTF_8.name());
+			RSADigestSigner signer = new RSADigestSigner(Hash.getDigest(Hash.getHashFromSigAlg(sigalg)));
+			setUpSigner(signer, inputStream, Keys.getAsymmetricKeyParameter(cert), false);
+			return signer.verifySignature(signature);
+		} catch (Exception e) {
+			logger.error("VerifySignature_internal", e);
+			return false;
+		}
+	}
 
 	private static Map<String, String> parseRedirect(String request) {
 		logger.trace("parseRedirect");
