@@ -9,7 +9,7 @@
         <version>${revision}${changelist}</version>
     </parent>
 
-    <artifactId>gamusaml20</artifactId>
+    <artifactId>gamsaml20</artifactId>
     <name>GAM Saml 2.0 EO</name>
 
     <properties>
