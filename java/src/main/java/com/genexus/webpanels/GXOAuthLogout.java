@@ -4,7 +4,7 @@ import com.genexus.Application;
 import com.genexus.ModelContext;
 import com.genexus.internet.HttpContext;
 import com.genexus.security.GXSecurityProvider;
-import json.org.json.JSONObject;
+import com.genexus.json.JSONObjectWrapper;
 
 public class GXOAuthLogout extends GXWebObjectStub
 {   
@@ -30,7 +30,7 @@ public class GXOAuthLogout extends GXWebObjectStub
 				context.getResponse().setStatus(statusCode[0]);
 
 			context.getResponse().setContentType("application/json");
-			JSONObject jObj = new JSONObject();
+			JSONObjectWrapper jObj = new JSONObjectWrapper();
 			if (genexus_agent.equals("WebFrontend Application") && URL[0].length() > 0)
 			{				
 				context.getResponse().addHeader("GXLocation", URL[0]);			

@@ -408,7 +408,7 @@ public class PDFReportItext2 extends GXReportPDFCommons
 
 			log.debug("GxDrawBitMap -> '" + bitmap + "' [" + left + "," + top + "] - Size: (" + (right - left) + "," + (bottom - top) + ")");
 
-	        if(image != null) { // Si la imagen NO se encuentra, no hago nada
+			if(image != null) { // Si la imagen NO se encuentra, no hago nada
 				float rightAux = (float)convertScale(right);
 				float bottomAux = (float)convertScale(bottom);
 				float leftAux = (float)convertScale(left);
@@ -417,11 +417,28 @@ public class PDFReportItext2 extends GXReportPDFCommons
 				image.setAbsolutePosition(leftAux + leftMargin, this.pageSize.getTop() - bottomAux - topMargin - bottomMargin);
 				if (aspectRatio == 0)
 					image.scaleAbsolute(rightAux - leftAux , bottomAux - topAux);
-				else
+				else {
 					image.scaleToFit(rightAux - leftAux , bottomAux - topAux);
+					String verticalAlignment = System.getenv("IMAGE_VERTICAL_ALIGNMENT");
+					verticalAlignment = (verticalAlignment != null) ? verticalAlignment.toUpperCase() : "";
+					if (verticalAlignment.equals("TOP") || verticalAlignment.equals("MIDDLE") || verticalAlignment.equals("BOTTOM")) {
+						float imageHeight = image.getScaledHeight();
+						float yPosition;
+						if (verticalAlignment.equals("TOP")) {
+							yPosition = this.pageSize.getTop() - topAux - imageHeight - topMargin - bottomMargin;
+						} else if (verticalAlignment.equals("MIDDLE")) {
+							float centerY = (topAux + bottomAux) / 2;
+							yPosition = this.pageSize.getTop() - centerY - imageHeight / 2 - topMargin - bottomMargin;
+						} else {
+							yPosition = this.pageSize.getTop() - bottomAux - topMargin - bottomMargin;
+						}
+						image.setAbsolutePosition(leftAux + leftMargin, yPosition);
+					}
+				}
 				PdfContentByte cb = writer.getDirectContent();
 				cb.addImage(image);
 			}
+
 		}
 		catch(DocumentException de) {
 			log.error("GxDrawBitMap failed:", de);

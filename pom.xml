@@ -14,7 +14,7 @@
 	<url>https://github.com/genexuslabs/JavaClasses</url>
 
 	<properties>
-		<revision>4.7</revision>
+		<revision>4.9</revision>
 		<changelist>-SNAPSHOT</changelist>
 		<sha1/>
 
@@ -70,11 +70,6 @@
 			<name>Maven Central</name>
 			<layout>default</layout>
 			<url>https://repo1.maven.org/maven2</url>
-		</repository>  
-		<repository>
-			<id>iTextRepository</id>
-			<name>iText Repository</name>
-			<url>https://repository.openmindonline.it/</url>
 		</repository>
 	</repositories>
 
@@ -100,6 +95,8 @@
 		<module>gxwebsocket</module>
 		<module>gxwebsocketjakarta</module>
 		<module>gxawsserverless</module>
+      		<module>gxserverlesscommon</module>
+	        <module>gxazureserverless</module>
 		<module>androidreports</module>
 		<module>gxqueue</module>
 		<module>gxqueue-awssqs</module>
