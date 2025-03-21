@@ -59,7 +59,7 @@ public class RedirectBinding extends Binding {
 		logger.debug("verifySignatures");
 
 		try {
-			return verifySignature_internal(parms.getCertPath(), parms.getCertPass(), parms.getCertAlias());
+			return verifySignature_internal(parms.getTrustCertPath(), parms.getTrustCertPass(), parms.getTrustCertAlias());
 		} catch (Exception e) {
 			logger.error("verifySignature", e);
 			return false;
@@ -118,7 +118,7 @@ public class RedirectBinding extends Binding {
 
 		byte[] query = signedMessage.getBytes(StandardCharsets.UTF_8);
 
-		X509Certificate cert = Keys.loadCertificate(certPath, certPass, certAlias);
+		X509Certificate cert = Keys.loadCertificate(certPath, certAlias, certPass);
 
 		try (InputStream inputStream = new ByteArrayInputStream(query)) {
 			String sigalg = URLDecoder.decode(this.redirectMessage.get("SigAlg"), StandardCharsets.UTF_8.name());
