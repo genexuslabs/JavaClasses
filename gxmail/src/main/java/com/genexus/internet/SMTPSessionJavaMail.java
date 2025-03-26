@@ -13,7 +13,6 @@ import com.genexus.diagnostics.core.LogManager;
 
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.activation.*;
-import org.apache.commons.lang3.ObjectUtils;
 
 public final class SMTPSessionJavaMail implements GXInternetConstants,ISMTPSession
 {
