@@ -533,7 +533,7 @@ public class HttpAjaxContext extends HttpContextWeb
 				}catch(Exception ex){}
 				writeTextNL("<script type=\"text/javascript\">gx.http.useBase64State=true;</script>");
 			}
-			writeText("<div><input type=\"hidden\" name=\"GXState\" value='");
+			writeText("<div><input type=\"hidden\" name=\"GXState\" data-gtm-ignore='true' value='");
 			writeText(com.genexus.webpanels.WebUtils.htmlEncode(value, true));
 			writeTextNL("'" + htmlEndTag(HTMLElement.INPUT) + "</div>");
 		}
