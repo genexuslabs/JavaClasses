@@ -232,16 +232,12 @@ public final class SMTPSessionJavaMail implements GXInternetConstants,ISMTPSessi
 	{
 		try
 		{
-			t.close();
+			if (t != null)
+				t.close();
 		}
 		catch (MessagingException e)
 		{
 			log ("7 - IOException " + e.getMessage());
-			sessionInfo.exceptionHandler(new GXMailException(e.getMessage(), MAIL_ConnectionLost));
-		}
-		catch (NullPointerException e)
-		{
-			log ("8 - NullPointerException " + e.getMessage());
 			sessionInfo.exceptionHandler(new GXMailException(e.getMessage(), MAIL_ConnectionLost));
 		}
 	}
