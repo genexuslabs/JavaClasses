@@ -13,6 +13,7 @@ import com.genexus.diagnostics.core.LogManager;
 
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.activation.*;
+import org.apache.commons.lang3.ObjectUtils;
 
 public final class SMTPSessionJavaMail implements GXInternetConstants,ISMTPSession
 {
@@ -237,6 +238,11 @@ public final class SMTPSessionJavaMail implements GXInternetConstants,ISMTPSessi
 		catch (MessagingException e)
 		{
 			log ("7 - IOException " + e.getMessage());
+			sessionInfo.exceptionHandler(new GXMailException(e.getMessage(), MAIL_ConnectionLost));
+		}
+		catch (NullPointerException e)
+		{
+			log ("8 - NullPointerException " + e.getMessage());
 			sessionInfo.exceptionHandler(new GXMailException(e.getMessage(), MAIL_ConnectionLost));
 		}
 	}
