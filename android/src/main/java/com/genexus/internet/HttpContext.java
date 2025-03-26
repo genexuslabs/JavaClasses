@@ -414,7 +414,7 @@ public abstract class HttpContext extends HttpAjaxContext implements IHttpContex
                 }catch(Exception ex){}
                 writeTextNL("<script type=\"text/javascript\">gx.http.useBase64State=true;</script>");
             }
-            writeText("<div><input type=\"hidden\" name=\"GXState\" value='");
+            writeText("<div><input type=\"hidden\" name=\"GXState\" data-gtm-ignore='true' value='");
             writeTextNL("'" + htmlEndTag(HTMLElement.INPUT) + "</div>");
             if (this.formCaption != null && !this.formCaption.equals(""))
             {
