@@ -17,7 +17,7 @@ public class Encoding {
 	public static String b64ToB64Url(String input) {
 		logger.debug("b64ToB64Url");
 		try {
-			return new String(UrlBase64.encode(Base64.decode(input)), "UTF-8").replaceAll("[\ufffd]", "");
+			return java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(Base64.decode(input));
 		} catch (Exception e) {
 			logger.error("b64ToB64Url", e);
 			return "";
@@ -40,7 +40,7 @@ public class Encoding {
 	{
 		logger.debug("UTF8toBase64Url");
 		try{
-			return new String(UrlBase64.encode(input.getBytes(StandardCharsets.UTF_8)));
+			return java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(input.getBytes(StandardCharsets.UTF_8));
 		}catch (Exception e)
 		{
 			logger.error("UTF8toBase64Url", e);
@@ -52,7 +52,7 @@ public class Encoding {
 	{
 		logger.debug("fromBase64Url");
 		try{
-			return new String(UrlBase64.decode(base64Url), StandardCharsets.UTF_8);
+			return new String(java.util.Base64.getUrlDecoder().decode(base64Url), StandardCharsets.ISO_8859_1);
 		}catch (Exception e)
 		{
 			logger.error("fromBase64Url", e);
