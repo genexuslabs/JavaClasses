@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class AndroidJSONSerialization implements IExtensionJSONSerialization {
+	
 	@Override
 	public Iterator<Map.Entry<String, Object>> getJSONObjectIterator(JSONObjectWrapper obj) {
 		Map<String, Object> map = new LinkedHashMap<>();
@@ -23,5 +24,16 @@ public class AndroidJSONSerialization implements IExtensionJSONSerialization {
 	@Override
 	public JSONTokener getJSONTokener(String s) {
 		return new AndroidJSONTokenerWrapper(s);
+	}
+
+	@Override
+	public Map<String, Object> getJSONObjectMap(JSONObjectWrapper obj) {
+		Map<String, Object> map = new LinkedHashMap<>();
+		for (Iterator<String> it = obj.keys(); it.hasNext(); ) {
+			String k = it.next();
+			map.put(k, obj.get(k)); // add key and value to map result
+		}
+		return map;
+		
 	}
 }
