@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.util.*;
 
 import com.genexus.*;
@@ -22,14 +24,27 @@ import com.genexus.common.interfaces.IGXWebRow;
 
 import com.genexus.webpanels.HttpContextWeb;
 import com.genexus.webpanels.WebUtils;
-import json.org.json.IJsonFormattable;
-import json.org.json.JSONArray;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.bouncycastle.crypto.BlockCipher;
+import org.bouncycastle.crypto.BufferedBlockCipher;
+import org.bouncycastle.crypto.DataLengthException;
+import org.bouncycastle.crypto.InvalidCipherTextException;
+import org.bouncycastle.crypto.engines.RijndaelEngine;
+import org.bouncycastle.crypto.modes.CBCBlockCipher;
+import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
+import org.bouncycastle.crypto.paddings.ZeroBytePadding;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.ParametersWithIV;
+import org.bouncycastle.util.encoders.Hex;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import com.genexus.json.JSONObjectWrapper;
 
 public class HttpAjaxContext extends HttpContextWeb
 {
 	private static String GX_AJAX_REQUEST_HEADER = "GxAjaxRequest";
+	private static String GX_AJAX_PRIVATE_KEY = "595D54FF4A612E69FF4F3FFFFF0B01FF";
+	private static String GX_AJAX_PRIVATE_IV = "8722E2EA52FD44F599D35D1534485D8E";
 
 	public static final int TYPE_RESET		= 0;
 	public static final int TYPE_SUBMIT		= 1;
@@ -38,13 +53,13 @@ public class HttpAjaxContext extends HttpContextWeb
 	public static final ILogger logger = LogManager.getLogger(HttpAjaxContext.class);
 	private JSONArray AttValues = new JSONArray();
 	private JSONArray PropValues = new JSONArray();
-	protected JSONObject HiddenValues = new JSONObject();
-	protected JSONObject Messages = new JSONObject();
-	private JSONObject WebComponents = new JSONObject();
-	private Hashtable<Integer, JSONObject> LoadCommands = new Hashtable<>();
+	protected JSONObjectWrapper HiddenValues = new JSONObjectWrapper();
+	protected JSONObjectWrapper Messages = new JSONObjectWrapper();
+	private JSONObjectWrapper WebComponents = new JSONObjectWrapper();
+	private Hashtable<Integer, JSONObjectWrapper> LoadCommands = new Hashtable<>();
 	private ArrayList Grids = new ArrayList();
 	private Hashtable<String, Integer> DicGrids = new Hashtable<String, Integer>();
-	private JSONObject ComponentObjects = new JSONObject();
+	private JSONObjectWrapper ComponentObjects = new JSONObjectWrapper();
 	protected GXAjaxCommandCollection commands = new GXAjaxCommandCollection();
 	protected IGXWebRow _currentGridRow = null;
 	protected JSONArray StylesheetsToLoad = new JSONArray();
@@ -218,7 +233,7 @@ public class HttpAjaxContext extends HttpContextWeb
 	{
 		try
 		{
-			JSONObject JSONRow = new JSONObject();
+			JSONObjectWrapper JSONRow = new JSONObjectWrapper();
 			JSONRow.put("grid", SId);
 			JSONRow.put("props", row.getParentGrid().GetJSONObject());
 			JSONRow.put("values", row.getParentGrid().GetValues());
@@ -233,7 +248,7 @@ public class HttpAjaxContext extends HttpContextWeb
 	{
 		try
 		{
-			JSONObject JSONData = new JSONObject();
+			JSONObjectWrapper JSONData = new JSONObjectWrapper();
 			JSONData.put("grid", SId);
 			JSONData.put("count", lines);
 			appendAjaxCommand("addlines", JSONData);
@@ -279,7 +294,7 @@ public class HttpAjaxContext extends HttpContextWeb
 		commands.AppendCommand(new GXAjaxCommand(cmdType, cmdData));
 	}
 
-	public void appendLoadData(int SId, JSONObject Data) throws JSONException
+	public void appendLoadData(int SId, JSONObjectWrapper Data) throws JSONException
 	{
 		LoadCommands.put(SId, Data);
 	}
@@ -292,7 +307,7 @@ public class HttpAjaxContext extends HttpContextWeb
 
 	public void setExternalObjectProperty(String CmpContext, boolean IsMasterPage, String containerName, String propertyName, Object value)
 	{
-			JSONObject obj = new JSONObject();
+		JSONObjectWrapper obj = new JSONObjectWrapper();
 			try
 			{
 				obj.put("CmpContext", CmpContext);
@@ -307,7 +322,7 @@ public class HttpAjaxContext extends HttpContextWeb
 
 	public void executeExternalObjectMethod(String CmpContext, boolean IsMasterPage, String containerName, String methodName, Object[] parms, boolean isEvent)
 	{
-			JSONObject obj = new JSONObject();
+		JSONObjectWrapper obj = new JSONObjectWrapper();
 			try
 			{
 				obj.put("CmpContext", CmpContext);
@@ -333,7 +348,7 @@ public class HttpAjaxContext extends HttpContextWeb
 
 	protected void addPrintReportCommand(String reportFile, String printerRule)
 	{
-		JSONObject obj = new JSONObject();
+		JSONObjectWrapper obj = new JSONObjectWrapper();
 		try
 		{
 			obj.put("reportFile", reportFile);
@@ -363,7 +378,7 @@ public class HttpAjaxContext extends HttpContextWeb
 		{
 			if (!recoverEncryptionKey())
 			{
-				webPutSessionValue(Encryption.AJAX_ENCRYPTION_KEY, Encryption.getRijndaelKey());
+				webPutSessionValue(Encryption.AJAX_ENCRYPTION_KEY, getRijndaelKey());
 			}
 		}
 		return (String)getSessionValue(Encryption.AJAX_ENCRYPTION_KEY);
@@ -377,7 +392,7 @@ public class HttpAjaxContext extends HttpContextWeb
 			if (clientKey != null && clientKey.trim().length() > 0)
 			{
 				boolean candecrypt[]=new boolean[1];
-				clientKey = Encryption.decryptRijndael(Encryption.GX_AJAX_PRIVATE_IV + clientKey, Encryption.GX_AJAX_PRIVATE_KEY, candecrypt);
+				clientKey = decryptRijndael(GX_AJAX_PRIVATE_IV + clientKey, GX_AJAX_PRIVATE_KEY, candecrypt);
 				if (candecrypt[0])
 				{
 					webPutSessionValue(Encryption.AJAX_ENCRYPTION_KEY, clientKey);
@@ -398,7 +413,7 @@ public class HttpAjaxContext extends HttpContextWeb
 		{
 			String key = getAjaxEncryptionKey();
 			boolean candecrypt[] = new boolean[1];
-			String decrypted = Encryption.decryptRijndael(encrypted, key, candecrypt);
+			String decrypted = decryptRijndael(encrypted, key, candecrypt);
 			validEncryptedParm = candecrypt[0];
 			if (!validEncryptedParm)
 			{
@@ -516,7 +531,7 @@ public class HttpAjaxContext extends HttpContextWeb
 		AddStylesheetsToLoad();
 		if (isSpaRequest())
 		{
-			writeTextNL("<script>gx.ajax.saveJsonResponse(" + WebUtils.htmlEncode(JSONObject.quote(getJSONResponse()), true) + ");</script>");
+			writeTextNL("<script>gx.ajax.saveJsonResponse(" + WebUtils.htmlEncode(JSONObjectWrapper.quote(getJSONResponse()), true) + ");</script>");
 		}
 		else
 		{
@@ -727,8 +742,7 @@ public class HttpAjaxContext extends HttpContextWeb
 		boolean fileExists = false;
 		try
 		{
-			fileExists = ApplicationContext.getInstance().checkIfResourceExist(getDefaultPath() + staticContentBase + fileName);
-			com.genexus.diagnostics.Log.info("Searching if file exists (" + fileName + "). Found: " + String.valueOf(fileExists));
+			fileExists = ApplicationContext.getInstance().checkIfResourceExist(getDefaultPath() + staticContentBase + fileName);			
 		}
 		catch (Exception e)
 		{
@@ -744,10 +758,10 @@ public class HttpAjaxContext extends HttpContextWeb
 		{
 			String key = getAjaxEncryptionKey();
 			ajax_rsp_assign_hidden(Encryption.AJAX_ENCRYPTION_KEY, key);
-			ajax_rsp_assign_hidden(Encryption.AJAX_ENCRYPTION_IV, Encryption.GX_AJAX_PRIVATE_IV);
+			ajax_rsp_assign_hidden(Encryption.AJAX_ENCRYPTION_IV, GX_AJAX_PRIVATE_IV);
 			try
 			{
-				ajax_rsp_assign_hidden(Encryption.AJAX_SECURITY_TOKEN, Encryption.encryptRijndael(key, Encryption.GX_AJAX_PRIVATE_KEY));
+				ajax_rsp_assign_hidden(Encryption.AJAX_SECURITY_TOKEN, encryptRijndael(key, GX_AJAX_PRIVATE_KEY));
 			}
 			catch(Exception exc) {}
 			encryptionKeySended = true;
@@ -803,21 +817,21 @@ public class HttpAjaxContext extends HttpContextWeb
 		return false;
 	}
 
-	private JSONObject getGxObject(JSONArray array, String CmpContext, boolean IsMasterPage)
+	private JSONObjectWrapper getGxObject(JSONArray array, String CmpContext, boolean IsMasterPage)
 	{
 		try
 		{
-			JSONObject obj;
+			JSONObjectWrapper obj;
 			int len = array.length();
 			for(int i=0; i<len; i++)
 			{
-				obj = array.getJSONObject(i);
+				obj = (JSONObjectWrapper)array.getJSONObject(i);
 				if (obj.getBoolean("IsMasterPage") == IsMasterPage &&  obj.getString("CmpContext").equals(CmpContext))
 				{
 					return obj;
 				}
 			}
-			obj = new JSONObject();
+			obj = new JSONObjectWrapper();
 			obj.put("CmpContext", CmpContext);
 			obj.put("IsMasterPage", new Boolean(IsMasterPage).toString());
 			array.put(obj);
@@ -836,7 +850,7 @@ public class HttpAjaxContext extends HttpContextWeb
 			if (!isSpaRequest() || (isSpaRequest() && (CmpContext == null || CmpContext.trim().length() == 0)))
 			{
 				try {
-					JSONObject obj = getGxObject(AttValues, CmpContext, IsMasterPage);
+					JSONObjectWrapper obj = getGxObject(AttValues, CmpContext, IsMasterPage);
 					if (obj != null)
 					{
 						obj.put(AttName, AttValue);
@@ -867,7 +881,7 @@ public class HttpAjaxContext extends HttpContextWeb
                 if (!isSpaRequest() || (isSpaRequest() && (CmpContext == null || CmpContext.trim().length() == 0)))
                 {
                   try {
-                      JSONObject obj = getGxObject(AttValues, CmpContext, IsMasterPage);
+					  JSONObjectWrapper obj = getGxObject(AttValues, CmpContext, IsMasterPage);
 					  if (obj != null && (!isUndefinedOutParam( AttName, SdtObj) || dynAjaxEventContext.isParmModified(AttName, SdtObj)))
 					  {
                         if (SdtObj instanceof IGxJSONAble)
@@ -893,15 +907,17 @@ public class HttpAjaxContext extends HttpContextWeb
             return HiddenValues.toString();
         }
 
-        private JSONObject getControlProps(JSONObject obj, String Control)
+        private JSONObjectWrapper getControlProps(JSONObjectWrapper obj, String Control)
         {
-            JSONObject ctrlProps = null;
+			JSONObjectWrapper ctrlProps = null;
             try {
-                ctrlProps = obj.optJSONObject(Control);
-                if (ctrlProps == null) {
-                    ctrlProps = new JSONObject();
+				JSONObject crtPropsAux = obj.optJSONObject(Control);
+                if (crtPropsAux == null) {
+                    ctrlProps = new JSONObjectWrapper();
                     obj.put(Control, ctrlProps);
                 }
+				else
+					ctrlProps = (JSONObjectWrapper)crtPropsAux;
             } catch (JSONException e) {
             }
             return ctrlProps;
@@ -931,10 +947,10 @@ public class HttpAjaxContext extends HttpContextWeb
                         {
                             formCaption = Value;
                         }
-                        JSONObject obj = getGxObject(PropValues, CmpContext, IsMasterPage);
+						JSONObjectWrapper obj = getGxObject(PropValues, CmpContext, IsMasterPage);
                         if (obj != null)
                         {
-                            JSONObject ctrlProps = getControlProps(obj, Control);
+							JSONObjectWrapper ctrlProps = getControlProps(obj, Control);
                             if (ctrlProps != null)
                             {
                             ctrlProps.put(Property, Value);
@@ -1195,6 +1211,11 @@ public class HttpAjaxContext extends HttpContextWeb
 					}
 					else
 					{
+						if (parm instanceof Date) {
+							LocalUtil localUtil = Application.getClientLocalUtil();
+							inputs.put(localUtil.format((Date)parm, localUtil.getDateFormat() + " " + localUtil.getTimeFormat()));
+						}
+						else
 							inputs.put(parm);
 					}
 			}
@@ -1329,7 +1350,7 @@ public class HttpAjaxContext extends HttpContextWeb
 	public void ajax_rsp_command_close() {
 		bCloseCommand = true;
 		try {
-			JSONObject closeParms = new JSONObject();
+			JSONObjectWrapper closeParms = new JSONObjectWrapper();
 			closeParms.put("values", ObjArrayToJSONArray(this.getWebReturnParms()));
 			closeParms.put("metadata", ObjArrayToJSONArray(this.getWebReturnParmsMetadata()));
 			appendAjaxCommand("close", closeParms);
@@ -1368,7 +1389,7 @@ public class HttpAjaxContext extends HttpContextWeb
 				if (win != null) {
 					appendAjaxCommand("popup", win.GetJSONObject());
 				} else if (!Redirected) {
-					JSONObject jsonCmd = new JSONObject();
+					JSONObjectWrapper jsonCmd = new JSONObjectWrapper();
 					jsonCmd.put("url", url);
 					if (this.wjLocDisableFrm > 0) {
 						jsonCmd.put("forceDisableFrm", this.wjLocDisableFrm);
@@ -1613,9 +1634,9 @@ public class HttpAjaxContext extends HttpContextWeb
 				return data;
 		}
 
-		public JSONObject getJSONObject()
+		public JSONObjectWrapper getJSONObject()
 		{
-				JSONObject jObj = new JSONObject();
+			JSONObjectWrapper jObj = new JSONObjectWrapper();
 				try {
 					jObj.put(type, data);
 				} catch (JSONException ex) {
@@ -1655,11 +1676,11 @@ public class HttpAjaxContext extends HttpContextWeb
 
 	public class GXUsercontrolMethod implements IGxJSONAble
 	{
-		JSONObject wrapper;
+		JSONObjectWrapper wrapper;
 
 		public GXUsercontrolMethod(String CmpContext, boolean IsMasterPage, String containerName, String methodName, String output, Object[] parms)
 		{
-			wrapper = new JSONObject();
+			wrapper = new JSONObjectWrapper();
 			AddObjectProperty("CmpContext", CmpContext);
 			AddObjectProperty("IsMasterPage", new Boolean(IsMasterPage));
 			AddObjectProperty("Control", containerName);
@@ -1705,7 +1726,7 @@ public class HttpAjaxContext extends HttpContextWeb
 			return wrapper;
 		}
 
-		public void FromJSONObject(IJsonFormattable obj)
+		public void FromJSONObject(Object obj)
 		{
 		}
 
@@ -1778,4 +1799,75 @@ public class HttpAjaxContext extends HttpContextWeb
                         return jArr;
                 }
         }
+
+	private static String getRijndaelKey()
+	{
+		SecureRandom rdm = new SecureRandom();
+		byte[] bytes = new byte[16];
+		rdm.nextBytes(bytes);
+		StringBuffer buffer = new StringBuffer(32);
+		for (int i = 0; i < 16; i++)
+		{
+			buffer.append(CommonUtil.padl(Integer.toHexString((int)bytes[i]), 2, "0"));
+		}
+		return buffer.toString().toUpperCase();
+	}
+
+	private static String decryptRijndael(String ivEncrypted, String key, boolean[] candecrypt) {
+		try {
+			candecrypt[0] = false;
+			String encrypted = ivEncrypted.length() >= GX_AJAX_PRIVATE_IV.length() ? ivEncrypted.substring(GX_AJAX_PRIVATE_IV.length()) : ivEncrypted;
+			byte[] inputBytes = Hex.decode(encrypted.trim().getBytes());
+			byte[] outputBytes;
+			String decrypted = "";
+			if (inputBytes != null) {
+				try {
+					outputBytes = aesCipher(inputBytes, false, key, GX_AJAX_PRIVATE_IV);
+				} catch (DataLengthException | IllegalStateException | InvalidCipherTextException e) {
+					return ivEncrypted;
+				}
+
+				String result = new String(outputBytes, StandardCharsets.US_ASCII).replaceAll("[\ufffd]", "");
+				if (result != null) {
+					candecrypt[0] = true;
+					decrypted = result.trim();
+				}
+			}
+			return decrypted;
+		}catch(Exception ex){
+			return ivEncrypted;
+		}
+	}
+
+	private static String encryptRijndael(String plainText, String key) {
+		byte[] inputBytes = plainText.trim().getBytes(StandardCharsets.US_ASCII);
+		byte[] outputBytes;
+		try {
+			outputBytes = aesCipher(inputBytes, true, key, GX_AJAX_PRIVATE_IV);
+		} catch (DataLengthException | IllegalStateException | InvalidCipherTextException e) {
+			logger.error("encryptRijndael error", e);
+			return "";
+		}
+		return Hex.toHexString(outputBytes);
+	}
+
+	private static byte[] aesCipher(byte[] inputBytes, boolean init, String key, String iv)
+		throws DataLengthException, IllegalStateException, InvalidCipherTextException {
+		byte[] byteKey = Hex.decode(key);
+		byte[] byteIV = Hex.decode(iv);
+		KeyParameter keyParam = new KeyParameter(byteKey);
+		ParametersWithIV keyParamWithIV = new ParametersWithIV(keyParam, byteIV);
+
+		BlockCipher engineWithMode = new CBCBlockCipher(new RijndaelEngine());
+
+		BufferedBlockCipher bbc = new PaddedBufferedBlockCipher(engineWithMode, new ZeroBytePadding());
+		bbc.init(init, keyParamWithIV);
+		byte[] outputBytes = new byte[bbc.getOutputSize(inputBytes.length)];
+		if (inputBytes != null) {
+			int length = bbc.processBytes(inputBytes, 0, inputBytes.length, outputBytes, 0);
+			bbc.doFinal(outputBytes, length);
+
+		}
+		return outputBytes;
+	}
 }

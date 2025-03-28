@@ -1,15 +1,14 @@
 package com.genexus.internet;
 
 import java.util.*;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.math.BigDecimal;
 import java.text.ParseException;
 
-import json.org.json.IJsonFormattable;
-import json.org.json.JSONArray;
+import org.json.JSONArray;
 import com.genexus.internet.IGxJSONAble;
 import com.genexus.xml.GXXMLSerializable;
 import com.genexus.internet.IGxJSONSerializable;
@@ -27,7 +26,6 @@ public class GXRestAPIClient {
 	private Location location;
 	private int protocol = 1;
 	private String httpMethod = "GET";
-	private int  statusCode;
 	private int  errorCode;	
 	private String errorMessage;
 	private Integer responseCode;
@@ -87,11 +85,15 @@ public class GXRestAPIClient {
 	}
 
 	public int getStatusCode() {
-		return statusCode;
+		return responseCode;
 	}
 
 	public String getErrorMessage() {
 		return errorMessage;
+	}
+
+	public String getStatusMessage() {
+		return responseMessage;
 	}
 
 	/* Sets */
@@ -113,9 +115,13 @@ public class GXRestAPIClient {
 	}
 
 	public void setStatusCode( int value) {
-		statusCode = value;
+		responseCode = value;
 	}
-	
+
+	public void setStatusMessage(String value) {
+		responseMessage = value;
+	}
+
 	public void setErrorCode( int value) {
 		errorCode = value;
 	}
@@ -335,9 +341,9 @@ public class GXRestAPIClient {
 		try {
 			if (jsonResponse != null) {
 				if (jsonResponse.has(varName))
-					jsonstr = jsonResponse.getString(varName);
+					jsonstr = jsonResponse.get(varName).toString();
 				else if (jsonResponse.length() == 1 && jsonResponse.has(""))
-					jsonstr = jsonResponse.getString("");								
+					jsonstr = jsonResponse.get("").toString();
 			}
 			else {
 				errorCode = RESPONSE_ERROR_CODE;
@@ -369,10 +375,10 @@ public class GXRestAPIClient {
 			if (jsonResponse != null) {
 				Boolean dSuccess = false;
 				if (jsonResponse.has(varName) && jsonResponse.length() == 1) {
-					dSuccess = sdt.fromJSonString(jsonResponse.getString(varName), null);
+					dSuccess = sdt.fromJSonString(jsonResponse.get(varName).toString(), null);
 				} 
 				else if (jsonResponse.length() == 1 && jsonResponse.has("")) {
-					dSuccess = sdt.fromJSonString(jsonResponse.getString(""), null);
+					dSuccess = sdt.fromJSonString(jsonResponse.get("").toString(), null);
 				} 
 				else if (jsonResponse.length()>= 1) {
 					dSuccess = sdt.fromJSonString(httpClient.getString(), null);			
@@ -392,7 +398,7 @@ public class GXRestAPIClient {
 				return null;
 			}
 		} 
-		catch (json.org.json.JSONException e) {
+		catch (JSONException e) {
 			errorCode = PARSING_ERROR_CODE;
 			errorMessage = PARSING_ERROR_MSG;
 			logError(PARSING_ERROR_CODE, PARSING_ERROR_MSG + " " + sdtClass, e);
@@ -422,7 +428,7 @@ public class GXRestAPIClient {
 
 			if (jsonarr != null) {
 				for (int i=0; i < jsonarr.length(); i++) {
-    				JSONObject o = jsonarr.getJSONObject(i);
+					JSONObject o = jsonarr.getJSONObject(i);
 					T sdt = elementClass.newInstance();
 					sdt.fromJSonString(o.toString(),null);
 					col.add(sdt);
@@ -434,7 +440,7 @@ public class GXRestAPIClient {
 				logError(RESPONSE_ERROR_CODE,RESPONSE_ERROR_MSG + " " + elementClass);
 			}	
 		} 
-		catch (json.org.json.JSONException e) {
+		catch (JSONException e) {
 			errorCode = PARSING_ERROR_CODE;
 			errorMessage = PARSING_ERROR_MSG;
 			logError(PARSING_ERROR_CODE,PARSING_ERROR_MSG + " " + elementClass ,e );
@@ -456,13 +462,13 @@ public class GXRestAPIClient {
         } 		
 		try {
 			if (jsonResponse.has(varName)) {
-				coll.fromJSonString(jsonResponse.getString(varName), null);
+				coll.fromJSonString(jsonResponse.get(varName).toString(), null);
 			} 
 			else if (jsonResponse.length() == 1 && jsonResponse.has("")) {
-				coll.fromJSonString(jsonResponse.getString(varName), null);
+				coll.fromJSonString(jsonResponse.get(varName).toString(), null);
 			} 
 		} 
-		catch (json.org.json.JSONException e) {
+		catch (JSONException e) {
 			errorCode = PARSING_ERROR_CODE;
 			errorMessage = PARSING_ERROR_MSG;
 			logError(PARSING_ERROR_CODE,PARSING_ERROR_MSG + " " + elementClasss, e);
@@ -513,15 +519,16 @@ public class GXRestAPIClient {
 		serviceuri += (location.getPort() != 80) ? ":" + Integer.toString(location.getPort()): "";
 		serviceuri += "/" + location.getBaseURL() + "/" + location.getResourceName();
 		serviceuri += queryString;
-		httpClient.execute( httpMethod, serviceuri);
-
-		if (httpClient.getStatusCode() >= 300 || httpClient.getErrCode() > 0) {	
-			errorCode = (httpClient.getErrCode() == 0)? 1 : httpClient.getErrCode();
-			errorMessage = httpClient.getErrDescription();				
-			statusCode = httpClient.getStatusCode();
-		}
+		httpClient.execute( this.httpMethod, serviceuri);
+		responseCode = httpClient.getStatusCode();
+		responseMessage = httpClient.getReasonLine();
+		errorCode = 0;
+		errorMessage = "";
+		if (responseCode >= 300 || httpClient.getErrCode() > 0) {
+			errorCode =  httpClient.getErrCode();
+			errorMessage = httpClient.getErrDescription();
+    }
 		else {
-			statusCode = httpClient.getStatusCode();
 			try {
 				String response = httpClient.getString();
 				if (response.trim().startsWith("["))

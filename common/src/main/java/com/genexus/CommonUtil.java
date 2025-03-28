@@ -4,7 +4,7 @@ import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.util.*;
 
-import json.org.json.JSONObject;
+import org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.io.*;
@@ -12,7 +12,7 @@ import java.net.URLEncoder;
 import java.text.*;
 import java.util.*;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.*;
 import java.security.*;

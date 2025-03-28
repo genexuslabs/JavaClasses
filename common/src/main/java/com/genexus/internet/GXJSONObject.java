@@ -2,9 +2,9 @@ package com.genexus.internet;
 
 import com.genexus.util.Codecs;
 
-import json.org.json.*;
+import com.genexus.json.JSONObjectWrapper;
 
-public class GXJSONObject extends JSONObject
+public class GXJSONObject extends JSONObjectWrapper
 {
 	private boolean base64Encoded;
 
