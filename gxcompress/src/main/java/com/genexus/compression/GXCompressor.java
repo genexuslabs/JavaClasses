@@ -35,7 +35,10 @@ public class GXCompressor implements IGXCompressor {
 	private static final String UNSUPPORTED_FORMAT = " is an unsupported format. Supported formats are zip, 7z, tar, gz and jar.";
 	private static final String EMPTY_FILE = "The selected file is empty: ";
 	private static final String DIRECTORY_ATTACK = "Potential directory traversal attack detected: ";
-	private static final String MAX_FILESIZE_EXCEEDED = "The files selected for compression exceed the maximum permitted file size of ";
+	private static final String MAX_FILESIZE_EXCEEDED = "The file(s) selected for (de)compression exceed the maximum permitted file size of ";
+	private static final String TOO_MANY_FILES = "Too many files have been added for (de)compression. Maximum allowed is ";
+	private static final String ZIP_SLIP_DETECTED = "Zip slip or path traversal attack detected in archive: ";
+	private static final int MAX_FILES_ALLOWED = 1000;
 
 	private static void storageMessages(String error, GXBaseCollection<SdtMessages_Message> messages) {
 		try {
@@ -55,6 +58,12 @@ public class GXCompressor implements IGXCompressor {
 			storageMessages(NO_FILES_ADDED, messages[0]);
 			return false;
 		}
+		if(maxCombinedFileSize > -1 && files.size() > MAX_FILES_ALLOWED){
+			log.error(TOO_MANY_FILES + MAX_FILES_ALLOWED);
+			storageMessages(TOO_MANY_FILES + MAX_FILES_ALLOWED, messages[0]);
+			files.clear();
+			return false;
+		}
 		long totalSize = 0;
 		File[] toCompress = new File[files.size()];
 		int index = 0;
@@ -67,18 +76,18 @@ public class GXCompressor implements IGXCompressor {
 					storageMessages(FILE_NOT_EXISTS + filePath, messages[0]);
 					continue;
 				}
-				if (normalizedPath.contains(File.separator + ".." + File.separator) ||
-					normalizedPath.endsWith(File.separator + "..") ||
-					normalizedPath.startsWith(".." + File.separator)) {
+				if (!normalizedPath.equals(file.getAbsolutePath())) {
 					log.error(DIRECTORY_ATTACK + "{}", filePath);
 					storageMessages(DIRECTORY_ATTACK + filePath, messages[0]);
 					return false;
 				}
 				long fileSize = file.length();
 				totalSize += fileSize;
-				if (totalSize > maxCombinedFileSize && maxCombinedFileSize > -1) {
-					log.error(MAX_FILESIZE_EXCEEDED + "{}", maxCombinedFileSize);
+				if (maxCombinedFileSize > -1 && totalSize > maxCombinedFileSize) {
+					log.error(MAX_FILESIZE_EXCEEDED + maxCombinedFileSize);
 					storageMessages(MAX_FILESIZE_EXCEEDED + maxCombinedFileSize, messages[0]);
+					toCompress = null;
+					files.clear();
 					return false;
 				}
 				toCompress[index++] = file;
@@ -131,6 +140,29 @@ public class GXCompressor implements IGXCompressor {
 		if (toCompress.length() == 0L){
 			log.error("{}{}", EMPTY_FILE, file);
 			storageMessages(EMPTY_FILE + file, messages[0]);
+			return false;
+		}
+		try {
+			int fileCount = CompressionUtils.countArchiveEntries(toCompress);
+			if (fileCount > MAX_FILES_ALLOWED) {
+				log.error(TOO_MANY_FILES + fileCount);
+				storageMessages(TOO_MANY_FILES + fileCount, messages[0]);
+				return false;
+			}
+		} catch (Exception e) {
+			log.error("Error counting archive entries for file: {}", file, e);
+			storageMessages("Error counting archive entries for file: " + file, messages[0]);
+			return false;
+		}
+		try {
+			if (!CompressionUtils.isArchiveSafe(toCompress, path)) {
+				log.error(ZIP_SLIP_DETECTED + file);
+				storageMessages(ZIP_SLIP_DETECTED + file, messages[0]);
+				return false;
+			}
+		} catch (Exception e) {
+			log.error("Error checking archive safety for file: {}", file, e);
+			storageMessages("Error checking archive safety for file: " + file, messages[0]);
 			return false;
 		}
 		String extension = getExtension(toCompress.getName());
