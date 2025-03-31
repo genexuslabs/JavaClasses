@@ -34,11 +34,16 @@ public class GXCompressor implements IGXCompressor {
 	private static final String FILE_NOT_EXISTS = "File does not exist: ";
 	private static final String UNSUPPORTED_FORMAT = " is an unsupported format. Supported formats are zip, 7z, tar, gz and jar.";
 	private static final String EMPTY_FILE = "The selected file is empty: ";
+	private static final String PURGED_ARCHIVE = "After performing security checks, no valid files where left to compress";
 	private static final String DIRECTORY_ATTACK = "Potential directory traversal attack detected: ";
 	private static final String MAX_FILESIZE_EXCEEDED = "The file(s) selected for (de)compression exceed the maximum permitted file size of ";
 	private static final String TOO_MANY_FILES = "Too many files have been added for (de)compression. Maximum allowed is ";
 	private static final String ZIP_SLIP_DETECTED = "Zip slip or path traversal attack detected in archive: ";
+	private static final String BIG_SINGLE_FILE = "Individual file exceeds maximum allowed size: ";
+	private static final String PROCESSING_ERROR = "Error checking archive safety for file: ";
+	private static final String ARCHIVE_SIZE_ESTIMATION_ERROR = "";
 	private static final int MAX_FILES_ALLOWED = 1000;
+	private static final long MAX_DECOMPRESSED_SIZE = 1024 * 1024 * 100; // 100MB limit
 
 	private static void storageMessages(String error, GXBaseCollection<SdtMessages_Message> messages) {
 		try {
@@ -51,7 +56,7 @@ public class GXCompressor implements IGXCompressor {
 			log.error("Failed to store the following error message: {}", error, e);
 		}
 	}
-	
+
 	public static Boolean compress(ArrayList<String> files, String path, long maxCombinedFileSize, GXBaseCollection<SdtMessages_Message>[] messages) {
 		if (files.isEmpty()){
 			log.error(NO_FILES_ADDED);
@@ -76,25 +81,52 @@ public class GXCompressor implements IGXCompressor {
 					storageMessages(FILE_NOT_EXISTS + filePath, messages[0]);
 					continue;
 				}
-				if (!normalizedPath.equals(file.getAbsolutePath())) {
+
+				// More permissive directory traversal check
+				// Check if the canonical path points to a parent directory of the file
+				// or if it points to a completely different location
+				File absFile = file.getAbsoluteFile();
+				if (!normalizedPath.startsWith(absFile.getParentFile().getCanonicalPath())) {
 					log.error(DIRECTORY_ATTACK + "{}", filePath);
 					storageMessages(DIRECTORY_ATTACK + filePath, messages[0]);
 					return false;
 				}
+
 				long fileSize = file.length();
+
+				if (maxCombinedFileSize > -1 && fileSize > maxCombinedFileSize) {
+					log.error(BIG_SINGLE_FILE + filePath);
+					storageMessages(BIG_SINGLE_FILE + filePath, messages[0]);
+					files.clear();
+					return false;
+				}
+
 				totalSize += fileSize;
 				if (maxCombinedFileSize > -1 && totalSize > maxCombinedFileSize) {
 					log.error(MAX_FILESIZE_EXCEEDED + maxCombinedFileSize);
 					storageMessages(MAX_FILESIZE_EXCEEDED + maxCombinedFileSize, messages[0]);
-					toCompress = null;
 					files.clear();
 					return false;
 				}
 				toCompress[index++] = file;
 			} catch (IOException e) {
 				log.error("Error normalizing path for file: {}", filePath, e);
+				return false;
 			}
 		}
+
+		if (index < toCompress.length) {
+			File[] resized = new File[index];
+			System.arraycopy(toCompress, 0, resized, 0, index);
+			toCompress = resized;
+		}
+
+		if (toCompress.length == 0) {
+			log.error(PURGED_ARCHIVE);
+			storageMessages(PURGED_ARCHIVE, messages[0]);
+			return false;
+		}
+
 		String format = CommonUtil.getFileType(path).toLowerCase();
 		try {
 			switch (format.toLowerCase()) {
@@ -150,8 +182,8 @@ public class GXCompressor implements IGXCompressor {
 				return false;
 			}
 		} catch (Exception e) {
-			log.error("Error counting archive entries for file: {}", file, e);
-			storageMessages("Error counting archive entries for file: " + file, messages[0]);
+			log.error(PROCESSING_ERROR + file, e);
+			storageMessages(PROCESSING_ERROR + file, messages[0]);
 			return false;
 		}
 		try {
@@ -161,10 +193,28 @@ public class GXCompressor implements IGXCompressor {
 				return false;
 			}
 		} catch (Exception e) {
-			log.error("Error checking archive safety for file: {}", file, e);
-			storageMessages("Error checking archive safety for file: " + file, messages[0]);
+			log.error(PROCESSING_ERROR+ file, e);
+			storageMessages(PROCESSING_ERROR + file, messages[0]);
 			return false;
 		}
+
+		try {
+			long totalSizeEstimate = CompressionUtils.estimateDecompressedSize(toCompress);
+
+			if (totalSizeEstimate > MAX_DECOMPRESSED_SIZE) {
+				log.error("Potential zip bomb detected. Estimated size: " + totalSizeEstimate + " bytes");
+				storageMessages("Potential zip bomb detected. Operation aborted for security reasons.", messages[0]);
+				if (!toCompress.delete()) {
+					log.error("Failed to delete suspicious archive: {}", file);
+				}
+				return false;
+			}
+		} catch (Exception e) {
+			log.error(ARCHIVE_SIZE_ESTIMATION_ERROR + file, e);
+			storageMessages(ARCHIVE_SIZE_ESTIMATION_ERROR+ file, messages[0]);
+			return false;
+		}
+
 		String extension = getExtension(toCompress.getName());
 		try {
 			switch (extension.toLowerCase()) {
