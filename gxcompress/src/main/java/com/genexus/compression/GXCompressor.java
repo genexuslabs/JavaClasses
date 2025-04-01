@@ -17,6 +17,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
@@ -25,7 +26,7 @@ import java.util.zip.*;
 
 import static org.apache.commons.io.FilenameUtils.getExtension;
 
-public class GXCompressor implements IGXCompressor {
+public class GXCompressor {
 
 	private static final Logger log = org.apache.logging.log4j.LogManager.getLogger(GXCompressor.class);
 
@@ -42,8 +43,6 @@ public class GXCompressor implements IGXCompressor {
 	private static final String BIG_SINGLE_FILE = "Individual file exceeds maximum allowed size: ";
 	private static final String PROCESSING_ERROR = "Error checking archive safety for file: ";
 	private static final String ARCHIVE_SIZE_ESTIMATION_ERROR = "";
-	private static final int MAX_FILES_ALLOWED = 1000;
-	private static final long MAX_DECOMPRESSED_SIZE = 1024 * 1024 * 100; // 100MB limit
 
 	private static void storageMessages(String error, GXBaseCollection<SdtMessages_Message> messages) {
 		try {
@@ -57,21 +56,23 @@ public class GXCompressor implements IGXCompressor {
 		}
 	}
 
-	public static Boolean compress(ArrayList<String> files, String path, long maxCombinedFileSize, GXBaseCollection<SdtMessages_Message>[] messages) {
-		if (files.isEmpty()){
+	/**
+	 * Compresses specified files into an archive at the given path based on configuration parameters.
+	 *
+	 * @param files List of file paths to compress
+	 * @param path Target path for the compressed archive
+	 * @param configuration Configuration parameters for compression
+	 * @param messages Collection to store output messages
+	 * @return Boolean indicating success or failure of compression operation
+	 */
+	public static Boolean compress(ArrayList<String> files, String path, CompressionConfiguration configuration, GXBaseCollection<SdtMessages_Message>[] messages) {
+		if (files.isEmpty()) {
 			log.error(NO_FILES_ADDED);
 			storageMessages(NO_FILES_ADDED, messages[0]);
 			return false;
 		}
-		if(maxCombinedFileSize > -1 && files.size() > MAX_FILES_ALLOWED){
-			log.error(TOO_MANY_FILES + MAX_FILES_ALLOWED);
-			storageMessages(TOO_MANY_FILES + MAX_FILES_ALLOWED, messages[0]);
-			files.clear();
-			return false;
-		}
+		List<File> validFiles = new ArrayList<>();
 		long totalSize = 0;
-		File[] toCompress = new File[files.size()];
-		int index = 0;
 		for (String filePath : files) {
 			File file = new File(filePath);
 			try {
@@ -81,52 +82,65 @@ public class GXCompressor implements IGXCompressor {
 					storageMessages(FILE_NOT_EXISTS + filePath, messages[0]);
 					continue;
 				}
-
-				// More permissive directory traversal check
-				// Check if the canonical path points to a parent directory of the file
-				// or if it points to a completely different location
 				File absFile = file.getAbsoluteFile();
 				if (!normalizedPath.startsWith(absFile.getParentFile().getCanonicalPath())) {
 					log.error(DIRECTORY_ATTACK + "{}", filePath);
 					storageMessages(DIRECTORY_ATTACK + filePath, messages[0]);
 					return false;
 				}
-
 				long fileSize = file.length();
-
-				if (maxCombinedFileSize > -1 && fileSize > maxCombinedFileSize) {
+				if (configuration.maxIndividualFileSize > -1 && fileSize > configuration.maxIndividualFileSize) {
 					log.error(BIG_SINGLE_FILE + filePath);
 					storageMessages(BIG_SINGLE_FILE + filePath, messages[0]);
-					files.clear();
-					return false;
+					continue;
 				}
-
 				totalSize += fileSize;
-				if (maxCombinedFileSize > -1 && totalSize > maxCombinedFileSize) {
-					log.error(MAX_FILESIZE_EXCEEDED + maxCombinedFileSize);
-					storageMessages(MAX_FILESIZE_EXCEEDED + maxCombinedFileSize, messages[0]);
-					files.clear();
-					return false;
-				}
-				toCompress[index++] = file;
+				validFiles.add(file);
 			} catch (IOException e) {
 				log.error("Error normalizing path for file: {}", filePath, e);
+				storageMessages("Error normalizing path for file: " + filePath, messages[0]);
 				return false;
 			}
 		}
-
-		if (index < toCompress.length) {
-			File[] resized = new File[index];
-			System.arraycopy(toCompress, 0, resized, 0, index);
-			toCompress = resized;
-		}
-
-		if (toCompress.length == 0) {
+		if (validFiles.isEmpty()) {
 			log.error(PURGED_ARCHIVE);
 			storageMessages(PURGED_ARCHIVE, messages[0]);
 			return false;
 		}
-
+		if (configuration.maxCombinedFileSize > -1 && totalSize > configuration.maxCombinedFileSize) {
+			log.error(MAX_FILESIZE_EXCEEDED + configuration.maxCombinedFileSize);
+			storageMessages(MAX_FILESIZE_EXCEEDED + configuration.maxCombinedFileSize, messages[0]);
+			return false;
+		}
+		if (configuration.maxFileCount > -1 && validFiles.size() > configuration.maxFileCount) {
+			log.error(TOO_MANY_FILES + configuration.maxFileCount);
+			storageMessages(TOO_MANY_FILES + configuration.maxFileCount, messages[0]);
+			return false;
+		}
+		try {
+			File targetFile = new File(path);
+			File targetDir = targetFile.getParentFile();
+			if (path.contains("/../") || path.contains("../") || path.contains("/..")) {
+				log.error(DIRECTORY_ATTACK + path);
+				storageMessages(DIRECTORY_ATTACK + path, messages[0]);
+				return false;
+			}
+			if (configuration.targetDirectory != null && !configuration.targetDirectory.isEmpty()) {
+				File configTargetDir = new File(configuration.targetDirectory);
+				String normalizedTargetPath = targetDir.getCanonicalPath();
+				String normalizedConfigPath = configTargetDir.getCanonicalPath();
+				if (!normalizedTargetPath.startsWith(normalizedConfigPath)) {
+					log.error(DIRECTORY_ATTACK + path);
+					storageMessages(DIRECTORY_ATTACK + path, messages[0]);
+					return false;
+				}
+			}
+		} catch (IOException e) {
+			log.error("Error validating target path: {}", path, e);
+			storageMessages("Error validating target path: " + path, messages[0]);
+			return false;
+		}
+		File[] toCompress = validFiles.toArray(new File[0]);
 		String format = CommonUtil.getFileType(path).toLowerCase();
 		try {
 			switch (format.toLowerCase()) {
@@ -146,39 +160,57 @@ public class GXCompressor implements IGXCompressor {
 					compressToJar(toCompress, path);
 					break;
 				default:
-					log.error("{}" + UNSUPPORTED_FORMAT, format);
+					log.error(format + UNSUPPORTED_FORMAT);
 					storageMessages(format + UNSUPPORTED_FORMAT, messages[0]);
 					return false;
 			}
 			return true;
 		} catch (Exception e) {
 			log.error(GENERIC_ERROR, e);
-			storageMessages(e.getMessage(),  messages[0]);
+			storageMessages(e.getMessage(), messages[0]);
 			return false;
 		}
-	}
-	
-	public static Compression newCompression(String path, long maxCombinedFileSize, GXBaseCollection<SdtMessages_Message>[] messages) {
-		return new Compression(path, maxCombinedFileSize, messages);
 	}
 
-	public static Boolean decompress(String file, String path, GXBaseCollection<SdtMessages_Message>[] messages) {
-		File toCompress = new File(file);
-		if (!toCompress.exists()) {
-			log.error("{}{}", FILE_NOT_EXISTS, toCompress.getAbsolutePath());
-			storageMessages(FILE_NOT_EXISTS + toCompress.getAbsolutePath(), messages[0]);
+	/**
+	 * Compresses files interactively, add files to a collection until the GXCompressor.compress method is executed
+	 *
+	 * @param path Target path for the compressed archive
+	 * @param configuration Configuration parameters for decompression
+	 * @param messages Collection to store output messages
+	 * @return Boolean indicating success or failure of decompression operation
+	 */
+	public static Compression newCompression(String path, CompressionConfiguration configuration, GXBaseCollection<SdtMessages_Message>[] messages) {
+		return new Compression(path, configuration, messages);
+	}
+
+	/**
+	 * Decompresses an archive file to the specified path based on configuration parameters.
+	 *
+	 * @param file Path to the archive file to decompress
+	 * @param path Target path for the decompressed files
+	 * @param configuration Configuration parameters for decompression
+	 * @param messages Collection to store output messages
+	 * @return Boolean indicating success or failure of decompression operation
+	 */
+	public static Boolean decompress(String file, String path, CompressionConfiguration configuration, GXBaseCollection<SdtMessages_Message>[] messages) {
+		File archiveFile = new File(file);
+		if (!archiveFile.exists()) {
+			log.error("{}{}", FILE_NOT_EXISTS, archiveFile.getAbsolutePath());
+			storageMessages(FILE_NOT_EXISTS + archiveFile.getAbsolutePath(), messages[0]);
 			return false;
 		}
-		if (toCompress.length() == 0L){
+		if (archiveFile.length() == 0L) {
 			log.error("{}{}", EMPTY_FILE, file);
 			storageMessages(EMPTY_FILE + file, messages[0]);
 			return false;
 		}
+		int fileCount;
 		try {
-			int fileCount = CompressionUtils.countArchiveEntries(toCompress);
-			if (fileCount > MAX_FILES_ALLOWED) {
-				log.error(TOO_MANY_FILES + fileCount);
-				storageMessages(TOO_MANY_FILES + fileCount, messages[0]);
+			fileCount = CompressionUtils.countArchiveEntries(archiveFile);
+			if (fileCount <= 0) {
+				log.error("{}{}", EMPTY_FILE, file);
+				storageMessages(EMPTY_FILE + file, messages[0]);
 				return false;
 			}
 		} catch (Exception e) {
@@ -187,54 +219,86 @@ public class GXCompressor implements IGXCompressor {
 			return false;
 		}
 		try {
-			if (!CompressionUtils.isArchiveSafe(toCompress, path)) {
+			File targetDir = new File(path);
+			if (path.contains("/../") || path.contains("../") || path.contains("/..")) {
+				log.error(DIRECTORY_ATTACK + path);
+				storageMessages(DIRECTORY_ATTACK + path, messages[0]);
+				return false;
+			}
+			if (configuration.targetDirectory != null && !configuration.targetDirectory.isEmpty()) {
+				File configTargetDir = new File(configuration.targetDirectory);
+				String normalizedTargetPath = targetDir.getCanonicalPath();
+				String normalizedConfigPath = configTargetDir.getCanonicalPath();
+
+				if (!normalizedTargetPath.startsWith(normalizedConfigPath)) {
+					log.error(DIRECTORY_ATTACK + path);
+					storageMessages(DIRECTORY_ATTACK + path, messages[0]);
+					return false;
+				}
+			}
+		} catch (IOException e) {
+			log.error("Error validating target path: {}", path, e);
+			storageMessages("Error validating target path: " + path, messages[0]);
+			return false;
+		}
+		try {
+			if (!CompressionUtils.isArchiveSafe(archiveFile, path)) {
 				log.error(ZIP_SLIP_DETECTED + file);
 				storageMessages(ZIP_SLIP_DETECTED + file, messages[0]);
 				return false;
 			}
 		} catch (Exception e) {
-			log.error(PROCESSING_ERROR+ file, e);
+			log.error(PROCESSING_ERROR + file, e);
 			storageMessages(PROCESSING_ERROR + file, messages[0]);
 			return false;
 		}
-
 		try {
-			long totalSizeEstimate = CompressionUtils.estimateDecompressedSize(toCompress);
-
-			if (totalSizeEstimate > MAX_DECOMPRESSED_SIZE) {
-				log.error("Potential zip bomb detected. Estimated size: " + totalSizeEstimate + " bytes");
-				storageMessages("Potential zip bomb detected. Operation aborted for security reasons.", messages[0]);
-				if (!toCompress.delete()) {
-					log.error("Failed to delete suspicious archive: {}", file);
+			if (configuration.maxIndividualFileSize > -1) {
+				long maxFileSize = CompressionUtils.getMaxFileSize(archiveFile);
+				if (maxFileSize > configuration.maxIndividualFileSize) {
+					log.error(BIG_SINGLE_FILE + maxFileSize + " bytes");
+					storageMessages(BIG_SINGLE_FILE + maxFileSize + " bytes", messages[0]);
+					return false;
 				}
-				return false;
+			}
+			if (configuration.maxCombinedFileSize > -1) {
+				long totalSizeEstimate = CompressionUtils.estimateDecompressedSize(archiveFile);
+				if (totalSizeEstimate > configuration.maxCombinedFileSize) {
+					log.error(MAX_FILESIZE_EXCEEDED + configuration.maxCombinedFileSize);
+					storageMessages(MAX_FILESIZE_EXCEEDED + configuration.maxCombinedFileSize, messages[0]);
+					return false;
+				}
 			}
 		} catch (Exception e) {
 			log.error(ARCHIVE_SIZE_ESTIMATION_ERROR + file, e);
-			storageMessages(ARCHIVE_SIZE_ESTIMATION_ERROR+ file, messages[0]);
+			storageMessages("Error estimating archive size: " + file, messages[0]);
 			return false;
 		}
-
-		String extension = getExtension(toCompress.getName());
+		if (configuration.maxFileCount > -1 && fileCount > configuration.maxFileCount) {
+			log.error(TOO_MANY_FILES + configuration.maxFileCount);
+			storageMessages(TOO_MANY_FILES + configuration.maxFileCount, messages[0]);
+			return false;
+		}
+		String extension = getExtension(archiveFile.getName());
 		try {
 			switch (extension.toLowerCase()) {
 				case "zip":
-					decompressZip(toCompress, path);
+					decompressZip(archiveFile, path);
 					break;
 				case "7z":
-					decompress7z(toCompress, path);
+					decompress7z(archiveFile, path);
 					break;
 				case "tar":
-					decompressTar(toCompress, path);
+					decompressTar(archiveFile, path);
 					break;
 				case "gz":
-					decompressGzip(toCompress, path);
+					decompressGzip(archiveFile, path);
 					break;
 				case "jar":
-					decompressJar(toCompress, path);
+					decompressJar(archiveFile, path);
 					break;
 				default:
-					log.error("{}" + UNSUPPORTED_FORMAT, extension);
+					log.error(extension + UNSUPPORTED_FORMAT);
 					storageMessages(extension + UNSUPPORTED_FORMAT, messages[0]);
 					return false;
 			}

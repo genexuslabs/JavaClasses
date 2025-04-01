@@ -4,164 +4,301 @@ import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
 import org.apache.commons.compress.archivers.sevenz.SevenZFile;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.file.Files;
 import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static org.apache.commons.io.FileUtils.getFile;
 import static org.apache.commons.io.FilenameUtils.getExtension;
 
+
 public class CompressionUtils {
 
-	public static int countArchiveEntries(File toCompress) throws IOException {
-		String ext = getExtension(toCompress.getName()).toLowerCase();
-		switch (ext) {
+	/**
+	 * Counts the number of entries in an archive file.
+	 *
+	 * @param archiveFile The archive file to analyze
+	 * @return The number of entries in the archive
+	 * @throws IOException If an I/O error occurs
+	 */
+	public static int countArchiveEntries(File archiveFile) throws IOException {
+		String extension = getExtension(archiveFile.getName()).toLowerCase();
+		int count = 0;
+
+		switch (extension) {
 			case "zip":
-			case "jar": {
-				int count = 0;
-				try (ZipFile zip = new ZipFile(toCompress)) {
-					Enumeration<? extends ZipEntry> entries = zip.entries();
-					while (entries.hasMoreElements()) {
-						entries.nextElement();
-						count++;
-					}
+				try (ZipFile zipFile = new ZipFile(archiveFile)) {
+					return zipFile.size();
 				}
-				return count;
-			}
-			case "tar": {
-				int count = 0;
-				try (FileInputStream fis = new FileInputStream(toCompress);
-					 TarArchiveInputStream tais = new TarArchiveInputStream(fis)) {
-					while (tais.getNextEntry() != null) {
-						count++;
-					}
-				}
-				return count;
-			}
-			case "7z": {
-				int count = 0;
-				try (SevenZFile sevenZFile = getSevenZFile(toCompress.getAbsolutePath())) {
+			case "7z":
+				try (SevenZFile sevenZFile = getSevenZFile(archiveFile.getAbsolutePath())) {
 					while (sevenZFile.getNextEntry() != null) {
 						count++;
 					}
+					return count;
 				}
-				return count;
-			}
+			case "tar":
+				try (TarArchiveInputStream tarStream = new TarArchiveInputStream(Files.newInputStream(archiveFile.toPath()))) {
+					while (tarStream.getNextEntry() != null) {
+						count++;
+					}
+					return count;
+				}
 			case "gz":
 				return 1;
-		}
-		return 0;
-	}
-	public static boolean isArchiveSafe(File toCompress, String targetDir) throws IOException {
-		String ext = getExtension(toCompress.getName()).toLowerCase();
-		File target = new File(targetDir).getCanonicalFile();
-		switch (ext) {
-			case "zip":
 			case "jar":
-				try (ZipFile zip = new ZipFile(toCompress)) {
-					Enumeration<? extends ZipEntry> entries = zip.entries();
+				try (JarFile jarFile = new JarFile(archiveFile)) {
+					return jarFile.size();
+				}
+			default:
+				throw new IllegalArgumentException("Unsupported archive format: " + extension);
+		}
+	}
+
+	/**
+	 * Checks if an archive is safe to extract (no path traversal/zip slip).
+	 *
+	 * @param archiveFile The archive file to check
+	 * @param targetDir The target directory for extraction
+	 * @return true if the archive is safe, false otherwise
+	 * @throws IOException If an I/O error occurs
+	 */
+	public static boolean isArchiveSafe(File archiveFile, String targetDir) throws IOException {
+		String extension = getExtension(archiveFile.getName()).toLowerCase();
+		File targetPath = new File(targetDir).getCanonicalFile();
+
+		switch (extension) {
+			case "zip":
+				try (ZipFile zipFile = new ZipFile(archiveFile)) {
+					Enumeration<? extends ZipEntry> entries = zipFile.entries();
 					while (entries.hasMoreElements()) {
 						ZipEntry entry = entries.nextElement();
-						File entryFile = new File(target, entry.getName());
-						if (!entryFile.getCanonicalPath().startsWith(target.getCanonicalPath() + File.separator)) {
-							return false;
-						}
-					}
-				}
-				return true;
-			case "tar":
-				try (FileInputStream fis = new FileInputStream(toCompress);
-					 TarArchiveInputStream tais = new TarArchiveInputStream(fis)) {
-					TarArchiveEntry entry;
-					while ((entry = tais.getNextEntry()) != null) {
-						File entryFile = new File(target, entry.getName());
-						if (!entryFile.getCanonicalPath().startsWith(target.getCanonicalPath() + File.separator)) {
+						File destinationFile = new File(targetPath, entry.getName()).getCanonicalFile();
+						if (!destinationFile.getPath().startsWith(targetPath.getPath() + File.separator) &&
+							!destinationFile.getPath().equals(targetPath.getPath())) {
 							return false;
 						}
 					}
 				}
 				return true;
 			case "7z":
-				try (SevenZFile sevenZFile = getSevenZFile(toCompress.getAbsolutePath())) {
+				try (SevenZFile sevenZFile = getSevenZFile(archiveFile.getAbsolutePath())) {
 					SevenZArchiveEntry entry;
 					while ((entry = sevenZFile.getNextEntry()) != null) {
-						File entryFile = new File(target, entry.getName());
-						if (!entryFile.getCanonicalPath().startsWith(target.getCanonicalPath() + File.separator)) {
+						File destinationFile = new File(targetPath, entry.getName()).getCanonicalFile();
+						if (!destinationFile.getPath().startsWith(targetPath.getPath() + File.separator) &&
+							!destinationFile.getPath().equals(targetPath.getPath())) {
+							return false;
+						}
+					}
+				}
+				return true;
+			case "tar":
+				try (TarArchiveInputStream tarStream = new TarArchiveInputStream(Files.newInputStream(archiveFile.toPath()))) {
+					TarArchiveEntry entry;
+					while ((entry = tarStream.getNextEntry()) != null) {
+						File destinationFile = new File(targetPath, entry.getName()).getCanonicalFile();
+						if (!destinationFile.getPath().startsWith(targetPath.getPath() + File.separator) &&
+							!destinationFile.getPath().equals(targetPath.getPath())) {
 							return false;
 						}
 					}
 				}
 				return true;
 			case "gz":
+				String fileName = archiveFile.getName();
+				if (fileName.endsWith(".gz") && fileName.length() > 3) {
+					String extractedName = fileName.substring(0, fileName.length() - 3);
+					File destinationFile = new File(targetPath, extractedName).getCanonicalFile();
+					return destinationFile.getPath().startsWith(targetPath.getPath() + File.separator) ||
+						destinationFile.getPath().equals(targetPath.getPath());
+				}
 				return true;
+			case "jar":
+				try (JarFile jarFile = new JarFile(archiveFile)) {
+					Enumeration<JarEntry> entries = jarFile.entries();
+					while (entries.hasMoreElements()) {
+						JarEntry entry = entries.nextElement();
+						File destinationFile = new File(targetPath, entry.getName()).getCanonicalFile();
+						if (!destinationFile.getPath().startsWith(targetPath.getPath() + File.separator) &&
+							!destinationFile.getPath().equals(targetPath.getPath())) {
+							return false;
+						}
+					}
+				}
+				return true;
+			default:
+				throw new IllegalArgumentException("Unsupported archive format: " + extension);
 		}
-		return true;
 	}
 
-	private static final long MAX_PERMITTED_SIZE = 1024L * 1024 * 1024 * 15; //15GB
+	/**
+	 * Gets the maximum file size of any entry in the archive.
+	 *
+	 * @param archiveFile The archive file to analyze
+	 * @return The size of the largest file in the archive
+	 * @throws IOException If an I/O error occurs
+	 */
+	public static long getMaxFileSize(File archiveFile) throws IOException {
+		String extension = getExtension(archiveFile.getName()).toLowerCase();
+		long maxSize = 0;
 
-	public static long estimateDecompressedSize(File archive) throws IOException {
-		String ext = getExtension(archive.getName()).toLowerCase();
+		switch (extension) {
+			case "zip":
+				try (ZipFile zipFile = new ZipFile(archiveFile)) {
+					Enumeration<? extends ZipEntry> entries = zipFile.entries();
+					while (entries.hasMoreElements()) {
+						ZipEntry entry = entries.nextElement();
+						if (!entry.isDirectory() && entry.getSize() > maxSize) {
+							maxSize = entry.getSize();
+						}
+					}
+				}
+				break;
+			case "7z":
+				try (SevenZFile sevenZFile = getSevenZFile(archiveFile.getAbsolutePath())) {
+					SevenZArchiveEntry entry;
+					while ((entry = sevenZFile.getNextEntry()) != null) {
+						if (!entry.isDirectory() && entry.getSize() > maxSize) {
+							maxSize = entry.getSize();
+						}
+					}
+				}
+				break;
+			case "tar":
+				try (TarArchiveInputStream tarStream = new TarArchiveInputStream(Files.newInputStream(archiveFile.toPath()))) {
+					TarArchiveEntry entry;
+					while ((entry = tarStream.getNextEntry()) != null) {
+						if (!entry.isDirectory() && entry.getSize() > maxSize) {
+							maxSize = entry.getSize();
+						}
+					}
+				}
+				break;
+			case "gz":
+				try (GZIPInputStream gzStream = new GZIPInputStream(Files.newInputStream(archiveFile.toPath()))) {
+					byte[] buffer = new byte[8192];
+					long size = 0;
+					int n;
+					while ((n = gzStream.read(buffer)) != -1) {
+						size += n;
+					}
+					maxSize = size;
+				}
+				break;
+			case "jar":
+				try (JarFile jarFile = new JarFile(archiveFile)) {
+					Enumeration<JarEntry> entries = jarFile.entries();
+					while (entries.hasMoreElements()) {
+						JarEntry entry = entries.nextElement();
+						if (!entry.isDirectory() && entry.getSize() > maxSize) {
+							maxSize = entry.getSize();
+						}
+					}
+				}
+				break;
+			default:
+				throw new IllegalArgumentException("Unsupported archive format: " + extension);
+		}
+
+		return maxSize;
+	}
+
+	/**
+	 * Estimates the total size of all files after decompression.
+	 *
+	 * @param archiveFile The archive file to analyze
+	 * @return The estimated total size after decompression
+	 * @throws IOException If an I/O error occurs
+	 */
+	public static long estimateDecompressedSize(File archiveFile) throws IOException {
+		String extension = getExtension(archiveFile.getName()).toLowerCase();
 		long totalSize = 0;
 
-		switch (ext) {
+		switch (extension) {
 			case "zip":
-			case "jar":
-				try (ZipFile zip = new ZipFile(archive)) {
-					Enumeration<? extends ZipEntry> entries = zip.entries();
+				try (ZipFile zipFile = new ZipFile(archiveFile)) {
+					Enumeration<? extends ZipEntry> entries = zipFile.entries();
 					while (entries.hasMoreElements()) {
 						ZipEntry entry = entries.nextElement();
 						if (!entry.isDirectory()) {
 							long size = entry.getSize();
-							totalSize += (size > 0) ? size : (archive.length() * 5);
-							if (totalSize > MAX_PERMITTED_SIZE) {
-								return totalSize;
-							}
-						}
-					}
-				}
-				break;
-			case "tar":
-				try (FileInputStream fis = new FileInputStream(archive);
-					 TarArchiveInputStream tais = new TarArchiveInputStream(fis)) {
-					TarArchiveEntry entry;
-					while ((entry = tais.getNextEntry()) != null) {
-						if (!entry.isDirectory()) {
-							totalSize += entry.getSize();
-							if (totalSize > MAX_PERMITTED_SIZE) {
-								return totalSize;
+							if (size != -1) {
+								totalSize += size;
+							} else {
+								totalSize += entry.getCompressedSize() * 3;
 							}
 						}
 					}
 				}
 				break;
 			case "7z":
-				try (SevenZFile sevenZFile = getSevenZFile(archive.getAbsolutePath())) {
+				try (SevenZFile sevenZFile = getSevenZFile(archiveFile.getAbsolutePath())) {
 					SevenZArchiveEntry entry;
 					while ((entry = sevenZFile.getNextEntry()) != null) {
 						if (!entry.isDirectory()) {
 							totalSize += entry.getSize();
-							if (totalSize > MAX_PERMITTED_SIZE) {
-								return totalSize;
-							}
+						}
+					}
+				}
+				break;
+			case "tar":
+				try (TarArchiveInputStream tarStream = new TarArchiveInputStream(Files.newInputStream(archiveFile.toPath()))) {
+					TarArchiveEntry entry;
+					while ((entry = tarStream.getNextEntry()) != null) {
+						if (!entry.isDirectory()) {
+							totalSize += entry.getSize();
 						}
 					}
 				}
 				break;
 			case "gz":
-				try (FileInputStream fis = new FileInputStream(archive);
-					 GzipCompressorInputStream ignored = new GzipCompressorInputStream(fis)) {
-					totalSize = archive.length() * 10;
+				try (RandomAccessFile raf = new RandomAccessFile(archiveFile, "r")) {
+					raf.seek(raf.length() - 4);
+					int b4 = raf.read();
+					int b3 = raf.read();
+					int b2 = raf.read();
+					int b1 = raf.read();
+					if (b1 != -1 && b2 != -1 && b3 != -1 && b4 != -1) {
+						long size = ((long) b1 << 24) | ((long) b2 << 16) | ((long) b3 << 8) | b4;
+						if (size > 0) {
+							totalSize = size;
+						} else {
+							totalSize = archiveFile.length() * 5;
+						}
+					} else {
+						totalSize = archiveFile.length() * 5;
+					}
+				} catch (Exception e) {
+					totalSize = archiveFile.length() * 5;
 				}
 				break;
-		}
-		if (totalSize < archive.length()) {
-			totalSize = archive.length() * 5;
+			case "jar":
+				try (JarFile jarFile = new JarFile(archiveFile)) {
+					Enumeration<JarEntry> entries = jarFile.entries();
+					while (entries.hasMoreElements()) {
+						JarEntry entry = entries.nextElement();
+						if (!entry.isDirectory()) {
+							long size = entry.getSize();
+							if (size != -1) {
+								totalSize += size;
+							} else {
+								totalSize += entry.getCompressedSize() * 3;
+							}
+						}
+					}
+				}
+				break;
+			default:
+				throw new IllegalArgumentException("Unsupported archive format: " + extension);
 		}
 
 		return totalSize;
