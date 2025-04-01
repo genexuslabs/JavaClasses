@@ -53,7 +53,7 @@ public class TestCompression {
 	@Test
 	public void testCompressToZip() {
 		String outputPath = new File(testDirectory, "output.zip").getAbsolutePath();
-		Boolean result = GXCompressor.compress(files, outputPath, -1, msgs);
+		Boolean result = GXCompressor.compress(files, outputPath, new CompressionConfiguration(), msgs);
 		assertTrue(result);
 		assertTrue(new File(outputPath).exists());
 	}
@@ -61,7 +61,7 @@ public class TestCompression {
 	@Test
 	public void testCompressToSevenZ() {
 		String outputPath = new File(testDirectory, "output.7z").getAbsolutePath();
-		Boolean result = GXCompressor.compress(files, outputPath, -1, msgs);
+		Boolean result = GXCompressor.compress(files, outputPath, new CompressionConfiguration(), msgs);
 		assertTrue(result);
 		assertTrue(new File(outputPath).exists());
 	}
@@ -69,7 +69,7 @@ public class TestCompression {
 	@Test
 	public void testCompressToTar() {
 		String outputPath = new File(testDirectory, "output.tar").getAbsolutePath();
-		Boolean result = GXCompressor.compress(files, outputPath, -1, msgs);
+		Boolean result = GXCompressor.compress(files, outputPath, new CompressionConfiguration(), msgs);
 		assertTrue(result);
 		assertTrue(new File(outputPath).exists());
 	}
@@ -79,7 +79,7 @@ public class TestCompression {
 		String outputPath = new File(testDirectory, "output.gz").getAbsolutePath();
 		ArrayList<String> singleFileCollection = new ArrayList<>();
 		singleFileCollection.add(files.get(0));
-		Boolean result = GXCompressor.compress(singleFileCollection, outputPath, -1, msgs);
+		Boolean result = GXCompressor.compress(singleFileCollection, outputPath, new CompressionConfiguration(), msgs);
 		assertTrue(result);
 		assertTrue(new File(outputPath).exists());
 	}
@@ -87,7 +87,7 @@ public class TestCompression {
 	@Test
 	public void testCompressToJar() {
 		String outputPath = new File(testDirectory, "output.jar").getAbsolutePath();
-		Boolean result = GXCompressor.compress(files, outputPath, -1, msgs);
+		Boolean result = GXCompressor.compress(files, outputPath, new CompressionConfiguration(), msgs);
 		assertTrue(result);
 		assertTrue(new File(outputPath).exists());
 	}
@@ -95,7 +95,7 @@ public class TestCompression {
 	@Test
 	public void testUnsupportedFormat() {
 		String outputPath = new File(testDirectory, "output.unknown").getAbsolutePath();
-		Boolean result = GXCompressor.compress(files, outputPath, -1, msgs);
+		Boolean result = GXCompressor.compress(files, outputPath, new CompressionConfiguration(), msgs);
 		assertFalse(result);
 	}
 }

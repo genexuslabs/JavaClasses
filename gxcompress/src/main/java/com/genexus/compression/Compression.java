@@ -2,29 +2,27 @@ package com.genexus.compression;
 
 import com.genexus.GXBaseCollection;
 import com.genexus.SdtMessages_Message;
-import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 
 public class Compression {
-	private static final Logger log = org.apache.logging.log4j.LogManager.getLogger(Compression.class);
 
-	private String absolutePath;
-	private long maxCombinedFileSize;
+	private String destinationPath;
+	private CompressionConfiguration compressionConfiguration;
 	private GXBaseCollection<SdtMessages_Message>[] messages;
 	private ArrayList<String> filesToCompress;
 
 	public Compression() {}
 
-	public Compression(String absolutePath, long maxCombinedFileSize, GXBaseCollection<SdtMessages_Message>[] messages) {
-		this.absolutePath = absolutePath;
-		this.maxCombinedFileSize = maxCombinedFileSize;
+	public Compression(String destinationPath, CompressionConfiguration configuration, GXBaseCollection<SdtMessages_Message>[] messages) {
+		this.destinationPath = destinationPath;
+		this.compressionConfiguration = configuration;
 		this.messages = messages;
 		filesToCompress = new ArrayList<>();
 	}
 
-	public void setAbsolutePath(String path) {
-		this.absolutePath = path;
+	public void setDestinationPath(String path) {
+		this.destinationPath = path;
 	}
 
 	public void addElement(String filePath) {
@@ -32,11 +30,11 @@ public class Compression {
 	}
 
 	public Boolean save() {
-		return GXCompressor.compress(filesToCompress, absolutePath, maxCombinedFileSize, messages);
+		return GXCompressor.compress(filesToCompress, destinationPath, compressionConfiguration, messages);
 	}
 
 	public void clear() {
-		absolutePath = "";
+		destinationPath = "";
 		filesToCompress = new ArrayList<>();
 	}
 }
