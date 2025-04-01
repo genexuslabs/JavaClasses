@@ -11,50 +11,21 @@ import com.genexus.*;
 
 import com.artech.base.services.AndroidContext;
 import com.genexus.util.Codecs;
-import com.genexus.util.Encryption;
 
-import json.org.json.IJsonFormattable;
-import json.org.json.JSONArray;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public abstract class HttpContext extends HttpAjaxContext implements IHttpContext
 {
-    private static String GX_AJAX_REQUEST_HEADER = "GxAjaxRequest";
-
     protected boolean PortletMode = false;
-    protected boolean AjaxCallMode = false;
-    protected boolean AjaxEventMode = false;
-	 protected boolean FullAjaxMode = false;
 	 public boolean drawingGrid = false;
 	
     public void setPortletMode()
     { PortletMode = true; }
 
-    public void setAjaxCallMode()
-    { AjaxCallMode = true; }
-
-	 public void setFullAjaxMode()
-	 { FullAjaxMode = true; }
-
-	 public void setAjaxEventMode()
-    { AjaxEventMode = true; }
-
     public boolean isPortletMode()
     { return PortletMode; }
-
-    public boolean isAjaxCallMode()
-    { return AjaxCallMode; }
-
-    public boolean isAjaxEventMode()
-    { return AjaxEventMode; }
-
-	 public boolean isFullAjaxMode()
-	 { return FullAjaxMode; }
-
-    public boolean isAjaxRequest()
-    { return isAjaxCallMode() || isAjaxEventMode() || isPortletMode() || isFullAjaxMode(); }
-    
 
     public byte wbGlbDoneStart = 0;
 				//nSOAPErr
@@ -386,7 +357,7 @@ public abstract class HttpContext extends HttpAjaxContext implements IHttpContex
 
 		public void pushCurrentUrl()
 		{
-			if (getRequestMethod().equals("GET") && !isAjaxRequest())
+			if (getRequestMethod().equals("GET"))
 			{
 				String sUrl = getRequestNavUrl().trim();
 				String topUrl = getNavigationHelper().peekUrl(sUrl);
@@ -410,106 +381,9 @@ public abstract class HttpContext extends HttpAjaxContext implements IHttpContex
         {
             addPrintReportCommand(getResource(reportFile), printerRule);
         }
-
-        public boolean isGxAjaxRequest()
-        {
-            if (this.isMultipartContent())
-            {
-                return true;
-            }
-        //    String gxHeader = getRequest().getHeader(GX_AJAX_REQUEST_HEADER);
-       //     if (gxHeader != null && gxHeader.trim().length() > 0)
-        //    {
-         //       return true;
-        //    }
-            return false;
-        }
-
-        private String getAjaxEncryptionKey()
-        {
-            if(getSessionValue(Encryption.AJAX_ENCRYPTION_KEY) == null)
-            {
-                if (!recoverEncryptionKey())
-                {
-                    webPutSessionValue(Encryption.AJAX_ENCRYPTION_KEY, Encryption.getRijndaelKey());
-                }
-            }
-            return (String)getSessionValue(Encryption.AJAX_ENCRYPTION_KEY);
-        }
-        
-        private boolean recoverEncryptionKey()
-        {
-            if (getSessionValue(Encryption.AJAX_ENCRYPTION_KEY) == null)
-            {
-           //     String clientKey = getRequest().getHeader(Encryption.AJAX_SECURITY_TOKEN);
-          //      if (clientKey != null && clientKey.trim().length() > 0)
-            //    {
-            //        boolean candecrypt[]=new boolean[1];
-            //        clientKey = Encryption.decryptRijndael(clientKey, Encryption.GX_AJAX_PRIVATE_KEY, candecrypt);
-             //       if (candecrypt[0])
-            //        {
-              //      	webPutSessionValue(Encryption.AJAX_ENCRYPTION_KEY, clientKey);
-             //       	return true;
-              //      }else
-              //      {
-              //      	return false;
-              //      }
-              //  }
-            }
-            return false;
-        }
-
-        public String DecryptAjaxCall(String encrypted)
-        {            
-            validEncryptedParm = false;
-			if (isGxAjaxRequest())
-			{
-				String key = getAjaxEncryptionKey();
-				boolean candecrypt[] = new boolean[1];
-				String decrypted = Encryption.decryptRijndael(encrypted, key, candecrypt);
-				validEncryptedParm = candecrypt[0];
-				if (!validEncryptedParm)
-				{
-					sendResponseStatus(403, "Forbidden action");
-					return "";
-				}
-				if (validEncryptedParm && !getRequestMethod().equalsIgnoreCase("post"))
-				{
-					setQueryString(decrypted);
-					decrypted = GetNextPar();
-				}
-				return decrypted;
-			}            
-            return encrypted;
-        }
-
-        public boolean IsValidAjaxCall()
-        {
-            return IsValidAjaxCall(true);
-        }
-
-        public boolean IsValidAjaxCall(boolean insideAjaxCall)
-        {         
-			if (insideAjaxCall && !validEncryptedParm)
-			{
-				sendResponseStatus(403, "Forbidden action");
-				return false;
-			}
-			else if (!insideAjaxCall && isGxAjaxRequest())
-			{
-				sendResponseStatus(440, "Session timeout");
-				return false;
-			}            
-            return true;
-        }
         
         public void sendResponseStatus(int statusCode, String statusDescription)
         {
-            //getResponse().setStatus(statusCode);
-            //try { getResponse().sendError(statusCode, statusDescription); }
-            //catch(Exception e) {}
-            //setAjaxCallMode();
-            //disableOutput();
         }
         
         private void sendReferer()
@@ -579,28 +453,11 @@ public abstract class HttpContext extends HttpAjaxContext implements IHttpContex
             }
             return sRet;
         }
-        
-        public void SendAjaxEncryptionKey()
-        {
-             if(!encryptionKeySended)
-             {
-                 String key = getAjaxEncryptionKey();
-                 ajax_rsp_assign_hidden(Encryption.AJAX_ENCRYPTION_KEY, key);
-                 ajax_rsp_assign_hidden(Encryption.AJAX_ENCRYPTION_IV, Encryption.GX_AJAX_PRIVATE_IV);
-
-                 try
-                 {
-                    ajax_rsp_assign_hidden(Encryption.AJAX_SECURITY_TOKEN, Encryption.encryptRijndael(key, Encryption.GX_AJAX_PRIVATE_KEY));
-                 }
-                 catch(Exception exc) {}
-                 encryptionKeySended = true;
-             }
-        }
 
         public void SendServerCommands()
         {
             try {
-                if (!isAjaxRequest() && commands.getCount() > 0)
+                if (commands.getCount() > 0)
                 {
                     HiddenValues.put("GX_SRV_COMMANDS", commands.getJSONArray());
                 }
@@ -613,7 +470,7 @@ public abstract class HttpContext extends HttpAjaxContext implements IHttpContex
         {
             try
             {
-                IJsonFormattable jsonObj;
+                Object jsonObj;
                 if (jsonStr.startsWith("["))
                     jsonObj = new JSONArray(jsonStr);
                 else

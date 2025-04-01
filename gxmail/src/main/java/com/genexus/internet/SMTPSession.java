@@ -23,7 +23,7 @@ import java.util.TimeZone;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import org.apache.commons.codec.binary.Base64OutputStream;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;

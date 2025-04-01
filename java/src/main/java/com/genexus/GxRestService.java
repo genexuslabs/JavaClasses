@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import com.genexus.diagnostics.core.ILogger;
+import com.genexus.diagnostics.core.LogManager;
 import com.genexus.internet.MsgList;
 import com.genexus.security.GXResult;
 import com.genexus.security.GXSecurityProvider;
@@ -13,13 +14,13 @@ import com.genexus.servlet.http.IHttpServletRequest;
 import com.genexus.servlet.http.IHttpServletResponse;
 import com.genexus.webpanels.HttpContextWeb;
 
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONException;
+import com.genexus.json.JSONObjectWrapper;
 
 abstract public class GxRestService extends GXObjectBase {
 	private static ILogger logger = null;
 	
-	protected JSONObject errorJson;
+	protected JSONObjectWrapper errorJson;
 	protected boolean error = false;
 	protected String gamError;
 	protected boolean forbidden = false;
@@ -80,7 +81,7 @@ abstract public class GxRestService extends GXObjectBase {
 
 	private void initLogger(IServletContext myContext) {
 		if (logger == null) {
-			logger = com.genexus.specific.java.LogManager.initialize(myContext.getRealPath("/"), GxRestService.class);
+			logger = LogManager.getLogger(GxRestService.class);
 		}
 	}
 
@@ -116,10 +117,10 @@ abstract public class GxRestService extends GXObjectBase {
 	{
 		try
 		{
-			JSONObject obj = new JSONObject();
+			JSONObjectWrapper obj = new JSONObjectWrapper();
 			obj.put("code", code);
 			obj.put("message", message);
-			errorJson = new JSONObject();
+			errorJson = new JSONObjectWrapper();
 			errorJson.put("error", obj);
 		}
 		catch(JSONException e)

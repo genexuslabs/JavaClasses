@@ -6,11 +6,7 @@ import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import com.genexus.cloud.serverless.*;
-import com.genexus.cloud.serverless.model.EventMessageProperty;
-import com.genexus.cloud.serverless.model.EventMessage;
-import com.genexus.cloud.serverless.model.EventMessageResponse;
-import com.genexus.cloud.serverless.model.EventMessageSourceType;
-import com.genexus.cloud.serverless.model.EventMessages;
+import com.genexus.cloud.serverless.model.*;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -64,7 +60,7 @@ public class LambdaSQSHandler extends LambdaBaseEventHandler implements RequestH
 		String errorMessage;
 
 		try {
-			EventMessageResponse response = dispatchEvent(msgs, Helper.toJSONString(sqsEvent));
+			EventMessageResponse response = dispatchEvent(msgs, JSONHelper.toJSONString(sqsEvent));
 			wasHandled = !response.hasFailed();
 			errorMessage = response.getErrorMessage();
 		} catch (Exception e) {
