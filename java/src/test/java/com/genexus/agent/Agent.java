@@ -2,6 +2,7 @@ package com.genexus.agent;
 
 import com.genexus.*;
 import com.genexus.util.CallResult;
+import com.genexus.util.ChatResult;
 import com.genexus.util.saia.OpenAIResponse;
 import java.util.ArrayList;
 
@@ -61,10 +62,9 @@ public final  class Agent extends GXProcedure
 			message.setRole("user");
 			message.setContent("Que me puedes contar de la ciudad que te pedi el clima previamente?");
 			messages.add(message);
-			AV5OutputVariable = callAgent( "The weatherman", true, Gxproperties, messages, new CallResult()) ;
-			System.out.print(AV5OutputVariable);
-			while (!isStreamEOF()) {
-				System.out.print(readChunk());
+			ChatResult chatResult = chatAgent( "The weatherman", Gxproperties, messages, new CallResult()) ;
+			while (chatResult.hasMoreData()) {
+				System.out.print(chatResult.hasMoreData());
 			}
 		}
 		else if (AV3Parameter1.equals("toolcall")) {
@@ -88,10 +88,9 @@ public final  class Agent extends GXProcedure
 			message.setRole("user");
 			message.setContent("Necesito nombre y descripcion del producto 1779");
 			messages.add(message);
-			AV5OutputVariable = callAgent( "ProductInfo", true, Gxproperties, messages, new CallResult()) ;
-			System.out.print(AV5OutputVariable);
-			while (!isStreamEOF()) {
-				System.out.print(readChunk());
+			ChatResult chatResult = chatAgent( "ProductInfo", Gxproperties, messages, new CallResult()) ;
+			while (chatResult.hasMoreData()) {
+				System.out.print(chatResult.hasMoreData());
 			}
 		}
 		else {

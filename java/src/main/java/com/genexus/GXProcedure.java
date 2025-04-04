@@ -274,6 +274,11 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 		return callAgent(agent, properties, messages, result);
 	}
 
+	protected ChatResult chatAgent(String agent, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result) {
+		callAgent(agent, true, properties, messages, result);
+		return new ChatResult(this, agent, properties, messages, result, client);
+	}
+
 	protected String callAgent(String agent, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result) {
 		return callAgent(agent, false, properties, messages, result);
 	}
@@ -299,12 +304,12 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 				}
 			}
 		} else if (client.getStatusCode() == 200) {
-			return readChunk(agent, properties, messages, result);
+			return "";
 		}
 		return "";
 	}
 
-	private String processNotChunkedResponse(String agent, boolean stream, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result, ArrayList<OpenAIResponse.ToolCall> toolCalls) {
+	public String processNotChunkedResponse(String agent, boolean stream, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result, ArrayList<OpenAIResponse.ToolCall> toolCalls) {
 		for (OpenAIResponse.ToolCall tollCall : toolCalls) {
 			processToolCall(tollCall, messages);
 		}
@@ -325,37 +330,5 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 		toolCallMessage.setContent(result);
 		toolCallMessage.setToolCallId(toolCall.getId());
 		messages.add(toolCallMessage);
-	}
-
-	protected String readChunk() {
-		return readChunk(null, null, null, null);
-	}
-
-	protected String readChunk(String agent, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result) {
-		String data = client.readChunk();
-		if (data.isEmpty())
-			return "";
-		int index = data.indexOf("data:") + "data:".length();
-		String chunkJson = data.substring(index).trim();
-		try {
-			JSONObject jsonResponse = new JSONObject(chunkJson);
-			OpenAIResponse chunkResponse = new ObjectMapper().readValue(jsonResponse.toString(), OpenAIResponse.class);
-			OpenAIResponse.Choice choise = chunkResponse.getChoices().get(0);
-			if (choise.getFinishReason() != null && choise.getFinishReason().equals("tool_calls") && agent != null) {
-				messages.add(choise.getMessage());
-				return processNotChunkedResponse(agent, true, properties, messages, result, choise.getMessage().getToolCalls());
-			}
-			String chunkString = choise.getDelta().getContent();
-			if (chunkString == null)
-				return "";
-			return chunkString;
-		}
-		catch (Exception e) {
-			return "";
-		}
-	}
-
-	protected boolean isStreamEOF() {
-		return client.getEof();
 	}
 }
