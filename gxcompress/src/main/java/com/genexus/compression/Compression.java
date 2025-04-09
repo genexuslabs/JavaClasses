@@ -36,5 +36,7 @@ public class Compression {
 	public void clear() {
 		destinationPath = "";
 		filesToCompress = new ArrayList<>();
+		messages = null;
+		compressionConfiguration = new CompressionConfiguration();
 	}
 }
