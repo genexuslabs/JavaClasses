@@ -7,11 +7,4 @@ public class CompressionConfiguration {
 	public String targetDirectory = "";
 
 	public CompressionConfiguration() {}
-
-	public CompressionConfiguration(long maxCombinedFileSize, long maxIndividualFileSize, int maxFileCount, String targetDirectory) {
-		this.maxCombinedFileSize = maxCombinedFileSize;
-		this.maxIndividualFileSize = maxIndividualFileSize;
-		this.maxFileCount = maxFileCount;
-		this.targetDirectory = (targetDirectory != null && !targetDirectory.isEmpty()) ? targetDirectory : "";
-	}
 }
