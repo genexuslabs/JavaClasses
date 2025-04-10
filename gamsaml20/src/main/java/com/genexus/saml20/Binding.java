@@ -1,5 +1,7 @@
 package com.genexus.saml20;
 
+import com.genexus.saml20.utils.SamlAssertionUtils;
+
 @SuppressWarnings("unused")
 public abstract class Binding {
 
@@ -22,4 +24,6 @@ public abstract class Binding {
 	abstract String getRoles(String name);
 
 	abstract String getLogoutAssertions();
+
+	abstract boolean isLogout();
 }
