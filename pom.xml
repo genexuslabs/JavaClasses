@@ -111,7 +111,13 @@
 		<module>gxcloudstorage-tests</module>
         <module>gxobservability</module>
         <module>gxcloudstorage-awss3-v2</module>
-        <module>gamsaml20</module>
+		<module>securityapicommons</module>
+        <module>gxjwt</module>
+        <module>gxcryptography</module>
+        <module>gxxmlsignature</module>
+        <module>gxsftp</module>
+        <module>gxftps</module>
+		<module>gamsaml20</module>
     </modules>
 
 	<dependencies>
