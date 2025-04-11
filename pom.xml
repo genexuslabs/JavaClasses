@@ -28,6 +28,7 @@
 		<software.azure.cosmos.version>4.42.0</software.azure.cosmos.version>
 		<log4j.version>2.21.1</log4j.version>
         <io.opentelemetry.version>1.28.0</io.opentelemetry.version>
+        <org.bouncycastle.version>1.78.1</org.bouncycastle.version>
 	</properties>
 
 	<organization>
@@ -109,15 +110,15 @@
 		<module>gxcloudstorage-azureblob</module>
 		<module>gxcloudstorage-ibmcos</module>
 		<module>gxcloudstorage-tests</module>
-        <module>gxobservability</module>
-        <module>gxcloudstorage-awss3-v2</module>
+    <module>gxobservability</module>
+    <module>gxcloudstorage-awss3-v2</module>
 		<module>gamsaml20</module>
 		<module>securityapicommons</module>
-        <module>gxjwt</module>
-        <module>gxcryptography</module>
-        <module>gxxmlsignature</module>
-        <module>gxsftp</module>
-        <module>gxftps</module>
+    <module>gxjwt</module>
+    <module>gxcryptography</module>
+    <module>gxxmlsignature</module>
+    <module>gxsftp</module>
+    <module>gxftps</module>
     </modules>
 
 	<dependencies>
