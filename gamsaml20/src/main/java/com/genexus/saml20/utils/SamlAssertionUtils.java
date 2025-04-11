@@ -49,6 +49,10 @@ public class SamlAssertionUtils {
 		}
 	}
 
+	public static boolean isLogout(Document xmlDoc){
+		return xmlDoc.getDocumentElement().getLocalName().equals("LogoutResponse");
+	}
+
 	public static Document createLogoutRequest(String id, String issuer, String nameID, String sessionIndex, String destination) {
 		logger.trace("createLogoutRequest");
 

@@ -65,5 +65,9 @@ public class PostBinding extends Binding {
 		return SamlAssertionUtils.getRoles(this.xmlDoc, name);
 	}
 
+	public boolean isLogout(){
+		return SamlAssertionUtils.isLogout(this.xmlDoc);
+	}
+
 	// EXTERNAL OBJECT PUBLIC METHODS  - END
 }

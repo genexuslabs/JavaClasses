@@ -99,6 +99,10 @@ public class RedirectBinding extends Binding {
 		return "";
 	}
 
+	public boolean isLogout(){
+		return SamlAssertionUtils.isLogout(this.xmlDoc);
+	}
+
 	// EXTERNAL OBJECT PUBLIC METHODS  - END
 
 	private boolean verifySignature_internal(String certPath, String certPass, String certAlias) {
