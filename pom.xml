@@ -113,6 +113,7 @@
 		<module>gxcache-redis</module>
 		<module>gxcache-memcached</module>
 		<module>gxobservability</module>
+		<module>gamsaml20</module>
         <module>securityapicommons</module>
         <module>gxjwt</module>
         <module>gxcryptography</module>
@@ -121,10 +122,8 @@
         <module>gxsftp</module>
         <module>gxftps</module>
         <module>gxcompress</module>
-		<module>gamsaml20</module>
         <module>gamutils</module>
 		<module>gamtotp</module>
-		
     </modules>
 
 	<dependencies>
