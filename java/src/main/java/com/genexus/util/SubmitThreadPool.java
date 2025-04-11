@@ -75,7 +75,7 @@ public class SubmitThreadPool
 		}
 
 		// Si llego aqui es porque tengo utilizados todos los thread, asi que encolo el submit
-		submitQueue.addElement(new Object[]{proc, new Integer(id), parameterPacker.toByteArray()});
+		submitQueue.addElement(new Object[]{proc, new Integer(id), parameterPacker.toByteArray(), ctx});
 	}
 
 	protected synchronized static void incRemainingSubmits()
@@ -206,7 +206,7 @@ class SubmitThread extends Thread
 			{ // Aqui debo sincronizar pues se setea la variable inUse
 				if(nextSubmit != null)
 				{
-					setProc((ISubmitteable)nextSubmit[0], ((Integer)nextSubmit[1]).intValue(), (Object[])new GXParameterUnpacker((byte[])nextSubmit[2]).readObject(), context);
+					setProc((ISubmitteable)nextSubmit[0], ((Integer)nextSubmit[1]).intValue(), (Object[])new GXParameterUnpacker((byte[])nextSubmit[2]).readObject(), (ModelContext) nextSubmit[3]);
 				}
 				else
 				{
