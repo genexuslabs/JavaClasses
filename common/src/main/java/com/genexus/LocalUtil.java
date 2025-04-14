@@ -1,5 +1,6 @@
 package com.genexus;
 
+import java.math.RoundingMode;
 import java.util.*;
 import java.text.*;
 
@@ -1713,6 +1714,7 @@ public class LocalUtil
 		{
 			DecimalFormat df = (DecimalFormat) numberFormat;
 			df.applyPattern(pictureToNumberFormat(withoutSuffixPicture));
+			df.setRoundingMode(RoundingMode.HALF_UP);
 			if ( CommonUtil.in(picture, '.') || CommonUtil.in(picture, ','))
 			{
 				formatted = alignAndPad(df.format(value), '0', withoutSuffixPicture, floating, numberFormat, originalPicture);

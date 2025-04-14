@@ -204,6 +204,13 @@ public class TestCommonUtil {
 		result = ui.getLocalUtil().format(bigDecimalValue, picture);
 		Assert.assertEquals(expectedResult, result);
 
+		bigDecimalValue = new BigDecimal(2.5);
+		picture = "Z,ZZZ,ZZZ,ZZZ,ZZZ,ZZ9";
+		expectedResult = "                    3";
+
+		result = ui.getLocalUtil().format(bigDecimalValue, picture);
+		Assert.assertEquals(expectedResult, result);
+
 		bigDecimalValue = new BigDecimal(-12.5);
 		picture = "$Z9.9";
 		expectedResult = "-$12.5";
