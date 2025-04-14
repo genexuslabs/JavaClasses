@@ -327,6 +327,7 @@ public class ForEachCursor extends Cursor implements IForEachCursor
 	    public void setBLOBFile(int index, String fileName) throws SQLException {}
 	    public void setBLOBFile(int index, String fileName, boolean isMultiMedia) throws SQLException {}
 		public void setBLOBFile(int index, String fileName, boolean isMultiMedia, boolean downloadContet) throws SQLException {}
+		public void setEmbedding(int index, Float[] value) throws SQLException {}
 
 		public void setVarchar(int index, String value, int length, boolean allowsNull) throws SQLException {}
 	    public void setLongVarchar(int index, String value, boolean allowsNull) throws SQLException {}
@@ -339,6 +340,8 @@ public class ForEachCursor extends Cursor implements IForEachCursor
 				boolean isLike = false;
 		    if(value.equals("like"))
 		    	isLike = true;
+			else if (value.equals("Distance"))
+				value = ds.getDistanceFunction();
 		    else if(!value.equals("=") && !value.equals(">") && !value.equals(">=")
 		            && !value.equals("<=") && !value.equals("<") && !value.equals("<>"))
 		    {
