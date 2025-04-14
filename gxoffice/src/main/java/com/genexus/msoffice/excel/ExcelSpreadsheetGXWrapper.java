@@ -11,6 +11,7 @@ import com.genexus.msoffice.excel.exception.ExcelException;
 import com.genexus.msoffice.excel.exception.ExcelTemplateNotFoundException;
 import com.genexus.msoffice.excel.poi.xssf.ExcelCells;
 import com.genexus.msoffice.excel.poi.xssf.ExcelWorksheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ExcelSpreadsheetGXWrapper implements IGXError {
     private static final ILogger logger = LogManager.getLogger(ExcelSpreadsheetGXWrapper.class);
@@ -333,4 +334,8 @@ public class ExcelSpreadsheetGXWrapper implements IGXError {
         _errDescription = arg0;
     }
 
+	public XSSFWorkbook getUnderlyingObject(){
+		return _document.getUnderlyingObject();
+
+	}
 }
