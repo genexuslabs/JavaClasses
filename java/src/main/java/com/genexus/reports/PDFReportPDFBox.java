@@ -244,9 +244,9 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 
 			if (cornerRadioBL == 0 && cornerRadioBR == 0 && cornerRadioTL == 0 && cornerRadioTR == 0 && styleBottom == 0 && styleLeft == 0 && styleRight == 0 && styleTop == 0) {
 				if (pen > 0)
-					cb.setStrokingColor(foreRed, foreGreen, foreBlue);
+					cb.setStrokingColor(foreRed / 255f, foreGreen / 255f, foreBlue / 255f);
 				else
-					cb.setStrokingColor(backRed, backGreen, backBlue);
+					cb.setStrokingColor(backRed / 255f, backGreen / 255f, backBlue / 255f);
 
 				cb.addRect(x1, y1, x2 - x1, y2 - y1);
 
@@ -280,7 +280,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				cRadioBR = Math.max(0, Math.min(cRadioBR, max / 2));
 
 				if (backMode != 0) {
-					cb.setStrokingColor(backRed, backGreen, backBlue);
+					cb.setStrokingColor(backRed / 255f, backGreen / 255f, backBlue / 255f);
 					cb.setLineWidth(0);
 					roundRectangle(cb, x1, y1, w, h,
 						cRadioTL, cRadioTR,
@@ -290,7 +290,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					cb.setLineWidth(penAux);
 				}
 				if (pen > 0) {
-					cb.setStrokingColor(foreRed, foreGreen, foreBlue);
+					cb.setStrokingColor(foreRed / 255f, foreGreen / 255f, foreBlue / 255f);
 					drawRectangle(cb, x1, y1, w, h,
 						styleTop, styleBottom, styleRight, styleLeft,
 						cRadioTL, cRadioTR,
@@ -324,7 +324,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			y2 = pageSize.getUpperRightY() - topAux - topMargin -bottomMargin;
 
 			cb.saveGraphicsState();
-			cb.setStrokingColor(foreRed, foreGreen, foreBlue);
+			cb.setStrokingColor(foreRed / 255f, foreGreen / 255f, foreBlue / 255f);
 			cb.setLineWidth(widthAux);
 
 			if (lineCapProjectingSquare) {
