@@ -270,7 +270,7 @@ public class GXCompressor {
 				}
 			}
 		} catch (Exception e) {
-			log.error(ARCHIVE_SIZE_ESTIMATION_ERROR + file, e);
+			log.error(ARCHIVE_SIZE_ESTIMATION_ERROR + "{}", file, e);
 			storageMessages("Error estimating archive size: " + file, messages[0]);
 			return false;
 		}
@@ -672,10 +672,18 @@ public class GXCompressor {
 		if (!archive.exists() || !archive.isFile()) {
 			throw new IllegalArgumentException("The archive file does not exist or is not a file.");
 		}
+
 		File targetDir = new File(directory);
-		if (!targetDir.exists() || !targetDir.isDirectory()) {
-			throw new IllegalArgumentException("The specified directory does not exist or is not a directory.");
+		if (!targetDir.exists()) {
+			if (!targetDir.mkdirs()) {
+				String error = "Failed to create target directory: " + directory;
+				log.error(error);
+				throw new IOException(error);
+			}
+		} else if (!targetDir.isDirectory()) {
+			throw new IllegalArgumentException("The specified path exists but is not a directory.");
 		}
+
 		File tempFile = File.createTempFile("decompressed_", ".tmp");
 		try (
 			FileInputStream fis = new FileInputStream(archive);
@@ -697,6 +705,7 @@ public class GXCompressor {
 				isTar = true;
 			}
 		} catch (IOException ignored) {}
+
 		if (isTar) {
 			try (FileInputStream tarFis = new FileInputStream(tempFile);
 				 TarArchiveInputStream tarInput = new TarArchiveInputStream(tarFis)) {
@@ -706,12 +715,16 @@ public class GXCompressor {
 					File outFile = new File(targetDir, entry.getName());
 					if (entry.isDirectory()) {
 						if (!outFile.exists() && !outFile.mkdirs()) {
-							throw new IOException("Failed to create directory: " + outFile);
+							String error = "Failed to create directory: " + outFile;
+							log.error(error);
+							throw new IOException(error);
 						}
 					} else {
 						File parent = outFile.getParentFile();
 						if (!parent.exists() && !parent.mkdirs()) {
-							throw new IOException("Failed to create directory: " + parent);
+							String error = "Failed to create parent directory: " + parent;
+							log.error(error);
+							throw new IOException(error);
 						}
 						try (FileOutputStream os = new FileOutputStream(outFile)) {
 							byte[] buffer = new byte[8192];
@@ -742,6 +755,7 @@ public class GXCompressor {
 				}
 			}
 		}
+
 		if (!tempFile.delete()) {
 			tempFile.deleteOnExit();
 		}
