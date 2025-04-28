@@ -220,7 +220,7 @@ public class SamlAssertionUtils {
 
 		for (int i = 0; i < nodes.getLength(); i++) {
 			if (nodes.item(i).getAttributes().getNamedItem("Name").getNodeValue().equals(name)) {
-				String value = getAttributeContent(nodes.item(i));
+				String value = nodes.item(i).getTextContent() == null ? getAttributeContent(nodes.item(i)): nodes.item(i).getTextContent();
 				logger.debug(MessageFormat.format("getLoginAttribute -- attribute name: {0}, value: {1}", name, value));
 				return value;
 			}
