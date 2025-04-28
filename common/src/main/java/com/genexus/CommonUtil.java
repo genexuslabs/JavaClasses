@@ -1599,6 +1599,10 @@ public final class CommonUtil
 	{
 		Date fnDate    = resetTime(fn);
 		Date todayDate = resetTime(today);
+		Date sentinel  = newNullDate();
+		if (fnDate.equals(sentinel) || todayDate.equals(sentinel)) {
+			return 0;
+		}
 
 		int age = 0;
 		int	multiplier = 1;
