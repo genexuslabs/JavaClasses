@@ -208,48 +208,21 @@ public class POP3SessionJavaMail implements GXInternetConstants, IPOP3Session {
       	semicolons. This is a hack to consider the case where the list of addresses is separated with semicolons which produces
       	an exception because the InternetAddress class used by jakarta mail to parse the addresses expects the list to be separated by commas
        */
-			try {
-				String[] addresses = message.getHeader(rType.toString());
-				if (addresses != null && addresses.length > 0) {
-					for (String address : addresses) {
-						String[] splitAddresses = address.split(";");
-						for (String splitAddress : splitAddresses) {
+			String[] addresses = message.getHeader(rType.toString());
+			if (addresses != null && addresses.length > 0) {
+				for (String address: addresses) {
+					String[] splitAddresses = address.replace(";", ",").split(",");
+					for (String splitAddress: splitAddresses) {
+						try {
 							InternetAddress ia = new InternetAddress(splitAddress);
 							mailRecipient.addNew(ia.getPersonal(), ia.getAddress());
+						} catch (AddressException ae) {
+							logger.info("Invalid email address" + splitAddress);
 						}
 					}
-				}
-				return mailRecipient;
-
-			} catch (Exception originalException) {
-				try {
-					String[] headers = message.getHeader(rType.toString());
-					if (headers != null) {
-						for (String header : headers) {
-							try {
-								String normalized = header.replace(";", ",").trim();
-								int garbageIndex = normalized.indexOf('(');
-								if (garbageIndex != -1) {
-									normalized = normalized.substring(0, garbageIndex).trim();
-								}
-								normalized = normalized.replaceAll(",\\s*$", "");
-
-								InternetAddress[] parsedAddresses = InternetAddress.parse(normalized, true);
-								for (InternetAddress ia : parsedAddresses) {
-									mailRecipient.addNew(ia.getPersonal(), ia.getAddress());
-								}
-							} catch (AddressException ae) {
-								logger.error("Failed to parse email addresses from fallback header: " + header, ae);
-								throw ae;
-							}
-						}
-					}
-					return mailRecipient;
-				} catch (Exception fallbackException) {
-					logger.error("Failed to extract email addresses.", fallbackException);
-					throw new MessagingException("Unable to extract recipient addresses from headers", fallbackException);
 				}
 			}
+			return mailRecipient;
 		}
 	}
 
