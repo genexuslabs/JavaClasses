@@ -9,4 +9,5 @@ import java.util.Map;
 public interface IExtensionJSONSerialization {
 	Iterator<Map.Entry<String, Object>> getJSONObjectIterator(JSONObjectWrapper obj);
 	JSONTokener getJSONTokener(String s);
+	public Map<String, Object> getJSONObjectMap(JSONObjectWrapper obj);
 }
