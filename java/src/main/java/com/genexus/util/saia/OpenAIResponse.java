@@ -104,6 +104,8 @@ public class OpenAIResponse {
 
 		@JsonIgnore
 		public String getStringContent() { return ((StringContent) content).getValue(); }
+		@JsonIgnore
+		public StructuredContent getStructuredContent() {return (StructuredContent)content;}
 		public Content getContent() { return content; }
 		@JsonIgnore
 		public void setStringContent(String content) { this.content = new StringContent(content); }
@@ -162,7 +164,7 @@ public class OpenAIResponse {
 
 		private String type;
 		private String text;
-		private ImageUrl image_url;
+		private ImageUrl imageURL;
 
 		public String getType() {
 			return type;
@@ -180,18 +182,20 @@ public class OpenAIResponse {
 			this.text = text;
 		}
 
-		public ImageUrl getImage_url() {
-			return image_url;
+		public ImageUrl getImageUrl() {
+			return imageURL;
 		}
 
-		public void setImage_url(ImageUrl image_url) {
-			this.image_url = image_url;
+		public void setImageUrl(ImageUrl imageURL) {
+			this.imageURL = imageURL;
 		}
 
+		@JsonInclude(JsonInclude.Include.NON_NULL)
 		public static class ImageUrl {
 			public ImageUrl() {}
 
 			private String url;
+			private String detail;
 
 			public String getUrl() {
 				return url;
@@ -199,6 +203,14 @@ public class OpenAIResponse {
 
 			public void setUrl(String url) {
 				this.url = url;
+			}
+
+			public String getDetail() {
+				return detail;
+			}
+			
+			public void setDetail(String detail) {
+				this.detail = detail;
 			}
 		}
 	}
