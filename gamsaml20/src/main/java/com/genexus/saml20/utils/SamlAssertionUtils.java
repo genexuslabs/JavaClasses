@@ -105,7 +105,6 @@ public class SamlAssertionUtils {
 		String samlp = "urn:oasis:names:tc:SAML:2.0:protocol";
 		String saml = "urn:oasis:names:tc:SAML:2.0:assertion";
 
-		PolicyFormat pf = PolicyFormat.getPolicyFormat(policyFormat);
 
 		DocumentBuilder builder = createDocumentBuilder();
 
@@ -126,8 +125,7 @@ public class SamlAssertionUtils {
 		request.appendChild(issuerElem);
 
 		org.w3c.dom.Element policy = doc.createElementNS(samlp, "saml2p:NameIDPolicy");
-		assert pf != null;
-		policy.setAttribute("Format", PolicyFormat.getPolicyFormatXmlValue(pf));
+		policy.setAttribute("Format", policyFormat.trim());
 		policy.setAttribute("AllowCreate", "true");
 		policy.setAttribute("SPNameQualifier", spname);
 		request.appendChild(policy);
