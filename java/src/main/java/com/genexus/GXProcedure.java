@@ -297,7 +297,7 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 			for (OpenAIResponse.Choice element : aiResponse.getChoices()) {
 				String finishReason = element.getFinishReason();
 				if (finishReason.equals("stop"))
-					return element.getMessage().getContent();
+					return element.getMessage().getStringContent();
 				if (finishReason.equals("tool_calls")) {
 					messages.add(element.getMessage());
 					return processNotChunkedResponse(agent, stream, properties, messages, result, element.getMessage().getToolCalls());
@@ -327,7 +327,7 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 		}
 		OpenAIResponse.Message toolCallMessage = new OpenAIResponse.Message();
 		toolCallMessage.setRole("tool");
-		toolCallMessage.setContent(result);
+		toolCallMessage.setStringContent(result);
 		toolCallMessage.setToolCallId(toolCall.getId());
 		messages.add(toolCallMessage);
 	}

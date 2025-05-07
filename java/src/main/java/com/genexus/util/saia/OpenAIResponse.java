@@ -1,7 +1,11 @@
 package com.genexus.util.saia;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.util.ArrayList;
 
@@ -85,7 +89,9 @@ public class OpenAIResponse {
 		private String role;
 
 		@JsonProperty("content")
-		private String content;
+		@JsonSerialize(using = ContentSerializer.class)
+		@JsonDeserialize(using = ContentDeserializer.class)
+		private Content content;
 
 		@JsonProperty("tool_calls")
 		private ArrayList<ToolCall> toolCalls;
@@ -96,14 +102,105 @@ public class OpenAIResponse {
 		public String getRole() { return role; }
 		public void setRole(String role) { this.role = role; }
 
-		public String getContent() { return content; }
-		public void setContent(String content) { this.content = content; }
+		@JsonIgnore
+		public String getStringContent() { return ((StringContent) content).getValue(); }
+		public Content getContent() { return content; }
+		@JsonIgnore
+		public void setStringContent(String content) { this.content = new StringContent(content); }
+		@JsonIgnore
+		public void setStructuredContent(StructuredContent content) { this.content = content; }
+		public void setContent(Content content) { this.content = content; }
 
 		public ArrayList<ToolCall> getToolCalls() { return toolCalls; }
 		public void setToolCalls(ArrayList<ToolCall> toolCalls) { this.toolCalls = toolCalls; }
 
 		public String getToolCallId() { return toolCallId; }
 		public void setToolCallId(String toolCallId) { this.toolCallId = toolCallId; }
+	}
+
+	public interface Content { }
+
+	public static class StringContent implements Content {
+		public StringContent() {}
+
+		private String value;
+
+		public StringContent(String value) {
+			this.value = value;
+		}
+
+		public String getValue() {
+			return value;
+		}
+
+		public void setValue(String value) {
+			this.value = value;
+		}
+	}
+
+	public static class StructuredContent implements Content {
+		public StructuredContent() {}
+
+		private ArrayList<StructuredContentItem> items;
+
+		public StructuredContent(ArrayList<StructuredContentItem> items) {
+			this.items = items;
+		}
+
+		public ArrayList<StructuredContentItem> getItems() {
+			return items;
+		}
+
+		public void setItems(ArrayList<StructuredContentItem> items) {
+			this.items = items;
+		}
+	}
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	public static class StructuredContentItem {
+		public StructuredContentItem() {}
+
+		private String type;
+		private String text;
+		private ImageUrl image_url;
+
+		public String getType() {
+			return type;
+		}
+
+		public void setType(String type) {
+			this.type = type;
+		}
+
+		public String getText() {
+			return text;
+		}
+
+		public void setText(String text) {
+			this.text = text;
+		}
+
+		public ImageUrl getImage_url() {
+			return image_url;
+		}
+
+		public void setImage_url(ImageUrl image_url) {
+			this.image_url = image_url;
+		}
+
+		public static class ImageUrl {
+			public ImageUrl() {}
+
+			private String url;
+
+			public String getUrl() {
+				return url;
+			}
+
+			public void setUrl(String url) {
+				this.url = url;
+			}
+		}
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)

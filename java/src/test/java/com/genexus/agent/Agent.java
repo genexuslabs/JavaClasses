@@ -37,30 +37,30 @@ public final  class Agent extends GXProcedure
 		if (AV3Parameter1.equals("chat")) {
 			OpenAIResponse.Message message = new OpenAIResponse.Message();
 			message.setRole("user");
-			message.setContent("Dime el clima en Lima - Peru");
+			message.setStringContent("Dime el clima en Lima - Peru");
 			messages.add(message);
 			message = new OpenAIResponse.Message();
 			message.setRole("assistant");
-			message.setContent("El clima actual en Lima, Perú, es soleado con una temperatura de 20.9°C (69.6°F). La dirección del viento es del suroeste (SSW) a 15.1 km/h (9.4 mph), y la humedad relativa es del 68%. La presión atmosférica es de 1013 mb. La visibilidad es de 10 km y el índice UV es de 12.5.");
+			message.setStringContent("El clima actual en Lima, Perú, es soleado con una temperatura de 20.9°C (69.6°F). La dirección del viento es del suroeste (SSW) a 15.1 km/h (9.4 mph), y la humedad relativa es del 68%. La presión atmosférica es de 1013 mb. La visibilidad es de 10 km y el índice UV es de 12.5.");
 			messages.add(message);
 			message = new OpenAIResponse.Message();
 			message.setRole("user");
-			message.setContent("Que me puedes contar de la ciudad que te pedi el clima previamente?");
+			message.setStringContent("Que me puedes contar de la ciudad que te pedi el clima previamente?");
 			messages.add(message);
 			AV5OutputVariable = callAgent( "The weatherman", Gxproperties, messages, new CallResult()) ;
 		}
 		else if (AV3Parameter1.equals("chat_stream")) {
 			OpenAIResponse.Message message = new OpenAIResponse.Message();
 			message.setRole("user");
-			message.setContent("Dime el clima en Lima - Peru");
+			message.setStringContent("Dime el clima en Lima - Peru");
 			messages.add(message);
 			message = new OpenAIResponse.Message();
 			message.setRole("assistant");
-			message.setContent("El clima actual en Lima, Perú, es soleado con una temperatura de 20.9°C (69.6°F). La dirección del viento es del suroeste (SSW) a 15.1 km/h (9.4 mph), y la humedad relativa es del 68%. La presión atmosférica es de 1013 mb. La visibilidad es de 10 km y el índice UV es de 12.5.");
+			message.setStringContent("El clima actual en Lima, Perú, es soleado con una temperatura de 20.9°C (69.6°F). La dirección del viento es del suroeste (SSW) a 15.1 km/h (9.4 mph), y la humedad relativa es del 68%. La presión atmosférica es de 1013 mb. La visibilidad es de 10 km y el índice UV es de 12.5.");
 			messages.add(message);
 			message = new OpenAIResponse.Message();
 			message.setRole("user");
-			message.setContent("Que me puedes contar de la ciudad que te pedi el clima previamente?");
+			message.setStringContent("Que me puedes contar de la ciudad que te pedi el clima previamente?");
 			messages.add(message);
 			ChatResult chatResult = chatAgent( "The weatherman", Gxproperties, messages, new CallResult()) ;
 			while (chatResult.hasMoreData()) {
@@ -70,23 +70,23 @@ public final  class Agent extends GXProcedure
 		else if (AV3Parameter1.equals("toolcall")) {
 			OpenAIResponse.Message message = new OpenAIResponse.Message();
 			message.setRole("user");
-			message.setContent("Necesito nombre y descripcion del producto 1779");
+			message.setStringContent("Necesito nombre y descripcion del producto 1779");
 			messages.add(message);
 			AV5OutputVariable = callAgent( "ProductInfo", Gxproperties, messages, new CallResult()) ;
 			message = new OpenAIResponse.Message();
 			message.setRole("assistant");
-			message.setContent(AV5OutputVariable);
+			message.setStringContent(AV5OutputVariable);
 			messages.add(message);
 			message = new OpenAIResponse.Message();
 			message.setRole("user");
-			message.setContent("Quiero que traduzcas la descripcion del producto que me habias enviado previamente");
+			message.setStringContent("Quiero que traduzcas la descripcion del producto que me habias enviado previamente");
 			messages.add(message);
 			AV5OutputVariable = callAgent( "ProductInfo", Gxproperties, messages, new CallResult()) ;
 		}
 		else if (AV3Parameter1.equals("toolcall_stream")) {
 			OpenAIResponse.Message message = new OpenAIResponse.Message();
 			message.setRole("user");
-			message.setContent("Necesito nombre y descripcion del producto 1779");
+			message.setStringContent("Necesito nombre y descripcion del producto 1779");
 			messages.add(message);
 			ChatResult chatResult = chatAgent( "ProductInfo", Gxproperties, messages, new CallResult()) ;
 			while (chatResult.hasMoreData()) {

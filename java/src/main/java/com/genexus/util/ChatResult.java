@@ -46,7 +46,7 @@ public class ChatResult {
 				messages.add(choise.getMessage());
 				return agentProcedure.processNotChunkedResponse(agent, true, properties, messages, result, choise.getMessage().getToolCalls());
 			}
-			String chunkString = choise.getDelta().getContent();
+			String chunkString = choise.getDelta().getStringContent();
 			if (chunkString == null)
 				return "";
 			return chunkString;
