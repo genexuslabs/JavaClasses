@@ -164,7 +164,9 @@ public class OpenAIResponse {
 
 		private String type;
 		private String text;
-		private ImageUrl imageURL;
+		private String image_url;
+		private String filename;
+		private String file_data;
 
 		public String getType() {
 			return type;
@@ -182,36 +184,28 @@ public class OpenAIResponse {
 			this.text = text;
 		}
 
-		public ImageUrl getImageUrl() {
-			return imageURL;
+		public String getImage_url() {
+			return image_url;
 		}
 
-		public void setImageUrl(ImageUrl imageURL) {
-			this.imageURL = imageURL;
+		public void setImage_url(String imageURL) {
+			this.image_url = imageURL;
 		}
 
-		@JsonInclude(JsonInclude.Include.NON_NULL)
-		public static class ImageUrl {
-			public ImageUrl() {}
+		public String getFilename() {
+			return filename;
+		}
 
-			private String url;
-			private String detail;
+		public void setFilename(String filename) {
+			this.filename = filename;
+		}
 
-			public String getUrl() {
-				return url;
-			}
+		public String getFile_data() {
+			return file_data;
+		}
 
-			public void setUrl(String url) {
-				this.url = url;
-			}
-
-			public String getDetail() {
-				return detail;
-			}
-			
-			public void setDetail(String detail) {
-				this.detail = detail;
-			}
+		public void setFile_data(String file_data) {
+			this.file_data = file_data;
 		}
 	}
 
