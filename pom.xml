@@ -121,9 +121,10 @@
         <module>gxsftp</module>
         <module>gxftps</module>
         <module>gxcompress</module>
+		<module>gamsaml20</module>
         <module>gamutils</module>
 		<module>gamtotp</module>
-		<module>gamsaml20</module>
+		
     </modules>
 
 	<dependencies>
