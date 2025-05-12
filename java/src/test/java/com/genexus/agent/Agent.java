@@ -49,6 +49,26 @@ public final  class Agent extends GXProcedure
 			messages.add(message);
 			AV5OutputVariable = callAgent( "The weatherman", Gxproperties, messages, new CallResult()) ;
 		}
+		else if (AV3Parameter1.equals("eval_image")) {
+			OpenAIResponse.StructuredContent content = new OpenAIResponse.StructuredContent();
+			ArrayList<OpenAIResponse.StructuredContentItem> items = new ArrayList<>();
+			OpenAIResponse.StructuredContentItem contentItem = new OpenAIResponse.StructuredContentItem();
+			contentItem.setType("text");
+			contentItem.setText("De que se trata esta imagen");
+			items.add(contentItem);
+			OpenAIResponse.StructuredContentItem contentItem1 = new OpenAIResponse.StructuredContentItem();
+			contentItem1.setType("image_url");
+			OpenAIResponse.StructuredContentItem.ImageUrl imageURL = new OpenAIResponse.StructuredContentItem.ImageUrl();
+			imageURL.setUrl("https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg");
+			contentItem1.setImage_url(imageURL);
+			items.add(contentItem1);
+			content.setItems(items);
+			OpenAIResponse.Message message = new OpenAIResponse.Message();
+			message.setRole("user");
+			message.setStructuredContent(content);
+			messages.add(message);
+			AV5OutputVariable = callAgent( "The weatherman", Gxproperties, messages, new CallResult()) ;
+		}
 		else if (AV3Parameter1.equals("chat_stream")) {
 			OpenAIResponse.Message message = new OpenAIResponse.Message();
 			message.setRole("user");
