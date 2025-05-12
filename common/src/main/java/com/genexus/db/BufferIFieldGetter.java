@@ -85,6 +85,10 @@ public class BufferIFieldGetter implements IFieldGetter {
         return ((byte[]) value[columnIndex - 1]);
     }
 
+	public Float[] getGxembedding(int columnIndex) throws SQLException {
+		return ((Float[]) value[columnIndex - 1]);
+	}
+
     public java.sql.Date getDate(int columnIndex) throws SQLException {
         return ((java.sql.Date) value[columnIndex - 1]);
     }

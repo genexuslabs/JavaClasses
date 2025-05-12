@@ -1307,7 +1307,9 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 			}
 		}
 	}
-	
+
+	public void setEmbedding(int index, Float[] value) throws SQLException{
+	}
     public void setBinaryStream(int index, java.io.InputStream value, int length) throws SQLException
 	{
 		if	(DEBUG)
