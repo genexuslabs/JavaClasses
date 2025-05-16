@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 
 public class SQLAndroidSQLiteHelper 
 {
-	   private static String clazzFullName = "com.artech.layers.LocalUtils";
+	   private static String clazzFullName = "com.genexus.android.core.layers.LocalUtils";
 	   
 	   public static void beginTransaction()
 	    {
