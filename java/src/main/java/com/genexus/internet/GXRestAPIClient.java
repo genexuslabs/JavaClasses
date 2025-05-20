@@ -54,8 +54,8 @@ public class GXRestAPIClient {
 	public enum  DateFormat {
 		
 		DATE_FMT(1, "yyyy-MM-dd"),
-		DATETIME_FMT(3, "yyyy-MM-dd'T'HH:mm:ss"),
-		DATETIME_FMT_MS(4,  "yyyy-MM-dd'T'HH:mm:ss.SSS");
+		DATETIME_FMT(2, "yyyy-MM-dd'T'HH:mm:ss"),
+		DATETIME_FMT_MS(3,  "yyyy-MM-dd'T'HH:mm:ss.SSS");
 
 		private final int fmtId;
 		private final String fmtString;
