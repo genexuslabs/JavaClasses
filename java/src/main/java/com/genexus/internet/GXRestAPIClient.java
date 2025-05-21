@@ -336,7 +336,7 @@ public class GXRestAPIClient {
 			if (val.startsWith(DATE_NULL))
 				return CommonUtil.newNullDate();
 			else	
-				return new SimpleDateFormat(DateFormat.DATETIME_FMT.getFormat()).parse(val);
+				return new SimpleDateFormat(DateFormat.DATE_FMT.getFormat()).parse(val);
 		}
 		catch (ParseException e) {
 		    return CommonUtil.newNullDate();
