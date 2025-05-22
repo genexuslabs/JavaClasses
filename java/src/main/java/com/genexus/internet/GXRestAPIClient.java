@@ -54,8 +54,8 @@ public class GXRestAPIClient {
 	public enum  DateFormat {
 		
 		DATE_FMT(1, "yyyy-MM-dd"),
-		DATETIME_FMT(3, "yyyy-MM-dd'T'HH:mm:ss"),
-		DATETIME_FMT_MS(4,  "yyyy-MM-dd'T'HH:mm:ss.SSS");
+		DATETIME_FMT(2, "yyyy-MM-dd'T'HH:mm:ss"),
+		DATETIME_FMT_MS(3,  "yyyy-MM-dd'T'HH:mm:ss.SSS");
 
 		private final int fmtId;
 		private final String fmtString;
@@ -336,7 +336,7 @@ public class GXRestAPIClient {
 			if (val.startsWith(DATE_NULL))
 				return CommonUtil.newNullDate();
 			else	
-				return new SimpleDateFormat(DateFormat.DATETIME_FMT.getFormat()).parse(val);
+				return new SimpleDateFormat(DateFormat.DATE_FMT.getFormat()).parse(val);
 		}
 		catch (ParseException e) {
 		    return CommonUtil.newNullDate();
