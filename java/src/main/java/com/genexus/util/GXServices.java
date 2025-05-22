@@ -20,6 +20,8 @@ public class GXServices {
 	public static final String DATA_ACCESS_SERVICE = "DataAccess";
 	private static final String SERVICES_FILE = "CloudServices.config";
 	private static final String SERVICES_DEV_FILE = "CloudServices.dev.config";
+	private static final String STORAGE_DEFAULT_NAME = "STORAGE_DEFAULT_NAME";
+	private static final String STORAGE_DEFAULT_CLASSNAME = "STORAGE_DEFAULT_CLASSNAME";
 	private static GXServices instance;
 	private Hashtable<String, GXService> services = new Hashtable<String, GXService>();
 
@@ -124,6 +126,11 @@ public class GXServices {
 		result = reader.readType(1, "ClassName");
 		String className = new String(reader.getValue());
 
+		if (type.equals(STORAGE_SERVICE)) {
+			name = getEnvValue(STORAGE_DEFAULT_NAME, name);
+			className = getEnvValue(STORAGE_DEFAULT_CLASSNAME, className);
+		}
+
 		boolean allowMultiple = false;
 		reader.read();
 		if (reader.getName() == "AllowMultiple")
@@ -167,4 +174,11 @@ public class GXServices {
 		return services.get(name);
 	}
 
+	private String getEnvValue(String envVar, String defaultValue) {
+		String value = System.getenv(envVar);
+		if (value == null){
+			value = defaultValue;
+		}
+		return value;
+	}
 }
