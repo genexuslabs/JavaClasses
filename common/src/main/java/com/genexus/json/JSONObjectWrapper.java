@@ -44,7 +44,8 @@ public class JSONObjectWrapper extends JSONObject implements java.io.Serializabl
 	}
 
 	public JSONObjectWrapper(JSONObject jsonObject) {
-		this(jsonObject.toMap());
+		super(jsonObject.toString());
+		initMap();
 	}
 
 	private void initMap() {
