@@ -57,7 +57,7 @@ public class PostBinding extends Binding {
 
 	public String getLoginAttribute(String name) {
 		logger.trace("getLoginAttribute");
-		return SamlAssertionUtils.getLoginAttribute(this.xmlDoc, name);
+		return SamlAssertionUtils.getLoginAttribute(this.xmlDoc, name).trim();
 	}
 
 	public String getRoles(String name) {
