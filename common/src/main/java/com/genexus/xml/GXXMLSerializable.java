@@ -363,7 +363,7 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
 		}
 		else
 		{
-			if (obj instanceof JSONObject)
+			if ((obj instanceof JSONObject) && !(obj instanceof JSONObjectWrapper))
 				obj = new JSONObjectWrapper((JSONObject)obj);
 			Iterator objIterator = getJSONObjectIterator((JSONObjectWrapper) obj);
 			Iterator modifiedObjIterator = getFromJSONObjectOrderIterator(objIterator);
@@ -467,7 +467,7 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
                 for(int i = 0; i < jsonArray.length(); i++)
                 {
                     Object currObj = jsonArray.get(i);
-					if (currObj instanceof JSONObject)
+					if ((currObj instanceof JSONObject) && !(currObj instanceof JSONObjectWrapper))
 						currObj = new JSONObjectWrapper((JSONObject)currObj);
                     if(currObj instanceof JSONObjectWrapper || !gxColl.IsSimpleCollection())
                     {
