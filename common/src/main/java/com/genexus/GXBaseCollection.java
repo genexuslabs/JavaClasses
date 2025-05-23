@@ -233,7 +233,7 @@ public class GXBaseCollection<T extends GXXMLSerializable> extends GXSimpleColle
 			try
 			{
 				Object jsonObj = jsonArr.get(i);
-				if (jsonObj instanceof JSONObject)
+				if ((jsonObj instanceof JSONObject) && !(jsonObj instanceof JSONObjectWrapper))
 					jsonObj = new JSONObjectWrapper((JSONObject)jsonObj);
 				Class[] parTypes = new Class[] {};
 				Object[] arglist = new Object[] {};
