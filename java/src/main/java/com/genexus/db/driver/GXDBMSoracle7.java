@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.sql.*;
 import java.util.Date;
 
+import com.genexus.Application;
 import com.genexus.CommonUtil;
 
 public class GXDBMSoracle7 implements GXDBMS
@@ -127,7 +128,10 @@ public class GXDBMSoracle7 implements GXDBMS
 	
 	public java.util.Date serverDateTime(GXConnection con) throws SQLException
 	{
-		ResultSet rslt = con.getStatement("_ServerDT_", "SELECT SYSTIMESTAMP FROM DUAL", false).executeQuery();
+		String sqlSentence = "SELECT SYSTIMESTAMP FROM DUAL";
+		if (!Application.getClientPreferences().useTimezoneFix())
+			sqlSentence = "SELECT CAST(SYSTIMESTAMP AS TIMESTAMP) FROM DUAL";
+		ResultSet rslt = con.getStatement("_ServerDT_", sqlSentence, false).executeQuery();
 		
 		rslt.next();
 		Date value = rslt.getTimestamp(1);
