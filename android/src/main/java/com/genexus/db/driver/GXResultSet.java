@@ -770,6 +770,11 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		return result.getBytes(columnIndex);
 	}
 
+	public Float[] getGxembedding (int columnIndex) throws SQLException
+	{
+		return null;
+	}
+
 	public java.util.UUID getGUID(int columnIndex) throws SQLException
 	{
 		java.util.UUID value;
