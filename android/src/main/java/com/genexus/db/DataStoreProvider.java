@@ -2,6 +2,7 @@ package com.genexus.db;
 
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.genexus.*;
 import com.genexus.db.driver.DataSource;
@@ -164,10 +165,41 @@ public class DataStoreProvider extends DataStoreProviderBase implements IDataSto
 	{
             execute(cursorIdx, null, false);
 	}
+
+	static ReentrantLock lockExecute = new ReentrantLock();
+
 	public synchronized void execute(int cursorIdx, Object[] parms)
 	{
-            execute(cursorIdx, parms, true);
-        }
+		DataSource ds = getDataSourceNoException();
+		if(ds!=null && ds.jdbcIntegrity==false)
+		{
+			// If the JDBC integrity is disabled, SQLIte is in autocommit mode.
+			// we need to lock the execute method to avoid concurrency issues.
+			// for example, the postExecute method (select changes()) cause exception in Android SQLite.
+			AndroidLog.debug("execute cursorIdx : " + cursorIdx);
+			long timeStamp = System.currentTimeMillis();
+			lockExecute.lock();
+			long timeStampLock2 = System.currentTimeMillis();
+			AndroidLog.debug("START execute afterlock cursorIdx: " + cursorIdx + " Waiting time: " + (timeStampLock2 - timeStamp));
+			try
+			{
+        		// execute the cursor with the parameters.
+				execute(cursorIdx, parms, true);
+			}
+			finally
+			{
+				lockExecute.unlock();
+			}
+			long timeStamp2 = System.currentTimeMillis();
+			AndroidLog.debug("END execute cursorIdx: " + cursorIdx+ " Execute time: " + (timeStamp2 - timeStampLock2));
+		}	
+		else
+		{
+			// default case, we execute the cursor with the parameters.
+			execute(cursorIdx, parms, true);
+		}
+
+    }
 
 	private void execute(int cursorIdx, Object[] parms, boolean preExecute)
 	{
