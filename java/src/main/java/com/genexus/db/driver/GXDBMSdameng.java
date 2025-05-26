@@ -106,7 +106,7 @@ public class GXDBMSdameng implements GXDBMS {
 	}
 	
 	public java.util.Date serverDateTime(GXConnection con) throws SQLException {
-		ResultSet rslt = con.getStatement("_ServerDT_", "SELECT LOCALTIMESTAMP()", false).executeQuery();
+		ResultSet rslt = con.getStatement("_ServerDT_", "SELECT CAST(LOCALTIMESTAMP() AS TIMESTAMP)", false).executeQuery();
 		
 		rslt.next();
 		Date value = rslt.getTimestamp(1);
