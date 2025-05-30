@@ -173,14 +173,15 @@ public class DataStoreProvider extends DataStoreProviderBase implements IDataSto
 		DataSource ds = getDataSourceNoException();
 		if(ds!=null && ds.jdbcIntegrity==false)
 		{
-			// If the JDBC integrity is disabled, SQLIte is in autocommit mode.
+			// If the JDBC integrity is disabled (XBASE_TINT), SQLIte is in autocommit mode.
 			// we need to lock the execute method to avoid concurrency issues.
 			// for example, the postExecute method (select changes()) cause exception in Android SQLite.
+			// it happends with execute sql statements like from diferent threads, like using procedures submit.
 			AndroidLog.debug("execute cursorIdx : " + cursorIdx);
-			long timeStamp = System.currentTimeMillis();
+			long timeStampStart = System.currentTimeMillis();
 			lockExecute.lock();
-			long timeStampLock2 = System.currentTimeMillis();
-			AndroidLog.debug("START execute afterlock cursorIdx: " + cursorIdx + " Waiting time: " + (timeStampLock2 - timeStamp));
+			long timeStampLock = System.currentTimeMillis();
+			AndroidLog.debug("START execute afterlock cursorIdx: " + cursorIdx + " Waiting time ms: " + (timeStampLock - timeStampStart));
 			try
 			{
         		// execute the cursor with the parameters.
@@ -190,8 +191,8 @@ public class DataStoreProvider extends DataStoreProviderBase implements IDataSto
 			{
 				lockExecute.unlock();
 			}
-			long timeStamp2 = System.currentTimeMillis();
-			AndroidLog.debug("END execute cursorIdx: " + cursorIdx+ " Execute time: " + (timeStamp2 - timeStampLock2));
+			long timeStampEnd = System.currentTimeMillis();
+			AndroidLog.debug("END execute cursorIdx: " + cursorIdx+ " Execute time ms: " + (timeStampEnd - timeStampLock));
 		}	
 		else
 		{
