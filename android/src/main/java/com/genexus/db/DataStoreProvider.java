@@ -177,22 +177,34 @@ public class DataStoreProvider extends DataStoreProviderBase implements IDataSto
 			// we need to lock the execute method to avoid concurrency issues.
 			// for example, the postExecute method (select changes()) cause exception in Android SQLite.
 			// it happends with execute sql statements like from diferent threads, like using procedures submit.
-			AndroidLog.debug("execute cursorIdx : " + cursorIdx);
-			long timeStampStart = System.currentTimeMillis();
-			lockExecute.lock();
-			long timeStampLock = System.currentTimeMillis();
-			AndroidLog.debug("START execute afterlock cursorIdx: " + cursorIdx + " Waiting time ms: " + (timeStampLock - timeStampStart));
-			try
+			Cursor cursor = cursors[cursorIdx];
+			if (cursor instanceof UpdateCursor) // if the cursor is an UpdateCursor, we need to lock the execute method.
+			{ 
+				AndroidLog.debug("execute UpdateCursor cursorIdx : " + cursorIdx);
+				long timeStampStart = System.currentTimeMillis();
+				lockExecute.lock();
+				long timeStampLock = System.currentTimeMillis();
+				AndroidLog.debug("START execute UpdateCursor afterlock cursorIdx: " + cursorIdx + " Waiting time ms: " + (timeStampLock - timeStampStart));
+				try
+				{
+        			// execute the cursor with the parameters.
+					execute(cursorIdx, parms, true);
+				}
+				finally
+				{
+					lockExecute.unlock();
+				}
+				long timeStampEnd = System.currentTimeMillis();
+				AndroidLog.debug("END execute UpdateCursor cursorIdx: " + cursorIdx+ " Execute time ms: " + (timeStampEnd - timeStampLock));
+			}
+			else
 			{
-        		// execute the cursor with the parameters.
+				// if the cursor is not an UpdateCursor, we can execute it without locking.
+				long timeStampStart = System.currentTimeMillis();
 				execute(cursorIdx, parms, true);
+				long timeStampEnd = System.currentTimeMillis();
+				AndroidLog.debug("END execute cursorIdx: " + cursorIdx+ " Execute time ms: " + (timeStampEnd - timeStampStart));
 			}
-			finally
-			{
-				lockExecute.unlock();
-			}
-			long timeStampEnd = System.currentTimeMillis();
-			AndroidLog.debug("END execute cursorIdx: " + cursorIdx+ " Execute time ms: " + (timeStampEnd - timeStampLock));
 		}	
 		else
 		{
