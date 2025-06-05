@@ -120,4 +120,17 @@ public class UserLog {
 	public static void debug(String message, String topic, Throwable ex) {
 		getLogger(topic).debug(message, ex);
 	}
+
+
+	/******* Log Improvements *****/
+
+	public static void setContext(String key, Object value) {
+		// Topic is ignored, also if you put something
+		getLogger("$").setContext(key, value);
+	}
+
+	public static void write(String message, String topic, int logLevel, Object data, boolean stackTrace) {
+		getLogger(topic).write(message, logLevel, data, stackTrace);
+	}
+
 }
