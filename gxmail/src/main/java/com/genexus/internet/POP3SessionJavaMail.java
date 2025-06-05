@@ -213,10 +213,14 @@ public class POP3SessionJavaMail implements GXInternetConstants, IPOP3Session {
 			String[] addresses = message.getHeader(rType.toString());
 			if (addresses != null && addresses.length > 0) {
 				for (String address: addresses) {
-					String[] splitAddresses = address.split(";");
+					String[] splitAddresses = address.replace(";", ",").split(",");
 					for (String splitAddress: splitAddresses) {
-						InternetAddress ia = new InternetAddress(splitAddress);
-						mailRecipient.addNew(ia.getPersonal(), ia.getAddress());
+						try {
+							InternetAddress ia = new InternetAddress(splitAddress);
+							mailRecipient.addNew(ia.getPersonal(), ia.getAddress());
+						} catch (AddressException ae) {
+							logger.info("Invalid email address" + splitAddress);
+						}
 					}
 				}
 			}
