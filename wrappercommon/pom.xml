@@ -56,9 +56,22 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
-
-
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.12.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.genexus</groupId>
+            <artifactId>gxclassR</artifactId>
+            <version>104.6-trunk.20240524121701-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-layout-template-json</artifactId>
+            <version>2.24.3</version>
+        </dependency>
     </dependencies>
 
     <build>

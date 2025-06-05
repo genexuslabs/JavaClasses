@@ -65,5 +65,15 @@ public interface ILogger {
 	 * msg); } }
 	 */
 
-	
+
+	/******* START - Log Improvements *****/
+	// A default implementation is added for AndroidLogger because it fails, it needs an
+	// implementation, another solution is to declare the class as abstract, but it is
+	// not possible because of the way the class is made.
+
+	default void setContext(String key, Object value) {}
+
+	default void write(String message, int logLevel, Object data, boolean stackTrace) {}
+
+	/******* END - Log Improvements *****/
 }
