@@ -53,7 +53,7 @@ public class Log4J2Logger implements ILogger {
 	}
 
 	public void fatal(String[] list) {
-		fatal((Throwable) null, list);
+		fatal(null, list);
 	}
 
 	public void error(String msg, Throwable ex) {
@@ -75,7 +75,7 @@ public class Log4J2Logger implements ILogger {
 	}
 
 	public void error(String[] list) {
-		error((Throwable) null, list);
+		error(null, list);
 	}
 
 	public void error(String msg) {
@@ -96,7 +96,7 @@ public class Log4J2Logger implements ILogger {
 	}
 
 	public void warn(String[] list) {
-		warn((Throwable) null, list);
+		warn(null, list);
 	}
 
 	public void warn(String msg, Throwable ex) {
@@ -122,7 +122,7 @@ public class Log4J2Logger implements ILogger {
 	}
 
 	public void debug(String[] list) {
-		debug((Throwable) null, list);
+		debug(null, list);
 	}
 
 	// Lambda Functions not supported JAVA 7. Only Java 8.
@@ -178,7 +178,7 @@ public class Log4J2Logger implements ILogger {
 	}
 
 	public void trace(String[] list) {
-		trace((Throwable) null, list);
+		trace(null, list);
 	}
 
 	// Lambda Functions not supported JAVA 7. Only Java 8.
@@ -219,6 +219,14 @@ public class Log4J2Logger implements ILogger {
 		ThreadContext.put(key, fromObjectToString(value));
 	}
 
+	public void write(String message, int logLevel, Object data, boolean stackTrace) {
+		printLog("data", data, stackTrace, Level.DEBUG);
+	}
+
+	public void write(String message, int logLevel, Object data) {
+		printLog("data", data, false, Level.DEBUG);
+	}
+
 	private ObjectMessage buildLogMessage(String messageKey, Object messageValue, boolean stackTrace) {
 		Map<String, Object> messageMap;
 		String stacktraceLabel = "stackTrace";
@@ -247,9 +255,7 @@ public class Log4J2Logger implements ILogger {
 		}
 	}
 
-	public void write(String message, int logLevel, Object data, boolean stackTrace) {
-		printLog("data", data, stackTrace, Level.DEBUG);
-	}
+
 
 	private void printLog(final String messageKey, final Object messageValue, final boolean stackTrace,
 						  final Level logLevel) {
