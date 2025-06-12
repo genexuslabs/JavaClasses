@@ -673,7 +673,11 @@ public class HttpAjaxContext extends HttpContextWeb
 		javascriptSources.clear();
 	}
 
-	public void AddJavascriptSource(String jsSrc, String urlBuildNumber, boolean userDefined, boolean isInlined)
+	public void AddJavascriptSource(String jsSrc, String urlBuildNumber, boolean userDefined, boolean isInlined) {
+		AddJavascriptSource( jsSrc, urlBuildNumber, userDefined, isInlined, false);
+	}
+
+	public void AddJavascriptSource(String jsSrc, String urlBuildNumber, boolean userDefined, boolean isInlined, boolean isModule)
 	{
 		if(!javascriptSources.contains(jsSrc))
 		{
@@ -686,7 +690,7 @@ public class HttpAjaxContext extends HttpContextWeb
 				queryString = "";
 				attributes = "data-gx-external-script";
 			}
-			String fragment = "<script type=\"text/javascript\" src=\"" + oldConvertURL(jsSrc) + queryString + "\" " + attributes + "></script>" ;
+			String fragment = "<script type=\"" + (isModule ? "module" : "text/javascript") + "\" src=\"" + oldConvertURL(jsSrc) + queryString + "\" " + attributes + "></script>" ;
 			if (isAjaxRequest() || isInlined || jsSrc == "jquery.js" || jsSrc == "gxcore.js")
 			{
 				writeTextNL(fragment);
