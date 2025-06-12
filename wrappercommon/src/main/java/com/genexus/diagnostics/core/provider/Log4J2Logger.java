@@ -7,13 +7,14 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.MarkerManager;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.layout.template.json.JsonTemplateLayout;
-import org.apache.logging.log4j.message.ObjectMessage;
+import org.apache.logging.log4j.message.MapMessage;
 
 import java.lang.reflect.Type;
 import java.util.*;
@@ -206,13 +207,29 @@ public class Log4J2Logger implements ILogger {
 		return log.isErrorEnabled();
 	}
 
+	public boolean isFatalEnabled() {
+		return log.isFatalEnabled();
+	}
 
+	public boolean isWarnEnabled() {
+		return log.isWarnEnabled();
+	}
 
+	public boolean isInfoEnabled() {
+		return log.isInfoEnabled();
+	}
 
+	public boolean isTraceEnabled() {
+		return log.isTraceEnabled();
+	}
 
+	public boolean isEnabled(int logLevel) {
+		return log.isEnabled(getLogLevel(logLevel));
+	}
 
-
-	/******** NEW methods to improve logging ********/
+	public boolean isEnabled(int logLevel, String marker) {
+		return log.isEnabled(getLogLevel(logLevel), MarkerManager.getMarker(marker));
+	}
 
 	public void setContext(String key, Object value) {
 		// Add entry to the MDC (only works for JSON log format)
@@ -220,68 +237,72 @@ public class Log4J2Logger implements ILogger {
 	}
 
 	public void write(String message, int logLevel, Object data, boolean stackTrace) {
-		printLog("data", data, stackTrace, Level.DEBUG);
+		if (isJsonLogFormat())
+			writeJsonFormat(message, logLevel, data, stackTrace);
+		else
+			writeTextFormat(message, logLevel, data, stackTrace);
 	}
 
-	public void write(String message, int logLevel, Object data) {
-		printLog("data", data, false, Level.DEBUG);
-	}
+	private void writeTextFormat(String message, int logLevel, Object data, boolean stackTrace) {
+		String dataKey = "data";
+		Map<String, Object> mapMessage = new LinkedHashMap<>();
 
-	private ObjectMessage buildLogMessage(String messageKey, Object messageValue, boolean stackTrace) {
-		Map<String, Object> messageMap;
-		String stacktraceLabel = "stackTrace";
-		String msgLabel = "message";
-
-		if (isNullOrBlank(messageValue)) {
-			if (stackTrace) {
-				messageMap = new LinkedHashMap<>();
-				messageMap.put(msgLabel, messageKey);
-				messageMap.put(stacktraceLabel, getStackTraceAsList());
-				if(isJsonLogFormat())
-					return new ObjectMessage(messageMap);
-				else
-					return new ObjectMessage(new Gson().toJson(messageMap));
-			}
-			return new ObjectMessage(messageKey);
+		if (data == null || (data instanceof String && "null".equals(data.toString()))) {
+			mapMessage.put(dataKey, (Object) null);
+		} else if (data instanceof GxUserType) { // SDT
+			mapMessage.put(dataKey, jsonStringToMap(fromObjectToString(data)));
+		} else if (data instanceof String && isJson((String) data)) { // JSON Strings
+			mapMessage.put(dataKey, jsonStringToMap(fromObjectToString(data)));
 		} else {
-			messageMap = objectToMap(messageKey, messageValue);
-			if (stackTrace) {
-				messageMap.put(stacktraceLabel, getStackTraceAsList());
-			}
-			if(isJsonLogFormat())
-				return new ObjectMessage(messageMap);
-			else
-				return new ObjectMessage(new Gson().toJson(messageMap));
+			mapMessage.put(dataKey, data);
+		}
+
+		if (stackTrace) {
+			mapMessage.put("stackTrace", getStackTraceAsList());
+		}
+
+		String json = new Gson().newBuilder().serializeNulls().create().toJson(mapMessage);
+		String format = "{} - {}";
+
+		log.log(getLogLevel(logLevel), format, message, json);
+
+	}
+
+	private void writeJsonFormat(String message, int logLevel, Object data, boolean stackTrace) {
+		String dataKey = "data";
+		MapMessage<?, ?> mapMessage = new MapMessage<>().with("message", message);
+
+		if (data == null || (data instanceof String && "null".equals(data.toString()))) {
+			mapMessage.with(dataKey, (Object) null);
+		} else if (data instanceof GxUserType) { // SDT
+			mapMessage.with(dataKey, jsonStringToMap(fromObjectToString(data)));
+		} else if (data instanceof String && isJson((String) data)) { // JSON Strings
+			mapMessage.with(dataKey, jsonStringToMap(fromObjectToString(data)));
+		} else {
+			mapMessage.with(dataKey, data);
+		}
+
+		if (stackTrace) {
+			mapMessage.with("stackTrace", getStackTraceAsList());
+		}
+
+		log.log(getLogLevel(logLevel), mapMessage);
+	}
+
+	private Level getLogLevel(int logLevel) {
+		switch (logLevel) {
+			case LogLevel.OFF: return Level.OFF;
+			case LogLevel.TRACE: return Level.TRACE;
+			case LogLevel.INFO: return Level.INFO;
+			case LogLevel.WARNING: return Level.WARN;
+			case LogLevel.ERROR: return Level.ERROR;
+			case LogLevel.FATAL: return Level.FATAL;
+			default: return Level.DEBUG;
 		}
 	}
 
-
-
-	private void printLog(final String messageKey, final Object messageValue, final boolean stackTrace,
-						  final Level logLevel) {
-
-		/* Generate the message JSON in this format:
-		 * { "message" :
-		 * 	{
-		 * 		"messageKey": "USER messageValue",
-		 * 	}
-		 * }
-		 * */
-		ObjectMessage om = buildLogMessage(messageKey, messageValue, stackTrace);
-
-		// Log the message received or the crafted msg
-		if (logLevel.equals(Level.FATAL))      log.fatal(om);
-		else if (logLevel.equals(Level.ERROR)) log.error(om);
-		else if (logLevel.equals(Level.WARN))  log.warn(om);
-		else if (logLevel.equals(Level.INFO))  log.info(om);
-		else if (logLevel.equals(Level.DEBUG)) log.debug(om);
-		else if (logLevel.equals(Level.TRACE)) log.trace(om);
-	}
-
-
-
 	private static String fromObjectToString(Object value) {
-		String res = "";
+		String res;
 		if (value == null) {
 			res = "null";
 		} else if (value instanceof String && isJson((String) value)) {
@@ -309,47 +330,6 @@ public class Log4J2Logger implements ILogger {
 		} catch (Exception e) {
 			return false;
 		}
-	}
-
-	private Map<String, Object> objectToMap(String key, Object value) {
-		Map<String, Object> result = new LinkedHashMap<>();
-		if (value == null) {
-			result.put(key, null);
-		} else if (value instanceof Number || value instanceof Boolean
-				   || value instanceof Map || value instanceof List) {
-			result.put(key, value);
-		} else if (value instanceof GxUserType) {
-			result.put(key, jsonStringToMap(((GxUserType) value).toJSonString()));
-		} else if (value instanceof String) {
-			String str = (String) value;
-
-			// Try to parse as JSON
-			try {
-				JsonElement parsed = JsonParser.parseString(str);
-				Gson gson = new Gson();
-				if (parsed.isJsonObject()) {
-					result.put(key, gson.fromJson(parsed, Map.class));
-				} else if (parsed.isJsonArray()) {
-					result.put(key, gson.fromJson(parsed, List.class));
-				} else if (parsed.isJsonPrimitive()) {
-					JsonPrimitive primitive = parsed.getAsJsonPrimitive();
-					if (primitive.isBoolean()) {
-						result.put(key, primitive.getAsBoolean());
-					} else if (primitive.isNumber()) {
-						result.put(key, primitive.getAsNumber());
-					} else if (primitive.isString()) {
-						result.put(key, primitive.getAsString());
-					}
-				}
-			} catch (JsonSyntaxException e) {
-				// Invalid JSON: it is left as string
-				result.put(key, str);
-			}
-		} else {
-			// Any other object: convert to string
-			result.put(key, value.toString());
-		}
-		return result;
 	}
 
 	private static String getStackTrace() {
@@ -380,12 +360,6 @@ public class Log4J2Logger implements ILogger {
 		return gson.fromJson(jsonString, type);
 	}
 
-	private String toJson(String key, Object value) {
-		Map<String, Object> map = new HashMap<>();
-		map.put(key, value);
-		return new Gson().toJson(map);
-	}
-
 	private static boolean isJsonLogFormat() {
 		LoggerContext context = (LoggerContext) LogManager.getContext(false);
 		Configuration config = context.getConfiguration();
@@ -398,18 +372,7 @@ public class Log4J2Logger implements ILogger {
 				}
 			}
 		}
-
 		return false;
-	}
-
-	public static boolean isNullOrBlank(Object obj) {
-		if (obj == null) {
-			return true;
-		}
-		if (obj instanceof String) {
-			return ((String) obj).trim().isEmpty();
-		}
-		return false; // It is not null, and it isn't an empty string
 	}
 
 }

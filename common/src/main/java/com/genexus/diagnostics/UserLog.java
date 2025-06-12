@@ -121,9 +121,6 @@ public class UserLog {
 		getLogger(topic).debug(message, ex);
 	}
 
-
-	/******* Log Improvements *****/
-
 	public static void setContext(String key, Object value) {
 		// Topic is ignored, also if you put something
 		getLogger("$").setContext(key, value);
@@ -132,5 +129,42 @@ public class UserLog {
 	public static void write(String message, String topic, int logLevel, Object data, boolean stackTrace) {
 		getLogger(topic).write(message, logLevel, data, stackTrace);
 	}
+
+	public static void write(String message, String topic, int logLevel, Object data) {
+		getLogger(topic).write(message, logLevel, data, false);
+	}
+
+	public static boolean isDebugEnabled() {
+		return getLogger().isDebugEnabled();
+	}
+
+	public static boolean isErrorEnabled() {
+		return getLogger().isErrorEnabled();
+	}
+
+	public static boolean isFatalEnabled() {
+		return getLogger().isFatalEnabled();
+	}
+
+	public static boolean isInfoEnabled() {
+		return getLogger().isInfoEnabled();
+	}
+
+	public static boolean isWarnEnabled() {
+		return getLogger().isWarnEnabled();
+	}
+
+	public static boolean isTraceEnabled() {
+		return getLogger().isTraceEnabled();
+	}
+
+	public static boolean isEnabled(int logLevel) {
+		return getLogger().isEnabled(logLevel);
+	}
+
+	public static boolean isEnabled(int logLevel, String topic) {
+		return getLogger(topic).isEnabled(logLevel);
+	}
+
 
 }
