@@ -1,9 +1,11 @@
 package com.genexus.diagnostics.core.provider;
 
+import com.genexus.GxUserType;
 import com.genexus.diagnostics.LogLevel;
 import com.genexus.diagnostics.core.ILogger;
-import com.genexus.GxUserType;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -17,7 +19,10 @@ import org.apache.logging.log4j.layout.template.json.JsonTemplateLayout;
 import org.apache.logging.log4j.message.MapMessage;
 
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Log4J2Logger implements ILogger {
 	private org.apache.logging.log4j.Logger log;
@@ -243,6 +248,9 @@ public class Log4J2Logger implements ILogger {
 			writeTextFormat(message, logLevel, data, stackTrace);
 	}
 
+	private static final String STACKTRACE_KEY = "stackTrace";
+	private static final String MESSAGE_KEY = "message";
+
 	private void writeTextFormat(String message, int logLevel, Object data, boolean stackTrace) {
 		String dataKey = "data";
 		Map<String, Object> mapMessage = new LinkedHashMap<>();
@@ -258,19 +266,17 @@ public class Log4J2Logger implements ILogger {
 		}
 
 		if (stackTrace) {
-			mapMessage.put("stackTrace", getStackTraceAsList());
+			mapMessage.put(STACKTRACE_KEY, getStackTraceAsList());
 		}
 
 		String json = new Gson().newBuilder().serializeNulls().create().toJson(mapMessage);
 		String format = "{} - {}";
-
 		log.log(getLogLevel(logLevel), format, message, json);
-
 	}
 
 	private void writeJsonFormat(String message, int logLevel, Object data, boolean stackTrace) {
 		String dataKey = "data";
-		MapMessage<?, ?> mapMessage = new MapMessage<>().with("message", message);
+		MapMessage<?, ?> mapMessage = new MapMessage<>().with(MESSAGE_KEY, message);
 
 		if (data == null || (data instanceof String && "null".equals(data.toString()))) {
 			mapMessage.with(dataKey, (Object) null);
@@ -283,7 +289,7 @@ public class Log4J2Logger implements ILogger {
 		}
 
 		if (stackTrace) {
-			mapMessage.with("stackTrace", getStackTraceAsList());
+			mapMessage.with(STACKTRACE_KEY, getStackTraceAsList());
 		}
 
 		log.log(getLogLevel(logLevel), mapMessage);
