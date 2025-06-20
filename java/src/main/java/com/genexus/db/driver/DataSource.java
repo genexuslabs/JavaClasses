@@ -71,6 +71,7 @@ public class DataSource extends AbstractDataSource
 	public String jdbcDataSource;
 	
 	private String namespace;
+	private String dbmsVersion;
 
 	public DataSource(
 						String name,
@@ -581,7 +582,15 @@ public class DataSource extends AbstractDataSource
 		copyDataSource.setConnectionPools(this.getConnectionPools());
 		return copyDataSource;
 	}
-	
+
+	public String getDistanceFunction() {
+		String distanceFunction = "DISTANCE";
+		if (dbms.getId() == GXDBMS.DBMS_MYSQL && getDbmsVersion() != null && getDbmsVersion().contains("MariaDB")) {
+			distanceFunction = "vec_distance_cosine";
+		}
+		return distanceFunction;
+	}
+
 	public String[] concatOp()
 	{
 		switch(dbms.getId())
@@ -616,7 +625,15 @@ public class DataSource extends AbstractDataSource
 	{
 		if (getConnectionPool().getRWConnectionPool(defaultUser) != null)
 			getConnectionPool().getRWConnectionPool(defaultUser).PoolRecycle();		
-	}		
+	}
+
+	public void setDbmsVersion(String dbmsVersion) {
+		this.dbmsVersion = dbmsVersion;
+	}
+
+	public String getDbmsVersion() {
+		return dbmsVersion;
+	}
 	
 }
 
