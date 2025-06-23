@@ -182,10 +182,23 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 	}
 
 	private S3Presigner buildS3Presinger(String accessKey, String secretKey, String region) {
-		return S3Presigner.builder()
-			.region(Region.of(region))
-			.credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
-			.build();
+		boolean bUseIAM = !getPropertyValue(USE_IAM, "", "").isEmpty()
+			|| (accessKey.isEmpty() && secretKey.isEmpty());
+
+		S3Presigner.Builder presignerBuilder = S3Presigner.builder()
+			.region(Region.of(region));
+
+		if (bUseIAM) {
+			logger.debug("Using IAM Credentials for S3Presigner");
+		} else {
+			presignerBuilder.credentialsProvider(
+				StaticCredentialsProvider.create(
+					AwsBasicCredentials.create(accessKey, secretKey)
+				)
+			);
+		}
+
+		return presignerBuilder.build();
 	}
 
 	private void bucketExists() {
