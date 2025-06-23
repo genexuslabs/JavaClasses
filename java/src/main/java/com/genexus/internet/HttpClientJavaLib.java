@@ -23,6 +23,7 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.entity.ContentType;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.impl.conn.SystemDefaultDnsResolver;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
@@ -68,6 +69,19 @@ public class HttpClientJavaLib extends GXHttpClient {
 		getPoolInstance();
 		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();
 		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
+		String gxDns = System.getenv("GX_USE_FIRST_IP_DNS");
+		if (gxDns == null || gxDns.trim().isEmpty()) {
+			gxDns = System.getProperty("GX_USE_FIRST_IP_DNS");
+		}
+		if (gxDns != null && gxDns.trim().equalsIgnoreCase("true")) {
+			httpClientBuilder.setDnsResolver(new SystemDefaultDnsResolver() {
+				@Override
+				public InetAddress[] resolve(String host) throws UnknownHostException {
+					InetAddress[] all = super.resolve(host);
+					return new InetAddress[] { all[0] };
+				}
+			});
+		}
 		cookies = new BasicCookieStore();		
 		streamsToClose = new Vector<>();
 	}
