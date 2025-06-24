@@ -43,6 +43,8 @@ public class GamUtilsEO {
 		return Random.hexaBits(bits);
 	}
 
+	public static String randomUrlSafeCharacters(int length) { return Random.urlSafe(length); }
+
 	//**JWK**//
 
 	public static String generateKeyPair() {

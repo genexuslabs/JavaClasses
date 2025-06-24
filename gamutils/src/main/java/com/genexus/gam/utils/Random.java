@@ -32,6 +32,19 @@ public class Random {
 		return sb.toString();
 	}
 
+	public static String urlSafe(int length) {
+		SecureRandom random = instanceRandom();
+		if (random == null) {
+			logger.error("randomurlSafeCharacters SecureRandom is null");
+			return "";
+		}
+		String characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_.~";
+		StringBuilder sb = new StringBuilder(length);
+		for (int i = 0; i < length; i++)
+			sb.append(characters.charAt(random.nextInt(characters.length())));
+		return sb.toString();
+	}
+
 	public static String numeric(int length) {
 		SecureRandom random = instanceRandom();
 		if (random == null) {

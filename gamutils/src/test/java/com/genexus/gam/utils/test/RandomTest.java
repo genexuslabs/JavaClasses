@@ -57,6 +57,21 @@ public class RandomTest {
 	}
 
 	@Test
+	public void testRandomUrlSafeCharacters() {
+		String l5_string = GamUtilsEO.randomUrlSafeCharacters(l5);
+		Assert.assertEquals("l5 urlSafeCharacters: ", l5, l5_string.length());
+
+		String l10_string = GamUtilsEO.randomUrlSafeCharacters(l10);
+		Assert.assertEquals("l10 urlSafeCharacters: ", l10, l10_string.length());
+
+		String l128_string = GamUtilsEO.randomUrlSafeCharacters(l128);
+		Assert.assertEquals("l128 urlSafeCharacters: ", l128, l128_string.length());
+
+		String l256_string = GamUtilsEO.randomUrlSafeCharacters(l256);
+		Assert.assertEquals("l256 urlSafeCharacters: ", l256, l256_string.length());
+	}
+
+	@Test
 	public void testHexaBits() {
 		int[] lengths = new int[]{32, 64, 128, 256, 512, 1024};
 		for (int n : lengths) {
