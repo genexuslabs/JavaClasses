@@ -108,7 +108,7 @@ public enum PublicKeyUtil {
 		logger.debug("fixType");
 		try {
 			String extension = FilenameUtils.getExtension(input);
-			if (extension.isEmpty()) {
+			if (extension.isEmpty() ||  extension.contains("}")) {
 				try {
 					Base64.decode(input);
 					logger.debug("b64");
