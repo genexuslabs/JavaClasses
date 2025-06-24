@@ -25,6 +25,12 @@ These are the source of the GeneXus Standard Classes for Java, valid since GeneX
 | gxexternalproviders | Implements service provider for IBM Cloud, Google, Azure, Amazon
 | gxgeospatial | Geography data type implementation
 | gxodata | OData access
+| securityapicommons | SecurityAPI's common module
+| gxcryptography | SecurityAPI's GeneXusCryptography module
+| gxjwt | SecurityAPI's GeneXusJWT module
+| gxxmlsignature | SecurityAPI's GeneXusXmlSignature module
+| gxftps | SecurityAPI's GeneXusFTPS module
+| gxsftp | SecurityAPI's GeneXusSFTP module
 | gamutils | GAM external object with utilities
 
 The dependencies between the projects are specified in each pom.xml within their directory.
