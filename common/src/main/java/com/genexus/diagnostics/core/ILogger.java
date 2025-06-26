@@ -77,7 +77,7 @@ public interface ILogger {
 
 	boolean isTraceEnabled();
 
-	boolean isEnabled(int logLevel);
+	default boolean isEnabled(int logLevel) { return false; }
 
 	//boolean isEnabled(int logLevel, String topic);
 
