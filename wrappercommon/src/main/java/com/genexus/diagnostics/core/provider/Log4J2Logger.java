@@ -1,6 +1,5 @@
 package com.genexus.diagnostics.core.provider;
 
-import com.genexus.GxUserType;
 import com.genexus.diagnostics.LogLevel;
 import com.genexus.diagnostics.core.ILogger;
 import com.google.gson.Gson;
@@ -257,10 +256,8 @@ public class Log4J2Logger implements ILogger {
 
 		if (data == null || (data instanceof String && "null".equals(data.toString()))) {
 			mapMessage.put(dataKey, (Object) null);
-		} else if (data instanceof GxUserType) { // SDT
-			mapMessage.put(dataKey, jsonStringToMap(fromObjectToString(data)));
 		} else if (data instanceof String && isJson((String) data)) { // JSON Strings
-			mapMessage.put(dataKey, jsonStringToMap(fromObjectToString(data)));
+			mapMessage.put(dataKey, jsonStringToMap((String)data));
 		} else {
 			mapMessage.put(dataKey, data);
 		}
@@ -280,10 +277,8 @@ public class Log4J2Logger implements ILogger {
 
 		if (data == null || (data instanceof String && "null".equals(data.toString()))) {
 			mapMessage.with(dataKey, (Object) null);
-		} else if (data instanceof GxUserType) { // SDT
-			mapMessage.with(dataKey, jsonStringToMap(fromObjectToString(data)));
 		} else if (data instanceof String && isJson((String) data)) { // JSON Strings
-			mapMessage.with(dataKey, jsonStringToMap(fromObjectToString(data)));
+			mapMessage.with(dataKey, jsonStringToMap((String)data));
 		} else {
 			mapMessage.with(dataKey, data);
 		}
@@ -320,8 +315,6 @@ public class Log4J2Logger implements ILogger {
 			res = value.toString();
 		} else if (value instanceof Map || value instanceof List) {
 			res = new Gson().toJson(value);
-		} else if (value instanceof GxUserType) {
-			res = ((GxUserType) value).toJSonString();
 		} else {
 			// Any other object → serialize as JSON
 			res = new Gson().toJson(value);
@@ -338,25 +331,12 @@ public class Log4J2Logger implements ILogger {
 		}
 	}
 
-	private static String getStackTrace() {
-		StringBuilder stackTrace;
-		stackTrace = new StringBuilder();
-		for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
-			stackTrace.append(ste).append(System.lineSeparator());
-		}
-		return stackTrace.toString();
-	}
-
 	private static List<String> getStackTraceAsList() {
 		List<String> stackTraceLines = new ArrayList<>();
 		for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
 			stackTraceLines.add(ste.toString());
 		}
 		return stackTraceLines;
-	}
-
-	private static String stackTraceListToString(List<String> stackTraceLines) {
-		return String.join(System.lineSeparator(), stackTraceLines);
 	}
 
 	// Convert a JSON String to Map<String, Object>
