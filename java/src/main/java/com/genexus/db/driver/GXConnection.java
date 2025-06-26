@@ -190,6 +190,7 @@ public final class GXConnection extends AbstractGXConnection implements Connecti
 			try
 			{
 				version = dma.getDatabaseProductVersion();
+				dataSource.setDbmsVersion(version);
 			}
 			catch (SQLException e)
 			{
@@ -1744,8 +1745,7 @@ public void rollback() throws SQLException
 
 	public Array createArrayOf(String typeName, Object[] elements)
 			throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
+		return getJDBCConnection().createArrayOf(typeName, elements);
 	}
 
 	public void abort(Executor executor)

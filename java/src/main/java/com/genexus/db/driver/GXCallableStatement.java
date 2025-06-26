@@ -704,6 +704,14 @@ public final class GXCallableStatement extends GXPreparedStatement implements Ca
 		return stmt.getBytes(columnIndex);
 	}
 
+	public Float[] getGxembedding (int columnIndex) throws SQLException
+	{
+		if	(DEBUG )
+			log(GXDBDebug.LOG_MAX, "Warning: getEmbedding");
+
+		return(Float[]) stmt.getArray(columnIndex).getArray();
+	}
+
 	public java.util.UUID getGUID(int columnIndex) throws SQLException
 	{
 		if	(DEBUG)
