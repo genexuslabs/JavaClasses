@@ -2,17 +2,24 @@
 package com.genexus;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genexus.db.Namespace;
 import com.genexus.db.UserInformation;
 import com.genexus.diagnostics.GXDebugInfo;
 import com.genexus.diagnostics.GXDebugManager;
+import com.genexus.internet.HttpClient;
 import com.genexus.internet.HttpContext;
 import com.genexus.mock.GXMockProvider;
 import com.genexus.performance.ProcedureInfo;
 import com.genexus.performance.ProceduresInfo;
-import com.genexus.util.ReorgSubmitThreadPool;
-import com.genexus.util.SubmitThreadPool;
+import com.genexus.util.*;
+import com.genexus.util.saia.OpenAIRequest;
+import com.genexus.util.saia.OpenAIResponse;
+import com.genexus.util.saia.SaiaService;
+import org.json.JSONObject;
 
 public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 	public abstract void initialize();
@@ -28,7 +35,8 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
     UserInformation ui=null;
 	
 	private Date beginExecute; 
-	
+	private HttpClient client;
+
 	public static final int IN_NEW_UTL = -2;
 
 	public GXProcedure(int remoteHandle, ModelContext context, String location) {
@@ -256,5 +264,71 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 			}
 		}
 		privateExecute( );
+	}
+
+	protected String callTool(String name, String arguments) {
+		return "";
+	}
+
+	protected String callAssistant(String agent, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result) {
+		return callAgent(agent, properties, messages, result);
+	}
+
+	protected ChatResult chatAgent(String agent, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result) {
+		callAgent(agent, true, properties, messages, result);
+		return new ChatResult(this, agent, properties, messages, result, client);
+	}
+
+	protected String callAgent(String agent, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result) {
+		return callAgent(agent, false, properties, messages, result);
+	}
+
+	protected String callAgent(String agent, boolean stream, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result) {
+		OpenAIRequest aiRequest = new OpenAIRequest();
+		aiRequest.setModel(String.format("saia:agent:%s", agent));
+		if (!messages.isEmpty())
+			aiRequest.setMessages(messages);
+		aiRequest.setVariables(properties.getList());
+		if (stream)
+			aiRequest.setStream(true);
+		client = new HttpClient();
+		OpenAIResponse aiResponse = SaiaService.call(aiRequest, client, result);
+		if (aiResponse != null && aiResponse.getChoices() != null) {
+			for (OpenAIResponse.Choice element : aiResponse.getChoices()) {
+				String finishReason = element.getFinishReason();
+				if (finishReason.equals("stop"))
+					return element.getMessage().getStringContent();
+				if (finishReason.equals("tool_calls")) {
+					messages.add(element.getMessage());
+					return processNotChunkedResponse(agent, stream, properties, messages, result, element.getMessage().getToolCalls());
+				}
+			}
+		} else if (client.getStatusCode() == 200) {
+			return "";
+		}
+		return "";
+	}
+
+	public String processNotChunkedResponse(String agent, boolean stream, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result, ArrayList<OpenAIResponse.ToolCall> toolCalls) {
+		for (OpenAIResponse.ToolCall tollCall : toolCalls) {
+			processToolCall(tollCall, messages);
+		}
+		return callAgent(agent, stream, properties, messages, result);
+	}
+
+	private void processToolCall(OpenAIResponse.ToolCall toolCall, ArrayList<OpenAIResponse.Message> messages) {
+		String result;
+		String functionName = toolCall.getFunction().getName();
+		try {
+			result = callTool(functionName, toolCall.getFunction().getArguments());
+		}
+		catch (Throwable e) {
+			result = String.format("Error calling tool %s", functionName);
+		}
+		OpenAIResponse.Message toolCallMessage = new OpenAIResponse.Message();
+		toolCallMessage.setRole("tool");
+		toolCallMessage.setStringContent(result);
+		toolCallMessage.setToolCallId(toolCall.getId());
+		messages.add(toolCallMessage);
 	}
 }

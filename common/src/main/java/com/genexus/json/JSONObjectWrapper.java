@@ -22,15 +22,12 @@ public class JSONObjectWrapper extends JSONObject implements java.io.Serializabl
 			? SpecificImplementation.JsonSerialization.getJSONTokener(string)
 			: new JSONTokenerWrapper(string)
 		);
-
-		if (map == null)
-			map = new LinkedHashMap<String, Object>();
+		initMap();
 	}
 
 	public JSONObjectWrapper(JSONTokenerWrapper token) {
 		super(token);
-		if (map == null)
-			map = new LinkedHashMap<String, Object>();
+		initMap();
 	}
 
 	public JSONObjectWrapper(Map<?,?> m) {
@@ -48,8 +45,18 @@ public class JSONObjectWrapper extends JSONObject implements java.io.Serializabl
 
 	public JSONObjectWrapper(JSONObject jsonObject) {
 		super(jsonObject.toString());
+		initMap();
+	}
+
+	private void initMap() {
 		if (map == null)
-			map = new LinkedHashMap<String, Object>();
+		{
+			// this is a workaround for the Android implementation not loading the map in the JsonObject constructor
+			if (SpecificImplementation.JsonSerialization != null)
+				map = SpecificImplementation.JsonSerialization.getJSONObjectMap(this);
+			else
+				map = new LinkedHashMap<String, Object>();	
+		}
 	}
 
 	public Set<Entry<String, Object>> entrySet() {
