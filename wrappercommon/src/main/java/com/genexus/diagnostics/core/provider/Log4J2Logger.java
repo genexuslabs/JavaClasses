@@ -1,6 +1,27 @@
 package com.genexus.diagnostics.core.provider;
 
+import com.genexus.diagnostics.LogLevel;
 import com.genexus.diagnostics.core.ILogger;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.MarkerManager;
+import org.apache.logging.log4j.ThreadContext;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.layout.template.json.JsonTemplateLayout;
+import org.apache.logging.log4j.message.MapMessage;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Log4J2Logger implements ILogger {
 	private org.apache.logging.log4j.Logger log;
@@ -188,6 +209,156 @@ public class Log4J2Logger implements ILogger {
 
 	public boolean isErrorEnabled() {
 		return log.isErrorEnabled();
+	}
+
+	public boolean isFatalEnabled() {
+		return log.isFatalEnabled();
+	}
+
+	public boolean isWarnEnabled() {
+		return log.isWarnEnabled();
+	}
+
+	public boolean isInfoEnabled() {
+		return log.isInfoEnabled();
+	}
+
+	public boolean isTraceEnabled() {
+		return log.isTraceEnabled();
+	}
+
+	public boolean isEnabled(int logLevel) {
+		return log.isEnabled(getLogLevel(logLevel));
+	}
+
+	public boolean isEnabled(int logLevel, String marker) {
+		return log.isEnabled(getLogLevel(logLevel), MarkerManager.getMarker(marker));
+	}
+
+	public void setContext(String key, Object value) {
+		// Add entry to the MDC (only works for JSON log format)
+		ThreadContext.put(key, fromObjectToString(value));
+	}
+
+	public void write(String message, int logLevel, Object data, boolean stackTrace) {
+		if (isJsonLogFormat())
+			writeJsonFormat(message, logLevel, data, stackTrace);
+		else
+			writeTextFormat(message, logLevel, data, stackTrace);
+	}
+
+	private static final String STACKTRACE_KEY = "stackTrace";
+	private static final String MESSAGE_KEY = "message";
+
+	private void writeTextFormat(String message, int logLevel, Object data, boolean stackTrace) {
+		String dataKey = "data";
+		Map<String, Object> mapMessage = new LinkedHashMap<>();
+
+		if (data == null || (data instanceof String && "null".equals(data.toString()))) {
+			mapMessage.put(dataKey, (Object) null);
+		} else if (data instanceof String && isJson((String) data)) { // JSON Strings
+			mapMessage.put(dataKey, jsonStringToMap((String)data));
+		} else {
+			mapMessage.put(dataKey, data);
+		}
+
+		if (stackTrace) {
+			mapMessage.put(STACKTRACE_KEY, getStackTraceAsList());
+		}
+
+		String json = new Gson().newBuilder().serializeNulls().create().toJson(mapMessage);
+		String format = "{} - {}";
+		log.log(getLogLevel(logLevel), format, message, json);
+	}
+
+	private void writeJsonFormat(String message, int logLevel, Object data, boolean stackTrace) {
+		String dataKey = "data";
+		MapMessage<?, ?> mapMessage = new MapMessage<>().with(MESSAGE_KEY, message);
+
+		if (data == null || (data instanceof String && "null".equals(data.toString()))) {
+			mapMessage.with(dataKey, (Object) null);
+		} else if (data instanceof String && isJson((String) data)) { // JSON Strings
+			mapMessage.with(dataKey, jsonStringToMap((String)data));
+		} else {
+			mapMessage.with(dataKey, data);
+		}
+
+		if (stackTrace) {
+			mapMessage.with(STACKTRACE_KEY, getStackTraceAsList());
+		}
+
+		log.log(getLogLevel(logLevel), mapMessage);
+	}
+
+	private Level getLogLevel(int logLevel) {
+		switch (logLevel) {
+			case LogLevel.OFF: return Level.OFF;
+			case LogLevel.TRACE: return Level.TRACE;
+			case LogLevel.INFO: return Level.INFO;
+			case LogLevel.WARNING: return Level.WARN;
+			case LogLevel.ERROR: return Level.ERROR;
+			case LogLevel.FATAL: return Level.FATAL;
+			default: return Level.DEBUG;
+		}
+	}
+
+	private static String fromObjectToString(Object value) {
+		String res;
+		if (value == null) {
+			res = "null";
+		} else if (value instanceof String && isJson((String) value)) {
+			// Avoid double serialization
+			res = (String) value;
+		} else if (value instanceof String) {
+			res = (String) value;
+		} else if (value instanceof Number || value instanceof Boolean) {
+			res = value.toString();
+		} else if (value instanceof Map || value instanceof List) {
+			res = new Gson().toJson(value);
+		} else {
+			// Any other object → serialize as JSON
+			res = new Gson().toJson(value);
+		}
+		return res;
+	}
+
+	private static boolean isJson(String input) {
+		try {
+			JsonElement json = JsonParser.parseString(input);
+			return json.isJsonObject() || json.isJsonArray();
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	private static List<String> getStackTraceAsList() {
+		List<String> stackTraceLines = new ArrayList<>();
+		for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+			stackTraceLines.add(ste.toString());
+		}
+		return stackTraceLines;
+	}
+
+	// Convert a JSON String to Map<String, Object>
+	private static Map<String, Object> jsonStringToMap(String jsonString) {
+		Gson gson = new Gson();
+		Type type = new TypeToken<Map<String, Object>>(){}.getType();
+		return gson.fromJson(jsonString, type);
+	}
+
+	private static boolean isJsonLogFormat() {
+		LoggerContext context = (LoggerContext) LogManager.getContext(false);
+		Configuration config = context.getConfiguration();
+
+		for (Appender appender : config.getAppenders().values()) {
+			if (appender instanceof AbstractAppender) {
+				Object layout = ((AbstractAppender) appender).getLayout();
+				if (layout instanceof JsonTemplateLayout) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 }

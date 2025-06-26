@@ -65,5 +65,20 @@ public interface ILogger {
 	 * msg); } }
 	 */
 
-	
+	default void setContext(String key, Object value) {}
+
+	default void write(String message, int logLevel, Object data, boolean stackTrace) {}
+
+	default boolean isFatalEnabled() { return false; }
+
+	default boolean isWarnEnabled() { return false; }
+
+	default boolean isInfoEnabled() { return false; }
+
+	default boolean isTraceEnabled() { return false; }
+
+	default boolean isEnabled(int logLevel) { return false; }
+
+	//boolean isEnabled(int logLevel, String topic);
+
 }
