@@ -131,7 +131,7 @@ public class UserLog {
 	}
 
 	public static void write(String message, String topic, int logLevel, Object data) {
-		getLogger(topic).write(message, logLevel, data, false);
+		write(message, topic, logLevel, data, false);
 	}
 
 	public static boolean isDebugEnabled() {
