@@ -79,6 +79,4 @@ public interface ILogger {
 
 	default boolean isEnabled(int logLevel) { return false; }
 
-	//boolean isEnabled(int logLevel, String topic);
-
 }
