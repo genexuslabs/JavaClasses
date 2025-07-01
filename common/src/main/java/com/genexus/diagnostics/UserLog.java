@@ -28,28 +28,26 @@ public class UserLog {
 		return log;
 	}
 
-	public static void write( int logLevel, String message, String topic) {
+	public static void write(int logLevel, String message, String topic) {
 		ILogger log = getLogger(topic);
+		LogLevel level = LogLevel.fromInt(logLevel);
 
-		switch (logLevel) {
-			case LogLevel.OFF: //LogLevel off
+		switch (level) {
+			case OFF: //LogLevel off
 				break;
-			case LogLevel.TRACE:
+			case TRACE:
 				log.trace(message);
 				break;
-			case LogLevel.DEBUG:
-				log.debug(message);
-				break;
-			case LogLevel.INFO:
+			case INFO:
 				log.info(message);
 				break;
-			case LogLevel.WARNING:
+			case WARNING:
 				log.warn(message);
 				break;
-			case LogLevel.ERROR:
+			case ERROR:
 				log.error(message);
 				break;
-			case LogLevel.FATAL:
+			case FATAL:
 				log.fatal(message);
 				break;
 			default:

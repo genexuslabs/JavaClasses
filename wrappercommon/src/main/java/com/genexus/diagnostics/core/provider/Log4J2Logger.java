@@ -288,13 +288,14 @@ public class Log4J2Logger implements ILogger {
 	}
 
 	private Level getLogLevel(int logLevel) {
-		switch (logLevel) {
-			case LogLevel.OFF: return Level.OFF;
-			case LogLevel.TRACE: return Level.TRACE;
-			case LogLevel.INFO: return Level.INFO;
-			case LogLevel.WARNING: return Level.WARN;
-			case LogLevel.ERROR: return Level.ERROR;
-			case LogLevel.FATAL: return Level.FATAL;
+		LogLevel level = LogLevel.fromInt(logLevel);
+		switch (level) {
+			case OFF: return Level.OFF;
+			case TRACE: return Level.TRACE;
+			case INFO: return Level.INFO;
+			case WARNING: return Level.WARN;
+			case ERROR: return Level.ERROR;
+			case FATAL: return Level.FATAL;
 			default: return Level.DEBUG;
 		}
 	}
