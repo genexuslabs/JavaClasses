@@ -293,7 +293,7 @@ public class Log4J2Logger implements ILogger {
 			case OFF: return Level.OFF;
 			case TRACE: return Level.TRACE;
 			case INFO: return Level.INFO;
-			case WARNING: return Level.WARN;
+			case WARN: return Level.WARN;
 			case ERROR: return Level.ERROR;
 			case FATAL: return Level.FATAL;
 			default: return Level.DEBUG;

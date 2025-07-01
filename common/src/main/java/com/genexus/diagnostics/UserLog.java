@@ -41,7 +41,7 @@ public class UserLog {
 			case INFO:
 				log.info(message);
 				break;
-			case WARNING:
+			case WARN:
 				log.warn(message);
 				break;
 			case ERROR:
