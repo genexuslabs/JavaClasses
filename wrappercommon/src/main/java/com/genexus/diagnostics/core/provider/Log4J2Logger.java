@@ -2,10 +2,6 @@ package com.genexus.diagnostics.core.provider;
 
 import com.genexus.diagnostics.LogLevel;
 import com.genexus.diagnostics.core.ILogger;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.MarkerManager;
@@ -16,8 +12,9 @@ import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.layout.template.json.JsonTemplateLayout;
 import org.apache.logging.log4j.message.MapMessage;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -255,7 +252,7 @@ public class Log4J2Logger implements ILogger {
 		Map<String, Object> mapMessage = new LinkedHashMap<>();
 
 		if (data == null || (data instanceof String && "null".equals(data.toString()))) {
-			mapMessage.put(dataKey, (Object) null);
+			mapMessage.put(dataKey, JSONObject.NULL);
 		} else if (data instanceof String && isJson((String) data)) { // JSON Strings
 			mapMessage.put(dataKey, jsonStringToMap((String)data));
 		} else {
@@ -266,7 +263,7 @@ public class Log4J2Logger implements ILogger {
 			mapMessage.put(STACKTRACE_KEY, getStackTraceAsList());
 		}
 
-		String json = new Gson().newBuilder().serializeNulls().create().toJson(mapMessage);
+		String json = new JSONObject(mapMessage).toString();
 		String format = "{} - {}";
 		log.log(getLogLevel(logLevel), format, message, json);
 	}
@@ -313,21 +310,28 @@ public class Log4J2Logger implements ILogger {
 			res = (String) value;
 		} else if (value instanceof Number || value instanceof Boolean) {
 			res = value.toString();
-		} else if (value instanceof Map || value instanceof List) {
-			res = new Gson().toJson(value);
+		} else if (value instanceof Map) {
+			res = new JSONObject((Map<?, ?>) value).toString();
+		} else if (value instanceof List) {
+			res = new JSONArray((List<?>) value).toString();
 		} else {
 			// Any other object → serialize as JSON
-			res = new Gson().toJson(value);
+			res = JSONObject.quote(value.toString());
 		}
 		return res;
 	}
 
-	private static boolean isJson(String input) {
+	private static boolean isJson(String str) {
 		try {
-			JsonElement json = JsonParser.parseString(input);
-			return json.isJsonObject() || json.isJsonArray();
-		} catch (Exception e) {
-			return false;
+			new JSONObject(str);
+			return true;
+		} catch (Exception e1) {
+			try {
+				new JSONArray(str);
+				return true;
+			} catch (Exception e2) {
+				return false;
+			}
 		}
 	}
 
@@ -337,13 +341,6 @@ public class Log4J2Logger implements ILogger {
 			stackTraceLines.add(ste.toString());
 		}
 		return stackTraceLines;
-	}
-
-	// Convert a JSON String to Map<String, Object>
-	private static Map<String, Object> jsonStringToMap(String jsonString) {
-		Gson gson = new Gson();
-		Type type = new TypeToken<Map<String, Object>>(){}.getType();
-		return gson.fromJson(jsonString, type);
 	}
 
 	private static boolean isJsonLogFormat() {
@@ -361,4 +358,38 @@ public class Log4J2Logger implements ILogger {
 		return false;
 	}
 
+	public static Map<String, Object> jsonStringToMap(String jsonString) {
+		JSONObject jsonObject = new JSONObject(jsonString);
+		return toMap(jsonObject);
+	}
+
+	private static Map<String, Object> toMap(JSONObject jsonObject) {
+		Map<String, Object> map = new LinkedHashMap<>();
+		for (String key : jsonObject.keySet()) {
+			Object value = jsonObject.get(key);
+			map.put(key, convert(value));
+		}
+		return map;
+	}
+
+	private static List<Object> toList(JSONArray array) {
+		List<Object> list = new ArrayList<>();
+		for (int i = 0; i < array.length(); i++) {
+			Object value = array.get(i);
+			list.add(convert(value));
+		}
+		return list;
+	}
+
+	private static Object convert(Object value) {
+		if (value instanceof JSONObject) {
+			return toMap((JSONObject) value);
+		} else if (value instanceof JSONArray) {
+			return toList((JSONArray) value);
+		} else if (value.equals(JSONObject.NULL)) {
+			return null;
+		} else {
+			return value;
+		}
+	}
 }
