@@ -8,7 +8,7 @@ import org.apache.logging.log4j.layout.template.json.resolver.TemplateResolverCo
 import org.apache.logging.log4j.layout.template.json.resolver.TemplateResolverFactory;
 
 
-@Plugin(name = "CustomMessageFactory", category = TemplateResolverFactory.CATEGORY)
+@Plugin(name = "CustomMessage", category = TemplateResolverFactory.CATEGORY)
 public final class CustomMessageFactory implements EventResolverFactory {
 	private static final CustomMessageFactory INSTANCE = new CustomMessageFactory();
 	private CustomMessageFactory() { /* no instances */ }
