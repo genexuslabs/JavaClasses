@@ -11,6 +11,7 @@ import org.apache.logging.log4j.layout.template.json.resolver.TemplateResolverFa
 @Plugin(name = "CustomMessageFactory", category = TemplateResolverFactory.CATEGORY)
 public final class CustomMessageFactory implements EventResolverFactory {
 	private static final CustomMessageFactory INSTANCE = new CustomMessageFactory();
+	private CustomMessageFactory() { /* no instances */ }
 
 	@PluginFactory
 	public static CustomMessageFactory getInstance() {
