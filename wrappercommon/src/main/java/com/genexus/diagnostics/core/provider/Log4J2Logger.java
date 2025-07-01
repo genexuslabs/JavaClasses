@@ -349,7 +349,7 @@ public class Log4J2Logger implements ILogger {
 
 		for (Appender appender : config.getAppenders().values()) {
 			if (appender instanceof AbstractAppender) {
-				Object layout = ((AbstractAppender) appender).getLayout();
+				Object layout = appender.getLayout();
 				if (layout instanceof JsonTemplateLayout) {
 					return true;
 				}
