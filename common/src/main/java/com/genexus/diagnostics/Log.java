@@ -40,7 +40,7 @@ public class Log {
 			case INFO:
 				log.info(message);
 				break;
-			case WARNING:
+			case WARN:
 				log.warn(message);
 				break;
 			case ERROR:
@@ -50,7 +50,7 @@ public class Log {
 				log.fatal(message);
 				break;
 			default:
-				log.debug(message);			
+				log.debug(message);
 		}		
 	}
 	

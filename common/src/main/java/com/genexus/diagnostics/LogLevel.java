@@ -5,7 +5,7 @@ public enum LogLevel {
 	TRACE(1),
 	DEBUG(5),
 	INFO(10),
-	WARNING(15),
+	WARN(15),
 	ERROR(20),
 	FATAL(30);
 
