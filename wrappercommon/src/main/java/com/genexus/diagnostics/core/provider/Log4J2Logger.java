@@ -22,6 +22,7 @@ import java.util.Map;
 
 public class Log4J2Logger implements ILogger {
 	private org.apache.logging.log4j.Logger log;
+	private static final boolean IS_JSON_FORMAT = isJsonLogFormat();
 
 	public Log4J2Logger(final Class<?> clazz) {
 		log = org.apache.logging.log4j.LogManager.getLogger(clazz);
@@ -239,7 +240,7 @@ public class Log4J2Logger implements ILogger {
 
 	public void write(String message, int logLevel, Object data, boolean stackTrace) {
 		if (isEnabled(logLevel)) {
-			if (isJsonLogFormat())
+			if (IS_JSON_FORMAT)
 				writeJsonFormat(message, logLevel, data, stackTrace);
 			else
 				writeTextFormat(message, logLevel, data, stackTrace);
