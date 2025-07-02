@@ -1,7 +1,7 @@
 package com.genexus.diagnostics.core;
 
 public interface ILogger {
-	
+
 	void fatal(String msg, Throwable ex);
 
 	void fatal(String msg1, String msg2, Throwable ex);
@@ -9,9 +9,9 @@ public interface ILogger {
 	void fatal(Throwable ex, String[] list);
 
 	void fatal(String[] list);
-	
+
 	void fatal(String msg);
-	
+
 	void error(String msg, Throwable ex);
 
 	void error(String msg1, String msg2, Throwable ex);
@@ -19,11 +19,11 @@ public interface ILogger {
 	void error(Throwable ex, String[] list);
 
 	void error(String[] list);
-	
+
 	void error(String msg);
 
 	void warn(String msg);
-	
+
 	void warn(Throwable ex, String[] list);
 
 	void warn(String[] list);
@@ -31,7 +31,7 @@ public interface ILogger {
 	void warn(String msg, Throwable ex);
 
 	void debug(String msg);
-	
+
 	void debug(Throwable ex, String[] list);
 
 	void debug(String[] list);
@@ -41,11 +41,11 @@ public interface ILogger {
 	void debug(String msg, Throwable ex);
 
 	void info(String[] list);
-	
+
 	void info(String msg);
 
 	void trace(String msg);
-	
+
 	void trace(Throwable ex, String[] list);
 
 	void trace(String[] list);
@@ -53,7 +53,7 @@ public interface ILogger {
 	void trace(String msg1, String msg2, Throwable ex);
 
 	void trace(String msg, Throwable ex);
-	
+
 	boolean isDebugEnabled();
 
 	boolean isErrorEnabled();
