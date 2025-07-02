@@ -238,10 +238,12 @@ public class Log4J2Logger implements ILogger {
 	}
 
 	public void write(String message, int logLevel, Object data, boolean stackTrace) {
-		if (isJsonLogFormat())
-			writeJsonFormat(message, logLevel, data, stackTrace);
-		else
-			writeTextFormat(message, logLevel, data, stackTrace);
+		if (isEnabled(logLevel)) {
+			if (isJsonLogFormat())
+				writeJsonFormat(message, logLevel, data, stackTrace);
+			else
+				writeTextFormat(message, logLevel, data, stackTrace);
+			}
 	}
 
 	private static final String STACKTRACE_KEY = "stackTrace";
