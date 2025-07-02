@@ -69,9 +69,9 @@ public class HttpClientJavaLib extends GXHttpClient {
 		getPoolInstance();
 		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();
 		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
-		String gxDns = System.getProperty("GX_USE_FIRST_IP_DNS");
+		String gxDns = System.getenv("GX_USE_FIRST_IP_DNS");
 		if (gxDns == null || gxDns.trim().isEmpty()) {
-			gxDns = System.getenv("GX_USE_FIRST_IP_DNS");
+			gxDns = System.getProperty("GX_USE_FIRST_IP_DNS");
 		}
 		if (gxDns != null && gxDns.trim().equalsIgnoreCase("true")) {
 			httpClientBuilder.setDnsResolver(new SystemDefaultDnsResolver() {
