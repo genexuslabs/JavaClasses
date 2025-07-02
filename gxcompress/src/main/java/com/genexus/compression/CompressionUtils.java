@@ -22,6 +22,8 @@ import static org.apache.commons.io.FilenameUtils.getExtension;
 
 public class CompressionUtils {
 
+	private static final int BUFFER_SIZE = 8192;
+
 	/**
 	 * Counts the number of entries in an archive file.
 	 *
@@ -39,7 +41,7 @@ public class CompressionUtils {
 					return zipFile.size();
 				}
 			case "7z":
-				try (SevenZFile sevenZFile = getSevenZFile(archiveFile.getAbsolutePath())) {
+				try (SevenZFile sevenZFile = getSevenZFile(archiveFile)) {
 					while (sevenZFile.getNextEntry() != null) {
 						count++;
 					}
@@ -81,21 +83,17 @@ public class CompressionUtils {
 					Enumeration<? extends ZipEntry> entries = zipFile.entries();
 					while (entries.hasMoreElements()) {
 						ZipEntry entry = entries.nextElement();
-						File destinationFile = new File(targetPath, entry.getName()).getCanonicalFile();
-						if (!destinationFile.getPath().startsWith(targetPath.getPath() + File.separator) &&
-							!destinationFile.getPath().equals(targetPath.getPath())) {
+						if (!isEntryPathSafe(targetPath, entry.getName())) {
 							return false;
 						}
 					}
 				}
 				return true;
 			case "7z":
-				try (SevenZFile sevenZFile = getSevenZFile(archiveFile.getAbsolutePath())) {
+				try (SevenZFile sevenZFile = getSevenZFile(archiveFile)) {
 					SevenZArchiveEntry entry;
 					while ((entry = sevenZFile.getNextEntry()) != null) {
-						File destinationFile = new File(targetPath, entry.getName()).getCanonicalFile();
-						if (!destinationFile.getPath().startsWith(targetPath.getPath() + File.separator) &&
-							!destinationFile.getPath().equals(targetPath.getPath())) {
+						if (!isEntryPathSafe(targetPath, entry.getName())) {
 							return false;
 						}
 					}
@@ -105,9 +103,7 @@ public class CompressionUtils {
 				try (TarArchiveInputStream tarStream = new TarArchiveInputStream(Files.newInputStream(archiveFile.toPath()))) {
 					TarArchiveEntry entry;
 					while ((entry = tarStream.getNextEntry()) != null) {
-						File destinationFile = new File(targetPath, entry.getName()).getCanonicalFile();
-						if (!destinationFile.getPath().startsWith(targetPath.getPath() + File.separator) &&
-							!destinationFile.getPath().equals(targetPath.getPath())) {
+						if (!isEntryPathSafe(targetPath, entry.getName())) {
 							return false;
 						}
 					}
@@ -117,9 +113,7 @@ public class CompressionUtils {
 				String fileName = archiveFile.getName();
 				if (fileName.endsWith(".gz") && fileName.length() > 3) {
 					String extractedName = fileName.substring(0, fileName.length() - 3);
-					File destinationFile = new File(targetPath, extractedName).getCanonicalFile();
-					return destinationFile.getPath().startsWith(targetPath.getPath() + File.separator) ||
-						destinationFile.getPath().equals(targetPath.getPath());
+					return isEntryPathSafe(targetPath, extractedName);
 				}
 				return true;
 			case "jar":
@@ -127,9 +121,7 @@ public class CompressionUtils {
 					Enumeration<JarEntry> entries = jarFile.entries();
 					while (entries.hasMoreElements()) {
 						JarEntry entry = entries.nextElement();
-						File destinationFile = new File(targetPath, entry.getName()).getCanonicalFile();
-						if (!destinationFile.getPath().startsWith(targetPath.getPath() + File.separator) &&
-							!destinationFile.getPath().equals(targetPath.getPath())) {
+						if (!isEntryPathSafe(targetPath, entry.getName())) {
 							return false;
 						}
 					}
@@ -164,7 +156,7 @@ public class CompressionUtils {
 				}
 				break;
 			case "7z":
-				try (SevenZFile sevenZFile = getSevenZFile(archiveFile.getAbsolutePath())) {
+				try (SevenZFile sevenZFile = getSevenZFile(archiveFile)) {
 					SevenZArchiveEntry entry;
 					while ((entry = sevenZFile.getNextEntry()) != null) {
 						if (!entry.isDirectory() && entry.getSize() > maxSize) {
@@ -185,7 +177,7 @@ public class CompressionUtils {
 				break;
 			case "gz":
 				try (GZIPInputStream gzStream = new GZIPInputStream(Files.newInputStream(archiveFile.toPath()))) {
-					byte[] buffer = new byte[8192];
+					byte[] buffer = new byte[BUFFER_SIZE];
 					long size = 0;
 					int n;
 					while ((n = gzStream.read(buffer)) != -1) {
@@ -241,7 +233,7 @@ public class CompressionUtils {
 				}
 				break;
 			case "7z":
-				try (SevenZFile sevenZFile = getSevenZFile(archiveFile.getAbsolutePath())) {
+				try (SevenZFile sevenZFile = getSevenZFile(archiveFile)) {
 					SevenZArchiveEntry entry;
 					while ((entry = sevenZFile.getNextEntry()) != null) {
 						if (!entry.isDirectory()) {
@@ -304,7 +296,12 @@ public class CompressionUtils {
 		return totalSize;
 	}
 
-	private static SevenZFile getSevenZFile(final String specialPath) throws IOException {
-		return SevenZFile.builder().setFile(getFile(specialPath)).get();
+	private static SevenZFile getSevenZFile(File archiveFile) throws IOException {
+		return SevenZFile.builder().setFile(archiveFile).get();
+	}
+
+	private static boolean isEntryPathSafe(File targetPath, String entryName) throws IOException {
+		File destinationFile = new File(targetPath, entryName).getCanonicalFile();
+		return destinationFile.getPath().startsWith(targetPath.getPath() + File.separator) || destinationFile.getPath().equals(targetPath.getPath());
 	}
 }
