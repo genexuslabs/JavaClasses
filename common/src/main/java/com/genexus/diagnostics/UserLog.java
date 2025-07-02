@@ -19,10 +19,9 @@ public class UserLog {
 	private static ILogger getLogger(String topic) {
 		ILogger log;
 		if (topic != null && topic.length() > 0) {
-			String loggerName = topic.startsWith("$") ? topic.substring(1): String.format("%s.%s", defaultUserLogNamespace, topic.trim());
+			String loggerName = topic.startsWith("$") ? topic.substring(1) : String.format("%s.%s", defaultUserLogNamespace, topic.trim());
 			log = LogManager.getLogger(loggerName);
-		}
-		else {
+		} else {
 			log = getMainLogger();
 		}
 		return log;

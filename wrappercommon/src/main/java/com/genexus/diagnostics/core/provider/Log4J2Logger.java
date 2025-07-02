@@ -4,7 +4,6 @@ import com.genexus.diagnostics.LogLevel;
 import com.genexus.diagnostics.core.ILogger;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.MarkerManager;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -21,8 +20,12 @@ import java.util.List;
 import java.util.Map;
 
 public class Log4J2Logger implements ILogger {
-	private org.apache.logging.log4j.Logger log;
+	private static final String STACKTRACE_KEY = "stackTrace";
+	private static final String MESSAGE_KEY = "message";
+	private static final String DATA_KEY = "data";
 	private static final boolean IS_JSON_FORMAT = isJsonLogFormat();
+
+	private final org.apache.logging.log4j.Logger log;
 
 	public Log4J2Logger(final Class<?> clazz) {
 		log = org.apache.logging.log4j.LogManager.getLogger(clazz);
@@ -166,7 +169,7 @@ public class Log4J2Logger implements ILogger {
 	public void trace(String msg) {
 		log.trace(msg);
 	}
-	
+
 	public void trace(Throwable ex, String[] list) {
 		if (log.isTraceEnabled()) {
 			StringBuilder msg = new StringBuilder();
@@ -209,57 +212,56 @@ public class Log4J2Logger implements ILogger {
 		return log.isErrorEnabled();
 	}
 
+	@Override
 	public boolean isFatalEnabled() {
 		return log.isFatalEnabled();
 	}
 
+	@Override
 	public boolean isWarnEnabled() {
 		return log.isWarnEnabled();
 	}
 
+	@Override
 	public boolean isInfoEnabled() {
 		return log.isInfoEnabled();
 	}
 
+	@Override
 	public boolean isTraceEnabled() {
 		return log.isTraceEnabled();
 	}
 
+	@Override
 	public boolean isEnabled(int logLevel) {
 		return log.isEnabled(getLogLevel(logLevel));
 	}
 
-	public boolean isEnabled(int logLevel, String marker) {
-		return log.isEnabled(getLogLevel(logLevel), MarkerManager.getMarker(marker));
-	}
-
+	@Override
 	public void setContext(String key, Object value) {
 		// Add entry to the MDC (only works for JSON log format)
 		ThreadContext.put(key, fromObjectToString(value));
 	}
 
+	@Override
 	public void write(String message, int logLevel, Object data, boolean stackTrace) {
 		if (isEnabled(logLevel)) {
 			if (IS_JSON_FORMAT)
 				writeJsonFormat(message, logLevel, data, stackTrace);
 			else
 				writeTextFormat(message, logLevel, data, stackTrace);
-			}
+		}
 	}
 
-	private static final String STACKTRACE_KEY = "stackTrace";
-	private static final String MESSAGE_KEY = "message";
-
 	private void writeTextFormat(String message, int logLevel, Object data, boolean stackTrace) {
-		String dataKey = "data";
 		Map<String, Object> mapMessage = new LinkedHashMap<>();
 
 		if (data == null || (data instanceof String && "null".equals(data.toString()))) {
-			mapMessage.put(dataKey, JSONObject.NULL);
+			mapMessage.put(DATA_KEY, JSONObject.NULL);
 		} else if (data instanceof String && isJson((String) data)) { // JSON Strings
-			mapMessage.put(dataKey, jsonStringToMap((String)data));
+			mapMessage.put(DATA_KEY, jsonStringToMap((String) data));
 		} else {
-			mapMessage.put(dataKey, data);
+			mapMessage.put(DATA_KEY, data);
 		}
 
 		if (stackTrace) {
@@ -272,15 +274,14 @@ public class Log4J2Logger implements ILogger {
 	}
 
 	private void writeJsonFormat(String message, int logLevel, Object data, boolean stackTrace) {
-		String dataKey = "data";
 		MapMessage<?, ?> mapMessage = new MapMessage<>().with(MESSAGE_KEY, message);
 
 		if (data == null || (data instanceof String && "null".equals(data.toString()))) {
-			mapMessage.with(dataKey, (Object) null);
+			mapMessage.with(DATA_KEY, (Object) null);
 		} else if (data instanceof String && isJson((String) data)) { // JSON Strings
-			mapMessage.with(dataKey, jsonStringToMap((String)data));
+			mapMessage.with(DATA_KEY, jsonStringToMap((String) data));
 		} else {
-			mapMessage.with(dataKey, data);
+			mapMessage.with(DATA_KEY, data);
 		}
 
 		if (stackTrace) {
@@ -293,13 +294,20 @@ public class Log4J2Logger implements ILogger {
 	private Level getLogLevel(int logLevel) {
 		LogLevel level = LogLevel.fromInt(logLevel);
 		switch (level) {
-			case OFF: return Level.OFF;
-			case TRACE: return Level.TRACE;
-			case INFO: return Level.INFO;
-			case WARN: return Level.WARN;
-			case ERROR: return Level.ERROR;
-			case FATAL: return Level.FATAL;
-			default: return Level.DEBUG;
+			case OFF:
+				return Level.OFF;
+			case TRACE:
+				return Level.TRACE;
+			case INFO:
+				return Level.INFO;
+			case WARN:
+				return Level.WARN;
+			case ERROR:
+				return Level.ERROR;
+			case FATAL:
+				return Level.FATAL;
+			default:
+				return Level.DEBUG;
 		}
 	}
 
@@ -320,6 +328,7 @@ public class Log4J2Logger implements ILogger {
 			res = new JSONArray((List<?>) value).toString();
 		} else {
 			// Any other object → serialize as JSON
+			// You never enter here from GX
 			res = JSONObject.quote(value.toString());
 		}
 		return res;

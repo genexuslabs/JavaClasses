@@ -7,26 +7,25 @@ public class Log {
 	private static ILogger getLogger() {
 		return getLogger("");
 	}
-	
+
 	public static ILogger getMainLogger() {
 		return LogManager.getLogger("com.genexus.logging");
 	}
-		
+
 	private static ILogger getLogger(String topic) {
 		ILogger log;
 		if (topic != null && topic.length() > 0) {
 			log = LogManager.getLogger(topic);
-		}
-		else {
+		} else {
 			log = getMainLogger();
 		}
 		return log;
 	}
-	
+
 	public static void write(int logLevel, String message, String topic) {
 		write(message, topic, logLevel);
 	}
-		
+
 	public static void write(String message, String topic, int logLevel) {
 		ILogger log = getLogger(topic);
 		LogLevel level = LogLevel.fromInt(logLevel);
@@ -51,17 +50,17 @@ public class Log {
 				break;
 			default:
 				log.debug(message);
-		}		
+		}
 	}
-	
+
 	public static void write(String message) {
 		getLogger().debug(message);
 	}
-	
+
 	public static void write(String message, String topic) {
 		getLogger(topic).debug(message);
 	}
-	
+
 	public static void error(String message) {
 		getLogger().error(message);
 	}
@@ -85,7 +84,7 @@ public class Log {
 	public static void fatal(String message, String topic, Throwable ex) {
 		getLogger(topic).fatal(message, ex);
 	}
-	
+
 	public static void warning(String message) {
 		getLogger().warn(message);
 	}
@@ -113,7 +112,7 @@ public class Log {
 	public static void debug(String message, String topic) {
 		getLogger(topic).debug(message);
 	}
-	
+
 	public static void debug(String message, String topic, Throwable ex) {
 		getLogger(topic).debug(message, ex);
 	}
