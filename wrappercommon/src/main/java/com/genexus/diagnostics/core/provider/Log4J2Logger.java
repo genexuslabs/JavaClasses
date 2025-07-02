@@ -341,7 +341,19 @@ public class Log4J2Logger implements ILogger {
 
 	private static List<String> getStackTraceAsList() {
 		List<String> stackTraceLines = new ArrayList<>();
-		for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+
+		boolean skipping = true;
+		for (StackTraceElement ste : stackTrace) {
+			String className = ste.getClassName();
+
+			// Skip lines from this package
+			if (skipping && (className.startsWith("com.genexus.diagnostics") ||
+				className.startsWith("java.lang.Thread"))) {
+				continue;
+			}
+
+			skipping = false;
 			stackTraceLines.add(ste.toString());
 		}
 		return stackTraceLines;
