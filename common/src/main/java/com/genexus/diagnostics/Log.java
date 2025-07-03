@@ -7,63 +7,60 @@ public class Log {
 	private static ILogger getLogger() {
 		return getLogger("");
 	}
-	
+
 	public static ILogger getMainLogger() {
 		return LogManager.getLogger("com.genexus.logging");
 	}
-		
+
 	private static ILogger getLogger(String topic) {
 		ILogger log;
 		if (topic != null && topic.length() > 0) {
 			log = LogManager.getLogger(topic);
-		}
-		else {
+		} else {
 			log = getMainLogger();
 		}
 		return log;
 	}
-	
+
 	public static void write(int logLevel, String message, String topic) {
 		write(message, topic, logLevel);
 	}
-		
+
 	public static void write(String message, String topic, int logLevel) {
 		ILogger log = getLogger(topic);
-	
-		switch (logLevel) {			
-			case LogLevel.OFF: //LogLevel off
+		LogLevel level = LogLevel.fromInt(logLevel);
+
+		switch (level) {
+			case OFF: //LogLevel off
 				break;
-			case LogLevel.TRACE:
+			case TRACE:
 				log.trace(message);
 				break;
-			case LogLevel.DEBUG:
-				log.debug(message);
-				break;
-			case LogLevel.INFO:
+			case INFO:
 				log.info(message);
 				break;
-			case LogLevel.WARNING:
+			case WARN:
 				log.warn(message);
 				break;
-			case LogLevel.ERROR:
+			case ERROR:
 				log.error(message);
 				break;
-			case LogLevel.FATAL:
+			case FATAL:
 				log.fatal(message);
 				break;
 			default:
-				log.debug(message);			
-		}		
+				log.debug(message);
+		}
 	}
-	
+
 	public static void write(String message) {
 		getLogger().debug(message);
 	}
-	
+
 	public static void write(String message, String topic) {
 		getLogger(topic).debug(message);
 	}
-	
+
 	public static void error(String message) {
 		getLogger().error(message);
 	}
@@ -87,7 +84,7 @@ public class Log {
 	public static void fatal(String message, String topic, Throwable ex) {
 		getLogger(topic).fatal(message, ex);
 	}
-	
+
 	public static void warning(String message) {
 		getLogger().warn(message);
 	}
@@ -115,7 +112,7 @@ public class Log {
 	public static void debug(String message, String topic) {
 		getLogger(topic).debug(message);
 	}
-	
+
 	public static void debug(String message, String topic, Throwable ex) {
 		getLogger(topic).debug(message, ex);
 	}

@@ -19,37 +19,34 @@ public class UserLog {
 	private static ILogger getLogger(String topic) {
 		ILogger log;
 		if (topic != null && topic.length() > 0) {
-			String loggerName = topic.startsWith("$") ? topic.substring(1): String.format("%s.%s", defaultUserLogNamespace, topic.trim());
+			String loggerName = topic.startsWith("$") ? topic.substring(1) : String.format("%s.%s", defaultUserLogNamespace, topic.trim());
 			log = LogManager.getLogger(loggerName);
-		}
-		else {
+		} else {
 			log = getMainLogger();
 		}
 		return log;
 	}
 
-	public static void write( int logLevel, String message, String topic) {
+	public static void write(int logLevel, String message, String topic) {
 		ILogger log = getLogger(topic);
+		LogLevel level = LogLevel.fromInt(logLevel);
 
-		switch (logLevel) {
-			case LogLevel.OFF: //LogLevel off
+		switch (level) {
+			case OFF: //LogLevel off
 				break;
-			case LogLevel.TRACE:
+			case TRACE:
 				log.trace(message);
 				break;
-			case LogLevel.DEBUG:
-				log.debug(message);
-				break;
-			case LogLevel.INFO:
+			case INFO:
 				log.info(message);
 				break;
-			case LogLevel.WARNING:
+			case WARN:
 				log.warn(message);
 				break;
-			case LogLevel.ERROR:
+			case ERROR:
 				log.error(message);
 				break;
-			case LogLevel.FATAL:
+			case FATAL:
 				log.fatal(message);
 				break;
 			default:
@@ -120,4 +117,51 @@ public class UserLog {
 	public static void debug(String message, String topic, Throwable ex) {
 		getLogger(topic).debug(message, ex);
 	}
+
+	public static void setContext(String key, Object value) {
+		// Topic is ignored, also if you put something
+		getLogger("$").setContext(key, value);
+	}
+
+	public static void write(String message, String topic, int logLevel, Object data, boolean stackTrace) {
+		getLogger(topic).write(message, logLevel, data, stackTrace);
+	}
+
+	public static void write(String message, String topic, int logLevel, Object data) {
+		write(message, topic, logLevel, data, false);
+	}
+
+	public static boolean isDebugEnabled() {
+		return getLogger().isDebugEnabled();
+	}
+
+	public static boolean isErrorEnabled() {
+		return getLogger().isErrorEnabled();
+	}
+
+	public static boolean isFatalEnabled() {
+		return getLogger().isFatalEnabled();
+	}
+
+	public static boolean isInfoEnabled() {
+		return getLogger().isInfoEnabled();
+	}
+
+	public static boolean isWarnEnabled() {
+		return getLogger().isWarnEnabled();
+	}
+
+	public static boolean isTraceEnabled() {
+		return getLogger().isTraceEnabled();
+	}
+
+	public static boolean isEnabled(int logLevel) {
+		return getLogger().isEnabled(logLevel);
+	}
+
+	public static boolean isEnabled(int logLevel, String topic) {
+		return getLogger(topic).isEnabled(logLevel);
+	}
+
+
 }
