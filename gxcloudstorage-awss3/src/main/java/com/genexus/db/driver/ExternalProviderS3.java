@@ -17,7 +17,6 @@ import java.io.ByteArrayInputStream;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.util.IOUtils;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -209,26 +208,34 @@ public class ExternalProviderS3 extends ExternalProviderBase implements External
         return accessControl;
     }
 
-    public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
-        byte[] bytes;
-        try {
-            bytes = IOUtils.toByteArray(input);
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(bytes.length);
-            if (externalFileName.endsWith(".tmp")) {
-                metadata.setContentType("image/jpeg");
-            }
-            String upload = "";
-            try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes)) {
-				client.putObject(new PutObjectRequest(bucket, externalFileName, byteArrayInputStream, metadata).withCannedAcl(internalToAWSACL(acl)));
-				upload = getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
+	public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
+		ExternalProviderHelper.InputStreamWithLength streamInfo = null;
+		try {
+			streamInfo = ExternalProviderHelper.getInputStreamContentLength(input);
+
+			ObjectMetadata metadata = new ObjectMetadata();
+			metadata.setContentLength(streamInfo.contentLength);
+
+			if (externalFileName.endsWith(".tmp")) {
+				metadata.setContentType("image/jpeg");
 			}
+			String upload = "";
+			client.putObject(new PutObjectRequest(bucket, externalFileName, streamInfo.inputStream, metadata).withCannedAcl(internalToAWSACL(acl)));
+			upload = getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
 			return upload;
-        } catch (IOException ex) {
-            logger.error("Error while uploading file to the external provider.", ex);
-            return "";
-        }
-    }
+		} catch (IOException ex) {
+			logger.error("Error while uploading file to the external provider.", ex);
+			return "";
+		} finally {
+			if (streamInfo != null && streamInfo.tempFile != null && streamInfo.tempFile.exists()) {
+				try {
+					streamInfo.tempFile.delete();
+				} catch (Exception e) {
+					logger.warn("Could not delete temporary file: " + streamInfo.tempFile.getAbsolutePath(), e);
+				}
+			}
+		}
+	}
 
     public String get(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
         client.getObjectMetadata(bucket, externalFileName);
