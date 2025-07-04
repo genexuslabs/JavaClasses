@@ -16,7 +16,6 @@ import com.google.api.services.storage.model.Objects;
 import com.google.api.services.storage.model.StorageObject;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.storage.*;
-import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -170,16 +169,28 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 	}
 
 	public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
+		ExternalProviderHelper.InputStreamWithLength streamInfo = null;
 		try {
+			streamInfo = ExternalProviderHelper.getInputStreamContentLength(input);
+
 			BlobId blobId = BlobId.of(bucket, externalFileName);
 			BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
-			byte[] targetArray = IOUtils.toByteArray(input);
-			storageClient.create(blobInfo, targetArray);
+
+			storageClient.createFrom(blobInfo, streamInfo.tempFile.toPath());
+
 			setBlobAcl(blobId, acl);
 			return getResourceUrl(blobInfo, acl);
 		} catch (IOException ex) {
 			handleIOException(ex);
 			return "";
+		} finally {
+			if (streamInfo != null && streamInfo.tempFile != null && streamInfo.tempFile.exists()) {
+				try {
+					streamInfo.tempFile.delete();
+				} catch (Exception e) {
+					logger.warn("Could not delete temporary file: " + streamInfo.tempFile.getAbsolutePath(), e);
+				}
+			}
 		}
 	}
 
