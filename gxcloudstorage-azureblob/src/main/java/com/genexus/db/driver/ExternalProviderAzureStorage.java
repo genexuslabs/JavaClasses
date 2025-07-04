@@ -146,10 +146,10 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 				blob.getProperties().setContentType("image/jpeg");
 			}
 			try (BlobOutputStream blobOutputStream = blob.openOutputStream()) {
-				int next = input.read();
-				while (next != -1) {
-					blobOutputStream.write(next);
-					next = input.read();
+				byte[] buffer = new byte[8192];
+				int bytesRead;
+				while ((bytesRead = input.read(buffer)) != -1) {
+					blobOutputStream.write(buffer, 0, bytesRead);
 				}
 			}
 			return getResourceUrl(externalFileName, acl, DEFAULT_EXPIRATION_MINUTES);
