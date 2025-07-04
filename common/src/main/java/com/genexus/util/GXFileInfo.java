@@ -54,7 +54,7 @@ public class GXFileInfo implements IGXFileInfo {
 		return fileSource.createNewFile();
 	}
     public boolean createNewFile(InputStream input) throws IOException{
-    	fromBytes(SpecificImplementation.GXutil.toByteArray(input));
+		fromInputStream(input);
 		return true;
 	}
 	public boolean delete(){
@@ -153,6 +153,16 @@ public class GXFileInfo implements IGXFileInfo {
 	{
 		try (OutputStream destination = new BufferedOutputStream(new FileOutputStream(fileSource))) {
 			destination.write(data, 0, data.length);
+		}
+	}
+	private void fromInputStream(InputStream input) throws IOException
+	{
+		try (OutputStream output = new BufferedOutputStream(new FileOutputStream(fileSource))) {
+			byte[] buffer = new byte[8192];
+			int bytesRead;
+			while ((bytesRead = input.read(buffer)) != -1) {
+				output.write(buffer, 0, bytesRead);
+			}
 		}
 	}
 	public String readAllText(String encoding)throws IOException{
