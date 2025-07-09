@@ -436,6 +436,9 @@ public class HttpClientManual extends GXHttpClient {
 		return true;
 	}
 
+	public void unreadChunk() {
+	}
+
 	public String readChunk() {
 		return getString();
 	}

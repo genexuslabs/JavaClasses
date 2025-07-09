@@ -42,10 +42,6 @@ public class ChatResult {
 			JSONObject jsonResponse = new JSONObject(chunkJson);
 			OpenAIResponse chunkResponse = new ObjectMapper().readValue(jsonResponse.toString(), OpenAIResponse.class);
 			OpenAIResponse.Choice choise = chunkResponse.getChoices().get(0);
-			if (choise.getFinishReason() != null && choise.getFinishReason().equals("tool_calls") && agent != null) {
-				messages.add(choise.getMessage());
-				return agentProcedure.processNotChunkedResponse(agent, true, properties, messages, result, choise.getMessage().getToolCalls());
-			}
 			String chunkString = choise.getDelta().getStringContent();
 			if (chunkString == null)
 				return "";
