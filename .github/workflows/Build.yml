@@ -49,7 +49,7 @@ jobs:
         servers: '[
           { "id": "github-genexuslabs", "username": "genexusbot", "password": "${{ secrets.SECURE_TOKEN }}" },
           { "id": "azure-devops", "username": "genexuslabs", "password": "${env.AZURE_ARTIFACTS_TOKEN}" },
-          { "id": "ossrh", "username": "${env.MAVEN_USERNAME}", "password": "${env.MAVEN_PASSWORD}" },
+          { "id": "central", "username": "${env.MAVEN_USERNAME}", "password": "${env.MAVEN_PASSWORD}" },
           { "id": "gpg.passphrase", "passphrase": "${env.MAVEN_GPG_PASSPHRASE}" }
         ]'
 
