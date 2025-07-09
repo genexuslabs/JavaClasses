@@ -253,6 +253,11 @@ public class HttpClient
 		return session.getString();
 	}
 
+	public void unreadChunk()
+	{
+		session.unreadChunk();
+	}
+
 	public String readChunk()
 	{
 		return session.readChunk();

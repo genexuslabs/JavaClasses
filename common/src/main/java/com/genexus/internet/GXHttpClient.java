@@ -483,6 +483,8 @@ public abstract class GXHttpClient implements IHttpClient{
 
 	public abstract String getString();
 
+	public abstract void unreadChunk();
+
 	public abstract String readChunk();
 
 	public abstract boolean getEof();
