@@ -768,13 +768,24 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	private	boolean eof;
+	private String previousChunkReaded;
+	private boolean usePreviousChunkReaded;
 	public boolean getEof() {
 		return eof;
+	}
+
+	public void unreadChunk() {
+		usePreviousChunkReaded = true;
 	}
 
 	public String readChunk() {
 		if (!isChunkedResponse)
 			return getString();
+
+		if (usePreviousChunkReaded) {
+			usePreviousChunkReaded = false;
+			return previousChunkReaded;
+		}
 
 		if (response == null)
 			return "";
@@ -785,6 +796,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 				eof = true;
 				res = "";
 			}
+			previousChunkReaded = res;
 			return res;
 		} catch (IOException e) {
 			setExceptionsCatch(e);
