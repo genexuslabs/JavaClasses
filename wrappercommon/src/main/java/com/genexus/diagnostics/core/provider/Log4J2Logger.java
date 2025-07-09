@@ -2,6 +2,7 @@ package com.genexus.diagnostics.core.provider;
 
 import com.genexus.diagnostics.LogLevel;
 import com.genexus.diagnostics.core.ILogger;
+import com.genexus.json.JSONObjectWrapper;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.ThreadContext;
@@ -14,10 +15,7 @@ import org.apache.logging.log4j.message.MapMessage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Log4J2Logger implements ILogger {
 	private static final String STACKTRACE_KEY = "stackTrace";
@@ -268,7 +266,7 @@ public class Log4J2Logger implements ILogger {
 			mapMessage.put(STACKTRACE_KEY, getStackTraceAsList());
 		}
 
-		String json = new JSONObject(mapMessage).toString();
+		String json = mapToJsonString(mapMessage);
 		String format = "{} - {}";
 		log.log(getLogLevel(logLevel), format, message, json);
 	}
@@ -384,16 +382,23 @@ public class Log4J2Logger implements ILogger {
 	}
 
 	public static Map<String, Object> jsonStringToMap(String jsonString) {
-		JSONObject jsonObject = new JSONObject(jsonString);
+		JSONObjectWrapper jsonObject = new JSONObjectWrapper(jsonString);
 		return toMap(jsonObject);
 	}
 
 	private static Map<String, Object> toMap(JSONObject jsonObject) {
 		Map<String, Object> map = new LinkedHashMap<>();
-		for (String key : jsonObject.keySet()) {
-			Object value = jsonObject.get(key);
+
+		Set<Map.Entry<String, Object>> entries = (jsonObject instanceof JSONObjectWrapper)
+			? ((JSONObjectWrapper) jsonObject).entrySet()
+			: jsonObject.toMap().entrySet(); // fallback for other JSONObject
+
+		for (Map.Entry<String, Object> entry : entries) {
+			String key = entry.getKey();
+			Object value = entry.getValue();
 			map.put(key, convert(value));
 		}
+
 		return map;
 	}
 
@@ -416,5 +421,61 @@ public class Log4J2Logger implements ILogger {
 		} else {
 			return value;
 		}
+	}
+
+	public static String mapToJsonString(Map<String, Object> map) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("{");
+
+		Iterator<Map.Entry<String, Object>> iterator = map.entrySet().iterator();
+		while (iterator.hasNext()) {
+			Map.Entry<String, Object> entry = iterator.next();
+
+			sb.append("\"").append(entry.getKey()).append("\":");
+			sb.append(toJsonValue(entry.getValue()));
+
+			if (iterator.hasNext()) {
+				sb.append(",");
+			}
+		}
+
+		sb.append("}");
+		return sb.toString();
+	}
+
+	private static String toJsonValue(Object value) {
+		if (value == null || value == JSONObject.NULL) {
+			return "null";
+		} else if (value instanceof String) {
+			return "\"" + value + "\"";
+		} else if (value instanceof Number || value instanceof Boolean) {
+			return value.toString();
+		} else if (value instanceof JSONObject) {
+			return mapToJsonString(((JSONObject) value).toMap());
+		} else if (value instanceof Map) {
+			return mapToJsonString((Map<String, Object>) value);
+		} else if (value instanceof JSONArray) {
+			return listToJsonString(((JSONArray) value).toList());
+		} else if (value instanceof Collection) {
+			return listToJsonString((Collection<?>) value);
+		} else {
+			return "\"" + value.toString() + "\""; // fallback: string
+		}
+	}
+
+	private static String listToJsonString(Collection<?> list) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("[");
+
+		Iterator<?> it = list.iterator();
+		while (it.hasNext()) {
+			sb.append(toJsonValue(it.next()));
+			if (it.hasNext()) {
+				sb.append(",");
+			}
+		}
+
+		sb.append("]");
+		return sb.toString();
 	}
 }
