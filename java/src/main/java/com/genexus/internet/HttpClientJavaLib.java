@@ -114,13 +114,10 @@ public class HttpClientJavaLib extends GXHttpClient {
 				RegistryBuilder.<ConnectionSocketFactory>create()
 					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
 					.build();
-			String useFirstIpDnsResolver = getGxIpResolverConfig();
-			if (useFirstIpDnsResolver != null) {
-				DnsResolver dnsResolver = new FirstIpDnsResolver();
-				connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry, dnsResolver);
-			} else {
-				connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
-			}
+			boolean useCustomDnsResolver = getGxIpResolverConfig() != null;
+			PoolingHttpClientConnectionManager connManager = useCustomDnsResolver
+				? new PoolingHttpClientConnectionManager(socketFactoryRegistry, new FirstIpDnsResolver())
+				: new PoolingHttpClientConnectionManager(socketFactoryRegistry);
 			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_SIZE", "1000")));
 			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_PER_ROUTE", "1000")));
 
