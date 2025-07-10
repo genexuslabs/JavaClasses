@@ -19,7 +19,7 @@ public class Base64PublicKeyTest extends SecurityAPITestObject {
 
 		path = resources.concat("/sha256_pubkey.pem");
 		base64Wrong = "--BEGINKEY--sdssf--ENDKEY—";
-		base64string = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDGfJuH7SIX63boIuZBLM0Wa+SEbqhgy03sfgn1Z4ZwWF8kICV3giNHskWFAGzc8P/TD3RTf/6VdugF3h/2ozkVbtSVaDgAmXTTiDxZ8F14fKAcTcSwGJaqCtqwC/v7Z7PKyqqkuKfB0mrfbY9O01F57GCZpm1yTP3gfeBMeug9WQIDAQAB";
+		base64string = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAudCzBe6bGw0LIAGXa7/6tExlgak3g5j0NemlqG59839vJDm/T3YNhntfhuelYjvGg/3g1Ghouwi7SHOvX7mYxWdFurJ5Tbyimv+ncCrRhfz2629um6YcMXt3lU9VIn7AB/2L/oKTk939B0IF+dsqMkQUAz8cEpuEbaTQW2ieQdLH+bE3RNMYvd0G5Vyk7innt9aoqoqJXcy0qjv07FuGKAuPLkjdjE2E5sTSfsHIogO3k7iq8nUO9ExO+It8bgP9Td/tW+a5wCfHJAlzq66h0vhewbmI9d2OAVf3AsgN0o8C+m4ztsRsO92oYemaYbUl9iWEGJmA0sqejRjKKxjUOQIDAQAB";
 	}
 
 	@Test
