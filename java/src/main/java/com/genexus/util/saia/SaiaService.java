@@ -42,15 +42,35 @@ public class SaiaService {
 			client.addString(jsonRequest);
 			client.execute("POST", providerURL);
 			if (client.getStatusCode() == 200) {
+				String saiaResponse;
 				if (client.getHeader("Content-Type").contains("text/event-stream")){
-					return null;
+					saiaResponse = client.readChunk();
+					int index = saiaResponse.indexOf("data:") + "data:".length();
+					String chunkJson = saiaResponse.substring(index).trim();
+					try {
+						JSONObject jsonResponse = new JSONObject(chunkJson);
+						OpenAIResponse chunkResponse = new ObjectMapper().readValue(jsonResponse.toString(), OpenAIResponse.class);
+						OpenAIResponse.Choice choise = chunkResponse.getChoices().get(0);
+						if (choise.getFinishReason() != null && choise.getFinishReason().equals("tool_calls")){
+							saiaResponse = chunkJson;
+						}
+						else {
+							client.unreadChunk();
+							return null;
+						}
+					}
+					catch (Exception e) {
+						client.unreadChunk();
+						return null;
+					}
 				}
 				else {
-					String saiaResponse = client.getString();
-					logger.debug("Agent response: " + saiaResponse);
-					JSONObject jsonResponse = new JSONObject(saiaResponse);
-					return new ObjectMapper().readValue(jsonResponse.toString(), OpenAIResponse.class);
+					saiaResponse = client.getString();
 				}
+
+				logger.debug("Agent response: " + saiaResponse);
+				JSONObject jsonResponse = new JSONObject(saiaResponse);
+				return new ObjectMapper().readValue(jsonResponse.toString(), OpenAIResponse.class);
 			}
 			else {
 				String errorDescription = String.format("Error calling Enterprise AI API, StatusCode: %d, ReasonLine: %s",
