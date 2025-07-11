@@ -100,7 +100,7 @@ public class GXExternalCollection<T extends GXXMLSerializable> extends GXBaseCol
 	}
 
 	@SuppressWarnings("unchecked")
-	public ArrayList getExternalInstance() {
+	public <E> ArrayList<E> getExternalInstance() {
 		ArrayList list = new ArrayList();
 		for (T Item : this)
 		{
