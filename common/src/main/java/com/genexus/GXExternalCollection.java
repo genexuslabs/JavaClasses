@@ -101,12 +101,12 @@ public class GXExternalCollection<T extends GXXMLSerializable> extends GXBaseCol
 
 	@SuppressWarnings("unchecked")
 	public <E> ArrayList<E> getExternalInstance() {
-		ArrayList list = new ArrayList();
+		ArrayList<E> list = new ArrayList<>();
 		for (T Item : this)
 		{
 			try
 			{
-				list.add(Item.getClass().getMethod("getExternalInstance", new Class[]{}).invoke(Item));
+				list.add((E) Item.getClass().getMethod("getExternalInstance", new Class[]{}).invoke(Item));
 			}
 			catch (Exception e)
 			{
