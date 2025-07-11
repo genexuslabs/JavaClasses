@@ -743,7 +743,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 			PutObjectRequest.Builder putObjectRequestBuilder = PutObjectRequest.builder()
 				.bucket(bucket)
 				.key(externalFileName)
-				.contentType(externalFileName.endsWith(".tmp") ? "image/jpeg" : null);
+				.contentType((externalFileName.endsWith(".tmp") && "application/octet-stream".equals(streamInfo.detectedContentType)) ? "image/jpeg" : streamInfo.detectedContentType);
 			PutObjectRequest putObjectRequest = putObjectRequestBuilder.build();
 
 			PutObjectResponse response = client.putObject(putObjectRequest, RequestBody.fromInputStream(streamInfo.inputStream, streamInfo.contentLength));
