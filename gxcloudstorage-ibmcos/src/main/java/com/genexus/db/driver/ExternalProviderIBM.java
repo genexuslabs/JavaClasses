@@ -154,9 +154,7 @@ public class ExternalProviderIBM extends ExternalProviderBase implements Externa
 			streamInfo = ExternalProviderHelper.getInputStreamContentLength(input);
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(streamInfo.contentLength);
-            if (externalFileName.endsWith(".tmp")) {
-                metadata.setContentType("image/jpeg");
-            }
+			metadata.setContentType((externalFileName.endsWith(".tmp") && "application/octet-stream".equals(streamInfo.detectedContentType)) ? "image/jpeg" : streamInfo.detectedContentType);
             String upload = "";
 			client.putObject(new PutObjectRequest(bucket, externalFileName, streamInfo.inputStream, metadata).withCannedAcl(internalToAWSACL(acl)));
 			upload = getResourceUrl(externalFileName, acl, defaultExpirationMinutes);

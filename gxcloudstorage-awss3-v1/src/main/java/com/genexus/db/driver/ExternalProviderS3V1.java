@@ -225,10 +225,8 @@ public class ExternalProviderS3V1 extends ExternalProviderBase implements Extern
 
 			ObjectMetadata metadata = new ObjectMetadata();
 			metadata.setContentLength(streamInfo.contentLength);
+			metadata.setContentType((externalFileName.endsWith(".tmp") && "application/octet-stream".equals(streamInfo.detectedContentType)) ? "image/jpeg" : streamInfo.detectedContentType);
 
-			if (externalFileName.endsWith(".tmp")) {
-				metadata.setContentType("image/jpeg");
-			}
 			String upload = "";
 			client.putObject(new PutObjectRequest(bucket, externalFileName, streamInfo.inputStream, metadata).withCannedAcl(internalToAWSACL(acl)));
 			upload = getResourceUrl(externalFileName, acl, defaultExpirationMinutes);

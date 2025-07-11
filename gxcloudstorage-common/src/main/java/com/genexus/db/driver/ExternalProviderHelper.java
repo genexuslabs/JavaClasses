@@ -4,6 +4,7 @@ import com.genexus.util.Encryption;
 import com.genexus.util.GXService;
 
 import java.io.*;
+import org.apache.tika.Tika;
 
 public class ExternalProviderHelper {
 
@@ -36,19 +37,25 @@ public class ExternalProviderHelper {
 			}
 		}
 		long size = tempFile.length();
-		InputStream newInput = new FileInputStream(tempFile);
-		return new InputStreamWithLength(newInput, size, tempFile);
+		InputStream bufferedInput = new BufferedInputStream(new FileInputStream(tempFile));
+		bufferedInput.mark(128 * 1024);
+		Tika tika = new Tika();
+		String detectedContentType = tika.detect(bufferedInput);
+		bufferedInput.reset();
+		return new InputStreamWithLength(bufferedInput, size, tempFile, detectedContentType);
 	}
 
 	public static class InputStreamWithLength {
 		public final InputStream inputStream;
 		public final long contentLength;
 		public final File tempFile; // nullable
+		public final String detectedContentType;
 
-		public InputStreamWithLength(InputStream inputStream, long contentLength, File tempFile) {
+		public InputStreamWithLength(InputStream inputStream, long contentLength, File tempFile, String detectedContentType) {
 			this.inputStream = inputStream;
 			this.contentLength = contentLength;
 			this.tempFile = tempFile;
+			this.detectedContentType = detectedContentType;
 		}
 	}
 }
