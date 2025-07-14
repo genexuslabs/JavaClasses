@@ -757,6 +757,28 @@ public class ExcelCells implements IExcelCellRange {
         }
     }
 
+	@Override
+	public String getHyperlinkValue() {
+		try {
+			return this.getHyperlink();
+		} catch (ExcelException e) {
+			_errorHandler.setErrCod((short) e.get_errorCode());
+			_errorHandler.setErrDes(e.get_errDsc());
+		}
+		return "";
+	}
+
+	@Override
+	public Boolean setHyperlinkValue(String value) {
+		try {
+			return this.setHyperlink(value);
+		} catch (ExcelException e) {
+			_errorHandler.setErrCod((short) e.get_errorCode());
+			_errorHandler.setErrDes(e.get_errDsc());
+		}
+		return false;
+	}
+
     protected void copyPropertiesStyle(XSSFCellStyle dest, XSSFCellStyle source) {
         dest.cloneStyleFrom(source);
     }
