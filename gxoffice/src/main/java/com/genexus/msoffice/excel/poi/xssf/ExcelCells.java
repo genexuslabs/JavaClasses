@@ -742,7 +742,7 @@ public class ExcelCells implements IExcelCellRange {
         return "";
     }
 
-    public boolean setHyperLink(String value) throws ExcelException {
+    public boolean setHyperlink(String value) throws ExcelException {
         CheckReadonlyDocument();
         try {
             CreationHelper createHelper = pWorkbook.getCreationHelper();
