@@ -766,6 +766,39 @@ public class ExcelCells implements IExcelCells {
 		}
 	}
 
+	public String getHyperlink() {
+		try {
+			Hyperlink link = pCells[1].getHyperlink();
+			if (link != null) {
+				return link.getAddress();
+			}
+		} catch (Exception e) {
+			m_errAccess.setErrDes("Invalid cell value");
+			m_errAccess.setErrCod((short) 7);
+		}
+		return "";
+	}
+
+	public void setHyperLink(String value) {
+		if (readonly) {
+			m_errAccess.setErrDes("Can not modify a readonly document");
+			m_errAccess.setErrCod((short) 13);
+			return;
+		}
+
+		try {
+			CreationHelper createHelper = pWorkbook.getCreationHelper();
+			Hyperlink link = createHelper.createHyperlink(org.apache.poi.common.usermodel.HyperlinkType.URL);
+			link.setAddress(value);
+			for (int i = 1; i <= cntCells; i++) {
+				pCells[i].setHyperlink(link);
+			}
+		} catch (Exception e) {
+			m_errAccess.setErrDes("Invalid cell value");
+			m_errAccess.setErrCod((short) 7);
+		}
+	}
+
 	protected void copyPropertiesStyle(CellStyle dest, CellStyle source) {
 		dest.cloneStyleFrom(source);
 	}
