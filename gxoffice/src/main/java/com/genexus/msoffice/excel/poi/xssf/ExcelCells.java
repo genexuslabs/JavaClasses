@@ -730,6 +730,55 @@ public class ExcelCells implements IExcelCellRange {
         }
     }
 
+    public String getHyperlink() throws ExcelException {
+        try {
+            Hyperlink link = pCells[1].getHyperlink();
+            if (link != null) {
+                return link.getAddress();
+            }
+        } catch (Exception e) {
+            throw new ExcelException(7, "Invalid cell value", e);
+        }
+        return "";
+    }
+
+    public boolean setHyperlink(String value) throws ExcelException {
+        CheckReadonlyDocument();
+        try {
+            CreationHelper createHelper = pWorkbook.getCreationHelper();
+            Hyperlink link = createHelper.createHyperlink(org.apache.poi.common.usermodel.HyperlinkType.URL);
+            link.setAddress(value);
+            for (int i = 1; i <= cellCount; i++) {
+                pCells[i].setHyperlink(link);
+            }
+            return true;
+        } catch (Exception e) {
+            throw new ExcelException(7, "Invalid cell value", e);
+        }
+    }
+
+	@Override
+	public String getHyperlinkValue() {
+		try {
+			return this.getHyperlink();
+		} catch (ExcelException e) {
+			_errorHandler.setErrCod((short) e.get_errorCode());
+			_errorHandler.setErrDes(e.get_errDsc());
+		}
+		return "";
+	}
+
+	@Override
+	public Boolean setHyperlinkValue(String value) {
+		try {
+			return this.setHyperlink(value);
+		} catch (ExcelException e) {
+			_errorHandler.setErrCod((short) e.get_errorCode());
+			_errorHandler.setErrDes(e.get_errDsc());
+		}
+		return false;
+	}
+
     protected void copyPropertiesStyle(XSSFCellStyle dest, XSSFCellStyle source) {
         dest.cloneStyleFrom(source);
     }
