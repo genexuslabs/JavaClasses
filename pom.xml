@@ -119,7 +119,8 @@
     <module>gxxmlsignature</module>
     <module>gxsftp</module>
     <module>gxftps</module>
-    </modules>
+    <module>gamutils</module>
+  </modules>
 
 	<dependencies>
 		<dependency>
