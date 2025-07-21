@@ -4,8 +4,8 @@ These are the source of the GeneXus Standard Classes for Java, valid since GeneX
 ## Repo Status
 | Branch | Build | Security
 |---|---|---
-|master |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Amaster)|[![CodeQL](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml)
-|beta   |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Abeta)|[![CodeQL](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml)
+|master |[![Build](https://github.com/genexuslabs/JavaClasses/actions/workflows/Build.yml/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions/workflows/Build.yml)|[![CodeQL](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml)
+|beta   |[![Build](https://github.com/genexuslabs/JavaClasses/actions/workflows/Build.yml/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions/workflows/Build.yml)|[![CodeQL](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml)
 
 ## Modules
 
