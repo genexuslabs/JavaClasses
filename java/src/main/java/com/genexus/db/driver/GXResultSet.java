@@ -837,10 +837,20 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 		if	(DEBUG )
 			log(GXDBDebug.LOG_MAX, "Warning: getEmbedding");
 
-		if (con.getDBMS().getId() == GXDBMS.DBMS_POSTGRESQL)
-			return convertVectorStringToFloatArray(result.getArray(columnIndex).toString());
-		else
-			return byteArrayToFloatObjectArray(result.getBytes(columnIndex));
+		if (con.getDBMS().getId() == GXDBMS.DBMS_POSTGRESQL) {
+			Object array = result.getArray(columnIndex);
+			if (array == null)
+				return null;
+			else
+				return convertVectorStringToFloatArray(array.toString());
+		}
+		else {
+			byte[] bytes = result.getBytes(columnIndex);
+			if (bytes == null)
+				return null;
+			else
+				return byteArrayToFloatObjectArray(bytes);
+		}
 	}
 
 	private static Float[] byteArrayToFloatObjectArray(byte[] bytes) {
