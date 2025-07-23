@@ -21,13 +21,11 @@ import com.genexus.util.GXService;
 import com.genexus.util.StorageUtils;
 import com.genexus.StructSdtMessages_Message;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
-import software.amazon.awssdk.utils.IoUtils;
 
 import java.io.*;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -603,8 +601,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 	}
 
 	private String uploadWithACL(String externalFileName, InputStream input, ResourceAccessControlList acl) {
-		try {
-			ByteBuffer byteBuffer = ByteBuffer.wrap(IoUtils.toByteArray(input));
+		try (ExternalProviderHelper.InputStreamWithLength streamInfo = ExternalProviderHelper.getInputStreamContentLength(input)) {
 			PutObjectRequest.Builder putObjectRequestBuilder = PutObjectRequest.builder()
 				.bucket(bucket)
 				.key(externalFileName)
@@ -613,7 +610,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 				putObjectRequestBuilder = putObjectRequestBuilder.acl(internalToAWSACLWithACL(acl));
 			PutObjectRequest putObjectRequest = putObjectRequestBuilder.build();
 
-			PutObjectResponse response = client.putObject(putObjectRequest, RequestBody.fromByteBuffer(byteBuffer));
+			PutObjectResponse response = client.putObject(putObjectRequest, RequestBody.fromInputStream(streamInfo.inputStream, streamInfo.contentLength));
 			if (!response.sdkHttpResponse().isSuccessful()) {
 				logger.error("Error while uploading file: " + response.sdkHttpResponse().statusText().orElse("Unknown error"));
 			}
@@ -727,15 +724,14 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 	}
 
 	private String uploadWithoutACL(String externalFileName, InputStream input) {
-		try {
-			ByteBuffer byteBuffer = ByteBuffer.wrap(IoUtils.toByteArray(input));
+		try (ExternalProviderHelper.InputStreamWithLength streamInfo = ExternalProviderHelper.getInputStreamContentLength(input)) {
 			PutObjectRequest.Builder putObjectRequestBuilder = PutObjectRequest.builder()
 				.bucket(bucket)
 				.key(externalFileName)
-				.contentType(externalFileName.endsWith(".tmp") ? "image/jpeg" : null);
+				.contentType((externalFileName.endsWith(".tmp") && "application/octet-stream".equals(streamInfo.detectedContentType)) ? "image/jpeg" : streamInfo.detectedContentType);
 			PutObjectRequest putObjectRequest = putObjectRequestBuilder.build();
 
-			PutObjectResponse response = client.putObject(putObjectRequest, RequestBody.fromByteBuffer(byteBuffer));
+			PutObjectResponse response = client.putObject(putObjectRequest, RequestBody.fromInputStream(streamInfo.inputStream, streamInfo.contentLength));
 			if (!response.sdkHttpResponse().isSuccessful()) {
 				logger.error("Error while uploading file: " + response.sdkHttpResponse().statusText().orElse("Unknown error"));
 			}
