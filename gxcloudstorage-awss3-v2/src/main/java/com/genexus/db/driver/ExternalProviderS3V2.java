@@ -624,10 +624,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 	}
 
 	private String uploadWithACL(String externalFileName, InputStream input, ResourceAccessControlList acl) {
-		ExternalProviderHelper.InputStreamWithLength streamInfo = null;
-		try {
-			streamInfo = ExternalProviderHelper.getInputStreamContentLength(input);
-
+		try (ExternalProviderHelper.InputStreamWithLength streamInfo = ExternalProviderHelper.getInputStreamContentLength(input)) {
 			PutObjectRequest.Builder putObjectRequestBuilder = PutObjectRequest.builder()
 				.bucket(bucket)
 				.key(externalFileName)
@@ -645,15 +642,6 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 		} catch (IOException ex) {
 			logger.error("Error while uploading file to the external provider.", ex);
 			return "";
-		} finally {
-			// Clean up the temporary file if it was created
-			if (streamInfo != null && streamInfo.tempFile != null && streamInfo.tempFile.exists()) {
-				try {
-					streamInfo.tempFile.delete();
-				} catch (Exception e) {
-					logger.warn("Could not delete temporary file: " + streamInfo.tempFile.getAbsolutePath(), e);
-				}
-			}
 		}
 	}
 
@@ -759,10 +747,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 	}
 
 	private String uploadWithoutACL(String externalFileName, InputStream input) {
-		ExternalProviderHelper.InputStreamWithLength streamInfo = null;
-		try {
-			streamInfo = ExternalProviderHelper.getInputStreamContentLength(input);
-
+		try (ExternalProviderHelper.InputStreamWithLength streamInfo = ExternalProviderHelper.getInputStreamContentLength(input)) {
 			PutObjectRequest.Builder putObjectRequestBuilder = PutObjectRequest.builder()
 				.bucket(bucket)
 				.key(externalFileName)
@@ -778,15 +763,6 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 		} catch (IOException ex) {
 			logger.error("Error while uploading file to the external provider.", ex);
 			return "";
-		} finally {
-			// Clean up the temporary file if it was created
-			if (streamInfo != null && streamInfo.tempFile != null && streamInfo.tempFile.exists()) {
-				try {
-					streamInfo.tempFile.delete();
-				} catch (Exception e) {
-					logger.warn("Could not delete temporary file: " + streamInfo.tempFile.getAbsolutePath(), e);
-				}
-			}
 		}
 	}
 

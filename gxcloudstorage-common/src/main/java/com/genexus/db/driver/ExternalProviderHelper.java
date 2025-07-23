@@ -8,6 +8,8 @@ import org.apache.tika.Tika;
 
 public class ExternalProviderHelper {
 
+	public static final int BUFFER_MARK_LIMIT = 128 * 1024;
+
 	public static String getServicePropertyValue(GXService s, String propName, boolean isSecure){
 		String value = s.getProperties().get(propName);
 		if (value != null){
@@ -38,14 +40,14 @@ public class ExternalProviderHelper {
 		}
 		long size = tempFile.length();
 		InputStream bufferedInput = new BufferedInputStream(new FileInputStream(tempFile));
-		bufferedInput.mark(128 * 1024);
+		bufferedInput.mark(BUFFER_MARK_LIMIT);
 		Tika tika = new Tika();
 		String detectedContentType = tika.detect(bufferedInput);
 		bufferedInput.reset();
 		return new InputStreamWithLength(bufferedInput, size, tempFile, detectedContentType);
 	}
 
-	public static class InputStreamWithLength {
+	public static class InputStreamWithLength implements AutoCloseable {
 		public final InputStream inputStream;
 		public final long contentLength;
 		public final File tempFile; // nullable
@@ -56,6 +58,19 @@ public class ExternalProviderHelper {
 			this.contentLength = contentLength;
 			this.tempFile = tempFile;
 			this.detectedContentType = detectedContentType;
+		}
+		
+		@Override
+		public void close() throws IOException {
+			try {
+				if (inputStream != null) {
+					inputStream.close();
+				}
+			} finally {
+				if (tempFile != null && tempFile.exists()) {
+					tempFile.delete();
+				}
+			}
 		}
 	}
 }

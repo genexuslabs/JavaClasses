@@ -169,10 +169,7 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 	}
 
 	public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
-		ExternalProviderHelper.InputStreamWithLength streamInfo = null;
-		try {
-			streamInfo = ExternalProviderHelper.getInputStreamContentLength(input);
-
+		try (ExternalProviderHelper.InputStreamWithLength streamInfo = ExternalProviderHelper.getInputStreamContentLength(input)) {
 			BlobId blobId = BlobId.of(bucket, externalFileName);
 			BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
 
@@ -183,14 +180,6 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 		} catch (IOException ex) {
 			handleIOException(ex);
 			return "";
-		} finally {
-			if (streamInfo != null && streamInfo.tempFile != null && streamInfo.tempFile.exists()) {
-				try {
-					streamInfo.tempFile.delete();
-				} catch (Exception e) {
-					logger.warn("Could not delete temporary file: " + streamInfo.tempFile.getAbsolutePath(), e);
-				}
-			}
 		}
 	}
 

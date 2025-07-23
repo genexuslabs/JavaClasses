@@ -139,10 +139,7 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 	}
 
 	public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
-		ExternalProviderHelper.InputStreamWithLength streamInfo = null;
-		try {
-			streamInfo = ExternalProviderHelper.getInputStreamContentLength(input);
-
+		try (ExternalProviderHelper.InputStreamWithLength streamInfo = ExternalProviderHelper.getInputStreamContentLength(input)) {
 			CloudBlockBlob blob = getCloudBlockBlob(externalFileName, acl);
 			blob.getProperties().setContentType((externalFileName.endsWith(".tmp") && "application/octet-stream".equals(streamInfo.detectedContentType)) ? "image/jpeg" : streamInfo.detectedContentType);
 			try (BlobOutputStream blobOutputStream = blob.openOutputStream()) {
@@ -162,15 +159,6 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 		} catch (IOException ex) {
 			logger.error("Error uploading file", ex);
 			return "";
-		}
-		finally {
-			if (streamInfo != null && streamInfo.tempFile != null && streamInfo.tempFile.exists()) {
-				try {
-					streamInfo.tempFile.delete();
-				} catch (Exception e) {
-					logger.warn("Could not delete temporary file: " + streamInfo.tempFile.getAbsolutePath(), e);
-				}
-			}
 		}
 	}
 
