@@ -33,7 +33,10 @@ public class GXEmbedding {
 	public GXEmbedding(Float[] embedding, String model, int dimensions) {
 		this.model = model;
 		this.dimensions = dimensions;
-		this.embedding = Arrays.asList(embedding);
+		if (embedding == null)
+			this.embedding = new ArrayList<>(Collections.nCopies(dimensions, 0.0f));
+		else
+			this.embedding = Arrays.asList(embedding);
 	}
 
 	public GXEmbedding(List<Float> embedding) {
