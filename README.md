@@ -4,8 +4,8 @@ These are the source of the GeneXus Standard Classes for Java, valid since GeneX
 ## Repo Status
 | Branch | Build | Security
 |---|---|---
-|master |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Amaster)|[![CodeQL](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml)
-|beta   |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Abeta)|[![CodeQL](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml)
+|master |[![Build](https://github.com/genexuslabs/JavaClasses/actions/workflows/Build.yml/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions/workflows/Build.yml)|[![CodeQL](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml)
+|beta   |[![Build](https://github.com/genexuslabs/JavaClasses/actions/workflows/Build.yml/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions/workflows/Build.yml)|[![CodeQL](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml)
 
 ## Modules
 
@@ -25,7 +25,13 @@ These are the source of the GeneXus Standard Classes for Java, valid since GeneX
 | gxexternalproviders | Implements service provider for IBM Cloud, Google, Azure, Amazon
 | gxgeospatial | Geography data type implementation
 | gxodata | OData access
-| gamsaml | GAM's External Object, SAML protocol implementation
+| securityapicommons | SecurityAPI's common module
+| gxcryptography | SecurityAPI's GeneXusCryptography module
+| gxjwt | SecurityAPI's GeneXusJWT module
+| gxxmlsignature | SecurityAPI's GeneXusXmlSignature module
+| gxftps | SecurityAPI's GeneXusFTPS module
+| gxsftp | SecurityAPI's GeneXusSFTP module
+
 
 The dependencies between the projects are specified in each pom.xml within their directory.
 

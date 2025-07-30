@@ -4,8 +4,8 @@ import HTTPClient.ParseException;
 import HTTPClient.URI;
 import com.genexus.CommonUtil;
 import com.genexus.common.interfaces.SpecificImplementation;
-import json.org.json.JSONException;
-import json.org.json.JSONObject;
+import org.json.JSONException;
+import com.genexus.json.JSONObjectWrapper;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -483,6 +483,8 @@ public abstract class GXHttpClient implements IHttpClient{
 
 	public abstract String getString();
 
+	public abstract void unreadChunk();
+
 	public abstract String readChunk();
 
 	public abstract boolean getEof();
@@ -568,15 +570,22 @@ public abstract class GXHttpClient implements IHttpClient{
 		return url;
 	}
 
+	boolean firstMultiPart;
 	@SuppressWarnings("unchecked")
 	protected byte[] getData()
 	{
 		byte[] out = new byte[0];
 
+		firstMultiPart = false;
+		int variablesCount = getVariablesToSend().size();
+		int count = 1;
 		for (Object key: getVariablesToSend().keySet())
 		{
+			if (count == variablesCount)
+				firstMultiPart = true;
 			String value = getMultipartTemplate().getFormDataTemplate((String)key, (String)getVariablesToSend().get(key));
 			getContentToSend().add(0, value); //Variables al principio
+			count++;
 		}
 
 		for (int idx = 0; idx < getContentToSend().size(); idx++)
@@ -792,7 +801,10 @@ public abstract class GXHttpClient implements IHttpClient{
 		}
 		String getFormDataTemplate(String varName, String value){
 			String contentType = getContentTypeFromString(value);
-			return "\r\n--" + boundary + "\r\nContent-Disposition: form-data; name=\"" + varName + "\"\r\n" + ((contentType != null)? "Content-Type: " + contentType + "\r\n" : "") + "\r\n" + value;
+			String beginformDataTemplate = "\r\n--";
+			if (firstMultiPart)
+				beginformDataTemplate = "--";
+			return beginformDataTemplate + boundary + "\r\nContent-Disposition: form-data; name=\"" + varName + "\"\r\n" + ((contentType != null)? "Content-Type: " + contentType + "\r\n" : "") + "\r\n" + value;
 		}
 
 		private String getContentTypeFromString(String value){
@@ -807,7 +819,7 @@ public abstract class GXHttpClient implements IHttpClient{
 
 		private boolean isJsonString(String value){
 			try {
-				JSONObject json = new JSONObject(value);
+				JSONObjectWrapper json = new JSONObjectWrapper(value);
 				return true;
 			} catch (JSONException e) {
 				return false;

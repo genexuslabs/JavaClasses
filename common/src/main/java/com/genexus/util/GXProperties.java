@@ -1,16 +1,15 @@
 package com.genexus.util;
 
-import java.util.LinkedHashMap;
+import java.util.*;
 
 import com.genexus.internet.IGxJSONSerializable;
 
-import json.org.json.*;
+import com.genexus.json.JSONObjectWrapper;
+import org.json.JSONException;
 
 import com.genexus.CommonUtil;
 import com.genexus.SdtMessages_Message;
 import com.genexus.GXBaseCollection;
-import java.util.Iterator;
-import java.util.Map;
 
 public class GXProperties implements IGxJSONSerializable {
 	private LinkedHashMap < String, GXProperty > properties = new LinkedHashMap < > ();
@@ -100,7 +99,7 @@ public class GXProperties implements IGxJSONSerializable {
 	}
 
 	public Object GetJSONObject() {
-		JSONObject jObj = new JSONObject();
+		JSONObjectWrapper jObj = new JSONObjectWrapper();
 		int i = 0;
 		while (count() > i) {
 			GXProperty prop = item(i);
@@ -113,8 +112,18 @@ public class GXProperties implements IGxJSONSerializable {
 	}
 
 	public String toJSonString() {
-		JSONObject jObj = (JSONObject) GetJSONObject();
+		JSONObjectWrapper jObj = (JSONObjectWrapper) GetJSONObject();
 		return jObj.toString();
+	}
+
+	public ArrayList<GXProperty> getList() {
+		ArrayList<GXProperty> list = new ArrayList<>();
+		int i = 0;
+		while (count() > i) {
+			list.add(item(i));
+			i++;
+		}
+		return list;
 	}
 
 	public boolean fromJSonString(String s) {
@@ -125,10 +134,9 @@ public class GXProperties implements IGxJSONSerializable {
 		this.clear();
 		if (!s.isEmpty()) {
 			try {
-				JSONObject jObj = new JSONObject(s);
-				Iterator < String > keys = jObj.keys();
-				while (keys.hasNext()) {
-					String key = keys.next();
+				JSONObjectWrapper jObj = new JSONObjectWrapper(s);
+				for (Map.Entry<String, Object> e : jObj.entrySet()) {
+					String key = e.getKey();
 					this.put(key, jObj.get(key).toString());
 				}
 				return true;

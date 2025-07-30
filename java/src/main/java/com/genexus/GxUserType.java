@@ -1,8 +1,9 @@
 package com.genexus;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genexus.xml.GXXMLSerializable;
 import java.util.HashMap;
-import json.org.json.JSONObject;
+import com.genexus.json.JSONObjectWrapper;
 import org.apache.logging.log4j.Logger;
 
 public abstract class GxUserType extends GXXMLSerializable implements Cloneable, java.io.Serializable, IGXAssigned
@@ -34,10 +35,15 @@ public abstract class GxUserType extends GXXMLSerializable implements Cloneable,
 	}
 
 	protected Object getJsonObjectFromHashMap( Object userType) {
-		JSONObject jsonObj = new JSONObject();
+		JSONObjectWrapper jsonObj = new JSONObjectWrapper();
 		try {
 			if (userType instanceof HashMap)
-				jsonObj = new json.org.json.JSONObject((HashMap)userType);
+				jsonObj = new JSONObjectWrapper((HashMap)userType);
+			else {
+				ObjectMapper mapper = new ObjectMapper();
+				String jsonString = mapper.writeValueAsString(userType);
+				jsonObj = new JSONObjectWrapper(jsonString);
+			}
 		}
 		catch(Exception e) {
 			log.error("Could not create Json Object", e);
@@ -49,5 +55,14 @@ public abstract class GxUserType extends GXXMLSerializable implements Cloneable,
 		fromjson(json);
 	}
 
-	protected void fromjson(String json){}
+	protected void fromjson(String json){
+		try {
+			Object instance = this.getClass().getMethod("getExternalInstance").invoke(this);
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.readerForUpdating(instance).readValue(json);
+		}
+		catch(Exception e) {
+			log.error("Error executing FromJson() method", e);
+		}
+	}
 }
