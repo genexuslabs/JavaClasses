@@ -48,6 +48,7 @@ public interface IHttpClient {
 	public void getHeader(String name, double[] value);
 	public InputStream getInputStream() throws IOException;
 	public String getString();
+	public void unreadChunk();
 	public String readChunk();
 	public boolean getEof();
 	public void toFile(String fileName);
