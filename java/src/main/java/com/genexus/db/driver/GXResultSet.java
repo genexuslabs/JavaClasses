@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
+import java.nio.ByteBuffer;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -829,6 +830,48 @@ public final class GXResultSet implements ResultSet, com.genexus.db.IFieldGetter
 			log(GXDBDebug.LOG_MAX, "Warning: getBytes");
 
 		return result.getBytes(columnIndex);
+	}
+
+	public Float[] getGxembedding (int columnIndex) throws SQLException
+	{
+		if	(DEBUG )
+			log(GXDBDebug.LOG_MAX, "Warning: getEmbedding");
+
+		if (con.getDBMS().getId() == GXDBMS.DBMS_POSTGRESQL) {
+			Object array = result.getArray(columnIndex);
+			if (array == null)
+				return null;
+			else
+				return convertVectorStringToFloatArray(array.toString());
+		}
+		else {
+			byte[] bytes = result.getBytes(columnIndex);
+			if (bytes == null)
+				return null;
+			else
+				return byteArrayToFloatObjectArray(bytes);
+		}
+	}
+
+	private static Float[] byteArrayToFloatObjectArray(byte[] bytes) {
+		Float[] floats = new Float[bytes.length / Float.BYTES];
+
+		ByteBuffer buffer = ByteBuffer.wrap(bytes);
+		for (int i = 0; i < floats.length; i++) {
+			floats[i] = buffer.getFloat();
+		}
+		return floats;
+	}
+
+	private static Float[] convertVectorStringToFloatArray(String vectorString) {
+		vectorString = vectorString.replace("[", "").replace("]", "").trim();
+		String[] stringValues = vectorString.split(",");
+		Float[] floatArray = new Float[stringValues.length];
+
+		for (int i = 0; i < stringValues.length; i++) {
+			floatArray[i] = Float.parseFloat(stringValues[i].trim());
+		}
+		return floatArray;
 	}
 
 	public java.util.UUID getGUID(int columnIndex) throws SQLException
