@@ -254,7 +254,7 @@ public class Log4J2Logger implements ILogger {
 	private void writeTextFormat(String message, int logLevel, Object data, boolean stackTrace) {
 		Map<String, Object> mapMessage = new LinkedHashMap<>();
 
-		if (data == null || (data instanceof String && "null".equals(data.toString()))) {
+		if (data == null) {
 			mapMessage.put(DATA_KEY, JSONObject.NULL);
 		} else if (data instanceof String && isJson((String) data)) { // JSON Strings
 			mapMessage.put(DATA_KEY, jsonStringToMap((String) data));
@@ -274,8 +274,8 @@ public class Log4J2Logger implements ILogger {
 	private void writeJsonFormat(String message, int logLevel, Object data, boolean stackTrace) {
 		MapMessage<?, ?> mapMessage = new MapMessage<>().with(MESSAGE_KEY, message);
 
-		if (data == null || (data instanceof String && "null".equals(data.toString()))) {
-			mapMessage.with(DATA_KEY, (Object) null);
+		if (data == null) {
+			mapMessage.with(DATA_KEY, JSONObject.NULL);
 		} else if (data instanceof String && isJson((String) data)) { // JSON Strings
 			mapMessage.with(DATA_KEY, jsonStringToMap((String) data));
 		} else {
