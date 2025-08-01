@@ -27,7 +27,7 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
-            <version>10.4</version>
+            <version>${jose.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
