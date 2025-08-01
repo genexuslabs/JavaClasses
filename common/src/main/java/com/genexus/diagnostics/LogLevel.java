@@ -1,14 +1,24 @@
 package com.genexus.diagnostics;
 
-public class LogLevel {
-	
-	static final int OFF = 0;
-	static final int TRACE = 1;
-	static final int DEBUG = 5;
-	static final int INFO = 10;
-	static final int WARNING = 15;
-	static final int ERROR = 20;
-	static final int FATAL = 30;
-	
-	
+public enum LogLevel {
+	OFF(0),
+	TRACE(1),
+	DEBUG(5),
+	INFO(10),
+	WARN(15),
+	ERROR(20),
+	FATAL(30);
+
+	private final int lvl;
+	LogLevel(int lvl) { this.lvl = lvl; }
+	public int intValue() { return lvl; }
+
+	public static LogLevel fromInt(int lvl) {
+		for (LogLevel level : LogLevel.values()) {
+			if (level.intValue() == lvl) {
+				return level;
+			}
+		}
+		return LogLevel.OFF;
+	}
 }
