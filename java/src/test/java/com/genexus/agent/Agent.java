@@ -84,7 +84,7 @@ public final  class Agent extends GXProcedure
 			messages.add(message);
 			ChatResult chatResult = chatAgent( "The weatherman", Gxproperties, messages, new CallResult()) ;
 			while (chatResult.hasMoreData()) {
-				System.out.print(chatResult.hasMoreData());
+				System.out.print(chatResult.getMoreData());
 			}
 		}
 		else if (AV3Parameter1.equals("toolcall")) {
@@ -110,7 +110,7 @@ public final  class Agent extends GXProcedure
 			messages.add(message);
 			ChatResult chatResult = chatAgent( "ProductInfo", Gxproperties, messages, new CallResult()) ;
 			while (chatResult.hasMoreData()) {
-				System.out.print(chatResult.hasMoreData());
+				System.out.print(chatResult.getMoreData());
 			}
 		}
 		else {
