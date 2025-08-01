@@ -114,6 +114,7 @@
     <module>gxcloudstorage-awss3-v2</module>
     <module>gxcompress</module>
     <module>securityapicommons</module>
+    <module>gamsaml20</module>
     <module>gxjwt</module>
     <module>gxcryptography</module>
     <module>gxxmlsignature</module>
