@@ -32,6 +32,7 @@ These are the source of the GeneXus Standard Classes for Java, valid since GeneX
 | gxftps | SecurityAPI's GeneXusFTPS module
 | gxsftp | SecurityAPI's GeneXusSFTP module
 
+
 The dependencies between the projects are specified in each pom.xml within their directory.
 
 # How to compile
