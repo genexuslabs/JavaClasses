@@ -18,12 +18,10 @@ import javax.net.ssl.SSLContext;
 import org.apache.http.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.conn.DnsResolver;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.impl.conn.SystemDefaultDnsResolver;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
@@ -66,44 +64,10 @@ import com.genexus.specific.java.*;
 
 public class HttpClientJavaLib extends GXHttpClient {
 
-	private static class FirstIpDnsResolver implements DnsResolver {
-		private final DnsResolver defaultDnsResolver = new SystemDefaultDnsResolver();
-
-		@Override
-		public InetAddress[] resolve(final String host) throws UnknownHostException {
-			InetAddress[] allIps = defaultDnsResolver.resolve(host);
-			if (allIps != null && allIps.length > 0) {
-				return new InetAddress[]{allIps[0]};
-			}
-			return allIps;
-		}
-	}
-
-	private static String getGxIpResolverConfig() {
-		String name = "GX_USE_FIRST_IP_DNS";
-		String gxDns = System.getProperty(name);
-		if (gxDns == null || gxDns.trim().isEmpty()) {
-			gxDns = System.getenv(name);
-		}
-		if (gxDns != null && gxDns.trim().equalsIgnoreCase("true")) {
-			return gxDns.trim();
-		} else {
-			return null;
-		}
-	}
-
-
 	public HttpClientJavaLib() {
 		getPoolInstance();
 		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();
-		HttpClientBuilder builder = HttpClients.custom()
-			.setConnectionManager(connManager)
-			.setConnectionManagerShared(true)
-			.setKeepAliveStrategy(myStrategy);
-		if (getGxIpResolverConfig() != null) {
-			builder.setDnsResolver(new FirstIpDnsResolver());
-		}
-		httpClientBuilder = builder;
+		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
 		cookies = new BasicCookieStore();		
 		streamsToClose = new Vector<>();
 	}
@@ -114,10 +78,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 				RegistryBuilder.<ConnectionSocketFactory>create()
 					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
 					.build();
-			boolean useCustomDnsResolver = getGxIpResolverConfig() != null;
-			PoolingHttpClientConnectionManager connManager = useCustomDnsResolver
-				? new PoolingHttpClientConnectionManager(socketFactoryRegistry, new FirstIpDnsResolver())
-				: new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
 			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_SIZE", "1000")));
 			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_PER_ROUTE", "1000")));
 
