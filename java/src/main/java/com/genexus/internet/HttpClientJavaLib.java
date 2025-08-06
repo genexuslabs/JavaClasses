@@ -66,19 +66,22 @@ import com.genexus.specific.java.*;
 
 public class HttpClientJavaLib extends GXHttpClient {
 
-	private static String getGxIpResolverConfig() {
+	private static final DnsResolver FIRST_IP_DNS_RESOLVER = host -> {
+		InetAddress[] allIps = SystemDefaultDnsResolver.INSTANCE.resolve(host);
+		if (allIps != null && allIps.length > 1) {
+			return new InetAddress[]{allIps[0]};
+		}
+		return allIps;
+	};
+
+	private static boolean isFirstIpDnsEnabled() {
 		String name = "GX_USE_FIRST_IP_DNS";
 		String gxDns = System.getProperty(name);
 		if (gxDns == null || gxDns.trim().isEmpty()) {
 			gxDns = System.getenv(name);
 		}
-		if (gxDns != null && gxDns.trim().equalsIgnoreCase("true")) {
-			return gxDns.trim();
-		} else {
-			return null;
-		}
+		return gxDns != null && gxDns.trim().equalsIgnoreCase("true");
 	}
-
 
 	public HttpClientJavaLib() {
 		getPoolInstance();
@@ -87,6 +90,9 @@ public class HttpClientJavaLib extends GXHttpClient {
 			.setConnectionManager(connManager)
 			.setConnectionManagerShared(true)
 			.setKeepAliveStrategy(myStrategy);
+		if (isFirstIpDnsEnabled()) {
+			builder.setDnsResolver(FIRST_IP_DNS_RESOLVER);
+		}
 		httpClientBuilder = builder;
 		cookies = new BasicCookieStore();		
 		streamsToClose = new Vector<>();
@@ -98,17 +104,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 				RegistryBuilder.<ConnectionSocketFactory>create()
 					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
 					.build();
-
-			if (getGxIpResolverConfig() != null) {
-				DnsResolver dnsResolver;
-				dnsResolver = host -> {
-					InetAddress[] allIps = SystemDefaultDnsResolver.INSTANCE.resolve(host);
-					if (allIps != null && allIps.length > 1) {
-						return new InetAddress[]{allIps[0]};
-					}
-					return allIps;
-				};
-				connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry, dnsResolver);
+			if (isFirstIpDnsEnabled()) {
+				connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry, FIRST_IP_DNS_RESOLVER);
 			} else {
 				connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
 			}
