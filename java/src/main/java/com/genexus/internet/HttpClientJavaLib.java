@@ -66,19 +66,6 @@ import com.genexus.specific.java.*;
 
 public class HttpClientJavaLib extends GXHttpClient {
 
-	private static class FirstIpDnsResolver implements DnsResolver {
-		private final DnsResolver defaultDnsResolver = new SystemDefaultDnsResolver();
-
-		@Override
-		public InetAddress[] resolve(final String host) throws UnknownHostException {
-			InetAddress[] allIps = defaultDnsResolver.resolve(host);
-			if (allIps != null && allIps.length > 0) {
-				return new InetAddress[]{allIps[0]};
-			}
-			return allIps;
-		}
-	}
-
 	private static String getGxIpResolverConfig() {
 		String name = "GX_USE_FIRST_IP_DNS";
 		String gxDns = System.getProperty(name);
@@ -100,9 +87,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 			.setConnectionManager(connManager)
 			.setConnectionManagerShared(true)
 			.setKeepAliveStrategy(myStrategy);
-		if (getGxIpResolverConfig() != null) {
-			builder.setDnsResolver(new FirstIpDnsResolver());
-		}
 		httpClientBuilder = builder;
 		cookies = new BasicCookieStore();		
 		streamsToClose = new Vector<>();
@@ -114,10 +98,17 @@ public class HttpClientJavaLib extends GXHttpClient {
 				RegistryBuilder.<ConnectionSocketFactory>create()
 					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
 					.build();
-			boolean useCustomDnsResolver = getGxIpResolverConfig() != null;
-			PoolingHttpClientConnectionManager connManager = useCustomDnsResolver
-				? new PoolingHttpClientConnectionManager(socketFactoryRegistry, new FirstIpDnsResolver())
-				: new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+			DnsResolver dnsResolver = null;
+			if (getGxIpResolverConfig() != null) {
+				dnsResolver = host -> {
+					InetAddress[] allIps = SystemDefaultDnsResolver.INSTANCE.resolve(host);
+					if (allIps != null && allIps.length > 1) {
+						return new InetAddress[]{allIps[0]};
+					}
+					return allIps;
+				};
+			}
+			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry, dnsResolver);
 			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_SIZE", "1000")));
 			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_PER_ROUTE", "1000")));
 
