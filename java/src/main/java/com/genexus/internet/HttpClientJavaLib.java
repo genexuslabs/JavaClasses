@@ -18,10 +18,12 @@ import javax.net.ssl.SSLContext;
 import org.apache.http.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.conn.DnsResolver;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.impl.conn.SystemDefaultDnsResolver;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
@@ -96,8 +98,9 @@ public class HttpClientJavaLib extends GXHttpClient {
 				RegistryBuilder.<ConnectionSocketFactory>create()
 					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
 					.build();
-			DnsResolver dnsResolver = null;
+
 			if (getGxIpResolverConfig() != null) {
+				DnsResolver dnsResolver;
 				dnsResolver = host -> {
 					InetAddress[] allIps = SystemDefaultDnsResolver.INSTANCE.resolve(host);
 					if (allIps != null && allIps.length > 1) {
@@ -105,8 +108,10 @@ public class HttpClientJavaLib extends GXHttpClient {
 					}
 					return allIps;
 				};
+				connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry, dnsResolver);
+			} else {
+				connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
 			}
-			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry, dnsResolver);
 			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_SIZE", "1000")));
 			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_PER_ROUTE", "1000")));
 
