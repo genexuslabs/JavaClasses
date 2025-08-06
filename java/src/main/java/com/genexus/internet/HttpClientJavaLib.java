@@ -18,11 +18,13 @@ import javax.net.ssl.SSLContext;
 import org.apache.http.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.conn.DnsResolver;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.entity.ContentType;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.impl.conn.SystemDefaultDnsResolver;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
@@ -64,11 +66,35 @@ import com.genexus.specific.java.*;
 
 public class HttpClientJavaLib extends GXHttpClient {
 
+	private static final DnsResolver FIRST_IP_DNS_RESOLVER = host -> {
+		InetAddress[] allIps = SystemDefaultDnsResolver.INSTANCE.resolve(host);
+		if (allIps != null && allIps.length > 1) {
+			return new InetAddress[]{allIps[0]};
+		}
+		return allIps;
+	};
+
+	private static boolean isFirstIpDnsEnabled() {
+		String name = "GX_USE_FIRST_IP_DNS";
+		String gxDns = System.getProperty(name);
+		if (gxDns == null || gxDns.trim().isEmpty()) {
+			gxDns = System.getenv(name);
+		}
+		return gxDns != null && gxDns.trim().equalsIgnoreCase("true");
+	}
+
 	public HttpClientJavaLib() {
 		getPoolInstance();
 		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();
-		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
-		cookies = new BasicCookieStore();		
+		HttpClientBuilder builder = HttpClients.custom()
+			.setConnectionManager(connManager)
+			.setConnectionManagerShared(true)
+			.setKeepAliveStrategy(myStrategy);
+		if (isFirstIpDnsEnabled()) {
+			builder.setDnsResolver(FIRST_IP_DNS_RESOLVER);
+		}
+		httpClientBuilder = builder;
+		cookies = new BasicCookieStore();
 		streamsToClose = new Vector<>();
 	}
 
@@ -78,7 +104,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 				RegistryBuilder.<ConnectionSocketFactory>create()
 					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https",getSSLSecureInstance())
 					.build();
-			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+			if (isFirstIpDnsEnabled()) {
+				connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry, FIRST_IP_DNS_RESOLVER);
+			} else {
+				connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+			}
 			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_SIZE", "1000")));
 			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_PER_ROUTE", "1000")));
 
@@ -620,7 +650,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			resetStateAdapted();
 		}
 	}
-	
+
 	private synchronized void displayHTTPConnections(){
 		Iterator<HttpRoute> iterator = storedRoutes.iterator();
 		while (iterator.hasNext()) {
