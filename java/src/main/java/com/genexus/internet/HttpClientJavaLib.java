@@ -68,7 +68,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 	private static final DnsResolver FIRST_IP_DNS_RESOLVER = host -> {
 		InetAddress[] allIps = SystemDefaultDnsResolver.INSTANCE.resolve(host);
-		if (allIps != null && allIps.length > 1) {
+		if (allIps != null && allIps.length > 0) {
 			return new InetAddress[]{allIps[0]};
 		}
 		return allIps;
