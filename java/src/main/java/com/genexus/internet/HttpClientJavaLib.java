@@ -66,18 +66,13 @@ import com.genexus.specific.java.*;
 
 public class HttpClientJavaLib extends GXHttpClient {
 
-	private static class FirstIpDnsResolver implements DnsResolver {
-		private final DnsResolver defaultDnsResolver = new SystemDefaultDnsResolver();
-
-		@Override
-		public InetAddress[] resolve(final String host) throws UnknownHostException {
-			InetAddress[] allIps = defaultDnsResolver.resolve(host);
-			if (allIps != null && allIps.length > 0) {
-				return new InetAddress[]{allIps[0]};
-			}
-			return allIps;
+	private static final DnsResolver FIRST_IP_DNS_RESOLVER = host -> {
+		InetAddress[] allIps = SystemDefaultDnsResolver.INSTANCE.resolve(host);
+		if (allIps != null && allIps.length > 0) {
+			return new InetAddress[]{allIps[0]};
 		}
-	}
+		return allIps;
+	};
 
 	private static String getGxIpResolverConfig() {
 		String name = "GX_USE_FIRST_IP_DNS";
