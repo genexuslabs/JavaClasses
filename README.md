@@ -30,7 +30,7 @@ These are the source of the GeneXus Standard Classes for Java, valid since GeneX
 | gxxmlsignature | SecurityAPI's GeneXusXmlSignature module
 | gxftps | SecurityAPI's GeneXusFTPS module
 | gxsftp | SecurityAPI's GeneXusSFTP module
-| gamsaml | GAM's External Object, SAML protocol implementation
+| gamsaml20 | GAM's External Object, custom SAML protocol implementation
 | gamutils | GAM external object with utilities
 | gamtotp | GAM external object for RFC6238 implementation
 

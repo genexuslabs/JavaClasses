@@ -121,7 +121,6 @@
         <module>gxjwt</module>
         <module>gxcryptography</module>
         <module>gxxmlsignature</module>
-        <module>gamsaml</module>
         <module>gxsftp</module>
         <module>gxftps</module>
         <module>gxcompress</module>
