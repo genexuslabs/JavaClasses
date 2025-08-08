@@ -10,6 +10,8 @@ import io.opentelemetry.context.Context;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.lang.reflect.Method;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -120,5 +122,72 @@ class OtelTracerTest {
         );
         
         assertNotNull(span);
+    }
+    
+    @Test
+    void testExtractAttributeValue() throws Exception {
+        // Get access to the private method using reflection
+        Method extractAttributeValueMethod = OtelTracer.class.getDeclaredMethod(
+            "extractAttributeValue", 
+            String.class, 
+            String.class
+        );
+        extractAttributeValueMethod.setAccessible(true);
+        
+        // Test case 1: Test with null parameters
+        String attributeValue = (String) extractAttributeValueMethod.invoke(
+            null, 
+            null, 
+            "service.name"
+        );
+        assertNull(attributeValue, "Should return null for null resource attributes");
+        
+        attributeValue = (String) extractAttributeValueMethod.invoke(
+            null, 
+            "service.name=test", 
+            null
+        );
+        assertNull(attributeValue, "Should return null for null attribute name");
+        
+        // Test case 2: Empty resource attributes
+        attributeValue = (String) extractAttributeValueMethod.invoke(
+            null, 
+            "", 
+            "service.name"
+        );
+        assertNull(attributeValue, "Should return null for empty resource attributes");
+        
+        // Test case 3: Simple key-value pair
+        String simpleAttributes = "service.name=test-service";
+        attributeValue = (String) extractAttributeValueMethod.invoke(
+            null, 
+            simpleAttributes, 
+            "service.name"
+        );
+        assertEquals("test-service", attributeValue, "Should extract simple attribute correctly");
+        
+        // Test case 4: Multiple key-value pairs
+        String multiAttributes = "service.name=my-service,service.version=1.0.0";
+        attributeValue = (String) extractAttributeValueMethod.invoke(
+            null, 
+            multiAttributes, 
+            "service.name"
+        );
+        assertEquals("my-service", attributeValue, "Should extract first attribute correctly");
+        
+        attributeValue = (String) extractAttributeValueMethod.invoke(
+            null, 
+            multiAttributes, 
+            "service.version"
+        );
+        assertEquals("1.0.0", attributeValue, "Should extract second attribute correctly");
+        
+        // Test case 5: Non-existent attribute
+        attributeValue = (String) extractAttributeValueMethod.invoke(
+            null, 
+            multiAttributes, 
+            "non.existent"
+        );
+        assertNull(attributeValue, "Should return null for non-existent attribute");
     }
 }
