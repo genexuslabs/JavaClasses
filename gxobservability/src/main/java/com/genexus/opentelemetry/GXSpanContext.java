@@ -1,33 +1,55 @@
 package com.genexus.opentelemetry;
 
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.context.Context;
-public class GXSpanContext
-{
-	private io.opentelemetry.api.trace.SpanContext _spanContext;
+import io.opentelemetry.api.trace.SpanContext;
 
-	public io.opentelemetry.api.trace.SpanContext getSpanContext()
-	{
-		return _spanContext;
+/**
+ * Wrapper class for OpenTelemetry SpanContext.
+ * Provides access to trace and span identifiers.
+ */
+public class GXSpanContext {
+	private final SpanContext spanContext;
+
+	/**
+	 * Returns the underlying OpenTelemetry SpanContext
+	 * 
+	 * @return the underlying SpanContext instance
+	 */
+	public SpanContext getSpanContext() {
+		return spanContext;
 	}
-	public GXSpanContext(io.opentelemetry.api.trace.SpanContext spanContext)
-	{
-		this._spanContext = spanContext;
+	
+	/**
+	 * Creates a GXSpanContext from an existing SpanContext
+	 * 
+	 * @param spanContext the OpenTelemetry SpanContext to wrap
+	 */
+	public GXSpanContext(SpanContext spanContext) {
+		this.spanContext = spanContext;
 	}
-	public GXSpanContext()
-	{
-		_spanContext = Span.current().getSpanContext();
+	
+	/**
+	 * Creates a GXSpanContext from the current active span
+	 */
+	public GXSpanContext() {
+		spanContext = Span.current().getSpanContext();
 	}
-	public String traceId()
-	{
-		return _spanContext.getTraceId();
+	
+	/**
+	 * Gets the trace ID of the current span context
+	 * 
+	 * @return the trace ID as a hexadecimal string
+	 */
+	public String traceId() {
+		return spanContext.getTraceId();
 	}
-	public String spanId()
-	{
-		return _spanContext.getSpanId();
+	
+	/**
+	 * Gets the span ID of the current span context
+	 * 
+	 * @return the span ID as a hexadecimal string
+	 */
+	public String spanId() {
+		return spanContext.getSpanId();
 	}
 }
