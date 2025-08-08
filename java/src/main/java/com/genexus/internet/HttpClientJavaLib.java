@@ -74,19 +74,14 @@ public class HttpClientJavaLib extends GXHttpClient {
 		return allIps;
 	};
 
-	private static String getGxIpResolverConfig() {
+	private static boolean isFirstIpDnsEnabled() {
 		String name = "GX_USE_FIRST_IP_DNS";
 		String gxDns = System.getProperty(name);
 		if (gxDns == null || gxDns.trim().isEmpty()) {
 			gxDns = System.getenv(name);
 		}
-		if (gxDns != null && gxDns.trim().equalsIgnoreCase("true")) {
-			return gxDns.trim();
-		} else {
-			return null;
-		}
+		return gxDns != null && gxDns.trim().equalsIgnoreCase("true");
 	}
-
 
 	public HttpClientJavaLib() {
 		getPoolInstance();
@@ -95,11 +90,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 			.setConnectionManager(connManager)
 			.setConnectionManagerShared(true)
 			.setKeepAliveStrategy(myStrategy);
-		if (getGxIpResolverConfig() != null) {
-			builder.setDnsResolver(new FirstIpDnsResolver());
+		if (isFirstIpDnsEnabled()) {
+			builder.setDnsResolver(FIRST_IP_DNS_RESOLVER);
 		}
 		httpClientBuilder = builder;
-		cookies = new BasicCookieStore();		
+		cookies = new BasicCookieStore();
 		streamsToClose = new Vector<>();
 	}
 
@@ -107,12 +102,13 @@ public class HttpClientJavaLib extends GXHttpClient {
 		if(connManager == null) {
 			Registry<ConnectionSocketFactory> socketFactoryRegistry =
 				RegistryBuilder.<ConnectionSocketFactory>create()
-					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https",getSSLSecureInstance())
+					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
 					.build();
-			boolean useCustomDnsResolver = getGxIpResolverConfig() != null;
-			PoolingHttpClientConnectionManager connManager = useCustomDnsResolver
-				? new PoolingHttpClientConnectionManager(socketFactoryRegistry, new FirstIpDnsResolver())
-				: new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+			if (isFirstIpDnsEnabled()) {
+				connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry, FIRST_IP_DNS_RESOLVER);
+			} else {
+				connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+			}
 			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_SIZE", "1000")));
 			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_PER_ROUTE", "1000")));
 
