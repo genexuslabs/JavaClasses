@@ -179,7 +179,7 @@ public class OtelTracer {
 			return null;
 		}
 		
-		String pattern = "(?:\\b\\w+\\b=\\w+)(?:,(?:\\b\\w+\\b=\\w+))*";
+		String pattern = "(\\w[\\w.\\-]*?)=([^,]+)";
 		Pattern regex = Pattern.compile(pattern);
 		Matcher matcher = regex.matcher(resourceAttributes);
 
