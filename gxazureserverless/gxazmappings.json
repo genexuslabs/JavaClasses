@@ -1,0 +1,34 @@
+[
+  {
+    "FunctionName": "TestQueueRaw",
+    "GXEntrypoint": "com.unittest.eventdriven.queue.handlequeueazureevent"
+  },
+  {
+    "FunctionName": "TestQueueEventMessage",
+    "GXEntrypoint": "com.unittest.eventdriven.queue.handlequeueazureevent2"
+  },
+  {
+    "FunctionName": "TestTimerRaw",
+    "GXEntrypoint": "com.unittest.eventdriven.timer.handletimerazureevent"
+  },
+  {
+    "FunctionName": "TestServiceBusRaw",
+    "GXEntrypoint": "com.unittest.eventdriven.servicebus.handlesbqueueazureevent"
+  },
+  {
+    "FunctionName": "TestServiceBusMessage",
+    "GXEntrypoint": "com.unittest.eventdriven.servicebus.handlesbqueueazureevent2"
+  },
+  {
+    "FunctionName": "TestEventGridRaw",
+    "GXEntrypoint": "com.unittest.eventdriven.eventgrid.handleeventgridazure"
+  },
+  {
+    "FunctionName": "TestEventGridCloud",
+    "GXEntrypoint": "com.unittest.eventdriven.eventgridcloud.handleeventgridcloudazure"
+  },
+  {
+    "FunctionName": "TestCosmosDB",
+    "GXEntrypoint": "com.unittest.eventdriven.cosmosdb.handlecosmosdbazure"
+  }
+]

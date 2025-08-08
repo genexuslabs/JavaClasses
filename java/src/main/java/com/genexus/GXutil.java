@@ -9,14 +9,15 @@ import java.util.*;
 
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.db.DataStoreProvider;
+import com.genexus.db.GXEmbedding;
 import com.genexus.internet.HttpContext;
 import com.genexus.internet.StringCollection;
 import com.genexus.platform.INativeFunctions;
 import com.genexus.platform.NativeFunctions;
 import com.genexus.util.*;
 
-import json.org.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
+import org.json.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 
 public final class GXutil
 {
@@ -1775,6 +1776,10 @@ public final class GXutil
 			return "";
 		}
 		return url.toString();
+	}
+
+	public static String embeddingToStr(GXEmbedding embedding) {
+		return embedding.toString();
 	}
 
 }

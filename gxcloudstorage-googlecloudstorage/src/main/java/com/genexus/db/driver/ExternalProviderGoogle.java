@@ -1,6 +1,5 @@
 package com.genexus.db.driver;
 
-import com.genexus.Application;
 import com.genexus.StructSdtMessages_Message;
 import com.genexus.util.GXService;
 import com.genexus.util.StorageUtils;
@@ -17,7 +16,6 @@ import com.google.api.services.storage.model.Objects;
 import com.google.api.services.storage.model.StorageObject;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.storage.*;
-import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -55,10 +53,6 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 	public ExternalProviderGoogle() throws Exception{
 		super();
 		initialize();
-	}
-
-	public ExternalProviderGoogle(String service) throws Exception{
-		this(Application.getGXServices().get(service));
 	}
 
 	public ExternalProviderGoogle(GXService providerService) throws Exception{
@@ -175,11 +169,12 @@ public class ExternalProviderGoogle extends ExternalProviderBase implements Exte
 	}
 
 	public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
-		try {
+		try (ExternalProviderHelper.InputStreamWithLength streamInfo = ExternalProviderHelper.getInputStreamContentLength(input)) {
 			BlobId blobId = BlobId.of(bucket, externalFileName);
 			BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
-			byte[] targetArray = IOUtils.toByteArray(input);
-			storageClient.create(blobInfo, targetArray);
+
+			storageClient.createFrom(blobInfo, streamInfo.tempFile.toPath());
+
 			setBlobAcl(blobId, acl);
 			return getResourceUrl(blobInfo, acl);
 		} catch (IOException ex) {

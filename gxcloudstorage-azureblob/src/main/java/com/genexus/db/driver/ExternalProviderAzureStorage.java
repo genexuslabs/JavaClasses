@@ -1,6 +1,5 @@
 package com.genexus.db.driver;
 
-import com.genexus.Application;
 import com.genexus.StructSdtMessages_Message;
 import com.genexus.util.GXService;
 import com.genexus.util.StorageUtils;
@@ -47,9 +46,6 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 	private String privateContainerName;
 	private String publicContainerName;
 
-	public ExternalProviderAzureStorage(String service) throws Exception {
-		this(Application.getGXServices().get(service));
-	}
 
 	private void init() throws Exception {
 		try {
@@ -143,17 +139,14 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 	}
 
 	public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
-
-		try {
+		try (ExternalProviderHelper.InputStreamWithLength streamInfo = ExternalProviderHelper.getInputStreamContentLength(input)) {
 			CloudBlockBlob blob = getCloudBlockBlob(externalFileName, acl);
-			if (externalFileName.endsWith(".tmp")) {
-				blob.getProperties().setContentType("image/jpeg");
-			}
+			blob.getProperties().setContentType((externalFileName.endsWith(".tmp") && "application/octet-stream".equals(streamInfo.detectedContentType)) ? "image/jpeg" : streamInfo.detectedContentType);
 			try (BlobOutputStream blobOutputStream = blob.openOutputStream()) {
-				int next = input.read();
-				while (next != -1) {
-					blobOutputStream.write(next);
-					next = input.read();
+				byte[] buffer = new byte[8192];
+				int bytesRead;
+				while ((bytesRead = streamInfo.inputStream.read(buffer)) != -1) {
+					blobOutputStream.write(buffer, 0, bytesRead);
 				}
 			}
 			return getResourceUrl(externalFileName, acl, DEFAULT_EXPIRATION_MINUTES);

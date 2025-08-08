@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -12,16 +13,17 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.*;
 import java.net.URI;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.net.ssl.SSLContext;
 
 import org.apache.http.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.conn.DnsResolver;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.entity.ContentType;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.impl.conn.SystemDefaultDnsResolver;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
@@ -64,12 +66,45 @@ import com.genexus.specific.java.*;
 
 public class HttpClientJavaLib extends GXHttpClient {
 
+	private static class FirstIpDnsResolver implements DnsResolver {
+		private final DnsResolver defaultDnsResolver = new SystemDefaultDnsResolver();
+
+		@Override
+		public InetAddress[] resolve(final String host) throws UnknownHostException {
+			InetAddress[] allIps = defaultDnsResolver.resolve(host);
+			if (allIps != null && allIps.length > 0) {
+				return new InetAddress[]{allIps[0]};
+			}
+			return allIps;
+		}
+	}
+
+	private static String getGxIpResolverConfig() {
+		String name = "GX_USE_FIRST_IP_DNS";
+		String gxDns = System.getProperty(name);
+		if (gxDns == null || gxDns.trim().isEmpty()) {
+			gxDns = System.getenv(name);
+		}
+		if (gxDns != null && gxDns.trim().equalsIgnoreCase("true")) {
+			return gxDns.trim();
+		} else {
+			return null;
+		}
+	}
+
+
 	public HttpClientJavaLib() {
 		getPoolInstance();
 		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();
-		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
-		cookies = new BasicCookieStore();
-		logger.info("Using apache http client implementation");
+		HttpClientBuilder builder = HttpClients.custom()
+			.setConnectionManager(connManager)
+			.setConnectionManagerShared(true)
+			.setKeepAliveStrategy(myStrategy);
+		if (getGxIpResolverConfig() != null) {
+			builder.setDnsResolver(new FirstIpDnsResolver());
+		}
+		httpClientBuilder = builder;
+		cookies = new BasicCookieStore();		
 		streamsToClose = new Vector<>();
 	}
 
@@ -79,7 +114,10 @@ public class HttpClientJavaLib extends GXHttpClient {
 				RegistryBuilder.<ConnectionSocketFactory>create()
 					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
 					.build();
-			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+			boolean useCustomDnsResolver = getGxIpResolverConfig() != null;
+			PoolingHttpClientConnectionManager connManager = useCustomDnsResolver
+				? new PoolingHttpClientConnectionManager(socketFactoryRegistry, new FirstIpDnsResolver())
+				: new PoolingHttpClientConnectionManager(socketFactoryRegistry);
 			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_SIZE", "1000")));
 			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_PER_ROUTE", "1000")));
 
@@ -94,7 +132,6 @@ public class HttpClientJavaLib extends GXHttpClient {
 	@Override
 	protected void finalize() {
 		this.closeOpenedStreams();
-		executor.shutdown();
 	}
 
 	private ConnectionKeepAliveStrategy generateKeepAliveStrategy() {
@@ -488,16 +525,26 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 			try (CloseableHttpClient httpClient = this.httpClientBuilder.build()) {
 				if (method.equalsIgnoreCase("GET")) {
-					HttpGetWithBody httpget = new HttpGetWithBody(url.trim());
-					httpget.setConfig(reqConfig);
-					Set<String> keys = getheadersToSend().keySet();
-					for (String header : keys) {
-						httpget.addHeader(header, getheadersToSend().get(header));
+					byte[] data = getData();
+					if (data.length > 0) {
+						HttpGetWithBody httpGetWithBody = new HttpGetWithBody(url.trim());
+						httpGetWithBody.setConfig(reqConfig);
+						Set<String> keys = getheadersToSend().keySet();
+						for (String header : keys) {
+							httpGetWithBody.addHeader(header, getheadersToSend().get(header));
+						}
+						httpGetWithBody.setEntity(new ByteArrayEntity(data));
+						response = httpClient.execute(httpGetWithBody, httpClientContext);
 					}
-
-					httpget.setEntity(new ByteArrayEntity(getData()));
-
-					response = httpClient.execute(httpget, httpClientContext);
+					else {
+						HttpGet httpget = new HttpGet(url.trim());
+						httpget.setConfig(reqConfig);
+						Set<String> keys = getheadersToSend().keySet();
+						for (String header : keys) {
+							httpget.addHeader(header, getheadersToSend().get(header));
+						}
+						response = httpClient.execute(httpget, httpClientContext);
+					}
 
 				} else if (method.equalsIgnoreCase("POST")) {
 					HttpPost httpPost = new HttpPost(url.trim());
@@ -616,9 +663,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 		finally {
 			if (Application.isJMXEnabled()){
-				if (executor.isShutdown())
-					executor = Executors.newSingleThreadExecutor();
-				executor.submit(this::displayHTTPConnections);
+				this.displayHTTPConnections();
 			}
 			if (getIsURL()) {
 				this.setHost(getPrevURLhost());
@@ -630,8 +675,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			resetStateAdapted();
 		}
 	}
-
-	private static ExecutorService executor = Executors.newSingleThreadExecutor();
+	
 	private synchronized void displayHTTPConnections(){
 		Iterator<HttpRoute> iterator = storedRoutes.iterator();
 		while (iterator.hasNext()) {
@@ -723,24 +767,38 @@ public class HttpClientJavaLib extends GXHttpClient {
 			return "";
 		try {
 			this.setEntity();
-			String res = EntityUtils.toString(entity, "UTF-8");
+			Charset charset = ContentType.getOrDefault(response.getEntity()).getCharset();
+			String res = EntityUtils.toString(entity, charset);
+			if (res.matches(".*[Ã-ÿ].*")) {
+				res = EntityUtils.toString(entity, StandardCharsets.UTF_8);
+			}
 			eof = true;
 			return res;
 		} catch (IOException e) {
 			setExceptionsCatch(e);
-		} catch (IllegalArgumentException e) {
-		}
+		} catch (IllegalArgumentException e) {}
 		return "";
 	}
 
 	private	boolean eof;
+	private String previousChunkReaded;
+	private boolean usePreviousChunkReaded;
 	public boolean getEof() {
 		return eof;
+	}
+
+	public void unreadChunk() {
+		usePreviousChunkReaded = true;
 	}
 
 	public String readChunk() {
 		if (!isChunkedResponse)
 			return getString();
+
+		if (usePreviousChunkReaded) {
+			usePreviousChunkReaded = false;
+			return previousChunkReaded;
+		}
 
 		if (response == null)
 			return "";
@@ -751,6 +809,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 				eof = true;
 				res = "";
 			}
+			previousChunkReaded = res;
 			return res;
 		} catch (IOException e) {
 			setExceptionsCatch(e);

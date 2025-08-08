@@ -1,5 +1,6 @@
 package com.genexus.test.cache.redis;
 
+import com.genexus.Application;
 import com.genexus.cache.redis.RedisClient;
 import com.genexus.db.CacheValue;
 import org.apache.logging.log4j.LogManager;
@@ -24,12 +25,27 @@ public class TestRedisCacheClient {
 
 		Connect.init();
 		com.genexus.specific.java.LogManager.initialize(".");
+		Application.init(com.genexus.sampleapp.GXcfg.class);
 	}
 
 	@Test
 	public void connect_full_url()
 	{
 		RedisClient redis = getRedisClient("redis://localhost:6379", "");
+		Assert.assertNotNull("Redis instance could not be created", redis);
+	}
+
+	@Test
+	public void connect_full_ssl_url()
+	{
+		RedisClient redis = getRedisClient("rediss://localhost:6379", "");
+		Assert.assertNotNull("Redis instance could not be created", redis);
+	}
+
+	@Test
+	public void connect_full_url_database()
+	{
+		RedisClient redis = getRedisClient("redis://localhost:6379/4", "");
 		Assert.assertNotNull("Redis instance could not be created", redis);
 	}
 

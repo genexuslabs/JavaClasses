@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -18,19 +18,19 @@ import com.genexus.Application;
 import com.genexus.ICacheService2;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
+import com.genexus.util.Encryption;
 import com.genexus.util.GXService;
 import com.genexus.util.GXServices;
 
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.*;
 
 
 public class RedisClient implements ICacheService2, Closeable {
 	public static final ILogger logger = LogManager.getLogger(RedisClient.class);
 	private String keyPattern = "%s_%s_%s"; //Namespace_KEY
 	private static int REDIS_DEFAULT_PORT = 6379;
+	private static String REDIS_SCHEMA = "redis://";
+	private static String REDIS_SSL_SCHEMA = "rediss://";
 	private JedisPool pool;
 	private ObjectMapper objMapper;
 
@@ -59,9 +59,11 @@ public class RedisClient implements ICacheService2, Closeable {
 		String host = "127.0.0.1";
 		hostOrRedisURL = isNullOrEmpty(hostOrRedisURL) ? host: hostOrRedisURL;
 		int port = REDIS_DEFAULT_PORT;
+		int database = Protocol.DEFAULT_DATABASE;
+		boolean ssl;
 
-		boolean isRedisURIScheme = hostOrRedisURL.startsWith("redis://");
-		String sRedisURI = isRedisURIScheme ? hostOrRedisURL : "redis://" + hostOrRedisURL;
+		boolean isRedisURIScheme = hostOrRedisURL.startsWith(REDIS_SCHEMA) || hostOrRedisURL.startsWith(REDIS_SSL_SCHEMA);
+		String sRedisURI = isRedisURIScheme ? hostOrRedisURL : REDIS_SCHEMA + hostOrRedisURL;
 
 		try {
 			URI redisURI = new URI(sRedisURI);
@@ -69,14 +71,19 @@ public class RedisClient implements ICacheService2, Closeable {
 			if (redisURI.getPort() > 0) {
 				port = redisURI.getPort();
 			}
+			String path = redisURI.getPath();
+			if (path != null && path.length() > 1) {
+				database = Integer.parseInt(path.substring(1));
+			}
+			ssl = redisURI.getScheme().equals("rediss");
 		} catch (URISyntaxException e) {
 			logger.error(String.format("Could not parse Redis URL. Check for supported URLs: %s" , sRedisURI), e);
 			throw e;
 		}
 
-		password = (!isNullOrEmpty(password)) ? password : null;
+		password = (!isNullOrEmpty(password)) ? Encryption.tryDecrypt64(password) : null;
 
-		pool = new JedisPool(new JedisPoolConfig(), host, port, redis.clients.jedis.Protocol.DEFAULT_TIMEOUT, password);
+		pool = new JedisPool(new JedisPoolConfig(), host, port, redis.clients.jedis.Protocol.DEFAULT_TIMEOUT, password, database, ssl);
 
 		objMapper = new ObjectMapper();
 		objMapper

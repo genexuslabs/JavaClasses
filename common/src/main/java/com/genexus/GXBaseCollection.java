@@ -10,9 +10,10 @@ import com.genexus.xml.GXXMLSerializable;
 import com.genexus.xml.GXXMLSerializer;
 import com.genexus.xml.XMLReader;
 import com.genexus.xml.XMLWriter;
+import com.genexus.json.JSONObjectWrapper;
 
-import json.org.json.IJsonFormattable;
-import json.org.json.JSONArray;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class GXBaseCollection<T extends GXXMLSerializable> extends GXSimpleCollection<T> {
 
@@ -223,7 +224,7 @@ public class GXBaseCollection<T extends GXXMLSerializable> extends GXSimpleColle
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void FromJSONObject(IJsonFormattable obj)
+	public void FromJSONObject(Object obj)
 	{
 		this.clear();
 		JSONArray jsonArr = (JSONArray)obj;
@@ -231,7 +232,9 @@ public class GXBaseCollection<T extends GXXMLSerializable> extends GXSimpleColle
 		{
 			try
 			{
-				Object jsonObj = jsonArr.get(i);				
+				Object jsonObj = jsonArr.get(i);
+				if ((jsonObj instanceof JSONObject) && !(jsonObj instanceof JSONObjectWrapper))
+					jsonObj = new JSONObjectWrapper((JSONObject)jsonObj);
 				Class[] parTypes = new Class[] {};
 				Object[] arglist = new Object[] {};
 				if (elementsType == null)
@@ -251,7 +254,7 @@ public class GXBaseCollection<T extends GXXMLSerializable> extends GXSimpleColle
 
 						Constructor<T> constructor = elementsType.getConstructor(parTypes);
 						currObj = constructor.newInstance(arglist);
-						((IGxJSONAble)currObj).FromJSONObject((IJsonFormattable)jsonObj);
+						((IGxJSONAble)currObj).FromJSONObject(jsonObj);
 					}
 					add((T)currObj);
 				}

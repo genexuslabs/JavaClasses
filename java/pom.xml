@@ -60,11 +60,6 @@
 			<version>3.1.2.2</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>2.11.0</version>
-		</dependency>
-		<dependency>
 			<groupId>commons-net</groupId>
 			<artifactId>commons-net</artifactId>
 			<version>3.9.0</version>
@@ -113,14 +108,9 @@
     		<version>5.0.0</version>
 		</dependency>
 		<dependency>
-		    <groupId>com.lowagie</groupId>
-		    <artifactId>itextasian</artifactId>
-		    <version>1.5.2</version>
-		</dependency>
-		<dependency>
     		<groupId>org.apache.pdfbox</groupId>
     		<artifactId>pdfbox</artifactId>
-    		<version>2.0.27</version>
+    		<version>3.0.3</version>
 		</dependency>
 		<dependency>
     		<groupId>org.jsoup</groupId>
@@ -168,6 +158,11 @@
             <groupId>io.opentelemetry.instrumentation</groupId>
             <artifactId>opentelemetry-instrumentation-annotations</artifactId>
             <version>${io.opentelemetry.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-dbcp2</artifactId>
+            <version>2.9.0</version>
         </dependency>
     </dependencies>
 	

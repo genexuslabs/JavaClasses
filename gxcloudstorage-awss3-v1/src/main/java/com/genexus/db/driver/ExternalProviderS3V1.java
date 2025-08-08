@@ -8,7 +8,6 @@ import com.amazonaws.services.s3.S3ClientOptions;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import com.amazonaws.HttpMethod;
-import com.genexus.Application;
 import com.genexus.util.GXService;
 import com.genexus.util.StorageUtils;
 import com.genexus.StructSdtMessages_Message;
@@ -18,7 +17,6 @@ import java.io.ByteArrayInputStream;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.util.IOUtils;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -28,6 +26,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
 
 public class ExternalProviderS3V1 extends ExternalProviderBase implements ExternalProvider  {
 	private static Logger logger = LogManager.getLogger(ExternalProviderS3V1.class);
@@ -72,10 +71,6 @@ public class ExternalProviderS3V1 extends ExternalProviderBase implements Extern
 
 	public String getName(){
 		return NAME;
-	}
-
-	public ExternalProviderS3V1(String service) throws Exception{
-		this(Application.getGXServices().get(service));
 	}
 
 	public ExternalProviderS3V1() throws Exception{
@@ -224,19 +219,14 @@ public class ExternalProviderS3V1 extends ExternalProviderBase implements Extern
 	}
 
 	public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
-		byte[] bytes;
-		try {
-			bytes = IOUtils.toByteArray(input);
+		try (ExternalProviderHelper.InputStreamWithLength streamInfo = ExternalProviderHelper.getInputStreamContentLength(input)) {
 			ObjectMetadata metadata = new ObjectMetadata();
-			metadata.setContentLength(bytes.length);
-			if (externalFileName.endsWith(".tmp")) {
-				metadata.setContentType("image/jpeg");
-			}
+			metadata.setContentLength(streamInfo.contentLength);
+			metadata.setContentType((externalFileName.endsWith(".tmp") && "application/octet-stream".equals(streamInfo.detectedContentType)) ? "image/jpeg" : streamInfo.detectedContentType);
+
 			String upload = "";
-			try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes)) {
-				client.putObject(new PutObjectRequest(bucket, externalFileName, byteArrayInputStream, metadata).withCannedAcl(internalToAWSACL(acl)));
-				upload = getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
-			}
+			client.putObject(new PutObjectRequest(bucket, externalFileName, streamInfo.inputStream, metadata).withCannedAcl(internalToAWSACL(acl)));
+			upload = getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
 			return upload;
 		} catch (IOException ex) {
 			logger.error("Error while uploading file to the external provider.", ex);
