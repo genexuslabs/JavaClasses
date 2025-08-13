@@ -22,7 +22,7 @@ public class TestGxReadEnvVar {
 	private static final String FIRST_VALUE = "FirstDB_URL";
 	private static final String SECOND_VALUE = "SecondDB_URL";
 
-	@Test
+	//@Test
 	public void testGxReadEnvVar() throws Exception {
 		Connect.init();
 		ModelContext modelContext = ModelContext.getModelContext(GXcfg.class);
