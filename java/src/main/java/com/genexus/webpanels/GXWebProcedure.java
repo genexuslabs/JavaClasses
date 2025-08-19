@@ -69,16 +69,15 @@ public abstract class GXWebProcedure extends GXObjectBase
 		super.initState(context, ui);
 
 		if(httpContext.getHttpSecure() == 0)httpContext.setHeader("pragma", "no-cache");
-		if (isChunked()) {
-			httpContext.setChunked();
-			httpContext.setCompression(false);
-		}
 
+		if (!isBufferedResponse()) {
+			httpContext.setResponseBufferMode(HttpContext.ResponseBufferMode.DISABLED);
+		}
 		initialize();
 	}
 
-	protected boolean isChunked() {
-		return false;
+	protected boolean isBufferedResponse() {
+		return true;
 	}
 
 	protected void preExecute()
