@@ -6,6 +6,7 @@ import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.utils.Constants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.xml.xpath.XPath;
@@ -22,8 +23,9 @@ public class DSig {
 
 	private static final Logger logger = LogManager.getLogger(DSig.class);
 
-	public static boolean validateSignatures(Document xmlDoc, String certPath, String certAlias, String certPassword) {
+	public static String validateSignatures(Document xmlDoc, String certPath, String certAlias, String certPassword) {
 		logger.trace("validateSignatures");
+		List<Element> assertions = new ArrayList<Element>();
 		X509Certificate cert = Keys.loadCertificate(certPath, certAlias, certPassword);
 
 		NodeList nodes = findElementsByPath(xmlDoc, "//*[@ID]");
@@ -31,29 +33,47 @@ public class DSig {
 		NodeList signatures = xmlDoc.getElementsByTagNameNS(Constants.SignatureSpecNS, Constants._TAG_SIGNATURE);
 		//check the message is signed - security measure
 		if(signatures.getLength() == 0){
-			return false;
+			return "";
 		}
 		for (int i = 0; i < signatures.getLength(); i++) {
 			Element signedElement = findNodeById(nodes, getSignatureID((Element) signatures.item(i)));
+			assertions.add(signedElement);
 			if (signedElement == null) {
-				return false;
+				return "";
 			}
 			signedElement.setIdAttribute("ID", true);
 			try {
 				XMLSignature signature = new XMLSignature((Element) signatures.item(i), "");
 				//verifies the signature algorithm is one expected - security meassure
 				if (!verifySignatureAlgorithm((Element) signatures.item(i))) {
-					return false;
+					return "";
 				}
 				if (!signature.checkSignatureValue(cert)) {
-					return false;
+					return "";
 				}
 			} catch (Exception e) {
 				logger.error("validateSignatures", e);
-				return false;
+				return "";
 			}
 		}
-		return true;
+		return buildXml(assertions, xmlDoc);
+	}
+
+	public static String buildXml(List<Element> assertions, Document xmlDoc){
+		//security meassure against assertion manipulation, it assures that every assertion to be used on the app has been signed and verified
+		Element element = xmlDoc.getDocumentElement();
+		Node response  = element.cloneNode(false);
+
+		NodeList status = element.getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:protocol", "Status");
+		response.appendChild(status.item(0));
+
+		for(Element elem: assertions){
+			if(!elem.getLocalName().equals("Response")){
+				Node node = elem.cloneNode(true);
+				response.appendChild(node);
+			}
+		}
+		return Encoding.elementToString((Element) response);
 	}
 
 	private static boolean verifySignatureAlgorithm(Element elem) {
