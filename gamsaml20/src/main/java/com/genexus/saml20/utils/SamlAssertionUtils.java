@@ -49,6 +49,37 @@ public class SamlAssertionUtils {
 		}
 	}
 
+	public static String buildXmlLogin(List<org.w3c.dom.Element> assertions, Document xmlDoc){
+		//security meassure against assertion manipulation, it assures that every assertion to be used on the app has been signed and verified
+		org.w3c.dom.Element element = xmlDoc.getDocumentElement();
+		Node response  = element.cloneNode(false);
+
+		NodeList status = element.getElementsByTagNameNS(_saml_protocolNS, "Status");
+		response.appendChild(status.item(0));
+
+		for(org.w3c.dom.Element elem: assertions){
+			if(!elem.getLocalName().equals("Response")){
+				Node node = elem.cloneNode(true);
+				response.appendChild(node);
+			}
+		}
+		return Encoding.elementToString((org.w3c.dom.Element) response);
+	}
+
+	public static String buildXmlLogout(List<org.w3c.dom.Element> assertions){
+		if(assertions.isEmpty())
+		{
+			return "";
+		}
+		org.w3c.dom.Element element =  assertions.get(0);
+		Node logoutResponse = element.cloneNode(false);
+		NodeList status = element.getElementsByTagNameNS(_saml_protocolNS, "Status");
+		logoutResponse.appendChild(status.item(0));
+		NodeList issuer = element.getElementsByTagNameNS(_saml_assertionNS, "Issuer");
+		logoutResponse.appendChild(issuer.item(0));
+		return Encoding.elementToString((org.w3c.dom.Element) logoutResponse);
+	}
+
 	public static boolean isLogout(Document xmlDoc){
 		logger.trace("isLogout");
 		try {

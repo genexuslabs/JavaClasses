@@ -56,25 +56,10 @@ public class DSig {
 				return "";
 			}
 		}
-		return buildXml(assertions, xmlDoc);
+		return SamlAssertionUtils.isLogout(xmlDoc) ? SamlAssertionUtils.buildXmlLogout(assertions) : SamlAssertionUtils.buildXmlLogin(assertions, xmlDoc);
 	}
 
-	public static String buildXml(List<Element> assertions, Document xmlDoc){
-		//security meassure against assertion manipulation, it assures that every assertion to be used on the app has been signed and verified
-		Element element = xmlDoc.getDocumentElement();
-		Node response  = element.cloneNode(false);
 
-		NodeList status = element.getElementsByTagNameNS("urn:oasis:names:tc:SAML:2.0:protocol", "Status");
-		response.appendChild(status.item(0));
-
-		for(Element elem: assertions){
-			if(!elem.getLocalName().equals("Response")){
-				Node node = elem.cloneNode(true);
-				response.appendChild(node);
-			}
-		}
-		return Encoding.elementToString((Element) response);
-	}
 
 	private static boolean verifySignatureAlgorithm(Element elem) {
 		logger.trace("verifySignatureAlgorithm");
