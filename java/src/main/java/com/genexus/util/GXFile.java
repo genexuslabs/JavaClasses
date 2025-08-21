@@ -228,8 +228,9 @@ public class GXFile extends AbstractGXFile {
 						lineIterator.close();
 						lineIterator = null;
 					}
-					if (this.getStream() != null) {
-						this.getStream().close();
+					InputStream is = this.getStream();
+					if (is != null) {
+						is.close();
 					}
 				} catch (Exception ignored) {}
 
