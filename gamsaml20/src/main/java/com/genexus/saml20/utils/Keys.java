@@ -112,7 +112,6 @@ public class Keys {
 		logger.debug(MessageFormat.format("path: {0}, alias: {1}", path, alias));
 		Path p = new File(path).toPath();
 		logger.debug("Res path: " + p.toAbsolutePath());
-		System.out.println("Res path: " + p.toAbsolutePath());
 		try (InputStream in = new DataInputStream(Files.newInputStream(p))) {
 			KeyStore ks = KeyStore.getInstance("JKS");
 			ks.load(in, password.toCharArray());
