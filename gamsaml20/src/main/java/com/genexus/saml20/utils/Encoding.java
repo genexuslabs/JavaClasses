@@ -4,7 +4,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -70,6 +72,24 @@ public class Encoding {
 			return writer.toString();
 		} catch (Exception e) {
 			logger.error("documentToString", e);
+			return null;
+		}
+	}
+
+	public static String elementToString(Element element) {
+		try {
+			TransformerFactory tf = TransformerFactory.newInstance();
+			Transformer transformer = tf.newTransformer();
+
+			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+
+			StringWriter writer = new StringWriter();
+			transformer.transform(new DOMSource(element), new StreamResult(writer));
+
+			return writer.toString();
+		} catch (Exception e) {
+			logger.error("elementToString", e);
 			return null;
 		}
 	}
