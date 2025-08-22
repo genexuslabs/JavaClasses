@@ -51,6 +51,7 @@ public class SamlAssertionUtils {
 
 	public static String buildXmlLogin(List<org.w3c.dom.Element> assertions, Document xmlDoc){
 		//security meassure against assertion manipulation, it assures that every assertion to be used on the app has been signed and verified
+		logger.trace("buildXmlLogin");
 		org.w3c.dom.Element element = xmlDoc.getDocumentElement();
 		Node response  = element.cloneNode(false);
 
@@ -67,8 +68,10 @@ public class SamlAssertionUtils {
 	}
 
 	public static String buildXmlLogout(List<org.w3c.dom.Element> assertions){
+		logger.trace("buildXmlLogout");
 		if(assertions.isEmpty())
 		{
+			logger.error("buildXmlLogout - There are 0 signed assertions on LogoutResponse");
 			return "";
 		}
 		org.w3c.dom.Element element =  assertions.get(0);
