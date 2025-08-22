@@ -47,8 +47,7 @@ public class PostBinding extends Binding {
 			return false;
 		}else {
 			this.verifiedDoc = SamlAssertionUtils.loadDocument(verified);
-			this.xmlDoc = null;
-			logger.debug(MessageFormat.format("verifySignatures sanitized xmlDoc {0}", Encoding.documentToString(this.xmlDoc)));
+			logger.debug(MessageFormat.format("verifySignatures - sanitized xmlDoc {0}", Encoding.documentToString(this.xmlDoc)));
 			return true;
 		}
 	}
@@ -74,7 +73,7 @@ public class PostBinding extends Binding {
 	}
 
 	public boolean isLogout(){
-		return SamlAssertionUtils.isLogout(this.verifiedDoc);
+		return SamlAssertionUtils.isLogout(this.xmlDoc);
 	}
 
 	// EXTERNAL OBJECT PUBLIC METHODS  - END
