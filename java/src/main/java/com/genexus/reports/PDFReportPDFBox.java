@@ -19,6 +19,8 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.oned.Code128Writer;
 
+import org.apache.fontbox.ttf.TrueTypeCollection;
+import org.apache.fontbox.ttf.TrueTypeFont;
 import org.apache.pdfbox.cos.*;
 import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdmodel.*;
@@ -572,21 +574,40 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 		}
 	}
 
-	private PDFont getOrLoadFont(String fontName, PDDocument doc) throws IOException {
+	private PDFont getOrLoadFont(String fontName, PDDocument doc) {
 		PDFont cachedFont = fontCache.get(fontName);
 		if (cachedFont != null) {
 			return cachedFont;
 		}
 		PDFont font = createPDType1FontFromName(fontName);
+		String cacheKey = fontName;
 		if (font == null) {
 			String fontPath = getFontLocation(fontName);
 			if (!fontPath.isEmpty()) {
-				font = PDType0Font.load(doc, new File(fontPath));
-			} else {
+				File fontFile = new File(fontPath);
+				try {
+					if (fontPath.toLowerCase().endsWith(".ttc")) {
+						try (TrueTypeCollection ttc = new TrueTypeCollection(fontFile)) {
+							TrueTypeFont ttf = ttc.getFontByName(fontName);
+							if (ttf != null) {
+								font = PDType0Font.load(doc, ttf, true);
+							}
+						}
+					} else {
+						font = PDType0Font.load(doc, fontFile);
+					}
+				} catch (Exception e) {
+					log.error("Failed to load font {} defaulting to Helvetica", fontName, e);
+				}
+			}
+			if (font == null) {
 				font = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+				cacheKey = "Helvetica";
 			}
 		}
-		fontCache.put(fontName, font);
+		if (!fontCache.containsKey(cacheKey)) {
+			fontCache.put(cacheKey, font);
+		}
 		return font;
 	}
 
