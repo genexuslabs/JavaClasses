@@ -15,10 +15,10 @@ public class PostBinding extends Binding {
 	private static final Logger logger = LogManager.getLogger(PostBinding.class);
 
 	private Document xmlDoc;
+	private Document verifiedDoc;
 
 	public PostBinding() {
 		logger.trace("PostBinding constructor");
-		xmlDoc = null;
 	}
 	// EXTERNAL OBJECT PUBLIC METHODS  - BEGIN
 
@@ -42,27 +42,34 @@ public class PostBinding extends Binding {
 	}
 
 	public boolean verifySignatures(SamlParms parms) {
-		return DSig.validateSignatures(this.xmlDoc, parms.getTrustCertPath(), parms.getTrustCertAlias(), parms.getTrustCertPass());
+		String verified = DSig.validateSignatures(this.xmlDoc, parms.getTrustCertPath(), parms.getTrustCertAlias(), parms.getTrustCertPass());
+		if(verified.isEmpty()){
+			return false;
+		}else {
+			this.verifiedDoc = SamlAssertionUtils.loadDocument(verified);
+			logger.debug(MessageFormat.format("verifySignatures - sanitized xmlDoc {0}", Encoding.documentToString(this.xmlDoc)));
+			return true;
+		}
 	}
 
 	public String getLoginAssertions() {
 		logger.trace("getLoginAssertions");
-		return SamlAssertionUtils.getLoginInfo(this.xmlDoc);
+		return SamlAssertionUtils.getLoginInfo(this.verifiedDoc);
 	}
 
 	public String getLogoutAssertions() {
 		logger.trace("getLogoutAssertions");
-		return SamlAssertionUtils.getLogoutInfo(this.xmlDoc);
+		return SamlAssertionUtils.getLogoutInfo(this.verifiedDoc);
 	}
 
 	public String getLoginAttribute(String name) {
 		logger.trace("getLoginAttribute");
-		return SamlAssertionUtils.getLoginAttribute(this.xmlDoc, name).trim();
+		return SamlAssertionUtils.getLoginAttribute(this.verifiedDoc, name).trim();
 	}
 
 	public String getRoles(String name) {
 		logger.debug("getRoles");
-		return SamlAssertionUtils.getRoles(this.xmlDoc, name);
+		return SamlAssertionUtils.getRoles(this.verifiedDoc, name);
 	}
 
 	public boolean isLogout(){
