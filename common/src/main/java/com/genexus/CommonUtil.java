@@ -3521,4 +3521,68 @@ public final class CommonUtil
 		}
 		return sb.toString();
 	}
+
+	public static boolean isKnownContentType(String type)
+	{
+		if (type != null)
+		{
+			for (int i = 0; i < contentTypes.length; i++)
+			{
+				if (contentTypes[i].length >= 2)
+				{
+					if (type.equalsIgnoreCase(contentTypes[i][1]))
+						return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public static String getContentFromExt( String extension)
+	{
+		if (extension != null)
+		{
+			extension = extension.toLowerCase();
+			for (int i = 0; i < contentTypes.length; i++) {
+				if (contentTypes[i][0].equals(extension.trim()))
+					return contentTypes[i][1];
+			}
+		}
+		return null;
+	}
+
+	private static final String contentTypes[][] = {
+		{"txt"     , "text/plain"},
+		{"rtx"     , "text/richtext"},
+		{"htm"     , "text/html"},
+		{"html" , "text/html"},
+		{"xml"     , "text/xml"},
+		{"aif"    , "audio/x-aiff"},
+		{"au"    , "audio/basic"},
+		{"wav"    , "audio/wav"},
+		{"bmp"    , "image/bmp"},
+		{"gif"    , "image/gif"},
+		{"jpe"    , "image/jpeg"},
+		{"jpeg"    , "image/jpeg"},
+		{"jpg"    , "image/jpeg"},
+		{"jfif"    , "image/pjpeg"},
+		{"tif"    , "image/tiff"},
+		{"tiff"    , "image/tiff"},
+		{"png"    , "image/x-png"},
+		{"3gp"    , "video/3gpp"},
+		{"3g2"    , "video/3gpp2"},
+		{"mpg"    , "video/mpeg"},
+		{"mpeg"    , "video/mpeg"},
+		{"mov"    , "video/quicktime"},
+		{"qt"    , "video/quicktime"},
+		{"avi"    , "video/x-msvideo"},
+		{"exe"    , "application/octet-stream"},
+		{"dll"    , "application/x-msdownload"},
+		{"ps"    , "application/postscript"},
+		{"pdf"    , "application/pdf"},
+		{"svg"    , "image/svg+xml"},
+		{"tgz"    , "application/x-compressed"},
+		{"zip"    , "application/x-zip-compressed"},
+		{"gz"    , "application/x-gzip"}
+	};
 }
