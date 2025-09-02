@@ -60,31 +60,44 @@ public class GXEmbedding {
 		return embedding.toArray(new Float[0]);
 	}
 
-	public static GXEmbedding generateEmbedding(GXEmbedding embeddingInfo, String text, GXBaseCollection<SdtMessages_Message> Messages) {
+	public static GXEmbedding generateEmbedding(GXEmbedding embeddingInfo, String text, GXBaseCollection<SdtMessages_Message> messages) {
 		try {
-			List<Float> embedding = getEmbedding(embeddingInfo.getModel(), embeddingInfo.getDimensions(), text);
+			List<Float> embedding = getEmbedding(embeddingInfo.getModel(), embeddingInfo.getDimensions(), text, messages);
 			embeddingInfo.setEmbedding(embedding);
 		}
 		catch (Exception ex) {
-			CommonUtil.ErrorToMessages("GenerateEmbedding Error", ex.getMessage(), Messages);
+			CommonUtil.ErrorToMessages("GenerateEmbedding Error", ex.getMessage(), messages);
 		}
 		return embeddingInfo;
 	}
 
-	public static List<Float> getEmbedding(String model, int dimensions, String input) {
+	public static List<Float> getEmbedding(String model, int dimensions, String input, GXBaseCollection<SdtMessages_Message> messages) {
 		if (input.isEmpty())
 			return new ArrayList<>();
 		ArrayList<String> inputList = new ArrayList<>();
 		inputList.add(input);
-		return getEmbedding(model, dimensions, inputList);
+		return getEmbedding(model, dimensions, inputList, messages);
 	}
 
-	public static List<Float> getEmbedding(String model, int dimensions, ArrayList<String> inputList) {
+	public static List<Float> getEmbedding(String model, int dimensions, ArrayList<String> inputList, GXBaseCollection<SdtMessages_Message> messages) {
 		OpenAIRequest aiRequest = new OpenAIRequest();
 		aiRequest.setModel(model);
 		aiRequest.setInput(inputList);
 		aiRequest.setDimension(dimensions);
-		OpenAIResponse aiResponse = SaiaService.call(aiRequest, true, new CallResult());
+		CallResult callResult = new CallResult();
+		OpenAIResponse aiResponse = SaiaService.call(aiRequest, true, callResult);
+
+		int i = 0 ;
+		while ( i < callResult.getMessages().size() )
+		{
+			SdtMessages_Message message = new SdtMessages_Message();
+			message.setgxTv_SdtMessages_Message_Id(callResult.getMessages().elementAt(i).getgxTv_SdtMessages_Message_Id());
+			message.setgxTv_SdtMessages_Message_Type(callResult.getMessages().elementAt(i).getgxTv_SdtMessages_Message_Type());
+			message.setgxTv_SdtMessages_Message_Description(callResult.getMessages().elementAt(i).getgxTv_SdtMessages_Message_Description());
+			messages.add(message);
+			i++ ;
+		}
+
 		if (aiResponse != null)
 			return aiResponse.getData().get(0).getEmbedding().stream()
 				.map(Double::floatValue)
