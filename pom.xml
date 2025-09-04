@@ -29,6 +29,11 @@
 		<log4j.version>2.21.1</log4j.version>
         <io.opentelemetry.version>1.28.0</io.opentelemetry.version>
         <org.bouncycastle.version>1.78.1</org.bouncycastle.version>
+        <commons-io.version>2.15.1</commons-io.version>
+        <commons-codec.version>1.15</commons-codec.version>
+        <xmlsec.version>3.0.3</xmlsec.version>
+        <jose.version>10.4</jose.version>
+
 	</properties>
 
 	<organization>
@@ -114,12 +119,15 @@
     <module>gxcloudstorage-awss3-v2</module>
     <module>gxcompress</module>
     <module>securityapicommons</module>
+    <module>gamsaml20</module>
     <module>gxjwt</module>
     <module>gxcryptography</module>
     <module>gxxmlsignature</module>
     <module>gxsftp</module>
     <module>gxftps</module>
-    </modules>
+    <module>gamutils</module>
+    <module>gamtotp</module>
+  </modules>
 
 	<dependencies>
 		<dependency>

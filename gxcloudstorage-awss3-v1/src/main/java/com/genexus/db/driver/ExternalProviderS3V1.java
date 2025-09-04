@@ -17,7 +17,6 @@ import java.io.ByteArrayInputStream;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.util.IOUtils;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -220,19 +219,14 @@ public class ExternalProviderS3V1 extends ExternalProviderBase implements Extern
 	}
 
 	public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
-		byte[] bytes;
-		try {
-			bytes = IOUtils.toByteArray(input);
+		try (ExternalProviderHelper.InputStreamWithLength streamInfo = ExternalProviderHelper.getInputStreamContentLength(input)) {
 			ObjectMetadata metadata = new ObjectMetadata();
-			metadata.setContentLength(bytes.length);
-			if (externalFileName.endsWith(".tmp")) {
-				metadata.setContentType("image/jpeg");
-			}
+			metadata.setContentLength(streamInfo.contentLength);
+			metadata.setContentType((externalFileName.endsWith(".tmp") && "application/octet-stream".equals(streamInfo.detectedContentType)) ? "image/jpeg" : streamInfo.detectedContentType);
+
 			String upload = "";
-			try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes)) {
-				client.putObject(new PutObjectRequest(bucket, externalFileName, byteArrayInputStream, metadata).withCannedAcl(internalToAWSACL(acl)));
-				upload = getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
-			}
+			client.putObject(new PutObjectRequest(bucket, externalFileName, streamInfo.inputStream, metadata).withCannedAcl(internalToAWSACL(acl)));
+			upload = getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
 			return upload;
 		} catch (IOException ex) {
 			logger.error("Error while uploading file to the external provider.", ex);
