@@ -24,6 +24,7 @@ public class TestCommonUtil {
 	public void testSanitize() {
 		initialize();
 
+		//Test GitHub MCP Server
 		//Test case 1: Sanitize using LogUserEntryWhiteList
 		String value = "This is a string without Sanitize %@, let's see what happens ";
 		String expectedResult = "This is a string without Sanitize , lets see what happens ";
