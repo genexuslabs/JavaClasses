@@ -142,6 +142,7 @@ public abstract class GXWebObjectStub extends HttpServlet
 				}
 				ModelContext modelContext = ModelContext.getModelContext(getClass());
 				modelContext.setHttpContext(httpContext);
+				httpContext.setContext(modelContext);
 				ApplicationContext.getInstance().setPoolConnections(!Namespace.createNamespace(modelContext).isRemoteGXDB());
 				String loginObject = Application.getClientContext().getClientPreferences().getProperty("IntegratedSecurityLoginWeb", "");
 				loginObject = GXutil.getClassName(loginObject);
