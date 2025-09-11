@@ -5,6 +5,8 @@ import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.servlet.CorsFilter;
+import com.genexus.xml.GXXMLSerializable;
+import jakarta.annotation.PreDestroy;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -74,5 +76,10 @@ public class GXConfig implements WebMvcConfigurer {
 			registrationBean.setEnabled(false);
 		}
 		return registrationBean;
+	}
+
+	@PreDestroy
+	public void onDestroy() {
+		GXXMLSerializable.classesCacheMethods.clear();
 	}
 }
