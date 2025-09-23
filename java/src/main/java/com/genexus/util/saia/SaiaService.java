@@ -45,6 +45,7 @@ public class SaiaService {
 			}
 
 			client.addString(jsonRequest);
+			client.setTimeout(600);
 			client.execute("POST", providerURL);
 			if (client.getStatusCode() == 200) {
 				String saiaResponse;
