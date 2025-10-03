@@ -282,7 +282,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 			return new SSLConnectionSocketFactory(
 				sslContext,
-				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2" },
+				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3" },
 				null,
 				NoopHostnameVerifier.INSTANCE);
 		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException | UnrecoverableKeyException | CertificateException | IOException e) {
@@ -290,7 +290,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 		return new SSLConnectionSocketFactory(
 			SSLContexts.createDefault(),
-			new String[] { "TLSv1", "TLSv1.1", "TLSv1.2"},
+			new String[] { "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3"},
 			null,
 			SSLConnectionSocketFactory.getDefaultHostnameVerifier());
 	}
