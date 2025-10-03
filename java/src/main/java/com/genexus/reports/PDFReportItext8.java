@@ -720,7 +720,7 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 					template = new PdfFormXObject(new Rectangle(right - left, bottom - top));
 					templateCreated = true;
 				}
-				cb.addXObjectAt(template, leftAux + leftMargin, this.pageSize.getTop() -  bottomAux - topMargin -bottomMargin);
+				cb.addXObjectAt(template, leftAux + leftMargin, this.pageSize.getTop() -  bottomAux - topMargin - bottomMargin - (baseFont.getAscent(sTxt,fontSize)/2));
 				templateFont = baseFont;
 				templateFontSize = fontSize;
 				templateColorFill = foreColor;
@@ -949,7 +949,7 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 		}
 
 		if (template != null) {
-			PdfCanvas cb = new PdfCanvas(pdfPage);
+			PdfCanvas cb = new PdfCanvas(template, pdfDocument);
 			cb.beginText();
 			cb.setFontAndSize(templateFont, templateFontSize);
 			cb.setTextMatrix(0,0);
