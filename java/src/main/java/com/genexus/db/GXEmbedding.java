@@ -112,4 +112,9 @@ public class GXEmbedding {
 			.map(String::valueOf)
 			.collect(Collectors.joining(","));
 	}
+
+	public boolean isEmpty() {
+		return embedding == null || embedding.isEmpty() ||
+			embedding.stream().allMatch(v -> v == null || v == 0.0f);
+	}
 }
