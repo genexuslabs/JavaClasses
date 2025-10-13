@@ -14,6 +14,17 @@
 	<name>GeneXus Standard Classes for Android</name>
 
 	<dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>gxcryptocommon</artifactId>
+            <version>${project.version}</version>
+            <exclusions>
+                <exclusion>  <!-- exclude common io from android -->
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>gxcommon</artifactId>
