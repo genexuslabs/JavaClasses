@@ -497,7 +497,7 @@ public abstract class GXXMLSerializable implements Cloneable, Serializable, IGxJ
         }
 
         // cache of methods for classes, inpruve perfomance, becuase each intance get all methods each time called.
-        private static transient ConcurrentHashMap<String, ConcurrentHashMap<String, Method>> classesCacheMethods = new ConcurrentHashMap<>();
+        public static transient ConcurrentHashMap<String, ConcurrentHashMap<String, Method>> classesCacheMethods = new ConcurrentHashMap<>();
         // cache of methods names, inpruve perfomance.
         private static transient ConcurrentHashMap<String, String> toLowerCacheMethods = new ConcurrentHashMap<>();
 

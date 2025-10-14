@@ -51,7 +51,7 @@ public class ExcelSpreadsheet implements IExcelSpreadsheet {
 				GXFile templateFile = new GXFile(template);
 				if (templateFile.exists()) {
 					is = templateFile.getStream();
-					_workbook = new XSSFWorkbook();
+					_workbook = new XSSFWorkbook(is);
 				} else {
 					throw new ExcelTemplateNotFoundException();
 				}
