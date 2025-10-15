@@ -4,22 +4,22 @@ These are the source of the GeneXus Standard Classes for Java, valid since GeneX
 ## Repo Status
 | Branch | Build | Security
 |---|---|---
-|master |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Amaster)|[![CodeQL](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml)
-|beta   |[![](https://github.com/genexuslabs/JavaClasses/workflows/Build/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions?query=workflow%3ABuild+branch%3Abeta)|[![CodeQL](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml)
+|master |[![Build](https://github.com/genexuslabs/JavaClasses/actions/workflows/Build.yml/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions/workflows/Build.yml)|[![CodeQL](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml)
+|beta   |[![Build](https://github.com/genexuslabs/JavaClasses/actions/workflows/Build.yml/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions/workflows/Build.yml)|[![CodeQL](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml/badge.svg?branch=beta)](https://github.com/genexuslabs/JavaClasses/actions/workflows/codeql-analysis.yml)
 
 ## Modules
 
-| Name  | Description
-|---|---
-| common | Classes common to Android and Java
-| gxcryptocommon | Classes common to Android and Java related to Cryptography
-| gxmail | Classes related to mail handling
-| java | Java standard classes,  output is gxclassr.jar
-| wrappercommon | Interfaces to encapsulate Java EE and Jakarta EE support,  output is gxwrappercommon.jar
-| wrapperjavax | Implement the interfaces defined in wrappercommon in Java EE,  output is gxwrapperjavax.jar
-| wrapperjakarta | Implement the interfaces defined in wrappercommon in Jakarta EE,  output is gxwrapperjakarta.jar
-| gxoffice | Formerly Java classes are now separated to be included only when using office. 
-| gxsearch | Formerly in Java classes are now separated to be included only when using search.
+| Name                           | Description
+|--------------------------------|---
+| common                         | Classes common to Android and Java
+| gxcryptocommon                 | Classes common to Android and Java related to Cryptography
+| gxmail                         | Classes related to mail handling
+| java                           | Java standard classes,  output is gxclassr.jar
+| wrappercommon                  | Interfaces to encapsulate Java EE and Jakarta EE support,  output is gxwrappercommon.jar
+| wrapperjavax                   | Implement the interfaces defined in wrappercommon in Java EE,  output is gxwrapperjavax.jar
+| wrapperjakarta                 | Implement the interfaces defined in wrappercommon in Jakarta EE,  output is gxwrapperjakarta.jar
+| gxoffice                       | Formerly Java classes are now separated to be included only when using office. 
+| gxsearch                       | Formerly in Java classes are now separated to be included only when using search.
 | gxandroidpublisher and javapns | They are necessary for when you have Push Notifications in your old implementation. These are projects that should disappear in the short term.
 | android | The standard Android classes. **Note that this is not the full runtime for Android, the full runtime can be created by using the Android Flexible Client project**.
 | gxexternalproviders | Implements service provider for IBM Cloud, Google, Azure, Amazon
@@ -31,6 +31,8 @@ These are the source of the GeneXus Standard Classes for Java, valid since GeneX
 | gxxmlsignature | SecurityAPI's GeneXusXmlSignature module
 | gxftps | SecurityAPI's GeneXusFTPS module
 | gxsftp | SecurityAPI's GeneXusSFTP module
+| gamutils | GAM external object with utilities
+| gamtotp                        | GAM external object for RFC6238 implementation
 
 The dependencies between the projects are specified in each pom.xml within their directory.
 

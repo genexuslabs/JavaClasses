@@ -11,7 +11,7 @@ import org.junit.Test;
 
 public class Base64PublicKeyTest extends SecurityAPITestObject {
 
-	private final String base64 = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCr6OYBg0NsNL3mUg8XfpyXO8O8/yLPuIhoThLivQP1O9d0XwXV2Mdqa6fuwQJFKxmJvmekpF2eq+/E5eQ/y9qTXgOp5+YHgqFh9SkhTpQLxJ413Br5HaPGyBPw2stz1hXXiBg/DLdG2nQKCDPtJurOY30rvTfKOCOFF/TuD6BMIQIDAQAB";
+	private final String base64 = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDqq4yriScMFgJSHK4PsOhucubSroiseJKvys6UnveRO6tLRBlEgtkWfs7cOgEYU4Dt8hil5KhYuRuRTgBmBFTe34G2aUmp9aLbUW5lrs/zoui9rYmrKHMmCTkYuOg+J7j1YFOZ5xldTK3BpOVHV3n8S6G3/evjFvf+WlG0ypMQdQIDAQAB";
 
 	private static String path_RSA_sha1_1024;
 	private static String xmlUnsignedPath;

@@ -275,15 +275,25 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 	}
 
 	protected ChatResult chatAgent(String agent, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result) {
-		callAgent(agent, true, properties, messages, result);
-		return new ChatResult(this, agent, properties, messages, result, client);
+		ChatResult chatResult = new ChatResult();
+
+		new Thread(() -> {
+			try {
+				context.setThreadModelContext(context);
+				callAgent(agent, true, properties, messages, result, chatResult);
+			} finally {
+				chatResult.markDone();
+			}
+		}).start();
+
+		return chatResult;
 	}
 
 	protected String callAgent(String agent, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result) {
-		return callAgent(agent, false, properties, messages, result);
+		return callAgent(agent, false, properties, messages, result, null);
 	}
 
-	protected String callAgent(String agent, boolean stream, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result) {
+	protected String callAgent(String agent, boolean stream, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result, ChatResult chatResult) {
 		OpenAIRequest aiRequest = new OpenAIRequest();
 		aiRequest.setModel(String.format("saia:agent:%s", agent));
 		if (!messages.isEmpty())
@@ -292,7 +302,7 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 		if (stream)
 			aiRequest.setStream(true);
 		client = new HttpClient();
-		OpenAIResponse aiResponse = SaiaService.call(aiRequest, client, result);
+		OpenAIResponse aiResponse = SaiaService.call(this, aiRequest, client, agent, stream, properties, messages, result, chatResult);
 		if (aiResponse != null && aiResponse.getChoices() != null) {
 			for (OpenAIResponse.Choice element : aiResponse.getChoices()) {
 				String finishReason = element.getFinishReason();
@@ -300,7 +310,7 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 					return element.getMessage().getStringContent();
 				if (finishReason.equals("tool_calls")) {
 					messages.add(element.getMessage());
-					return processNotChunkedResponse(agent, stream, properties, messages, result, element.getMessage().getToolCalls());
+					return processNotChunkedResponse(agent, stream, properties, messages, result, chatResult, element.getMessage().getToolCalls());
 				}
 			}
 		} else if (client.getStatusCode() == 200) {
@@ -309,11 +319,11 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 		return "";
 	}
 
-	public String processNotChunkedResponse(String agent, boolean stream, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result, ArrayList<OpenAIResponse.ToolCall> toolCalls) {
+	public String processNotChunkedResponse(String agent, boolean stream, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result, ChatResult chatResult, ArrayList<OpenAIResponse.ToolCall> toolCalls) {
 		for (OpenAIResponse.ToolCall tollCall : toolCalls) {
 			processToolCall(tollCall, messages);
 		}
-		return callAgent(agent, stream, properties, messages, result);
+		return callAgent(agent, stream, properties, messages, result, chatResult);
 	}
 
 	private void processToolCall(OpenAIResponse.ToolCall toolCall, ArrayList<OpenAIResponse.Message> messages) {

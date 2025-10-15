@@ -6,6 +6,10 @@ import com.genexus.msoffice.excel.style.ExcelStyle;
 
 public interface IExcelCellRange
 {
+    String getHyperlinkValue();
+
+	Boolean setHyperlinkValue(String value);
+
 	int getRowStart();
 
 	int getRowEnd();

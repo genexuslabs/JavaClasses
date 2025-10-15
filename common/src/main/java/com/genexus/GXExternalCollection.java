@@ -99,13 +99,14 @@ public class GXExternalCollection<T extends GXXMLSerializable> extends GXBaseCol
 		return struct;
 	}
 
-	public ArrayList getExternalInstance() {
-		ArrayList list = new ArrayList();
+	@SuppressWarnings("unchecked")
+	public <E> ArrayList<E> getExternalInstance() {
+		ArrayList<E> list = new ArrayList<>();
 		for (T Item : this)
 		{
 			try
 			{
-				list.add(Item.getClass().getMethod("getExternalInstance", new Class[]{}).invoke(Item));
+				list.add((E) Item.getClass().getMethod("getExternalInstance", new Class[]{}).invoke(Item));
 			}
 			catch (Exception e)
 			{
@@ -113,6 +114,26 @@ public class GXExternalCollection<T extends GXXMLSerializable> extends GXBaseCol
 			}
 		}
 		return list;
+	}
+
+	@SuppressWarnings("unchecked")
+	public void setExternalInstance(ArrayList<?> data)
+	{
+		try {
+			if (elementsType != null) {
+				clear();
+				for (Object item : data) {
+					T obj = elementsType.getConstructor(new Class[]{}).newInstance();
+					obj.getClass().getMethod("setExternalInstance", item.getClass()).invoke(obj, item);
+					super.add(obj);
+					vectorExternal.add(item);
+				}
+			}
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
 	}
 
 }
