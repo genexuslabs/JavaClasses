@@ -14,7 +14,7 @@
 	<url>https://github.com/genexuslabs/JavaClasses</url>
 
 	<properties>
-		<revision>4.10</revision>
+		<revision>4.11</revision>
 		<changelist>-SNAPSHOT</changelist>
 		<sha1/>
 
@@ -28,7 +28,12 @@
 		<software.azure.cosmos.version>4.42.0</software.azure.cosmos.version>
 		<log4j.version>2.21.1</log4j.version>
         <io.opentelemetry.version>1.28.0</io.opentelemetry.version>
-        <org.bouncycastle.version>1.78.1</org.bouncycastle.version>
+        <org.bouncycastle.version>1.82</org.bouncycastle.version>
+        <commons-io.version>2.15.1</commons-io.version>
+        <commons-codec.version>1.15</commons-codec.version>
+        <xmlsec.version>3.0.3</xmlsec.version>
+        <jose.version>10.4</jose.version>
+
 	</properties>
 
 	<organization>
@@ -110,15 +115,19 @@
 		<module>gxcloudstorage-azureblob</module>
 		<module>gxcloudstorage-ibmcos</module>
 		<module>gxcloudstorage-tests</module>
-        <module>gxobservability</module>
-        <module>gxcloudstorage-awss3-v2</module>
-        <module>securityapicommons</module>
-        <module>gxjwt</module>
-        <module>gxcryptography</module>
-        <module>gxxmlsignature</module>
-        <module>gxsftp</module>
-        <module>gxftps</module>
-    </modules>
+    <module>gxobservability</module>
+    <module>gxcloudstorage-awss3-v2</module>
+    <module>gxcompress</module>
+    <module>securityapicommons</module>
+    <module>gamsaml20</module>
+    <module>gxjwt</module>
+    <module>gxcryptography</module>
+    <module>gxxmlsignature</module>
+    <module>gxsftp</module>
+    <module>gxftps</module>
+    <module>gamutils</module>
+    <module>gamtotp</module>
+  </modules>
 
 	<dependencies>
 		<dependency>
@@ -348,31 +357,21 @@
 			<properties>
 			</properties>
 			<distributionManagement>
-				<repository>
-					<id>ossrh</id>
-	  				<name>Maven Central</name>
-	  				<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-				</repository>
-				<snapshotRepository>
-					<id>ossrh</id>
-	  				<name>Maven Central - Snapshots Repository</name>
-	  				<url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-				</snapshotRepository>
 			</distributionManagement>
 			<build>
 				<plugins>
 					<plugin>
-						<groupId>org.sonatype.plugins</groupId>
-						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.6.13</version>
+						<groupId>org.sonatype.central</groupId>
+						<artifactId>central-publishing-maven-plugin</artifactId>
+						<version>0.8.0</version>
 						<extensions>true</extensions>
 						<configuration>
-							<serverId>ossrh</serverId>
-							<nexusUrl>https://s01.oss.sonatype.org</nexusUrl>
-							<autoReleaseAfterClose>true</autoReleaseAfterClose>
+							<publishingServerId>central</publishingServerId>
+							<autoPublish>true</autoPublish>
+							<waitUntil>published</waitUntil>
 						</configuration>
 					</plugin>
-				 </plugins>
+				</plugins>
 			</build>
 		</profile>
 	</profiles>

@@ -113,29 +113,31 @@ public class ExcelDoc {
 	String template = "";
 
 	public void setTemplate(String p1) {
-		File path = new File(p1);
+		String resolvedPath = p1;
+		File pathFile = new File(p1);
+
 		if (com.genexus.ModelContext.getModelContext() != null) {
 			com.genexus.internet.HttpContext webContext = (com.genexus.internet.HttpContext) com.genexus.ModelContext
 					.getModelContext().getHttpContext();
 			if ((webContext != null) && (webContext instanceof com.genexus.webpanels.HttpContextWeb)) {
-				if (!path.isAbsolute()) {
-					p1 = ((com.genexus.webpanels.HttpContextWeb) webContext).getRealPath(p1);
+				if (!pathFile.isAbsolute()) {
+					resolvedPath = ((com.genexus.webpanels.HttpContextWeb) webContext).getRealPath(p1);
 				}
 			}
 		}
 
 		if (makeExternalUpload) {
-			String localTemplate = p1;
-			if (path.isAbsolute())
-				p1 = path.getName().toString();
-			GXFile template = new GXFile(p1);
-			if (!template.exists()) {
-				Application.getExternalProvider().upload(localTemplate, p1, ResourceAccessControlList.Default);
+			String localTemplateForUpload = resolvedPath;
+			String remoteFileName = new File(resolvedPath).getName();
+
+			GXFile templateFile = new GXFile(resolvedPath);
+			if (!templateFile.exists()) {
+				Application.getExternalProvider().upload(localTemplateForUpload, remoteFileName, ResourceAccessControlList.Default);
 			}
 		}
-		template = p1;
+		template = resolvedPath;
 		if (document != null) {
-			document.setTemplate(p1);
+			document.setTemplate(resolvedPath);
 		}
 	}
 

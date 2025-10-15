@@ -5,10 +5,7 @@ import com.genexus.servlet.http.IHttpServletRequest;
 import com.genexus.fileupload.FileItemIterator;
 import com.genexus.fileupload.IFileItemIterator;
 import java.util.Collection;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Part;
-
-import java.io.IOException;
 
 public class ServletFileUpload implements IServletFileUpload{
 

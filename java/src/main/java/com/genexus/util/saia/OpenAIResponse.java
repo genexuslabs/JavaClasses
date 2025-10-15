@@ -103,7 +103,12 @@ public class OpenAIResponse {
 		public void setRole(String role) { this.role = role; }
 
 		@JsonIgnore
-		public String getStringContent() { return ((StringContent) content).getValue(); }
+		public String getStringContent() {
+			if (content != null)
+				return ((StringContent) content).getValue();
+
+			return null;
+		}
 		@JsonIgnore
 		public StructuredContent getStructuredContent() {return (StructuredContent)content;}
 		public Content getContent() { return content; }

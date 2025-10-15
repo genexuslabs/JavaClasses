@@ -1,58 +1,38 @@
 package com.genexus.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.genexus.GXProcedure;
-import com.genexus.internet.HttpClient;
-import com.genexus.util.saia.OpenAIResponse;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class ChatResult {
-	private HttpClient client = null;
-	private String agent = null;
-	private GXProperties properties = null;
-	private ArrayList<OpenAIResponse.Message> messages = null;
-	private CallResult result = null;
-	private GXProcedure agentProcedure = null;
+	private static final String END_MARKER = new String("__END__");
+	private final BlockingQueue<String> chunks = new LinkedBlockingQueue<>();
+	private volatile boolean done = false;
 
-	public ChatResult() {
+	public synchronized void addChunk(String chunk) {
+		if (chunk != null) {
+			chunks.offer(chunk);
+		}
 	}
 
-	public ChatResult(GXProcedure agentProcedure, String agent, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result, HttpClient client) {
-		this.agentProcedure = agentProcedure;
-		this.agent = agent;
-		this.properties = properties;
-		this.messages = messages;
-		this.result = result;
-		this.client = client;
-	}
-
-	public boolean hasMoreData() {
-		return !client.getEof();
+	public void markDone() {
+		done = true;
+		chunks.offer(END_MARKER);
 	}
 
 	public String getMoreData() {
-		String data = client.readChunk();
-		if (data.isEmpty())
-			return "";
-		int index = data.indexOf("data:") + "data:".length();
-		String chunkJson = data.substring(index).trim();
 		try {
-			JSONObject jsonResponse = new JSONObject(chunkJson);
-			OpenAIResponse chunkResponse = new ObjectMapper().readValue(jsonResponse.toString(), OpenAIResponse.class);
-			OpenAIResponse.Choice choise = chunkResponse.getChoices().get(0);
-			if (choise.getFinishReason() != null && choise.getFinishReason().equals("tool_calls") && agent != null) {
-				messages.add(choise.getMessage());
-				return agentProcedure.processNotChunkedResponse(agent, true, properties, messages, result, choise.getMessage().getToolCalls());
-			}
-			String chunkString = choise.getDelta().getStringContent();
-			if (chunkString == null)
+			String chunk = chunks.take();
+			if (END_MARKER.equals(chunk)) {
 				return "";
-			return chunkString;
-		}
-		catch (Exception e) {
+			}
+			return chunk;
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 			return "";
 		}
+	}
+
+	public boolean hasMoreData() {
+		return !(done && chunks.isEmpty());
 	}
 }
