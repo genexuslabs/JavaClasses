@@ -28,7 +28,7 @@
 		<software.azure.cosmos.version>4.74.0</software.azure.cosmos.version>
 		<log4j.version>2.21.1</log4j.version>
         <io.opentelemetry.version>1.28.0</io.opentelemetry.version>
-        <org.bouncycastle.version>1.78.1</org.bouncycastle.version>
+        <org.bouncycastle.version>1.82</org.bouncycastle.version>
         <commons-io.version>2.15.1</commons-io.version>
         <commons-codec.version>1.15</commons-codec.version>
         <xmlsec.version>3.0.3</xmlsec.version>
