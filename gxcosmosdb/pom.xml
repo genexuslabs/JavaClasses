@@ -27,6 +27,14 @@
             <groupId>com.azure</groupId>
             <artifactId>azure-cosmos</artifactId>
         </dependency>
+
+        <!-- overrite from azure-cosmos due to transitive CVEs -->
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-core-http-netty</artifactId>
+            <version>1.16.2</version>
+        </dependency>
+
         <dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>gxclassR</artifactId>

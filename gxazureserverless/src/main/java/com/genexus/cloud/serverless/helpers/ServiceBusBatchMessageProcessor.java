@@ -5,7 +5,6 @@ import com.genexus.cloud.serverless.JSONHelper;
 import com.genexus.cloud.serverless.model.EventMessage;
 import com.genexus.cloud.serverless.model.EventMessages;
 import com.microsoft.azure.functions.ExecutionContext;
-import com.sun.jna.platform.win32.Guid;
 
 import java.time.Instant;
 import java.util.Date;
