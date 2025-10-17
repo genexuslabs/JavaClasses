@@ -10,12 +10,14 @@ import java.util.*;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.db.DataStoreProvider;
 import com.genexus.db.GXEmbedding;
+import com.genexus.internet.HttpClient;
 import com.genexus.internet.HttpContext;
 import com.genexus.internet.StringCollection;
 import com.genexus.platform.INativeFunctions;
 import com.genexus.platform.NativeFunctions;
 import com.genexus.util.*;
 
+import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 
@@ -1782,4 +1784,11 @@ public final class GXutil
 		return embedding.toString();
 	}
 
+	public static byte[] ImageUrlToBytes(String url) throws IOException{
+		HttpClient httpClient = new HttpClient();
+		httpClient.execute( "GET", url);
+		try (InputStream in = httpClient.getInputStream()) {
+			return IOUtils.toByteArray(in);
+		}
+	}
 }
