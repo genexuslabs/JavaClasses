@@ -21,13 +21,11 @@ import com.genexus.util.GXService;
 import com.genexus.util.StorageUtils;
 import com.genexus.StructSdtMessages_Message;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
-import software.amazon.awssdk.utils.IoUtils;
 
 import java.io.*;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -121,7 +119,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 			this.folder = folder;
 
 			this.client = buildS3Client(accessKey, secretKey, endpointValue, clientRegion);
-			this.presigner = buildS3Presinger(accessKey, secretKey, clientRegion);
+			this.presigner = buildS3Presigner(accessKey, secretKey, clientRegion);
 			bucketExists();
 		}
 	}
@@ -131,13 +129,13 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 
 		boolean bUseIAM = !getPropertyValue(USE_IAM, "", "").isEmpty() || (accessKey.equals("") && secretKey.equals(""));
 
-		S3ClientBuilder builder = bUseIAM ?
-			S3Client.builder() :
-			S3Client.builder().credentialsProvider(
-				StaticCredentialsProvider.create(
-					AwsBasicCredentials.create(accessKey, secretKey)
-				)
-			);
+		S3ClientBuilder builder = bUseIAM
+			? S3Client.builder().credentialsProvider(DefaultCredentialsProvider.create())
+			: S3Client.builder().credentialsProvider(
+			StaticCredentialsProvider.create(
+				AwsBasicCredentials.create(accessKey, secretKey)
+			)
+		);
 
 		if (bUseIAM) {
 			logger.debug("Using IAM Credentials");
@@ -145,7 +143,6 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 
 		if (!endpoint.isEmpty() && !endpoint.contains(".amazonaws.com")) {
 			pathStyleUrls = true;
-
 			s3Client = builder
 				.endpointOverride(URI.create(endpoint))
 				.region(Region.of(region))
@@ -181,11 +178,22 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 		return s3Client;
 	}
 
-	private S3Presigner buildS3Presinger(String accessKey, String secretKey, String region) {
-		return S3Presigner.builder()
+	private S3Presigner buildS3Presigner(String accessKey, String secretKey, String region) {
+		boolean bUseIAM = !getPropertyValue(USE_IAM, "", "").isEmpty() || (accessKey.equals("") && secretKey.equals(""));
+
+		S3Presigner.Builder builder = S3Presigner.builder()
 			.region(Region.of(region))
-			.credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
-			.build();
+			.credentialsProvider(
+				bUseIAM
+					? DefaultCredentialsProvider.create()
+					: StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey))
+			);
+
+		if (bUseIAM) {
+			logger.debug("Using IAM Credentials for presigner");
+		}
+
+		return builder.build();
 	}
 
 	private void bucketExists() {
@@ -603,8 +611,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 	}
 
 	private String uploadWithACL(String externalFileName, InputStream input, ResourceAccessControlList acl) {
-		try {
-			ByteBuffer byteBuffer = ByteBuffer.wrap(IoUtils.toByteArray(input));
+		try (ExternalProviderHelper.InputStreamWithLength streamInfo = ExternalProviderHelper.getInputStreamContentLength(input)) {
 			PutObjectRequest.Builder putObjectRequestBuilder = PutObjectRequest.builder()
 				.bucket(bucket)
 				.key(externalFileName)
@@ -613,7 +620,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 				putObjectRequestBuilder = putObjectRequestBuilder.acl(internalToAWSACLWithACL(acl));
 			PutObjectRequest putObjectRequest = putObjectRequestBuilder.build();
 
-			PutObjectResponse response = client.putObject(putObjectRequest, RequestBody.fromByteBuffer(byteBuffer));
+			PutObjectResponse response = client.putObject(putObjectRequest, RequestBody.fromInputStream(streamInfo.inputStream, streamInfo.contentLength));
 			if (!response.sdkHttpResponse().isSuccessful()) {
 				logger.error("Error while uploading file: " + response.sdkHttpResponse().statusText().orElse("Unknown error"));
 			}
@@ -727,15 +734,14 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 	}
 
 	private String uploadWithoutACL(String externalFileName, InputStream input) {
-		try {
-			ByteBuffer byteBuffer = ByteBuffer.wrap(IoUtils.toByteArray(input));
+		try (ExternalProviderHelper.InputStreamWithLength streamInfo = ExternalProviderHelper.getInputStreamContentLength(input)) {
 			PutObjectRequest.Builder putObjectRequestBuilder = PutObjectRequest.builder()
 				.bucket(bucket)
 				.key(externalFileName)
-				.contentType(externalFileName.endsWith(".tmp") ? "image/jpeg" : null);
+				.contentType((externalFileName.endsWith(".tmp") && "application/octet-stream".equals(streamInfo.detectedContentType)) ? "image/jpeg" : streamInfo.detectedContentType);
 			PutObjectRequest putObjectRequest = putObjectRequestBuilder.build();
 
-			PutObjectResponse response = client.putObject(putObjectRequest, RequestBody.fromByteBuffer(byteBuffer));
+			PutObjectResponse response = client.putObject(putObjectRequest, RequestBody.fromInputStream(streamInfo.inputStream, streamInfo.contentLength));
 			if (!response.sdkHttpResponse().isSuccessful()) {
 				logger.error("Error while uploading file: " + response.sdkHttpResponse().statusText().orElse("Unknown error"));
 			}

@@ -18,10 +18,12 @@ import javax.net.ssl.SSLContext;
 import org.apache.http.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.conn.DnsResolver;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.impl.conn.SystemDefaultDnsResolver;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
@@ -64,11 +66,35 @@ import com.genexus.specific.java.*;
 
 public class HttpClientJavaLib extends GXHttpClient {
 
+	private static final DnsResolver FIRST_IP_DNS_RESOLVER = host -> {
+		InetAddress[] allIps = SystemDefaultDnsResolver.INSTANCE.resolve(host);
+		if (allIps != null && allIps.length > 0) {
+			return new InetAddress[]{allIps[0]};
+		}
+		return allIps;
+	};
+
+	private static boolean isFirstIpDnsEnabled() {
+		String name = "GX_USE_FIRST_IP_DNS";
+		String gxDns = System.getProperty(name);
+		if (gxDns == null || gxDns.trim().isEmpty()) {
+			gxDns = System.getenv(name);
+		}
+		return gxDns != null && gxDns.trim().equalsIgnoreCase("true");
+	}
+
 	public HttpClientJavaLib() {
 		getPoolInstance();
 		ConnectionKeepAliveStrategy myStrategy = generateKeepAliveStrategy();
-		httpClientBuilder = HttpClients.custom().setConnectionManager(connManager).setConnectionManagerShared(true).setKeepAliveStrategy(myStrategy);
-		cookies = new BasicCookieStore();		
+		HttpClientBuilder builder = HttpClients.custom()
+			.setConnectionManager(connManager)
+			.setConnectionManagerShared(true)
+			.setKeepAliveStrategy(myStrategy);
+		if (isFirstIpDnsEnabled()) {
+			builder.setDnsResolver(FIRST_IP_DNS_RESOLVER);
+		}
+		httpClientBuilder = builder;
+		cookies = new BasicCookieStore();
 		streamsToClose = new Vector<>();
 	}
 
@@ -78,7 +104,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 				RegistryBuilder.<ConnectionSocketFactory>create()
 					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
 					.build();
-			connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+			if (isFirstIpDnsEnabled()) {
+				connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry, FIRST_IP_DNS_RESOLVER);
+			} else {
+				connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+			}
 			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_SIZE", "1000")));
 			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_PER_ROUTE", "1000")));
 
@@ -282,7 +312,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 			return new SSLConnectionSocketFactory(
 				sslContext,
-				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2" },
+				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3" },
 				null,
 				NoopHostnameVerifier.INSTANCE);
 		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException | UnrecoverableKeyException | CertificateException | IOException e) {
@@ -290,7 +320,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 		return new SSLConnectionSocketFactory(
 			SSLContexts.createDefault(),
-			new String[] { "TLSv1", "TLSv1.1", "TLSv1.2"},
+			new String[] { "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3"},
 			null,
 			SSLConnectionSocketFactory.getDefaultHostnameVerifier());
 	}
@@ -636,7 +666,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			resetStateAdapted();
 		}
 	}
-	
+
 	private synchronized void displayHTTPConnections(){
 		Iterator<HttpRoute> iterator = storedRoutes.iterator();
 		while (iterator.hasNext()) {
@@ -728,11 +758,12 @@ public class HttpClientJavaLib extends GXHttpClient {
 			return "";
 		try {
 			this.setEntity();
-			Charset charset = ContentType.getOrDefault(response.getEntity()).getCharset();
+			ContentType contentType = ContentType.getOrDefault(response.getEntity());
+			Charset charset = contentType.getCharset() != null
+				? contentType.getCharset()
+				: StandardCharsets.UTF_8;
+
 			String res = EntityUtils.toString(entity, charset);
-			if (res.matches(".*[Ã-ÿ].*")) {
-				res = EntityUtils.toString(entity, StandardCharsets.UTF_8);
-			}
 			eof = true;
 			return res;
 		} catch (IOException e) {
@@ -742,13 +773,24 @@ public class HttpClientJavaLib extends GXHttpClient {
 	}
 
 	private	boolean eof;
+	private String previousChunkReaded;
+	private boolean usePreviousChunkReaded;
 	public boolean getEof() {
 		return eof;
+	}
+
+	public void unreadChunk() {
+		usePreviousChunkReaded = true;
 	}
 
 	public String readChunk() {
 		if (!isChunkedResponse)
 			return getString();
+
+		if (usePreviousChunkReaded) {
+			usePreviousChunkReaded = false;
+			return previousChunkReaded;
+		}
 
 		if (response == null)
 			return "";
@@ -759,6 +801,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 				eof = true;
 				res = "";
 			}
+			previousChunkReaded = res;
 			return res;
 		} catch (IOException e) {
 			setExceptionsCatch(e);

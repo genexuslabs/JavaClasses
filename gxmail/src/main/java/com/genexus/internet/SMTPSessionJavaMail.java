@@ -217,22 +217,38 @@ public final class SMTPSessionJavaMail implements GXInternetConstants,ISMTPSessi
 		{
 			fileNamePath = attachDir + fileNamePath;
 		}
-		BodyPart messageBodyPart = new MimeBodyPart();
-		DataSource source = new FileDataSource(fileNamePath);
-		messageBodyPart.setDataHandler(new DataHandler(source));
+
 		if	(filename.lastIndexOf(File.separator) != -1)
 		{
 			filename = filename.substring(filename.lastIndexOf(File.separator) + 1);
 		}
+
+		int lastDot = filename.lastIndexOf('.');
+		String extension = (lastDot == -1) ? "" : filename.substring(lastDot + 1).toLowerCase();
+
+		String mt = CommonUtil.getContentFromExt(extension);
+		final String mimeType = (mt == null || mt.isEmpty()) ? "application/octet-stream" : mt;
+
+		DataSource source = new FileDataSource(fileNamePath) {
+			@Override
+			public String getContentType() {
+				return mimeType;
+			}
+		};
+
+		BodyPart messageBodyPart = new MimeBodyPart();
+		messageBodyPart.setDataHandler(new DataHandler(source));
 		messageBodyPart.setFileName(filename);
+
 		multipart.addBodyPart(messageBodyPart);
-   }	
+   }
 
 	public void logout(GXSMTPSession sessionInfo)
 	{
 		try
 		{
-			t.close();
+			if (t != null)
+				t.close();
 		}
 		catch (MessagingException e)
 		{

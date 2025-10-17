@@ -2,6 +2,7 @@ package com.genexus.db;
 
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.genexus.*;
 import com.genexus.db.driver.DataSource;
@@ -164,10 +165,54 @@ public class DataStoreProvider extends DataStoreProviderBase implements IDataSto
 	{
             execute(cursorIdx, null, false);
 	}
+
+	static ReentrantLock lockExecute = new ReentrantLock();
+
 	public synchronized void execute(int cursorIdx, Object[] parms)
 	{
-            execute(cursorIdx, parms, true);
-        }
+		DataSource ds = getDataSourceNoException();
+		if(ds!=null && ds.jdbcIntegrity==false)
+		{
+			// If the JDBC integrity is disabled (XBASE_TINT), SQLIte is in autocommit mode.
+			// we need to lock the execute method to avoid concurrency issues.
+			// for example, the postExecute method (select changes()) cause exception in Android SQLite.
+			// it happends with execute sql statements like from diferent threads, like using procedures submit.
+			Cursor cursor = cursors[cursorIdx];
+			if (cursor instanceof UpdateCursor) // if the cursor is an UpdateCursor, we need to lock the execute method.
+			{ 
+				AndroidLog.debug("execute UpdateCursor cursorIdx : " + cursorIdx);
+				long timeStampStart = System.currentTimeMillis();
+				lockExecute.lock();
+				long timeStampLock = System.currentTimeMillis();
+				AndroidLog.debug("START execute UpdateCursor afterlock cursorIdx: " + cursorIdx + " Waiting time ms: " + (timeStampLock - timeStampStart));
+				try
+				{
+        			// execute the cursor with the parameters.
+					execute(cursorIdx, parms, true);
+				}
+				finally
+				{
+					lockExecute.unlock();
+				}
+				long timeStampEnd = System.currentTimeMillis();
+				AndroidLog.debug("END execute UpdateCursor cursorIdx: " + cursorIdx+ " Execute time ms: " + (timeStampEnd - timeStampLock));
+			}
+			else
+			{
+				// if the cursor is not an UpdateCursor, we can execute it without locking.
+				long timeStampStart = System.currentTimeMillis();
+				execute(cursorIdx, parms, true);
+				long timeStampEnd = System.currentTimeMillis();
+				AndroidLog.debug("END execute cursorIdx: " + cursorIdx+ " Execute time ms: " + (timeStampEnd - timeStampStart));
+			}
+		}	
+		else
+		{
+			// default case, we execute the cursor with the parameters.
+			execute(cursorIdx, parms, true);
+		}
+
+    }
 
 	private void execute(int cursorIdx, Object[] parms, boolean preExecute)
 	{
