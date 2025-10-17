@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.genexus.ApplicationContext;
 import com.genexus.CommonUtil;
+import com.genexus.GXutil;
 import com.genexus.ModelContext;
 import com.genexus.platform.NativeFunctions;
 import com.genexus.webpanels.HttpContextWeb;
@@ -377,9 +378,8 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					}
 				}
 			}
-			catch(java.lang.IllegalArgumentException ex) {
-				URL url= new java.net.URL(bitmap);
-				image = PDImageXObject.createFromByteArray(document, IOUtils.toByteArray(url.openStream()),bitmap);
+			catch(java.lang.IllegalArgumentException | java.io.FileNotFoundException ex) {
+				image = PDImageXObject.createFromByteArray(document, GXutil.ImageUrlToBytes(bitmap),bitmap);
 			}
 
 			if (documentImages == null) {

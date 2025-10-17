@@ -1391,10 +1391,10 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 					int queryIndex = fileName.lastIndexOf('?');
 					if (queryIndex > -1)
 						fileName = fileName.substring(0, queryIndex + 1) + PrivateUtilities.encodeURL(fileName.substring(queryIndex + 1));
-					URL fileURL = new URL(fileName);
+					String fileURL = fileName;
 					String blobPath = com.genexus.Preferences.getDefaultPreferences().getBLOB_PATH();
 					fileName = com.genexus.PrivateUtilities.getTempFileName(blobPath, CommonUtil.getFileName(fileName), CommonUtil.getFileType(fileName), true);
-					com.genexus.PrivateUtilities.InputStreamToFile(fileURL.openStream() ,fileName);						
+					new com.genexus.util.GXFile(fileName).fromBytes(GXutil.ImageUrlToBytes(fileURL));
 				}
 			}
 			catch(MalformedURLException e)

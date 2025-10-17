@@ -2,6 +2,7 @@ package com.genexus.reports;
 
 import com.genexus.ApplicationContext;
 import com.genexus.CommonUtil;
+import com.genexus.GXutil;
 import com.genexus.ModelContext;
 import com.genexus.platform.NativeFunctions;
 import com.genexus.reports.fonts.PDFFont;
@@ -425,9 +426,8 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 					}
 				}
 			}
-			catch(java.lang.IllegalArgumentException ex) {
-				URL url= new java.net.URL(bitmap);
-				imageData = ImageDataFactory.create(url);
+			catch(java.lang.IllegalArgumentException | com.itextpdf.io.exceptions.IOException ex) {
+				imageData = ImageDataFactory.create(GXutil.ImageUrlToBytes(bitmap));
 			}
 
 			if (documentImages == null) {
