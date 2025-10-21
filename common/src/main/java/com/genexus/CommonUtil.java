@@ -9,7 +9,6 @@ import org.json.JSONObject;
 import java.math.BigDecimal;
 import java.io.*;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.text.*;
 import java.util.*;
 
@@ -3490,36 +3489,6 @@ public final class CommonUtil
 			}
 		}
 		return sanitizedInput.toString();
-	}
-
-	public static String encodeUtf8Once(String input) {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < input.length(); i++) {
-			char c = input.charAt(i);
-			if (c == '%' && i + 2 < input.length() &&
-				(((input.charAt(i+1) >= '0' && input.charAt(i+1) <= '9') ||
-					(input.charAt(i+1) >= 'A' && input.charAt(i+1) <= 'F') ||
-					(input.charAt(i+1) >= 'a' && input.charAt(i+1) <= 'f')) &&
-					((input.charAt(i+2) >= '0' && input.charAt(i+2) <= '9') ||
-						(input.charAt(i+2) >= 'A' && input.charAt(i+2) <= 'F') ||
-						(input.charAt(i+2) >= 'a' && input.charAt(i+2) <= 'f')))) {
-				sb.append('%').append(input.charAt(i+1)).append(input.charAt(i+2));
-				i += 2;
-			}
-			else if ((c >= 'A' && c <= 'Z') ||
-				(c >= 'a' && c <= 'z') ||
-				(c >= '0' && c <= '9') ||
-				c == '-' || c == '_' || c == '.' || c == '~') {
-				sb.append(c);
-			}
-			else {
-				byte[] bytes = String.valueOf(c).getBytes(StandardCharsets.UTF_8);
-				for (byte b : bytes) {
-					sb.append(String.format("%%%02X", b));
-				}
-			}
-		}
-		return sb.toString();
 	}
 
 	public static boolean isKnownContentType(String type)
