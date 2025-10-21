@@ -93,6 +93,10 @@ public class HttpClientJavaLib extends GXHttpClient {
 		if (isFirstIpDnsEnabled()) {
 			builder.setDnsResolver(FIRST_IP_DNS_RESOLVER);
 		}
+		String userAgent = clientCfg.getProperty("Client", "UserAgentHeader", "");
+		if (!userAgent.isEmpty()) {
+			builder.setUserAgent(userAgent);
+		}
 		httpClientBuilder = builder;
 		cookies = new BasicCookieStore();
 		streamsToClose = new Vector<>();
