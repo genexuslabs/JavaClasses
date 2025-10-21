@@ -121,7 +121,8 @@ public class Memcached implements ICacheService2, Closeable {
 	}
 
 	public void clearCache(String cacheid) {
-		_cache.incr(cacheid, 1);
+		Long newPrefix = CommonUtil.now(false, false).getTime();
+		set(cacheid, newPrefix);
 	}
 
 	public void clearKey(String key) {
