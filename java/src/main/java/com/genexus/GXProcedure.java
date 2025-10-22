@@ -275,6 +275,10 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 	}
 
 	protected ChatResult chatAgent(String agent, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result) {
+		return chatAgent(agent, properties, messages, null, result);
+	}
+
+	protected ChatResult chatAgent(String agent, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, GXExternalCollection<?> history, CallResult result) {
 		ChatResult chatResult = new ChatResult();
 
 		new Thread(() -> {
@@ -283,6 +287,8 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 				callAgent(agent, true, properties, messages, result, chatResult);
 			} finally {
 				chatResult.markDone();
+				if (history != null)
+					history.setExternalInstance(messages);
 			}
 		}).start();
 
