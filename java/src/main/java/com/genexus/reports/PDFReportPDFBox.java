@@ -1350,6 +1350,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				document.addPage(new PDPage(this.pageSize));
 				pages++;
 			}
+			GxEndPage();
 			replaceTemplatePages();
 			int copies = 1;
 			try {
