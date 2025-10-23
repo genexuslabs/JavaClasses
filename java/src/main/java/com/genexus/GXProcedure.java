@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genexus.db.Namespace;
 import com.genexus.db.UserInformation;
 import com.genexus.diagnostics.GXDebugInfo;
@@ -18,8 +17,8 @@ import com.genexus.performance.ProceduresInfo;
 import com.genexus.util.*;
 import com.genexus.util.saia.OpenAIRequest;
 import com.genexus.util.saia.OpenAIResponse;
+import com.genexus.util.saia.SaiaEvents;
 import com.genexus.util.saia.SaiaService;
-import org.json.JSONObject;
 
 public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 	public abstract void initialize();
@@ -286,9 +285,9 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 				context.setThreadModelContext(context);
 				callAgent(agent, true, properties, messages, result, chatResult);
 			} finally {
-				chatResult.markDone();
 				if (history != null)
 					history.setExternalInstance(messages);
+				chatResult.markDone();
 			}
 		}).start();
 
@@ -327,16 +326,18 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 
 	public String processNotChunkedResponse(String agent, boolean stream, GXProperties properties, ArrayList<OpenAIResponse.Message> messages, CallResult result, ChatResult chatResult, ArrayList<OpenAIResponse.ToolCall> toolCalls) {
 		for (OpenAIResponse.ToolCall tollCall : toolCalls) {
-			processToolCall(tollCall, messages);
+			processToolCall(tollCall, messages, chatResult);
 		}
 		return callAgent(agent, stream, properties, messages, result, chatResult);
 	}
 
-	private void processToolCall(OpenAIResponse.ToolCall toolCall, ArrayList<OpenAIResponse.Message> messages) {
+	private void processToolCall(OpenAIResponse.ToolCall toolCall, ArrayList<OpenAIResponse.Message> messages, ChatResult chatResult) {
 		String result;
 		String functionName = toolCall.getFunction().getName();
 		try {
+			addToolCallChunk(chatResult, toolCall, "saia.metadata.tool.started", "started", null);
 			result = callTool(functionName, toolCall.getFunction().getArguments());
+			addToolCallChunk(chatResult, toolCall, "saia.metadata.tool.finished", "finished_successfully", result);
 		}
 		catch (Throwable e) {
 			result = String.format("Error calling tool %s", functionName);
@@ -346,5 +347,14 @@ public abstract class GXProcedure implements IErrorHandler, ISubmitteable {
 		toolCallMessage.setStringContent(result);
 		toolCallMessage.setToolCallId(toolCall.getId());
 		messages.add(toolCallMessage);
+	}
+
+	private void addToolCallChunk(ChatResult chatResult, OpenAIResponse.ToolCall toolCall, String event, String tollStatus, String result) {
+		if (chatResult != null) {
+			SaiaEvents saiaToolStarted = new SaiaEvents();
+			String eventJson = saiaToolStarted.serializeSaiaEvent(toolCall, event, tollStatus, result);
+			if (eventJson != null)
+				chatResult.addChunk("data: " + eventJson);
+		}
 	}
 }
