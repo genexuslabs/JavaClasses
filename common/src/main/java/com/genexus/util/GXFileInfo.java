@@ -28,7 +28,7 @@ public class GXFileInfo implements IGXFileInfo {
 		this.isDirectory = isDirectory;
 	}
 	public String getPath(){
-		if (fileSource.isFile() || !exists()){
+		if (fileSource.isFile()){
 			String absoluteName = getAbsolutePath();
 			if (!absoluteName.equals(""))
 				return new File(absoluteName).getParent();

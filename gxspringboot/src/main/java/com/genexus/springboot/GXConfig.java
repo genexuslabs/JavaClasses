@@ -46,9 +46,6 @@ public class GXConfig implements WebMvcConfigurer {
 			registry.addResourceHandler(webImageDir + "**")
 				.addResourceLocations("classpath:" + webImageDir);
 
-			registry.addResourceHandler("/_ng/**")
-				.addResourceLocations("classpath:/ng/");
-
 			registry.addResourceHandler("/" + blobPath + "/**")
 				.addResourceLocations("file:./" + blobPath + "/");
 		}
@@ -74,7 +71,6 @@ public class GXConfig implements WebMvcConfigurer {
 		if (new ClassPathResource(REWRITE_FILE).exists()) {
 			registrationBean.addInitParameter("modRewriteConf", "true");
 			registrationBean.addInitParameter("confPath", REWRITE_FILE);
-			registrationBean.setOrder(org.springframework.core.Ordered.HIGHEST_PRECEDENCE);
 		}
 		else {
 			registrationBean.setEnabled(false);

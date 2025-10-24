@@ -56,11 +56,9 @@ public class ExcelDoc {
 	public void checkExcelDocument() {
 		if (document == null) {
 			try {
-				if (excelFileName.endsWith(".xls") || excelFileName.endsWith(".xlm")
-						|| excelFileName.endsWith(".xlb") || excelFileName.endsWith(".xlm")) {
-					Class.forName("org.apache.poi.hssf.usermodel.HSSFWorkbook");
-					document = new com.genexus.gxoffice.poi.hssf.ExcelDocument();
-				} else {
+				if (excelFileName.endsWith(".xlsx") || excelFileName.endsWith(".xlsm")
+						|| excelFileName.endsWith(".xlsb") || excelFileName.endsWith(".xlam")
+						|| isXlsx(excelFileName)) {
 					if (bufferedStreaming) {
 						Class.forName("org.apache.poi.xssf.streaming.SXSSFWorkbook");
 						document = new com.genexus.gxoffice.poi.sxssf.ExcelDocument();
@@ -68,6 +66,9 @@ public class ExcelDoc {
 						Class.forName("org.apache.poi.xssf.usermodel.XSSFWorkbook");
 						document = new com.genexus.gxoffice.poi.xssf.ExcelDocument();
 					}
+				} else {
+					Class.forName("org.apache.poi.hssf.usermodel.HSSFWorkbook");
+					document = new com.genexus.gxoffice.poi.hssf.ExcelDocument();
 				}
 			} catch (Throwable e) {
 				document = new com.genexus.gxoffice.ExcelDocument();

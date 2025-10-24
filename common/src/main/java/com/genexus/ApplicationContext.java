@@ -132,7 +132,7 @@ public class ApplicationContext
 		if (isSpringBootApp())
 			return new ClassPathResource(path).exists();
 		else
-			return new File(path).exists() || getClass().getClassLoader().getResource(path) != null;
+			return new File(path).exists();
 	}
 
 	public void setEJBEngine(boolean isEJBEngine)

@@ -66,22 +66,32 @@ import com.genexus.specific.java.*;
 
 public class HttpClientJavaLib extends GXHttpClient {
 
-	private static final DnsResolver FIRST_IP_DNS_RESOLVER = host -> {
-		InetAddress[] allIps = SystemDefaultDnsResolver.INSTANCE.resolve(host);
-		if (allIps != null && allIps.length > 0) {
-			return new InetAddress[]{allIps[0]};
-		}
-		return allIps;
-	};
+	private static class FirstIpDnsResolver implements DnsResolver {
+		private final DnsResolver defaultDnsResolver = new SystemDefaultDnsResolver();
 
-	private static boolean isFirstIpDnsEnabled() {
+		@Override
+		public InetAddress[] resolve(final String host) throws UnknownHostException {
+			InetAddress[] allIps = defaultDnsResolver.resolve(host);
+			if (allIps != null && allIps.length > 0) {
+				return new InetAddress[]{allIps[0]};
+			}
+			return allIps;
+		}
+	}
+
+	private static String getGxIpResolverConfig() {
 		String name = "GX_USE_FIRST_IP_DNS";
 		String gxDns = System.getProperty(name);
 		if (gxDns == null || gxDns.trim().isEmpty()) {
 			gxDns = System.getenv(name);
 		}
-		return gxDns != null && gxDns.trim().equalsIgnoreCase("true");
+		if (gxDns != null && gxDns.trim().equalsIgnoreCase("true")) {
+			return gxDns.trim();
+		} else {
+			return null;
+		}
 	}
+
 
 	public HttpClientJavaLib() {
 		getPoolInstance();
@@ -90,15 +100,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 			.setConnectionManager(connManager)
 			.setConnectionManagerShared(true)
 			.setKeepAliveStrategy(myStrategy);
-		if (isFirstIpDnsEnabled()) {
-			builder.setDnsResolver(FIRST_IP_DNS_RESOLVER);
-		}
-		String userAgent = clientCfg.getProperty("Client", "UserAgentHeader", "");
-		if (!userAgent.isEmpty()) {
-			builder.setUserAgent(userAgent);
+		if (getGxIpResolverConfig() != null) {
+			builder.setDnsResolver(new FirstIpDnsResolver());
 		}
 		httpClientBuilder = builder;
-		cookies = new BasicCookieStore();
+		cookies = new BasicCookieStore();		
 		streamsToClose = new Vector<>();
 	}
 
@@ -108,11 +114,10 @@ public class HttpClientJavaLib extends GXHttpClient {
 				RegistryBuilder.<ConnectionSocketFactory>create()
 					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
 					.build();
-			if (isFirstIpDnsEnabled()) {
-				connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry, FIRST_IP_DNS_RESOLVER);
-			} else {
-				connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
-			}
+			boolean useCustomDnsResolver = getGxIpResolverConfig() != null;
+			PoolingHttpClientConnectionManager connManager = useCustomDnsResolver
+				? new PoolingHttpClientConnectionManager(socketFactoryRegistry, new FirstIpDnsResolver())
+				: new PoolingHttpClientConnectionManager(socketFactoryRegistry);
 			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_SIZE", "1000")));
 			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_PER_ROUTE", "1000")));
 
@@ -316,7 +321,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 			return new SSLConnectionSocketFactory(
 				sslContext,
-				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3" },
+				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2" },
 				null,
 				NoopHostnameVerifier.INSTANCE);
 		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException | UnrecoverableKeyException | CertificateException | IOException e) {
@@ -324,7 +329,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 		return new SSLConnectionSocketFactory(
 			SSLContexts.createDefault(),
-			new String[] { "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3"},
+			new String[] { "TLSv1", "TLSv1.1", "TLSv1.2"},
 			null,
 			SSLConnectionSocketFactory.getDefaultHostnameVerifier());
 	}
@@ -670,7 +675,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			resetStateAdapted();
 		}
 	}
-
+	
 	private synchronized void displayHTTPConnections(){
 		Iterator<HttpRoute> iterator = storedRoutes.iterator();
 		while (iterator.hasNext()) {

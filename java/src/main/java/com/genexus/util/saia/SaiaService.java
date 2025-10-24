@@ -90,21 +90,15 @@ public class SaiaService {
 			chunkJson = saiaChunkResponse.substring(index).trim();
 			try {
 				JSONObject jsonResponse = new JSONObject(chunkJson);
-				if (jsonResponse.has("event") && jsonResponse.has("data")) {
-
-					chatResult.addChunk(saiaChunkResponse);
-				}
-				else {
-					OpenAIResponse chunkResponse = new ObjectMapper().readValue(jsonResponse.toString(), OpenAIResponse.class);
-					if (!chunkResponse.getChoices().isEmpty()) {
-						OpenAIResponse.Choice choice = chunkResponse.getChoices().get(0);
-						if (choice.getFinishReason() != null && choice.getFinishReason().equals("tool_calls")) {
-							messages.add(choice.getMessage());
-							proc.processNotChunkedResponse(agent, stream, properties, messages, result, chatResult, choice.getMessage().getToolCalls());
-							;
-						} else if (choice.getDelta() != null && choice.getDelta().getContent() != null) {
-							chatResult.addChunk(((OpenAIResponse.StringContent) choice.getDelta().getContent()).getValue());
-						}
+				OpenAIResponse chunkResponse = new ObjectMapper().readValue(jsonResponse.toString(), OpenAIResponse.class);
+				if (!chunkResponse.getChoices().isEmpty()) {
+					OpenAIResponse.Choice choice = chunkResponse.getChoices().get(0);
+					if (choice.getFinishReason() != null && choice.getFinishReason().equals("tool_calls")) {
+						messages.add(choice.getMessage());
+						proc.processNotChunkedResponse(agent, stream, properties, messages, result, chatResult, choice.getMessage().getToolCalls());
+						;
+					} else if (choice.getDelta() != null && choice.getDelta().getContent() != null) {
+						chatResult.addChunk(((OpenAIResponse.StringContent) choice.getDelta().getContent()).getValue());
 					}
 				}
 				saiaChunkResponse = client.readChunk();

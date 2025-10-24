@@ -2,7 +2,6 @@ package com.genexus.reports;
 
 import com.genexus.ApplicationContext;
 import com.genexus.CommonUtil;
-import com.genexus.GXutil;
 import com.genexus.ModelContext;
 import com.genexus.platform.NativeFunctions;
 import com.genexus.reports.fonts.PDFFont;
@@ -426,8 +425,9 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 					}
 				}
 			}
-			catch(java.lang.IllegalArgumentException | com.itextpdf.io.exceptions.IOException ex) {
-				imageData = ImageDataFactory.create(GXutil.ImageUrlToBytes(bitmap));
+			catch(java.lang.IllegalArgumentException ex) {
+				URL url= new java.net.URL(bitmap);
+				imageData = ImageDataFactory.create(url);
 			}
 
 			if (documentImages == null) {
@@ -720,7 +720,7 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 					template = new PdfFormXObject(new Rectangle(right - left, bottom - top));
 					templateCreated = true;
 				}
-				cb.addXObjectAt(template, leftAux + leftMargin, this.pageSize.getTop() -  bottomAux - topMargin - bottomMargin - (baseFont.getAscent(sTxt,fontSize)/2));
+				cb.addXObjectAt(template, leftAux + leftMargin, this.pageSize.getTop() -  bottomAux - topMargin -bottomMargin);
 				templateFont = baseFont;
 				templateFontSize = fontSize;
 				templateColorFill = foreColor;
@@ -949,7 +949,7 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 		}
 
 		if (template != null) {
-			PdfCanvas cb = new PdfCanvas(template, pdfDocument);
+			PdfCanvas cb = new PdfCanvas(pdfPage);
 			cb.beginText();
 			cb.setFontAndSize(templateFont, templateFontSize);
 			cb.setTextMatrix(0,0);

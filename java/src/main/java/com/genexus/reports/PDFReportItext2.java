@@ -9,7 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.genexus.ApplicationContext;
 import com.genexus.CommonUtil;
-import com.genexus.GXutil;
 import com.genexus.ModelContext;
 import com.genexus.platform.NativeFunctions;
 import com.genexus.webpanels.HttpContextWeb;
@@ -397,8 +396,9 @@ public class PDFReportItext2 extends GXReportPDFCommons
 					}
 				}
 			}
-			catch(java.lang.IllegalArgumentException | IOException ex) {//Puede ser una url absoluta
-				image = com.lowagie.text.Image.getInstance(GXutil.ImageUrlToBytes(bitmap));
+			catch(java.lang.IllegalArgumentException ex) {//Puede ser una url absoluta
+				java.net.URL url= new java.net.URL(bitmap);
+				image = com.lowagie.text.Image.getInstance(url);
 			}
 
 			if (documentImages == null) {
@@ -442,6 +442,9 @@ public class PDFReportItext2 extends GXReportPDFCommons
 		}
 		catch(DocumentException de) {
 			log.error("GxDrawBitMap failed:", de);
+		}
+		catch(IOException ioe) {
+			log.error("GxDrawBitMap failed:", ioe);
 		}
 		catch(Exception e) {
 			log.error("GxDrawBitMap failed:", e);

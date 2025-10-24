@@ -785,11 +785,7 @@ public class XMLReader implements XMLDocumentHandler, XMLErrorHandler, XMLDTDHan
 			else
 			{
 				File xmlFile = new File(url);
-				if (xmlFile.exists())
-					fileInputStream = new FileInputStream(xmlFile);
-				else {
-					fileInputStream = getClass().getClassLoader().getResourceAsStream(url);
-				}
+				fileInputStream = new FileInputStream(xmlFile);
 			}
 			inputSource = new XMLInputSource(null, url, null, fileInputStream, null);
 			if (documentEncoding.length() > 0)

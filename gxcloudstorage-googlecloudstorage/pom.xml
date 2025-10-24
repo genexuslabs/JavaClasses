@@ -28,7 +28,7 @@
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-storage</artifactId>
-            <version>2.58.1</version>
+            <version>1.118.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.google.code.findbugs</groupId>
@@ -69,15 +69,13 @@
                 </exclusion>
                 <exclusion>
                     <groupId>com.google.protobuf</groupId>
+                    <artifactId>protobuf-java</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.protobuf</groupId>
                     <artifactId>protobuf-java-util</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <!-- overwrite  grpc-netty-shaded from google-cloud-storage because of CVEs-->
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-netty-shaded</artifactId>
-            <version>1.75.0</version>
         </dependency>
 	</dependencies>
 </project>

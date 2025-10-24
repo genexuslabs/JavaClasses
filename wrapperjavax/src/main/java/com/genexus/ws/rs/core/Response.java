@@ -36,10 +36,6 @@ public abstract class Response extends javax.ws.rs.core.Response {
 		return new Response.ResponseBuilder(javax.ws.rs.core.Response.status(Status.UNAUTHORIZED));
 	}
 
-	public static Response.ResponseBuilder badrequest() {
-		return new Response.ResponseBuilder(javax.ws.rs.core.Response.status(Status.BAD_REQUEST));
-	}
-
 	public static Response.ResponseBuilder noContentWrapped() {
 		return new Response.ResponseBuilder(javax.ws.rs.core.Response.noContent());
 	}
