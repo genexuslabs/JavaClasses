@@ -94,10 +94,7 @@ jobs:
           geai-release-stable)
             echo "## Is GEAI-Release-Stable branch, use fixed version"
                 
-            pomMajorNumber="118"
-            pomMinorNumber="0"
-            pomPatchNumber="$(git rev-list --count origin/master..)"
-            
+            versionChangelist="-geai-stable.$timestamp-SNAPSHOT"            
             SHOULD_DEPLOY='true'
             ;;
 
