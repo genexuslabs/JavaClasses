@@ -91,6 +91,13 @@ jobs:
             SHOULD_DEPLOY='true'
             ;;
 
+          geai-release-stable)
+            echo "## Is GEAI-Release-Stable branch, use fixed version"
+                
+            versionChangelist="-geai-stable.$timestamp-SNAPSHOT"            
+            SHOULD_DEPLOY='true'
+            ;;
+
           beta-corona)
             echo "## Is BETA-CORONA branch, use fixed version"
                 
