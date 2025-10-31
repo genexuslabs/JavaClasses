@@ -66,32 +66,22 @@ import com.genexus.specific.java.*;
 
 public class HttpClientJavaLib extends GXHttpClient {
 
-	private static class FirstIpDnsResolver implements DnsResolver {
-		private final DnsResolver defaultDnsResolver = new SystemDefaultDnsResolver();
-
-		@Override
-		public InetAddress[] resolve(final String host) throws UnknownHostException {
-			InetAddress[] allIps = defaultDnsResolver.resolve(host);
-			if (allIps != null && allIps.length > 0) {
-				return new InetAddress[]{allIps[0]};
-			}
-			return allIps;
+	private static final DnsResolver FIRST_IP_DNS_RESOLVER = host -> {
+		InetAddress[] allIps = SystemDefaultDnsResolver.INSTANCE.resolve(host);
+		if (allIps != null && allIps.length > 0) {
+			return new InetAddress[]{allIps[0]};
 		}
-	}
+		return allIps;
+	};
 
-	private static String getGxIpResolverConfig() {
+	private static boolean isFirstIpDnsEnabled() {
 		String name = "GX_USE_FIRST_IP_DNS";
 		String gxDns = System.getProperty(name);
 		if (gxDns == null || gxDns.trim().isEmpty()) {
 			gxDns = System.getenv(name);
 		}
-		if (gxDns != null && gxDns.trim().equalsIgnoreCase("true")) {
-			return gxDns.trim();
-		} else {
-			return null;
-		}
+		return gxDns != null && gxDns.trim().equalsIgnoreCase("true");
 	}
-
 
 	public HttpClientJavaLib() {
 		getPoolInstance();
@@ -100,11 +90,15 @@ public class HttpClientJavaLib extends GXHttpClient {
 			.setConnectionManager(connManager)
 			.setConnectionManagerShared(true)
 			.setKeepAliveStrategy(myStrategy);
-		if (getGxIpResolverConfig() != null) {
-			builder.setDnsResolver(new FirstIpDnsResolver());
+		if (isFirstIpDnsEnabled()) {
+			builder.setDnsResolver(FIRST_IP_DNS_RESOLVER);
+		}
+		String userAgent = clientCfg.getProperty("Client", "UserAgentHeader", "");
+		if (!userAgent.isEmpty()) {
+			builder.setUserAgent(userAgent);
 		}
 		httpClientBuilder = builder;
-		cookies = new BasicCookieStore();		
+		cookies = new BasicCookieStore();
 		streamsToClose = new Vector<>();
 	}
 
@@ -114,10 +108,11 @@ public class HttpClientJavaLib extends GXHttpClient {
 				RegistryBuilder.<ConnectionSocketFactory>create()
 					.register("http", PlainConnectionSocketFactory.INSTANCE).register("https", getSSLSecureInstance())
 					.build();
-			boolean useCustomDnsResolver = getGxIpResolverConfig() != null;
-			PoolingHttpClientConnectionManager connManager = useCustomDnsResolver
-				? new PoolingHttpClientConnectionManager(socketFactoryRegistry, new FirstIpDnsResolver())
-				: new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+			if (isFirstIpDnsEnabled()) {
+				connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry, FIRST_IP_DNS_RESOLVER);
+			} else {
+				connManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+			}
 			connManager.setMaxTotal((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_SIZE", "1000")));
 			connManager.setDefaultMaxPerRoute((int) CommonUtil.val(clientCfg.getProperty("Client", "HTTPCLIENT_MAX_PER_ROUTE", "1000")));
 
@@ -321,7 +316,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 			return new SSLConnectionSocketFactory(
 				sslContext,
-				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2" },
+				new String[] { "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3" },
 				null,
 				NoopHostnameVerifier.INSTANCE);
 		} catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException | UnrecoverableKeyException | CertificateException | IOException e) {
@@ -329,7 +324,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 		return new SSLConnectionSocketFactory(
 			SSLContexts.createDefault(),
-			new String[] { "TLSv1", "TLSv1.1", "TLSv1.2"},
+			new String[] { "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3"},
 			null,
 			SSLConnectionSocketFactory.getDefaultHostnameVerifier());
 	}
@@ -675,7 +670,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			resetStateAdapted();
 		}
 	}
-	
+
 	private synchronized void displayHTTPConnections(){
 		Iterator<HttpRoute> iterator = storedRoutes.iterator();
 		while (iterator.hasNext()) {
@@ -767,11 +762,12 @@ public class HttpClientJavaLib extends GXHttpClient {
 			return "";
 		try {
 			this.setEntity();
-			Charset charset = ContentType.getOrDefault(response.getEntity()).getCharset();
+			ContentType contentType = ContentType.getOrDefault(response.getEntity());
+			Charset charset = contentType.getCharset() != null
+				? contentType.getCharset()
+				: StandardCharsets.UTF_8;
+
 			String res = EntityUtils.toString(entity, charset);
-			if (res.matches(".*[Ã-ÿ].*")) {
-				res = EntityUtils.toString(entity, StandardCharsets.UTF_8);
-			}
 			eof = true;
 			return res;
 		} catch (IOException e) {

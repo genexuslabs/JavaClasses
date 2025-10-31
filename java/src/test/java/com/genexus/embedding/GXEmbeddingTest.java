@@ -19,7 +19,8 @@ public class GXEmbeddingTest {
 		Connect.init();
 		LogManager.initialize(".");
 		Application.init(GXcfg.class);
-		List<Float> embedding = GXEmbedding.getEmbedding("openai/text-embedding-3-small", 512, "Hello World");
+		GXBaseCollection<SdtMessages_Message> AV7Messages = new GXBaseCollection<>();
+		List<Float> embedding = GXEmbedding.getEmbedding("openai/text-embedding-3-small", 512, "Hello World", AV7Messages);
 		String result = embedding.stream()
 			.map(String::valueOf)
 			.collect(Collectors.joining(","));
