@@ -31,6 +31,11 @@
             <version>${software.awssdk.version}</version>
         </dependency>
         <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sts</artifactId>
+            <version>${software.awssdk.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-1.2-api</artifactId>
             <version>${log4j.version}</version>
