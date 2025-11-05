@@ -137,4 +137,8 @@ public class FileItem
   		gxFile.delete();
   	}
   }
+
+  public GXFile getFile() {
+	  return gxFile;
+  }
 }
