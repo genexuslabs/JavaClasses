@@ -33,7 +33,7 @@
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-semconv</artifactId>
-            <version>1.30.1-alpha</version>
+            <version>${io.opentelemetry.version}</version>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry</groupId>
@@ -42,7 +42,7 @@
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
-            <version>1.36.0</version>
+            <version>${io.opentelemetry.version}</version>
         </dependency>
     </dependencies>
     <dependencyManagement>
@@ -50,7 +50,7 @@
             <dependency>
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-bom</artifactId>
-                <version>1.23.0</version>
+                <version>${io.opentelemetry.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
