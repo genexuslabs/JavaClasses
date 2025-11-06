@@ -6,8 +6,13 @@ import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
 import com.genexus.servlet.CorsFilter;
 import com.genexus.xml.GXXMLSerializable;
+
 import jakarta.annotation.PreDestroy;
+import jakarta.servlet.Servlet;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.servlet.ServletContainer;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +23,8 @@ import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.tuckey.web.filters.urlrewrite.UrlRewriteFilter;
+
+import java.util.Set;
 
 @Configuration
 @EnableWebMvc
@@ -80,6 +87,20 @@ public class GXConfig implements WebMvcConfigurer {
 			registrationBean.setEnabled(false);
 		}
 		return registrationBean;
+	}
+
+	@Bean
+	public ServletRegistrationBean<Servlet> jerseyServletRegistration() {
+		ResourceConfig rc = new ResourceConfig();
+		Set<Class<?>> rrcs = JaxrsResourcesHolder.getAll();
+		if (!rrcs.isEmpty()) {
+			rc.registerClasses(rrcs.toArray(new Class<?>[0]));
+		}
+		ServletContainer container = new ServletContainer(rc);
+		ServletRegistrationBean<Servlet> bean = new ServletRegistrationBean<>(container, "/rest/*");
+		bean.setName("jersey-servlet");
+		bean.setLoadOnStartup(1);
+		return bean;
 	}
 
 	@PreDestroy
