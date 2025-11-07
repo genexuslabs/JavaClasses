@@ -8,14 +8,14 @@ import com.genexus.servlet.CorsFilter;
 import com.genexus.xml.GXXMLSerializable;
 
 import jakarta.annotation.PreDestroy;
-import jakarta.servlet.Servlet;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
+import org.glassfish.jersey.servlet.ServletProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -24,6 +24,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.tuckey.web.filters.urlrewrite.UrlRewriteFilter;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 @Configuration
@@ -90,17 +92,26 @@ public class GXConfig implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public ServletRegistrationBean<Servlet> jerseyServletRegistration() {
+	public FilterRegistrationBean<ServletContainer> jerseyFilter() {
 		ResourceConfig rc = new ResourceConfig();
 		Set<Class<?>> rrcs = JaxrsResourcesHolder.getAll();
 		if (!rrcs.isEmpty()) {
 			rc.registerClasses(rrcs.toArray(new Class<?>[0]));
+			rc.property(ServletProperties.FILTER_FORWARD_ON_404, true);
 		}
+
 		ServletContainer container = new ServletContainer(rc);
-		ServletRegistrationBean<Servlet> bean = new ServletRegistrationBean<>(container, "/rest/*");
-		bean.setName("jersey-servlet");
-		bean.setLoadOnStartup(1);
-		return bean;
+
+		FilterRegistrationBean<ServletContainer> reg = new FilterRegistrationBean<>(container);
+		reg.addUrlPatterns("/rest/*");
+		reg.setName("jersey-filter");
+		reg.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
+
+		Map<String, String> initParams = new HashMap<>();
+		initParams.put(ServletProperties.FILTER_CONTEXT_PATH, "/rest");
+		reg.setInitParameters(initParams);
+
+		return reg;
 	}
 
 	@PreDestroy
