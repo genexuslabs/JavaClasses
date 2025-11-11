@@ -39,7 +39,7 @@ public abstract class GxUserType extends GXXMLSerializable implements Cloneable,
 
     protected JSONObjectWrapper getJsonObjectFromHashMap(Object userType) {
         try {
-            if (userType instanceof HashMap<?, ?> map) {
+            if (userType instanceof HashMap) {
                 return new JSONObjectWrapper(map);
             }
 
