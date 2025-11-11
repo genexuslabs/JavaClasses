@@ -34,22 +34,23 @@ public abstract class GxUserType extends GXXMLSerializable implements Cloneable,
 		bIsAssigned = bAssigned;
 	}
 
-	protected Object getJsonObjectFromHashMap( Object userType) {
-		JSONObjectWrapper jsonObj = new JSONObjectWrapper();
-		try {
-			if (userType instanceof HashMap)
-				jsonObj = new JSONObjectWrapper((HashMap)userType);
-			else {
-				ObjectMapper mapper = new ObjectMapper();
-				String jsonString = mapper.writeValueAsString(userType);
-				jsonObj = new JSONObjectWrapper(jsonString);
-			}
-		}
-		catch(Exception e) {
-			log.error("Could not create Json Object", e);
-		}
-		return jsonObj;
-	}
+	private static final ObjectMapper MAPPER =
+            new ObjectMapper().disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+
+    protected JSONObjectWrapper getJsonObjectFromHashMap(Object userType) {
+        try {
+            if (userType instanceof HashMap<?, ?> map) {
+                return new JSONObjectWrapper(map);
+            }
+
+            String jsonString = MAPPER.writeValueAsString(userType);
+            return new JSONObjectWrapper(jsonString);
+
+        } catch (Exception e) {
+            log.error("Could not create Json Object", e);
+            return new JSONObjectWrapper(); // return empty object instead of null
+        }
+    }
 
 	protected void setHashMapFromJson(String json) {
 		fromjson(json);
