@@ -35,7 +35,7 @@ public abstract class GxUserType extends GXXMLSerializable implements Cloneable,
 	}
 
 	private static final ObjectMapper MAPPER =
-            new ObjectMapper().disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+            new ObjectMapper().disable(com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
     protected JSONObjectWrapper getJsonObjectFromHashMap(Object userType) {
         try {
