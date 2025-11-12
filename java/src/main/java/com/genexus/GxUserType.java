@@ -47,7 +47,8 @@ public abstract class GxUserType extends GXXMLSerializable implements Cloneable,
             return new JSONObjectWrapper(jsonString);
 
         } catch (Exception e) {
-            log.error("Could not create Json Object", e);
+			//GEN029-5258 disable log to avoid flooding due to known issue with PrintWriter serialization
+            //log.error("Could not create Json Object", e);		
             return new JSONObjectWrapper(); // return empty object instead of null
         }
     }
