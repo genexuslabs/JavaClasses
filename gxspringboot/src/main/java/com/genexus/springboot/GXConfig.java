@@ -13,6 +13,7 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.jersey.servlet.ServletProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -92,13 +93,16 @@ public class GXConfig implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public FilterRegistrationBean<ServletContainer> jerseyFilter() {
-		ResourceConfig rc = new ResourceConfig();
+	public ServletContextInitializer jerseyFilter() {
 		Set<Class<?>> rrcs = JaxrsResourcesHolder.getAll();
-		if (!rrcs.isEmpty()) {
-			rc.registerClasses(rrcs.toArray(new Class<?>[0]));
-			rc.property(ServletProperties.FILTER_FORWARD_ON_404, true);
+
+		if (rrcs.isEmpty()) {
+			return sc -> {};
 		}
+
+		ResourceConfig rc = new ResourceConfig();
+		rc.registerClasses(rrcs.toArray(new Class<?>[0]));
+		rc.property(ServletProperties.FILTER_FORWARD_ON_404, true);
 
 		ServletContainer container = new ServletContainer(rc);
 
