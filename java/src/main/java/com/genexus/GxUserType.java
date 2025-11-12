@@ -63,8 +63,7 @@ public abstract class GxUserType extends GXXMLSerializable implements Cloneable,
 			mapper.readerForUpdating(instance).readValue(json);
 		}
 		catch(Exception e) {
-			//log.error("Error executing FromJson() method", e);
-			// GEAI: GG: Disable this log.
+			log.error("Error executing FromJson() method", e);
 		}
 	}
 }
