@@ -22,7 +22,7 @@
 		<jersey.jakarta.version>3.0.4</jersey.jakarta.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<poi.version>5.4.1</poi.version>
-		<jackson.version>2.14.1</jackson.version>
+		<jackson.version>2.16.2</jackson.version>
 		<junit.version>4.13.2</junit.version>
 		<software.awssdk.version>2.35.6</software.awssdk.version>
 		<software.azure.cosmos.version>4.74.0</software.azure.cosmos.version>
