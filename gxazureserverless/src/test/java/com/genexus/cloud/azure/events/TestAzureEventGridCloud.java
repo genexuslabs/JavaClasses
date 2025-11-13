@@ -1,6 +1,6 @@
 package com.genexus.cloud.azure.events;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.genexus.cloud.serverless.azure.handler.AzureEventGridCloudHandler;;
+import com.genexus.cloud.serverless.azure.handler.AzureEventGridCloudHandler;
 import com.microsoft.azure.functions.ExecutionContext;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
