@@ -32,7 +32,7 @@
         <dependency>
             <groupId>org.apache.wss4j</groupId>
             <artifactId>wss4j-ws-security-common</artifactId>
-            <version>2.4.3</version>
+            <version>3.0.4</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.geronimo.javamail</groupId>
@@ -43,13 +43,19 @@
         <dependency>
             <groupId>org.apache.wss4j</groupId>
             <artifactId>wss4j-ws-security-dom</artifactId>
-            <version>2.4.3</version>
+            <version>3.0.4</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.geronimo.javamail</groupId>
                     <artifactId>geronimo-javamail_1.4_mail</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <!-- ovwerwrite wss4j bcpkix-jdk18on dependency due to CVEs -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk18on</artifactId>
+            <version>${org.bouncycastle.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
