@@ -157,7 +157,7 @@
 		<dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
             <artifactId>opentelemetry-instrumentation-annotations</artifactId>
-            <version>${io.opentelemetry.version}</version>
+            <version>2.21.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
