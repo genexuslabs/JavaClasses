@@ -523,7 +523,7 @@ public class WebUtils
 				if (serviceClass != null)
 					if (rrcs != null)
 						rrcs.add(serviceClass);
-					else
+					if (restImports != null)
 						restImports.add(serviceClass.getName());
 			}
 			reader.close();
