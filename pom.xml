@@ -127,6 +127,7 @@
     <module>gxftps</module>
     <module>gamutils</module>
     <module>gamtotp</module>
+    <module>gxflowfulltextsearch</module>
   </modules>
 
 	<dependencies>
