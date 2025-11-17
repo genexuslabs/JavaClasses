@@ -1,22 +1,11 @@
 package com.genexus.db.driver;
 
-import com.azure.core.exception.ClientAuthenticationException;
-import com.azure.core.exception.HttpRequestException;
-import com.azure.identity.DefaultAzureCredential;
-import com.azure.identity.DefaultAzureCredentialBuilder;
-import com.azure.storage.blob.BlobClient;
-import com.azure.storage.blob.BlobContainerClient;
-import com.azure.storage.blob.BlobServiceClient;
-import com.azure.storage.blob.BlobServiceClientBuilder;
-import com.azure.storage.blob.models.*;
-import com.azure.storage.blob.sas.BlobSasPermission;
-import com.azure.storage.blob.sas.BlobServiceSasSignatureValues;
-import com.azure.storage.blob.specialized.BlockBlobClient;
-import com.azure.storage.common.StorageSharedKeyCredential;
-import com.azure.storage.blob.options.BlobParallelUploadOptions;
 import com.genexus.StructSdtMessages_Message;
 import com.genexus.util.GXService;
 import com.genexus.util.StorageUtils;
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.blob.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,7 +13,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.time.OffsetDateTime;
+import java.security.InvalidKeyException;
 import java.util.*;
 
 public class ExternalProviderAzureStorage extends ExternalProviderBase implements ExternalProvider {
@@ -37,8 +26,6 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 	static final String PUBLIC_CONTAINER = "PUBLIC_CONTAINER_NAME";
 	static final String PRIVATE_CONTAINER = "PRIVATE_CONTAINER_NAME";
 
-	private boolean useManagedIdentity;
-
 	@Deprecated
 	static final String ACCOUNT_DEPRECATED = "ACCOUNT_NAME";
 	@Deprecated
@@ -50,90 +37,46 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 
 	private String account;
 	private String key;
-
-	private BlobServiceClient blobServiceClient;
-	private BlobContainerClient publicContainerClient;
-	private BlobContainerClient privateContainerClient;
+	private CloudBlobContainer publicContainer;
+	private CloudBlobContainer privateContainer;
+	private CloudBlobClient client;
 
 	private int defaultExpirationMinutes = DEFAULT_EXPIRATION_MINUTES;
 
 	private String privateContainerName;
 	private String publicContainerName;
 
+
 	private void init() throws Exception {
 		try {
 			account = getEncryptedPropertyValue(ACCOUNT, ACCOUNT_DEPRECATED);
-		} catch (Exception ex) {
-			logger.error("Error initializing Azure Storage: unable to get account", ex);
-			throw ex;
-		}
-
-		try {
 			key = getEncryptedPropertyValue(ACCESS_KEY, KEY_DEPRECATED);
-			if (key.isEmpty()) {
-				logger.info("ACCESS_KEY empty — using Managed Identity");
-				useManagedIdentity = true;
-			}
-		} catch (Exception ex) {
-			if (key == null) {
-				logger.info("ACCESS_KEY null — using Managed Identity");
-				useManagedIdentity = true;
-			}
-		}
 
-		try {
+			CloudStorageAccount storageAccount = CloudStorageAccount.parse(
+				String.format("DefaultEndpointsProtocol=%1s;AccountName=%2s;AccountKey=%3s", "https", account, key));
+			client = storageAccount.createCloudBlobClient();
+
 			String privateContainerNameValue = getEncryptedPropertyValue(PRIVATE_CONTAINER, PRIVATE_CONTAINER_DEPRECATED);
 			String publicContainerNameValue = getEncryptedPropertyValue(PUBLIC_CONTAINER, PUBLIC_CONTAINER_DEPRECATED);
 
 			privateContainerName = privateContainerNameValue.toLowerCase();
 			publicContainerName = publicContainerNameValue.toLowerCase();
 
-			if (useManagedIdentity) {
-				initWithManagedIdentity();
-			} else {
-				initWithAccountKey();
-			}
-		}
-		catch (Exception ex) {
-			handleAndLogException("Initialization error", ex);
-		}
-	}
-	
-	private void initWithAccountKey() {
-		// Create BlobServiceClient with account key
-		StorageSharedKeyCredential credential = new StorageSharedKeyCredential(account, key);
-		blobServiceClient = new BlobServiceClientBuilder()
-			.endpoint(String.format("https://%s.blob.core.windows.net", account))
-			.credential(credential)
-			.buildClient();
-			
-		initContainerClients();
-	}
-	
-	private void initWithManagedIdentity() {
-		// Create a DefaultAzureCredential
-		DefaultAzureCredential credential = new DefaultAzureCredentialBuilder().build();
-		
-		// Create BlobServiceClient using the credential
-		blobServiceClient = new BlobServiceClientBuilder()
-			.endpoint(String.format("https://%s.blob.core.windows.net", account))
-			.credential(credential)
-			.buildClient();
-			
-		initContainerClients();
-	}
-	
-	private void initContainerClients() {
-		// Create container clients and ensure containers exist
-		publicContainerClient = blobServiceClient.getBlobContainerClient(publicContainerName);
-		if (!publicContainerClient.exists()) {
-			publicContainerClient = blobServiceClient.createBlobContainer(publicContainerName);
-			publicContainerClient.setAccessPolicy(PublicAccessType.BLOB, null);
-		}
-		
-		privateContainerClient = blobServiceClient.getBlobContainerClient(privateContainerName);
-		if (!privateContainerClient.exists()) {
-			privateContainerClient = blobServiceClient.createBlobContainer(privateContainerName);
+			publicContainer = client.getContainerReference(publicContainerName);
+			publicContainer.createIfNotExists();
+
+			privateContainer = client.getContainerReference(privateContainerName);
+			privateContainer.createIfNotExists();
+
+			BlobContainerPermissions permissions = new BlobContainerPermissions();
+			permissions.setPublicAccess(BlobContainerPublicAccessType.BLOB);
+			publicContainer.uploadPermissions(permissions);
+		} catch (URISyntaxException ex) {
+			logger.error("Invalid URI", ex);
+		} catch (StorageException sex) {
+			logger.error(sex.getMessage());
+		} catch (InvalidKeyException ikex) {
+			logger.error("Invalid keys", ikex);
 		}
 	}
 
@@ -153,21 +96,26 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 
 	public void download(String externalFileName, String localFile, ResourceAccessControlList acl) {
 		try {
-			BlobClient blobClient = getBlobClient(externalFileName, acl);
-			blobClient.downloadToFile(localFile, true);
-		} catch (Exception ex) {
-			handleAndLogException("Invalid URI or error downloading file", ex);
+			CloudBlockBlob blob = getCloudBlockBlob(externalFileName, acl);
+			blob.downloadToFile(localFile);
+		} catch (URISyntaxException ex) {
+			logger.error("Invalid URI ", ex.getMessage());
+		} catch (StorageException ex) {
+			throw new RuntimeException(ex.getMessage(), ex);
+		} catch (IOException ioex) {
+			logger.error("Error downloading file", ioex);
 		}
 	}
-	
-	private BlobClient getBlobClient(String fileName, ResourceAccessControlList acl) {
-		BlobClient blobClient;
+
+
+	private CloudBlockBlob getCloudBlockBlob(String fileName, ResourceAccessControlList acl) throws URISyntaxException, StorageException {
+		CloudBlockBlob blob;
 		if (isPrivateAcl(acl)) {
-			blobClient = privateContainerClient.getBlobClient(fileName);
+			blob = privateContainer.getBlockBlobReference(fileName);
 		} else {
-			blobClient = publicContainerClient.getBlobClient(fileName);
+			blob = publicContainer.getBlockBlobReference(fileName);
 		}
-		return blobClient;
+		return blob;
 	}
 
 	private boolean isPrivateAcl(ResourceAccessControlList acl) {
@@ -177,39 +125,39 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 
 	public String upload(String localFile, String externalFileName, ResourceAccessControlList acl) {
 		try {
-			BlobClient blobClient = getBlobClient(externalFileName, acl);
-			blobClient.uploadFromFile(localFile, true);
+			CloudBlockBlob blob = getCloudBlockBlob(externalFileName, acl);
+			blob.uploadFromFile(localFile);
 			return getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
-		} catch (Exception ex) {
-			handleAndLogException("Error uploading file", ex);
-			return "";
+		} catch (URISyntaxException ex) {
+			logger.error("Invalid URI ", ex.getMessage());
+		} catch (StorageException ex) {
+			throw new RuntimeException(ex.getMessage(), ex);
+		} catch (IOException ex) {
+			logger.error("Error uploading file", ex);
 		}
+		return "";
 	}
 
 	public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
-		//https://docs.azure.cn/en-us/storage/blobs/storage-blob-upload-java
-		try (ExternalProviderHelper.InputStreamWithLength streamInfo =
-				 ExternalProviderHelper.getInputStreamContentLength(input)) {
-
-			BlockBlobClient blobClient =
-				getBlobClient(externalFileName, acl).getBlockBlobClient();
-
-			// Set content type
-			String contentType =
-				(externalFileName.endsWith(".tmp") &&
-					"application/octet-stream".equals(streamInfo.detectedContentType))
-					? "image/jpeg"
-					: streamInfo.detectedContentType;
-
-			BlobHttpHeaders headers = new BlobHttpHeaders().setContentType(contentType);
-
-			// Upload with headers in one shot (equivalent to old behavior)
-			blobClient.upload(streamInfo.inputStream, streamInfo.contentLength, true);
-
+		try (ExternalProviderHelper.InputStreamWithLength streamInfo = ExternalProviderHelper.getInputStreamContentLength(input)) {
+			CloudBlockBlob blob = getCloudBlockBlob(externalFileName, acl);
+			blob.getProperties().setContentType((externalFileName.endsWith(".tmp") && "application/octet-stream".equals(streamInfo.detectedContentType)) ? "image/jpeg" : streamInfo.detectedContentType);
+			try (BlobOutputStream blobOutputStream = blob.openOutputStream()) {
+				byte[] buffer = new byte[8192];
+				int bytesRead;
+				while ((bytesRead = streamInfo.inputStream.read(buffer)) != -1) {
+					blobOutputStream.write(buffer, 0, bytesRead);
+				}
+			}
 			return getResourceUrl(externalFileName, acl, DEFAULT_EXPIRATION_MINUTES);
-		}
-		catch (Exception ex) {
-			handleAndLogException("Error uploading file", ex);
+
+		} catch (URISyntaxException ex) {
+			logger.error("Invalid URI", ex);
+			return "";
+		} catch (StorageException ex) {
+			throw new RuntimeException(ex.getMessage(), ex);
+		} catch (IOException ex) {
+			logger.error("Error uploading file", ex);
 			return "";
 		}
 	}
@@ -219,56 +167,51 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 			if (exists(externalFileName, acl)) {
 				return getResourceUrl(externalFileName, acl, expirationMinutes);
 			}
+		} catch (StorageException ex) {
+			throw new RuntimeException(ex.getMessage(), ex);
 		} catch (Exception ex) {
-			handleAndLogException("Error getting file", ex);
+			logger.error("Error getting file", ex);
 			return "";
 		}
 		return "";
 	}
 
-	private String getResourceUrl(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
+	private String getResourceUrl(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) throws URISyntaxException, StorageException {
 		if (isPrivateAcl(acl)) {
 			return getPrivate(externalFileName, expirationMinutes);
 		} else {
-			BlobClient blobClient = publicContainerClient.getBlobClient(externalFileName);
-			return blobClient.getBlobUrl();
+			CloudBlockBlob blob = publicContainer.getBlockBlobReference(externalFileName);
+			return blob.getUri().toString();
 		}
 	}
 
 	private String getPrivate(String externalFileName, int expirationMinutes) {
 		try {
-			BlobClient blobClient = privateContainerClient.getBlobClient(externalFileName);
-
+			CloudBlockBlob blob = privateContainer.getBlockBlobReference(externalFileName);
+			SharedAccessBlobPolicy policy = new SharedAccessBlobPolicy();
+			policy.setPermissionsFromString("r");
+			Calendar date = Calendar.getInstance();
 			expirationMinutes = expirationMinutes > 0 ? expirationMinutes : defaultExpirationMinutes;
-			OffsetDateTime expiryTime = OffsetDateTime.now().plusMinutes(expirationMinutes);
-			// Permissions (read)
-			BlobSasPermission permission = new BlobSasPermission().setReadPermission(true);
-			BlobServiceSasSignatureValues values =
-				new BlobServiceSasSignatureValues(expiryTime, permission);
-			String sasToken;
-			if (!useManagedIdentity) {
-				sasToken = blobClient.generateSas(values);
-			} else {
-				BlobServiceClient blobServiceClient = privateContainerClient.getServiceClient();
-				OffsetDateTime start = OffsetDateTime.now().minusMinutes(1);
-				UserDelegationKey userDelegationKey =
-					blobServiceClient.getUserDelegationKey(start, expiryTime);
-				sasToken = blobClient.generateUserDelegationSas(values, userDelegationKey);
-			}
-			return blobClient.getBlobUrl() + "?" + sasToken;
-
+			Date expire = new Date(date.getTimeInMillis() + (expirationMinutes * 60000));
+			policy.setSharedAccessExpiryTime(expire);
+			return blob.getUri().toString() + "?" + blob.generateSharedAccessSignature(policy, null);
+		} catch (StorageException ex) {
+			throw new RuntimeException(ex.getMessage(), ex);
 		} catch (Exception ex) {
-			handleAndLogException("Error getting private file", ex);
-			return "";
+			logger.error("Error getting private file", ex);
 		}
+		return "";
+
 	}
 
 	public void delete(String objectName, ResourceAccessControlList acl) {
 		try {
-			BlobClient blobClient = getBlobClient(objectName, acl);
-			blobClient.deleteIfExists();
-		} catch (Exception ex) {
-			handleAndLogException("Error deleting file", ex);
+			CloudBlockBlob blob = getCloudBlockBlob(objectName, acl);
+			blob.deleteIfExists();
+		} catch (URISyntaxException ex) {
+			logger.error("Invalid URI ", ex.getMessage());
+		} catch (StorageException ex) {
+			throw new RuntimeException(ex.getMessage(), ex);
 		}
 	}
 
@@ -286,53 +229,33 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 	public String copy(String objectName, String newName, ResourceAccessControlList acl) {
 		objectName = resolveObjectName(objectName, acl);
 		try {
-			BlobClient sourceBlob = getBlobClient(objectName, acl);
-			BlobClient targetBlob = getBlobClient(newName, acl);
-			
-			// Get source URL with SAS if it's private
-			String sourceBlobUrl;
-			if (isPrivateAcl(acl)) {
-				BlobSasPermission permission = new BlobSasPermission().setReadPermission(true);
-				BlobServiceSasSignatureValues values = new BlobServiceSasSignatureValues(
-					OffsetDateTime.now().plusMinutes(5), permission);
-				sourceBlobUrl = sourceBlob.getBlobUrl() + "?" + sourceBlob.generateSas(values);
-			} else {
-				sourceBlobUrl = sourceBlob.getBlobUrl();
-			}
-			
-			// Start the copy operation
-			targetBlob.beginCopy(sourceBlobUrl, null);
+			CloudBlockBlob sourceBlob = getCloudBlockBlob(objectName, acl);
+			CloudBlockBlob targetBlob = getCloudBlockBlob(newName, acl);
+			targetBlob.startCopy(sourceBlob);
 			return getResourceUrl(newName, acl, defaultExpirationMinutes);
-		} catch (Exception ex) {
-			handleAndLogException("Error copying file", ex);
-			return "";
+		} catch (URISyntaxException ex) {
+			logger.error("Invalid URI ", ex.getMessage());
+		} catch (StorageException ex) {
+			throw new RuntimeException(ex.getMessage(), ex);
 		}
+		return "";
 	}
 
 	public String copy(String objectUrl, String newName, String tableName, String fieldName, ResourceAccessControlList acl) {
 		objectUrl = objectUrl.replace(getUrl(), "");
 		newName = tableName + "/" + fieldName + "/" + newName;
 		try {
-			BlobClient sourceBlob = privateContainerClient.getBlobClient(objectUrl);
-			BlobClient targetBlob = getBlobClient(newName, acl);
-			
-			// Set metadata
-			Map<String, String> metadata = createObjectMetadata(tableName, fieldName, StorageUtils.encodeName(newName));
-			targetBlob.setMetadata(metadata);
-			
-			// Get source URL with SAS for private access
-			BlobSasPermission permission = new BlobSasPermission().setReadPermission(true);
-			BlobServiceSasSignatureValues values = new BlobServiceSasSignatureValues(
-				OffsetDateTime.now().plusMinutes(5), permission);
-			String sourceBlobUrl = sourceBlob.getBlobUrl() + "?" + sourceBlob.generateSas(values);
-			
-			// Start the copy operation
-			targetBlob.beginCopy(sourceBlobUrl, null);
+			CloudBlockBlob sourceBlob = privateContainer.getBlockBlobReference(objectUrl);  //Source will be always on the private container
+			CloudBlockBlob targetBlob = getCloudBlockBlob(newName, acl);
+			targetBlob.setMetadata(createObjectMetadata(tableName, fieldName, StorageUtils.encodeName(newName)));
+			targetBlob.startCopy(sourceBlob);
 			return getResourceUrl(newName, acl, defaultExpirationMinutes);
-		} catch (Exception ex) {
-			handleAndLogException("Error copying file", ex);
-			return "";
+		} catch (URISyntaxException ex) {
+			logger.error("Invalid URI ", ex.getMessage());
+		} catch (StorageException ex) {
+			throw new RuntimeException(ex.getMessage(), ex);
 		}
+		return "";
 	}
 
 	private HashMap<String, String> createObjectMetadata(String table, String field, String name) {
@@ -345,40 +268,45 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 
 	public long getLength(String objectName, ResourceAccessControlList acl) {
 		try {
-			BlobClient blobClient = getBlobClient(objectName, acl);
-			BlobProperties properties = blobClient.getProperties();
-			return properties.getBlobSize();
-		} catch (Exception ex) {
-			handleAndLogException("Error getting file length", ex);
+			CloudBlockBlob blob = getCloudBlockBlob(objectName, acl);
+			blob.downloadAttributes();
+			return blob.getProperties().getLength();
+		} catch (URISyntaxException ex) {
+			logger.error("Invalid URI ", ex.getMessage());
 			return 0;
+		} catch (StorageException ex) {
+			throw new RuntimeException(ex.getMessage(), ex);
 		}
 	}
 
 	public Date getLastModified(String objectName, ResourceAccessControlList acl) {
 		try {
-			BlobClient blobClient = getBlobClient(objectName, acl);
-			BlobProperties properties = blobClient.getProperties();
-			return Date.from(properties.getLastModified().toInstant());
-		} catch (Exception ex) {
-			handleAndLogException("Error getting last modified date", ex);
+			CloudBlockBlob blob = getCloudBlockBlob(objectName, acl);
+			blob.downloadAttributes();
+			return blob.getProperties().getLastModified();
+		} catch (URISyntaxException ex) {
+			logger.error("Invalid URI ", ex.getMessage());
 			return new Date();
+		} catch (StorageException ex) {
+			throw new RuntimeException(ex.getMessage(), ex);
 		}
 	}
 
 	public boolean exists(String objectName, ResourceAccessControlList acl) {
 		try {
-			BlobClient blobClient = getBlobClient(objectName, acl);
-			return blobClient.exists();
-		} catch (Exception ex) {
-			handleAndLogException("Error checking if file exists", ex);
+			return getCloudBlockBlob(objectName, acl).exists();
+		} catch (URISyntaxException ex) {
+			logger.error("Invalid URI ", ex.getMessage());
 			return false;
+		} catch (StorageException ex) {
+			throw new RuntimeException(ex.getMessage(), ex);
 		}
 	}
 
 	public String getDirectory(String directoryName) {
 		directoryName = StorageUtils.normalizeDirectoryName(directoryName);
 		if (existsDirectory(directoryName)) {
-			return publicContainerClient.getBlobContainerName() + StorageUtils.DELIMITER + directoryName;
+			return publicContainer.getName() + StorageUtils.DELIMITER + directoryName;
 		} else {
 			return "";
 		}
@@ -387,35 +315,40 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 	public boolean existsDirectory(String directoryName) {
 		directoryName = StorageUtils.normalizeDirectoryName(directoryName);
 		try {
-			// List all blobs with the directory prefix
-			ListBlobsOptions options = new ListBlobsOptions().setPrefix(directoryName);
-			
-			// Check if there are any blobs with this prefix
-			boolean exists = false;
-			for (BlobItem blobItem : publicContainerClient.listBlobs(options, null)) {
-				String name = blobItem.getName();
-				if (!name.equals(directoryName)) {
-					// If we found any blob that isn't just the directory marker itself
-					exists = true;
-					break;
+			CloudBlobDirectory directory = publicContainer.getDirectoryReference(directoryName);
+			for (ListBlobItem item : directory.listBlobs()) {
+				String itemName = "";
+				if (isFile(item)) {
+					return true;
+				}
+				if (item instanceof CloudBlobDirectory) {
+					itemName = ((CloudBlobDirectory) item).getPrefix();
+					itemName = itemName.substring(0, itemName.length() - 1);
+					if (!itemName.equals(directoryName)) {
+						return true;
+					}
 				}
 			}
-			return exists;
-		} catch (Exception ex) {
-			handleAndLogException("Error checking if directory exists", ex);
 			return false;
+		} catch (URISyntaxException ex) {
+			logger.error("Invalid URI ", ex.getMessage());
+			return false;
+		} catch (StorageException ex) {
+			throw new RuntimeException(ex.getMessage(), ex);
 		}
 	}
 
 	public void createDirectory(String directoryName) {
 		directoryName = StorageUtils.normalizeDirectoryName(directoryName);
 		try {
-			// Create a blob with empty content to mark the directory
-			BlobClient blobClient = publicContainerClient.getBlobClient(directoryName);
-			byte[] emptyContent = new byte[0];
-			blobClient.upload(new ByteArrayInputStream(emptyContent), emptyContent.length, true);
-		} catch (Exception ex) {
-			handleAndLogException("Error creating directory", ex);
+			CloudBlockBlob blob = publicContainer.getBlockBlobReference(directoryName);
+			blob.uploadFromByteArray(new byte[0], 0, 0);
+		} catch (URISyntaxException ex) {
+			logger.error("Invalid URI ", ex.getMessage());
+		} catch (StorageException ex) {
+			throw new RuntimeException(ex.getMessage(), ex);
+		} catch (IOException ioex) {
+			logger.error("Error uploading file", ioex);
 		}
 	}
 
@@ -423,26 +356,32 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 		ResourceAccessControlList acl = null;
 		directoryName = StorageUtils.normalizeDirectoryName(directoryName);
 		try {
-			// List all blobs with the directory prefix
-			ListBlobsOptions options = new ListBlobsOptions().setPrefix(directoryName);
-			
-			// Delete all blobs in the directory
-			for (BlobItem blobItem : publicContainerClient.listBlobs(options, null)) {
-				String name = blobItem.getName();
-				if (name.startsWith(directoryName)) {
-					if (name.endsWith(StorageUtils.DELIMITER)) {
-						// This is a "subdirectory"
-						if (!name.equals(directoryName)) {
-							deleteDirectory(name);
-						}
-					} else {
-						// This is a file
-						delete(name, acl);
+			CloudBlobDirectory directory = publicContainer.getDirectoryReference(directoryName);
+			for (ListBlobItem item : directory.listBlobs()) {
+				String itemName = "";
+				if (isFile(item)) {
+					if (item instanceof CloudPageBlob) {
+						itemName = ((CloudPageBlob) item).getName();
+					} else if (item instanceof CloudBlockBlob) {
+						itemName = ((CloudBlockBlob) item).getName();
+					}
+					delete(itemName, acl);
+				}
+				if (isDirectory(item)) {
+					if (item instanceof CloudBlobDirectory) {
+						itemName = ((CloudBlobDirectory) item).getPrefix();
+					} else if (item instanceof CloudBlockBlob) {
+						itemName = ((CloudBlockBlob) item).getName();
+					}
+					if (!itemName.equals(directoryName)) {
+						deleteDirectory(itemName);
 					}
 				}
 			}
-		} catch (Exception ex) {
-			handleAndLogException("Error deleting directory", ex);
+		} catch (URISyntaxException ex) {
+			logger.error("Invalid URI ", ex.getMessage());
+		} catch (StorageException ex) {
+			throw new RuntimeException(ex.getMessage(), ex);
 		}
 	}
 
@@ -454,31 +393,31 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 		directoryName = StorageUtils.normalizeDirectoryName(directoryName);
 		newDirectoryName = StorageUtils.normalizeDirectoryName(newDirectoryName);
 		try {
-			// List all blobs with the directory prefix
-			ListBlobsOptions options = new ListBlobsOptions().setPrefix(directoryName);
-			
-			// Copy and rename all blobs in the directory
-			for (BlobItem blobItem : publicContainerClient.listBlobs(options, null)) {
-				String name = blobItem.getName();
-				if (name.startsWith(directoryName)) {
-					if (name.endsWith(StorageUtils.DELIMITER)) {
-						// This is a "subdirectory"
-						if (!name.equals(directoryName)) {
-							String subdirName = name.substring(directoryName.length());
-							renameDirectory(name, newDirectoryName + subdirName);
-						}
-					} else {
-						// This is a file, rename it
-						String newName = name.replace(directoryName, newDirectoryName);
-						rename(name, newName, acl);
+			CloudBlobDirectory directory = publicContainer.getDirectoryReference(directoryName);
+			for (ListBlobItem item : directory.listBlobs()) {
+				String itemName = "";
+				if (isFile(item)) {
+					if (item instanceof CloudPageBlob) {
+						itemName = ((CloudPageBlob) item).getName();
+					} else if (item instanceof CloudBlockBlob) {
+						itemName = ((CloudBlockBlob) item).getName();
 					}
+					rename(itemName, itemName.replace(directoryName, newDirectoryName), acl);
+				}
+				if (isDirectory(item)) {
+					if (item instanceof CloudBlobDirectory) {
+						itemName = ((CloudBlobDirectory) item).getPrefix();
+					} else if (item instanceof CloudBlockBlob) {
+						itemName = ((CloudBlockBlob) item).getName();
+					}
+					renameDirectory(directoryName + StorageUtils.DELIMITER + itemName, newDirectoryName + StorageUtils.DELIMITER + itemName);
 				}
 			}
-			
-			// Delete the original directory
 			deleteDirectory(directoryName);
-		} catch (Exception ex) {
-			handleAndLogException("Error renaming directory", ex);
+		} catch (URISyntaxException ex) {
+			logger.error("Invalid URI ", ex.getMessage());
+		} catch (StorageException ex) {
+			throw new RuntimeException(ex.getMessage(), ex);
 		}
 	}
 
@@ -486,19 +425,20 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 		List<String> files = new ArrayList<String>();
 		directoryName = StorageUtils.normalizeDirectoryName(directoryName);
 		try {
-			// List all blobs with the directory prefix
-			ListBlobsOptions options = new ListBlobsOptions().setPrefix(directoryName);
-			
-			// Add all file names to the list
-			for (BlobItem blobItem : publicContainerClient.listBlobs(options, null)) {
-				String name = blobItem.getName();
-				if (name.startsWith(directoryName) && !name.endsWith(StorageUtils.DELIMITER)) {
-					// This is a file, add it to the list
-					files.add(name);
+			CloudBlobDirectory directory = publicContainer.getDirectoryReference(directoryName);
+			for (ListBlobItem item : directory.listBlobs()) {
+				if (isFile(item)) {
+					if (item instanceof CloudPageBlob) {
+						files.add(((CloudPageBlob) item).getName());
+					} else if (item instanceof CloudBlockBlob) {
+						files.add(((CloudBlockBlob) item).getName());
+					}
 				}
 			}
-		} catch (Exception ex) {
-			handleAndLogException("Error getting files", ex);
+		} catch (URISyntaxException ex) {
+			logger.error("Invalid URI ", ex.getMessage());
+		} catch (StorageException ex) {
+			throw new RuntimeException(ex.getMessage(), ex);
 		}
 		return files;
 	}
@@ -511,55 +451,58 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 		List<String> directories = new ArrayList<String>();
 		directoryName = StorageUtils.normalizeDirectoryName(directoryName);
 		try {
-			// List all blobs with the directory prefix
-			ListBlobsOptions options = new ListBlobsOptions().setPrefix(directoryName);
-			
-			// Get all subdirectory names
-			Set<String> dirSet = new HashSet<String>();
-			for (BlobItem blobItem : publicContainerClient.listBlobs(options, null)) {
-				String name = blobItem.getName();
-				if (name.startsWith(directoryName) && !name.equals(directoryName)) {
-					// Get the subdirectory name
-					String remainingPath = name.substring(directoryName.length());
-					int slashIndex = remainingPath.indexOf(StorageUtils.DELIMITER);
-					
-					if (slashIndex >= 0) {
-						// This is a subdirectory or a file in a subdirectory
-						String subdirName = directoryName + remainingPath.substring(0, slashIndex + 1);
-						dirSet.add(subdirName);
+			CloudBlobDirectory directory = publicContainer.getDirectoryReference(directoryName);
+			for (ListBlobItem item : directory.listBlobs()) {
+				if (isDirectory(item)) {
+					if (item instanceof CloudBlobDirectory) {
+						directories.add(((CloudBlobDirectory) item).getPrefix());
+					} else if (item instanceof CloudBlockBlob) {
+						directories.add(((CloudBlockBlob) item).getName());
 					}
 				}
 			}
-			directories.addAll(dirSet);
-		} catch (Exception ex) {
-			handleAndLogException("Error getting subdirectories", ex);
+			directories.remove(directoryName);
+		} catch (URISyntaxException ex) {
+			logger.error("Invalid URI ", ex.getMessage());
+		} catch (StorageException ex) {
+			throw new RuntimeException(ex.getMessage(), ex);
 		}
 		return directories;
 	}
 
 	public InputStream getStream(String objectName, ResourceAccessControlList acl) {
 		try {
-			BlobClient blobClient = getBlobClient(objectName, acl);
-			return blobClient.openInputStream();
-		} catch (Exception ex) {
-			handleAndLogException("Error getting stream", ex);
-			return null;
+			CloudBlockBlob blob = getCloudBlockBlob(objectName, acl);
+			blob.downloadAttributes();
+			byte[] bytes = new byte[(int) blob.getProperties().getLength()];
+			blob.downloadToByteArray(bytes, 0);
+
+			InputStream stream = new ByteArrayInputStream(bytes);
+			return stream;
+		} catch (URISyntaxException ex) {
+			logger.error("Invalid URI ", ex.getMessage());
+		} catch (StorageException ex) {
+			throw new RuntimeException(ex.getMessage(), ex);
 		}
+		return null;
 	}
 
 	public boolean getMessageFromException(Exception ex, StructSdtMessages_Message msg) {
 		try {
-			// Extract error information from the SDK exceptions
-			String errorMessage = ex.getMessage();
-			if (errorMessage != null) {
-				msg.setId("AzureError");
-				msg.setDescription(errorMessage);
-				return true;
-			}
-			return false;
+			StorageException aex = (StorageException) ex.getCause();
+			msg.setId(aex.getErrorCode());
+			return true;
 		} catch (Exception e) {
 			return false;
 		}
+	}
+
+	private boolean isDirectory(ListBlobItem item) {
+		return (item instanceof CloudBlobDirectory) || (item instanceof CloudBlockBlob && ((CloudBlockBlob) item).getName().endsWith(StorageUtils.DELIMITER));
+	}
+
+	private boolean isFile(ListBlobItem item) {
+		return (item instanceof CloudPageBlob) || (item instanceof CloudBlockBlob && !((CloudBlockBlob) item).getName().endsWith(StorageUtils.DELIMITER));
 	}
 
 	private String getUrl() {
@@ -578,22 +521,5 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 			objectName = url.replace(privateContainerUrl, "");
 		}
 		return objectName;
-	}
-	
-	private void handleAndLogException(String message, Exception ex) {
-		if (ex instanceof BlobStorageException) {
-			logger.error("Azure Storage error: {} (Status: {}, Code: {})",
-				((BlobStorageException) ex).getServiceMessage(), ((BlobStorageException) ex).getStatusCode(), ((BlobStorageException) ex).getErrorCode());
-		} else if (ex instanceof ClientAuthenticationException) {
-			logger.error("Authentication error: {}", ex.getMessage());
-		} else if (ex instanceof HttpRequestException) {
-			logger.error("Connection error: {}", ex.getMessage());
-		} else if (ex instanceof URISyntaxException) {
-			logger.error("Invalid URI: {}", ex.getMessage());
-		} else if (ex instanceof IOException) {
-			logger.error(message, ex);
-		} else {
-			logger.error("Unexpected storage error", ex);
-		}
 	}
 }
