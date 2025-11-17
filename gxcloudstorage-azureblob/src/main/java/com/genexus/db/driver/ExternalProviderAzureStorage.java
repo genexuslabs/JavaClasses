@@ -11,7 +11,9 @@ import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.models.*;
 import com.azure.storage.blob.sas.BlobSasPermission;
 import com.azure.storage.blob.sas.BlobServiceSasSignatureValues;
+import com.azure.storage.blob.specialized.BlockBlobClient;
 import com.azure.storage.common.StorageSharedKeyCredential;
+import com.azure.storage.blob.options.BlobParallelUploadOptions;
 import com.genexus.StructSdtMessages_Message;
 import com.genexus.util.GXService;
 import com.genexus.util.StorageUtils;
@@ -34,6 +36,8 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 	static final String ACCESS_KEY = "ACCESS_KEY";
 	static final String PUBLIC_CONTAINER = "PUBLIC_CONTAINER_NAME";
 	static final String PRIVATE_CONTAINER = "PRIVATE_CONTAINER_NAME";
+
+	private boolean useManagedIdentity;
 
 	@Deprecated
 	static final String ACCOUNT_DEPRECATED = "ACCOUNT_NAME";
@@ -63,7 +67,7 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 			logger.error("Error initializing Azure Storage: unable to get account", ex);
 			throw ex;
 		}
-		boolean useManagedIdentity = false;
+
 		try {
 			key = getEncryptedPropertyValue(ACCESS_KEY, KEY_DEPRECATED);
 			if (key.isEmpty()) {
@@ -183,19 +187,28 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 	}
 
 	public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
-		try (ExternalProviderHelper.InputStreamWithLength streamInfo = ExternalProviderHelper.getInputStreamContentLength(input)) {
-			BlobClient blobClient = getBlobClient(externalFileName, acl);
-			
+		//https://docs.azure.cn/en-us/storage/blobs/storage-blob-upload-java
+		try (ExternalProviderHelper.InputStreamWithLength streamInfo =
+				 ExternalProviderHelper.getInputStreamContentLength(input)) {
+
+			BlockBlobClient blobClient =
+				getBlobClient(externalFileName, acl).getBlockBlobClient();
+
 			// Set content type
-			String contentType = (externalFileName.endsWith(".tmp") && "application/octet-stream".equals(streamInfo.detectedContentType)) 
-				? "image/jpeg" : streamInfo.detectedContentType;
+			String contentType =
+				(externalFileName.endsWith(".tmp") &&
+					"application/octet-stream".equals(streamInfo.detectedContentType))
+					? "image/jpeg"
+					: streamInfo.detectedContentType;
+
 			BlobHttpHeaders headers = new BlobHttpHeaders().setContentType(contentType);
-			
+
+			// Upload with headers in one shot (equivalent to old behavior)
 			blobClient.upload(streamInfo.inputStream, streamInfo.contentLength, true);
-			blobClient.setHttpHeaders(headers);
-			
+
 			return getResourceUrl(externalFileName, acl, DEFAULT_EXPIRATION_MINUTES);
-		} catch (Exception ex) {
+		}
+		catch (Exception ex) {
 			handleAndLogException("Error uploading file", ex);
 			return "";
 		}
@@ -225,15 +238,25 @@ public class ExternalProviderAzureStorage extends ExternalProviderBase implement
 	private String getPrivate(String externalFileName, int expirationMinutes) {
 		try {
 			BlobClient blobClient = privateContainerClient.getBlobClient(externalFileName);
-			
-			// Create SAS token
+
 			expirationMinutes = expirationMinutes > 0 ? expirationMinutes : defaultExpirationMinutes;
 			OffsetDateTime expiryTime = OffsetDateTime.now().plusMinutes(expirationMinutes);
-			
+			// Permissions (read)
 			BlobSasPermission permission = new BlobSasPermission().setReadPermission(true);
-			BlobServiceSasSignatureValues values = new BlobServiceSasSignatureValues(expiryTime, permission);
-			
-			return blobClient.getBlobUrl() + "?" + blobClient.generateSas(values);
+			BlobServiceSasSignatureValues values =
+				new BlobServiceSasSignatureValues(expiryTime, permission);
+			String sasToken;
+			if (!useManagedIdentity) {
+				sasToken = blobClient.generateSas(values);
+			} else {
+				BlobServiceClient blobServiceClient = privateContainerClient.getServiceClient();
+				OffsetDateTime start = OffsetDateTime.now().minusMinutes(1);
+				UserDelegationKey userDelegationKey =
+					blobServiceClient.getUserDelegationKey(start, expiryTime);
+				sasToken = blobClient.generateUserDelegationSas(values, userDelegationKey);
+			}
+			return blobClient.getBlobUrl() + "?" + sasToken;
+
 		} catch (Exception ex) {
 			handleAndLogException("Error getting private file", ex);
 			return "";

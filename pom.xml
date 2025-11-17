@@ -126,6 +126,7 @@
         <module>gxcompress</module>
         <module>gamutils</module>
 		<module>gamtotp</module>
+		<module>gxcloudstorage-azureblob-legacy</module>
     </modules>
 
 	<dependencies>
