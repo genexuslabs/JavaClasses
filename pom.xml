@@ -127,6 +127,7 @@
         <module>gamutils</module>
 		<module>gamtotp</module>
 		<module>gxcloudstorage-azureblob-latest</module>
+		<module>gxflowfulltextsearch</module>
     </modules>
 
 	<dependencies>
