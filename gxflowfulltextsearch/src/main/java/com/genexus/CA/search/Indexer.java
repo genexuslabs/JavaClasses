@@ -1,13 +1,12 @@
 package com.genexus.CA.search;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -33,8 +32,6 @@ public final class Indexer {
    private static final int IDX = 1;
    private static final int DLT = 2;
 
-   private static final Logger logger = LogManager.getLogger("Indexer.class");
-
    protected Indexer(String directory) {
       this.indexDirectory = directory;
       if (!this.indexExists(directory)) {
@@ -43,7 +40,7 @@ public final class Indexer {
             IndexWriter writer = new IndexWriter(directory, new StandardAnalyzer(), true);
             writer.close();
          } catch (Exception var3) {
-            logger.error(var3.getMessage(), var3);
+            Logger.print(var3.toString());
          }
       }
 
@@ -61,32 +58,40 @@ public final class Indexer {
                List<XWPFParagraph> data = reader.getParagraphs();
 
                XWPFParagraph p;
-               for(Iterator<XWPFParagraph> var14 = data.iterator(); var14.hasNext(); content = content + p.getText()) {
-                  p = var14.next();
+               for(Iterator var14 = data.iterator(); var14.hasNext(); content = content + p.getText()) {
+                  p = (XWPFParagraph)var14.next();
                }
             } else if (this.isPdfExtension(filePath)) {
                PDDocument document = Loader.loadPDF(new File(filePath));
                new PDFTextStripperByArea();
                PDFTextStripper tStripper = new PDFTextStripper();
                content = content + tStripper.getText(document);
+            } else if (this.isTxtExtension(filePath)) {
+               File txt = new File(filePath);
+
+               String st;
+               for(BufferedReader br = new BufferedReader(new FileReader(txt)); (st = br.readLine()) != null; content = content + st) {
+               }
             }
          } catch (IOException var16) {
             var16.printStackTrace();
          }
       }
 
-	   if (this.documentExists(uri, lang)) {
-		   this.indexOperation(2, lang, (Document) null, uri.toLowerCase());
-	   }
+      if (doc != null) {
+         if (this.documentExists(uri, lang)) {
+            this.indexOperation(2, lang, (Document)null, uri.toLowerCase());
+         }
 
-	   doc.add(new Field("uri", uri, Store.YES, Index.UN_TOKENIZED));
-	   doc.add(new Field("content", content, Store.YES, Index.TOKENIZED));
+         doc.add(new Field("uri", uri, Store.YES, Index.UN_TOKENIZED));
+         doc.add(new Field("content", content, Store.YES, Index.TOKENIZED));
 
-	   try {
-		  this.indexOperation(1, lang, doc, (String)null);
-	   } catch (Exception var15) {
-		  logger.error(var15.getMessage(), var15);
-	   }
+         try {
+            this.indexOperation(1, lang, doc, (String)null);
+         } catch (Exception var15) {
+            Logger.print(var15.toString());
+         }
+      }
 
    }
 
@@ -94,7 +99,7 @@ public final class Indexer {
       try {
          this.indexOperation(2, (String)null, (Document)null, uri.toLowerCase());
       } catch (Exception var3) {
-         logger.error(var3.getMessage(), var3);
+         Logger.print(var3.toString());
       }
 
    }
@@ -108,7 +113,7 @@ public final class Indexer {
             writer.optimize();
             writer.close();
          } catch (Exception var9) {
-            logger.error(var9.getMessage(), var9);
+            Logger.print(var9.toString());
          }
          break;
       case 2:
@@ -130,7 +135,7 @@ public final class Indexer {
 
             reader.close();
          } catch (Exception var8) {
-            logger.error(var8.getMessage(), var8);
+            Logger.print(var8.toString());
          }
       }
 
@@ -152,10 +157,19 @@ public final class Indexer {
    private boolean documentExists(String uri, String lang) {
       boolean value = false;
 
-	  Hits hits = getHits(uri, lang);
-	  if (hits.length() > 0) {
-		  value = true;
-	  }
+      try {
+         IndexSearcher searcher = new IndexSearcher(this.indexDirectory);
+         BooleanQuery query = new BooleanQuery();
+         query.add(new TermQuery(new Term("uri", uri)), Occur.MUST);
+         query.add(new TermQuery(new Term("language", lang)), Occur.MUST);
+         Hits hits = searcher.search(query);
+         searcher.close();
+         if (hits.length() > 0) {
+            value = true;
+         }
+      } catch (IOException var7) {
+         Logger.print(var7.toString());
+      }
 
       return value;
    }
@@ -164,12 +178,18 @@ public final class Indexer {
       int value = -1;
 
       try {
-         Hits  hits = this.getHits(uri, lang);
+         IndexSearcher searcher = new IndexSearcher(this.indexDirectory);
+         BooleanQuery query = new BooleanQuery();
+         query.add(new TermQuery(new Term("uri", uri)), Occur.MUST);
+         query.add(new TermQuery(new Term("language", lang)), Occur.MUST);
+         Hits hits = searcher.search(query);
          if (hits.length() > 0) {
             value = hits.id(0);
          }
+
+         searcher.close();
       } catch (IOException var7) {
-         logger.error(var7.getMessage(), var7);
+         Logger.print(var7.toString());
       }
 
       return value;
@@ -177,23 +197,6 @@ public final class Indexer {
 
    private boolean isMicrosoftExtension(String filePath) {
       return filePath.endsWith(".doc") || filePath.endsWith(".docx") || filePath.endsWith(".xls") || filePath.endsWith(".xlsx") || filePath.endsWith(".ppt") || filePath.endsWith(".pptx");
-   }
-
-   private Hits getHits(String uri, String lang) {
-	   IndexSearcher searcher = null;
-	   Hits hits = null;
-	   try {
-		   searcher = new IndexSearcher(this.indexDirectory);
-		   BooleanQuery query = new BooleanQuery();
-		   query.add(new TermQuery(new Term("uri", uri)), Occur.MUST);
-		   query.add(new TermQuery(new Term("language", lang)), Occur.MUST);
-		   hits = searcher.search(query);
-		   searcher.close();
-	   } catch (IOException e) {
-		   logger.error(e.getMessage(), e);
-	   }
-
-	   return hits;
    }
 
    private boolean isPdfExtension(String filePath) {
