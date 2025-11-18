@@ -119,7 +119,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 			this.folder = folder;
 
 			this.client = buildS3Client(accessKey, secretKey, endpointValue, clientRegion);
-			this.presigner = buildS3Presigner(accessKey, secretKey, clientRegion);
+			this.presigner = buildS3Presigner(accessKey, secretKey, endpointValue, clientRegion);
 			bucketExists();
 		}
 	}
@@ -178,7 +178,7 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 		return s3Client;
 	}
 
-	private S3Presigner buildS3Presigner(String accessKey, String secretKey, String region) {
+	private S3Presigner buildS3Presigner(String accessKey, String secretKey, String endpoint, String region) {
 		boolean bUseIAM = !getPropertyValue(USE_IAM, "", "").isEmpty() || (accessKey.equals("") && secretKey.equals(""));
 
 		S3Presigner.Builder builder = S3Presigner.builder()
@@ -191,6 +191,10 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 
 		if (bUseIAM) {
 			logger.debug("Using IAM Credentials for presigner");
+		}
+
+		if (!endpoint.isEmpty() && !endpoint.contains(".amazonaws.com")) {
+			builder.endpointOverride(URI.create(endpoint));
 		}
 
 		return builder.build();
@@ -568,15 +572,27 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 	}
 
 	private String getStorageUri() {
-		return (!pathStyleUrls) ?
-			"https://" + bucket + ".s3." + clientRegion + ".amazonaws.com/" :
-			".s3." + clientRegion + ".amazonaws.com//" + bucket + "/";
+		if (!pathStyleUrls) {
+			if (endpointUrl.contains(".amazonaws.com")) {
+				return "https://" + bucket + ".s3." + clientRegion + ".amazonaws.com/";
+			} else {
+				return endpointUrl + "/" + bucket + "/";
+			}
+		} else {
+			return endpointUrl + "/" + bucket + "/";
+		}
 	}
 
 	private String getStorageUriWithoutRegion() {
-		return (!pathStyleUrls) ?
-			"https://" + bucket + ".s3.amazonaws.com/" :
-			".s3.amazonaws.com//" + bucket + "/";
+		if (!pathStyleUrls) {
+			if (endpointUrl.contains(".amazonaws.com")) {
+				return "https://" + bucket + ".s3.amazonaws.com/";
+			} else {
+				return endpointUrl + "/" + bucket + "/";
+			}
+		} else {
+			return endpointUrl + "/" + bucket + "/";
+		}
 	}
 
 	// With ACL implementation
@@ -650,19 +666,27 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 		} else {
 			try {
 				int lastIndex = Math.max(externalFileName.lastIndexOf('/'), externalFileName.lastIndexOf('\\'));
-				String path = externalFileName.substring(0, lastIndex + 1);
-				String fileName = externalFileName.substring(lastIndex + 1);
+				String path = lastIndex >= 0 ? externalFileName.substring(0, lastIndex + 1) : "";
+				String fileName = lastIndex >= 0 ? externalFileName.substring(lastIndex + 1) : externalFileName;
 				String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString());
 
-				String url = String.format(
-					"https://%s.s3.%s.amazonaws.com/%s%s",
-					bucket,
-					clientRegion,
-					path,
-					encodedFileName
-				);
-
-				return url;
+				if (endpointUrl.contains(".amazonaws.com")) {
+					return String.format(
+						"https://%s.s3.%s.amazonaws.com/%s%s",
+						bucket,
+						clientRegion,
+						path,
+						encodedFileName
+					);
+				} else {
+					return String.format(
+						"%s/%s/%s%s",
+						endpointUrl,
+						bucket,
+						path,
+						encodedFileName
+					);
+				}
 			} catch (UnsupportedEncodingException uee) {
 				logger.error("Failed to encode resource URL for " + externalFileName, uee);
 				return "";
@@ -771,19 +795,27 @@ public class ExternalProviderS3V2 extends ExternalProviderBase implements Extern
 		} else if (ownerEnforcedBucketPrivacy == BucketPrivacy.PUBLIC){
 			try {
 				int lastIndex = Math.max(externalFileName.lastIndexOf('/'), externalFileName.lastIndexOf('\\'));
-				String path = externalFileName.substring(0, lastIndex + 1);
-				String fileName = externalFileName.substring(lastIndex + 1);
+				String path = lastIndex >= 0 ? externalFileName.substring(0, lastIndex + 1) : "";
+				String fileName = lastIndex >= 0 ? externalFileName.substring(lastIndex + 1) : externalFileName;
 				String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString());
 
-				String url = String.format(
-					"https://%s.s3.%s.amazonaws.com/%s%s",
-					bucket,
-					clientRegion,
-					path,
-					encodedFileName
-				);
-
-				return url;
+				if (endpointUrl.contains(".amazonaws.com")) {
+					return String.format(
+						"https://%s.s3.%s.amazonaws.com/%s%s",
+						bucket,
+						clientRegion,
+						path,
+						encodedFileName
+					);
+				} else {
+					return String.format(
+						"%s/%s/%s%s",
+						endpointUrl,
+						bucket,
+						path,
+						encodedFileName
+					);
+				}
 			} catch (UnsupportedEncodingException uee) {
 				logger.error("Failed to encode resource URL for {}", externalFileName, uee);
 				return "";
