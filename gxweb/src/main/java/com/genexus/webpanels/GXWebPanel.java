@@ -770,47 +770,41 @@ public abstract class GXWebPanel extends GXWebObjectBase
 			if (field != null)
             {
 				Class fieldType = field.getType();
-				if (IGxJSONSerializable.class.isAssignableFrom(field.getType()))
-				{
-					Class[] cArg = new Class[1];
-					cArg[0] = String.class;
-					Object fieldInstance = PrivateUtilities.getFieldValue(targetObj, fieldName);
-					Method mth;
-					if (value instanceof JSONArray || value instanceof JSONObjectWrapper)
-					{
-						mth = field.getType().getMethod("FromJSONObject", new Class[]{Object.class});
-						mth.invoke(fieldInstance , new Object[]{value});
-					}
-					else
-					{
-						mth = field.getType().getMethod("fromJSonString", cArg);
-						mth.invoke(fieldInstance , new Object[]{value.toString()});
-					}
-
-					PrivateUtilities.setFieldValue(targetObj, field.getName(), fieldInstance);
+				Object fieldInstance = PrivateUtilities.getFieldValue(targetObj, fieldName);
+				Method mth;
+				if (com.genexus.util.GXHashMap.class.isAssignableFrom(field.getType())) {
+					mth = field.getType().getMethod("fromJson", new Class[]{Object.class});
+					mth.invoke(fieldInstance, new Object[]{value});
 				}
-				else
-				{
-					try
-					{
-						if (fieldType.isArray())
-						{
-							Object tempArray = getArrayFieldValue(fieldType, value);
-							if (tempArray != null)
-							{
-								value = tempArray;
+				else {
+					if (IGxJSONSerializable.class.isAssignableFrom(field.getType())) {
+						Class[] cArg = new Class[1];
+						cArg[0] = String.class;
+						if (value instanceof JSONArray || value instanceof JSONObjectWrapper) {
+							mth = field.getType().getMethod("FromJSONObject", new Class[]{Object.class});
+							mth.invoke(fieldInstance, new Object[]{value});
+						} else {
+							mth = field.getType().getMethod("fromJSonString", cArg);
+							mth.invoke(fieldInstance, new Object[]{value.toString()});
+						}
+
+						PrivateUtilities.setFieldValue(targetObj, field.getName(), fieldInstance);
+					} else {
+						try {
+							if (fieldType.isArray()) {
+								Object tempArray = getArrayFieldValue(fieldType, value);
+								if (tempArray != null) {
+									value = tempArray;
+								}
+							} else {
+								if (fieldType == java.util.Date.class)
+									value = localUtil.ctot(value.toString(), 0);
+								else
+									value = GXutil.convertObjectTo(value, fieldType);
 							}
+							PrivateUtilities.setFieldValue(targetObj, field.getName(), value);
+						} catch (Exception e) {
 						}
-						else {
-							if (fieldType == java.util.Date.class)
-								value = localUtil.ctot(value.toString(), 0);
-							else
-								value = GXutil.convertObjectTo(value, fieldType);
-						}
-						PrivateUtilities.setFieldValue(targetObj, field.getName(), value);
-					}
-					catch (Exception e)
-					{
 					}
 				}
 			}
