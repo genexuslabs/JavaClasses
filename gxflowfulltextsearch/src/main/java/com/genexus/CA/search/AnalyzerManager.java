@@ -5,7 +5,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 public class AnalyzerManager {
-   private static HashMap hash = new HashMap();
+   private static final HashMap hash = new HashMap();
 
    public static Analyzer getAnalyzer(String lang) {
       Analyzer analyzer = null;
