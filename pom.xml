@@ -22,6 +22,10 @@
 		<jersey.javax.version>2.34</jersey.javax.version>
 		<jersey.jakarta.version>3.0.4</jersey.jakarta.version>
 		<poi.version>5.4.1</poi.version>
+		<pdfbox.version>3.0.3</pdfbox.version>
+		<lucene.version>2.2.0</lucene.version>
+		<commons.collections4.version>4.1</commons.collections4.version>
+		<commons.logging.version>1.2</commons.logging.version>
 		<jackson.version>2.16.2</jackson.version>
 		<junit.version>4.13.2</junit.version>
 		<software.awssdk.version>2.35.6</software.awssdk.version>
