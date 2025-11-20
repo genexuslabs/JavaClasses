@@ -2,6 +2,7 @@ package com.genexus.db.driver;
 
 import com.azure.core.exception.ClientAuthenticationException;
 import com.azure.core.exception.HttpRequestException;
+import com.azure.core.util.Context;
 import com.azure.identity.DefaultAzureCredential;
 import com.azure.identity.DefaultAzureCredentialBuilder;
 import com.azure.storage.blob.BlobClient;
@@ -189,17 +190,30 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 	public String upload(String externalFileName, InputStream input, ResourceAccessControlList acl) {
 		//https://docs.azure.cn/en-us/storage/blobs/storage-blob-upload-java
 		try (ExternalProviderHelper.InputStreamWithLength streamInfo =
-				 ExternalProviderHelper.getInputStreamContentLength(input)) {
+					 ExternalProviderHelper.getInputStreamContentLength(input)) {
+
 			BlockBlobClient blobClient =
-				getBlobClient(externalFileName, acl).getBlockBlobClient();
-			// Set content type
+					getBlobClient(externalFileName, acl).getBlockBlobClient();
+
 			String contentType =
-				(externalFileName.endsWith(".tmp") &&
-					"application/octet-stream".equals(streamInfo.detectedContentType))
-					? "image/jpeg"
-					: streamInfo.detectedContentType;
+					(externalFileName.endsWith(".tmp") &&
+							"application/octet-stream".equals(streamInfo.detectedContentType))
+							? "image/jpeg"
+							: streamInfo.detectedContentType;
+
 			BlobHttpHeaders headers = new BlobHttpHeaders().setContentType(contentType);
-			blobClient.upload(streamInfo.inputStream, streamInfo.contentLength, true);
+			blobClient.uploadWithResponse(
+					streamInfo.inputStream,
+					streamInfo.contentLength,
+					headers,
+					null,
+					null,
+					null,
+					null,
+					null,
+					Context.NONE
+			);
+
 			return getResourceUrl(externalFileName, acl, DEFAULT_EXPIRATION_MINUTES);
 		}
 		catch (Exception ex) {
@@ -281,9 +295,7 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 		try {
 			BlobClient sourceBlob = getBlobClient(objectName, acl);
 			BlobClient targetBlob = getBlobClient(newName, acl);
-
 			String sourceBlobUrl;
-
 			if (useManagedIdentity) {
 				//Needs RBAC permissions: https://learn.microsoft.com/en-us/azure/storage/blobs/authorize-access-azure-active-directory
 				sourceBlobUrl = sourceBlob.getBlobUrl();
@@ -334,7 +346,6 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 
 				sourceBlobUrl = sourceBlob.getBlobUrl() + "?" + sourceBlob.generateSas(values);
 			}
-
 			targetBlob.beginCopy(sourceBlobUrl, null);
 			return getResourceUrl(newName, acl, defaultExpirationMinutes);
 
@@ -398,7 +409,6 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 		try {
 			// List all blobs with the directory prefix
 			ListBlobsOptions options = new ListBlobsOptions().setPrefix(directoryName);
-			
 			// Check if there are any blobs with this prefix
 			boolean exists = false;
 			for (BlobItem blobItem : publicContainerClient.listBlobs(options, null)) {
@@ -483,7 +493,6 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 					}
 				}
 			}
-			
 			// Delete the original directory
 			deleteDirectory(directoryName);
 		} catch (Exception ex) {
