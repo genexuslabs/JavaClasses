@@ -19,8 +19,9 @@
 		<sha1/>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jersey.javax.version>2.34</jersey.javax.version>
-		<jersey.jakarta.version>3.0.4</jersey.jakarta.version>
+		
+		<jersey.javax.version>2.46</jersey.javax.version>
+		<jersey.jakarta.version>3.0.17</jersey.jakarta.version>
 		<poi.version>5.4.1</poi.version>
 		<pdfbox.version>3.0.3</pdfbox.version>
 		<lucene.version>2.2.0</lucene.version>
