@@ -92,7 +92,7 @@
 		<dependency>
 			<groupId>com.sun.xml.ws</groupId>
 			<artifactId>jaxws-rt</artifactId>
-			<version>2.3.5</version>
+			<version>2.3.7</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.xml.fastinfoset</groupId>
@@ -104,12 +104,6 @@
                 </exclusion>
     	</exclusions>
 		</dependency>
-        <!-- overwrite jaxws-rt  woodstox-core dependency due to CVEs -->
-        <dependency>
-            <groupId>com.fasterxml.woodstox</groupId>
-            <artifactId>woodstox-core</artifactId>
-            <version>6.5.1</version>
-        </dependency>
     </dependencies>
 
 	<build>
