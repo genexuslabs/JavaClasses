@@ -22,24 +22,48 @@
 		<dependency>
 			<groupId>org.apache.olingo</groupId>
 			<artifactId>odata-commons-api</artifactId>
-			<version>4.9.0</version>
+			<version>5.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.olingo</groupId>
 			<artifactId>odata-commons-core</artifactId>
-			<version>4.9.0</version>
+			<version>5.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.olingo</groupId>
 			<artifactId>odata-client-api</artifactId>
-			<version>4.9.0</version>
+			<version>5.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.olingo</groupId>
 			<artifactId>odata-client-core</artifactId>
-			<version>4.9.0</version>
+			<version>5.0.0</version>
 		</dependency>
-	</dependencies>
+        <!-- overwrite odata-client-core jackson-core dependency due to CVEs -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <!-- overwrite odata-client-core jackson-databind dependency due to CVEs -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <!-- overwrite odata-client-core commons-io dependency due to CVEs -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
+        </dependency>
+        <!-- overwrite odata-client-core commons-lang3   dependency due to CVEs -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons.lang3.version}</version>
+        </dependency>
+    </dependencies>
 
 	<build>
 		<finalName>gxodata</finalName>
