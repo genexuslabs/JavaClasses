@@ -239,7 +239,14 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 			return getPrivate(externalFileName, expirationMinutes);
 		} else {
 			BlobClient blobClient = publicContainerClient.getBlobClient(externalFileName);
-			return blobClient.getBlobUrl();
+			//getBlobClient method returns URL encoded
+			//https://azuresdkdocs.z19.web.core.windows.net/java/azure-storage-blob/12.30.0/com/azure/storage/blob/BlobContainerClient.html#getBlobClient(java.lang.String)
+			////https://github.com/Azure/azure-sdk-for-java/issues/21610
+
+			String url = blobClient.getBlobUrl();
+
+			//Decode only when not SAS
+			return safeDecodeUrl(url);
 		}
 	}
 
@@ -597,7 +604,18 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 		}
 		return objectName;
 	}
-	
+
+	private static String safeDecodeUrl(String uri) {
+		if (uri == null || uri.isEmpty()) return uri;
+		boolean hasEncodedSegments = uri.matches(".*%[0-9A-Fa-f]{2}.*");
+		if (!hasEncodedSegments) return uri;
+		try {
+			return java.net.URLDecoder.decode(uri);
+		} catch (IllegalArgumentException e) {
+			return uri;
+		}
+	}
+
 	private void handleAndLogException(String message, Exception ex) {
 		if (ex instanceof BlobStorageException) {
 			logger.error("Azure Storage error: {} (Status: {}, Code: {})",
