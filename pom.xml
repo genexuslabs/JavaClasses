@@ -18,8 +18,8 @@
 		<changelist>-SNAPSHOT</changelist>
 		<sha1/>
 
-		<jersey.javax.version>2.34</jersey.javax.version>
-		<jersey.jakarta.version>3.0.4</jersey.jakarta.version>
+		<jersey.javax.version>2.46</jersey.javax.version>
+		<jersey.jakarta.version>3.0.17</jersey.jakarta.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<poi.version>5.4.1</poi.version>
 		<jackson.version>2.16.2</jackson.version>
