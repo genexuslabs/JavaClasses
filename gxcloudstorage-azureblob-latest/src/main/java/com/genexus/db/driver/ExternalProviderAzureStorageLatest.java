@@ -340,7 +340,6 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 
 			Map<String, String> metadata =
 				createObjectMetadata(tableName, fieldName, StorageUtils.encodeName(newName));
-			targetBlob.setMetadata(metadata);
 
 			String sourceBlobUrl;
 			if (useManagedIdentity) {
@@ -354,6 +353,7 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 				sourceBlobUrl = sourceBlob.getBlobUrl() + "?" + sourceBlob.generateSas(values);
 			}
 			targetBlob.beginCopy(sourceBlobUrl, null);
+			targetBlob.setMetadata(metadata);
 			return getResourceUrl(newName, acl, defaultExpirationMinutes);
 
 		} catch (Exception ex) {
