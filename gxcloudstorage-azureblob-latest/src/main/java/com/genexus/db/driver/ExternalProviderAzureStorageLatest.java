@@ -244,10 +244,7 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 			//getBlobClient method returns URL encoded
 			//https://azuresdkdocs.z19.web.core.windows.net/java/azure-storage-blob/12.30.0/com/azure/storage/blob/BlobContainerClient.html#getBlobClient(java.lang.String)
 			////https://github.com/Azure/azure-sdk-for-java/issues/21610
-
-			String url = blobClient.getBlobUrl();
-			return url;
-			//return safeDecodeUrl(url);
+			return blobClient.getBlobUrl();
 		}
 	}
 
@@ -605,17 +602,6 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 			objectName = url.replace(privateContainerUrl, "");
 		}
 		return objectName;
-	}
-
-	private static String safeDecodeUrl(String uri) {
-		if (uri == null || uri.isEmpty()) return uri;
-		boolean hasEncodedSegments = uri.matches(".*%[0-9A-Fa-f]{2}.*");
-		if (!hasEncodedSegments) return uri;
-		try {
-			return java.net.URLDecoder.decode(uri);
-		} catch (IllegalArgumentException e) {
-			return uri;
-		}
 	}
 
 	private String getExternalFileName(String externalFileName)
