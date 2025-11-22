@@ -5,6 +5,8 @@ import com.genexus.util.GXFile;
 import com.genexus.util.GXServices;
 
 import java.io.File;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,6 +28,7 @@ public class GXDbFile
 	{
 		try
 		{
+			uri = safeDecodeUrl(uri);
 			return CommonUtil.getFileName(uri);
 		}
 		catch (Exception e)		
@@ -235,4 +238,20 @@ public class GXDbFile
 		return pathToUrl(path, webContext, forceAbsPath);
 	}
 
+	private static String safeDecodeUrl(String uri) {
+		if (uri == null || uri.isEmpty()) {
+			return uri;
+		}
+		boolean hasEncodedSegments =
+			uri.matches(".*%[0-9A-Fa-f]{2}.*");
+
+		if (!hasEncodedSegments) {
+			return uri;
+		}
+		try {
+			return URLDecoder.decode(uri);
+		} catch (IllegalArgumentException e) {
+			return uri;
+		}
+	}
 }
