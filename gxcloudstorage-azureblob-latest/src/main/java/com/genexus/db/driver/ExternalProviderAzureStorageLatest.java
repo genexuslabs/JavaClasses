@@ -14,7 +14,6 @@ import com.azure.storage.blob.sas.BlobSasPermission;
 import com.azure.storage.blob.sas.BlobServiceSasSignatureValues;
 import com.azure.storage.blob.specialized.BlockBlobClient;
 import com.azure.storage.common.StorageSharedKeyCredential;
-import com.azure.storage.blob.options.BlobParallelUploadOptions;
 import com.genexus.StructSdtMessages_Message;
 import com.genexus.util.GXService;
 import com.genexus.util.StorageUtils;
@@ -178,6 +177,7 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 
 	public String upload(String localFile, String externalFileName, ResourceAccessControlList acl) {
 		try {
+			externalFileName = getExternalFileName(externalFileName);
 			BlobClient blobClient = getBlobClient(externalFileName, acl);
 			blobClient.uploadFromFile(localFile, true);
 			return getResourceUrl(externalFileName, acl, defaultExpirationMinutes);
@@ -191,10 +191,9 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 		//https://docs.azure.cn/en-us/storage/blobs/storage-blob-upload-java
 		try (ExternalProviderHelper.InputStreamWithLength streamInfo =
 					 ExternalProviderHelper.getInputStreamContentLength(input)) {
-
+			externalFileName = getExternalFileName(externalFileName);
 			BlockBlobClient blobClient =
 					getBlobClient(externalFileName, acl).getBlockBlobClient();
-
 			String contentType =
 					(externalFileName.endsWith(".tmp") &&
 							"application/octet-stream".equals(streamInfo.detectedContentType))
@@ -224,6 +223,7 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 
 	public String get(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
 		try {
+			externalFileName = getExternalFileName(externalFileName);
 			if (exists(externalFileName, acl)) {
 				return getResourceUrl(externalFileName, acl, expirationMinutes);
 			}
@@ -235,6 +235,8 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 	}
 
 	private String getResourceUrl(String externalFileName, ResourceAccessControlList acl, int expirationMinutes) {
+
+		externalFileName = getExternalFileName(externalFileName);
 		if (isPrivateAcl(acl)) {
 			return getPrivate(externalFileName, expirationMinutes);
 		} else {
@@ -244,14 +246,14 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 			////https://github.com/Azure/azure-sdk-for-java/issues/21610
 
 			String url = blobClient.getBlobUrl();
-
-			//Decode only when not SAS
-			return safeDecodeUrl(url);
+			return url;
+			//return safeDecodeUrl(url);
 		}
 	}
 
 	private String getPrivate(String externalFileName, int expirationMinutes) {
 		try {
+			externalFileName = getExternalFileName(externalFileName);
 			BlobClient blobClient = privateContainerClient.getBlobClient(externalFileName);
 			expirationMinutes = expirationMinutes > 0 ? expirationMinutes : defaultExpirationMinutes;
 			OffsetDateTime expiryTime = OffsetDateTime.now().plusMinutes(expirationMinutes);
@@ -614,6 +616,15 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 		} catch (IllegalArgumentException e) {
 			return uri;
 		}
+	}
+
+	private String getExternalFileName(String externalFileName)
+	{
+		//Defensive code, as externalFileName may have a leading / and this causes a double / at blob uri
+		//The latest Azure SDK is strict at uri format and encodes special characters
+		if (externalFileName == "")
+			return externalFileName;
+		return externalFileName.startsWith("/") ? externalFileName.substring(1) : externalFileName;
 	}
 
 	private void handleAndLogException(String message, Exception ex) {
