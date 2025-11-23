@@ -628,5 +628,6 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 		} else {
 			logger.error("Unexpected storage error", ex);
 		}
+		throw new RuntimeException(ex.getMessage(), ex);
 	}
 }
