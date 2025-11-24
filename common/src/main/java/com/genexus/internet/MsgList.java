@@ -98,6 +98,11 @@ public class MsgList extends java.util.Vector<Msg> implements IGxJSONAble
 		removeAllElements();
 	}
 
+	public boolean hasAny(String msgId)
+	{
+		return this.stream().anyMatch(item -> msgId.equals(item.getId()));
+	}
+
 	private short displayMode = 1;
 
 	public void setDisplaymode(short displayMode)
