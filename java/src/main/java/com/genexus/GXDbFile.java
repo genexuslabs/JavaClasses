@@ -5,6 +5,7 @@ import com.genexus.util.GXFile;
 import com.genexus.util.GXServices;
 
 import java.io.File;
+import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
@@ -239,18 +240,28 @@ public class GXDbFile
 	}
 
 	private static String safeDecodeUrl(String uri) {
-		if (uri == null || uri.isEmpty()) {
+		if (uri == null || uri.isEmpty())
 			return uri;
-		}
-		boolean hasEncodedSegments =
-			uri.matches(".*%[0-9A-Fa-f]{2}.*");
-
-		if (!hasEncodedSegments) {
-			return uri;
-		}
 		try {
-			return URLDecoder.decode(uri);
-		} catch (IllegalArgumentException e) {
+			URI u = new URI(uri);
+			String rawPath = u.getRawPath();
+			if (rawPath == null)
+				return uri;
+
+			boolean hasEncodedSegments = rawPath.matches(".*%[0-9A-Fa-f]{2}.*");
+			if (!hasEncodedSegments) {
+				return uri;
+			}
+			String decodedPath = java.net.URLDecoder.decode(rawPath, "UTF-8");
+			return new URI(
+				u.getScheme(),
+				u.getAuthority(),
+				decodedPath,
+				u.getRawQuery(),
+				null
+			).toString();
+
+		} catch (Exception e) {
 			return uri;
 		}
 	}
