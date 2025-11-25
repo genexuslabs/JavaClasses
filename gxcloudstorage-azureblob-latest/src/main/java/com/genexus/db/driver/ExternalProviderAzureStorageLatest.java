@@ -2,6 +2,7 @@ package com.genexus.db.driver;
 
 import com.azure.core.exception.ClientAuthenticationException;
 import com.azure.core.exception.HttpRequestException;
+import com.azure.core.http.rest.PagedIterable;
 import com.azure.core.util.Context;
 import com.azure.identity.DefaultAzureCredential;
 import com.azure.identity.DefaultAzureCredentialBuilder;
@@ -313,7 +314,6 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 							OffsetDateTime.now().plusMinutes(5),
 							permission
 						);
-
 					sourceBlobUrl = sourceBlob.getBlobUrl() + "?" + sourceBlob.generateSas(values);
 				} else {
 					sourceBlobUrl = sourceBlob.getBlobUrl();
@@ -331,7 +331,6 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 
 		objectUrl = objectUrl.replace(getUrl(), "");
 		newName = tableName + "/" + fieldName + "/" + newName;
-
 		try {
 			// Source is always in the private container
 			BlobClient sourceBlob = privateContainerClient.getBlobClient(objectUrl);
@@ -339,12 +338,10 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 
 			Map<String, String> metadata =
 				createObjectMetadata(tableName, fieldName, StorageUtils.encodeName(newName));
-
 			String sourceBlobUrl;
 			if (useManagedIdentity) {
 				sourceBlobUrl = sourceBlob.getBlobUrl();
 			} else {
-
 				BlobSasPermission permission = new BlobSasPermission().setReadPermission(true);
 				BlobServiceSasSignatureValues values = new BlobServiceSasSignatureValues(
 					OffsetDateTime.now().plusMinutes(5), permission);
@@ -402,9 +399,16 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 	}
 
 	public String getDirectory(String directoryName) {
+
+		ResourceAccessControlList acl = defaultAcl;
 		directoryName = StorageUtils.normalizeDirectoryName(directoryName);
 		if (existsDirectory(directoryName)) {
-			return publicContainerClient.getBlobContainerName() + StorageUtils.DELIMITER + directoryName;
+			if (!isPrivateAcl(acl)) {
+				return publicContainerClient.getBlobContainerName() + StorageUtils.DELIMITER + directoryName;
+			}
+			else {
+				return privateContainerClient.getBlobContainerName() + StorageUtils.DELIMITER + directoryName;
+			}
 		} else {
 			return "";
 		}
@@ -417,7 +421,15 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 			ListBlobsOptions options = new ListBlobsOptions().setPrefix(directoryName);
 			// Check if there are any blobs with this prefix
 			boolean exists = false;
-			for (BlobItem blobItem : publicContainerClient.listBlobs(options, null)) {
+			ResourceAccessControlList acl = defaultAcl;
+			PagedIterable<BlobItem> listBlobs;
+			if (!isPrivateAcl(acl)) {
+				listBlobs = publicContainerClient.listBlobs(options, null);
+			}
+			else {
+				listBlobs = privateContainerClient.listBlobs(options, null);
+			}
+			for (BlobItem blobItem : listBlobs) {
 				String name = blobItem.getName();
 				if (!name.equals(directoryName)) {
 					// If we found any blob that isn't just the directory marker itself
@@ -436,7 +448,14 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 		directoryName = StorageUtils.normalizeDirectoryName(directoryName);
 		try {
 			// Create a blob with empty content to mark the directory
-			BlobClient blobClient = publicContainerClient.getBlobClient(directoryName);
+			ResourceAccessControlList acl = defaultAcl;
+			BlobClient blobClient;
+			if (!isPrivateAcl(acl)) {
+				blobClient = publicContainerClient.getBlobClient(directoryName);
+			}
+			else {
+				blobClient = privateContainerClient.getBlobClient(directoryName);
+			}
 			byte[] emptyContent = new byte[0];
 			blobClient.upload(new ByteArrayInputStream(emptyContent), emptyContent.length, true);
 		} catch (Exception ex) {
@@ -445,14 +464,20 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 	}
 
 	public void deleteDirectory(String directoryName) {
-		ResourceAccessControlList acl = null;
 		directoryName = StorageUtils.normalizeDirectoryName(directoryName);
 		try {
 			// List all blobs with the directory prefix
 			ListBlobsOptions options = new ListBlobsOptions().setPrefix(directoryName);
-			
+			ResourceAccessControlList acl = defaultAcl;
+			PagedIterable<BlobItem> listBlobs;
 			// Delete all blobs in the directory
-			for (BlobItem blobItem : publicContainerClient.listBlobs(options, null)) {
+			if (!isPrivateAcl(acl)) {
+				listBlobs = publicContainerClient.listBlobs(options, null);
+			}
+			else {
+				listBlobs = privateContainerClient.listBlobs(options, null);
+			}
+			for (BlobItem blobItem : listBlobs) {
 				String name = blobItem.getName();
 				if (name.startsWith(directoryName)) {
 					if (name.endsWith(StorageUtils.DELIMITER)) {
@@ -472,7 +497,7 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 	}
 
 	public void renameDirectory(String directoryName, String newDirectoryName) {
-		ResourceAccessControlList acl = null;
+		ResourceAccessControlList acl = defaultAcl;
 		if (!existsDirectory(newDirectoryName)) {
 			createDirectory(newDirectoryName);
 		}
@@ -481,9 +506,15 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 		try {
 			// List all blobs with the directory prefix
 			ListBlobsOptions options = new ListBlobsOptions().setPrefix(directoryName);
-			
 			// Copy and rename all blobs in the directory
-			for (BlobItem blobItem : publicContainerClient.listBlobs(options, null)) {
+			PagedIterable<BlobItem> listBlobs;
+			if (!isPrivateAcl(acl)) {
+				listBlobs = publicContainerClient.listBlobs(options, null);
+			}
+			else {
+				listBlobs = privateContainerClient.listBlobs(options, null);
+			}
+			for (BlobItem blobItem : listBlobs) {
 				String name = blobItem.getName();
 				if (name.startsWith(directoryName)) {
 					if (name.endsWith(StorageUtils.DELIMITER)) {
@@ -507,14 +538,21 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 	}
 
 	public List<String> getFiles(String directoryName, String filter) {
+		ResourceAccessControlList acl = defaultAcl;
 		List<String> files = new ArrayList<String>();
 		directoryName = StorageUtils.normalizeDirectoryName(directoryName);
 		try {
 			// List all blobs with the directory prefix
 			ListBlobsOptions options = new ListBlobsOptions().setPrefix(directoryName);
-			
 			// Add all file names to the list
-			for (BlobItem blobItem : publicContainerClient.listBlobs(options, null)) {
+			PagedIterable<BlobItem> listBlobs;
+			if (!isPrivateAcl(acl)) {
+				listBlobs = publicContainerClient.listBlobs(options, null);
+			}
+			else {
+				listBlobs = privateContainerClient.listBlobs(options, null);
+			}
+			for (BlobItem blobItem : listBlobs) {
 				String name = blobItem.getName();
 				if (name.startsWith(directoryName) && !name.endsWith(StorageUtils.DELIMITER)) {
 					// This is a file, add it to the list
@@ -532,15 +570,22 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 	}
 
 	public List<String> getSubDirectories(String directoryName) {
+		ResourceAccessControlList acl = defaultAcl;
 		List<String> directories = new ArrayList<String>();
 		directoryName = StorageUtils.normalizeDirectoryName(directoryName);
 		try {
 			// List all blobs with the directory prefix
 			ListBlobsOptions options = new ListBlobsOptions().setPrefix(directoryName);
-			
 			// Get all subdirectory names
+			PagedIterable<BlobItem> listBlobs;
+			if (!isPrivateAcl(acl)) {
+				listBlobs = publicContainerClient.listBlobs(options, null);
+			}
+			else {
+				listBlobs = privateContainerClient.listBlobs(options, null);
+			}
 			Set<String> dirSet = new HashSet<String>();
-			for (BlobItem blobItem : publicContainerClient.listBlobs(options, null)) {
+			for (BlobItem blobItem : listBlobs) {
 				String name = blobItem.getName();
 				if (name.startsWith(directoryName) && !name.equals(directoryName)) {
 					// Get the subdirectory name
