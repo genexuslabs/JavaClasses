@@ -42,5 +42,11 @@
             <artifactId>jackson-core</artifactId>
             <version>${jackson.version}</version>
         </dependency>
+        <!-- overwrite azure-storage commons-lang3 dependency due to CVEs -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons.lang3.version}</version>
+        </dependency>
 	</dependencies>
 </project>
