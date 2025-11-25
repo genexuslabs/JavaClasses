@@ -48,7 +48,7 @@
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-messaging-eventgrid</artifactId>
-            <version>4.22.3</version>
+            <version>4.31.4</version>
         </dependency>
 
         <dependency>
