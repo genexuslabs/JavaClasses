@@ -44,6 +44,12 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>gxcloudstorage-azureblob-latest</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>gxcloudstorage-awss3-v1</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>

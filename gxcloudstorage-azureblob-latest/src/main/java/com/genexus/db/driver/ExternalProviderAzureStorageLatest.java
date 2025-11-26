@@ -660,8 +660,8 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 
 	private void handleAndLogException(String message, Exception ex) {
 		if (ex instanceof BlobStorageException) {
-			logger.error("Azure Storage error: {} (Status: {}, Code: {})",
-				((BlobStorageException) ex).getServiceMessage(), ((BlobStorageException) ex).getStatusCode(), ((BlobStorageException) ex).getErrorCode());
+			logger.error("Azure Storage error: (Status: {}, Code: {})",
+				((BlobStorageException) ex).getStatusCode(), ((BlobStorageException) ex).getErrorCode());
 		} else if (ex instanceof ClientAuthenticationException) {
 			logger.error("Authentication error: {}", ex.getMessage());
 		} else if (ex instanceof HttpRequestException) {
