@@ -636,26 +636,20 @@ public class GXCompressor {
 		}
 	}
 
-	private static boolean isPathTraversal(String dir, String fName) {
-		try {
-			Path path = Paths.get(dir).resolve(fName);
-			return !path.toAbsolutePath().equals(path.toRealPath());
-		}catch (Exception e){
-			return true;
-		}
-	}
-
 	private static void decompressTar(File archive, String directory) throws IOException {
 		byte[] buffer = new byte[BUFFER_SIZE];
+		final Path targetDir = Paths.get(directory).toAbsolutePath().normalize();
 		try (TarArchiveInputStream tis = new TarArchiveInputStream(Files.newInputStream(archive.toPath()))) {
 			TarArchiveEntry entry;
 			while ((entry = tis.getNextEntry()) != null) {
-				if(isPathTraversal(directory, entry.getName()))
+				Path entryPath = targetDir.resolve(entry.getName()).normalize();
+				if(!entryPath.startsWith(targetDir))
 				{
 					log.error(DIRECTORY_ATTACK + "{}", entry.getName());
 					return;
 				}else {
-					File newFile = new File(directory, entry.getName());
+
+					File newFile = entryPath.toFile();
 
 					if (entry.isDirectory()) {
 						if (!newFile.isDirectory() && !newFile.mkdirs()) {
