@@ -634,12 +634,20 @@ public class GXCompressor {
 		}
 	}
 
+
+
 	private static void decompressTar(File archive, String directory) throws IOException {
 		byte[] buffer = new byte[BUFFER_SIZE];
 		try (TarArchiveInputStream tis = new TarArchiveInputStream(Files.newInputStream(archive.toPath()))) {
 			TarArchiveEntry entry;
 			while ((entry = tis.getNextEntry()) != null) {
+
 				File newFile = new File(directory, entry.getName());
+				if(!newFile.getAbsolutePath().equals(newFile.getCanonicalPath()))
+				{
+					log.error(DIRECTORY_ATTACK + "{}", newFile.getAbsolutePath());
+					return;
+				}
 				if (entry.isDirectory()) {
 					if (!newFile.isDirectory() && !newFile.mkdirs()) {
 						throw new IOException("Failed to create directory " + newFile);
