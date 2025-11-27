@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -303,5 +305,14 @@ public class CompressionUtils {
 	private static boolean isEntryPathSafe(File targetPath, String entryName) throws IOException {
 		File destinationFile = new File(targetPath, entryName).getCanonicalFile();
 		return destinationFile.getPath().startsWith(targetPath.getPath() + File.separator) || destinationFile.getPath().equals(targetPath.getPath());
+	}
+
+	public static boolean isPathTraversal(String dir, String fName) {
+		try {
+			Path path = Paths.get(dir).resolve(fName);
+			return !path.toAbsolutePath().equals(path.toRealPath());
+		}catch (Exception e){
+			return true;
+		}
 	}
 }

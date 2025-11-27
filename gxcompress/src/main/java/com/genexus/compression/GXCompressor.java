@@ -639,20 +639,25 @@ public class GXCompressor {
 		try (TarArchiveInputStream tis = new TarArchiveInputStream(Files.newInputStream(archive.toPath()))) {
 			TarArchiveEntry entry;
 			while ((entry = tis.getNextEntry()) != null) {
-				File newFile = new File(directory, entry.getName());
-				if (entry.isDirectory()) {
-					if (!newFile.isDirectory() && !newFile.mkdirs()) {
-						throw new IOException("Failed to create directory " + newFile);
-					}
-				} else {
-					File parent = newFile.getParentFile();
-					if (!parent.isDirectory() && !parent.mkdirs()) {
-						throw new IOException("Failed to create directory " + parent);
-					}
-					try (OutputStream out = Files.newOutputStream(newFile.toPath())) {
-						int len;
-						while ((len = tis.read(buffer)) != -1) {
-							out.write(buffer, 0, len);
+				if(CompressionUtils.isPathTraversal(directory, entry.getName())){
+					log.error(DIRECTORY_ATTACK + "{}", entry.getName());
+					return;
+				}else {
+					File newFile = new File(directory, entry.getName());
+					if (entry.isDirectory()) {
+						if (!newFile.isDirectory() && !newFile.mkdirs()) {
+							throw new IOException("Failed to create directory " + newFile);
+						}
+					} else {
+						File parent = newFile.getParentFile();
+						if (!parent.isDirectory() && !parent.mkdirs()) {
+							throw new IOException("Failed to create directory " + parent);
+						}
+						try (OutputStream out = Files.newOutputStream(newFile.toPath())) {
+							int len;
+							while ((len = tis.read(buffer)) != -1) {
+								out.write(buffer, 0, len);
+							}
 						}
 					}
 				}
