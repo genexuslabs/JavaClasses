@@ -18,10 +18,20 @@ public class SecureCookieHttpServletResponseWrapper extends HttpServletResponseW
     }
 	@Override
 	public void addCookie(ICookie cookie) {
-		if (!cookie.getSecure() && cookie.getName().toLowerCase()==cookieId){
+		if (!cookie.getSecure() && cookie.getName().toLowerCase().equals(cookieId)){
 			cookie.setSecure(true);
 		}
 		super.addCookie(cookie);
+	}
+
+	@Override
+	public void addHeader(String name, String value) {
+		if (name.equalsIgnoreCase("Set-Cookie") && value.toLowerCase().startsWith(cookieId.toLowerCase() + "=")) {
+			if (!value.toLowerCase().contains("secure")) {
+				value += "; Secure";
+			}
+		}
+		super.addHeader(name, value);
 	}
 
 	public IServletOutputStream getWrapperOutputStream() throws IOException {
