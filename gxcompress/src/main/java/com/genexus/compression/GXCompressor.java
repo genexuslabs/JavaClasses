@@ -16,6 +16,8 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -634,33 +636,41 @@ public class GXCompressor {
 		}
 	}
 
-
+	private static boolean isPathTraversal(String dir, String fName) {
+		try {
+			Path path = Paths.get(dir).resolve(fName);
+			return !path.toAbsolutePath().equals(path.toRealPath());
+		}catch (Exception e){
+			return true;
+		}
+	}
 
 	private static void decompressTar(File archive, String directory) throws IOException {
 		byte[] buffer = new byte[BUFFER_SIZE];
 		try (TarArchiveInputStream tis = new TarArchiveInputStream(Files.newInputStream(archive.toPath()))) {
 			TarArchiveEntry entry;
 			while ((entry = tis.getNextEntry()) != null) {
-
-				File newFile = new File(directory, entry.getName());
-				if(!newFile.getAbsolutePath().equals(newFile.getCanonicalPath()))
+				if(isPathTraversal(directory, entry.getName()))
 				{
-					log.error(DIRECTORY_ATTACK + "{}", newFile.getAbsolutePath());
+					log.error(DIRECTORY_ATTACK + "{}", entry.getName());
 					return;
-				}
-				if (entry.isDirectory()) {
-					if (!newFile.isDirectory() && !newFile.mkdirs()) {
-						throw new IOException("Failed to create directory " + newFile);
-					}
-				} else {
-					File parent = newFile.getParentFile();
-					if (!parent.isDirectory() && !parent.mkdirs()) {
-						throw new IOException("Failed to create directory " + parent);
-					}
-					try (OutputStream out = Files.newOutputStream(newFile.toPath())) {
-						int len;
-						while ((len = tis.read(buffer)) != -1) {
-							out.write(buffer, 0, len);
+				}else {
+					File newFile = new File(directory, entry.getName());
+
+					if (entry.isDirectory()) {
+						if (!newFile.isDirectory() && !newFile.mkdirs()) {
+							throw new IOException("Failed to create directory " + newFile);
+						}
+					} else {
+						File parent = newFile.getParentFile();
+						if (!parent.isDirectory() && !parent.mkdirs()) {
+							throw new IOException("Failed to create directory " + parent);
+						}
+						try (OutputStream out = Files.newOutputStream(newFile.toPath())) {
+							int len;
+							while ((len = tis.read(buffer)) != -1) {
+								out.write(buffer, 0, len);
+							}
 						}
 					}
 				}
