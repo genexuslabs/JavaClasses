@@ -16,6 +16,8 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -584,23 +586,31 @@ public class GXCompressor {
 
 	private static void decompressZip(File archive, String directory) throws IOException {
 		byte[] buffer = new byte[BUFFER_SIZE];
+		final Path targetDir = Paths.get(directory).toAbsolutePath().normalize();
 		try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(archive.toPath()))) {
 			ZipEntry zipEntry;
 			while ((zipEntry = zis.getNextEntry()) != null) {
-				File newFile = new File(directory, zipEntry.getName());
-				if (zipEntry.isDirectory()) {
-					if (!newFile.isDirectory() && !newFile.mkdirs()) {
-						throw new IOException("Failed to create directory " + newFile);
-					}
-				} else {
-					File parent = newFile.getParentFile();
-					if (!parent.isDirectory() && !parent.mkdirs()) {
-						throw new IOException("Failed to create directory " + parent);
-					}
-					try (FileOutputStream fos = new FileOutputStream(newFile)) {
-						int len;
-						while ((len = zis.read(buffer)) > 0) {
-							fos.write(buffer, 0, len);
+				Path entryPath = targetDir.resolve(zipEntry.getName()).normalize();
+				if(!entryPath.startsWith(targetDir))
+				{
+					log.error(DIRECTORY_ATTACK + "{}", zipEntry.getName());
+					return;
+				}else {
+					File newFile = entryPath.toFile();
+					if (zipEntry.isDirectory()) {
+						if (!newFile.isDirectory() && !newFile.mkdirs()) {
+							throw new IOException("Failed to create directory " + newFile);
+						}
+					} else {
+						File parent = newFile.getParentFile();
+						if (!parent.isDirectory() && !parent.mkdirs()) {
+							throw new IOException("Failed to create directory " + parent);
+						}
+						try (FileOutputStream fos = new FileOutputStream(newFile)) {
+							int len;
+							while ((len = zis.read(buffer)) > 0) {
+								fos.write(buffer, 0, len);
+							}
 						}
 					}
 				}
@@ -610,23 +620,30 @@ public class GXCompressor {
 
 	private static void decompress7z(File archive, String directory) throws IOException {
 		byte[] buffer = new byte[BUFFER_SIZE];
+		final Path targetDir = Paths.get(directory).toAbsolutePath().normalize();
 		try (SevenZFile sevenZFile = new SevenZFile(archive)) {
 			SevenZArchiveEntry entry;
 			while ((entry = sevenZFile.getNextEntry()) != null) {
-				File newFile = new File(directory, entry.getName());
-				if (entry.isDirectory()) {
-					if (!newFile.isDirectory() && !newFile.mkdirs()) {
-						throw new IOException("Failed to create directory " + newFile);
-					}
-				} else {
-					File parent = newFile.getParentFile();
-					if (!parent.isDirectory() && !parent.mkdirs()) {
-						throw new IOException("Failed to create directory " + parent);
-					}
-					try (OutputStream out = Files.newOutputStream(newFile.toPath())) {
-						int bytesRead;
-						while ((bytesRead = sevenZFile.read(buffer)) != -1) {
-							out.write(buffer, 0, bytesRead);
+				Path entryPath = targetDir.resolve(entry.getName()).normalize();
+				if(!entryPath.startsWith(targetDir)) {
+					log.error(DIRECTORY_ATTACK + "{}", entry.getName());
+					return;
+				}else {
+					File newFile = entryPath.toFile();
+					if (entry.isDirectory()) {
+						if (!newFile.isDirectory() && !newFile.mkdirs()) {
+							throw new IOException("Failed to create directory " + newFile);
+						}
+					} else {
+						File parent = newFile.getParentFile();
+						if (!parent.isDirectory() && !parent.mkdirs()) {
+							throw new IOException("Failed to create directory " + parent);
+						}
+						try (OutputStream out = Files.newOutputStream(newFile.toPath())) {
+							int bytesRead;
+							while ((bytesRead = sevenZFile.read(buffer)) != -1) {
+								out.write(buffer, 0, bytesRead);
+							}
 						}
 					}
 				}
@@ -636,23 +653,30 @@ public class GXCompressor {
 
 	private static void decompressTar(File archive, String directory) throws IOException {
 		byte[] buffer = new byte[BUFFER_SIZE];
+		final Path targetDir = Paths.get(directory).toAbsolutePath().normalize();
 		try (TarArchiveInputStream tis = new TarArchiveInputStream(Files.newInputStream(archive.toPath()))) {
 			TarArchiveEntry entry;
 			while ((entry = tis.getNextEntry()) != null) {
-				File newFile = new File(directory, entry.getName());
-				if (entry.isDirectory()) {
-					if (!newFile.isDirectory() && !newFile.mkdirs()) {
-						throw new IOException("Failed to create directory " + newFile);
-					}
-				} else {
-					File parent = newFile.getParentFile();
-					if (!parent.isDirectory() && !parent.mkdirs()) {
-						throw new IOException("Failed to create directory " + parent);
-					}
-					try (OutputStream out = Files.newOutputStream(newFile.toPath())) {
-						int len;
-						while ((len = tis.read(buffer)) != -1) {
-							out.write(buffer, 0, len);
+				Path entryPath = targetDir.resolve(entry.getName()).normalize();
+				if(!entryPath.startsWith(targetDir)) {
+					log.error(DIRECTORY_ATTACK + "{}", entry.getName());
+					return;
+				}else {
+					File newFile = entryPath.toFile();
+					if (entry.isDirectory()) {
+						if (!newFile.isDirectory() && !newFile.mkdirs()) {
+							throw new IOException("Failed to create directory " + newFile);
+						}
+					} else {
+						File parent = newFile.getParentFile();
+						if (!parent.isDirectory() && !parent.mkdirs()) {
+							throw new IOException("Failed to create directory " + parent);
+						}
+						try (OutputStream out = Files.newOutputStream(newFile.toPath())) {
+							int len;
+							while ((len = tis.read(buffer)) != -1) {
+								out.write(buffer, 0, len);
+							}
 						}
 					}
 				}
