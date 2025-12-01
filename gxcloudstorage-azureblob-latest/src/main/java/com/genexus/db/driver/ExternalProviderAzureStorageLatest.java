@@ -127,15 +127,11 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 	private void initContainerClients() {
 		// Create container clients and ensure containers exist
 		publicContainerClient = blobServiceClient.getBlobContainerClient(publicContainerName);
-		if (!publicContainerClient.exists()) {
-			publicContainerClient = blobServiceClient.createBlobContainer(publicContainerName);
-			publicContainerClient.setAccessPolicy(PublicAccessType.BLOB, null);
-		}
-		
+		publicContainerClient.createIfNotExists();
+		publicContainerClient.setAccessPolicy(PublicAccessType.BLOB, null);
+
 		privateContainerClient = blobServiceClient.getBlobContainerClient(privateContainerName);
-		if (!privateContainerClient.exists()) {
-			privateContainerClient = blobServiceClient.createBlobContainer(privateContainerName);
-		}
+		privateContainerClient.createIfNotExists();
 	}
 
 	public ExternalProviderAzureStorageLatest() throws Exception {
@@ -653,7 +649,7 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 	{
 		//Defensive code, as externalFileName may have a leading / and this causes a double / at blob uri
 		//The latest Azure SDK is strict at uri format and encodes special characters
-		if (externalFileName == "")
+		if (externalFileName == null || externalFileName.isEmpty())
 			return externalFileName;
 		return externalFileName.startsWith("/") ? externalFileName.substring(1) : externalFileName;
 	}
@@ -662,6 +658,7 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 		if (ex instanceof BlobStorageException) {
 			logger.error("Azure Storage error: (Status: {}, Code: {})",
 				((BlobStorageException) ex).getStatusCode(), ((BlobStorageException) ex).getErrorCode());
+			throw new RuntimeException(ex.getMessage(), ex);
 		} else if (ex instanceof ClientAuthenticationException) {
 			logger.error("Authentication error: {}", ex.getMessage());
 		} else if (ex instanceof HttpRequestException) {
@@ -673,6 +670,5 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 		} else {
 			logger.error("Unexpected storage error", ex);
 		}
-		throw new RuntimeException(ex.getMessage(), ex);
 	}
 }
