@@ -293,6 +293,15 @@ public class ExternalProviderAzureStorageLatest extends ExternalProviderBase imp
 		return (objectName == null || objectName.length() == 0)? urlOrObjectName: objectName;
 	}
 
+	// Note about copy behavior:
+	// As in SDK v8 (CloudBlockBlob.startCopy), the call to beginCopy() starts an
+	// asynchronous server-side copy operation and returns immediately. This means
+	// the copy may still be in progress after this method returns. The previous
+	// behavior is intentionally preserved, and we do not wait for the copy to
+	// complete. If, in the future, it becomes necessary to ensure that the copy
+	// has finished before proceeding, explicit polling logic must be added to
+	// verify the final status of the operation.
+
 	public String copy(String objectName, String newName, ResourceAccessControlList acl) {
 		objectName = resolveObjectName(objectName, acl);
 		try {
