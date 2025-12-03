@@ -102,8 +102,8 @@
 		<module>gxwebsocket</module>
 		<module>gxwebsocketjakarta</module>
 		<module>gxawsserverless</module>
-      		<module>gxserverlesscommon</module>
-	        <module>gxazureserverless</module>
+        <module>gxserverlesscommon</module>
+        <module>gxazureserverless</module>
 		<module>androidreports</module>
 		<module>gxqueue</module>
 		<module>gxqueue-awssqs</module>
@@ -116,19 +116,20 @@
 		<module>gxcloudstorage-azureblob</module>
 		<module>gxcloudstorage-ibmcos</module>
 		<module>gxcloudstorage-tests</module>
-    <module>gxobservability</module>
-    <module>gxcloudstorage-awss3-v2</module>
-    <module>gxcompress</module>
-    <module>securityapicommons</module>
-    <module>gamsaml20</module>
-    <module>gxjwt</module>
-    <module>gxcryptography</module>
-    <module>gxxmlsignature</module>
-    <module>gxsftp</module>
-    <module>gxftps</module>
-    <module>gamutils</module>
-    <module>gamtotp</module>
-  </modules>
+        <module>gxobservability</module>
+        <module>gxcloudstorage-awss3-v2</module>
+        <module>gxcompress</module>
+        <module>securityapicommons</module>
+        <module>gamsaml20</module>
+        <module>gxjwt</module>
+        <module>gxcryptography</module>
+        <module>gxxmlsignature</module>
+        <module>gxsftp</module>
+        <module>gxftps</module>
+        <module>gamutils</module>
+        <module>gamtotp</module>
+        <module>gxcloudstorage-azureblob-latest</module>
+    </modules>
 
 	<dependencies>
 		<dependency>
