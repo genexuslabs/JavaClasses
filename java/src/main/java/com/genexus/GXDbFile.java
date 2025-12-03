@@ -252,13 +252,13 @@ public class GXDbFile
 			if (!hasEncodedSegments) {
 				return uri;
 			}
-			String decodedPath = java.net.URLDecoder.decode(rawPath, "UTF-8");
+			String decodedPath = URLDecoder.decode(rawPath, StandardCharsets.UTF_8.name());
 			return new URI(
 				u.getScheme(),
 				u.getAuthority(),
 				decodedPath,
 				u.getRawQuery(),
-				null
+				u.getRawFragment()
 			).toString();
 
 		} catch (Exception e) {
