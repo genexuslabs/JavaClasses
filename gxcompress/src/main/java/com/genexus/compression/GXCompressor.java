@@ -590,6 +590,9 @@ public class GXCompressor {
 			ZipEntry zipEntry;
 			while ((zipEntry = zis.getNextEntry()) != null) {
 				File newFile = new File(directory, zipEntry.getName());
+				if (HasZipSlipVulnerability(newFile, directory)) {
+					throw new IOException("Bad tar entry: " + zipEntry.getName());
+				}
 				if (zipEntry.isDirectory()) {
 					if (!newFile.isDirectory() && !newFile.mkdirs()) {
 						throw new IOException("Failed to create directory " + newFile);
@@ -616,6 +619,9 @@ public class GXCompressor {
 			SevenZArchiveEntry entry;
 			while ((entry = sevenZFile.getNextEntry()) != null) {
 				File newFile = new File(directory, entry.getName());
+				if (HasZipSlipVulnerability(newFile, directory)) {
+					throw new IOException("Bad tar entry: " + entry.getName());
+				}
 				if (entry.isDirectory()) {
 					if (!newFile.isDirectory() && !newFile.mkdirs()) {
 						throw new IOException("Failed to create directory " + newFile);
@@ -656,7 +662,9 @@ public class GXCompressor {
 					return;
 				}else {
 					File newFile = new File(directory, entry.getName());
-
+					if (HasZipSlipVulnerability(newFile, directory)) {
+						throw new IOException("Bad tar entry: " + entry.getName());
+					}
 					if (entry.isDirectory()) {
 						if (!newFile.isDirectory() && !newFile.mkdirs()) {
 							throw new IOException("Failed to create directory " + newFile);
@@ -804,5 +812,13 @@ public class GXCompressor {
 				}
 			}
 		}
+	}
+
+	// Check for Zip Slip vulnerability: ensure extracted file remains within target directory
+	// Use Path.normalize() and Path.startsWith()
+	private static boolean HasZipSlipVulnerability(File file, String directory) {
+		java.nio.file.Path destDirPath = new File(directory).toPath().toAbsolutePath().normalize();
+		java.nio.file.Path newFilePath = file.toPath().toAbsolutePath().normalize();
+		return !newFilePath.startsWith(destDirPath);
 	}
 }
