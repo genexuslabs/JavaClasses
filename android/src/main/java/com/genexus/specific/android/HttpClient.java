@@ -88,14 +88,14 @@ public class HttpClient implements IExtensionHttpClient {
 		// enable TLSv1.1/1.2 if available
 		// (see https://github.com/rfc2822/davdroid/issues/229)
 		String[] supportedProtocols = socket.getSupportedProtocols();
+		
 		ArrayList<String> tempList =  new ArrayList<String>();
 		Collections.addAll(tempList, supportedProtocols);
-		// remove only olds and unsecure protocols (SSLv3 ), TLS in all version are supported.
+		// remove only olds and unsecure protocols (SSLv3 ), TLS 1.2 and up  are supported.
 		tempList.remove("SSLv3");
 		// from : https://blog.dev-area.net/2015/08/13/android-4-1-enable-tls-1-1-and-tls-1-2/
-		//  add 1.1 and 1.2 if not yet added, at least in Android 4.x
-		if (!tempList.contains("TLSv1.1"))
-			tempList.add("TLSv1.1");
+		// Tls 1.1 is not supoerted anymore in Android 16 or up. Exception java.lang.IllegalArgumentException: protocol TLSv1.1 is not supported if added
+		//  add 1.2 if not yet added, at least in Android 4.x
 		if (!tempList.contains("TLSv1.2"))
 			tempList.add("TLSv1.2");
 
