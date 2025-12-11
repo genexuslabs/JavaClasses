@@ -1,5 +1,6 @@
 package com.genexus.db.driver;
 
+import com.genexus.GXDbFile;
 import com.genexus.specific.java.Connect;
 import org.junit.Assume;
 import org.junit.Before;
@@ -28,6 +29,7 @@ public abstract class TestExternalProvider {
 
 	private String testSampleFileName;
 	private String testSampleFilePath;
+	private String testSampleSubFolderFileName;
 	private String uniqueId;
 
 
@@ -58,6 +60,7 @@ public abstract class TestExternalProvider {
 
 		uniqueId = Integer.toString(new Random().nextInt(5000));
 		testSampleFileName = String.format("text-%s.txt", uniqueId);
+		testSampleSubFolderFileName = String.format("SubFolder/text-%s.txt", uniqueId);
 		testSampleFilePath = Paths.get("resources", testSampleFileName).toString();
 
 		try {
@@ -76,6 +79,15 @@ public abstract class TestExternalProvider {
 	public void testUploadPublicMethod(){
 		String upload = provider.upload(testSampleFilePath, testSampleFileName, ResourceAccessControlList.PublicRead);
 		ensureUrl(upload, ResourceAccessControlList.PublicRead);
+	}
+
+	@Test
+	public void testUploadSubFoldersPublicMethod(){
+		String upload = provider.upload(testSampleFilePath, testSampleSubFolderFileName, ResourceAccessControlList.PublicRead);
+		ensureUrl(upload, ResourceAccessControlList.PublicRead);
+		String fileName = GXDbFile.getFileName(upload);
+		Boolean fileMatch = fileName.matches("^text-\\d+$");
+		assertTrue("Blob Name does not match",fileMatch);
 	}
 
 	@Test
