@@ -28,12 +28,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-functions-maven-plugin</artifactId>
-            <version>1.35.0</version>
-        </dependency>
-
-        <dependency>
             <groupId>io.cloudevents</groupId>
             <artifactId>cloudevents-api</artifactId>
             <version>2.5.0</version>
@@ -54,13 +48,14 @@
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-messaging-eventgrid</artifactId>
-            <version>4.22.3</version>
+            <version>4.31.4</version>
         </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>5.12.0</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
