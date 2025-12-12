@@ -2418,7 +2418,13 @@ public final class CommonUtil
 
 	public static String getRelativeBlobFile(String path)
 	{
-		return path.replace(com.genexus.ApplicationContext.getInstance().getServletEngineDefaultPath() + File.separator, "").replace(File.separator, "/");
+		String servletEngineDefaultPath = com.genexus.ApplicationContext.getInstance().getServletEngineDefaultPath();
+		if (!servletEngineDefaultPath.isEmpty() && path.startsWith(servletEngineDefaultPath)) {
+			return path.replace(servletEngineDefaultPath + File.separator, "").replace(File.separator, "/");
+		}
+		else {
+			return path;
+		}
 	}
 
 	public static final String FORMDATA_REFERENCE = "gxformdataref:";
