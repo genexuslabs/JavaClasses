@@ -4,15 +4,17 @@ package com.genexus.webpanels;
 import com.genexus.*;
 import com.genexus.internet.HttpContext;
 
+import com.genexus.util.GXFile;
 import org.json.JSONArray;
 import com.genexus.json.JSONObjectWrapper;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.InputStream;
-
+import java.lang.reflect.*;
 
 public class GXObjectUploadServices extends GXWebObjectStub
-{   
+{
+	private static final String ENV_HOOK_CLASS = "GX_UPLOAD_SECURITY_HOOK_CLASS";
 	boolean isRestCall = false;
 	String keyId;
 	String jsonResponse = null;
@@ -53,6 +55,8 @@ public class GXObjectUploadServices extends GXWebObjectStub
 				context.setContentType("text/plain");
 				FileItemCollection postedFiles = context.getHttpRequest().getPostedparts();
 				JSONArray jsonArray = new JSONArray();
+				short[] status = new short[1];
+				String[] body = new String[1];
 				for (int i = 0, len = postedFiles.getCount(); i < len; i++)
 				{
 					keyId = HttpUtils.getUploadFileKey();
@@ -71,6 +75,10 @@ public class GXObjectUploadServices extends GXWebObjectStub
 						jsonArray.put(jObj);
 						if (!savedFileName.isEmpty()){
 							HttpUtils.CacheUploadFile(keyId, savedFileName, fileName, ext);
+						}
+						if (executeUploadHook(modelContext, file.getFile(), fileName, status, body)) {
+							context.sendResponseStatus(status[0], body[0]);
+							return;
 						}
 					}
 				}
@@ -265,5 +273,39 @@ public class GXObjectUploadServices extends GXWebObjectStub
 	}
    protected void init(HttpContext context )
    {
-   }	   
+   }
+
+	private static boolean executeUploadHook(
+		ModelContext ctx,
+		GXFile file,
+		String originalFileName,
+		short[] httpStatusCode,
+		String[] httpResponseBody) {
+
+		try {
+			String hookClassName = System.getenv(ENV_HOOK_CLASS);
+			if (hookClassName == null || hookClassName.isEmpty())
+				return false;
+
+			Class<?> hookClass = Class.forName(hookClassName);
+			Object hookInstance = hookClass
+				.getConstructor(int.class, ModelContext.class)
+				.newInstance(-1, ctx);
+
+			Method executeUdp = hookClass.getMethod(
+				"executeUdp",
+				GXFile.class,
+				String.class,
+				short[].class,
+				String[].class);
+
+			Object result = executeUdp.invoke(hookInstance, file, originalFileName, httpStatusCode, httpResponseBody);
+			return (Boolean) result;
+
+		} catch (Exception e) {
+			httpStatusCode[0] = 400;
+			httpResponseBody[0] = e.getMessage();
+			return true;
+		}
+	}
 }
