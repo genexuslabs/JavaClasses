@@ -16,9 +16,6 @@ public class Namespace extends AbstractNamespace
 	public static final int GXDB_CLIENT = 0;
 	public static final int GXDB_SERVER = 1;
 	private static Hashtable namespaceList = new Hashtable();
-
-	private GXJarClassLoader classLoader;
-
 	private Hashtable dataSources = new Hashtable();
 	private String 	name;
 
@@ -233,27 +230,6 @@ public class Namespace extends AbstractNamespace
 
 	public void reset()
 	{
-		if	(classLoader != null)
-		{
-            classLoader = null;
-/*			try
-			{
-				classLoader.resetClassLoader();
-			}
-			catch (java.io.IOException e)
-			{
-				System.err.println("Error resetting namespace classloader " + e.getMessage());
-			}
-*/
-		}
-	}
-
-	public synchronized GXJarClassLoader getClassLoader()
-	{
-        if(classLoader == null)
-            classLoader = new GXJarClassLoader(classesArchive, autoReload);
-        else classLoader = classLoader.getClassLoaderInstance();
-        return classLoader;
 	}
 
 	public int getDataSourceCount()
