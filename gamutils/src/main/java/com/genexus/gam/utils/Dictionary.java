@@ -35,6 +35,27 @@ public class Dictionary {
 					return false;
 				}
 			})
+			.registerTypeHierarchyAdapter(Number.class, new TypeAdapter<Number>() {
+				@Override
+				public void write(JsonWriter out, Number value) throws IOException {
+					if (value == null) {
+						out.nullValue();
+						return;
+					}
+
+					double d = value.doubleValue();
+					if (d == Math.rint(d)) {
+						out.value(value.longValue()); // 1.0 → 1
+					} else {
+						out.value(d);                 // 1.5 → 1.5
+					}
+				}
+
+				@Override
+				public Number read(JsonReader in) throws IOException {
+					return in.nextDouble();
+				}
+			})
 			.create();
 	}
 
