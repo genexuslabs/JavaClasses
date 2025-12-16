@@ -1,14 +1,12 @@
 package com.genexus.gam.utils;
 
 import com.genexus.GxUserType;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,7 +21,42 @@ public class Dictionary {
 
 	public Dictionary() {
 		this.userMap = new LinkedHashMap<>();
-		this.gson = new GsonBuilder().serializeNulls().create();
+		this.gson = new GsonBuilder().serializeNulls()
+			.addSerializationExclusionStrategy(new ExclusionStrategy() {
+				@Override
+				public boolean shouldSkipField(FieldAttributes f) {
+					// exclude only the field 'map' inherited from org.json.JSONObject
+					return f.getName().equals("map") &&
+						f.getDeclaringClass() == org.json.JSONObject.class;
+				}
+
+				@Override
+				public boolean shouldSkipClass(Class<?> clazz) {
+					return false;
+				}
+			})
+			.registerTypeHierarchyAdapter(Number.class, new TypeAdapter<Number>() {
+				@Override
+				public void write(JsonWriter out, Number value) throws IOException {
+					if (value == null) {
+						out.nullValue();
+						return;
+					}
+
+					double d = value.doubleValue();
+					if (d == Math.rint(d)) {
+						out.value(value.longValue()); // 1.0 → 1
+					} else {
+						out.value(d);                 // 1.5 → 1.5
+					}
+				}
+
+				@Override
+				public Number read(JsonReader in) throws IOException {
+					return in.nextDouble();
+				}
+			})
+			.create();
 	}
 
 	public Object get(String key) {
