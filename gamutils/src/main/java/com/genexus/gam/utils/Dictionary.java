@@ -21,7 +21,7 @@ public class Dictionary {
 
 	public Dictionary() {
 		this.userMap = new LinkedHashMap<>();
-		this.gson = new GsonBuilder()
+		this.gson = new GsonBuilder().serializeNulls()
 			.addSerializationExclusionStrategy(new ExclusionStrategy() {
 				@Override
 				public boolean shouldSkipField(FieldAttributes f) {
