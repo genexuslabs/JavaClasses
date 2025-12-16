@@ -746,7 +746,7 @@ public class HttpAjaxContext extends HttpContextWeb
 		boolean fileExists = false;
 		try
 		{
-			fileExists = ApplicationContext.getInstance().checkIfResourceExist(getDefaultPath() + staticContentBase + fileName);			
+			fileExists = ApplicationContext.getInstance().checkIfResourceExist(getDefaultPath() + staticContentBase + fileName);
 		}
 		catch (Exception e)
 		{
@@ -886,18 +886,22 @@ public class HttpAjaxContext extends HttpContextWeb
                 {
                   try {
 					  JSONObjectWrapper obj = getGxObject(AttValues, CmpContext, IsMasterPage);
-					  if (obj != null && (!isUndefinedOutParam( AttName, SdtObj) || dynAjaxEventContext.isParmModified(AttName, SdtObj)))
-					  {
-                        if (SdtObj instanceof IGxJSONAble)
-                            obj.put(AttName, ((IGxJSONAble)SdtObj).GetJSONObject());
-                        else
-                        {
-                            if (SdtObj.getClass().isArray())
-                            {
-                                obj.put(AttName, ObjArrayToJSONArray(SdtObj));
-                            }
-                        }
-                      }
+					  if (obj != null) {
+						  if (SdtObj instanceof com.genexus.util.GXHashMap) {
+							  obj.put(AttName, ((com.genexus.util.jsonsableHash) SdtObj).toJson());
+						  }
+						  else {
+							  if ((!isUndefinedOutParam(AttName, SdtObj) || dynAjaxEventContext.isParmModified(AttName, SdtObj))) {
+								  if (SdtObj instanceof IGxJSONAble)
+									  obj.put(AttName, ((IGxJSONAble) SdtObj).GetJSONObject());
+								  else {
+									  if (SdtObj.getClass().isArray()) {
+										  obj.put(AttName, ObjArrayToJSONArray(SdtObj));
+									  }
+								  }
+							  }
+						  }
+					  }
                   }
                   catch (JSONException e) {
 					  logger.error(String.format("Could not serialize Object '%s' to JSON", AttName), e);
