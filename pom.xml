@@ -29,7 +29,7 @@
 		<commons.logging.version>1.2</commons.logging.version>
 		<jackson.version>2.16.2</jackson.version>
 		<junit.version>4.13.2</junit.version>
-		<software.awssdk.version>2.35.6</software.awssdk.version>
+		<software.awssdk.version>2.40.8</software.awssdk.version>
 		<software.azure.cosmos.version>4.74.0</software.azure.cosmos.version>
 		<log4j.version>2.21.1</log4j.version>
 		<io.opentelemetry.version>1.56.0</io.opentelemetry.version>

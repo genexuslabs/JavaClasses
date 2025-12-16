@@ -28,11 +28,17 @@
             <artifactId>azure-cosmos</artifactId>
         </dependency>
 
-        <!-- overrite from azure-cosmos due to transitive CVEs -->
+        <!-- overwrite from azure-cosmos due to transitive CVEs -->
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-core-http-netty</artifactId>
             <version>1.16.2</version>
+        </dependency>
+        <!-- overwrite from azure-core-http-netty due to transitive CVEs -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>4.1.129.Final</version>
         </dependency>
 
         <dependency>
