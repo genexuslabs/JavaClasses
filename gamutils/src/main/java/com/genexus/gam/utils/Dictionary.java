@@ -87,40 +87,59 @@ public class Dictionary {
 		return this.gson.fromJson(jsonString, type);
 	}
 
-	private void objectToMap(String key, Object value) {
-		if (value == null) {
-			this.userMap.put(key, null);
-		} else if (value instanceof Number || value instanceof Boolean || value instanceof Map || value instanceof List) {
-			this.userMap.put(key, value);
-		} else if (value instanceof GxUserType) {
-			this.userMap.put(key, jsonStringToMap(((GxUserType) value).toJSonString()));
-		} else if (value instanceof String) {
-			String str = (String) value;
+	private Object deepConvert(Object value) {
+		if (value == null) return null;
 
-			// Try to parse as JSON
-			try {
-				JsonElement parsed = JsonParser.parseString(str);
-				if (parsed.isJsonObject()) {
-					this.userMap.put(key, this.gson.fromJson(parsed, Map.class));
-				} else if (parsed.isJsonArray()) {
-					this.userMap.put(key, this.gson.fromJson(parsed, List.class));
-				} else if (parsed.isJsonPrimitive()) {
-					JsonPrimitive primitive = parsed.getAsJsonPrimitive();
-					if (primitive.isBoolean()) {
-						this.userMap.put(key, primitive.getAsBoolean());
-					} else if (primitive.isNumber()) {
-						this.userMap.put(key, primitive.getAsNumber());
-					} else if (primitive.isString()) {
-						this.userMap.put(key, primitive.getAsString());
-					}
-				}
-			} catch (JsonSyntaxException e) {
-				// Invalid JSON: it is left as string
-				this.userMap.put(key, str);
-			}
-		} else {
-			// Any other object: it is converted to string
-			this.userMap.put(key, value.toString());
+		if (value instanceof Number || value instanceof Boolean) {
+			return value;
 		}
+
+		if (value instanceof String) {
+			try {
+				JsonElement parsed = JsonParser.parseString((String) value);
+				if (parsed.isJsonObject()) {
+					return gson.fromJson(parsed, Map.class);
+				}
+				if (parsed.isJsonArray()) {
+					return gson.fromJson(parsed, List.class);
+				}
+				return ((JsonPrimitive) parsed).getAsString();
+			} catch (Exception e) {
+				return value;
+			}
+		}
+
+		// SDT => Map
+		if (value instanceof GxUserType) {
+			String s = ((GxUserType) value).toJSonString();
+			return jsonStringToMap(s);
+		}
+
+		// Map => deep convert values
+		if (value instanceof Map) {
+			Map<String,Object> newMap = new LinkedHashMap<>();
+			((Map<?,?>) value).forEach((k,v) -> newMap.put(k.toString(), deepConvert(v)));
+			return newMap;
+		}
+
+		// List => deep convert each element
+		if (value instanceof List) {
+			List<Object> newList = new java.util.ArrayList<>();
+			for (Object o : (List<?>) value) newList.add(deepConvert(o));
+			return newList;
+		}
+
+		// Catch: JSONObjectWrapper
+		if (value.getClass().getName().contains("JSONObjectWrapper") ||
+			value instanceof org.json.JSONObject) {
+			// Convert org.json to Map
+			return jsonStringToMap(value.toString());
+		}
+
+		return value.toString();
+	}
+
+	private void objectToMap(String key, Object value) {
+		this.userMap.put(key, deepConvert(value));
 	}
 }
