@@ -30,6 +30,12 @@
             <artifactId>s3</artifactId>
             <version>${software.awssdk.version}</version>
         </dependency>
+        <!-- overwrite from s3 due to transitive CVEs -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>4.1.129.Final</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-1.2-api</artifactId>
