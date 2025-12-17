@@ -14,9 +14,9 @@ public interface IExcelSpreadsheet
 	Boolean close() throws ExcelException;
 
 	// CellMethods
-	ExcelCellsGXWrapper getCells(IExcelWorksheet worksheet, int startRow, int startCol, int rowCount, int colCount) throws ExcelException;
+	IExcelCellRange getCells(IExcelWorksheet worksheet, int startRow, int startCol, int rowCount, int colCount) throws ExcelException;
 
-	ExcelCellsGXWrapper getCell(IExcelWorksheet worksheet, int startRow, int startCol) throws ExcelException;
+	IExcelCellRange getCell(IExcelWorksheet worksheet, int startRow, int startCol) throws ExcelException;
 
 	Boolean insertRow(IExcelWorksheet worksheet, int rowIdx, int rowCount);
 

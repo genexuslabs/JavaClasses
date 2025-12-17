@@ -7,8 +7,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.genexus.msoffice.excel.*;
+import com.genexus.msoffice.excel.Constants;
 import com.genexus.msoffice.excel.exception.ExcelException;
+import com.genexus.msoffice.excel.IExcelSpreadsheet;
+import com.genexus.msoffice.excel.IGXError;
 import com.genexus.msoffice.excel.exception.ExcelTemplateNotFoundException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -22,6 +24,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import com.genexus.util.GXFile;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
+import com.genexus.msoffice.excel.IExcelCellRange;
+import com.genexus.msoffice.excel.IExcelWorksheet;
 
 public class ExcelSpreadsheet implements IExcelSpreadsheet {
     public static final ILogger logger = LogManager.getLogger(ExcelSpreadsheet.class);
@@ -123,11 +127,11 @@ public class ExcelSpreadsheet implements IExcelSpreadsheet {
         return save();
     }
 
-    public ExcelCellsGXWrapper getCells(IExcelWorksheet worksheet, int startRow, int startCol, int rowCount, int colCount) throws ExcelException {
-        return new ExcelCellsGXWrapper(new ExcelCells(_errorHandler, this, _workbook, _workbook.getSheet(worksheet.getName()), startRow - 1, startCol - 1, rowCount, colCount, _isReadonly, _stylesCache));
+    public IExcelCellRange getCells(IExcelWorksheet worksheet, int startRow, int startCol, int rowCount, int colCount) throws ExcelException {
+        return new ExcelCells(_errorHandler, this, _workbook, _workbook.getSheet(worksheet.getName()), startRow - 1, startCol - 1, rowCount, colCount, _isReadonly, _stylesCache);
     }
 
-    public ExcelCellsGXWrapper getCell(IExcelWorksheet worksheet, int startRow, int startCol) throws ExcelException {
+    public IExcelCellRange getCell(IExcelWorksheet worksheet, int startRow, int startCol) throws ExcelException {
         return getCells(worksheet, startRow, startCol, 1, 1);
     }
 
