@@ -10,12 +10,9 @@ import java.util.Date;
 import java.util.List;
 
 import com.genexus.msoffice.excel.style.ExcelStyle;
-import org.junit.*;
-
-import com.genexus.msoffice.excel.poi.xssf.ExcelCells;
-import com.genexus.msoffice.excel.poi.xssf.ExcelWorksheet;
 import com.genexus.msoffice.excel.style.ExcelAlignment;
 
+import org.junit.*;
 import static org.junit.Assert.*;
 /**
  * Unit test for simple App.
@@ -140,7 +137,7 @@ public class ExcelSpreadsheetTest {
     public void testOpenAndSave() {
 		ExcelSpreadsheetGXWrapper excel = create("testActive");
         try {
-            excel.getCells(2, 1, 5, 5).setDate(new Date());
+            excel.getCells(2, 1, 5, 5).setDateValue(new Date());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -166,7 +163,7 @@ public class ExcelSpreadsheetTest {
 				Assert.assertEquals("File is locked", 7, excel.getErrCode());
 
 				try {
-					excel.getCells(2, 1, 5, 5).setDate(new Date());
+					excel.getCells(2, 1, 5, 5).setDateValue(new Date());
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -186,7 +183,7 @@ public class ExcelSpreadsheetTest {
         excel.open(excel1);
 
         try {
-            excel.getCells(2, 1, 5, 5).setDate(new Date());
+            excel.getCells(2, 1, 5, 5).setDateValue(new Date());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -207,7 +204,7 @@ public class ExcelSpreadsheetTest {
         excel.insertSheet("genexus1");
         excel.insertSheet("genexus2");
 
-        List<ExcelWorksheet> wSheets = excel.getWorksheets();
+        List<IExcelWorksheet> wSheets = excel.getWorksheets();
         Assert.assertTrue(wSheets.size() == 3);
         Assert.assertTrue(wSheets.get(0).getName() == "genexus0");
         Assert.assertTrue(wSheets.get(1).getName() == "genexus1");
@@ -224,7 +221,7 @@ public class ExcelSpreadsheetTest {
         excel.insertSheet("genexus1");
         excel.insertSheet("genexus2");
 
-        List<ExcelWorksheet> wSheets = excel.getWorksheets();
+        List<IExcelWorksheet> wSheets = excel.getWorksheets();
         Assert.assertTrue(wSheets.size() == 3);
         Assert.assertTrue(wSheets.get(0).getName() == "genexus0");
         Assert.assertTrue(wSheets.get(1).getName() == "genexus1");
@@ -243,7 +240,7 @@ public class ExcelSpreadsheetTest {
         excel.insertSheet("gx3");
         excel.insertSheet("gx4");
 
-        List<ExcelWorksheet> wSheets = excel.getWorksheets();
+        List<IExcelWorksheet> wSheets = excel.getWorksheets();
         Assert.assertTrue(wSheets.size() == 4);
         Assert.assertTrue(wSheets.get(0).getName() == "gx1");
         Assert.assertTrue(wSheets.get(1).getName() == "gx2");
@@ -432,7 +429,7 @@ public class ExcelSpreadsheetTest {
         excel.save();
         excel.close();
         excel = open("testGetWorksheets");
-        List<ExcelWorksheet> sheets = excel.getWorksheets();
+        List<IExcelWorksheet> sheets = excel.getWorksheets();
         assertEquals("hoja1", sheets.get(0).getName());
         assertEquals("hoja2", sheets.get(1).getName());
         assertEquals("hoja3", sheets.get(2).getName());
@@ -454,7 +451,7 @@ public class ExcelSpreadsheetTest {
         excel.getCells(1, 1, 3, 3).setCellStyle(style);
 
 
-        ExcelCells cells = excel.getCells(5, 1, 3, 3);
+        ExcelCellsGXWrapper cells = excel.getCells(5, 1, 3, 3);
         cells.setText("texto SI se puede editar");
         style = new ExcelStyle();
         style.setLocked(false);
@@ -476,7 +473,7 @@ public class ExcelSpreadsheetTest {
         excel.getCells(1, 1, 3, 3).setCellStyle(style);
 
 
-        ExcelCells cells = excel.getCells(5, 1, 3, 3);
+        ExcelCellsGXWrapper cells = excel.getCells(5, 1, 3, 3);
         cells.setText("texto SI se puede editar");
         style = new ExcelStyle();
         style.setLocked(false);
@@ -542,7 +539,7 @@ public class ExcelSpreadsheetTest {
         excel.save();
         excel.close();
         excel = open("testCloneSheet");
-        List<ExcelWorksheet> sheets = excel.getWorksheets();
+        List<IExcelWorksheet> sheets = excel.getWorksheets();
         Assert.assertEquals(4, sheets.size());
         excel.close();
     }
@@ -556,7 +553,7 @@ public class ExcelSpreadsheetTest {
         excel.save();
         excel.close();
         excel = open("testCloneSheet2");
-        List<ExcelWorksheet> sheets = excel.getWorksheets();
+        List<IExcelWorksheet> sheets = excel.getWorksheets();
         Assert.assertEquals(2, sheets.size());
         excel.close();
     }
@@ -579,7 +576,7 @@ public class ExcelSpreadsheetTest {
         excel.save();
         excel.close();
         excel = open("testCloneSheetError");
-        List<ExcelWorksheet> sheets = excel.getWorksheets();
+        List<IExcelWorksheet> sheets = excel.getWorksheets();
         Assert.assertEquals(4, sheets.size());
         excel.close();
     }
@@ -600,7 +597,7 @@ public class ExcelSpreadsheetTest {
         excel.save();
         excel.close();
 		excel = open("testWorksheetRename");
-        List<ExcelWorksheet> sheets = excel.getWorksheets();
+        List<IExcelWorksheet> sheets = excel.getWorksheets();
         assertEquals("hoja1", sheets.get(1).getName());
         assertEquals("hoja2", sheets.get(2).getName());
         assertEquals("modificada", sheets.get(3).getName());
@@ -1026,7 +1023,7 @@ public class ExcelSpreadsheetTest {
 		excel.getCells(1, 3, 1, 1).setText("VERYLONGTEXTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
 		excel.getCells(2, 4, 1, 1).setText("hola!");
 		excel.getCells(6, 6, 1, 1).setText("VERYLONGTEXTINDIFFERENTROWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
-		ExcelCells cells = excel.getCells(7, 7, 1, 1);
+		ExcelCellsGXWrapper cells = excel.getCells(7, 7, 1, 1);
 		ExcelStyle style = new ExcelStyle();
 		style.setDataFormat("#.##"); //change style, so it shows the full number not scientific notation
 		cells.setNumericValue(new BigDecimal("123456789123456789123456789"));
@@ -1041,7 +1038,7 @@ public class ExcelSpreadsheetTest {
 		excel.setAutofit(true);
 		Date date = new Date();
 		//sets date with default format
-		ExcelCells cells = excel.getCells(1, 1, 1, 1);
+		ExcelCellsGXWrapper cells = excel.getCells(1, 1, 1, 1);
 		cells.setDateValue(date);
 		//sets date and apply format after
 		cells = excel.getCells(2, 1, 1, 1);
