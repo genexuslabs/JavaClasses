@@ -18,8 +18,6 @@ public interface IExcelCellRange
 
 	int getColumnEnd();
 
-	String getCellAdress();
-
 	String getValueType();
 
 	/*
@@ -44,8 +42,4 @@ public interface IExcelCellRange
 	Boolean mergeCells();
 
 	Boolean setCellStyle(ExcelStyle style);
-
-	ExcelStyle getCellStyle();
-
-	
 }
