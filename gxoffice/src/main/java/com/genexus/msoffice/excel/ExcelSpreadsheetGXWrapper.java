@@ -105,10 +105,10 @@ public class ExcelSpreadsheetGXWrapper implements IGXError {
         return ok;
     }
 
-	public ExcelCellsGXWrapper getCell(int rowIdx, int colIdx) {
+	public ExcelCells getCell(int rowIdx, int colIdx) {
 		if (initialize()) {
 			try {
-				return _document.getCell(_currentWorksheet, rowIdx, colIdx);
+				return (ExcelCells) _document.getCell(_currentWorksheet, rowIdx, colIdx);
 			} catch (ExcelException e) {
 				this.setError(e);
 			}
@@ -137,10 +137,10 @@ public class ExcelSpreadsheetGXWrapper implements IGXError {
         logger.error(errorMsg);
     }
 
-	public ExcelCellsGXWrapper getCells(int rowIdx, int colIdx, int rowCount, int colCount) {
+	public ExcelCells getCells(int rowIdx, int colIdx, int rowCount, int colCount) {
 		if (initialize()) {
 			try {
-				return _document.getCells(_currentWorksheet, rowIdx, colIdx, rowCount, colCount);
+				return (ExcelCells) _document.getCells(_currentWorksheet, rowIdx, colIdx, rowCount, colCount);
 			} catch (ExcelException e) {
 				this.setError(e);
 			}
