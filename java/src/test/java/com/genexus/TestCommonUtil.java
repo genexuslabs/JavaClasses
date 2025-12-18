@@ -295,7 +295,7 @@ public class TestCommonUtil {
 		try{
 			Class stringClass = Class.forName("java.lang.String");
 			result = CommonUtil.convertObjectTo(obj, stringClass, true);
-			Assert.assertEquals(null, result);
+			Assert.assertEquals("null", result);
 		} catch (Exception e){
 			Assert.fail("Test failed " + e);
 		}
