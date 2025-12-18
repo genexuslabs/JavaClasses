@@ -30,6 +30,12 @@
 			<artifactId>azure-storage-blob</artifactId>
             <version>12.32.0</version>
 		</dependency>
+        <!-- overwrite from sqs due to transitive CVEs -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-identity</artifactId>
