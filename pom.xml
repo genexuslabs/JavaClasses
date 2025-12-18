@@ -34,6 +34,7 @@
         <xmlsec.version>3.0.3</xmlsec.version>
         <jose.version>10.4</jose.version>
         <commons.lang3.version>3.18.0</commons.lang3.version>
+        <netty.version>4.1.129.Final</netty.version>
 
 	</properties>
 
