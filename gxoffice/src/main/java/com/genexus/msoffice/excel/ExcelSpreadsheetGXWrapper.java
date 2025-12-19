@@ -17,38 +17,32 @@ public class ExcelSpreadsheetGXWrapper implements IGXError {
     private int _errCode;
     private String _errDescription = "";
     private IExcelWorksheet _currentWorksheet;
-    private List<IExcelWorksheet> _worksheets;
     private IExcelSpreadsheet _document;
     private Boolean _isReadonly = false;
     private Boolean _autofit = false;
     private final String DEFAULT_SHEET_NAME = "Sheet";
 
-    public Boolean getAutofit() {
-        return _autofit;
-    }
+	private Boolean initialize() {
+		return initialize(DEFAULT_SHEET_NAME);
+	}
+
+	private Boolean initialize(String defaultSheetName) {
+		boolean ok = selectFirstDefaultSheet(defaultSheetName);
+		if (!ok) {
+			setErrCod((short) 1);
+			setErrDes("Could not get/set first Sheet on Document");
+		} else {
+			setErrCod((short) 0);
+			setErrDes("");
+		}
+		return ok;
+	}
 
     public void setAutofit(Boolean _autofit) {
         this._autofit = _autofit;
         if (_document != null) {
             _document.setAutofit(_autofit);
         }
-    }
-
-    private Boolean initialize() {
-
-        return initialize(DEFAULT_SHEET_NAME);
-    }
-
-    private Boolean initialize(String defaultSheetName) {
-        boolean ok = selectFirstDefaultSheet(defaultSheetName);
-        if (!ok) {
-            setErrCod((short) 1);
-            setErrDes("Could not get/set first Sheet on Document");
-        } else {
-            setErrCod((short) 0);
-            setErrDes("");
-        }
-        return ok;
     }
 
     public boolean open(String filePath) {
@@ -111,10 +105,21 @@ public class ExcelSpreadsheetGXWrapper implements IGXError {
         return ok;
     }
 
-    public ExcelCells getCell(int rowIdx, int colIdx) {
+	public ExcelCells getCell(int rowIdx, int colIdx) {
+		if (initialize()) {
+			try {
+				return (ExcelCells) _document.getCell(_currentWorksheet, rowIdx, colIdx);
+			} catch (ExcelException e) {
+				this.setError(e);
+			}
+		}
+		return null;
+	}
+
+    public ExcelCellsGXWrapper getCellv2(int rowIdx, int colIdx) {
         if (initialize()) {
             try {
-                return (ExcelCells) _document.getCell(_currentWorksheet, rowIdx, colIdx);
+                return new ExcelCellsGXWrapper(_document.getCell(_currentWorksheet, rowIdx, colIdx));
             } catch (ExcelException e) {
                 this.setError(e);
             }
@@ -132,10 +137,21 @@ public class ExcelSpreadsheetGXWrapper implements IGXError {
         logger.error(errorMsg);
     }
 
-    public ExcelCells getCells(int rowIdx, int colIdx, int rowCount, int colCount) {
+	public ExcelCells getCells(int rowIdx, int colIdx, int rowCount, int colCount) {
+		if (initialize()) {
+			try {
+				return (ExcelCells) _document.getCells(_currentWorksheet, rowIdx, colIdx, rowCount, colCount);
+			} catch (ExcelException e) {
+				this.setError(e);
+			}
+		}
+		return null;
+	}
+
+    public ExcelCellsGXWrapper getCellsv2(int rowIdx, int colIdx, int rowCount, int colCount) {
         if (initialize()) {
             try {
-                return (ExcelCells) _document.getCells(_currentWorksheet, rowIdx, colIdx, rowCount, colCount);
+                return new ExcelCellsGXWrapper(_document.getCells(_currentWorksheet, rowIdx, colIdx, rowCount, colCount));
             } catch (ExcelException e) {
                 this.setError(e);
             }
@@ -157,7 +173,7 @@ public class ExcelSpreadsheetGXWrapper implements IGXError {
 
     public Boolean setCurrentWorksheetByName(String sheetName) {
         if (initialize()) {
-            ExcelWorksheet ws = _document.getWorkSheet(sheetName);
+            IExcelWorksheet ws = _document.getWorkSheet(sheetName);
             if (ws != null) {
                 _currentWorksheet = ws;
                 _document.setActiveWorkSheet(sheetName);
@@ -172,15 +188,6 @@ public class ExcelSpreadsheetGXWrapper implements IGXError {
             return _document.insertRow(_currentWorksheet, rowIdx - 1, rowCount);
         }
         return false;
-    }
-
-    public Boolean insertColumn(int colIdx, int colCount) {
-        //throw new Exception("NotImplemented");
-        return false;
-        /*
-         * if (isOK()) { //return _document.(_currentWorksheet, colIdx, colCount); }
-         * return false;
-         */
     }
 
     public Boolean deleteRow(int rowIdx) {
@@ -234,7 +241,7 @@ public class ExcelSpreadsheetGXWrapper implements IGXError {
 
     public Boolean deleteSheet(String sheetName) {
         if (initialize()) {
-            ExcelWorksheet ws = _document.getWorkSheet(sheetName);
+            IExcelWorksheet ws = _document.getWorkSheet(sheetName);
             if (ws != null)
                 return _document.deleteSheet(sheetName);
         }
@@ -279,18 +286,25 @@ public class ExcelSpreadsheetGXWrapper implements IGXError {
         return _errDescription;
     }
 
-    public ExcelWorksheet getCurrentWorksheet() {
+	public ExcelWorksheet getCurrentWorksheet() {
+		if (initialize()) {
+			return (ExcelWorksheet) _currentWorksheet;
+		}
+		return null;
+	}
+
+    public ExcelWorksheetGXWrapper getCurrentWorksheetv2() {
         if (initialize()) {
-            return (ExcelWorksheet) _currentWorksheet;
+            return new ExcelWorksheetGXWrapper(_currentWorksheet);
         }
         return null;
     }
 
-    public List<ExcelWorksheet> getWorksheets() {
+    public List<IExcelWorksheet> getWorksheets() {
         if (initialize())
             return _document.getWorksheets();
         else
-            return new ArrayList<ExcelWorksheet>();
+            return new ArrayList<IExcelWorksheet>();
     }
 
     private boolean selectFirstDefaultSheet(String sheetName) {

@@ -8,6 +8,8 @@ public interface IExcelWorksheet
 
 	public Boolean isHidden();
 
+	public Boolean setHidden(boolean hidden);
+
 	public Boolean rename(String newName);
 	
 	public Boolean copy(String newName) throws ExcelException;

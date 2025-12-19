@@ -1,10 +1,8 @@
 package com.genexus.msoffice.excel;
 
 import com.genexus.Application;
-import com.genexus.msoffice.excel.poi.xssf.ExcelSpreadsheet;
 import com.genexus.msoffice.excel.exception.ExcelDocumentNotSupported;
 import com.genexus.msoffice.excel.exception.ExcelTemplateNotFoundException;
-import com.genexus.util.GXServices;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,11 +17,15 @@ public class ExcelFactory
 		filePath = resolvePath(filePath);
 		template = resolvePath(template);
 
-		if (filePath.endsWith(".xlsx") || !filePath.contains("."))
-		{
-			return new ExcelSpreadsheet(handler, filePath, template);
+		if (filePath.toLowerCase().endsWith(".xls")) {
+			return new com.genexus.msoffice.excel.poi.hssf.ExcelSpreadsheet(handler, filePath, template);
 		}
-		throw new ExcelDocumentNotSupported();
+		else {
+			if (filePath.toLowerCase().endsWith(".xlsx") || !filePath.contains(".")) {
+				return new com.genexus.msoffice.excel.poi.xssf.ExcelSpreadsheet(handler, filePath, template);
+			}
+			throw new ExcelDocumentNotSupported();
+		}
 	}
 
 	private static String resolvePath(String filePath) {

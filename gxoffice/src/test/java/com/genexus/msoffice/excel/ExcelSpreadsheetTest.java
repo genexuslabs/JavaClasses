@@ -10,12 +10,9 @@ import java.util.Date;
 import java.util.List;
 
 import com.genexus.msoffice.excel.style.ExcelStyle;
-import org.junit.*;
-
-import com.genexus.msoffice.excel.poi.xssf.ExcelCells;
-import com.genexus.msoffice.excel.poi.xssf.ExcelWorksheet;
 import com.genexus.msoffice.excel.style.ExcelAlignment;
 
+import org.junit.*;
 import static org.junit.Assert.*;
 /**
  * Unit test for simple App.
@@ -37,11 +34,11 @@ public class ExcelSpreadsheetTest {
 	@Test
     public void testNumberFormat1() {
         ExcelSpreadsheetGXWrapper excel = create("testNumberFormat1");
-        excel.getCells(1, 1, 1, 1).setNumericValue(BigDecimal.valueOf(123.456));
-        excel.getCells(2, 1, 1, 1).setNumericValue(BigDecimal.valueOf(1));
-        excel.getCells(3, 1, 1, 1).setNumericValue(BigDecimal.valueOf(100));
+        excel.getCellsv2(1, 1, 1, 1).setNumericValue(BigDecimal.valueOf(123.456));
+        excel.getCellsv2(2, 1, 1, 1).setNumericValue(BigDecimal.valueOf(1));
+        excel.getCellsv2(3, 1, 1, 1).setNumericValue(BigDecimal.valueOf(100));
 
-        excel.getCells(4, 1, 1, 1).setNumericValue(BigDecimal.valueOf(0.123));
+        excel.getCellsv2(4, 1, 1, 1).setNumericValue(BigDecimal.valueOf(0.123));
         excel.save();
 
     }
@@ -50,10 +47,10 @@ public class ExcelSpreadsheetTest {
     public void testCellStyle1() {
 		ExcelSpreadsheetGXWrapper excel = create("testCellStyle1");
         excel.setColumnWidth(1, 100);
-        excel.getCells(2, 1, 1, 5).setNumericValue(BigDecimal.valueOf(123.456));
+        excel.getCellsv2(2, 1, 1, 5).setNumericValue(BigDecimal.valueOf(123.456));
         ExcelStyle newCellStyle = new ExcelStyle();
         newCellStyle.getCellFont().setBold(true);
-        excel.getCells(2, 1, 1, 5).setCellStyle(newCellStyle);
+        excel.getCellsv2(2, 1, 1, 5).setCellStyle(newCellStyle);
 
         boolean ok = excel.save();
         Assert.assertTrue(ok);
@@ -63,10 +60,10 @@ public class ExcelSpreadsheetTest {
     public void testCellStyle2() {
 		ExcelSpreadsheetGXWrapper excel = create("testCellStyle2");
         excel.setColumnWidth(1, 100);
-        excel.getCells(2, 1, 5, 5).setNumericValue(BigDecimal.valueOf(123.456));
+        excel.getCellsv2(2, 1, 5, 5).setNumericValue(BigDecimal.valueOf(123.456));
         ExcelStyle newCellStyle = new ExcelStyle();
         newCellStyle.getCellFont().setBold(true);
-        excel.getCells(2, 1, 3, 3).setCellStyle(newCellStyle);
+        excel.getCellsv2(2, 1, 3, 3).setCellStyle(newCellStyle);
 
         excel.save();
 
@@ -125,13 +122,13 @@ public class ExcelSpreadsheetTest {
     @Test
     public void testActiveWorksheet() {
 		ExcelSpreadsheetGXWrapper excel = create("testActiveWorksheet");
-        excel.getCells(2, 1, 5, 5).setNumericValue(BigDecimal.valueOf(123.456));
+        excel.getCellsv2(2, 1, 5, 5).setNumericValue(BigDecimal.valueOf(123.456));
         excel.insertSheet("test1");
 
         excel.insertSheet("test2");
         excel.insertSheet("test3");
         excel.setCurrentWorksheetByName("test2");
-        excel.getCells(2, 1, 5, 5).setNumericValue(new java.math.BigDecimal(3));
+        excel.getCellsv2(2, 1, 5, 5).setNumericValue(new java.math.BigDecimal(3));
         excel.save();
 
     }
@@ -140,7 +137,7 @@ public class ExcelSpreadsheetTest {
     public void testOpenAndSave() {
 		ExcelSpreadsheetGXWrapper excel = create("testActive");
         try {
-            excel.getCells(2, 1, 5, 5).setDate(new Date());
+            excel.getCellsv2(2, 1, 5, 5).setDateValue(new Date());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -166,7 +163,7 @@ public class ExcelSpreadsheetTest {
 				Assert.assertEquals("File is locked", 7, excel.getErrCode());
 
 				try {
-					excel.getCells(2, 1, 5, 5).setDate(new Date());
+					excel.getCellsv2(2, 1, 5, 5).setDateValue(new Date());
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -186,7 +183,7 @@ public class ExcelSpreadsheetTest {
         excel.open(excel1);
 
         try {
-            excel.getCells(2, 1, 5, 5).setDate(new Date());
+            excel.getCellsv2(2, 1, 5, 5).setDateValue(new Date());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -207,7 +204,7 @@ public class ExcelSpreadsheetTest {
         excel.insertSheet("genexus1");
         excel.insertSheet("genexus2");
 
-        List<ExcelWorksheet> wSheets = excel.getWorksheets();
+        List<IExcelWorksheet> wSheets = excel.getWorksheets();
         Assert.assertTrue(wSheets.size() == 3);
         Assert.assertTrue(wSheets.get(0).getName() == "genexus0");
         Assert.assertTrue(wSheets.get(1).getName() == "genexus1");
@@ -224,7 +221,7 @@ public class ExcelSpreadsheetTest {
         excel.insertSheet("genexus1");
         excel.insertSheet("genexus2");
 
-        List<ExcelWorksheet> wSheets = excel.getWorksheets();
+        List<IExcelWorksheet> wSheets = excel.getWorksheets();
         Assert.assertTrue(wSheets.size() == 3);
         Assert.assertTrue(wSheets.get(0).getName() == "genexus0");
         Assert.assertTrue(wSheets.get(1).getName() == "genexus1");
@@ -243,7 +240,7 @@ public class ExcelSpreadsheetTest {
         excel.insertSheet("gx3");
         excel.insertSheet("gx4");
 
-        List<ExcelWorksheet> wSheets = excel.getWorksheets();
+        List<IExcelWorksheet> wSheets = excel.getWorksheets();
         Assert.assertTrue(wSheets.size() == 4);
         Assert.assertTrue(wSheets.get(0).getName() == "gx1");
         Assert.assertTrue(wSheets.get(1).getName() == "gx2");
@@ -260,19 +257,19 @@ public class ExcelSpreadsheetTest {
     public void testSetCellValues() {
 		ExcelSpreadsheetGXWrapper excel = create("testSetCellValues");
         excel.setAutofit(true);
-        excel.getCells(1, 1, 1, 1).setNumericValue(new java.math.BigDecimal(100));
-        excel.getCells(2, 1, 1, 1).setText("hola!");
-        excel.getCells(3, 1, 1, 1).setDateValue(new Date());
-        excel.getCells(4, 1, 1, 1).setNumericValue(BigDecimal.valueOf(66.78));
+        excel.getCellsv2(1, 1, 1, 1).setNumericValue(new java.math.BigDecimal(100));
+        excel.getCellsv2(2, 1, 1, 1).setText("hola!");
+        excel.getCellsv2(3, 1, 1, 1).setDateValue(new Date());
+        excel.getCellsv2(4, 1, 1, 1).setNumericValue(BigDecimal.valueOf(66.78));
 
         excel.save();
         excel.close();
         // Verify previous Excel Document
         excel = open("testSetCellValues");
 
-        assertEquals(100, excel.getCells(1, 1, 1, 1).getNumericValue().intValue());
+        assertEquals(100, excel.getCellsv2(1, 1, 1, 1).getNumericValue().intValue());
 
-        assertEquals("No Coindicen", excel.getCells(2, 1, 1, 1).getText(), "hola!");
+        assertEquals("No Coindicen", excel.getCellsv2(2, 1, 1, 1).getText(), "hola!");
         excel.save();
     }
 
@@ -297,7 +294,7 @@ public class ExcelSpreadsheetTest {
     @Test
     public void testExcelCellRange() {
 		ExcelSpreadsheetGXWrapper excel = create("testExcelCellRange");
-        IExcelCellRange cellRange = excel.getCells(2, 2, 5, 10);
+        IExcelCellRange cellRange = excel.getCellsv2(2, 2, 5, 10);
 
         assertEquals(2, cellRange.getColumnStart(), 0);
         assertEquals(11, cellRange.getColumnEnd(), 0);
@@ -381,7 +378,7 @@ public class ExcelSpreadsheetTest {
 
         excel.insertSheet("hoja1");
         excel.setCurrentWorksheetByName("hoja1");
-        excel.getCells(1, 1, 3, 3).setText("test");
+        excel.getCellsv2(1, 1, 3, 3).setText("test");
         excel.insertSheet("hoja2");
         excel.insertSheet("hoja3");
         excel.save();
@@ -393,7 +390,7 @@ public class ExcelSpreadsheetTest {
         excel.close();
 		excel = open("testCopySheet");
         excel.setCurrentWorksheetByName("hoja1Copia");
-        assertEquals("No Coindicen", excel.getCells(1, 1, 3, 3).getText(), "test");
+        assertEquals("No Coindicen", excel.getCellsv2(1, 1, 3, 3).getText(), "test");
         excel.close();
     }
 
@@ -403,7 +400,7 @@ public class ExcelSpreadsheetTest {
 
 		excel.insertSheet("hoja1");
 		excel.setCurrentWorksheetByName("hoja1");
-		excel.getCells(1, 1, 3, 3).setText("test");
+		excel.getCellsv2(1, 1, 3, 3).setText("test");
 		excel.insertSheet("hoja2");
 		excel.insertSheet("hoja3");
 		excel.save();
@@ -417,7 +414,7 @@ public class ExcelSpreadsheetTest {
 		excel.close();
 		excel = open("testCopySheet");
 		excel.setCurrentWorksheetByName("hoja1Copia");
-		assertEquals("No Coindicen", excel.getCells(1, 1, 3, 3).getText(), "test");
+		assertEquals("No Coindicen", excel.getCellsv2(1, 1, 3, 3).getText(), "test");
 		excel.close();
 	}
 
@@ -432,7 +429,7 @@ public class ExcelSpreadsheetTest {
         excel.save();
         excel.close();
         excel = open("testGetWorksheets");
-        List<ExcelWorksheet> sheets = excel.getWorksheets();
+        List<IExcelWorksheet> sheets = excel.getWorksheets();
         assertEquals("hoja1", sheets.get(0).getName());
         assertEquals("hoja2", sheets.get(1).getName());
         assertEquals("hoja3", sheets.get(2).getName());
@@ -448,13 +445,13 @@ public class ExcelSpreadsheetTest {
         excel.insertSheet("hoja1");
         excel.setCurrentWorksheetByName("hoja1");
         excel.getCurrentWorksheet().setProtected("password");
-        excel.getCells(1, 1, 3, 3).setText("texto no se puede editar");
+        excel.getCellsv2(1, 1, 3, 3).setText("texto no se puede editar");
         ExcelStyle style = new ExcelStyle();
         style.setHidden(true);
-        excel.getCells(1, 1, 3, 3).setCellStyle(style);
+        excel.getCellsv2(1, 1, 3, 3).setCellStyle(style);
 
 
-        ExcelCells cells = excel.getCells(5, 1, 3, 3);
+        ExcelCellsGXWrapper cells = excel.getCellsv2(5, 1, 3, 3);
         cells.setText("texto SI se puede editar");
         style = new ExcelStyle();
         style.setLocked(false);
@@ -470,13 +467,13 @@ public class ExcelSpreadsheetTest {
         excel.insertSheet("hoja1");
         excel.setCurrentWorksheetByName("hoja1");
         excel.getCurrentWorksheet().setProtected("password");
-        excel.getCells(1, 1, 3, 3).setText("texto no se puede editar");
+        excel.getCellsv2(1, 1, 3, 3).setText("texto no se puede editar");
         ExcelStyle style = new ExcelStyle();
         style.setLocked(true);
-        excel.getCells(1, 1, 3, 3).setCellStyle(style);
+        excel.getCellsv2(1, 1, 3, 3).setCellStyle(style);
 
 
-        ExcelCells cells = excel.getCells(5, 1, 3, 3);
+        ExcelCellsGXWrapper cells = excel.getCellsv2(5, 1, 3, 3);
         cells.setText("texto SI se puede editar");
         style = new ExcelStyle();
         style.setLocked(false);
@@ -542,7 +539,7 @@ public class ExcelSpreadsheetTest {
         excel.save();
         excel.close();
         excel = open("testCloneSheet");
-        List<ExcelWorksheet> sheets = excel.getWorksheets();
+        List<IExcelWorksheet> sheets = excel.getWorksheets();
         Assert.assertEquals(4, sheets.size());
         excel.close();
     }
@@ -556,7 +553,7 @@ public class ExcelSpreadsheetTest {
         excel.save();
         excel.close();
         excel = open("testCloneSheet2");
-        List<ExcelWorksheet> sheets = excel.getWorksheets();
+        List<IExcelWorksheet> sheets = excel.getWorksheets();
         Assert.assertEquals(2, sheets.size());
         excel.close();
     }
@@ -579,7 +576,7 @@ public class ExcelSpreadsheetTest {
         excel.save();
         excel.close();
         excel = open("testCloneSheetError");
-        List<ExcelWorksheet> sheets = excel.getWorksheets();
+        List<IExcelWorksheet> sheets = excel.getWorksheets();
         Assert.assertEquals(4, sheets.size());
         excel.close();
     }
@@ -600,7 +597,7 @@ public class ExcelSpreadsheetTest {
         excel.save();
         excel.close();
 		excel = open("testWorksheetRename");
-        List<ExcelWorksheet> sheets = excel.getWorksheets();
+        List<IExcelWorksheet> sheets = excel.getWorksheets();
         assertEquals("hoja1", sheets.get(1).getName());
         assertEquals("hoja2", sheets.get(2).getName());
         assertEquals("modificada", sheets.get(3).getName());
@@ -611,8 +608,8 @@ public class ExcelSpreadsheetTest {
     @Test
     public void testMergeCells() {
 		ExcelSpreadsheetGXWrapper excel = create("testMergeCells");
-        excel.getCells(2, 10, 10, 5).mergeCells();
-        excel.getCells(2, 10, 10, 5).setText("merged cells");
+        excel.getCellsv2(2, 10, 10, 5).mergeCells();
+        excel.getCellsv2(2, 10, 10, 5).setText("merged cells");
         excel.save();
         excel.close();
     }
@@ -620,14 +617,14 @@ public class ExcelSpreadsheetTest {
 	@Test
 	public void testMergeMultipleCells() {
 		ExcelSpreadsheetGXWrapper excel = create("testMergeCells-2");
-		excel.getCells(1, 1, 2, 5).mergeCells();
-		excel.getCells(1, 1, 2, 5).setText("merged cells 1");
+		excel.getCellsv2(1, 1, 2, 5).mergeCells();
+		excel.getCellsv2(1, 1, 2, 5).setText("merged cells 1");
 
-		excel.getCells(5, 1, 2, 5).mergeCells();
-		excel.getCells(5, 1, 2, 5).setText("merged cells 2");
+		excel.getCellsv2(5, 1, 2, 5).mergeCells();
+		excel.getCellsv2(5, 1, 2, 5).setText("merged cells 2");
 
-		excel.getCells(8, 1, 2, 5).mergeCells();
-		excel.getCells(8, 1, 2, 5).setText("merged cells 3");
+		excel.getCellsv2(8, 1, 2, 5).mergeCells();
+		excel.getCellsv2(8, 1, 2, 5).setText("merged cells 3");
 
 		excel.save();
 		excel.close();
@@ -636,11 +633,11 @@ public class ExcelSpreadsheetTest {
 	@Test
 	public void testMergeMultipleCellsIntersect() {
 		ExcelSpreadsheetGXWrapper excel = create("testMergeCells-3");
-		excel.getCells(1, 1, 8, 5).mergeCells();
-		excel.getCells(1, 1, 8, 5).setText("merged cells 1");
+		excel.getCellsv2(1, 1, 8, 5).mergeCells();
+		excel.getCellsv2(1, 1, 8, 5).setText("merged cells 1");
 
-		excel.getCells(5, 1, 8, 5).mergeCells();
-		excel.getCells(5, 1, 8, 5).setText("merged cells 2");
+		excel.getCellsv2(5, 1, 8, 5).mergeCells();
+		excel.getCellsv2(5, 1, 8, 5).setText("merged cells 2");
 
 		excel.save();
 		excel.close();
@@ -650,9 +647,9 @@ public class ExcelSpreadsheetTest {
 	@Test
 	public void testMergeNestedCells() {
 		ExcelSpreadsheetGXWrapper excel = create("testMergeNestedCells");
-		excel.getCells(5, 5, 4, 4).mergeCells();
-		excel.getCells(5, 5, 4, 4).setText("merged cells");
-		excel.getCells(1, 1, 10, 10).mergeCells();
+		excel.getCellsv2(5, 5, 4, 4).mergeCells();
+		excel.getCellsv2(5, 5, 4, 4).setText("merged cells");
+		excel.getCellsv2(1, 1, 10, 10).mergeCells();
 		excel.save();
 		excel.close();
 	}
@@ -660,13 +657,13 @@ public class ExcelSpreadsheetTest {
     @Test
     public void testMergeCellsError() {
         ExcelSpreadsheetGXWrapper excel = create("testMergeCellsError");
-        excel.getCells(2, 10, 10, 5).mergeCells();
-        excel.getCells(2, 10, 10, 5).mergeCells();
-        excel.getCells(2, 10, 10, 5).mergeCells();
-        excel.getCells(3, 11, 2, 2).mergeCells();
-        excel.getCells(2, 10, 10, 5).mergeCells();
+        excel.getCellsv2(2, 10, 10, 5).mergeCells();
+        excel.getCellsv2(2, 10, 10, 5).mergeCells();
+        excel.getCellsv2(2, 10, 10, 5).mergeCells();
+        excel.getCellsv2(3, 11, 2, 2).mergeCells();
+        excel.getCellsv2(2, 10, 10, 5).mergeCells();
 
-        excel.getCells(2, 10, 10, 5).setText("merged cells");
+        excel.getCellsv2(2, 10, 10, 5).setText("merged cells");
         excel.save();
         excel.close();
     }
@@ -674,7 +671,7 @@ public class ExcelSpreadsheetTest {
     @Test
     public void testColumnAndRowHeight() {
 		ExcelSpreadsheetGXWrapper excel = create("testColumnAndRowHeight");
-        excel.getCells(1, 1, 5, 5).setText("texto de las celdas largo");
+        excel.getCellsv2(1, 1, 5, 5).setText("texto de las celdas largo");
         excel.setRowHeight(2, 50);
         excel.setColumnWidth(1, 100);
         excel.save();
@@ -684,11 +681,11 @@ public class ExcelSpreadsheetTest {
     @Test
     public void testAlignment() {
 		ExcelSpreadsheetGXWrapper excel = create("testAlignment");
-        excel.getCells(2, 2, 3, 3).setText("a");
+        excel.getCellsv2(2, 2, 3, 3).setText("a");
         ExcelStyle style = new ExcelStyle();
         style.getCellAlignment().setHorizontalAlignment(ExcelAlignment.HORIZONTAL_ALIGN_RIGHT); //center
         style.getCellAlignment().setVerticalAlignment(ExcelAlignment.VERTICAL_ALIGN_MIDDLE); //middle
-        excel.getCells(2, 2, 3, 3).setCellStyle(style);
+        excel.getCellsv2(2, 2, 3, 3).setCellStyle(style);
         excel.save();
         excel.close();
 
@@ -698,7 +695,7 @@ public class ExcelSpreadsheetTest {
     public void testExcelCellStyle() {
 		ExcelSpreadsheetGXWrapper excel = create("testExcelCellStyle");
 
-        IExcelCellRange cells = excel.getCells(1, 1, 2, 2);
+        IExcelCellRange cells = excel.getCellsv2(1, 1, 2, 2);
 
         ExcelStyle style = new ExcelStyle();
 
@@ -717,7 +714,7 @@ public class ExcelSpreadsheetTest {
         excel.setRowHeight(1, 45);
         excel.setRowHeight(2, 45);
 
-        cells = excel.getCells(5, 2, 4, 4);
+        cells = excel.getCellsv2(5, 2, 4, 4);
 
         cells.setText("texto2");
         style = new ExcelStyle();
@@ -729,7 +726,7 @@ public class ExcelSpreadsheetTest {
         cells.setCellStyle(style);
 
 
-        cells = excel.getCells(10, 2, 2, 2);
+        cells = excel.getCellsv2(10, 2, 2, 2);
         cells.setText("texto3");
         style = new ExcelStyle();
         style.getCellFont().setBold(false);
@@ -749,7 +746,7 @@ public class ExcelSpreadsheetTest {
     @Test
     public void testExcelBorderStyle() {
 		ExcelSpreadsheetGXWrapper excel = create("testExcelBorderStyle");
-        IExcelCellRange cells = excel.getCells(5, 2, 4, 4);
+        IExcelCellRange cells = excel.getCellsv2(5, 2, 4, 4);
         cells.setText("texto2");
 
 		ExcelStyle style = new ExcelStyle();
@@ -766,7 +763,7 @@ public class ExcelSpreadsheetTest {
 
         cells.setCellStyle(style);
 
-        cells = excel.getCells(10, 2, 2, 2);
+        cells = excel.getCellsv2(10, 2, 2, 2);
         cells.setText("texto3");
         style = new ExcelStyle();
 
@@ -821,10 +818,10 @@ public class ExcelSpreadsheetTest {
     public void testDeleteRow() {
 		ExcelSpreadsheetGXWrapper excel = create("testDeleteRow");
 
-        excel.getCells(1, 1, 1, 5).setNumericValue(new java.math.BigDecimal(1));
-        excel.getCells(2, 1, 1, 5).setNumericValue(new java.math.BigDecimal(2));
-        excel.getCells(3, 1, 1, 5).setNumericValue(new java.math.BigDecimal(3));
-        excel.getCells(4, 1, 1, 5).setNumericValue(new java.math.BigDecimal(4));
+        excel.getCellsv2(1, 1, 1, 5).setNumericValue(new java.math.BigDecimal(1));
+        excel.getCellsv2(2, 1, 1, 5).setNumericValue(new java.math.BigDecimal(2));
+        excel.getCellsv2(3, 1, 1, 5).setNumericValue(new java.math.BigDecimal(3));
+        excel.getCellsv2(4, 1, 1, 5).setNumericValue(new java.math.BigDecimal(4));
         excel.save();
         excel.close();
         // Verify previous Excel Document
@@ -994,7 +991,7 @@ public class ExcelSpreadsheetTest {
 	@Test
 	public void testDeleteColumn3() {
 		ExcelSpreadsheetGXWrapper excel = create("testDeleteColumn3");
-		excel.getCells(1,1,5,5).setText("cell");
+		excel.getCellsv2(1,1,5,5).setText("cell");
 		excel.insertRow(3, 5);
 		excel.deleteRow(3);
 		excel.deleteColumn(2);
@@ -1010,7 +1007,7 @@ public class ExcelSpreadsheetTest {
     @Test
     public void testSaveAs() {
         ExcelSpreadsheetGXWrapper excel = create("testSaveAs");
-        excel.getCells(1, 1, 15, 15).setNumericValue(new BigDecimal(100));
+        excel.getCellsv2(1, 1, 15, 15).setNumericValue(new BigDecimal(100));
         String excelNew = basePath + "testSaveAsCopy.xlsx";
         excel.saveAs(excelNew);
         excel.close();
@@ -1022,11 +1019,11 @@ public class ExcelSpreadsheetTest {
 	public void testAutoFit() {
 		ExcelSpreadsheetGXWrapper excel = create("testAutoFit");
 		excel.setAutofit(true);
-		excel.getCells(1, 2, 1, 1).setText("LONGTEXTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
-		excel.getCells(1, 3, 1, 1).setText("VERYLONGTEXTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
-		excel.getCells(2, 4, 1, 1).setText("hola!");
-		excel.getCells(6, 6, 1, 1).setText("VERYLONGTEXTINDIFFERENTROWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
-		ExcelCells cells = excel.getCells(7, 7, 1, 1);
+		excel.getCellsv2(1, 2, 1, 1).setText("LONGTEXTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
+		excel.getCellsv2(1, 3, 1, 1).setText("VERYLONGTEXTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
+		excel.getCellsv2(2, 4, 1, 1).setText("hola!");
+		excel.getCellsv2(6, 6, 1, 1).setText("VERYLONGTEXTINDIFFERENTROWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
+		ExcelCellsGXWrapper cells = excel.getCellsv2(7, 7, 1, 1);
 		ExcelStyle style = new ExcelStyle();
 		style.setDataFormat("#.##"); //change style, so it shows the full number not scientific notation
 		cells.setNumericValue(new BigDecimal("123456789123456789123456789"));
@@ -1041,16 +1038,16 @@ public class ExcelSpreadsheetTest {
 		excel.setAutofit(true);
 		Date date = new Date();
 		//sets date with default format
-		ExcelCells cells = excel.getCells(1, 1, 1, 1);
+		ExcelCellsGXWrapper cells = excel.getCellsv2(1, 1, 1, 1);
 		cells.setDateValue(date);
 		//sets date and apply format after
-		cells = excel.getCells(2, 1, 1, 1);
+		cells = excel.getCellsv2(2, 1, 1, 1);
 		ExcelStyle style = new ExcelStyle();
 		cells.setDateValue(date);
 		style.setDataFormat("YYYY/MM/DD hh:mm:ss");
 		cells.setCellStyle(style);
 		//sets date and apply format before
-		cells = excel.getCells(3, 1, 1, 1);
+		cells = excel.getCellsv2(3, 1, 1, 1);
 		style = new ExcelStyle();
 		style.setDataFormat("YYYY/MM/DD hh:mm:ss");
 		cells.setCellStyle(style);
@@ -1060,16 +1057,16 @@ public class ExcelSpreadsheetTest {
 		date.setMinutes(0);
 		date.setSeconds(0);
 		//sets date with default format without hours
-		cells = excel.getCells(4, 1, 1, 1);
+		cells = excel.getCellsv2(4, 1, 1, 1);
 		cells.setDateValue(date);
 		//sets date and apply format after
-		cells = excel.getCells(5, 1, 1, 1);
+		cells = excel.getCellsv2(5, 1, 1, 1);
 		style = new ExcelStyle();
 		cells.setDateValue(date);
 		style.setDataFormat("YYYY/MM/DD hh:mm:ss");
 		cells.setCellStyle(style);
 		//sets date and apply format before
-		cells = excel.getCells(6, 1, 1, 1);
+		cells = excel.getCellsv2(6, 1, 1, 1);
 		style = new ExcelStyle();
 		style.setDataFormat("YYYY/MM/DD hh:mm:ss");
 		cells.setCellStyle(style);
