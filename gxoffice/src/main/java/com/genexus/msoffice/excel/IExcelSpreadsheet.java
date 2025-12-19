@@ -3,7 +3,6 @@ package com.genexus.msoffice.excel;
 import java.util.List;
 
 import com.genexus.msoffice.excel.exception.ExcelException;
-import com.genexus.msoffice.excel.poi.xssf.ExcelWorksheet;
 
 public interface IExcelSpreadsheet
 {
@@ -29,8 +28,8 @@ public interface IExcelSpreadsheet
 	Boolean deleteColumn(IExcelWorksheet worksheet, int colIdx);
 
 	// Worksheets
-	List<ExcelWorksheet> getWorksheets();
-	ExcelWorksheet getWorkSheet(String name);
+	List<IExcelWorksheet> getWorksheets();
+	IExcelWorksheet getWorkSheet(String name);
 
 	Boolean insertWorksheet(String newSheetName, int idx) throws ExcelException;
 	Boolean getAutofit();
