@@ -19,6 +19,7 @@ import java.security.*;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -853,8 +854,12 @@ public final class CommonUtil
    	public static int strcmp( String left ,
                              String right )
    	{
-               return rtrim(left).compareTo(rtrim(right));
-   	}
+		return Comparator.nullsFirst(String::compareTo)
+			.compare(
+				left  == null ? null : rtrim(left),
+				right == null ? null : rtrim(right)
+			);
+	}
 
    	public static boolean strcmp2( String left ,
                              String right )
@@ -2804,7 +2809,7 @@ public final class CommonUtil
         }
         else if (className.equals("string") || className.indexOf("java.lang.String") != -1)
         {
-            return objStr.equals("null") ? null : objStr;
+			return (obj == JSONObject.NULL)? null : objStr;
         }
         else if (className.equals("double") || className.equals("java.lang.Double") || className.equals("[D"))
         {
