@@ -59,15 +59,17 @@ public class SaiaService {
 
 				logger.debug("Agent response: " + saiaResponse);
 				JSONObject jsonResponse = new JSONObject(saiaResponse);
-				return new ObjectMapper().readValue(jsonResponse.toString(), OpenAIResponse.class);
+				OpenAIResponse aiResponse = new ObjectMapper().readValue(jsonResponse.toString(), OpenAIResponse.class);
+				if (!aiResponse.getSuccess()) {
+					setError(String.valueOf(aiResponse.getError().getCode()), aiResponse.getError().getMessage(), client, result);
+				}
+				return aiResponse;
 			}
 			else {
 				String errorDescription = String.format("Error calling Enterprise AI API, StatusCode: %d, ReasonLine: %s",
 					client.getStatusCode(),
 					client.getReasonLine());
-				addResultMessage("SAIA_ERROR_CALL", (byte)1, errorDescription, result);
-				logger.error(errorDescription);
-				logger.debug("Agent error response: " + client.getString());
+				setError("SAIA_ERROR_CALL", errorDescription, client, result);
 			}
 		}
 		catch (Exception e) {
@@ -114,6 +116,12 @@ public class SaiaService {
 				saiaChunkResponse = client.readChunk();
 			}
 		}
+	}
+
+	private static void setError(String errorCode, String errorDescription, HttpClient client, CallResult result) {
+		addResultMessage(errorCode, (byte)1, errorDescription, result);
+		logger.error(errorDescription);
+		logger.debug("Agent error response: " + client.getString());
 	}
 
 	private static void addResultMessage(String id, byte type, String description, CallResult result){

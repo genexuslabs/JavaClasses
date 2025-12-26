@@ -32,6 +32,15 @@ public class OpenAIResponse {
 
 	@JsonProperty("data")
 	private ArrayList<DataItem> data;
+        
+	@JsonProperty("error")
+	private Error error;
+        
+	@JsonProperty("success")
+	private Boolean success = true;
+        
+	@JsonProperty("status")
+	private String status;
 
 	public String getId() { return id; }
 	public void setId(String id) { this.id = id; }
@@ -53,6 +62,15 @@ public class OpenAIResponse {
 
 	public ArrayList<DataItem> getData() { return data; }
 	public void setData(ArrayList<DataItem> data) { this.data = data; }
+        
+	public Error getError() { return error; }
+	public void setError(Error error) { this.error = error; }
+        
+	public Boolean getSuccess() { return success; }
+	public void setSuccess(Boolean success) { this.success = success; }
+        
+	public String getStatus() { return status; }
+	public void setStatus(String status) { this.status = status; }
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static class Choice {
@@ -300,5 +318,23 @@ public class OpenAIResponse {
 
 		public ArrayList<Double> getEmbedding() { return embedding; }
 		public void setEmbedding(ArrayList<Double> embedding) { this.embedding = embedding; }
+	}
+
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public static class Error {
+
+		@JsonProperty("code")
+		private int code;
+
+		@JsonProperty("message")
+		private String message;
+
+		public Error() {}
+
+		public int getCode() { return code; }
+		public void setCode(int code) { this.code = code; }
+
+		public String getMessage() { return message; }
+		public void setMessage(String message) { this.message = message; }
 	}
 }
