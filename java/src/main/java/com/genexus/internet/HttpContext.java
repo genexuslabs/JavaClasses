@@ -727,7 +727,7 @@ public abstract class HttpContext implements IHttpContext
 	public String convertURL(String file)
 	{
 		String url = "";
-		if (file.equals(""))
+		if (file == null || file.equals(""))
 		{
 			return "";
 		}
