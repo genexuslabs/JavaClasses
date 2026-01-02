@@ -854,11 +854,7 @@ public final class CommonUtil
    	public static int strcmp( String left ,
                              String right )
    	{
-		return Comparator.nullsFirst(String::compareTo)
-			.compare(
-				left  == null ? null : rtrim(left),
-				right == null ? null : rtrim(right)
-			);
+		return rtrim(left).compareTo(rtrim(right));
 	}
 
    	public static boolean strcmp2( String left ,
