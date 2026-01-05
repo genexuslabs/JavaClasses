@@ -30,8 +30,6 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.graphics.state.RenderingMode;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionJavaScript;
 import org.apache.pdfbox.pdmodel.interactive.viewerpreferences.PDViewerPreferences;
-import org.apache.pdfbox.text.PDFTextStripper;
-import org.apache.pdfbox.text.TextPosition;
 import org.apache.pdfbox.util.Matrix;
 
 import org.jsoup.Jsoup;
@@ -51,9 +49,6 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	private String barcodeType = null;
 	private PDDocument document;
 	private PDDocumentCatalog writer;
-	private PDFont templateFont;
-	private float templateX;
-	private float templateY;
 	public boolean lineCapProjectingSquare = true;
 	public boolean barcode128AsImage = true;
 	ConcurrentHashMap<String, PDImageXObject> documentImages;
@@ -63,6 +58,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 	private Set<String> supportedHTMLTags = new HashSet<>();
 	private PDPageContentStream currentPageContentStream;
 	private final static String PAGES_PLACEHOLDER = "{{pages}}";
+	private final List<PageCountPlaceholder> pageCountPlaceholders = new ArrayList<>();
 
 	static {
 		log = org.apache.logging.log4j.LogManager.getLogger(PDFReportPDFBox.class);
@@ -647,6 +643,31 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			int alignment = align & 3;
 			boolean autoResize = ((align & 256) == 256);
 
+			if (sTxt.trim().equalsIgnoreCase(PAGES_PLACEHOLDER)) {
+				float width = baseFont.getStringWidth("999") / 1000 * fontSize;
+
+				float x;
+				switch (align) {
+					case 1:
+						x = ((leftAux + rightAux) / 2) + leftMargin - width / 2;
+						break;
+					case 2:
+						x = rightAux + leftMargin - width;
+						break;
+					default:
+						x = leftAux + leftMargin;
+						break;
+				}
+
+				float y = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin - fontSize*0.2f ;
+
+				int pageIndex = document.getNumberOfPages() - 1;
+				pageCountPlaceholders.add(new PageCountPlaceholder(pageIndex, x, y, baseFont, fontSize, foreColor));
+
+				return;
+			}
+
+
 			// Handle HTML format
 			if (htmlformat == 1) {
 				log.debug("WARNING: HTML rendering is not natively supported by PDFBOX 2.0.27. Handcrafted support is provided but it is not intended to cover all possible use cases");
@@ -855,19 +876,6 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 						underline.getHeight()
 					);
 					contentStream.fill();
-				}
-
-				// Handle {{Pages}}
-				if (sTxt.trim().equalsIgnoreCase(PAGES_PLACEHOLDER)) {
-					if (!templateCreated) {
-						templateFont = baseFont;
-						templateFontSize = fontSize;
-						templateColorFill = foreColor;
-						templateX = leftAux + leftMargin;
-						templateY = this.pageSize.getUpperRightY() - bottomAux - topMargin - bottomMargin;
-						templateCreated = true;
-					}
-					sTxt = PAGES_PLACEHOLDER;
 				}
 
 				float textBlockWidth = rightAux - leftAux;
@@ -1271,75 +1279,22 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 		return new PDRectangle((int)(width / PAGE_SCALE_X) + leftMargin, (int)(length / PAGE_SCALE_Y) + topMargin);
 	}
 
-	private void replaceTemplatePages() throws IOException {
+	private void writePageCountPlaceholders() {
 		int totalPages = document.getNumberOfPages();
-		for (int i = 0; i < totalPages; i++) {
-			final PDPage page = document.getPage(i);
-			final List<float[]> replacements = new java.util.ArrayList<>();
-			PDFTextStripper stripper = new PDFTextStripper() {
-				@Override
-				protected void writeString(String text, List<TextPosition> textPositions) throws IOException {
-					String placeholder = PAGES_PLACEHOLDER;
-					int index = text.indexOf(placeholder);
-					while (index != -1 && index + placeholder.length() <= textPositions.size()) {
-						float minX = Float.MAX_VALUE;
-						float maxX = 0;
-						float minY = Float.MAX_VALUE;
-						float maxY = 0;
-						for (int j = index; j < index + placeholder.length(); j++) {
-							TextPosition tp = textPositions.get(j);
-							float tpX = tp.getXDirAdj();
-							float tpY = tp.getYDirAdj();
-							float tpWidth = tp.getWidthDirAdj();
-							float tpHeight = tp.getHeightDir();
-							if (tpX < minX) {
-								minX = tpX;
-							}
-							if (tpX + tpWidth > maxX) {
-								maxX = tpX + tpWidth;
-							}
-							if (tpY < minY) {
-								minY = tpY;
-							}
-							if (tpY + tpHeight > maxY) {
-								maxY = tpY + tpHeight;
-							}
-						}
-						float bboxWidth = maxX - minX;
-						float bboxHeight = maxY - minY;
-						float origBoxBottom = pageSize.getHeight() - maxY;
-						float originalCenterX = minX + bboxWidth / 2;
-						float originalCenterY = origBoxBottom + bboxHeight / 2;
-						float newCenterY = originalCenterY + (bboxHeight * 0.5f);
-						float enlargedWidth = bboxWidth * 2.5f;
-						float enlargedHeight = bboxHeight * 2.5f;
-						float rectX = originalCenterX - (enlargedWidth / 2);
-						float rectY = newCenterY - (enlargedHeight / 2);
-						float baselineY = newCenterY;
-						replacements.add(new float[] { rectX, rectY, enlargedWidth, enlargedHeight, baselineY });
-						index = text.indexOf(placeholder, index + placeholder.length());
-					}
-					super.writeString(text, textPositions);
-				}
-			};
-			stripper.setStartPage(i + 1);
-			stripper.setEndPage(i + 1);
-			stripper.getText(document);
-			if (!replacements.isEmpty()) {
-				try (PDPageContentStream cs = new PDPageContentStream(
-					document, page, PDPageContentStream.AppendMode.APPEND, true, true)) {
-					for (float[] rep : replacements) {
-						cs.addRect(rep[0], rep[1], rep[2], rep[3]);
-						cs.setNonStrokingColor(java.awt.Color.WHITE);
-						cs.fill();
-						cs.beginText();
-						cs.setFont(templateFont, templateFontSize);
-						cs.setNonStrokingColor(templateColorFill);
-						cs.newLineAtOffset(rep[0], rep[4]);
-						cs.showText(String.valueOf(totalPages));
-						cs.endText();
-					}
-				}
+
+		for (PageCountPlaceholder p : pageCountPlaceholders) {
+			PDPage page = document.getPage(p.pageIndex);
+			try (PDPageContentStream cs = new PDPageContentStream(
+				document, page, PDPageContentStream.AppendMode.APPEND, true)) {
+
+				cs.beginText();
+				cs.setFont(p.font, p.fontSize);
+				cs.setNonStrokingColor(p.color);
+				cs.newLineAtOffset(p.x, p.y);
+				cs.showText(String.valueOf(totalPages));
+				cs.endText();
+			} catch (IOException e) {
+				log.error("Failed to write page count placeholder", e);
 			}
 		}
 	}
@@ -1351,7 +1306,7 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				pages++;
 			}
 			GxEndPage();
-			replaceTemplatePages();
+			writePageCountPlaceholders();
 			int copies = 1;
 			try {
 				copies = Integer.parseInt(printerSettings.getProperty(form, Const.COPIES));
@@ -1485,6 +1440,24 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 			}
 		} catch (IOException e) {
 			log.error("Failed to close page content stream: ", e);
+		}
+	}
+
+	private static class PageCountPlaceholder {
+		final int pageIndex;
+		final float x;
+		final float y;
+		final PDFont font;
+		final float fontSize;
+		final Color color;
+
+		PageCountPlaceholder(int pageIndex, float x, float y, PDFont font, float fontSize, Color color) {
+			this.pageIndex = pageIndex;
+			this.x = x;
+			this.y = y;
+			this.font = font;
+			this.fontSize = fontSize;
+			this.color = color;
 		}
 	}
 
