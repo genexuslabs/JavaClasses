@@ -31,8 +31,8 @@
 		<junit.version>4.13.2</junit.version>
 		<software.awssdk.version>2.40.8</software.awssdk.version>
 		<software.azure.cosmos.version>4.74.0</software.azure.cosmos.version>
-		<log4j.version>2.21.1</log4j.version>
-		<io.opentelemetry.version>1.56.0</io.opentelemetry.version>
+		<log4j.version>2.25.3</log4j.version>
+        <io.opentelemetry.version>1.56.0</io.opentelemetry.version>
         <org.bouncycastle.version>1.82</org.bouncycastle.version>
         <commons-io.version>2.15.1</commons-io.version>
         <commons-codec.version>1.15</commons-codec.version>
