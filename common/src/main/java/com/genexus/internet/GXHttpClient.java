@@ -719,7 +719,11 @@ public abstract class GXHttpClient implements IHttpClient{
 	}
 
 	protected void setExceptionsCatch(Exception e) {
-		setErrCode(ERROR_IO);
+		setExceptionsCatch(ERROR_IO, e);
+	}
+
+	protected void setExceptionsCatch(int ErrorType, Exception e) {
+		setErrCode(ErrorType);
 		setErrDescription(e.getMessage());
 	}
 
