@@ -1,9 +1,7 @@
 package com.genexus.internet;
 
 import java.io.*;
-import java.net.InetAddress;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
@@ -12,12 +10,14 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.*;
-import java.net.URI;
 import javax.net.ssl.SSLContext;
 
 import org.apache.http.*;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.apache.http.conn.DnsResolver;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -65,6 +65,9 @@ import com.genexus.CommonUtil;
 import com.genexus.specific.java.*;
 
 public class HttpClientJavaLib extends GXHttpClient {
+	private static final int ERROR_SOCKET_TIMEOUT = 1001;
+	private static final int ERROR_CONNECT_TIMEOUT = 1002;
+	private static final int ERROR_CONNECTION_REQUEST_TIMEOUT = 1003;
 
 	private static final DnsResolver FIRST_IP_DNS_RESOLVER = host -> {
 		InetAddress[] allIps = SystemDefaultDnsResolver.INSTANCE.resolve(host);
@@ -417,11 +420,35 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 			int msTimeout = getTimeout() * 1000;
 
+			int connectTimeout = msTimeout;
+			int connectionRequestTimeout = msTimeout;
+			int socketTimeout = msTimeout;
+
+			try {
+				String connectTimeoutEnv = System.getenv("HTTP_CONNECT_TIMEOUT_MS");
+				if (connectTimeoutEnv != null && !connectTimeoutEnv.trim().isEmpty()) {
+					connectTimeout = Integer.parseInt(connectTimeoutEnv);
+				}
+
+				String connectionRequestTimeoutEnv = System.getenv("HTTP_CONNECTION_REQUEST_TIMEOUT_MS");
+				if (connectionRequestTimeoutEnv != null && !connectionRequestTimeoutEnv.trim().isEmpty()) {
+					connectionRequestTimeout = Integer.parseInt(connectionRequestTimeoutEnv);
+				}
+
+				String socketTimeoutEnv = System.getenv("HTTP_SOCKET_TIMEOUT_MS");
+				if (socketTimeoutEnv != null && !socketTimeoutEnv.trim().isEmpty()) {
+					socketTimeout = Integer.parseInt(socketTimeoutEnv);
+				}
+			}
+			catch (NumberFormatException e) {
+				logger.error("Error parsing timeout environment variables", e);
+			}
+
 			RequestConfig.Builder requestConfigBuilder = RequestConfig.custom()
 				.setCookieSpec(CookieSpecs.STANDARD)
-				.setSocketTimeout(msTimeout)
-				.setConnectionRequestTimeout(msTimeout)
-				.setConnectTimeout(msTimeout);
+				.setSocketTimeout(socketTimeout)
+				.setConnectionRequestTimeout(connectionRequestTimeout)
+				.setConnectTimeout(connectTimeout);
 
 			this.httpClientBuilder.setRoutePlanner(null);
 
@@ -650,11 +677,14 @@ public class HttpClientJavaLib extends GXHttpClient {
 			if (response.containsHeader("Transfer-Encoding")) {
 				isChunkedResponse = response.getFirstHeader("Transfer-Encoding").getValue().equalsIgnoreCase("chunked");
 			}
-
+		} catch (ConnectionPoolTimeoutException e) {
+			setExecuteExceptionsCatch(ERROR_CONNECTION_REQUEST_TIMEOUT, e);
+		} catch (ConnectTimeoutException e) {
+			setExecuteExceptionsCatch(ERROR_CONNECT_TIMEOUT, e);
+		} catch (SocketTimeoutException e) {
+			setExecuteExceptionsCatch(ERROR_SOCKET_TIMEOUT, e);
 		} catch (IOException e) {
-			setExceptionsCatch(e);
-			this.statusCode = 0;
-			this.reasonLine = "";
+			setExecuteExceptionsCatch(ERROR_IO, e);
 		}
 		finally {
 			if (Application.isJMXEnabled()){
@@ -669,6 +699,13 @@ public class HttpClientJavaLib extends GXHttpClient {
 			}
 			resetStateAdapted();
 		}
+	}
+
+	private void setExecuteExceptionsCatch(int ErrorType, Exception e) {
+		setExceptionsCatch(ErrorType, e);
+		this.statusCode = 0;
+		this.reasonLine = "";
+		logger.error("Execute error: " + e.getMessage(), e);
 	}
 
 	private synchronized void displayHTTPConnections(){
