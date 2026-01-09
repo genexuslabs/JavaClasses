@@ -686,8 +686,8 @@ public class HttpClientJavaLib extends GXHttpClient {
 		}
 	}
 
-	private void setExecuteExceptionsCatch(int ErrorType, Exception e) {
-		setExceptionsCatch(ErrorType, e);
+	private void setExecuteExceptionsCatch(int errorCode, Exception e) {
+		setExceptionsCatch(errorCode, e);
 		this.statusCode = 0;
 		this.reasonLine = "";
 		logger.error("Execute error: " + e.getMessage(), e);
