@@ -30,6 +30,12 @@
             <artifactId>s3</artifactId>
             <version>${software.awssdk.version}</version>
         </dependency>
+        <!-- overwrite from s3 due to transitive CVEs -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>sts</artifactId>

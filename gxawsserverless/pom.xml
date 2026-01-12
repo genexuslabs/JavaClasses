@@ -54,6 +54,12 @@
             <artifactId>lambda</artifactId>
             <version>${software.awssdk.version}</version>
         </dependency>
+        <!-- overwrite from lambda due to transitive CVEs -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.amazonaws</groupId>
