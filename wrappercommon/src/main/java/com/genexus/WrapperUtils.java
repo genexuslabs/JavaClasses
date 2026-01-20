@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
 import com.genexus.opentelemetry.OpenTelemetryHelper;
+import com.genexus.servlet.http.IHttpServletRequest;
 import org.json.JSONException;
 import com.genexus.json.JSONObjectWrapper;
 import org.apache.commons.io.IOUtils;
@@ -55,5 +56,16 @@ public class WrapperUtils {
 		requestBodyThreadLocal.set(body);
 
 		return IOUtils.toInputStream(body, "UTF-8");
+	}
+
+	public static boolean isSecureConnection(IHttpServletRequest req) {
+		return req.isSecure() ||
+			"https".equalsIgnoreCase(req.getHeader("X-Forwarded-Proto")) ||
+			"on".equalsIgnoreCase(req.getHeader("X-Forwarded-Ssl")) ||
+			"1".equals(req.getHeader("X-Forwarded-Ssl")) ||
+			"true".equalsIgnoreCase(req.getHeader("X-Forwarded-Ssl")) ||
+			"https".equalsIgnoreCase(req.getHeader("X-Forwarded-Scheme")) ||
+			"on".equalsIgnoreCase(req.getHeader("Front-End-Https")) ||
+			"https".equalsIgnoreCase(req.getHeader("X-Url-Scheme"));
 	}
 }
