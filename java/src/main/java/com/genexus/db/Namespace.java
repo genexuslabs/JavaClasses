@@ -18,8 +18,6 @@ public class Namespace extends AbstractNamespace
 	public static final int GXDB_SERVER = 1;
 	private static ConcurrentHashMap<String, String> namespaceListCheck = new ConcurrentHashMap<String, String>();
 	private static ConcurrentHashMap<String, Namespace> namespaceList = new ConcurrentHashMap<String, Namespace>();
-
-	private GXJarClassLoader classLoader;
 	private ConcurrentHashMap<String, DataSource> dataSources = new ConcurrentHashMap<String, DataSource>();
 
 	private String 	name;
@@ -257,19 +255,6 @@ public class Namespace extends AbstractNamespace
 
 	public void reset()
 	{
-		if	(classLoader != null)
-		{
-            classLoader = null;
-/*			try
-			{
-				classLoader.resetClassLoader();
-			}
-			catch (java.io.IOException e)
-			{
-				System.err.println("Error resetting namespace classloader " + e.getMessage());
-			}
-*/
-		}
 		for (Enumeration<UserInformation> en = DBConnectionManager.getInstance().getServerConnections(); en.hasMoreElements();)
 		{
 			ServerUserInformation user = (ServerUserInformation) en.nextElement();
@@ -278,14 +263,6 @@ public class Namespace extends AbstractNamespace
 				ServerConnectionManager.getInstance().disconnect(user.getHandle());
 			}
 		}
-	}
-
-	public synchronized GXJarClassLoader getClassLoader()
-	{
-        if(classLoader == null)
-            classLoader = new GXJarClassLoader(classesArchive, autoReload);
-        else classLoader = classLoader.getClassLoaderInstance();
-        return classLoader;
 	}
 
 	public int getDataSourceCount()

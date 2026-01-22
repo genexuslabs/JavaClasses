@@ -48,7 +48,13 @@
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-messaging-eventgrid</artifactId>
-            <version>4.22.3</version>
+            <version>4.31.4</version>
+        </dependency>
+        <!-- overwrite from azure-messaging-eventgrid due to transitive CVEs -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>${netty.version}</version>
         </dependency>
 
         <dependency>

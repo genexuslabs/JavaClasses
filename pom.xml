@@ -14,12 +14,12 @@
 	<url>https://github.com/genexuslabs/JavaClasses</url>
 
 	<properties>
-		<revision>4.11</revision>
+		<revision>4.12</revision>
 		<changelist>-SNAPSHOT</changelist>
 		<sha1/>
 
-		<jersey.javax.version>2.34</jersey.javax.version>
-		<jersey.jakarta.version>3.0.4</jersey.jakarta.version>
+		<jersey.javax.version>2.46</jersey.javax.version>
+		<jersey.jakarta.version>3.0.17</jersey.jakarta.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<poi.version>5.4.1</poi.version>
 		<pdfbox.version>3.0.3</pdfbox.version>
@@ -28,15 +28,17 @@
 		<commons.logging.version>1.2</commons.logging.version>
 		<jackson.version>2.16.2</jackson.version>
 		<junit.version>4.13.2</junit.version>
-		<software.awssdk.version>2.35.6</software.awssdk.version>
+		<software.awssdk.version>2.40.8</software.awssdk.version>
 		<software.azure.cosmos.version>4.74.0</software.azure.cosmos.version>
-		<log4j.version>2.21.1</log4j.version>
+		<log4j.version>2.25.3</log4j.version>
         <io.opentelemetry.version>1.56.0</io.opentelemetry.version>
         <org.bouncycastle.version>1.82</org.bouncycastle.version>
         <commons-io.version>2.15.1</commons-io.version>
         <commons-codec.version>1.15</commons-codec.version>
         <xmlsec.version>3.0.3</xmlsec.version>
         <jose.version>10.4</jose.version>
+        <commons.lang3.version>3.18.0</commons.lang3.version>
+        <netty.version>4.1.129.Final</netty.version>
 
 	</properties>
 
@@ -105,8 +107,8 @@
 		<module>gxwebsocket</module>
 		<module>gxwebsocketjakarta</module>
 		<module>gxawsserverless</module>
-      		<module>gxserverlesscommon</module>
-	        <module>gxazureserverless</module>
+        <module>gxserverlesscommon</module>
+        <module>gxazureserverless</module>
 		<module>androidreports</module>
 		<module>gxqueue</module>
 		<module>gxqueue-awssqs</module>
@@ -118,21 +120,22 @@
 		<module>gxcloudstorage-googlecloudstorage</module>
 		<module>gxcloudstorage-azureblob</module>
 		<module>gxcloudstorage-ibmcos</module>
-		<module>gxcloudstorage-tests</module>
-    <module>gxobservability</module>
-    <module>gxcloudstorage-awss3-v2</module>
-    <module>gxcompress</module>
-    <module>securityapicommons</module>
-    <module>gamsaml20</module>
-    <module>gxjwt</module>
-    <module>gxcryptography</module>
-    <module>gxxmlsignature</module>
-    <module>gxsftp</module>
-    <module>gxftps</module>
-    <module>gamutils</module>
-    <module>gamtotp</module>
-    <module>gxflowfulltextsearch</module>
-  </modules>
+		<module>gxcloudstorage-tests</module
+        <module>gxobservability</module>
+        <module>gxcloudstorage-awss3-v2</module>
+        <module>gxcompress</module>
+        <module>securityapicommons</module>
+        <module>gamsaml20</module>
+        <module>gxjwt</module>
+        <module>gxcryptography</module>
+        <module>gxxmlsignature</module>
+        <module>gxsftp</module>
+        <module>gxftps</module>
+        <module>gamutils</module>
+        <module>gamtotp</module>
+        <module>gxcloudstorage-azureblob-latest</module>
+        <module>gxflowfulltextsearch</module>
+    </modules>
 
 	<dependencies>
 		<dependency>

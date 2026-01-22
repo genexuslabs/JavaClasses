@@ -1,5 +1,4 @@
-
-package com.genexus.msoffice.excel.poi.xssf;
+package com.genexus.msoffice.excel.poi.hssf;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -14,13 +13,8 @@ import com.genexus.msoffice.excel.IExcelCellRange;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.model.StylesTable;
-import org.apache.poi.xssf.usermodel.*;
-import org.apache.poi.xssf.usermodel.extensions.XSSFCellBorder;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTBorder;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTBorderPr;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTXf;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.STBorderStyle;
+import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.hssf.util.HSSFColor;
 
 import java.math.BigDecimal;
 
@@ -36,8 +30,8 @@ public class ExcelCells implements IExcelCellRange {
     protected int rowEndIdx;
 
     protected org.apache.poi.ss.usermodel.Sheet pSelectedSheet;
-    protected XSSFCell[] pCells;
-    protected XSSFWorkbook pWorkbook;
+    protected HSSFCell[] pCells;
+    protected HSSFWorkbook pWorkbook;
 
     protected ExcelSpreadsheet doc;
 
@@ -48,7 +42,7 @@ public class ExcelCells implements IExcelCellRange {
 
     protected ExcelStyle cellStyle;
 
-    public ExcelCells(IGXError errAccess, ExcelSpreadsheet document, XSSFWorkbook workBook, XSSFSheet selectedSheet,
+    public ExcelCells(IGXError errAccess, ExcelSpreadsheet document, HSSFWorkbook workBook, HSSFSheet selectedSheet,
                       int rowPos, int colPos, int height, int width, StylesCache stylesCache) throws ExcelException {
         this(errAccess, document, workBook, selectedSheet, rowPos, colPos, height, width, false, stylesCache);
     }
@@ -56,7 +50,7 @@ public class ExcelCells implements IExcelCellRange {
     public ExcelCells() {
     }
 
-    public ExcelCells(IGXError errAccess, ExcelSpreadsheet document, XSSFWorkbook workBook, XSSFSheet selectedSheet,
+    public ExcelCells(IGXError errAccess, ExcelSpreadsheet document, HSSFWorkbook workBook, HSSFSheet selectedSheet,
                       int rowPos, int colPos, int height, int width, boolean readonly, StylesCache stylesCache)
             throws ExcelException {
         _errorHandler = errAccess;
@@ -76,13 +70,13 @@ public class ExcelCells implements IExcelCellRange {
         fitColumnWidth = true;
         this.readonly = readonly;
         this.stylesCache = stylesCache;
-        pCells = new XSSFCell[(width * height) + 1];
+        pCells = new HSSFCell[(width * height) + 1];
         try {
             for (int y = rowPos; y < (rowPos + pHeight); y++) {
-                XSSFRow pRow = getExcelRow(selectedSheet, y);
+                HSSFRow pRow = getExcelRow(selectedSheet, y);
                 if (pRow != null) {
                     for (short x = (short) colPos; x < (colPos + pWidth); x++) {
-                        XSSFCell pCell = getExcelCell(pRow, x);
+                        HSSFCell pCell = getExcelCell(pRow, x);
                         if (pCell != null) {
                             cellCount++;
                             pCells[cellCount] = pCell;
@@ -95,8 +89,8 @@ public class ExcelCells implements IExcelCellRange {
         }
     }
 
-    protected XSSFRow getExcelRow(XSSFSheet sheet, int rowPos) {
-        XSSFRow row = sheet.getRow(rowPos);
+    protected HSSFRow getExcelRow(HSSFSheet sheet, int rowPos) {
+        HSSFRow row = sheet.getRow(rowPos);
 
         /*
          * if ((row == null) && readonly) { return null; }
@@ -108,8 +102,8 @@ public class ExcelCells implements IExcelCellRange {
         return row;
     }
 
-    protected XSSFCell getExcelCell(XSSFRow row, short colPos) {
-        XSSFCell cell = row.getCell(colPos);
+    protected HSSFCell getExcelCell(HSSFRow row, short colPos) {
+        HSSFCell cell = row.getCell(colPos);
 
         /*
          * if ((cell == null) && readonly) { return null; }
@@ -145,39 +139,39 @@ public class ExcelCells implements IExcelCellRange {
 
     }
 
-	public boolean setDate(Date value) throws ExcelException {
-		CheckReadonlyDocument();
-		try {
-			if (!CommonUtil.nullDate().equals(value)) {
-				String dformat = "m/d/yy h:mm";//this.doc.getDateFormat().toLowerCase();
-				Calendar calendar = GregorianCalendar.getInstance(); // creates a new calendar instance
-				calendar.setTime(value);
-				if (calendar.get(Calendar.MINUTE) == 0 && calendar.get(Calendar.HOUR) == 0
-					&& calendar.get(Calendar.SECOND) == 0 && dformat.indexOf(' ') > 0) {
-					dformat = dformat.substring(0, dformat.indexOf(' '));
-				}
-				DataFormat df = pWorkbook.createDataFormat();
+        public boolean setDate(Date value) throws ExcelException {
+                CheckReadonlyDocument();
+                try {
+                        if (!CommonUtil.nullDate().equals(value)) {
+                                String dformat = "m/d/yy h:mm";//this.doc.getDateFormat().toLowerCase();
+                                Calendar calendar = GregorianCalendar.getInstance(); // creates a new calendar instance
+                                calendar.setTime(value);
+                                if (calendar.get(Calendar.MINUTE) == 0 && calendar.get(Calendar.HOUR) == 0
+                                        && calendar.get(Calendar.SECOND) == 0 && dformat.indexOf(' ') > 0) {
+                                        dformat = dformat.substring(0, dformat.indexOf(' '));
+                                }
+                                DataFormat df = pWorkbook.createDataFormat();
 
-				for (int i = 1; i <= cellCount; i++) {
-					XSSFCellStyle cellStyle = pCells[i].getCellStyle();
-					if (! DateUtil.isCellDateFormatted(pCells[i])) {
-						XSSFCellStyle newStyle = pWorkbook.createCellStyle();
-						copyPropertiesStyle(newStyle, cellStyle);
-						newStyle.setDataFormat(df.getFormat(dformat));
-						pCells[i].setCellStyle(newStyle);
-						fitColumnWidth(i, dformat.length() + 4);
-					}else {
-						fitColumnWidth(i, cellStyle.getDataFormatString().length() + 4);
-					}
-					pCells[i].setCellValue(value);
-				}
-				return true;
-			}
-		} catch (Exception e) {
-			throw new ExcelException(7, "Invalid cell value");
-		}
-		return false;
-	}
+                                for (int i = 1; i <= cellCount; i++) {
+                                        HSSFCellStyle cellStyle = pCells[i].getCellStyle();
+                                        if (! DateUtil.isCellDateFormatted(pCells[i])) {
+                                                HSSFCellStyle newStyle = pWorkbook.createCellStyle();
+                                                copyPropertiesStyle(newStyle, cellStyle);
+                                                newStyle.setDataFormat(df.getFormat(dformat));
+                                                pCells[i].setCellStyle(newStyle);
+                                                fitColumnWidth(i, dformat.length() + 4);
+                                        }else {
+                                                fitColumnWidth(i, cellStyle.getDataFormatString().length() + 4);
+                                        }
+                                        pCells[i].setCellValue(value);
+                                }
+                                return true;
+                        }
+                } catch (Exception e) {
+                        throw new ExcelException(7, "Invalid cell value");
+                }
+                return false;
+        }
 
     public Date getDate() throws ExcelException {
         Date returnValue = null;
@@ -337,10 +331,10 @@ public class ExcelCells implements IExcelCellRange {
 
         try {
             for (int i = 1; i <= cellCount; i++) {
-                XSSFCellStyle cellStyle = pCells[1].getCellStyle();
-                XSSFFont fontCell = pWorkbook.getFontAt(cellStyle.getFontIndex());
-                XSSFCellStyle newStyle = null;
-                XSSFFont newFont = null;
+                HSSFCellStyle cellStyle = pCells[1].getCellStyle();
+                HSSFFont fontCell = pWorkbook.getFontAt(cellStyle.getFontIndex());
+                HSSFCellStyle newStyle = null;
+                HSSFFont newFont = null;
 
                 if (fontCell.getFontHeightInPoints() != value) {
                     // System.out.println("Changing Size...");
@@ -368,9 +362,9 @@ public class ExcelCells implements IExcelCellRange {
         return pWorkbook.getFontAt(pCells[1].getCellStyle().getFontIndex()).getFontName();
     }
 
-    protected XSSFFont getInternalFont(boolean bold, short color, short fontHeight, String name, boolean italic,
+    protected HSSFFont getInternalFont(boolean bold, short color, short fontHeight, String name, boolean italic,
                                        boolean strikeout, short typeOffset, byte underline) {
-        XSSFFont font = pWorkbook.findFont(bold, color, fontHeight, name, italic, strikeout, typeOffset, underline);
+        HSSFFont font = pWorkbook.findFont(bold, color, fontHeight, name, italic, strikeout, typeOffset, underline);
         if (font == null) {
             font = pWorkbook.createFont();
         }
@@ -382,10 +376,10 @@ public class ExcelCells implements IExcelCellRange {
 
         try {
             for (int i = 1; i <= cellCount; i++) {
-                XSSFCellStyle cellStyle = pCells[i].getCellStyle();
-                XSSFFont fontCell = pWorkbook.getFontAt(cellStyle.getFontIndex());
-                XSSFCellStyle newStyle = null;
-                XSSFFont newFont = null;
+                HSSFCellStyle cellStyle = pCells[i].getCellStyle();
+                HSSFFont fontCell = pWorkbook.getFontAt(cellStyle.getFontIndex());
+                HSSFCellStyle newStyle = null;
+                HSSFFont newFont = null;
 
                 if (!fontCell.getFontName().equals(value)) {
                     newFont = getInternalFont(fontCell.getBold(), fontCell.getColor(), fontCell.getFontHeight(), value,
@@ -421,10 +415,10 @@ public class ExcelCells implements IExcelCellRange {
         try {
 
             for (int i = 1; i <= cellCount; i++) {
-                XSSFCellStyle cellStyle = pCells[i].getCellStyle();
-                XSSFFont fontCell = pWorkbook.getFontAt(cellStyle.getFontIndex());
-                XSSFCellStyle newStyle = null;
-                XSSFFont newFont = null;
+                HSSFCellStyle cellStyle = pCells[i].getCellStyle();
+                HSSFFont fontCell = pWorkbook.getFontAt(cellStyle.getFontIndex());
+                HSSFCellStyle newStyle = null;
+                HSSFFont newFont = null;
 
                 switch (value) {
                     case 0:
@@ -483,10 +477,10 @@ public class ExcelCells implements IExcelCellRange {
         try {
 
             for (int i = 1; i <= cellCount; i++) {
-                XSSFCellStyle cellStyle = pCells[i].getCellStyle();
-                XSSFFont fontCell = pWorkbook.getFontAt(cellStyle.getFontIndex());
-                XSSFCellStyle newStyle = null;
-                XSSFFont newFont = null;
+                HSSFCellStyle cellStyle = pCells[i].getCellStyle();
+                HSSFFont fontCell = pWorkbook.getFontAt(cellStyle.getFontIndex());
+                HSSFCellStyle newStyle = null;
+                HSSFFont newFont = null;
 
                 switch (value) {
                     case 0:
@@ -531,7 +525,7 @@ public class ExcelCells implements IExcelCellRange {
     }
 
     public short getUnderline() {
-        if (pWorkbook.getFontAt(pCells[1].getCellStyle().getFontIndex()).getUnderline() != XSSFFont.U_NONE) {
+        if (pWorkbook.getFontAt(pCells[1].getCellStyle().getFontIndex()).getUnderline() != HSSFFont.U_NONE) {
             return 1;
         }
         return 0;
@@ -543,20 +537,20 @@ public class ExcelCells implements IExcelCellRange {
         try {
 
             for (int i = 1; i <= cellCount; i++) {
-                XSSFCellStyle cellStyle = pCells[i].getCellStyle();
-                XSSFFont fontCell = pWorkbook.getFontAt(cellStyle.getFontIndex());
-                XSSFCellStyle newStyle = null;
-                XSSFFont newFont = null;
+                HSSFCellStyle cellStyle = pCells[i].getCellStyle();
+                HSSFFont fontCell = pWorkbook.getFontAt(cellStyle.getFontIndex());
+                HSSFCellStyle newStyle = null;
+                HSSFFont newFont = null;
 
                 switch (value) {
                     case 0:
-                        if (fontCell.getUnderline() != XSSFFont.U_NONE) {
+                        if (fontCell.getUnderline() != HSSFFont.U_NONE) {
                             newFont = getInternalFont(fontCell.getBold(), fontCell.getColor(), fontCell.getFontHeight(),
                                     fontCell.getFontName(), fontCell.getItalic(), fontCell.getStrikeout(),
-                                    fontCell.getTypeOffset(), XSSFFont.U_NONE);
+                                    fontCell.getTypeOffset(), HSSFFont.U_NONE);
                             copyPropertiesFont(newFont, fontCell);
 
-                            newFont.setUnderline(XSSFFont.U_NONE);
+                            newFont.setUnderline(HSSFFont.U_NONE);
 
                             newStyle = stylesCache.getCellStyle(newFont);
                             copyPropertiesStyle(newStyle, cellStyle);
@@ -566,13 +560,13 @@ public class ExcelCells implements IExcelCellRange {
                         }
                         break;
                     case 1:
-                        if (fontCell.getUnderline() != XSSFFont.U_SINGLE) {
+                        if (fontCell.getUnderline() != HSSFFont.U_SINGLE) {
                             newFont = getInternalFont(fontCell.getBold(), fontCell.getColor(), fontCell.getFontHeight(),
                                     fontCell.getFontName(), fontCell.getItalic(), fontCell.getStrikeout(),
-                                    fontCell.getTypeOffset(), XSSFFont.U_SINGLE);
+                                    fontCell.getTypeOffset(), HSSFFont.U_SINGLE);
                             copyPropertiesFont(newFont, fontCell);
 
-                            newFont.setUnderline(XSSFFont.U_SINGLE);
+                            newFont.setUnderline(HSSFFont.U_SINGLE);
 
                             newStyle = stylesCache.getCellStyle(newFont);
                             copyPropertiesStyle(newStyle, cellStyle);
@@ -602,127 +596,35 @@ public class ExcelCells implements IExcelCellRange {
         setColor((long) value);
     }
 
-    // Ver setColor()
-    /*
-     * public void setColor(long value) //Willy version { int val=(int)value; int
-     * r=val >> 16 & 0xff; int g=val >> 8 & 0xff; int b=val & 0xff; HSSFPalette
-     * palette = pWorkbook.getCustomPalette(); try { for (int i=1;i <= cntCells;
-     * i++) { XSSFCellStyle cellStyle = pCells[i].getCellStyle(); XSSFFont fontCell
-     * = pWorkbook.getFontAt(cellStyle.getFontIndex()); CellStyle newStyle = null;
-     * XSSFFont newFont = null;
-     *
-     * newStyle = pWorkbook.createCellStyle();
-     * PropertyUtils.copyProperties(newStyle, cellStyle); newFont =
-     * pWorkbook.createFont(); int colorIdx=ColorManager.getColor(pWorkbook);
-     * PropertyUtils.copyProperties(newFont,
-     * pWorkbook.getFontAt(cellStyle.getFontIndex()));
-     * palette.setColorAtIndex((short)colorIdx,(byte)r,(byte)g,(byte)b);
-     * newFont.setColor((short)colorIdx); //newFont.setColor(XSSFFont.COLOR_RED);
-     * newStyle.setFont(newFont); pCells[i].setCellStyle(newStyle);
-     *
-     * }
-     *
-     * } catch (Exception e) {
-     *
-     * } }
-     */
-    // Esta version optimiza la paleta de colores existente en la planilla
-    // Busca colores parecidos y si los encuentra, los toma para no recargar
-    // la paleta de colores que tiene un maximo de 40h-10h posiciones.
-    public void setColor(long value) throws ExcelException // 05/07/05 B@tero
-    {
+    // Implementación para XLS que usa HSSFPalette para configurar colores
+    public void setColor(long value) throws ExcelException {
         CheckReadonlyDocument();
 
         try {
-
+            // En XLS necesitamos manejar la paleta de colores que es más limitada que en XLSX
+            HSSFPalette palette = pWorkbook.getCustomPalette();
+            short colorIdx = (short) (value + 7); // Ajustar al índice de la paleta
+            
             for (int i = 1; i <= cellCount; i++) {
-                XSSFCellStyle cellStyle = pCells[i].getCellStyle();
-                XSSFFont fontCell = pWorkbook.getFontAt(cellStyle.getFontIndex());
-                XSSFCellStyle newStyle = null;
-                XSSFFont newFont = null;
-                XSSFColor newColor = null;
+                HSSFCellStyle cellStyle = pCells[i].getCellStyle();
+                HSSFFont fontCell = pWorkbook.getFontAt(cellStyle.getFontIndex());
+                HSSFCellStyle newStyle = null;
+                HSSFFont newFont = null;
+                
+                // En XLS, solo podemos usar índices de color predefinidos o personalizados
+                if (fontCell.getColor() != colorIdx) {
+                    newFont = (HSSFFont) getInternalFont(fontCell.getBold(), colorIdx,
+                            fontCell.getFontHeight(), fontCell.getFontName(), fontCell.getItalic(),
+                            fontCell.getStrikeout(), fontCell.getTypeOffset(), fontCell.getUnderline());
+                    copyPropertiesFont(newFont, fontCell);
 
-                XSSFColor fontColor = ((XSSFFont) fontCell).getXSSFColor();
+                    newFont.setColor(colorIdx);
 
-                int val = (int) value;
-                int red = val >> 16 & 0xff;
-                int green = val >> 8 & 0xff;
-                int blue = val & 0xff;
+                    newStyle = stylesCache.getCellStyle(newFont);
+                    copyPropertiesStyle(newStyle, cellStyle);
 
-                if (red != 0 || green != 0 || blue > 56) // Si es value esta entre 1 y 56 entonces supongo que es un
-                // color Index de Excel y voy por el else
-                {
-                    if ((fontColor != null && (fontColor.getRGB() == null || (fontColor.getRGB()[0] == 0
-                            && fontColor.getRGB()[1] == 0 && fontColor.getRGB()[2] == 0)))) {
-                        // System.out.println("Automatic color.");
-
-                        if ((red + green + blue) != 0) {
-                            newColor = new XSSFColor(new java.awt.Color(red, green, blue), new DefaultIndexedColorMap());
-
-                            newFont = (XSSFFont) pWorkbook.createFont();
-                            copyPropertiesFont(newFont, fontCell);
-
-                            newFont.setColor(newColor);
-
-                            newStyle = pWorkbook.createCellStyle();
-                            copyPropertiesStyle(newStyle, cellStyle);
-
-                            newStyle.setFont(newFont);
-                            pCells[i].setCellStyle(newStyle);
-                        }
-                    } else {
-                        if (fontColor != null) {
-                            byte[] triplet = fontColor.getRGB();
-
-                            if (triplet[0] != red || triplet[1] != green || triplet[2] != blue) {
-                                newColor = new XSSFColor( new java.awt.Color(red, green, blue), new DefaultIndexedColorMap());
-
-                                newFont = (XSSFFont) pWorkbook.createFont();
-                                copyPropertiesFont(newFont, fontCell);
-
-                                newFont.setColor(newColor);
-
-                                newStyle = pWorkbook.createCellStyle();
-                                copyPropertiesStyle(newStyle, cellStyle);
-
-                                newStyle.setFont(newFont);
-                                pCells[i].setCellStyle(newStyle);
-                            }
-                        }
-                    }
-                } else {
-                    // Es el ofset que hay que sumar para que el colorIndex quede igual
-                    // al de la implementacion anterior de excel
-                    value = value + 7;
-                    if (fontColor != null) {
-                        if (fontColor.getIndexed() != value) {
-                            newFont = (XSSFFont) getInternalFont(fontCell.getBold(), (short) value,
-                                    fontCell.getFontHeight(), fontCell.getFontName(), fontCell.getItalic(),
-                                    fontCell.getStrikeout(), fontCell.getTypeOffset(), fontCell.getUnderline());
-                            copyPropertiesFont(newFont, fontCell);
-
-                            newFont.setColor((short) value);
-
-                            newStyle = stylesCache.getCellStyle(newFont);
-                            copyPropertiesStyle(newStyle, cellStyle);
-
-                            newStyle.setFont(newFont);
-                            pCells[i].setCellStyle(newStyle);
-                        }
-                    } else {
-                        newFont = (XSSFFont) getInternalFont(fontCell.getBold(), (short) value,
-                                fontCell.getFontHeight(), fontCell.getFontName(), fontCell.getItalic(),
-                                fontCell.getStrikeout(), fontCell.getTypeOffset(), fontCell.getUnderline());
-                        copyPropertiesFont(newFont, fontCell);
-
-                        newFont.setColor((short) value);
-
-                        newStyle = stylesCache.getCellStyle(newFont);
-                        copyPropertiesStyle(newStyle, cellStyle);
-
-                        newStyle.setFont(newFont);
-                        pCells[i].setCellStyle(newStyle);
-                    }
+                    newStyle.setFont(newFont);
+                    pCells[i].setCellStyle(newStyle);
                 }
             }
         } catch (Exception e) {
@@ -757,33 +659,33 @@ public class ExcelCells implements IExcelCellRange {
         }
     }
 
-	@Override
-	public String getHyperlinkValue() {
-		try {
-			return this.getHyperlink();
-		} catch (ExcelException e) {
-			_errorHandler.setErrCod((short) e.get_errorCode());
-			_errorHandler.setErrDes(e.get_errDsc());
-		}
-		return "";
-	}
+        @Override
+        public String getHyperlinkValue() {
+                try {
+                        return this.getHyperlink();
+                } catch (ExcelException e) {
+                        _errorHandler.setErrCod((short) e.get_errorCode());
+                        _errorHandler.setErrDes(e.get_errDsc());
+                }
+                return "";
+        }
 
-	@Override
-	public Boolean setHyperlinkValue(String value) {
-		try {
-			return this.setHyperlink(value);
-		} catch (ExcelException e) {
-			_errorHandler.setErrCod((short) e.get_errorCode());
-			_errorHandler.setErrDes(e.get_errDsc());
-		}
-		return false;
-	}
+        @Override
+        public Boolean setHyperlinkValue(String value) {
+                try {
+                        return this.setHyperlink(value);
+                } catch (ExcelException e) {
+                        _errorHandler.setErrCod((short) e.get_errorCode());
+                        _errorHandler.setErrDes(e.get_errDsc());
+                }
+                return false;
+        }
 
-    protected void copyPropertiesStyle(XSSFCellStyle dest, XSSFCellStyle source) {
+    protected void copyPropertiesStyle(HSSFCellStyle dest, HSSFCellStyle source) {
         dest.cloneStyleFrom(source);
     }
 
-    protected void copyPropertiesFont(XSSFFont dest, XSSFFont source) {
+    protected void copyPropertiesFont(HSSFFont dest, HSSFFont source) {
         dest.setFontHeightInPoints(source.getFontHeightInPoints());
         dest.setFontName(source.getFontName());
         dest.setBold(source.getBold());
@@ -809,46 +711,6 @@ public class ExcelCells implements IExcelCellRange {
     public boolean getFitColumnWidth() {
         return fitColumnWidth;
     }
-
-    /*
-     * public void setAlignment(short value) { setCellStyleProperty("alignment", new
-     * Short(value)); }
-     *
-     * public void setBorder(short value) { setCellStyleProperty("borderLeft", new
-     * Short(value)); }
-     *
-     * public void setCellStyleProperty(String propertyName, Object propertyValue) {
-     * try {
-     *
-     * XSSFCellStyle originalStyle = pCells[1].getCellStyle(); CellStyle newStyle =
-     * null;
-     *
-     * Map values = PropertyUtils.describe(originalStyle); values.put(propertyName,
-     * propertyValue); values.remove("index"); // not good to compare on
-     *
-     * short numberCellStyles = pWorkbook.getNumCellStyles();
-     *
-     * for (short i = 0; i < numberCellStyles; i++) { XSSFCellStyle wbStyle =
-     * pWorkbook.getCellStyleAt(i); Map wbStyleMap =
-     * PropertyUtils.describe(wbStyle); wbStyleMap.remove( "index" );
-     *
-     * if (wbStyleMap.equals(values)) { newStyle = wbStyle;
-     * //System.out.println("founded!!!"); break; } }
-     *
-     * if ( newStyle == null ) { newStyle = pWorkbook.createCellStyle();
-     * newStyle.setFont(pWorkbook.getFontAt(originalStyle.getFontIndex()));
-     *
-     * PropertyUtils.copyProperties(newStyle, originalStyle);
-     * PropertyUtils.setProperty(newStyle, propertyName, propertyValue);
-     * //System.out.println("not founded!!!"); }
-     *
-     * pCells[1].setCellStyle(newStyle);
-     *
-     * }
-     *
-     * catch (Exception e) { e.printStackTrace(); // throw new NestableException(
-     * "Couldn't setCellStyleProperty.", e ); } }
-     */
 
     @Override
     public int getRowStart() {
@@ -954,7 +816,7 @@ public class ExcelCells implements IExcelCellRange {
     @Override
     public Boolean setCellStyle(ExcelStyle newCellStyle) {
         if (cellCount > 0) {
-            XSSFCellStyle style = pWorkbook.createCellStyle();
+            HSSFCellStyle style = pWorkbook.createCellStyle();
 
             style.cloneStyleFrom(style);
             applyNewCellStyle(style, newCellStyle);
@@ -963,18 +825,30 @@ public class ExcelCells implements IExcelCellRange {
             }
         }
         return cellCount > 0;
-
     }
 
-    private XSSFColor toColor(ExcelColor color) {
-       return new XSSFColor( new java.awt.Color(color.getRed(), color.getGreen(), color.getBlue()), new DefaultIndexedColorMap());
+    private HSSFColor toColor(ExcelColor color) {
+       // En HSSF, necesitamos usar la paleta de colores personalizada
+       HSSFPalette palette = pWorkbook.getCustomPalette();
+       byte r = (byte)(color.getRed() & 0xFF);
+       byte g = (byte)(color.getGreen() & 0xFF);
+       byte b = (byte)(color.getBlue() & 0xFF);
+       
+       // Tratar de encontrar el color más cercano o crear un color personalizado
+       try {
+           short customColorIdx = 0x40; // Empezar a usar índices personalizados
+           palette.setColorAtIndex(customColorIdx, r, g, b);
+           return palette.getColor(customColorIdx);
+       } catch (Exception e) {
+           // Si hay un problema con los colores personalizados, devolver negro
+           return palette.getColor(HSSFColor.HSSFColorPredefined.BLACK.getIndex());
+       }
     }
 
-    private XSSFCellStyle applyNewCellStyle(XSSFCellStyle cellStyle, ExcelStyle newCellStyle) {
+    private HSSFCellStyle applyNewCellStyle(HSSFCellStyle cellStyle, ExcelStyle newCellStyle) {
         ExcelFont cellFont = newCellStyle.getCellFont();
         if (cellFont != null && cellFont.isDirty()) {
-            // XSSFFont cellStyleFont = cellStyle.getFont();
-            XSSFFont cellStyleFont = pWorkbook.createFont();
+            HSSFFont cellStyleFont = pWorkbook.createFont();
             cellStyle.setFont(cellStyleFont);
             ExcelFont font = newCellStyle.getCellFont();
             if (font != null) {
@@ -991,19 +865,22 @@ public class ExcelCells implements IExcelCellRange {
                     cellStyleFont.setStrikeout(font.getStrike());
                 }
                 if (font.getSize() != null) {
-                    cellStyleFont.setFontHeight(font.getSize());
+                    cellStyleFont.setFontHeight(font.getSize().shortValue());
                 }
                 if (font.getUnderline() != null) {
                     cellStyleFont.setUnderline((byte) (font.getUnderline() ? 1 : 0));
                 }
                 if (font.getColor() != null && font.getColor().isDirty()) {
-                    cellStyleFont.setColor(toColor(font.getColor()));
+                    HSSFColor color = toColor(font.getColor());
+                    cellStyleFont.setColor(color.getIndex());
                 }
             }
         }
+
         ExcelFill cellfill = newCellStyle.getCellFill();
         if (cellfill != null && cellfill.getCellBackColor() != null && cellfill.getCellBackColor().isDirty()) {
-            cellStyle.setFillForegroundColor(toColor(cellfill.getCellBackColor()));
+            HSSFColor color = toColor(cellfill.getCellBackColor());
+            cellStyle.setFillForegroundColor(color.getIndex());
             cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         }
 
@@ -1063,7 +940,6 @@ public class ExcelCells implements IExcelCellRange {
         }
 
         if (newCellStyle.getTextRotation() != 0) {
-
             cellStyle.setRotation((short) (newCellStyle.getTextRotation()));
         }
 
@@ -1081,54 +957,24 @@ public class ExcelCells implements IExcelCellRange {
             applyBorderSide(cellStyle, BorderCellSide.BOTTOM, cellBorder.getBorderBottom());
             applyBorderSide(cellStyle, BorderCellSide.LEFT, cellBorder.getBorderLeft());
             applyBorderSide(cellStyle, BorderCellSide.RIGHT, cellBorder.getBorderRight());
-
-            Boolean hasDiagonalUp = cellBorder.getBorderDiagonalUp() != null && cellBorder.getBorderDiagonalUp().isDirty();
-            Boolean hasDiagonalDown = cellBorder.getBorderDiagonalDown() != null && cellBorder.getBorderDiagonalDown().isDirty();
-            if (hasDiagonalUp || hasDiagonalDown) {
-                CTXf _cellXf = cellStyle.getCoreXf();
-                ExcelBorder border = (hasDiagonalUp) ? cellBorder.getBorderDiagonalUp() : cellBorder.getBorderDiagonalDown();
-                XSSFColor diagonalColor = toColor(border.getBorderColor());
-                setBorderDiagonal(BorderStyle.valueOf(border.getBorder()), diagonalColor, this.pWorkbook.getStylesSource(), _cellXf, hasDiagonalUp, hasDiagonalDown);
-            }
         }
         return cellStyle;
     }
 
-    private static CTBorder getCTBorder(StylesTable _stylesSource, CTXf _cellXf) {
-        CTBorder ct;
-        if (_cellXf.getApplyBorder()) {
-            int idx = (int) _cellXf.getBorderId();
-            XSSFCellBorder cf = _stylesSource.getBorderAt(idx);
-            ct = (CTBorder) cf.getCTBorder().copy();
-        } else {
-            ct = CTBorder.Factory.newInstance();
-        }
-        return ct;
-    }
-
-    public static void setBorderDiagonal(BorderStyle border, XSSFColor color, StylesTable _stylesSource, CTXf _cellXf, boolean up, boolean down) {
-        CTBorder ct = getCTBorder(_stylesSource, _cellXf);
-        CTBorderPr pr = ct.isSetDiagonal() ? ct.getDiagonal() : ct.addNewDiagonal();
-
-        ct.setDiagonalDown(down);
-        ct.setDiagonalUp(up);
-        pr.setStyle(STBorderStyle.Enum.forInt(border.getCode() + 1));
-        pr.setColor(color.getCTColor());
-
-        int idx = _stylesSource.putBorder(new XSSFCellBorder(ct));
-        _cellXf.setBorderId(idx);
-        _cellXf.setApplyBorder(true);
-    }
-
-    private void applyBorderSide(XSSFCellStyle cellStyle, BorderCellSide bSide, ExcelBorder border) {
+    private void applyBorderSide(HSSFCellStyle cellStyle, BorderCellSide bSide, ExcelBorder border) {
         if (border != null && border.isDirty()) {
             if (border.getBorderColor().isDirty()) {
-                try {
-                    XSSFCellBorder.BorderSide borderSide = XSSFCellBorder.BorderSide.valueOf(bSide.name());
-                    cellStyle.setBorderColor(borderSide, toColor(border.getBorderColor()));
+                HSSFColor color = toColor(border.getBorderColor());
+                if (bSide == BorderCellSide.BOTTOM) {
+                    cellStyle.setBottomBorderColor(color.getIndex());
+                } else if (bSide == BorderCellSide.TOP) {
+                    cellStyle.setTopBorderColor(color.getIndex());
+                } else if (bSide == BorderCellSide.LEFT) {
+                    cellStyle.setLeftBorderColor(color.getIndex());
+                } else if (bSide == BorderCellSide.RIGHT) {
+                    cellStyle.setRightBorderColor(color.getIndex());
                 }
-                catch (IllegalArgumentException e) {}
-			}
+            }
             if (border.getBorder() != null && border.getBorder().length() > 0) {
                 BorderStyle bs = BorderStyle.valueOf(border.getBorder());
                 if (bSide == BorderCellSide.BOTTOM) {
@@ -1145,6 +991,6 @@ public class ExcelCells implements IExcelCellRange {
     }
 
     public enum BorderCellSide {
-        RIGHT, LEFT, TOP, BOTTOM, DIAGONALUP, DIAGONALDOWN
+        RIGHT, LEFT, TOP, BOTTOM
     }
 }

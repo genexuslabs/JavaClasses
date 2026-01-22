@@ -19,6 +19,7 @@ import java.security.*;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -853,8 +854,8 @@ public final class CommonUtil
    	public static int strcmp( String left ,
                              String right )
    	{
-               return rtrim(left).compareTo(rtrim(right));
-   	}
+		return rtrim(left).compareTo(rtrim(right));
+	}
 
    	public static boolean strcmp2( String left ,
                              String right )
@@ -2418,7 +2419,13 @@ public final class CommonUtil
 
 	public static String getRelativeBlobFile(String path)
 	{
-		return path.replace(com.genexus.ApplicationContext.getInstance().getServletEngineDefaultPath() + File.separator, "").replace(File.separator, "/");
+		String servletEngineDefaultPath = com.genexus.ApplicationContext.getInstance().getServletEngineDefaultPath();
+		if (!servletEngineDefaultPath.isEmpty() && path.startsWith(servletEngineDefaultPath)) {
+			return path.replace(servletEngineDefaultPath + File.separator, "").replace(File.separator, "/");
+		}
+		else {
+			return path;
+		}
 	}
 
 	public static final String FORMDATA_REFERENCE = "gxformdataref:";
@@ -2798,7 +2805,7 @@ public final class CommonUtil
         }
         else if (className.equals("string") || className.indexOf("java.lang.String") != -1)
         {
-            return objStr.equals("null") ? null : objStr;
+			return (obj == JSONObject.NULL)? null : objStr;
         }
         else if (className.equals("double") || className.equals("java.lang.Double") || className.equals("[D"))
         {
