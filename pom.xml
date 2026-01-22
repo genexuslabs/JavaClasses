@@ -120,7 +120,7 @@
 		<module>gxcloudstorage-googlecloudstorage</module>
 		<module>gxcloudstorage-azureblob</module>
 		<module>gxcloudstorage-ibmcos</module>
-		<module>gxcloudstorage-tests</module
+		<module>gxcloudstorage-tests</module>
         <module>gxobservability</module>
         <module>gxcloudstorage-awss3-v2</module>
         <module>gxcompress</module>
