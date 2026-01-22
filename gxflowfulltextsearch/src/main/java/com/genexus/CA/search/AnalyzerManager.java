@@ -1,26 +1,25 @@
 package com.genexus.CA.search;
 
-import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 public class AnalyzerManager {
-   private static final HashMap hash = new HashMap();
+	private static final Map<String, Analyzer> ANALYZERS = new ConcurrentHashMap<>();
 
-   public static Analyzer getAnalyzer(String lang) {
-      Analyzer analyzer = null;
-      if (hash.containsKey(lang)) {
-         analyzer = (Analyzer)hash.get(lang);
-      } else {
-         if (lang.equals("spa")) {
-            analyzer = new StandardAnalyzer();
-         } else {
-            analyzer = new StandardAnalyzer();
-         }
+	static {
+		ANALYZERS.put("default", new StandardAnalyzer());
+		// In the future, when the Lucene version is updated, specific analyzers for different languages can be added here.
+		// For example, for Spanish:
+		// ANALYZERS.put("es", new org.apache.lucene.analysis.es.SpanishAnalyzer());
+	}
 
-         hash.put(lang, analyzer);
-      }
-
-      return (Analyzer)analyzer;
-   }
+	public static Analyzer getAnalyzer(String lang) {
+		if (lang == null || lang.trim().isEmpty()) {
+			return ANALYZERS.get("default");
+		}
+		return ANALYZERS.getOrDefault(lang, ANALYZERS.get("default"));
+	}
 }
