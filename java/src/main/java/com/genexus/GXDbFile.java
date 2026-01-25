@@ -247,7 +247,7 @@ public class GXDbFile
 			String rawPath = u.getRawPath();
 			if (rawPath == null)
 				return uri;
-			//Defensive code: Azure Blob URL escapes subdirectory slashes
+			//Defensive code: Azure Blob URL scapes subdirectory slashes
 			//https://github.com/Azure/azure-sdk-for-java/issues/21610
 			String fixedPath = rawPath
 				.replace("%2F", "/")
