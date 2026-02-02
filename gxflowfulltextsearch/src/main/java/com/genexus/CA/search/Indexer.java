@@ -41,11 +41,14 @@ public final class Indexer {
    Indexer(String directory) {
       this.indexDirectory = normalizeIndexDirectory(directory);
       if (!this.indexExists(this.indexDirectory)) {
+         IndexWriter writer = null;
          try {
-            IndexWriter writer = new IndexWriter(this.indexDirectory, new StandardAnalyzer(), true);
-            writer.close();
+            writer = new IndexWriter(this.indexDirectory, new StandardAnalyzer(), true);
          } catch (Exception e) {
             logger.error("Error creating index directory: {}", this.indexDirectory, e);
+         }
+         finally {
+            closeWriter(writer);
          }
       }
 
@@ -116,13 +119,15 @@ public final class Indexer {
    private synchronized void indexOperation(int op, String lang, Document doc, String uri) {
       switch(op) {
       case OPERATION_INDEX:
+         IndexWriter writer = null;
          try {
-            IndexWriter writer = new IndexWriter(this.getIndexDirectory(), AnalyzerManager.getAnalyzer(lang), false);
+            writer = new IndexWriter(this.getIndexDirectory(), AnalyzerManager.getAnalyzer(lang), false);
             writer.addDocument(doc);
             // writer.optimize(); // This is a costly operation and should not be done for every document.
-            writer.close();
          } catch (Exception e) {
             logger.error("Error indexing document. uri={}, lang={}", uri, lang, e);
+         } finally {
+            closeWriter(writer);
          }
          break;
       case OPERATION_DELETE:
@@ -154,6 +159,7 @@ public final class Indexer {
                }
             }
          }
+		 break;
       }
 
    }
@@ -170,11 +176,21 @@ public final class Indexer {
    }
 
    private boolean indexExists(String dir) {
+      IndexSearcher searcher = null;
       try {
-         new IndexSearcher(dir);
+         searcher = new IndexSearcher(dir);
          return true;
       } catch (IOException e) {
          return false;
+      }
+      finally {
+         if (searcher != null) {
+            try {
+               searcher.close();
+            } catch (IOException e) {
+               logger.error("Error closing IndexSearcher", e);
+            }
+         }
       }
    }
 
@@ -255,5 +271,15 @@ public final class Indexer {
    private boolean isTxtExtension(String filePath) {
       String lowerFilePath = filePath.toLowerCase();
       return lowerFilePath.endsWith(".txt") || lowerFilePath.endsWith(".html");
+   }
+
+   private void closeWriter(IndexWriter writer) {
+      if (writer != null) {
+         try {
+            writer.close();
+         } catch (IOException e) {
+            logger.error("Error closing IndexWriter", e);
+         }
+      }
    }
 }
