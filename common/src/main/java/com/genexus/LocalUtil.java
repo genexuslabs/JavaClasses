@@ -797,7 +797,7 @@ public class LocalUtil
 	}
 
 	private static boolean isNullDateValue(String value) {
-		return value.equals("00/00/00") || value.equals("00/00/0000");
+		return value.equals("00/00/00") || value.equals("00/00/0000") || value.equals("0000/00/00");
 	}
 
 	public static void main(String arg[])
