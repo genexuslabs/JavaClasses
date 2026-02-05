@@ -11,6 +11,7 @@ on:
       - 'master'
       - 'beta'
       - 'release-*'
+      - 'm-release-*'
       - 'beta-corona'
 
 jobs:
