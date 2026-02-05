@@ -110,6 +110,14 @@ jobs:
             SHOULD_DEPLOY_MAVEN_CENTRAL='true'
             ;;
 
+          m-release-*)
+            echo "## Is RELEASE/UPGRADE branch, use pom.xml version modifing patch number"
+
+            pomPatchNumber="$(git rev-list --count origin/master..)"
+
+            SHOULD_DEPLOY='true'
+            ;;            
+
           *)
             echo "## Is a feature branch, use pom.xml version as is"
             ;;
