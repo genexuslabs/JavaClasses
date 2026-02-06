@@ -247,16 +247,16 @@ public class GXDbFile
 			String rawPath = u.getRawPath();
 			if (rawPath == null)
 				return uri;
+			//Defensive code: Azure Blob URL scapes subdirectory slashes
+			//https://github.com/Azure/azure-sdk-for-java/issues/21610
+			String fixedPath = rawPath
+				.replace("%2F", "/")
+				.replace("%2f", "/");
 
-			boolean hasEncodedSegments = rawPath.matches(".*%[0-9A-Fa-f]{2}.*");
-			if (!hasEncodedSegments) {
-				return uri;
-			}
-			String decodedPath = URLDecoder.decode(rawPath, StandardCharsets.UTF_8.name());
 			return new URI(
 				u.getScheme(),
 				u.getAuthority(),
-				decodedPath,
+				fixedPath,
 				u.getRawQuery(),
 				u.getRawFragment()
 			).toString();
