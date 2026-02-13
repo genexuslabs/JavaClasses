@@ -796,6 +796,10 @@ public class LocalUtil
 		}
 	}
 
+	private static boolean isNullDateValue(String value) {
+		return value.equals("00/00/00") || value.equals("00/00/0000") || value.equals("0000/00/00");
+	}
+
 	public static void main(String arg[])
 	{
 		System.out.println(isNullDateTime("  /  /   12 AM", 2, 1));
@@ -1091,7 +1095,7 @@ public class LocalUtil
 		{
 			//When parsing a date gives a ParseException we try with setLenient(true) to parse dates only with dates with
 			//daylighttime changes at 00:00 AM (Issue: 93038)
-			if (!isNullTimeValue(date.substring(date.indexOf(' ') + 1), false))
+			if (date.indexOf(' ') == -1 || !isNullTimeValue(date.substring(date.indexOf(' ') + 1), false) && !isNullDateValue(date.substring(0, date.indexOf(' '))))
 				return null;
 			df.setLenient(true);
 			try
