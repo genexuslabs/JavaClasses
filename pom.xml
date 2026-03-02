@@ -27,7 +27,7 @@
 		<lucene.version>2.2.0</lucene.version>
 		<commons.collections4.version>4.1</commons.collections4.version>
 		<commons.logging.version>1.2</commons.logging.version>
-		<jackson.version>2.16.2</jackson.version>
+		<jackson.version>2.18.6</jackson.version>
 		<junit.version>4.13.2</junit.version>
 		<software.awssdk.version>2.40.8</software.awssdk.version>
 		<software.azure.cosmos.version>4.74.0</software.azure.cosmos.version>
