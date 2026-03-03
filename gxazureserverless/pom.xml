@@ -44,6 +44,12 @@
             <artifactId>cloudevents-json-jackson</artifactId>
             <version>4.0.1</version>
         </dependency>
+        <!-- overwrite from io.cloudevents due to transitive CVEs -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.azure</groupId>
