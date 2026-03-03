@@ -79,5 +79,11 @@
             <artifactId>grpc-netty-shaded</artifactId>
             <version>1.75.0</version>
         </dependency>
+        <!-- overwrite jackson-core from google-cloud-storage because of CVEs-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
 	</dependencies>
 </project>
