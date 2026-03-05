@@ -33,6 +33,12 @@
             <artifactId>azure-core-http-netty</artifactId>
             <version>1.16.2</version>
         </dependency>
+        <!-- overwrite from azure-cosmos due to transitive CVEs -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
         <!-- overwrite from azure-core-http-netty due to transitive CVEs -->
         <dependency>
             <groupId>io.netty</groupId>
