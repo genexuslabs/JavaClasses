@@ -102,6 +102,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 		HttpClientBuilder builder = HttpClients.custom()
 			.setConnectionManager(connManager)
 			.setConnectionManagerShared(true)
+			.useSystemProperties()
 			.setKeepAliveStrategy(myStrategy);
 		if (getGxIpResolverConfig() != null) {
 			builder.setDnsResolver(new FirstIpDnsResolver());
