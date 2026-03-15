@@ -49,11 +49,19 @@ jobs:
       current_minor: ${{ steps.detect-version.outputs.current_minor }}
       branch_created: ${{ steps.check-branch.outputs.branch_created }}
     steps:
+      - name: Get GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.APP_REPO_WRITER_ID }}
+          private-key: ${{ secrets.APP_REPO_WRITER_PRIVATE_KEY }}
+
       - name: Checkout master
         uses: actions/checkout@v6
         with:
           ref: master
           fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Detect current version
         id: detect-version
@@ -185,5 +193,10 @@ jobs:
             echo "- Would create branch: \`${RELEASE_BRANCH}\`" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "- Release branch: \`${RELEASE_BRANCH}\`" >> "$GITHUB_STEP_SUMMARY"
-            [ -n "$PR_URL" ] && echo "- Version bump PR: $PR_URL" >> "$GITHUB_STEP_SUMMARY"
+            if [ -n "$PR_URL" ]; then
+              echo "" >> "$GITHUB_STEP_SUMMARY"
+              echo "### Next steps" >> "$GITHUB_STEP_SUMMARY"
+              echo "" >> "$GITHUB_STEP_SUMMARY"
+              echo "- [ ] Review and approve version bump PR: $PR_URL" >> "$GITHUB_STEP_SUMMARY"
+            fi
           fi
