@@ -1,0 +1,189 @@
+name: Create Release Branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number for traceability'
+        type: string
+        required: true
+      dry_run:
+        description: 'Dry run: simulate the process without making any changes'
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: create-release-branch
+  cancel-in-progress: false
+
+jobs:
+
+  validate-permissions:
+    name: Validate permissions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check admin permission
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          permission=$(gh api "repos/${REPO}/collaborators/${ACTOR}/permission" --jq '.permission')
+          if [ "$permission" != "admin" ]; then
+            echo "::error::User ${ACTOR} does not have admin permission (current: ${permission})"
+            exit 1
+          fi
+          echo "User ${ACTOR} has admin permission"
+
+  create-release-branch:
+    name: Create release branch
+    needs: validate-permissions
+    runs-on: ubuntu-latest
+    outputs:
+      release_branch: ${{ steps.detect-version.outputs.release_branch }}
+      current_major: ${{ steps.detect-version.outputs.current_major }}
+      current_minor: ${{ steps.detect-version.outputs.current_minor }}
+      branch_created: ${{ steps.check-branch.outputs.branch_created }}
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v6
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Detect current version
+        id: detect-version
+        run: |
+          revision=$(grep -oP '<revision>\K[^<]+' pom.xml)
+          current_major=$(echo "$revision" | cut -d. -f1)
+          current_minor=$(echo "$revision" | cut -d. -f2)
+          release_branch="release-${current_major}.${current_minor}"
+          echo "current_major=$current_major" >> "$GITHUB_OUTPUT"
+          echo "current_minor=$current_minor" >> "$GITHUB_OUTPUT"
+          echo "release_branch=$release_branch" >> "$GITHUB_OUTPUT"
+          echo "Detected version: ${current_major}.${current_minor}"
+          echo "Release branch: $release_branch"
+
+      - name: Check if release branch already exists
+        id: check-branch
+        env:
+          RELEASE_BRANCH: ${{ steps.detect-version.outputs.release_branch }}
+        run: |
+          if git ls-remote --exit-code --heads origin "$RELEASE_BRANCH" > /dev/null 2>&1; then
+            echo "::warning::Branch ${RELEASE_BRANCH} already exists on remote. Skipping."
+            echo "branch_created=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Branch ${RELEASE_BRANCH} does not exist. Proceeding."
+            echo "branch_created=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create and push release branch
+        if: inputs.dry_run != true && steps.check-branch.outputs.branch_created == 'true'
+        env:
+          RELEASE_BRANCH: ${{ steps.detect-version.outputs.release_branch }}
+        run: |
+          git checkout -b "$RELEASE_BRANCH"
+          git push origin "$RELEASE_BRANCH"
+          echo "Pushed branch $RELEASE_BRANCH"
+
+      - name: Dry run — skip push
+        if: inputs.dry_run == true && steps.check-branch.outputs.branch_created == 'true'
+        env:
+          RELEASE_BRANCH: ${{ steps.detect-version.outputs.release_branch }}
+        run: echo "Dry run — would create branch $RELEASE_BRANCH"
+
+  create-version-bump-pr:
+    name: Create version bump PR
+    needs: create-release-branch
+    runs-on: ubuntu-latest
+    if: inputs.dry_run != true && needs.create-release-branch.outputs.branch_created == 'true'
+    outputs:
+      pr_url: ${{ steps.create-pr.outputs.pr_url }}
+    steps:
+      - name: Get GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.APP_REPO_WRITER_ID }}
+          private-key: ${{ secrets.APP_REPO_WRITER_PRIVATE_KEY }}
+
+      - name: Checkout master
+        uses: actions/checkout@v6
+        with:
+          ref: master
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Calculate next version
+        id: next-version
+        env:
+          CURRENT_MAJOR: ${{ needs.create-release-branch.outputs.current_major }}
+          CURRENT_MINOR: ${{ needs.create-release-branch.outputs.current_minor }}
+        run: |
+          next_minor=$((CURRENT_MINOR + 1))
+          echo "next_minor=$next_minor" >> "$GITHUB_OUTPUT"
+          echo "Next version: ${CURRENT_MAJOR}.${next_minor}"
+
+      - name: Create bump branch and update version
+        env:
+          CURRENT_MAJOR: ${{ needs.create-release-branch.outputs.current_major }}
+          NEXT_MINOR: ${{ steps.next-version.outputs.next_minor }}
+        run: |
+          bump_branch="chore/bump-version-${CURRENT_MAJOR}.${NEXT_MINOR}"
+          git checkout -b "$bump_branch"
+          sed -i "s|<revision>${CURRENT_MAJOR}\.[0-9]\+</revision>|<revision>${CURRENT_MAJOR}.${NEXT_MINOR}</revision>|" pom.xml
+          echo "Updated pom.xml:"
+          grep '<revision>' pom.xml
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git add pom.xml
+          git commit -m "Bump version for next release ${CURRENT_MAJOR}.${NEXT_MINOR}"
+          git push origin "$bump_branch"
+
+      - name: Create PR
+        id: create-pr
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          CURRENT_MAJOR: ${{ needs.create-release-branch.outputs.current_major }}
+          CURRENT_MINOR: ${{ needs.create-release-branch.outputs.current_minor }}
+          NEXT_MINOR: ${{ steps.next-version.outputs.next_minor }}
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+        run: |
+          body="Bump \`revision\` to \`${CURRENT_MAJOR}.${NEXT_MINOR}\` following the creation of \`release-${CURRENT_MAJOR}.${CURRENT_MINOR}\`."
+          body="${body}"$'\n\n'"Issue: ${ISSUE_NUMBER}"
+          pr_url=$(gh pr create \
+            --head "chore/bump-version-${CURRENT_MAJOR}.${NEXT_MINOR}" \
+            --base master \
+            --title "chore: bump version to ${CURRENT_MAJOR}.${NEXT_MINOR}" \
+            --body "$body")
+          echo "pr_url=$pr_url" >> "$GITHUB_OUTPUT"
+          echo "Created PR: $pr_url"
+
+  summary:
+    name: Summary
+    needs: [create-release-branch, create-version-bump-pr]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Write summary
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          RELEASE_BRANCH: ${{ needs.create-release-branch.outputs.release_branch }}
+          PR_URL: ${{ needs.create-version-bump-pr.outputs.pr_url }}
+          CURRENT_MAJOR: ${{ needs.create-release-branch.outputs.current_major }}
+          CURRENT_MINOR: ${{ needs.create-release-branch.outputs.current_minor }}
+        run: |
+          echo "## Release Branch Creation — JavaClasses" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$DRY_RUN" == "true" ]; then
+            echo "### Dry run — no changes were made" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Detected version: **${CURRENT_MAJOR}.${CURRENT_MINOR}**" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Would create branch: \`${RELEASE_BRANCH}\`" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- Release branch: \`${RELEASE_BRANCH}\`" >> "$GITHUB_STEP_SUMMARY"
+            [ -n "$PR_URL" ] && echo "- Version bump PR: $PR_URL" >> "$GITHUB_STEP_SUMMARY"
+          fi
