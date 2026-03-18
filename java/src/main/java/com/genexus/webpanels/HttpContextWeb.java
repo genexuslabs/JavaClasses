@@ -79,7 +79,8 @@ public class HttpContextWeb extends HttpContext {
 	private static final String SAME_SITE_LAX = "Lax";
 	private static final String SAME_SITE_STRICT = "Strict";
 	private static final String SET_COOKIE = "Set-Cookie";
-	private static String httpForwardedHeadersEnabled = System.getenv("HTTP_FORWARDEDHEADERS_ENABLED");
+	//private static String httpForwardedHeadersEnabled = System.getenv("HTTP_FORWARDEDHEADERS_ENABLED");
+	private static String httpForwardedHeadersEnabled = "true";
 
 	public static final int BROWSER_OTHER		= 0;
 	public static final int BROWSER_IE 		= 1;
