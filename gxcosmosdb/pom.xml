@@ -45,6 +45,12 @@
             <artifactId>netty-codec-http</artifactId>
             <version>${netty.version}</version>
         </dependency>
+        <!-- overwrite from azure-core-http-netty due to transitive CVEs -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http2</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
 
         <dependency>
 			<groupId>${project.groupId}</groupId>
