@@ -62,6 +62,12 @@
             <artifactId>netty-codec-http</artifactId>
             <version>${netty.version}</version>
         </dependency>
+        <!-- overwrite from azure-messaging-eventgrid due to transitive CVEs -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http2</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>

@@ -36,6 +36,12 @@
             <artifactId>netty-codec-http</artifactId>
             <version>${netty.version}</version>
         </dependency>
+        <!-- overwrite from s3 due to transitive CVEs -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http2</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-1.2-api</artifactId>
