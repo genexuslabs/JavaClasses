@@ -395,6 +395,12 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 		try {
 			ImageData imageData;
 			try {
+				if (!staticContentBaseOverride.isEmpty() && bitmap.startsWith(httpContext.getStaticContentBase())) {
+					String bitmapOverride = staticContentBaseOverride + bitmap.substring(httpContext.getStaticContentBase().length());
+					log.debug("GxDrawBitMap -> Overriding '" + bitmap + "' to '" + bitmapOverride + "'");
+					bitmap = bitmapOverride;
+				}
+
 				if (documentImages != null && documentImages.containsKey(bitmap)) {
 					imageData = ImageDataFactory.create(bitmap);
 				}
@@ -429,6 +435,10 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 				URL url= new java.net.URL(bitmap);
 				imageData = ImageDataFactory.create(url);
 			}
+			catch(Exception ex) {
+				log.debug("GxDrawBitMap -> '" + bitmap + "' " + ex.getMessage());
+				throw ex;
+			}
 
 			if (documentImages == null) {
 				documentImages = new ConcurrentHashMap<>();
@@ -450,6 +460,9 @@ public class PDFReportItext8 extends GXReportPDFCommons {
 				else
 					image.scaleToFit(rightAux - leftAux , bottomAux - topAux);
 				document.add(image);
+			}
+			else {
+				log.debug("GxDrawBitMap -> '" + bitmap + "' not found");
 			}
 		}
 		catch(IOException ioe) {

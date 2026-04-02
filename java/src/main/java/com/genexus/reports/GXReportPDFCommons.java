@@ -84,6 +84,7 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 	protected static String defaultRelativePrepend = null;
 	protected static String defaultRelativePrependINI = null;
 	protected static String webAppDir = null;
+	protected static String staticContentBaseOverride = null;
 	private static String predefinedSearchPath = "";
 	protected float leftMargin;
 	protected float topMargin;
@@ -333,6 +334,9 @@ public abstract class GXReportPDFCommons implements IReportHandler{
 		props.setupGeneralProperty(Const.STYLE_DASHED, Const.DEFAULT_STYLE_DASHED);
 		props.setupGeneralProperty(Const.STYLE_LONG_DASHED, Const.DEFAULT_STYLE_LONG_DASHED);
 		props.setupGeneralProperty(Const.STYLE_LONG_DOT_DASHED, Const.DEFAULT_STYLE_LONG_DOT_DASHED);
+
+		props.setupGeneralProperty("StaticContentBaseOverride", "");
+		staticContentBaseOverride = props.getGeneralProperty("StaticContentBaseOverride", "");
 
 		loadSubstituteTable(); // Cargo la tabla de substitutos de fonts
 

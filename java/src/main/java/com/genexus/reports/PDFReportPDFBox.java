@@ -346,6 +346,12 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 		try (PDPageContentStream cb = currentPageContentStream){
 			PDImageXObject image;
 			try {
+				if (!staticContentBaseOverride.isEmpty() && bitmap.startsWith(httpContext.getStaticContentBase())) {
+					String bitmapOverride = staticContentBaseOverride + bitmap.substring(httpContext.getStaticContentBase().length());
+					log.debug("GxDrawBitMap -> Overriding '" + bitmap + "' to '" + bitmapOverride + "'");
+					bitmap = bitmapOverride;
+				}
+
 				if (documentImages != null && documentImages.containsKey(bitmap)) {
 					image = documentImages.get(bitmap);
 				}
@@ -381,6 +387,10 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 				URL url= new java.net.URL(bitmap);
 				image = PDImageXObject.createFromByteArray(document, IOUtils.toByteArray(url.openStream()),bitmap);
 			}
+			catch(Exception ex) {
+				log.debug("GxDrawBitMap -> '" + bitmap + "' " + ex.getMessage());
+				throw ex;
+			}
 
 			if (documentImages == null) {
 				documentImages = new ConcurrentHashMap<>();
@@ -402,6 +412,9 @@ public class PDFReportPDFBox extends GXReportPDFCommons{
 					cb.drawImage(image, x, y, rightAux - leftAux, bottomAux - topAux);
 				else
 					cb.drawImage(image, x, y, (rightAux - leftAux) * aspectRatio, (bottomAux - topAux) * aspectRatio);
+			}
+			else {
+				log.debug("GxDrawBitMap -> '" + bitmap + "' not found");
 			}
 		}
 		catch(IOException ioe) {
