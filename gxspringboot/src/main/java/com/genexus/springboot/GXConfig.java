@@ -4,10 +4,12 @@ import com.genexus.Application;
 import com.genexus.common.interfaces.SpecificImplementation;
 import com.genexus.diagnostics.core.ILogger;
 import com.genexus.diagnostics.core.LogManager;
+import com.genexus.filters.SessionFilter;
 import com.genexus.servlet.CorsFilter;
 import com.genexus.xml.GXXMLSerializable;
 
 import jakarta.annotation.PreDestroy;
+import jakarta.servlet.DispatcherType;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.jersey.servlet.ServletProperties;
@@ -90,6 +92,24 @@ public class GXConfig implements WebMvcConfigurer {
 			registrationBean.setEnabled(false);
 		}
 		return registrationBean;
+	}
+
+	@Bean
+	public FilterRegistrationBean<SessionFilter> sessionFilter() {
+		FilterRegistrationBean<SessionFilter> registration =
+			new FilterRegistrationBean<>();
+
+		registration.setFilter(new SessionFilter());
+		registration.setName("session-filter");
+		registration.addUrlPatterns("/*");
+		registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 2);
+
+		registration.setDispatcherTypes(
+			DispatcherType.REQUEST,
+			DispatcherType.FORWARD
+		);
+
+		return registration;
 	}
 
 	@Bean
