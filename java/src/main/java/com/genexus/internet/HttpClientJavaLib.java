@@ -543,7 +543,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 			if (getSecure() == 1)   // Se completa con esquema y host
 				url = url.startsWith("https://") ? url : "https://" + getHost()+ (getPort() != 443?":"+getPort():"")+ url;		// La lib de HttpClient agrega el port
 			else
-				url = url.startsWith("http://") ? url : "http://" + getHost() + ":" + (getPort() == -1? "80" :getPort()) + url;
+				url = url.startsWith("http://") ? url : "http://" + getHost() +  (getPort() != 80?":"+getPort(): "") + url;
 
 			try (CloseableHttpClient httpClient = this.httpClientBuilder.build()) {
 				if (method.equalsIgnoreCase("GET")) {
