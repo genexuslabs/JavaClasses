@@ -1242,7 +1242,15 @@ public class HttpContextWeb extends HttpContext {
 	static public Hashtable<String, String[]> parsePostData(IHttpServletRequest request, IServletInputStream in) {
 		try {
 			// Nuestra versión del parsePostData utiliza UTF-8
-			return com.genexus.webpanels.HttpUtils.parsePostData(in);
+			Hashtable<String, String[]> postData = com.genexus.webpanels.HttpUtils.parsePostData(in);
+			// On GET requests, if the body yielded no variables, fall back to the query string.
+			// POST/PUT/DELETE/... behavior is unchanged: only the body is read.
+			if ((postData == null || postData.isEmpty())
+					&& request != null
+					&& "GET".equalsIgnoreCase(request.getMethod())) {
+				return com.genexus.webpanels.HttpUtils.parsePostData(request);
+			}
+			return postData;
 		} catch (IllegalArgumentException e) {
 			return com.genexus.webpanels.HttpUtils.parsePostData(request);
 		}

@@ -15,6 +15,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.net.URLEncoder;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -571,21 +572,51 @@ public abstract class GXHttpClient implements IHttpClient{
 	}
 
 	boolean firstMultiPart;
-	@SuppressWarnings("unchecked")
+
 	protected byte[] getData()
+	{
+		return getData(true);
+	}
+
+	protected String getQueryStringFromVariables()
+	{
+		if (getVariablesToSend() == null || getVariablesToSend().isEmpty())
+			return "";
+		StringBuilder sb = new StringBuilder();
+		boolean first = true;
+		for (Object key : getVariablesToSend().keySet())
+		{
+			if (!first) sb.append('&');
+			try
+			{
+				sb.append(URLEncoder.encode((String) key, "UTF-8"))
+				  .append('=')
+				  .append(URLEncoder.encode((String) getVariablesToSend().get(key), "UTF-8"));
+			}
+			catch (UnsupportedEncodingException ignored) { /* UTF-8 always supported */ }
+			first = false;
+		}
+		return sb.toString();
+	}
+
+	@SuppressWarnings("unchecked")
+	protected byte[] getData(boolean includeVariablesAsMultipart)
 	{
 		byte[] out = new byte[0];
 
 		firstMultiPart = false;
-		int variablesCount = getVariablesToSend().size();
-		int count = 1;
-		for (Object key: getVariablesToSend().keySet())
+		if (includeVariablesAsMultipart)
 		{
-			if (count == variablesCount)
-				firstMultiPart = true;
-			String value = getMultipartTemplate().getFormDataTemplate((String)key, (String)getVariablesToSend().get(key));
-			getContentToSend().add(0, value); //Variables al principio
-			count++;
+			int variablesCount = getVariablesToSend().size();
+			int count = 1;
+			for (Object key: getVariablesToSend().keySet())
+			{
+				if (count == variablesCount)
+					firstMultiPart = true;
+				String value = getMultipartTemplate().getFormDataTemplate((String)key, (String)getVariablesToSend().get(key));
+				getContentToSend().add(0, value); //Variables al principio
+				count++;
+			}
 		}
 
 		for (int idx = 0; idx < getContentToSend().size(); idx++)
