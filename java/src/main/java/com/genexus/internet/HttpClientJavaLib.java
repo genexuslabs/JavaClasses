@@ -547,9 +547,17 @@ public class HttpClientJavaLib extends GXHttpClient {
 
 			try (CloseableHttpClient httpClient = this.httpClientBuilder.build()) {
 				if (method.equalsIgnoreCase("GET")) {
-					byte[] data = getData();
+					// Variables added via addVariable are appended to the query string,
+					// not serialized as a multipart body (which servers ignore on GETs).
+					String queryFromVars = getQueryStringFromVariables();
+					String finalUrl = url;
+					if (!queryFromVars.isEmpty()) {
+						finalUrl = url + (url.contains("?") ? "&" : "?") + queryFromVars;
+					}
+
+					byte[] data = getData(false);   // body only from addBytes/addString, no variables
 					if (data.length > 0) {
-						HttpGetWithBody httpGetWithBody = new HttpGetWithBody(url.trim());
+						HttpGetWithBody httpGetWithBody = new HttpGetWithBody(finalUrl.trim());
 						httpGetWithBody.setConfig(reqConfig);
 						Set<String> keys = getheadersToSend().keySet();
 						for (String header : keys) {
@@ -559,7 +567,7 @@ public class HttpClientJavaLib extends GXHttpClient {
 						response = httpClient.execute(httpGetWithBody, httpClientContext);
 					}
 					else {
-						HttpGet httpget = new HttpGet(url.trim());
+						HttpGet httpget = new HttpGet(finalUrl.trim());
 						httpget.setConfig(reqConfig);
 						Set<String> keys = getheadersToSend().keySet();
 						for (String header : keys) {
