@@ -22,14 +22,22 @@ public class CorsFilter implements jakarta.servlet.Filter {
 	@Override
 	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
 		HttpServletRequest request = (HttpServletRequest) servletRequest;
+		HttpServletResponse response = (HttpServletResponse) servletResponse;
 
-		HashMap<String, String> corsHeaders = CORSHelper.getCORSHeaders(request.getMethod(), request.getHeader(CORSHelper.REQUEST_METHOD_HEADER_NAME), request.getHeader(CORSHelper.REQUEST_HEADERS_HEADER_NAME));
+		String origin = request.getHeader(CORSHelper.ORIGIN_HEADER_NAME);
+		String requestedMethod = request.getHeader(CORSHelper.REQUEST_METHOD_HEADER_NAME);
+		String requestedHeaders = request.getHeader(CORSHelper.REQUEST_HEADERS_HEADER_NAME);
+
+		HashMap<String, String> corsHeaders = CORSHelper.getCORSHeaders(request.getMethod(), origin, requestedMethod, requestedHeaders);
 		if (corsHeaders != null) {
-			HttpServletResponse response = (HttpServletResponse) servletResponse;
 			for (String headerName : corsHeaders.keySet()) {
 				if (!response.containsHeader(headerName)) {
 					response.setHeader(headerName, corsHeaders.get(headerName));
 				}
+			}
+			if (CORSHelper.isPreflight(request.getMethod(), origin, requestedMethod)) {
+				response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+				return;
 			}
 		}
 		filterChain.doFilter(servletRequest, servletResponse);
