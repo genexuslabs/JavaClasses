@@ -3,10 +3,9 @@ package com.genexus.util;
 import com.genexus.AndroidLog;
 import com.genexus.GXutil;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,23 +15,14 @@ public class GXHashMap<K, V> extends HashMap<K, V> {
 
 	private static final Gson gson = new Gson();
 	private boolean isNumberKey = false;
-	private Class<?> valueClass = null;
-
-	public void setValueClass(Class<?> valueClass) {
-		this.valueClass = valueClass;
-	}
 
 	public void setHashMap(GXHashMap<K, V> hashMap) {
-		if (hashMap.valueClass != null && this.valueClass == null)
-			this.valueClass = hashMap.valueClass;
 		putAll(hashMap);
 	}
 
 	public V put(K key, V value) {
 		if (key instanceof Number)
 			isNumberKey = true;
-		if (value != null && valueClass == null)
-			valueClass = value.getClass();
 		return super.put(key, value);
 	}
 
@@ -75,23 +65,35 @@ public class GXHashMap<K, V> extends HashMap<K, V> {
 	}
 
 	public void fromJson(String json) {
+		Type type = new ParameterizedType() {
+			@Override
+			public Type[] getActualTypeArguments() {
+				return ((ParameterizedType) getClass().getEnclosingClass().getGenericSuperclass()).getActualTypeArguments();
+			}
+
+			@Override
+			public Type getRawType() {
+				return HashMap.class;
+			}
+
+			@Override
+			public Type getOwnerType() {
+				return null;
+			}
+		};
+
 		try {
 			this.clear();
-			JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
-			for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
-				K key;
-				if (isNumberKey) {
-					key = (K) java.text.NumberFormat.getInstance().parse(entry.getKey());
-				} else {
-					key = (K) entry.getKey();
+			HashMap<K, V> fromJsonHashMap = gson.fromJson(json, type);
+			if (!isNumberKey)
+				this.putAll(fromJsonHashMap);
+			else {
+				for (Map.Entry<K, V> entry : fromJsonHashMap.entrySet()) {
+					K key = entry.getKey();
+					V value = entry.getValue();
+
+					this.put((K) java.text.NumberFormat.getInstance().parse((String) key), value);
 				}
-				V value;
-				if (valueClass != null) {
-					value = (V) gson.fromJson(entry.getValue(), valueClass);
-				} else {
-					value = (V) gson.fromJson(entry.getValue(), Object.class);
-				}
-				this.put(key, value);
 			}
 		}
 		catch (Exception e) {
