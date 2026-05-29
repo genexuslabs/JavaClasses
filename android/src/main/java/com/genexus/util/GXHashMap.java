@@ -3,7 +3,6 @@ package com.genexus.util;
 import com.genexus.AndroidLog;
 import com.genexus.GXutil;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -66,11 +65,22 @@ public class GXHashMap<K, V> extends HashMap<K, V> {
 	}
 
 	public void fromJson(String json) {
-		fromJson(json, String.class, Object.class);
-	}
+		Type type = new ParameterizedType() {
+			@Override
+			public Type[] getActualTypeArguments() {
+				return ((ParameterizedType) getClass().getEnclosingClass().getGenericSuperclass()).getActualTypeArguments();
+			}
 
-	public void fromJson(String json, Class<?> keyClass, Class<?> valueClass) {
-		Type type = TypeToken.getParameterized(HashMap.class, keyClass, valueClass).getType();
+			@Override
+			public Type getRawType() {
+				return HashMap.class;
+			}
+
+			@Override
+			public Type getOwnerType() {
+				return null;
+			}
+		};
 
 		try {
 			this.clear();
