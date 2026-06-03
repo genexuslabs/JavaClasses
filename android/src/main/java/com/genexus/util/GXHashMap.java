@@ -170,17 +170,17 @@ public class GXHashMap<K, V> extends HashMap<K, V> {
 	}
 
 	public GXHashMap<K, String> dateToCharRest() {
-		return convertToCharRest(this, false);
+		return convertToCharRest(false);
 	}
 
 	public GXHashMap<K, String> timeToCharRest() {
-		return convertToCharRest(this, true);
+		return convertToCharRest(true);
 	}
 
-	private GXHashMap<K, String> convertToCharRest(GXHashMap<K, V> thisHashMap, boolean isDateTime) {
+	private GXHashMap<K, String> convertToCharRest(boolean isDateTime) {
 		GXHashMap<K, String> chardMap = new GXHashMap<>();
 
-		for (Map.Entry<K, V> entry : thisHashMap.entrySet()) {
+		for (Map.Entry<K, V> entry : this.entrySet()) {
 			K key = entry.getKey();
 			V dateValue = entry.getValue();
 
