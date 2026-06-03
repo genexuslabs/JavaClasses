@@ -44,8 +44,8 @@ public class GXHashMap<K, V> extends HashMap<K, V> {
 
 	public boolean removeKey(K key) {
 		if (containsKey(key)) {
-			if (remove(key) != null)
-				return true;
+			remove(key);
+			return true;
 		}
 		return false;
 	}
@@ -67,15 +67,15 @@ public class GXHashMap<K, V> extends HashMap<K, V> {
 			return gson.toJson(this);
 		}
 		catch (Exception e) {
-			AndroidLog.error("Could not obtain json form Dictionary "+ e.getMessage());
+			AndroidLog.error("Could not obtain json from Dictionary "+ e.getMessage());
 			return "";
 		}
 	}
 
 	public void fromJson(String json) {
 		try {
-			this.clear();
 			JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
+			HashMap<K, V> parsed = new HashMap<>();
 			// Detectar el tipo de V desde el primer elemento si no lo conocemos
 			if (valueClass == null && jsonObject.size() > 0) {
 				JsonElement firstValue = jsonObject.entrySet().iterator().next().getValue();
@@ -86,7 +86,7 @@ public class GXHashMap<K, V> extends HashMap<K, V> {
 			for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
 				K key;
 				if (isNumberKey) {
-					key = (K) java.text.NumberFormat.getInstance().parse(entry.getKey());
+					key = (K) parseNumericKey(entry.getKey());
 				} else {
 					key = (K) entry.getKey();
 				}
@@ -96,11 +96,25 @@ public class GXHashMap<K, V> extends HashMap<K, V> {
 				} else {
 					value = (V) resolveJsonValue(entry.getValue());
 				}
-				this.put(key, value);
+				parsed.put(key, value);
 			}
+			this.clear();
+			this.putAll(parsed);
 		}
 		catch (Exception e) {
 			AndroidLog.error("Could not set Dictionary from json " + e.getMessage());
+		}
+	}
+
+	private Number parseNumericKey(String keyString) {
+		try {
+			long longValue = Long.parseLong(keyString);
+			if (longValue >= Integer.MIN_VALUE && longValue <= Integer.MAX_VALUE) {
+				return (int) longValue;
+			}
+			return longValue;
+		} catch (NumberFormatException e) {
+			return Double.valueOf(keyString);
 		}
 	}
 
@@ -156,17 +170,17 @@ public class GXHashMap<K, V> extends HashMap<K, V> {
 	}
 
 	public GXHashMap<K, String> dateToCharRest() {
-		return convertToCharRest(this, false);
+		return convertToCharRest(false);
 	}
 
 	public GXHashMap<K, String> timeToCharRest() {
-		return convertToCharRest(this, true);
+		return convertToCharRest(true);
 	}
 
-	private GXHashMap<K, String> convertToCharRest(GXHashMap<K, V> thisHashMap, boolean isDateTime) {
+	private GXHashMap<K, String> convertToCharRest(boolean isDateTime) {
 		GXHashMap<K, String> chardMap = new GXHashMap<>();
 
-		for (Map.Entry<K, V> entry : thisHashMap.entrySet()) {
+		for (Map.Entry<K, V> entry : this.entrySet()) {
 			K key = entry.getKey();
 			V dateValue = entry.getValue();
 
