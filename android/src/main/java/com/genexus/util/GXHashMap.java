@@ -74,8 +74,8 @@ public class GXHashMap<K, V> extends HashMap<K, V> {
 
 	public void fromJson(String json) {
 		try {
-			this.clear();
 			JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
+			HashMap<K, V> parsed = new HashMap<>();
 			// Detectar el tipo de V desde el primer elemento si no lo conocemos
 			if (valueClass == null && jsonObject.size() > 0) {
 				JsonElement firstValue = jsonObject.entrySet().iterator().next().getValue();
@@ -96,8 +96,10 @@ public class GXHashMap<K, V> extends HashMap<K, V> {
 				} else {
 					value = (V) resolveJsonValue(entry.getValue());
 				}
-				this.put(key, value);
+				parsed.put(key, value);
 			}
+			this.clear();
+			this.putAll(parsed);
 		}
 		catch (Exception e) {
 			AndroidLog.error("Could not set Dictionary from json " + e.getMessage());
