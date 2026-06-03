@@ -86,7 +86,7 @@ public class GXHashMap<K, V> extends HashMap<K, V> {
 			for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
 				K key;
 				if (isNumberKey) {
-					key = (K) java.text.NumberFormat.getInstance().parse(entry.getKey());
+					key = (K) parseNumericKey(entry.getKey());
 				} else {
 					key = (K) entry.getKey();
 				}
@@ -101,6 +101,18 @@ public class GXHashMap<K, V> extends HashMap<K, V> {
 		}
 		catch (Exception e) {
 			AndroidLog.error("Could not set Dictionary from json " + e.getMessage());
+		}
+	}
+
+	private Number parseNumericKey(String keyString) {
+		try {
+			long longValue = Long.parseLong(keyString);
+			if (longValue >= Integer.MIN_VALUE && longValue <= Integer.MAX_VALUE) {
+				return (int) longValue;
+			}
+			return longValue;
+		} catch (NumberFormatException e) {
+			return Double.valueOf(keyString);
 		}
 	}
 
