@@ -44,8 +44,8 @@ public class GXHashMap<K, V> extends HashMap<K, V> {
 
 	public boolean removeKey(K key) {
 		if (containsKey(key)) {
-			if (remove(key) != null)
-				return true;
+			remove(key);
+			return true;
 		}
 		return false;
 	}
