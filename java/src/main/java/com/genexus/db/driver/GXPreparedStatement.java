@@ -1416,7 +1416,7 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 						{
 							String ctxPath = webContext.getContextPath();
 							if (ctxPath != null && !ctxPath.isEmpty() && fileName.startsWith(ctxPath))
-								fileName = fileName.replaceFirst(ctxPath, "").substring(1);
+								fileName = fileName.substring(ctxPath.length() + 1);
 						}
 						else
 							fileName = ((com.genexus.webpanels.HttpContextWeb) webContext).getRealPath(fileName);
