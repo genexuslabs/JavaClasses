@@ -191,15 +191,17 @@ public class GXHashMap<K, V> extends HashMap<K, V> {
 	}
 
 	public GXHashMap<K, V> charToDateREST(GXHashMap<K, String> charHashMap, boolean isDateTime) {
-		clear();
+		HashMap<K, V> parsed = new HashMap<>();
 
 		for (Map.Entry<K, String> entry : charHashMap.entrySet()) {
 			K key = entry.getKey();
 			String stringValue = entry.getValue();
 
 			V dateValue = isDateTime? (V)GXutil.charToTimeREST(stringValue): (V)GXutil.charToDateREST(stringValue);
-			put(key, dateValue);
+			parsed.put(key, dateValue);
 		}
+		this.clear();
+		this.putAll(parsed);
 		return this;
 	}
 }
