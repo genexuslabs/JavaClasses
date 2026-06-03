@@ -67,7 +67,7 @@ public class GXHashMap<K, V> extends HashMap<K, V> {
 			return gson.toJson(this);
 		}
 		catch (Exception e) {
-			AndroidLog.error("Could not obtain json form Dictionary "+ e.getMessage());
+			AndroidLog.error("Could not obtain json from Dictionary "+ e.getMessage());
 			return "";
 		}
 	}
