@@ -1414,8 +1414,9 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 					if (webContext instanceof com.genexus.webpanels.HttpContextWeb) {
 						if (ApplicationContext.getInstance().isSpringBootApp() && ! new File(fileName).isAbsolute())
 						{
-							if (fileName.startsWith(webContext.getContextPath()))
-								fileName = fileName.replaceFirst(webContext.getContextPath(), "").substring(1);
+							String ctxPath = webContext.getContextPath();
+							if (ctxPath != null && !ctxPath.isEmpty() && fileName.startsWith(ctxPath))
+								fileName = fileName.substring(ctxPath.length() + 1);
 						}
 						else
 							fileName = ((com.genexus.webpanels.HttpContextWeb) webContext).getRealPath(fileName);
@@ -1424,9 +1425,10 @@ public class GXPreparedStatement extends GXStatement implements PreparedStatemen
 					{
 						if (!webContext.getDefaultPath().isEmpty() && ! new File(fileName).isAbsolute())
 						{
-							if (fileName.startsWith(webContext.getContextPath()))
+							String ctxPath = webContext.getContextPath();
+							if (ctxPath != null && !ctxPath.isEmpty() && fileName.startsWith(ctxPath))
 							{
-								fileName = fileName.substring(webContext.getContextPath().length() +1);
+								fileName = fileName.substring(ctxPath.length() +1);
 							}
 
 							fileName = webContext.getDefaultPath() + File.separator + fileName;

@@ -80,32 +80,44 @@ public class GXDBMSpostgresql implements GXDBMS
 		return false;
 	}
 
+	private static String safeSQLState(SQLException e)
+	{
+		String s = (e == null) ? null : e.getSQLState();
+		return (s == null) ? "" : s.toLowerCase();
+	}
+
+	private static String safeMessage(SQLException e)
+	{
+		String m = (e == null) ? null : e.getMessage();
+		return (m == null) ? "" : m.toLowerCase();
+	}
+
 	public boolean DuplicateKeyValue(SQLException e)
 	{
-	    String sqlstate = e.getSQLState().toLowerCase();
+	    String sqlstate = safeSQLState(e);
         //23505 duplicate key violates unique constraint xxx
         if (sqlstate.indexOf("23505")>=0){
             return true;
         }else
 	    {
-          String msg = e.getMessage().toLowerCase();
+          String msg = safeMessage(e);
           return (msg.indexOf("duplicate key") >= 0 && msg.indexOf("unique") >= 0);
 	    }
 	}
 
 	public boolean ObjectLocked(SQLException e)
 	{
-		String sqlstate = e.getSQLState().toLowerCase();
+		String sqlstate = safeSQLState(e);
 		String sqlstateCause = "";
 		if (e.getCause() != null && e.getCause() instanceof SQLException)
-			sqlstateCause = ((SQLException)e.getCause()).getSQLState().toLowerCase();
+			sqlstateCause = safeSQLState((SQLException)e.getCause());
 		return sqlstate.contains("55p03") || sqlstateCause.contains("55p03");
 	}
 
 	public boolean ObjectNotFound(SQLException e)
 	{
-		String sqlstate = e.getSQLState().toLowerCase();
-        String msg = e.getMessage().toLowerCase();
+		String sqlstate = safeSQLState(e);
+        String msg = safeMessage(e);
         //42704 index xxx does not exist
         //42P01  relation tableName does not exist
         //42p06 schema already exists
