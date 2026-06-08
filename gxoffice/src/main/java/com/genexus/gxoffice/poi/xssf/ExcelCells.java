@@ -117,9 +117,23 @@ public class ExcelCells implements IExcelCells {
 		}
 	}
 
+	private double getNumericResolved() {
+		if (pCells[1].getCellType() == CellType.FORMULA) {
+			try {
+				FormulaEvaluator evaluator = pWorkbook.getCreationHelper().createFormulaEvaluator();
+				CellValue cv = evaluator.evaluate(pCells[1]);
+				if (cv != null && cv.getCellType() == CellType.NUMERIC)
+					return cv.getNumberValue();
+			} catch (Exception e) {
+				// Formula not supported by POI evaluator: fall back to cached value
+			}
+		}
+		return pCells[1].getNumericCellValue();
+	}
+
 	public double getNumber() {
 		try {
-			return pCells[1].getNumericCellValue();
+			return getNumericResolved();
 
 		} catch (Exception e) {
 			m_errAccess.setErrDes("Invalid cell value");
