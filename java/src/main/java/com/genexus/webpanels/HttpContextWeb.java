@@ -374,14 +374,20 @@ public class HttpContextWeb extends HttpContext {
 			}
 
 			try {
-				if (contentType != null
-						&& (contentType.contains("application/json") || contentType.contains("text/xml"))) {
-					postData = new Hashtable<>();
+				boolean isFormUrlEncoded = contentType != null
+						&& contentType.contains("application/x-www-form-urlencoded");
+				if (ServletFileUpload.isMultipartContent(request)) {
+					postData = parseMultipartPostData(getPostedparts());
+				} else if (isFormUrlEncoded || "GET".equalsIgnoreCase(request.getMethod())) {
+					// Only read the request body when it can actually hold form
+					// variables (urlencoded), or fall back to the query string on GET.
+					postData = parsePostData(request, request.getInputStream());
 				} else {
-					if (ServletFileUpload.isMultipartContent(request))
-						postData = parseMultipartPostData(getPostedparts());
-					else
-						postData = parsePostData(request, request.getInputStream());
+					// json / xml / binary (image/*, application/octet-stream, ...):
+					// there are no form variables to parse, and reading the body here
+					// would consume the input stream needed by binary upload handlers
+					// (e.g. GXObjectUploadServices) -> "Stream closed" / 0-byte file.
+					postData = new Hashtable<>();
 				}
 				Object value = postData.get("GXState");
 				if (value != null) {
