@@ -60,6 +60,20 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- overwrite from gxcloudstorage-azureblob-latest due to transitive CVEs -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-dns</artifactId>
+            <version>${netty.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- overwrite from gxcloudstorage-azureblob-latest due to transitive CVEs -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-handler-proxy</artifactId>
+            <version>${netty.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

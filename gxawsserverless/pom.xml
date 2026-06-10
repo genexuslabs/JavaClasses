@@ -66,7 +66,12 @@
             <artifactId>netty-codec-http2</artifactId>
             <version>${netty.version}</version>
         </dependency>
-
+        <!-- overwrite due to transitive CVEs -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-dns</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-events</artifactId>
