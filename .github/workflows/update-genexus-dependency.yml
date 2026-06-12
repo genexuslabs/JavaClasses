@@ -1,0 +1,28 @@
+name: Update GeneXus Dependency
+run-name: Update GeneXus Dependency to v${{ inputs.VERSION }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      VERSION:
+        description: 'Package version to propagate'
+        required: true
+        type: string
+      PACKAGE_NAMES:
+        description: 'Comma-separated list of package names (defaults to repository name if not provided)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    uses: VY-GEN032-KG/genexus-dependency-sync/.github/workflows/commit-to-git.yml@master
+    with:
+      COMPONENT_NAME: ${{ github.repository }}
+      BRANCH: ${{ github.ref_name }}
+      VERSION: ${{ inputs.VERSION }}
+      PACKAGE_NAMES: ${{ inputs.PACKAGE_NAMES }}
+    secrets:
+      GENEXUS_LINK_PRIVATE_KEY: ${{ secrets.GENEXUS_LINK_PRIVATE_KEY }}

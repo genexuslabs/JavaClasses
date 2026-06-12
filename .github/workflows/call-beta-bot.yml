@@ -11,8 +11,9 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   call-workflow:
-    if: github.repository_owner == 'genexuslabs'
-    uses: genexuslabs/build-genexus-reusable-workflow/.github/workflows/run-beta-bot.yml@main
+    uses: VY-GEN032-KG/auto-prs-merger/.github/workflows/run-beta-bot.yml@master
     secrets: inherit

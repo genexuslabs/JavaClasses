@@ -61,9 +61,9 @@ jobs:
     steps:
       - name: Get GitHub App token
         id: app-token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_REPO_WRITER_ID }}
+          client-id: ${{ vars.APP_REPO_WRITER_ID }}
           private-key: ${{ secrets.APP_REPO_WRITER_PRIVATE_KEY }}
 
       - name: Checkout master
@@ -124,9 +124,9 @@ jobs:
     steps:
       - name: Get GitHub App token
         id: app-token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.APP_REPO_WRITER_ID }}
+          client-id: ${{ vars.APP_REPO_WRITER_ID }}
           private-key: ${{ secrets.APP_REPO_WRITER_PRIVATE_KEY }}
 
       - name: Checkout master

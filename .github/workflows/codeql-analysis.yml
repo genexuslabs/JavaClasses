@@ -36,11 +36,11 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
         # If you wish to specify custom queries, you can do so here or in a config file.
@@ -61,16 +61,27 @@ jobs:
       with:
         maven-version: ${{ vars.MAVEN_VERSION }}
 
+    - name: Compute Maven dependency feed
+      id: deps-feed
+      run: |
+        if [ -n "${{ vars.AZURE_MAVEN_DEPENDENCY_TO_GX }}" ]; then
+          echo "url=${{ vars.AZURE_MAVEN_DEPENDENCY_TO_GX }}" >> $GITHUB_OUTPUT
+          echo "server_id=azure-third-party" >> $GITHUB_OUTPUT
+        else
+          echo "url=https://maven.pkg.github.com/genexuslabs/Private-Maven-for-GX" >> $GITHUB_OUTPUT
+          echo "server_id=github-genexuslabs" >> $GITHUB_OUTPUT
+        fi
+
     - name: Setup Maven settings
       uses: whelk-io/maven-settings-xml-action@v14
       with:
-        repositories: '[{ "id": "github-genexuslabs", "url": "https://maven.pkg.github.com/genexuslabs/Private-Maven-for-GX", "releases": { "enabled": "true" }, "snapshots": { "enabled": "true" } }]'
-        servers: '[{ "id": "github-genexuslabs", "username": "genexusbot", "password": "${{ secrets.SECURE_TOKEN }}" }]'
+        repositories: '[{ "id": "${{ steps.deps-feed.outputs.server_id }}", "url": "${{ steps.deps-feed.outputs.url }}", "releases": { "enabled": "true" }, "snapshots": { "enabled": "true" } }]'
+        servers: '[{ "id": "github-genexuslabs", "username": "genexusbot", "password": "${{ secrets.SECURE_TOKEN }}" }, { "id": "azure-third-party", "username": "token", "password": "${{ secrets.AZURE_ARTIFACTS_TOKEN }}" }]'
 
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
     - name: Autobuild
-      uses: github/codeql-action/autobuild@v2
+      uses: github/codeql-action/autobuild@v3
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl
@@ -84,4 +95,4 @@ jobs:
     #   make release
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3
