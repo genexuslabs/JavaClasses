@@ -21,6 +21,10 @@ on:
   schedule:
     - cron: '28 9 * * 6'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   analyze:
     name: Analyze
@@ -53,8 +57,6 @@ jobs:
       with:
         java-version: ${{ vars.JAVA_VERSION }}
         distribution: 'temurin'
-        gpg-private-key: ${{ secrets.MAVEN_GPG_BUILDER_PRIVATE_KEY }}
-        gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
     - name: Setup Maven
       uses: stCarolas/setup-maven@v4.5
@@ -76,12 +78,14 @@ jobs:
       uses: whelk-io/maven-settings-xml-action@v14
       with:
         repositories: '[{ "id": "${{ steps.deps-feed.outputs.server_id }}", "url": "${{ steps.deps-feed.outputs.url }}", "releases": { "enabled": "true" }, "snapshots": { "enabled": "true" } }]'
-        servers: '[{ "id": "github-genexuslabs", "username": "genexusbot", "password": "${{ secrets.SECURE_TOKEN }}" }, { "id": "azure-third-party", "username": "token", "password": "${{ secrets.AZURE_ARTIFACTS_TOKEN }}" }]'
+        servers: '[{ "id": "github-genexuslabs", "username": "genexusbot", "password": "${{ secrets.SECURE_TOKEN }}" }, { "id": "azure-third-party", "username": "token", "password": "${env.AZURE_ARTIFACTS_TOKEN}" }]'
 
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
     - name: Autobuild
       uses: github/codeql-action/autobuild@v3
+      env:
+        AZURE_ARTIFACTS_TOKEN: ${{ secrets.AZURE_ARTIFACTS_TOKEN }}
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl
