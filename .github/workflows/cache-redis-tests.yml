@@ -64,7 +64,7 @@ jobs:
         servers: '[{ "id": "github-genexuslabs", "username": "genexusbot", "password": "${{ secrets.SECURE_TOKEN }}" }, { "id": "azure-third-party", "username": "token", "password": "${env.AZURE_ARTIFACTS_TOKEN}" }]'
 
     - name: Install
-      if: github.repository_owner == 'VY-GEN032-KG'
+      if: github.repository_owner == vars.PUBLIC_MIRROR_SOURCE_ORG
       env:
         AZURE_ARTIFACTS_TOKEN: ${{ secrets.AZURE_ARTIFACTS_TOKEN }}
       run: mvn -B install --file $POM_PATH -DskipTests

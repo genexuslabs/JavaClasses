@@ -16,6 +16,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   sync:
     uses: VY-GEN032-KG/genexus-dependency-sync/.github/workflows/commit-to-git.yml@master
