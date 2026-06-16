@@ -1,0 +1,54 @@
+# ------------------------------------------------------------------------------
+# DO NOT MODIFY — This workflow is part of the public mirror infrastructure
+# and is managed by the repository maintainers. Pull requests that modify
+# this file will not be accepted.
+# ------------------------------------------------------------------------------
+name: Public mirror — intake
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions: {}
+
+jobs:
+  notify-private:
+    if: ${{ vars.PUB_SYNC_PRIVATE_ORG != '' &&
+            github.repository_owner != vars.PUB_SYNC_PRIVATE_ORG }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate token for private org
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id:    ${{ vars.PUB_SYNC_INTAKE_APP_ID }}
+          private-key:  ${{ secrets.PUB_SYNC_INTAKE_APP_KEY }}
+          owner:        ${{ vars.PUB_SYNC_PRIVATE_ORG }}
+          repositories: ${{ github.event.repository.name }}
+      - name: Dispatch intake event to private repo
+        env:
+          GH_TOKEN:    ${{ steps.app-token.outputs.token }}
+          PRIVATE_ORG: ${{ vars.PUB_SYNC_PRIVATE_ORG }}
+          REPO_NAME:   ${{ github.event.repository.name }}
+          PR_NUMBER:   ${{ github.event.pull_request.number }}
+          HEAD_SHA:    ${{ github.event.pull_request.head.sha }}
+          HEAD_REPO:   ${{ github.event.pull_request.head.repo.full_name }}
+          BASE_REF:    ${{ github.event.pull_request.base.ref }}
+          PR_TITLE:    ${{ github.event.pull_request.title }}
+          PR_AUTHOR:   ${{ github.event.pull_request.user.login }}
+          PR_URL:      ${{ github.event.pull_request.html_url }}
+        run: |
+          jq -n \
+            --arg num      "$PR_NUMBER" \
+            --arg sha      "$HEAD_SHA" \
+            --arg headrepo "$HEAD_REPO" \
+            --arg base     "$BASE_REF" \
+            --arg title    "$PR_TITLE" \
+            --arg author   "$PR_AUTHOR" \
+            --arg url      "$PR_URL" \
+            --arg action   "${{ github.event.action }}" \
+            '{event_type: "public-pr-intake", client_payload: {
+                public_pr_number: $num, head_sha: $sha, head_repo: $headrepo,
+                base_ref: $base, title: $title, author: $author,
+                url: $url, action: $action }}' \
+          | gh api "repos/${PRIVATE_ORG}/${REPO_NAME}/dispatches" --input -
