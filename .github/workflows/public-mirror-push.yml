@@ -1,0 +1,51 @@
+# ------------------------------------------------------------------------------
+# DO NOT MODIFY — This workflow is part of the public mirror infrastructure
+# and is managed by the repository maintainers. Pull requests that modify
+# this file will not be accepted.
+# ------------------------------------------------------------------------------
+name: Public mirror — push
+
+on:
+  push:
+    branches:
+      # Customize to match this repository's branch structure.
+      - master
+      - 'release-*'
+  workflow_dispatch:
+  repository_dispatch:
+    types: [public-pr-intake]
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+
+  sync:
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+    uses: VY-GEN032-KG/.github/.github/workflows/public-mirror-sync-reusable.yml@main
+    secrets: inherit
+
+  ingest:
+    if: ${{ github.event_name == 'repository_dispatch' }}
+    uses: VY-GEN032-KG/.github/.github/workflows/public-mirror-ingest-pr-reusable.yml@main
+    with:
+      public_pr_number: ${{ github.event.client_payload.public_pr_number }}
+      base_ref:         ${{ github.event.client_payload.base_ref }}
+      pr_title:         ${{ github.event.client_payload.title }}
+      pr_author:        ${{ github.event.client_payload.author }}
+      pr_url:           ${{ github.event.client_payload.url }}
+      pr_action:        ${{ github.event.client_payload.action }}
+    secrets: inherit
+
+  close-mirror:
+    if: ${{ github.event_name == 'pull_request' &&
+            contains(toJSON(github.event.pull_request.labels.*.name), 'mirror:pub-') }}
+    uses: VY-GEN032-KG/.github/.github/workflows/public-mirror-close-pr-reusable.yml@main
+    with:
+      labels_json: ${{ toJSON(github.event.pull_request.labels) }}
+      base_ref:    ${{ github.event.pull_request.base.ref }}
+      merged:      ${{ toJSON(github.event.pull_request.merged) }}
+    secrets: inherit
