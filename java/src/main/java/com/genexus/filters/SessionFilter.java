@@ -3,6 +3,7 @@ package com.genexus.filters;
 import java.util.Arrays;
 import java.util.Map;
 
+import com.genexus.WrapperUtils;
 import com.genexus.servlet.*;
 import com.genexus.servlet.http.*;
 
@@ -19,12 +20,7 @@ public class SessionFilter extends Filter{
     public void doFilter(IServletRequest request, IServletResponse response, IFilterChain chain) throws Exception {
         IHttpServletRequest req = request.getHttpServletRequest();
         IHttpServletResponse res = response.getHttpServletResponse();
-		ICookie session=null;
-        ICookie[] allCookies = req.getCookies();
-		if (allCookies != null) {
-			session = Arrays.stream(allCookies).filter(x -> x.getName().equals(JSESSIONID)).findFirst().orElse(null);
-		}
-		if (session!=null && req.isSecure() && !session.getSecure())
+		if (WrapperUtils.isSecureConnection(req))
 		{
 			chain.doFilter(request, new SecureCookieHttpServletResponseWrapper(res, JSESSIONID));
 		}

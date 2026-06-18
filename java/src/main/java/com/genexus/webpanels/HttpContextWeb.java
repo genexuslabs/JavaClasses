@@ -1005,9 +1005,8 @@ public class HttpContextWeb extends HttpContext {
 	}
 
 	public int getHttpSecure() {
-		String protocol = getHeader("X-Forwarded-Proto");
-		if (protocol != null && !protocol.equals("")) {
-			return protocol.equalsIgnoreCase("https") ? 1 : 0;
+		if (WrapperUtils.isSecureConnection(request)) {
+			return 1;
 		}
 		String serverProtocolProperty = ModelContext.getModelContext().getPreferences().getProperty("SERVER_PROTOCOL", "");
 		if (!StringUtils.isBlank(serverProtocolProperty)) {
