@@ -98,6 +98,8 @@ public class GamUtilsEO {
 
 	public static String base64ToHexa(String base64) { return Encoding.base64ToHexa(base64); }
 
+	public static boolean isHexadecimal(String hexa) { return Encoding.isHexa(hexa); }
+
 	//**PKCE**//
 
 	public static String pkce_create(int len, String option) { return Pkce.create(len, option); }

@@ -76,5 +76,19 @@ public class EncodingTest {
 		}
 	}
 
+	@Test
+	public void testIsHexa()
+	{
+		int i = 0;
+		do {
+			String randomHexa = GamUtilsEO.randomHexaBits(128);
+			boolean hexa = GamUtilsEO.isHexadecimal(randomHexa);
+			Assert.assertTrue("testIsHexa_true", hexa);
 
+			String randomAlphanumeric = GamUtilsEO.randomAlphanumeric(128);
+			boolean notHexa = GamUtilsEO.isHexadecimal(randomAlphanumeric);
+			Assert.assertFalse("testIsHexa_false", notHexa);
+			i++;
+		} while (i < 50);
+	}
 }

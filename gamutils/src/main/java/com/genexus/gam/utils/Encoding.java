@@ -71,4 +71,16 @@ public class Encoding {
 			return "";
 		}
 	}
+
+	public static boolean isHexa(String hexa)
+	{
+		try {
+			Hex.decode(hexa);
+		}catch (Exception e)
+		{
+			logger.error("isHexa", e);
+			return false;
+		}
+		return true;
+	}
 }
